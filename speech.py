@@ -3,7 +3,7 @@ Uses Google's voice API to handle speech input from Mic and output text.
 
 author: Omar Barazanji
 
-refs:
+refrences:
 1) https://cloud.google.com/speech-to-text/docs/libraries#client-libraries-install-python
 2) https://www.thepythoncode.com/article/play-and-record-audio-sound-in-python
 
