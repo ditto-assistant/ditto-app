@@ -1,5 +1,5 @@
 """
-Uses Google's voice API to handle speech input from Mic and output text.
+Uses Google's Speech-to-Text API to handle speech input from Mic and output text.
 
 author: Omar Barazanji
 
