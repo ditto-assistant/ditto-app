@@ -1,2 +1,2 @@
 # assistant
-AI assistant using Google's Speech-to-Text API and GPT-3.
+AI assistant using Speech-to-Text and GPT-3.
