@@ -21,20 +21,29 @@ class Command:
 
     def __init__(self):
         self.light_status = True
+        self.light_mode = 'default'
         self.response = ''
         self.command_input = ''
 
-    def toggle_light(self, val):
-            try:
-                s =serial.Serial('COM3', baudrate=9600, bytesize=8)
-                if val == True:
-                    s.write(b'\x00')
-                    self.light_status = True
-                else:
-                    s.write(b'\x01')
-                    self.light_status = False
-            except:
-                print('no device found')
+    def toggle_light(self, mode):
+        try:
+            s =serial.Serial('COM3', baudrate=9600, bytesize=8)
+            if mode == 'on':
+                s.write(b'\x00')
+                self.light_status = True
+                self.light_mode = 'default'
+            elif mode == 'off':
+                s.write(b'\x01')
+                self.light_status = False
+            elif mode == 'sparkle':
+                self.light_mode = 'sparkle'
+                s.write(b'\x02')
+            else:
+                print('not a valid light mode')
+                self.light_mode = self.light_mode
+        except:
+            print('no device found')
+
 
     def response_handler(self, response):
         pass
@@ -46,17 +55,18 @@ class Command:
         self.command_input = command
         start_sequence = "\nA:"
         restart_sequence = "\nQ:"
-
+        
         self.response = openai.Completion.create(
             engine="davinci",
-            prompt="Q: turn off the lights.\nA: toggle-light `off` \nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on?\nA: toggle-light `on`\nQ: %s" % command,
-            temperature=0.4,
+            prompt="Q: turn off the lights.\nA: toggle-light `off` \nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on?\nA: toggle-light `on`\nQ: toggle lights\nA: toggle-light `off`\nQ: toggle lights\nA: toggle-light `on`\nQ: set the lights to sparkle\nA: toggle-light `sparkle`\nQ: put the lights on sparkle mode\nA: toggle-light `sparkle`\nQ: sparkle\nA: toggle-light `sparkle`\nQ: %s" % command,
+            temperature=0.2,
             max_tokens=100,
             top_p=1,
             frequency_penalty=0.2,
             presence_penalty=0,
             stop=["\nQ:"]
         )
+
     
 if __name__ == "__main__":
     command = Command()
