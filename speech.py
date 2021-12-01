@@ -12,7 +12,11 @@ notes:
     $env:GOOGLE_APPLICATION_CREDENTIALS="path_to_google_api_json"
 """
 
+# google cloud
 from google.cloud import speech
+
+# local vosk
+from modules.vosk_model.activation import Activation
 
 import pyaudio
 import wave
@@ -22,13 +26,16 @@ class Speech:
 
     def __init__(self):
         self.recording = False
+        self.text = ""
+        self.activation = Activation("ditto")
+        self.fosk_model_dir = 'modules/vosk_model/model'
+        self.fname = 'modules/vosk_model/command.wav'
 
     def record_audio(self, max_len_seconds=10):
         chunk = 1024
         fmt = pyaudio.paInt16
         chan = 1
         self.rate = 16000
-        self.fname = 'resources/command.wav'
 
         p = pyaudio.PyAudio()
 
@@ -65,8 +72,7 @@ class Speech:
         wf.writeframes(b''.join(frames))
         wf.close()
         
-
-    def process_audio(self):
+    def process_audio_google(self):
         with io.open(self.fname, "rb") as audio_file:
             content = audio_file.read()
         client = speech.SpeechClient()
@@ -81,8 +87,14 @@ class Speech:
         for result in response.results:
             print('\n')
             print("Transcript: {}".format(result.alternatives[0].transcript))
+            self.text = "{}".format(result.alternatives[0].transcript)
+
+    def process_audio_vosk(self):
+        self.activation.input(self.fname, self.fosk_model_dir)
+        self.text = self.activation.text
 
 if __name__ == "__main__":
     s = Speech()
     s.record_audio(3)
-    s.process_audio()
+    s.process_audio_vosk()
+    # s.process_audio_google()

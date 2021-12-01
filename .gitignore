@@ -1,1 +1,4 @@
 resources/
+*.wav
+model/
+*.zip

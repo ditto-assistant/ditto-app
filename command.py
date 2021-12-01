@@ -13,16 +13,40 @@ notes:
 
 import os
 import openai
+import serial
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-response = openai.Completion.create(
-  engine="davinci",
-  prompt="This is a test: ",
-  temperature=0.7,
-  max_tokens=64,
-  top_p=1,
-  frequency_penalty=0,
-  presence_penalty=0
-).to_dict()
+class Command:
 
+    def __init__(self):
+        self.light_status = False
+
+    def toggle_light(self):
+        try:
+            s =serial.Serial('COM3', baudrate=9600, bytesize=8)
+            s.write(b'\xA1')
+            self.light_status = not self.light_status
+        except:
+            print('no device found')
+
+    def response_handler(self, response):
+        pass
+
+    def speech_handler(self, speech_text):
+        pass
+
+    def send_request(self, command):
+        start_sequence = "\nA:"
+        restart_sequence = "\nQ:"
+
+        response = openai.Completion.create(
+        engine="davinci",
+        prompt="Q: turn off the lights.\nA: toggle-light `off` \nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on?\nA: toggle-light `on`\nQ: ",
+        temperature=0.5,
+        max_tokens=100,
+        top_p=1,
+        frequency_penalty=0.2,
+        presence_penalty=0,
+        stop=["\n"]
+        )
