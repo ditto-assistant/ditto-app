@@ -2,12 +2,9 @@
 
 FASTLED_USING_NAMESPACE
 
-// Omni Wisp demo code for FastLED proper usage
-
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
-//#define FASTLED_ALLOW_INTERRUPTS 0
 
 #define DATA_PIN    23
 #define LED_TYPE    WS2812B
@@ -71,11 +68,9 @@ void juggle() {
 
 void setup() {
   Serial.begin(9600);
-  delay(1); // 3 second delay for recovery
+  delay(1); 
 
-  // tell FastLED about the LED strip configuration
   FastLED.addLeds<1, LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,CLK_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
@@ -89,12 +84,7 @@ SimplePatternList gPatterns = { rainbow, fadeToBlack, confetti, sinelon, juggle,
 
 void loop()
 {   
-  //NOT WORKING - TELL GITHUB
-  // send the 'leds' array out to the actual LED strip
-  //  FastLED.show();
-  // insert a delay to keep the framerate modest
-  //  FastLED.delay(1000/FRAMES_PER_SECOND);
-  // do some periodic updates
+
   EVERY_N_MILLISECONDS(FRAMES_PER_SECOND / 2)
   {
     // Call the current pattern function once, updating the 'leds' array
@@ -102,7 +92,7 @@ void loop()
     FastLED.show();
   }
   EVERY_N_MILLISECONDS( FRAMES_PER_SECOND ) {
-    gHue++;  // slowly cycle the "base color" through the rainbow
+    gHue++;  
   }
   if (Serial.available()) {
       incomingByte = Serial.read();
