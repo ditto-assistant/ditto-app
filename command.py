@@ -24,11 +24,14 @@ class Command:
         self.response = ''
 
     def toggle_light(self, val):
-        if val != self.light_status:
             try:
                 s =serial.Serial('COM3', baudrate=9600, bytesize=8)
-                s.write(b'\xA1')
-                self.light_status = not self.light_status
+                if val == True:
+                    s.write(b'\x02')
+                    self.light_status = True
+                else:
+                    s.write(b'\x01')
+                    self.light_status = False
             except:
                 print('no device found')
 
@@ -55,4 +58,4 @@ class Command:
     
 if __name__ == "__main__":
     command = Command()
-    command.send_request("turn em off")
+    # command.send_request("turn em off")

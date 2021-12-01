@@ -13,7 +13,7 @@ import os
 import wave
 import json
 
-SetLogLevel(0)
+# SetLogLevel(0)
 
 class Activation:
 

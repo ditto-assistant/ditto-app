@@ -1,3 +1,9 @@
+/**
+ * Teensy logic for light strip and other things.
+ * 
+ * author: Omar Barazanji 
+ **/
+
 #include <FastLED.h>
 
 FASTLED_USING_NAMESPACE
@@ -96,7 +102,15 @@ void loop()
   }
   if (Serial.available()) {
       incomingByte = Serial.read();
-      gCurrentPatternNumber = !gCurrentPatternNumber;
+      if (incomingByte == 0x00) {
+        gCurrentPatternNumber = 0;
+      }
+      if (incomingByte == 0x01) {
+        gCurrentPatternNumber = 1;
+      }
+      if (incomingByte == 0x02) {
+        gCurrentPatternNumber = 2;
+      }
   }
 }
 
