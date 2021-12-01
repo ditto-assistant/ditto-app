@@ -22,12 +22,13 @@ class Command:
     def __init__(self):
         self.light_status = True
         self.response = ''
+        self.command_input = ''
 
     def toggle_light(self, val):
             try:
                 s =serial.Serial('COM3', baudrate=9600, bytesize=8)
                 if val == True:
-                    s.write(b'\x02')
+                    s.write(b'\x00')
                     self.light_status = True
                 else:
                     s.write(b'\x01')
@@ -42,13 +43,14 @@ class Command:
         pass
 
     def send_request(self, command):
+        self.command_input = command
         start_sequence = "\nA:"
         restart_sequence = "\nQ:"
 
         self.response = openai.Completion.create(
             engine="davinci",
             prompt="Q: turn off the lights.\nA: toggle-light `off` \nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on?\nA: toggle-light `on`\nQ: %s" % command,
-            temperature=0.5,
+            temperature=0.4,
             max_tokens=100,
             top_p=1,
             frequency_penalty=0.2,

@@ -18,30 +18,36 @@ class Assistant:
         pass
 
     def activation_sequence(self):
-        self.speech.record_audio(3)
-        self.speech.process_audio_vosk()
-        self.speech.activation.check_input()
-
+        self.speech.record_audio(True)
         if self.speech.activation.activate: # name has been spoken
-            print('activation success')
             self.speech.activation.activate = False
+            self.speech.text = ""
+            self.speech.activation.text = ""
 
-            print('listening') # listen for command
-            self.speech.record_audio(3)
-            self.speech.process_audio_vosk()
+            print('   ,.,')
+            print(' ((~"~))')
+            print("'(|o_o|)'")
+            print(",..\=/..,")
 
-            print('sending request to GPT3')
-            self.command.send_request(self.speech.text)
-            print('done')
+            self.speech.record_audio(False)
+            if self.speech.activation.activate: 
+                print('sending request to GPT3')
+                self.speech.activation.activate = False
+                self.command.send_request(self.speech.text)
 
-            self.command_response = self.command.response.choices.pop()['text'].strip('.\nA: ')
+                self.speech.text = ""
+                self.speech.activation.text = ""
 
-            print('handling light')
-            if 'toggle-light' in self.command_response:
-                if 'off' in self.command_response:
-                    self.command.toggle_light(False)
-                if 'on' in self.command_response:
-                    self.command.toggle_light(True)
+                self.command_response = self.command.response.choices.pop()['text'].strip('.\nA: ')
+
+                if 'toggle-light' in self.command_response:
+                    if 'off' in self.command_response:
+                        self.command.toggle_light(False)
+                        print('Turning off the lights')
+                    if 'on' in self.command_response:
+                        self.command.toggle_light(True)
+                        print('Turning on the lights')
+            else: print('Canceling...')
                 
 
 if __name__ == "__main__":

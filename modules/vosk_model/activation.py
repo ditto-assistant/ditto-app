@@ -7,13 +7,15 @@ refs:
 1) https://alphacephei.com/vosk/install
 """
 
-from vosk import Model, KaldiRecognizer, SetLogLevel
 import sys
 import os
 import wave
 import json
 
-# SetLogLevel(0)
+# for py_audio activation (old method)
+from vosk import Model, KaldiRecognizer, SetLogLevel
+SetLogLevel(-1)
+
 
 class Activation:
 
@@ -22,6 +24,7 @@ class Activation:
         self.activate = False
         self.text = ''
 
+    # decode wave file and save to self.text
     def input(self, fname, model_path):
         wf = wave.open(fname, "rb")
 
@@ -38,8 +41,13 @@ class Activation:
                 self.partial_result = rec.PartialResult()
         self.final_result = rec.FinalResult()
 
-    def check_input(self):
-        if self.name in self.text:
-            self.activate = True
+    # check self.text and decide whether or not to activate
+    def check_input(self, activation_mode_on):
+        if activation_mode_on:
+            if self.name in self.text:
+                self.activate = True
+        else:
+            if self.text:
+                self.activate = True
 
     
