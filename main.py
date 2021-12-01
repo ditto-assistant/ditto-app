@@ -21,9 +21,28 @@ class Assistant:
         self.speech.record_audio(3)
         self.speech.process_audio_vosk()
         self.speech.activation.check_input()
-        if self.speech.activation.activate:
+
+        if self.speech.activation.activate: # name has been spoken
             print('activation success')
             self.speech.activation.activate = False
+
+            print('listening') # listen for command
+            self.speech.record_audio(3)
+            self.speech.process_audio_vosk()
+
+            print('sending request to GPT3')
+            self.command.send_request(self.speech.text)
+            print('done')
+
+            self.command_response = self.command.response.choices.pop()['text'].strip('.\nA: ')
+
+            print('handling light')
+            if 'toggle-light' in self.command_response:
+                if 'off' in self.command_response:
+                    self.command.toggle_light(False)
+                if 'on' in self.command_response:
+                    self.command.toggle_light(True)
+                
 
 if __name__ == "__main__":
     assistant = Assistant()
