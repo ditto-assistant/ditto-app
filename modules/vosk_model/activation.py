@@ -47,7 +47,7 @@ class Activation:
             if self.name in self.text:
                 self.activate = True
         else:
-            if self.text:
+            if not self.text == "":
                 self.activate = True
 
     

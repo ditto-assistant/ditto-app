@@ -38,15 +38,23 @@ class Assistant:
                 self.speech.text = ""
                 self.speech.activation.text = ""
 
-                self.command_response = self.command.response.choices.pop()['text'].strip('.\nA: ')
+                self.command_response = self.command.response.choices.copy().pop()['text'].strip('.\nA: ')
 
                 if 'toggle-light' in self.command_response:
                     if 'off' in self.command_response:
-                        self.command.toggle_light(False)
+                        self.command.toggle_light('off')
                         print('Turning off the lights')
-                    if 'on' in self.command_response:
-                        self.command.toggle_light(True)
+                    elif 'on' in self.command_response:
+                        self.command.toggle_light('on')
                         print('Turning on the lights')
+                    elif 'sparkle' in self.command_response:
+                        self.command.toggle_light('sparkle')
+                        print('Setting lights to sparkle')
+                    else:
+                        print('invalid mode: %s' % self.command_response)
+                else:
+                    print('invalid command')
+
             else: print('Canceling...')
                 
 
