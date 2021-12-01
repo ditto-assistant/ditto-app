@@ -17,7 +17,17 @@ from google.cloud import speech
 
 # local vosk
 from modules.vosk_model.activation import Activation
+from vosk import Model, KaldiRecognizer, SetLogLevel
 
+# suppress Vosk logger
+SetLogLevel(-1)
+
+# pyaudio alternative for real-time stream (supported by Vosk)
+import sounddevice as sd
+
+import vosk
+import json
+import queue
 import pyaudio
 import wave
 import io
@@ -26,12 +36,52 @@ class Speech:
 
     def __init__(self):
         self.recording = False
+        self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
-        self.fosk_model_dir = 'modules/vosk_model/model'
+        self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
 
-    def record_audio(self, max_len_seconds=10):
+    def callback(self, indata, frames, time, status):
+        """This is called (from a separate thread) for each audio block."""
+        if status:
+            print(status)
+        self.q.put(bytes(indata))
+
+    def record_audio(self, activation_mode=False):
+        chunk = 1024
+        chan = 1
+        self.rate = 16000
+
+
+        self.recording = True
+        with sd.RawInputStream(
+            samplerate = self.rate,
+            blocksize =chunk,
+            # device=
+            dtype='int16',
+            channels=chan,
+            callback=self.callback):
+                if activation_mode: print('\nidle...\n')
+                else: print('listening...\n')
+                model = Model(self.vosk_model_dir)
+                rec = KaldiRecognizer(model, self.rate)
+                while True:
+                    data = self.q.get()
+                    if rec.AcceptWaveform(data):
+                        # print(rec.Result())
+                        self.text = json.loads(rec.Result())['text']
+                        self.activation.text = self.text
+                        self.activation.check_input(activation_mode)
+                        if self.activation.activate:
+                            self.recording = False
+                            break
+                    else:
+                        self.partial_result = json.loads(rec.PartialResult())['partial']
+                        # print(rec.PartialResult()) 
+
+                    
+    def record_pyaudio(self, max_len_seconds=10):
         chunk = 1024
         fmt = pyaudio.paInt16
         chan = 1
@@ -71,7 +121,7 @@ class Speech:
         wf.setframerate(self.rate)
         wf.writeframes(b''.join(frames))
         wf.close()
-        
+
     def process_audio_google(self):
         with io.open(self.fname, "rb") as audio_file:
             content = audio_file.read()
@@ -90,7 +140,7 @@ class Speech:
             self.text = "{}".format(result.alternatives[0].transcript)
 
     def process_audio_vosk(self):
-        self.activation.input(self.fname, self.fosk_model_dir)
+        self.activation.input(self.fname, self.vosk_model_dir)
         self.text = self.activation.text
 
 if __name__ == "__main__":
