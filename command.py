@@ -57,7 +57,7 @@ class Command:
         restart_sequence = "\nQ:"
         
         self.response = openai.Completion.create(
-            engine="davinci",
+            engine="ada",
             prompt="Q: turn off the lights.\nA: toggle-light `off` \nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on?\nA: toggle-light `on`\nQ: toggle lights\nA: toggle-light `off`\nQ: toggle lights\nA: toggle-light `on`\nQ: set the lights to sparkle\nA: toggle-light `sparkle`\nQ: put the lights on sparkle mode\nA: toggle-light `sparkle`\nQ: sparkle\nA: toggle-light `sparkle`\nQ: %s" % command,
             temperature=0.05,
             max_tokens=100,
