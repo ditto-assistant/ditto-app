@@ -47,6 +47,8 @@ class Assistant:
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
             else:
+                self.activation_mode = True # go back to idle...
+                self.application = 'model-selector'
                 print('invalid command')
 
         elif self.application == "conversation-application": # conversation application logic
@@ -61,7 +63,7 @@ class Assistant:
                     print('\nA: ')
                     for x in reply:
                         print(x)
-                else: print('A: '+ reply)
+                else: print('\nA: '+ reply)
                 self.activation_mode = True # go back to idle...
                 self.application = 'model-selector'
             else:
