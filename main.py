@@ -4,6 +4,12 @@ Combines speech to text and gpt3 api to make commands.
 author: Omar Barazanji
 """
 
+# handles text to speech
+# run the following to install text to speech (windows):
+#    ...python_install\Scripts\pywin32_postinstall.py -install
+# https://stackoverflow.com/questions/22490233/win32com-import-error-python-3-4
+import pyttsx
+
 from speech import Speech
 from command import Command
 
@@ -12,7 +18,9 @@ class Assistant:
     def __init__(self):
         self.speech = Speech()
         self.command = Command()
+        self.speech_engine = pyttsx.init()
         self.prompt = ""
+        self.reply = ""
         self.application = "model-selector"
         self.activation_mode = True
 
@@ -29,17 +37,20 @@ class Assistant:
             if 'toggle-light' in self.command_response:
                 if 'off' in self.command_response:
                     self.command.toggle_light('off')
-                    print('Turning off the lights')
+                    self.reply = '[Turning off the lights]'
+                    print(self.reply)
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
                 elif 'on' in self.command_response:
                     self.command.toggle_light('on')
-                    print('Turning on the lights')
+                    self.reply = '[Turning on the lights]'
+                    print(self.reply)
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
                 elif 'sparkle' in self.command_response:
                     self.command.toggle_light('sparkle')
-                    print('Setting lights to sparkle')
+                    self.reply = '[Setting lights to sparkle]'
+                    print(self.reply)
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
                 else:
@@ -51,6 +62,10 @@ class Assistant:
                 self.application = 'model-selector'
                 print('invalid command')
 
+            self.speech_engine.say(self.reply)
+            self.speech_engine.runAndWait()
+            self.reply = ""
+
         elif self.application == "conversation-application": # conversation application logic
             self.command.send_request(self.prompt, self.application)
             self.speech.text = ""
@@ -58,12 +73,16 @@ class Assistant:
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-conversation' in self.command_response:
                 reply = self.command_response.strip("toggle-conversation `").strip("`")
+                self.reply = ""
                 if '\\n' in reply:
                     reply = reply.split('\\n')
                     print('\nA: ')
                     for x in reply:
                         print(x)
-                else: print('\nA: '+ reply)
+                        self.reply = self.reply + " " + x.strip('\\') 
+                else: 
+                    print('\nA: '+ reply)
+                    self.reply = reply
                 self.activation_mode = True # go back to idle...
                 self.application = 'model-selector'
             else:
@@ -71,6 +90,9 @@ class Assistant:
                 self.activation_mode = True # go back to idle...
                 self.application = 'model-selector'
 
+            self.speech_engine.say(self.reply)
+            self.speech_engine.runAndWait()
+            self.reply = ""
 
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
@@ -83,6 +105,7 @@ class Assistant:
             else:
                 self.activation_mode = True # go back to idle...
                 print('invalid application')
+
 
     def activation_sequence(self):
         self.activation_mode = True
@@ -109,7 +132,6 @@ class Assistant:
                     self.send_command()
 
                 
-
             else: print('Canceling...')
                 
 
