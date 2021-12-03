@@ -24,8 +24,6 @@ class Assistant:
         self.application = "model-selector"
         self.activation_mode = True
 
-    def get_speech(self):
-        pass
 
     def send_command(self):
 
@@ -94,6 +92,27 @@ class Assistant:
             self.speech_engine.runAndWait()
             self.reply = ""
 
+        elif self.application == "timer-application":
+            self.command.send_request(self.prompt, self.application)
+            self.speech.text = ""
+            self.speech.activation.text = ""
+            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            if 'toggle-timer' in self.command_response:
+                reply = self.command_response.strip("toggle-timer `").strip("`")     
+                self.reply = '[Setting timer for %s]' % reply
+                print(self.reply)
+                self.speech_engine.say(self.reply)
+                self.speech_engine.runAndWait()
+                self.command.toggle_timer(reply)
+            else:
+                print('invalid timer command')
+
+            self.reply = ""
+            self.activation_mode = True # go back to idle...
+            self.application = 'model-selector'
+
+            
+
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
             self.command.send_request(self.prompt, self.application)
@@ -102,6 +121,8 @@ class Assistant:
                 self.application = 'light-application'
             elif 'conversation-application'in self.command_response:
                 self.application = 'conversation-application'
+            elif 'timer-application' in self.command_response:
+                self.application = 'timer-application'
             else:
                 self.activation_mode = True # go back to idle...
                 print('invalid application')
@@ -139,5 +160,3 @@ if __name__ == "__main__":
     assistant = Assistant()
     while True:
         assistant.activation_sequence()
-
-    # assistant.command(text)
