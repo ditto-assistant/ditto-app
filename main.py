@@ -122,18 +122,20 @@ class Assistant:
                 reply = self.command_response.replace("toggle-spotify `","").strip("`").split(", ")
                 if len(reply)==1:
                     p = self.command.play_music(reply[0])
-                    if p:
+                    if p==1:
                         self.reply = '[Playing %s on Spotify]' % reply[0].capitalize()
                         print(self.reply)
-                    else:
+                    if (p==-1):
                         self.reply = '[Could not find %s on Spotify]' % reply[0].capitalize()
+                        print(self.reply)
                 else:
                     p = self.command.play_music(reply[0], reply[1])
-                    if p:
+                    if p==1:
                         self.reply = '[Playing %s by %s on Spotify]' % (reply[1].capitalize().strip(" "), reply[0].capitalize())
                         print(self.reply)
-                    else:
+                    if (p==-1):
                         self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].capitalize().strip(" "), reply[0].capitalize())
+                        print(self.reply)
 
             else:
                 print('invalid spotify command')

@@ -60,7 +60,7 @@ class Spotify():
             sp.start_playback(uris=[uri], device_id=0)
             return 1
         except:
-            print("invalid uri")
+            print("invalid uri: %s" % uri)
             return -1
 
     def get_uri_spotify(self, artist, song=None):
