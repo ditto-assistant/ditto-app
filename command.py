@@ -55,15 +55,19 @@ class Command:
 
 
     def play_music(self, artist, song=None):
-        play=0
+        play=-1
         player = Spotify(self.path.replace("/", "\\")+"\\modules\\spotify")
         uri = player.get_uri_spotify(artist, song)
-        if not uri==-1: 
+        
+        if not uri==None: 
             play=player.play_spotify(uri)
-        elif uri == "":
+        else:
             return -1
-        if play: return 1
-        else: return -1
+
+        if play: 
+            return 1
+        else:
+            return -1
 
 
     def send_request(self, command, model):
