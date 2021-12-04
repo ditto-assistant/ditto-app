@@ -10,6 +10,8 @@ author: Omar Barazanji
 # https://stackoverflow.com/questions/22490233/win32com-import-error-python-3-4
 import pyttsx
 
+import os 
+
 from speech import Speech
 from command import Command
 
@@ -17,15 +19,12 @@ class Assistant:
 
     def __init__(self):
         self.speech = Speech()
-        self.command = Command()
+        self.command = Command(os.getcwd())
         self.speech_engine = pyttsx.init()
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector"
         self.activation_mode = True
-
-    def get_speech(self):
-        pass
 
     def send_command(self):
 
@@ -94,6 +93,57 @@ class Assistant:
             self.speech_engine.runAndWait()
             self.reply = ""
 
+        elif self.application == "timer-application": # timer application logic
+            self.command.send_request(self.prompt, self.application)
+            self.speech.text = ""
+            self.speech.activation.text = ""
+            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            if 'toggle-timer' in self.command_response:
+                reply = self.command_response.strip("toggle-timer `").strip("`")     
+                self.reply = '[Setting timer for %s]' % reply
+                print(self.reply)
+                self.speech_engine.say(self.reply)
+                self.speech_engine.runAndWait()
+                self.command.toggle_timer(reply)
+            else:
+                print('invalid timer command')
+
+            self.reply = ""
+            self.activation_mode = True # go back to idle...
+            self.application = 'model-selector'
+
+        elif self.application == "spotify-application": # spotify application logic
+            # added period to end of prompt to prevent GPT3 from adding more to prompt
+            self.command.send_request(self.prompt+".", self.application)
+            self.speech.text = ""
+            self.speech.activation.text = ""
+            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            if 'toggle-spotify' in self.command_response:
+                reply = self.command_response.replace("toggle-spotify `","").strip("`").split(", ")
+                if len(reply)==1:
+                    p = self.command.play_music(reply[0])
+                    if p:
+                        self.reply = '[Playing %s on Spotify]' % reply[0].capitalize()
+                        print(self.reply)
+                    else:
+                        self.reply = '[Could not find %s on Spotify]' % reply[0].capitalize()
+                else:
+                    p = self.command.play_music(reply[0], reply[1])
+                    if p:
+                        self.reply = '[Playing %s by %s on Spotify]' % (reply[1].capitalize().strip(" "), reply[0].capitalize())
+                        print(self.reply)
+                    else:
+                        self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].capitalize().strip(" "), reply[0].capitalize())
+
+            else:
+                print('invalid spotify command')
+
+            self.speech_engine.say(self.reply)
+            self.speech_engine.runAndWait()
+            self.reply = ""
+            self.activation_mode = True # go back to idle...
+            self.application = 'model-selector'
+
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
             self.command.send_request(self.prompt, self.application)
@@ -102,6 +152,10 @@ class Assistant:
                 self.application = 'light-application'
             elif 'conversation-application'in self.command_response:
                 self.application = 'conversation-application'
+            elif 'timer-application' in self.command_response:
+                self.application = 'timer-application'
+            elif 'spotify-application' in self.command_response:
+                self.application = 'spotify-application'
             else:
                 self.activation_mode = True # go back to idle...
                 print('invalid application')
@@ -139,5 +193,3 @@ if __name__ == "__main__":
     assistant = Assistant()
     while True:
         assistant.activation_sequence()
-
-    # assistant.command(text)
