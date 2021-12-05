@@ -146,6 +146,29 @@ class Assistant:
             self.activation_mode = True # go back to idle...
             self.application = 'model-selector'
 
+        elif self.application=="memory-application":
+            # added period to end of prompt to prevent GPT3 from adding more to prompt
+            self.command.send_request(self.prompt+".", self.application)
+            self.speech.text = ""
+            self.speech.activation.text = ""
+            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            if 'toggle-memory-store' in self.command_response:
+                reply = self.command_response.replace("toggle-memory-store `","").strip("`").split(", ")
+                self.reply = ("[I'll remember %s]" % reply[0]).replace("my", "your")
+                print(self.reply)
+                self.command.store_memory(reply[0], reply[1])
+            if 'toggle-memory-read' in self.command_response:
+                reply = self.command_response.replace("toggle-memory-read `","").strip("`").split(", ")
+                value = self.command.read_memory(reply[0])
+                self.reply = (reply[0] + " is %s" % value).replace("my", "your")
+
+            self.speech_engine.say(self.reply)
+            self.speech_engine.runAndWait()
+            self.reply = ""
+            self.activation_mode = True # go back to idle...
+            self.application = 'model-selector'
+
+
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
             self.command.send_request(self.prompt, self.application)
@@ -158,6 +181,8 @@ class Assistant:
                 self.application = 'timer-application'
             elif 'spotify-application' in self.command_response:
                 self.application = 'spotify-application'
+            elif 'memory-application' in self.command_response:
+                self.application = 'memory-application'
             else:
                 self.activation_mode = True # go back to idle...
                 print('invalid application')
