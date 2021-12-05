@@ -12,6 +12,7 @@ import json
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 
+from subprocess import Popen, PIPE
 
 class Spotify():
     
@@ -64,6 +65,9 @@ class Spotify():
             return -1
 
     def get_uri_spotify(self, artist, song=None):
+        # wake up spotify
+        # path = self.path.replace("/","\\") + '\\resources\\spotify_shortcut.lnk'
+        # os.system(path)
 
         sp = spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
