@@ -14,6 +14,7 @@ notes:
 import os
 import openai
 import serial
+import json
 
 from modules.hourglass.timer import Timer
 from modules.spotify.spotify import Spotify
@@ -23,6 +24,14 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 class Command:
 
     def __init__(self, path):
+        self.mem_path= path+'/modules/memory/memory.json'
+        mem=""
+        with open(self.mem_path) as f:
+            for x in f.readlines():
+                mem+=x
+        if mem=="":
+            mem=json.dumps({"name" : "Omar"})
+        self.memory = json.loads(mem)
         self.path = path
         self.light_status = True
         self.light_mode = 'default'
@@ -70,6 +79,16 @@ class Command:
             return -1
 
 
+    def store_memory(self, key, value):
+        self.memory[key]=value
+        with open(self.path+'/modules/memory/memory.json','w') as f:
+            json.dump(self.memory, f)
+
+    def read_memory(self, key):
+        return self.memory[key]
+
+
+
     def send_request(self, command, model):
         self.command_input = command
         start_sequence = "\nA:"
@@ -78,7 +97,7 @@ class Command:
         if model == 'model-selector':
             self.response = openai.Completion.create(
                     engine="ada",
-                    prompt="Q: turn off the lights\nA: light-application \nQ: turn on the lights\nA: light-application \nQ: set the lights to sparkle\nA: light-application \nQ: put the lights on sparkle mode\nA: light-application \nQ: how are you doing\nA: conversation-application \nQ: what's the meaning of life\nA: conversation-application \nQ: i hope your day is going well.\nA: conversation-application \nQ: yo\nA: conversation-application \nQ: can you turn the lights off\nA: light-application\nQ: write me a poem\nA: conversation-application \nQ: how do you split and atom in half\nA: conversation-application\nQ: what happens when you mix baking soda and vinegar\nA: conversation-application\nQ: set a timer for 45 seconds\nA: timer-application\nQ: timer 1 minute\nA: timer-application\nQ: turn off the lights\nA: light-application\nQ: what is the meaning of life?\nA: conversation-application\nQ: count down from 50\nA: timer-application\nQ: it's dab time\nA: timer-application\nQ: time to hit a dab\nA: timer-application\nQ: set a dab timer\nA: timer-application\nQ: who are you\nA: conversation-application\nQ: turn off the lights\nA: light-application\nQ: play dig my grave by goat\nA: spotify-application\nQ: can we listen to the mars volta\nA: spotify-application\nQ: play crucial by false jasmine on spotify\nA: spotify-application\nQ: play jeff buckley on spotify\nA: spotify-application\nQ: play me a good song\nA: spotify-application\nQ: Right me a song about a cactus \nA: conversation-application\nQ: dab time\nA: timer-application\nQ: %s" % command,
+                    prompt="Q: turn off the lights\nA: light-application \nQ: turn on the lights\nA: light-application \nQ: set the lights to sparkle\nA: light-application \nQ: put the lights on sparkle mode\nA: light-application \nQ: how are you doing\nA: conversation-application \nQ: what's the meaning of life\nA: conversation-application \nQ: i hope your day is going well.\nA: conversation-application \nQ: yo\nA: conversation-application \nQ: can you turn the lights off\nA: light-application\nQ: write me a poem\nA: conversation-application \nQ: how do you split and atom in half\nA: conversation-application\nQ: what happens when you mix baking soda and vinegar\nA: conversation-application\nQ: set a timer for 45 seconds\nA: timer-application\nQ: timer 1 minute\nA: timer-application\nQ: turn off the lights\nA: light-application\nQ: what is the meaning of life?\nA: conversation-application\nQ: count down from 50\nA: timer-application\nQ: it's dab time\nA: timer-application\nQ: time to hit a dab\nA: timer-application\nQ: set a dab timer\nA: timer-application\nQ: who are you\nA: conversation-application\nQ: turn off the lights\nA: light-application\nQ: play dig my grave by goat\nA: spotify-application\nQ: can we listen to the mars volta\nA: spotify-application\nQ: play crucial by false jasmine on spotify\nA: spotify-application\nQ: play jeff buckley on spotify\nA: spotify-application\nQ: play me a good song\nA: spotify-application\nQ: Right me a song about a cactus \nA: conversation-application\nQ: dab time\nA: timer-application\nQ: remember that my favorite color is blue.\nA: memory-application\nQ: don't forget that my favorite movie is Fear and Loathing in Las Vegas.\nA: memory-application\nQ: when is my friend john's birthday.\nA: memory-application\nQ: how are you\nA: don't forget that I like all kinds of pizza.\nA: memory-application\nQ: what is your favorite movie\nA: conversation-application\nQ: what is my favorite movie\nA: memory-application\nQ: play false jasmine\nA: spotify-application\nQ: turn off the lights\nA: light-application\nQ: what is your name\nA: conversation-application\nQ: what is my name\nA: memory-application\nQ: what is your name\nA: conversation-application\nQ: what is my name\nA: memory-application\nQ: what is my dog's name\nA: memory-application\nQ: what is your dog's name\nA: conversation-application\nQ: what is my birthday\nA: memory-application\nQ: when is your birthday\nA: conversation-application\nQ: what is your favorite color\nA: conversation-application\nQ: what is my favorite color\nA: memory-application\nQ: what is your dog's name\nA: conversation-application\nQ: what are your thoughts on the meaning of life\nA: conversation-application\nQ: what are my thoughts\nA: memory-application\nQ: what are your thoughts\nA: conversation-application\nQ: what are my thoughts\nA: memory-application\nQ: play false jasmine\nA: spotify-application\nQ: %s" % command,
                     temperature=0,
                     max_tokens=64,
                     top_p=1,
@@ -130,7 +149,18 @@ class Command:
                 presence_penalty=0,
                 stop=["\nQ: "]
             )
+        elif model == 'memory-application':
+            self.response = openai.Completion.create(
+                engine="ada",
+                prompt="Q: remember that my favorite color is blue.\nA: toggle-memory-store `my favorite color, blue`\nQ: don't forget that my favorite color is blue.\nA: toggle-memory-store `my favorite color, blue`\nQ: what is my favorite color.\nA: toggle-memory-read `my favorite color`\nQ: remember my birthday is on november fifth nineteen ninety seven.\nA: toggle-memory-store `my birthday, november fifth nineteen ninety seven`\nQ: don't forget my birthday is on november fifth nineteen ninety seven.\nA: toggle-memory-store `my birthday, november fifth nineteen ninety seven`\nQ: Q: what is my birthday.\nA: toggle-memory-read `my birthday`\nQ: when was my birthday.\nA: toggle-memory-read `my birthday`\nQ: what is my favorite color.\nA: toggle-memory-read `my favorite color`\nQ: remember my mom's birthday is on october sixth nineteen fifty nine.\nA: toggle-memory-store `my mom's birthday color, october sixth nineteen fifty nine`\nQ: don't forget that my mom's birthday is on october sixth nineteen fifty nine.\nA: toggle-memory-store `my mom's birthday, october sixth nineteen fifty nine`\nQ: when was my mom's birthday.\nA: toggle-memory-read `my mom's birthday`\nQ: when is my birthday.\nA: toggle-memory-read `my birthday`\nQ: don't forget that the mars volta is my favorite band.\nA: toggle-memory-store `my favorite band, the mars volta`\nQ: what is my favorite color.\nA: toggle-memory-read `my favorite color`\nQ: what is my favorite band.\nA: toggle-memory-read `my favorite band`\nQ: don't forget that my friend john's birthday is on july eighteenth ninety ninety eight.\nA: toggle-memory-store `my friend john's birthday, july eighteenth ninety ninety eight`\nQ: when is my friend john's birthday.\nA: toggle-memory-read `my friend john's birthday`\nQ: when was my mom's birthday.\nA: toggle-memory-read `my mom's birthday`\nQ: what is my favorite color.\nA: toggle-memory-read `my favorite color`\nQ: don't forget that my mom's birthday is on october six nineteen fifty nine.\nA: toggle-memory-store `my mom's birthday, october six nineteen fifty nine`\nQ: don't forget my favorite color is blue.\nA: toggle-memory-store `my favorite color, blue`\nQ: don't forget my name is omar.\nA: toggle-memory-store `my name, omar`\nQ: remember that my favorite band is the mars volta.\nA: toggle-memory-store `my favorite band, the mars volta`\nQ: what is my brother's name.\nA: toggle-memory-read `my brother's name`\nQ: %s" % command,
+                temperature=0,
+                max_tokens=100,
+                top_p=1,
+                frequency_penalty=0.2,
+                presence_penalty=0,
+                stop=["\nQ: "]
+            )
     
 if __name__ == "__main__":
     command = Command()
-    # command.send_request("turn em off")
+    command.send_request("turn em off")
