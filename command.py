@@ -24,13 +24,23 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 class Command:
 
     def __init__(self, path):
+        # path to memory.json 
         self.mem_path= path+'/modules/memory/memory.json'
+
         mem=""
-        with open(self.mem_path) as f:
-            for x in f.readlines():
-                mem+=x
-        if mem=="":
-            mem=json.dumps({"name" : "Omar"})
+        # try to load in memory.json
+        try:
+            with open(self.mem_path) as f:
+                for x in f.readlines():
+                    mem+=x
+        except: # create memory.json if first time
+            mem_init = {"your name": "Ditto"}
+            with open(self.mem_path, 'w') as f:
+                json.dump(mem_init, f)
+
+        if mem=="": # if fail to load file, create in program
+            mem=json.dumps({"your name" : "Ditto"})
+
         self.memory = json.loads(mem)
         self.path = path
         self.light_status = True
