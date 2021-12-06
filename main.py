@@ -112,24 +112,34 @@ class Assistant:
             # added period to end of prompt to prevent GPT3 from adding more to prompt
             self.command.send_request(self.prompt+".", self.application)
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
-            if 'toggle-spotify' in self.command_response:
-                reply = self.command_response.replace("toggle-spotify `","").strip("`").split(", ")
-                if len(reply)==1:
-                    p = self.command.play_music(reply[0])
+            cmd = self.command_response.split("`")[0].strip(" ")
+            reply = self.command_response.split("`")[1].strip(",")
+            if 'toggle-spotify' == cmd:
+                if isinstance(reply, str):
+                    p = self.command.play_music(reply)
                     if p==1:
-                        self.reply = '[Playing %s on Spotify]' % reply[0].capitalize()
+                        self.reply = '[Playing %s on Spotify]' % reply.title()
                         print(self.reply)
                     if (p==-1):
-                        self.reply = '[Could not find %s on Spotify]' % reply[0].capitalize()
+                        self.reply = '[Could not find %s on Spotify]' % reply.title()
                         print(self.reply)
                 else:
                     p = self.command.play_music(reply[0], reply[1])
                     if p==1:
-                        self.reply = '[Playing %s by %s on Spotify]' % (reply[1].capitalize().strip(" "), reply[0].capitalize())
+                        self.reply = '[Playing %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
                         print(self.reply)
                     if (p==-1):
-                        self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].capitalize().strip(" "), reply[0].capitalize())
+                        self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
                         print(self.reply)
+
+            elif 'toggle-spotify-playlist' == cmd:
+                p = self.command.play_user_playlist(reply.lower())
+                if p==1:
+                    self.reply = '[Playing %s Playlist on Spotify]' % reply.title()
+                    print(self.reply)
+                if p==-1:
+                    self.reply = '[Could not find %s on Spotify]' % reply.title()
+                    print(self.reply)
 
             else:
                 print('invalid spotify command')

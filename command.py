@@ -91,6 +91,19 @@ class Command:
             return -1
 
 
+    def play_user_playlist(self, name):
+        play=-1
+        uri = ''
+        for x in self.player.user_playlists:
+            if name.lower() in x[0].lower():
+                uri = x[1]
+        if uri=='':
+            return -1
+        play = self.player.play_spotify(uri)
+        if play: return 1
+        else: return -1
+
+
     def store_memory(self, key, value):
         self.memory[key]=value
         with open(self.path+'/modules/memory/memory.json','w') as f:
@@ -153,7 +166,7 @@ class Command:
         elif model == 'spotify-application':
             self.response = openai.Completion.create(
                 engine="ada",
-                prompt="Q: play crucial by false jasmine.\nA: toggle-spotify `false jasmine, crucial`\nQ: play false jasmine on spotify.\nA: toggle-spotify `false jasmine`\nQ: play false jasmine.\nA: toggle-spotify `false jasmine`\nQ: play vitamin c by can .\nA: toggle-spotify `can, vitamin c`\nQ: can we listen to the mars volta.\nA: toggle-spotify `the mars volta`\nQ: throw on some slum village.\nA: toggle-spotify `slum village`\nQ: play all my love by led zeppelin.\nA: toggle-spotify `led zeppelin, all my love`\nQ: play me some sublime .\nA: toggle-spotify `sublime`\nQ: can we listen to grace by jeff buckley.\nA: toggle-spotify `jeff buckley, grace`\nQ: play roundabout by yes.\nA: toggle-spotify `yes, roundabout`\nQ: play the widow by the mars volta.\nA: toggle-spotify `the mars volta, the widow`\nQ: play deep down by mike patton.\nA: toggle-spotify `mike patton, deep down`\nQ: play djedje by gordon.\nA: toggle-spotify `gordon, djedje`\nQ: play djedje.\nA: toggle-spotify `djedje`\nQ: play dig my grave by goat.\nA: toggle-spotify `goat, dig my grave`\nQ: play the mars volta.\nA: toggle-spotify `the mars volta`\nQ: play jeff buckley.\nA: toggle-spotify `jeff buckley`\nQ: play me a good song\nA: toggle-spotify `good`\nQ: i want to hear my favorite band, False Jasmine.\nA: toggle-spotify `false jasmine`\nQ: %s" % command,
+                prompt="Q: play crucial by false jasmine.\nA: toggle-spotify `false jasmine, crucial`\nQ: play false jasmine on spotify.\nA: toggle-spotify `false jasmine`\nQ: play false jasmine.\nA: toggle-spotify `false jasmine`\nQ: play vitamin c by can .\nA: toggle-spotify `can, vitamin c`\nQ: can we listen to the mars volta.\nA: toggle-spotify `the mars volta`\nQ: throw on some slum village.\nA: toggle-spotify `slum village`\nQ: play all my love by led zeppelin.\nA: toggle-spotify `led zeppelin, all my love`\nQ: play me some sublime .\nA: toggle-spotify `sublime`\nQ: can we listen to grace by jeff buckley.\nA: toggle-spotify `jeff buckley, grace`\nQ: play roundabout by yes.\nA: toggle-spotify `yes, roundabout`\nQ: play the widow by the mars volta.\nA: toggle-spotify `the mars volta, the widow`\nQ: play deep down by mike patton.\nA: toggle-spotify `mike patton, deep down`\nQ: play djedje by gordon.\nA: toggle-spotify `gordon, djedje`\nQ: play djedje.\nA: toggle-spotify `djedje`\nQ: play dig my grave by goat.\nA: toggle-spotify `goat, dig my grave`\nQ: play the mars volta.\nA: toggle-spotify `the mars volta`\nQ: play jeff buckley.\nA: toggle-spotify `jeff buckley`\nQ: play me a good song\nA: toggle-spotify `good`\nQ: i want to hear my favorite band, False Jasmine.\nA: toggle-spotify `false jasmine`\nQ: play my playlist baked on spotify.\nA: toggle-spotify-playlist `baked`\nQ: play my baked playlist.\nA: toggle-spotify-playlist `baked`\nQ: play my discover weekly playlist.\nA: toggle-spotify-playlist `discover weekly`\nQ: play the discover weekly playlist on spotify.\nA: toggle-spotify-playlist `discover weekly`\nQ: play my playlist your top songs twenty nineteen on spotify.\nA: toggle-spotify-playlist `your top songs 2019`\nQ: play my top songs twenty twenty one playlist.\nA: toggle-spotify-playlist `your top songs 2021`\nQ: play my playlist judge tunes on spotify.\nA: toggle-spotify-playlist `djedjetunes`\nQ: play judge tunes on spotify.\nA: toggle-spotify-playlist `djedjetunes`\nQ: play the mars volta.\nA: toggle-spotify `the mars volta`\nQ: %s" % command,
                 temperature=0,
                 max_tokens=64,
                 top_p=1,

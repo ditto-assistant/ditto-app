@@ -8,6 +8,7 @@ refs:
 
 import os
 import json
+import random
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
@@ -49,9 +50,13 @@ class Spotify():
 
         # pre-save top songs for better context
         self.get_user_top_songs()
+        # pre-save user playlists
+        self.get_user_playlists()
 
     
     def play_spotify(self, uri):
+        if 'playlist' in uri: context_mode = 'playlist'
+        else: context_mode = 'song'
         device_id = 0
         scope = "user-read-playback-state,user-modify-playback-state"
         sp = spotipy.Spotify(
@@ -76,7 +81,16 @@ class Spotify():
                 json.dump(self.user_values, f)
 
         try:
-            sp.start_playback(uris=[uri], device_id=device_id)
+            if context_mode=='playlist':
+                for x in self.user_playlists:
+                    if uri in x: # find playist 
+                        offset_max = x[2] # grab tack count
+                        shuffle_val = random.randint(0,offset_max)
+                    else:
+                        offset_max = 0
+                sp.start_playback(context_uri=uri, offset={"position":shuffle_val}, device_id=device_id)
+            if context_mode=='song':
+                sp.start_playback(uris=[uri], device_id=device_id)
             return 1
         except:
             print("invalid uri: %s" % uri)
@@ -90,11 +104,11 @@ class Spotify():
                 track_song = track[0].lower()
                 track_artist = track[1].lower()
                 if song==None and (artist.lower() in track_song or artist.lower() in track_artist):
-                    print('found %s in top songs' % artist.title())
+                    print('found %s in top songs\n' % artist.title())
                     return track[2]
                 if not song==None and artist.lower() in track_artist:
                     if song.lower() in track_song:
-                        print('found %s by %s in top songs' % song.title(), artist.title())
+                        print('found %s by %s in top songs\n' % song.title(), artist.title())
                         return track[2]      
 
         sp = spotipy.Spotify(
@@ -124,11 +138,28 @@ class Spotify():
         ranges = ['short_term', 'medium_term', 'long_term']
         self.top_songs = []
         for sp_range in ranges:
-            results = sp.current_user_top_tracks(time_range=sp_range, limit=50)
+            results = sp.current_user_top_tracks(time_range=sp_range, limit=75)
             for i, item in enumerate(results['items']):
                 self.top_songs.append([item['name'], item['artists'][0]['name'], item['uri']])
 
+    def get_user_playlists(self):
+        self.user_playlists = []
+        scope = 'playlist-read-private'
+
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+            scope=scope,
+            client_id = self.user_values["client-id"],
+            client_secret = self.user_values["client-secret"],
+            redirect_uri='http://127.0.0.1:8123'
+        ))
+        user_id = sp.me()['id']
+        playlists = sp.current_user_playlists(limit=50)
+        for playlist in playlists['items']:
+            self.user_playlists.append([playlist['name'], playlist['uri'], playlist['tracks']['total']])
+
 if __name__ == "__main__":
     spotify_app = Spotify(os.getcwd())
+
     uri = spotify_app.get_uri_spotify("the mars volta")
     spotify_app.play_spotify(uri)
+    # spotify_app.play_spotify('spotify:playlist:2PT7ZGFsCmFpRUBrzXFZGT')
