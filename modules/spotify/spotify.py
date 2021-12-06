@@ -46,6 +46,9 @@ class Spotify():
             for x in f.readlines():
                 s += x
         self.user_values = json.loads(s)
+
+        # pre-save top songs for better context
+        self.get_user_top_songs()
     
     def play_spotify(self, uri):
         scope = "user-read-playback-state,user-modify-playback-state"
@@ -54,7 +57,7 @@ class Spotify():
                 client_id = self.user_values["client-id"],
                 client_secret = self.user_values["client-secret"],
                 scope=scope,
-                redirect_uri='http://127.0.0.1:8123/'
+                redirect_uri='http://127.0.0.1:8123'
             )                
         )
         try:
@@ -68,6 +71,18 @@ class Spotify():
         # wake up spotify
         # path = self.path.replace("/","\\") + '\\resources\\spotify_shortcut.lnk'
         # os.system(path)
+
+        if self.top_songs:
+            for track in self.top_songs:
+                track_song = track[0].lower()
+                track_artist = track[1].lower()
+                if song==None and (artist.lower() in track_song or artist.lower() in track_artist):
+                    print('found %s in top songs' % artist.title())
+                    return track[2]
+                if not song==None and artist.lower() in track_artist:
+                    if song.lower() in track_song:
+                        print('found %s by %s in top songs' % song.title(), artist.title())
+                        return track[2]      
 
         sp = spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
@@ -85,8 +100,22 @@ class Spotify():
             print('invalid search')
             return -1
     
+    def get_user_top_songs(self):
+        scope = 'user-top-read'
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+            scope=scope,
+            client_id = self.user_values["client-id"],
+            client_secret = self.user_values["client-secret"],
+            redirect_uri='http://127.0.0.1:8123'))
+
+        ranges = ['short_term', 'medium_term', 'long_term']
+        self.top_songs = []
+        for sp_range in ranges:
+            results = sp.current_user_top_tracks(time_range=sp_range, limit=50)
+            for i, item in enumerate(results['items']):
+                self.top_songs.append([item['name'], item['artists'][0]['name'], item['uri']])
 
 if __name__ == "__main__":
     spotify_app = Spotify(os.getcwd())
-    uri = spotify_app.get_uri_spotify("False Jasmine", "gravity")
+    uri = spotify_app.get_uri_spotify("the mars volta")
     spotify_app.play_spotify(uri)

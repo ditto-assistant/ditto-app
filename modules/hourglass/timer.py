@@ -10,19 +10,17 @@ ref:
 import os
 import sys
 
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 class Timer:
     
     def __init__(self):
-        self.default_path = "C:\\" + '"' + 'Program Files (x86)' + '"' + '\Hourglass\Hourglass.exe'
+        self.default_path = 'C:\\Program Files (x86)\\Hourglass\\Hourglass.exe'
         self.custom_path = ''
 
     def set_timer(self, val):
         try:
-            os.system('"' + self.default_path + '"' + " " + val)
-            process = Popen([self.default_path, val, '-e "on"'])
-            process.communicate()
+            Popen([self.default_path,'-e', "on", val], shell=False)
         except:
             pass
 

@@ -146,7 +146,7 @@ class Assistant:
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-memory-store' in self.command_response:
                 reply = self.command_response.replace("toggle-memory-store `","").strip("`").split(", ")
-                self.reply = ("[I'll remember %s]" % reply[0]).replace("my", "your")
+                self.reply = ("[I'll remember %s]" % reply[0]).replace("my", "Your")
                 print(self.reply)
                 try:
                     self.command.store_memory(reply[0], reply[1])
@@ -164,7 +164,7 @@ class Assistant:
                     self.prompt = self.speech.text
                     self.application = 'conversation-application'
                 if not self.application=='conversation-application':
-                    self.reply = (reply[0] + " is %s" % value).replace("my", "your")
+                    self.reply = ("["+reply[0] + " is %s]" % value).replace("my", "Your")
                     print(self.reply)
             if not self.application=='conversation-application':
                 self.speech_engine.say(self.reply)
