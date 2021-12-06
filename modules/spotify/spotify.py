@@ -49,8 +49,10 @@ class Spotify():
 
         # pre-save top songs for better context
         self.get_user_top_songs()
+
     
     def play_spotify(self, uri):
+        device_id = 0
         scope = "user-read-playback-state,user-modify-playback-state"
         sp = spotipy.Spotify(
             client_credentials_manager = SpotifyOAuth(
@@ -60,17 +62,28 @@ class Spotify():
                 redirect_uri='http://127.0.0.1:8123'
             )                
         )
+        self.devices = sp.devices()
+        if self.devices['devices']==[]: # if no devices, default to previous used device ID
+            if 'device-id' in self.user_values.keys(): # check if previous device exists
+                device_id = self.user_values['device-id'] # grab id
+
+        if 'device-id' in self.user_values.keys(): # devices exist, check for previous device
+            device_id = self.user_values['device-id'] # grab id
+        else: # register device (first time)
+            device_id = self.devices['devices'][0]['id'] # grab id
+            self.user_values['device-id'] = device_id
+            with open(self.path+'\\resources\\spotify.json', 'w') as f: # store to json
+                json.dump(self.user_values, f)
+
         try:
-            sp.start_playback(uris=[uri], device_id=0)
+            sp.start_playback(uris=[uri], device_id=device_id)
             return 1
         except:
             print("invalid uri: %s" % uri)
             return -1
 
+
     def get_uri_spotify(self, artist, song=None):
-        # wake up spotify
-        # path = self.path.replace("/","\\") + '\\resources\\spotify_shortcut.lnk'
-        # os.system(path)
 
         if self.top_songs:
             for track in self.top_songs:
