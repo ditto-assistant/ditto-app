@@ -53,7 +53,6 @@ class Speech:
         chan = 1
         self.rate = 16000
 
-
         self.recording = True
         with sd.RawInputStream(
             samplerate = self.rate,
@@ -80,64 +79,64 @@ class Speech:
                         self.partial_result = json.loads(rec.PartialResult())['partial']
                         # print(rec.PartialResult()) 
 
-                    
-    def record_pyaudio(self, max_len_seconds=10):
-        chunk = 1024
-        fmt = pyaudio.paInt16
-        chan = 1
-        self.rate = 16000
+                        
+        def record_pyaudio(self, max_len_seconds=10):
+            chunk = 1024
+            fmt = pyaudio.paInt16
+            chan = 1
+            self.rate = 16000
 
-        p = pyaudio.PyAudio()
+            p = pyaudio.PyAudio()
 
-        print('recording...')
+            print('recording...')
 
-        self.recording = True
-        stream = p.open(
-            format=fmt, 
-            channels=chan, 
-            rate=self.rate, 
-            input=self.recording, 
-            frames_per_buffer=chunk
-        )
-        
-        frames = []
+            self.recording = True
+            stream = p.open(
+                format=fmt, 
+                channels=chan, 
+                rate=self.rate, 
+                input=self.recording, 
+                frames_per_buffer=chunk
+            )
+            
+            frames = []
 
-        for x in range(0, int(self.rate / chunk*max_len_seconds)):
-            data = stream.read(chunk)
-            frames.append(data)
+            for x in range(0, int(self.rate / chunk*max_len_seconds)):
+                data = stream.read(chunk)
+                frames.append(data)
 
-            if not self.recording:
-                break
-        
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
+                if not self.recording:
+                    break
+            
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
 
-        print('done.')
+            print('done.')
 
-        wf = wave.open(self.fname, 'wb')
-        wf.setnchannels(chan)
-        wf.setsampwidth(p.get_sample_size(fmt))
-        wf.setframerate(self.rate)
-        wf.writeframes(b''.join(frames))
-        wf.close()
+            wf = wave.open(self.fname, 'wb')
+            wf.setnchannels(chan)
+            wf.setsampwidth(p.get_sample_size(fmt))
+            wf.setframerate(self.rate)
+            wf.writeframes(b''.join(frames))
+            wf.close()
 
-    def process_audio_google(self):
-        with io.open(self.fname, "rb") as audio_file:
-            content = audio_file.read()
-        client = speech.SpeechClient()
-        audio = speech.RecognitionAudio(content=content)
-        config = speech.RecognitionConfig( 
-            encoding = speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz = self.rate,
-            language_code = "en-US"
-        )
-        response = client.recognize(config=config, audio=audio)
+        def process_audio_google(self):
+            with io.open(self.fname, "rb") as audio_file:
+                content = audio_file.read()
+            client = speech.SpeechClient()
+            audio = speech.RecognitionAudio(content=content)
+            config = speech.RecognitionConfig( 
+                encoding = speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                sample_rate_hertz = self.rate,
+                language_code = "en-US"
+            )
+            response = client.recognize(config=config, audio=audio)
 
-        for result in response.results:
-            print('\n')
-            print("Transcript: {}".format(result.alternatives[0].transcript))
-            self.text = "{}".format(result.alternatives[0].transcript)
+            for result in response.results:
+                print('\n')
+                print("Transcript: {}".format(result.alternatives[0].transcript))
+                self.text = "{}".format(result.alternatives[0].transcript)
 
     def process_audio_vosk(self):
         self.activation.input(self.fname, self.vosk_model_dir)
@@ -145,6 +144,7 @@ class Speech:
 
 if __name__ == "__main__":
     s = Speech()
-    s.record_audio(3)
-    s.process_audio_vosk()
+    # s.record_audio_google()
+    # s.record_audio(True)
+    # s.process_audio_vosk()
     # s.process_audio_google()

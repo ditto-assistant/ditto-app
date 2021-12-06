@@ -25,6 +25,8 @@ class Assistant:
         self.reply = ""
         self.application = "model-selector"
         self.activation_mode = True
+        self.from_memory_read = (False,"")
+        self.from_memory_store = False
 
     def send_command(self):
 
@@ -78,8 +80,15 @@ class Assistant:
                 else: 
                     print('\nA: '+ reply)
                     self.reply = reply
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
+                if self.from_memory_store: # used to tell (don't forget) assistant to remember things about itself (your)
+                    self.application = 'memory-application'
+                    self.prompt = self.reply
+                if self.from_memory_read[0]: # used to let (what is) assistant remember things about itself (your)
+                    self.application = 'memory-application'
+                    self.prompt = self.reply
+                else:
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
             else:
                 print('invalid reply')
                 self.activation_mode = True # go back to idle...
@@ -151,37 +160,60 @@ class Assistant:
             self.application = 'model-selector'
 
         elif self.application=="memory-application":
-            # added period to end of prompt to prevent GPT3 from adding more to prompt
-            self.command.send_request(self.prompt+".", self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
-            if 'toggle-memory-store' in self.command_response:
-                reply = self.command_response.replace("toggle-memory-store `","").strip("`").split(", ")
-                self.reply = ("[I'll remember %s]" % reply[0]).replace("my", "Your")
-                print(self.reply)
-                try:
-                    self.command.store_memory(reply[0], reply[1])
-                except KeyError:
-                    print('forwarding from `memory` to `conversation` application')
-                    self.prompt = self.speech.text
-                    self.application = 'conversation-application'
+            if not self.from_memory_read[0] and not self.from_memory_store:
+                # added period to end of prompt to prevent GPT3 from adding more to prompt
+                self.command.send_request(self.prompt+".", self.application)
+                self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+                if 'toggle-memory-store' in self.command_response:
 
-            if 'toggle-memory-read' in self.command_response:
-                reply = self.command_response.replace("toggle-memory-read `","").strip("`").split(", ")
-                try:
-                    value = self.command.read_memory(reply[0])
-                except KeyError:
-                    print('forwarding from `memory` to `conversation` application')
-                    self.prompt = self.speech.text
-                    self.application = 'conversation-application'
-                if not self.application=='conversation-application':
-                    self.reply = ("["+reply[0] + " is %s]" % value).replace("my", "Your")
+                    reply = self.command_response.replace("toggle-memory-store `","").strip("`").split(", ")
+                    self.reply = ("[I'll remember %s]" % reply[0]).replace("my", "Your")
                     print(self.reply)
-            if not self.application=='conversation-application':
-                self.speech_engine.say(self.reply)
-                self.speech_engine.runAndWait()
-                self.reply = ""
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
+                    try:
+                        self.command.store_memory(reply[0], reply[1])
+                    except KeyError:
+                        # might not use...
+                        print('forwarding from `memory-store` to `conversation` application')
+                        self.from_memory_store = False
+                        self.prompt = self.speech.text
+                        self.application = 'conversation-application'
+
+                if 'toggle-memory-read' in self.command_response:
+                    reply = self.command_response.replace("toggle-memory-read `","").strip("`").split(", ")
+                    try:
+                        value = self.command.read_memory(reply[0])
+                    except KeyError:
+                        print('forwarding from `memory-read` to `conversation` application')
+                        # value doesn't exist in memory, grab value from conversation-application and store
+                        self.from_memory_read = (True, reply[0]) # save key for conversation app to forward back here for storage
+                        self.prompt = self.speech.text
+                        self.application = 'conversation-application'
+                    if not self.application=='conversation-application':
+                        if 'your' in reply[0]: # memory about itself ('your' always in key)
+                            self.reply = ("[%s]" % value)
+                        else: # memory about you ('my' always in key)
+                            self.reply = ("["+reply[0] + " is %s]" % value).replace("my", "Your")
+                        print(self.reply)
+                if not self.application=='conversation-application':
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+                    self.reply = ""
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+            else:
+                if self.from_memory_read[0]: # we need to store result from conversation-app
+                    print('forwarding from `conversation` to `memory-store`')
+                    key = self.from_memory_read[1]
+                    val = self.prompt
+                    self.command.store_memory(key, val)
+                    self.from_memory_read = (False,"")
+                    self.reply = ""
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+
+                if self.from_memory_store: # we need to read (might not use this)
+                    pass
+
 
 
         elif self.application == 'model-selector': # model selector logic
