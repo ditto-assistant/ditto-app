@@ -48,6 +48,9 @@ class Command:
         self.response = ''
         self.command_input = ''
 
+        self.player = Spotify(self.path.replace("/", "\\")+"\\modules\\spotify")
+
+
     def toggle_light(self, mode):
         try:
             s = serial.Serial('COM3', baudrate=9600, bytesize=8)
@@ -75,11 +78,10 @@ class Command:
 
     def play_music(self, artist, song=None):
         play=-1
-        player = Spotify(self.path.replace("/", "\\")+"\\modules\\spotify")
-        uri = player.get_uri_spotify(artist, song)
+        uri = self.player.get_uri_spotify(artist, song)
         
         if not uri==None: 
-            play=player.play_spotify(uri)
+            play=self.player.play_spotify(uri)
         else:
             return -1
 
