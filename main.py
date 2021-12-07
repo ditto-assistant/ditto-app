@@ -11,9 +11,12 @@ author: Omar Barazanji
 import pyttsx
 
 import os 
+import time
+from threading import Timer
 
 # for top lvl error handling (see Command for full usage)
 import openai
+from serial.serialutil import Timeout
 
 from speech import Speech
 from command import Command
@@ -26,12 +29,14 @@ class Assistant:
         self.speech_engine = pyttsx.init()
         self.prompt = ""
         self.reply = ""
-        self.application = "model-selector"
-        self.activation_mode = True
-        self.from_memory_read = (False,"")
-        self.from_memory_store = False
+        self.application = "model-selector" # first application to boot into when name is spoken
+        self.activation_mode = True # If true then idle and listening for name
+        self.from_memory_read = (False,"") # used to handle memory to conversation read request
+        self.from_memory_store = False # used to handle mem to conv store req
+        self.conversation_timer = 0 # used to handle short term memory during conversation
+        self.timer_mode = False
 
-    def send_command(self):
+    def send_command(self): # application logic
 
         if self.application == 'light-application': # light application logic
             self.command.send_request(self.prompt, self.application)
@@ -73,6 +78,7 @@ class Assistant:
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-conversation' in self.command_response:
                 reply = self.command_response.strip("toggle-conversation `").strip("`")
+                self.command.inject_response(self.prompt, reply) # add response to conversation prompt
                 self.reply = ""
                 if '\\n' in reply:
                     reply = reply.split('\\n')
@@ -162,7 +168,7 @@ class Assistant:
             self.activation_mode = True # go back to idle...
             self.application = 'model-selector'
 
-        elif self.application=="memory-application":
+        elif self.application == "memory-application": # memory application logic
             if not self.from_memory_read[0] and not self.from_memory_store:
                 # added period to end of prompt to prevent GPT3 from adding more to prompt
                 self.command.send_request(self.prompt+".", self.application)
@@ -260,22 +266,31 @@ class Assistant:
 
             self.activation_mode = False
             self.speech.record_audio(activation_mode=False) # record audio and listen for command
-            if self.speech.activation.activate: # command has been spoken
+            if self.speech.activation.activate: # command has been spoken (app on enter section)
                 print('sending request to GPT3')
                 self.speech.activation.activate = False
                 self.speech.activation.text = ""
 
+                self.timeout_handler(10) # executes every 10 seconds (used to handle short term mem)
+                self.conversation_timer = 0
+                self.timer_mode = True # turn on timer
+
                 ## enter application handler ## (main loop)
                 while not self.activation_mode:
+
                     try:
                         self.send_command()
+                        
                     except openai.error.APIConnectionError as e:
                         print("Error: trouble connecting to API (possibly no internet)")
                         print("Full Error: \n%d" % e)
                         self.activation_mode = True # back to idle ...
                         self.speech.text = ""
                         self.speech.activation.text = ""
+
                     except IndexError as e:
+                        # ref:
+                        # https://beta.openai.com/docs/api-reference/completions/create
                         print("Error: large prompt to small model (length termination)")
                         print("command reply error prompt: %s" % self.prompt)
                         print("raw response: \n")
@@ -286,9 +301,26 @@ class Assistant:
                         self.speech.text = ""
                         self.speech.activation.text = ""
 
+                if self.activation_mode == True: # going back to idle... (app on exit section)
+                    pass
                 
             else: print('Canceling...')
                 
+    def timeout_handler(self, timeout=10):
+        # print ("%d python seconds since activation" % sec)
+        # print(self.command.conversation_prompt[-30:])
+        self.timer = Timer(timeout, self.timeout_handler)
+        self.timer.start()
+        if self.timer_mode: self.conversation_timer += 1
+        if self.conversation_timer == 10:
+            self.conversation_timer = 0
+            print('conversation timer reset\n\nidle...') 
+            self.command.reset_conversation() # reset conversation prompt 
+            self.timer.cancel()
+            self.timer_mode = False # turn off timer
+
+        
+        
 
 if __name__ == "__main__":
     assistant = Assistant()
