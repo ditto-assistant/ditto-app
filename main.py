@@ -12,6 +12,9 @@ import pyttsx
 
 import os 
 
+# for top lvl error handling (see Command for full usage)
+import openai
+
 from speech import Speech
 from command import Command
 
@@ -171,7 +174,13 @@ class Assistant:
                     print(self.reply)
                     try:
                         self.command.store_memory(reply[0], reply[1])
-                    except KeyError:
+                    except KeyError:                        
+                        # might not use...
+                        print('forwarding from `memory-store` to `conversation` application')
+                        self.from_memory_store = False
+                        self.prompt = self.speech.text
+                        self.application = 'conversation-application'
+                    except IndexError:
                         # might not use...
                         print('forwarding from `memory-store` to `conversation` application')
                         self.from_memory_store = False
@@ -215,11 +224,11 @@ class Assistant:
                     pass
 
 
-
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
             self.command.send_request(self.prompt, self.application)
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+
             if 'light-application' in self.command_response:
                 self.application = 'light-application'
             elif 'conversation-application'in self.command_response:
@@ -258,7 +267,24 @@ class Assistant:
 
                 ## enter application handler ## (main loop)
                 while not self.activation_mode:
-                    self.send_command()
+                    try:
+                        self.send_command()
+                    except openai.error.APIConnectionError as e:
+                        print("Error: trouble connecting to API (possibly no internet)")
+                        print("Full Error: \n%d" % e)
+                        self.activation_mode = True # back to idle ...
+                        self.speech.text = ""
+                        self.speech.activation.text = ""
+                    except IndexError as e:
+                        print("Error: large prompt to small model (length termination)")
+                        print("command reply error prompt: %s" % self.prompt)
+                        print("raw response: \n")
+                        print(self.command.response)
+                        print('complete error: \n')
+                        print(e)
+                        self.activation_mode = True # back to idle ...
+                        self.speech.text = ""
+                        self.speech.activation.text = ""
 
                 
             else: print('Canceling...')
