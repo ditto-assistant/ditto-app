@@ -1,0 +1,7 @@
+pyttsx3==2.90
+openai==0.11.3
+playsound==1.2.2
+sounddevice==0.4.3
+google-cloud-speech==2.11.1
+vosk==0.3.32
+spotipy==2.19.0

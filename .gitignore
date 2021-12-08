@@ -1,0 +1,5 @@
+*.wav
+model/
+*.zip
+resources/*.json
+resources/*.txt
