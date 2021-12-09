@@ -28,7 +28,7 @@ Windows (Python 3.7)
 
         $env:OPENAI_API_KEY="your-key-here"
 
-#. Spotipy API Auth
+#. Spotipy API Auth (optional)
 
     * Create account on Spotify Developers and create a new application. Locate ID on Dashboard.
 
