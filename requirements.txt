@@ -1,4 +1,4 @@
-pyttsx3==2.90
+pyttsx3==2.71
 openai==0.11.3
 playsound==1.2.2
 sounddevice==0.4.3

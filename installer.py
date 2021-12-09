@@ -16,3 +16,4 @@ os.system('resources\\installer\\Hourglassinstaller.exe')
 import dload
 dload.save_unzip("https://alphacephei.com/kaldi/models/vosk-model-small-en-us-0.15.zip", "modules/vosk_model")
 os.rename('modules\\vosk_model\\vosk-model-small-en-us-0.15', 'modules\\vosk_model\\model')
+
