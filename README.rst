@@ -16,7 +16,7 @@ Windows (Python 3.7)
 #. Installer
 
     * Create a new 3.7 environment.
-    * Run install.py 
+    * Run installer.py 
 
 #. GPT-3 API Auth
 
