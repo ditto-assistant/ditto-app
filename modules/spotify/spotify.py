@@ -36,22 +36,22 @@ class Spotify():
         if 'spotify' not in x:
             print('no spotify json found...')
             s = json.dumps({"client-id": "ID", "client-secret": "ID"})
-            with open('resources/spotify.json', 'w') as f:
+            with open(path +'\\resources\\spotify.json', 'w') as f:
                 f.write(s)
             print('created spotify.json in resources/')
             print('please fill in client app IDs')
-            exit()
         
-        with open(path +'/resources/spotify.json') as f:
+        with open(path +'\\resources\\spotify.json') as f:
             s = ""
             for x in f.readlines():
                 s += x
         self.user_values = json.loads(s)
 
-        # pre-save top songs for better context
-        self.get_user_top_songs()
-        # pre-save user playlists
-        self.get_user_playlists()
+        if not self.user_values['client-id'] == 'ID':
+            # pre-save top songs for better context
+            self.get_user_top_songs()
+            # pre-save user playlists
+            self.get_user_playlists()
 
     
     def play_spotify(self, uri):

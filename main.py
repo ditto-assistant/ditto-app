@@ -8,7 +8,7 @@ author: Omar Barazanji
 # run the following to install text to speech (windows):
 #    ...python_install\Scripts\pywin32_postinstall.py -install
 # https://stackoverflow.com/questions/22490233/win32com-import-error-python-3-4
-import pyttsx
+import pyttsx3
 
 import os 
 import time
@@ -39,7 +39,7 @@ class Assistant:
     def __init__(self):
         self.speech = Speech()
         self.command = Command(os.getcwd())
-        self.speech_engine = pyttsx.init()
+        self.speech_engine = pyttsx3.init()
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector" # first application to boot into when name is spoken
