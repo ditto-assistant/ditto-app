@@ -76,6 +76,18 @@ class Assistant:
                     print(self.reply)
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
+                elif 'white' in self.command_response:
+                    self.command.toggle_light('white')
+                    self.reply = '[Setting lights to white]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                elif 'green' in self.command_response:
+                    self.command.toggle_light('green')
+                    self.reply = '[Setting lights to green]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
                 else:
                     print('invalid mode: %s' % self.command_response)
                     self.activation_mode = True # go back to idle...
