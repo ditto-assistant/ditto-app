@@ -17,6 +17,7 @@ Windows (Python 3.7)
 
     * Create a new 3.7 environment.
     * Run installer.py 
+    * Let Hourglass install to default directory. This will be used for the timer application and it is a small 1mb binary.
 
 #. GPT-3 API Auth
 
