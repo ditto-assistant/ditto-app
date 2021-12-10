@@ -76,6 +76,12 @@ class Command:
             elif mode == 'mode 5':
                 self.light_mode = mode
                 s.write(b'\x05')
+            elif mode == 'white':
+                self.light_mode = mode
+                s.write(b'\x06')
+            elif mode == 'green':
+                self.light_mode = mode
+                s.write(b'\x07')
             else:
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
@@ -205,4 +211,4 @@ class Command:
 if __name__ == "__main__":
     command = Command(os.getcwd())
     # command.play_music("False Jasmine")
-    command.toggle_light('mode 3')
+    command.toggle_light('white')
