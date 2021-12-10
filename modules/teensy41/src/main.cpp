@@ -22,6 +22,23 @@ CRGB leds[NUM_LEDS];
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 uint8_t incomingByte;
+
+void white()
+{
+  FastLED.setBrightness(50);
+  for (int i=0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::White;
+  }
+}
+
+void green()
+{
+  FastLED.setBrightness(80);
+  for (int i=0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Green;
+  }
+}
+
 void rainbow()
 {
   // FastLED's built-in rainbow generator
@@ -84,7 +101,7 @@ void setup() {
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = { rainbow, fadeToBlack, confetti, sinelon, juggle, bpm };
+SimplePatternList gPatterns = { rainbow, fadeToBlack, confetti, sinelon, juggle, bpm, white, green };
 
 
 
@@ -119,6 +136,15 @@ void loop()
       }
       if (incomingByte == 0x05) {
         gCurrentPatternNumber = 5;
+      }
+      if (incomingByte == 0x06) {
+        gCurrentPatternNumber = 6; // white
+      }
+      if (incomingByte == 0x07) {
+        gCurrentPatternNumber = 7; // green
+      }
+      if (incomingByte == 0xF1) {
+        FastLED.setBrightness(80);
       }
   }
 }
