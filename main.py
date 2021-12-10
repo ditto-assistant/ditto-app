@@ -221,9 +221,10 @@ class Assistant:
                     try:
                         value = self.command.read_memory(reply[0])
                     except KeyError:
-                        print('forwarding from `memory-read` to `conversation` application')
-                        # value doesn't exist in memory, grab value from conversation-application and store
-                        self.from_memory_read = (True, reply[0]) # save key for conversation app to forward back here for storage
+                        # value doesn't exist in memory, grab value from conversation-application (if your)
+                        if 'my' not in reply[0]: # don't let assistant make things up about user (my)
+                            self.from_memory_read = (True, reply[0]) # save key for conversation app to forward back here for storage
+                            print('forwarding from `memory-read` to `conversation` application')
                         self.prompt = self.speech.text
                         self.application = 'conversation-application'
                     if not self.application=='conversation-application':
@@ -297,7 +298,7 @@ class Assistant:
 
             self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for command
             
-            if self.speech.text == 'cancel': # if the user would like to cancel
+            if self.speech.text == 'cancel' or self.speech.text == 'goodbye': # if the user would like to cancel
                 playsound(os.path.abspath('resources/sounds/ditto-off.mp3'))
                 self.comm_timer_mode = False
                 self.comm_timer.cancel()
