@@ -44,7 +44,7 @@ class Command:
         self.memory = json.loads(mem)
         self.path = path
         self.light_status = True
-        self.light_mode = 'default'
+        self.light_mode = 'on'
         self.response = ''
         self.command_input = ''
 
@@ -59,13 +59,23 @@ class Command:
             if mode == 'on':
                 s.write(b'\x00')
                 self.light_status = True
-                self.light_mode = 'default'
+                self.light_mode = mode
             elif mode == 'off':
-                s.write(b'\x01')
                 self.light_status = False
+                s.write(b'\x01')
+                self.light_mode = mode
             elif mode == 'sparkle':
-                self.light_mode = 'sparkle'
+                self.light_mode = mode
                 s.write(b'\x02')
+            elif mode == 'mode 3':
+                self.light_mode = mode
+                s.write(b'\x03')
+            elif mode == 'mode 4':
+                self.light_mode = mode
+                s.write(b'\x04')
+            elif mode == 'mode 5':
+                self.light_mode = mode
+                s.write(b'\x05')
             else:
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
@@ -150,10 +160,10 @@ class Command:
             self.response = openai.Completion.create(
                 engine="babbage",
                 prompt=self.conversation_prompt + command,
-                temperature=0.6,
+                temperature=0.75,
                 max_tokens=300,
                 top_p=1,
-                frequency_penalty=1.0,
+                frequency_penalty=1.5,
                 presence_penalty=1.0,
                 stop=["\nQ: "]
             )
@@ -193,5 +203,6 @@ class Command:
         
     
 if __name__ == "__main__":
-    command = Command()
+    command = Command(os.getcwd())
     # command.play_music("False Jasmine")
+    command.toggle_light('mode 3')

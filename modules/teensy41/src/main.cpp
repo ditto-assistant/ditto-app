@@ -111,6 +111,15 @@ void loop()
       if (incomingByte == 0x02) {
         gCurrentPatternNumber = 2;
       }
+      if (incomingByte == 0x03) {
+        gCurrentPatternNumber = 3;
+      }
+      if (incomingByte == 0x04) {
+        gCurrentPatternNumber = 4;
+      }
+      if (incomingByte == 0x05) {
+        gCurrentPatternNumber = 5;
+      }
   }
 }
 
