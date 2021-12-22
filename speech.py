@@ -14,6 +14,7 @@ notes:
 
 # google cloud
 from google.cloud import speech
+from google_transcript import Google
 
 # local vosk
 from modules.vosk_model.activation import Activation
@@ -56,39 +57,56 @@ class Speech:
         self.rate = 16000
 
         self.recording = True
-        with sd.RawInputStream(
-            samplerate = self.rate,
-            blocksize =chunk,
-            # device=
-            dtype='int16',
-            channels=chan,
-            callback=self.callback):
-                if not self.comm_timer_mode and activation_mode: 
-                    self.idle_loop_count += 1
-                    if self.idle_loop_count ==1 :print('\nidle...\n')
-                else:
-                    self.idle_loop_count = 0 
-                    print('listening...\n')
-                model = Model(self.vosk_model_dir)
-                rec = KaldiRecognizer(model, self.rate)
-                while True:
-                    data = self.q.get()
-                    if rec.AcceptWaveform(data):
-                        # print(rec.Result())
-                        self.text = json.loads(rec.Result())['text']
-                        self.activation.text = self.text
-                        self.activation.check_input(activation_mode)
-                        if self.activation.activate:
+        if activation_mode:
+            with sd.RawInputStream(
+                samplerate = self.rate,
+                blocksize =chunk,
+                # device=
+                dtype='int16',
+                channels=chan,
+                callback=self.callback):
+                    if not self.comm_timer_mode and activation_mode: 
+                        self.idle_loop_count += 1
+                        if self.idle_loop_count ==1 :print('\nidle...\n')
+                    else:
+                        self.idle_loop_count = 0 
+                        print('listening...\n')
+                    
+                    model = Model(self.vosk_model_dir)
+                    rec = KaldiRecognizer(model, self.rate)
+                    while True:
+                        data = self.q.get()
+                        if rec.AcceptWaveform(data):
+                            # print(rec.Result())
+                            self.text = json.loads(rec.Result())['text']
+                            self.activation.text = self.text
+                            self.activation.check_input(activation_mode)
+                            if self.activation.activate:
+                                self.recording = False
+                                break
+                        else:
+                            self.partial_result = json.loads(rec.PartialResult())['partial']
+                            # print(rec.PartialResult()) 
+
+                        if self.activation.activate: # command timeout
                             self.recording = False
                             break
-                    else:
-                        self.partial_result = json.loads(rec.PartialResult())['partial']
-                        # print(rec.PartialResult()) 
-
-                    if self.activation.activate: # command timeout
+        else:
+            if not self.comm_timer_mode and activation_mode: 
+                self.idle_loop_count += 1
+                if self.idle_loop_count ==1 :print('\nidle...\n')
+            else:
+                self.idle_loop_count = 0 
+                print('listening...\n')
+            while True:
+                    self.google_instance = Google()
+                    self.text = self.google_instance.grab_prompt()
+                    self.activation.text = self.text
+                    self.activation.check_input(activation_mode)
+                    if self.activation.activate:
                         self.recording = False
                         break
-                        
+                   
         def record_pyaudio(self, max_len_seconds=10):
             chunk = 1024
             fmt = pyaudio.paInt16
