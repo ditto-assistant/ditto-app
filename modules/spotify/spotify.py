@@ -48,12 +48,38 @@ class Spotify():
         self.user_values = json.loads(s)
 
         if not self.user_values['client-id'] == 'ID':
-            # pre-save top songs for better context
-            self.get_user_top_songs()
-            # pre-save user playlists
-            self.get_user_playlists()
+            # pre-save user data
+            self.get_user_details()
 
-    
+
+    def remote(self, command, *args):
+        scope = "user-read-playback-state,user-modify-playback-state"
+        sp = spotipy.Spotify(
+            client_credentials_manager = SpotifyOAuth(
+                client_id = self.user_values["client-id"],
+                client_secret = self.user_values["client-secret"],
+                scope=scope,
+                redirect_uri='http://127.0.0.1:8123'
+            )                
+        )
+        try:
+            if command == "resume":
+                sp.start_playback(self.user_values['device-id'])
+                print('\n[resume]')
+            elif command == "pause":
+                sp.pause_playback(self.user_values['device-id'])
+                print('\n[pause]')
+            elif command == "next":
+                print('\n[next]')
+                sp.next_track(self.user_values['device-id'])
+            elif command == "previous":
+                print('\n[previous]')
+                sp.previous_track(self.user_values['device-id'])
+            else:
+                pass
+        except:
+            pass
+
     def play_spotify(self, uri):
         if 'playlist' in uri: context_mode = 'playlist'
         else: context_mode = 'song'
@@ -67,19 +93,6 @@ class Spotify():
                 redirect_uri='http://127.0.0.1:8123'
             )                
         )
-        self.devices = sp.devices()
-        if self.devices['devices']==[]: # if no devices, default to previous used device ID
-            if 'device-id' in self.user_values.keys(): # check if previous device exists
-                device_id = self.user_values['device-id'] # grab id
-
-        if 'device-id' in self.user_values.keys(): # devices exist, check for previous device
-            device_id = self.user_values['device-id'] # grab id
-        else: # register device (first time)
-            device_id = self.devices['devices'][0]['id'] # grab id
-            self.user_values['device-id'] = device_id
-            with open(self.path+'\\resources\\spotify.json', 'w') as f: # store to json
-                json.dump(self.user_values, f)
-
         try:
             if context_mode=='playlist':
                 for x in self.user_playlists:
@@ -95,7 +108,6 @@ class Spotify():
         except:
             print("invalid uri: %s" % uri)
             return -1
-
 
     def get_uri_spotify(self, artist, song=None):
 
@@ -127,14 +139,15 @@ class Spotify():
             print('invalid search')
             return -1
     
-    def get_user_top_songs(self):
-        scope = 'user-top-read'
+    def get_user_details(self):
+        scope = 'user-top-read, playlist-read-private, user-read-playback-state, user-modify-playback-state'
         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
             scope=scope,
             client_id = self.user_values["client-id"],
             client_secret = self.user_values["client-secret"],
             redirect_uri='http://127.0.0.1:8123'))
 
+        # grab top songs
         ranges = ['short_term', 'medium_term', 'long_term']
         self.top_songs = []
         for sp_range in ranges:
@@ -142,24 +155,34 @@ class Spotify():
             for i, item in enumerate(results['items']):
                 self.top_songs.append([item['name'], item['artists'][0]['name'], item['uri']])
 
-    def get_user_playlists(self):
-        self.user_playlists = []
-        scope = 'playlist-read-private'
-
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-            scope=scope,
-            client_id = self.user_values["client-id"],
-            client_secret = self.user_values["client-secret"],
-            redirect_uri='http://127.0.0.1:8123'
-        ))
+        # grab top playlists
         user_id = sp.me()['id']
+        self.user_playlists = []
         playlists = sp.current_user_playlists(limit=50)
         for playlist in playlists['items']:
             self.user_playlists.append([playlist['name'], playlist['uri'], playlist['tracks']['total']])
 
+        # grab device-id
+        self.devices = sp.devices()
+        if self.devices['devices']==[]: # if no devices, default to previous used device ID
+            if 'device-id' in self.user_values.keys(): # check if previous device exists
+                device_id = self.user_values['device-id'] # grab id
+
+        if 'device-id' in self.user_values.keys(): # devices exist, check for previous device
+            device_id = self.user_values['device-id'] # grab id
+        else: # register device (first time)
+            device_id = self.devices['devices'][0]['id'] # grab id
+            self.user_values['device-id'] = device_id
+            with open(self.path+'\\resources\\spotify.json', 'w') as f: # store to json
+                json.dump(self.user_values, f)
+
+
 if __name__ == "__main__":
     spotify_app = Spotify(os.getcwd())
 
-    uri = spotify_app.get_uri_spotify("the mars volta")
-    spotify_app.play_spotify(uri)
+    # uri = spotify_app.get_uri_spotify("the mars volta")
+    # spotify_app.play_spotify(uri)
+
+    # spotify_app.next_song()
+
     # spotify_app.play_spotify('spotify:playlist:2PT7ZGFsCmFpRUBrzXFZGT')
