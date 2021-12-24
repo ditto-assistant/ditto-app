@@ -143,7 +143,7 @@ class Command:
         if model == 'model-selector':
             self.response = openai.Completion.create(
                 model="ada:ft-omni-aura-llc-2021-12-24-01-53-01",
-                prompt="Q: do you play old school RuneScape.\nA: conversation-application\nQ: do you play RuneScape.\nA: conversation-application\nQ: %s+\nA:" % command,
+                prompt="Q: do you play old school RuneScape.\nA: conversation-application\nQ: do you play RuneScape.\nA: conversation-application\nQ: don't forget my favorite instrument is the guitar.\nA: memory-application\nQ: don't forget that my favorite instrument is the drum set.\nA: memory-application\nQ: %s+\nA:" % command,
                 temperature=0,
                 max_tokens=64,
                 top_p=1,
