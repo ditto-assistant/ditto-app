@@ -103,7 +103,7 @@ class Spotify():
                         offset_max = 0
                 sp.start_playback(context_uri=uri, offset={"position":shuffle_val}, device_id=device_id)
             if context_mode=='song':
-                sp.start_playback(uris=[uri], device_id=self.device_id)
+                sp.start_playback(uris=[uri], device_id=self.user_values["device-id"])
             return 1
         except:
             print("invalid uri: %s" % uri)
