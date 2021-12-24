@@ -143,7 +143,7 @@ class Assistant:
             self.reply = ""
 
         elif self.application == "timer-application": # timer application logic
-            self.command.send_request(self.prompt, self.application)
+            self.command.send_request(self.prompt+".", self.application)
             self.speech.text = ""
             self.speech.activation.text = ""
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
@@ -193,6 +193,16 @@ class Assistant:
                 if p==-1:
                     self.reply = '[Could not find %s on Spotify]' % reply.title()
                     print(self.reply)
+
+            elif 'toggle-spotify-player' == cmd:
+                if reply == 'resume':
+                    self.command.player.remote('resume')
+                elif reply == 'pause':
+                    self.command.player.remote('pause')
+                elif reply == 'next':
+                    self.command.player.remote('next')
+                elif reply == 'previous':
+                    self.command.player.remote('previous')
 
             else:
                 print('invalid spotify command')
@@ -268,7 +278,7 @@ class Assistant:
 
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
-            self.command.send_request(self.prompt, self.application)
+            self.command.send_request(self.prompt+".", self.application)
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
 
             if 'light-application' in self.command_response:
