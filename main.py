@@ -279,7 +279,7 @@ class Assistant:
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
             self.command.send_request(self.prompt+".", self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
 
             if 'light-application' in self.command_response:
                 self.application = 'light-application'
