@@ -1,3 +1,5 @@
+# https://beta.openai.com/docs/guides/fine-tuning
+
 with open('model-selector.txt', 'r') as f:
     fmt_str = ""
     prompt = ""
