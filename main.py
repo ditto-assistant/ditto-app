@@ -22,14 +22,13 @@ from serial.serialutil import Timeout
 # note: pip install playsound==1.2.2
 from playsound import playsound
 from sounddevice import play
+
 ACTIVATE_SOUND = False
 for x in os.listdir(os.getcwd()):
     if 'resources' in x:
         for y in os.listdir('resources'):
             if 'sounds' in y:
                 ACTIVATE_SOUND = True
-
-
 
 from speech import Speech
 from command import Command
@@ -55,7 +54,7 @@ class Assistant:
     def send_command(self): # application logic
 
         if self.application == 'light-application': # light application logic
-            self.command.send_request(self.prompt, self.application)
+            self.command.send_request(self.prompt+'.', self.application)
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-light' in self.command_response:
                 if 'off' in self.command_response:
@@ -102,7 +101,7 @@ class Assistant:
             self.reply = ""
 
         elif self.application == "conversation-application": # conversation application logic
-            self.command.send_request(self.prompt, self.application)
+            self.command.send_request(self.prompt+'.', self.application)
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-conversation' in self.command_response:
                 reply = self.command_response.strip("toggle-conversation `").strip("`")
