@@ -83,7 +83,6 @@ class Spotify():
     def play_spotify(self, uri):
         if 'playlist' in uri: context_mode = 'playlist'
         else: context_mode = 'song'
-        device_id = 0
         scope = "user-read-playback-state,user-modify-playback-state"
         sp = spotipy.Spotify(
             client_credentials_manager = SpotifyOAuth(
@@ -101,7 +100,7 @@ class Spotify():
                         shuffle_val = random.randint(0,offset_max)
                     else:
                         offset_max = 0
-                sp.start_playback(context_uri=uri, offset={"position":shuffle_val}, device_id=device_id)
+                sp.start_playback(context_uri=uri, offset={"position":shuffle_val}, device_id=self.user_values["device-id"])
             if context_mode=='song':
                 sp.start_playback(uris=[uri], device_id=self.user_values["device-id"])
             return 1
