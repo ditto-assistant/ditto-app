@@ -86,6 +86,11 @@ class Speech:
                                 break
                         else:
                             self.partial_result = json.loads(rec.PartialResult())['partial']
+                            self.activation.partial_text = self.partial_result
+                            self.activation.check_input(activation_mode)
+                            if self.activation.activate:
+                                self.recording = False
+                                break
                             # print(rec.PartialResult()) 
 
                         if self.activation.activate: # command timeout

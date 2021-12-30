@@ -23,6 +23,7 @@ class Activation:
         self.name = name
         self.activate = False
         self.text = ''
+        self.partial_text = ''
 
     # decode wave file and save to self.text
     def input(self, fname, model_path):
@@ -44,7 +45,7 @@ class Activation:
     # check self.text and decide whether or not to activate
     def check_input(self, activation_mode_on):
         if activation_mode_on:
-            if self.name in self.text:
+            if self.name in self.text or self.name in self.partial_text:
                 self.activate = True
         else:
             if not self.text == "":
