@@ -3,11 +3,12 @@ from Google docs.
 """
 
 from __future__ import division
-
+import os
 import re
 import sys
 
 from google.cloud import speech
+from playsound import playsound
 
 import pyaudio
 from six.moves import queue
@@ -89,6 +90,20 @@ class Google():
     
     def __init__(self):
         self.prompt = ""
+        # See http://g.co/cloud/speech/docs/languages
+        # for a list of supported languages.
+        self.language_code = "en-US"  # a BCP-47 language tag
+
+        self.client = speech.SpeechClient()
+        self.config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=RATE,
+            language_code=self.language_code,
+        )
+
+        self.streaming_config = speech.StreamingRecognitionConfig(
+            config=self.config, interim_results=True
+        )
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -148,29 +163,19 @@ class Google():
 
 
     def grab_prompt(self):
-        # See http://g.co/cloud/speech/docs/languages
-        # for a list of supported languages.
-        language_code = "en-US"  # a BCP-47 language tag
-
-        client = speech.SpeechClient()
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=RATE,
-            language_code=language_code,
-        )
-
-        streaming_config = speech.StreamingRecognitionConfig(
-            config=config, interim_results=True
-        )
-
         with MicrophoneStream(RATE, CHUNK) as stream:
             audio_generator = stream.generator()
             requests = (
                 speech.StreamingRecognizeRequest(audio_content=content)
                 for content in audio_generator
             )
-
-            responses = client.streaming_recognize(streaming_config, requests)
+            print('   ,.,')
+            print(' ((~"~))')
+            print("'(|o_o|)'")
+            print(",..\=/..,")
+            print('listening...\n')
+            playsound(os.path.abspath('resources/sounds/ditto-on.mp3'))
+            responses = self.client.streaming_recognize(self.streaming_config, requests)
 
             # Now, put the transcription responses to use.
             self.prompt = self.listen_print_loop(responses)
