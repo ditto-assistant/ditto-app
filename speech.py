@@ -40,6 +40,7 @@ class Speech:
         self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
+        self.google_instance = Google()
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
@@ -70,7 +71,6 @@ class Speech:
                         if self.idle_loop_count ==1 :print('\nidle...\n')
                     else:
                         self.idle_loop_count = 0 
-                        print('listening...\n')
                     
                     model = Model(self.vosk_model_dir)
                     rec = KaldiRecognizer(model, self.rate)
@@ -86,6 +86,11 @@ class Speech:
                                 break
                         else:
                             self.partial_result = json.loads(rec.PartialResult())['partial']
+                            self.activation.partial_text = self.partial_result
+                            self.activation.check_input(activation_mode)
+                            if self.activation.activate:
+                                self.recording = False
+                                break
                             # print(rec.PartialResult()) 
 
                         if self.activation.activate: # command timeout
@@ -96,16 +101,12 @@ class Speech:
                 self.idle_loop_count += 1
                 if self.idle_loop_count ==1 :print('\nidle...\n')
             else:
-                self.idle_loop_count = 0 
-                print('listening...\n')
-            while True:
-                    self.google_instance = Google()
-                    self.text = self.google_instance.grab_prompt()
-                    self.activation.text = self.text
-                    self.activation.check_input(activation_mode)
-                    if self.activation.activate:
-                        self.recording = False
-                        break
+                self.idle_loop_count = 0
+                self.text = self.google_instance.grab_prompt()
+                self.activation.text = self.text
+                self.activation.check_input(activation_mode)
+                if self.activation.activate:
+                    self.recording = False
                    
         def record_pyaudio(self, max_len_seconds=10):
             chunk = 1024

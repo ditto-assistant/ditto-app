@@ -304,13 +304,6 @@ class Assistant:
             self.speech.text = ""
             self.speech.activation.text = ""
 
-            print('   ,.,')
-            print(' ((~"~))')
-            print("'(|o_o|)'")
-            print(",..\=/..,")
-
-            if ACTIVATE_SOUND: playsound(os.path.abspath('resources/sounds/ditto-on.mp3'))
-
             self.activation_mode = False
 
             self.comm_timer_mode = True # turn on timer
