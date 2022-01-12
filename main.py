@@ -87,6 +87,24 @@ class Assistant:
                     print(self.reply)
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
+                elif 'orange' in self.command_response:
+                    self.command.toggle_light('orange')
+                    self.reply = '[Setting lights to orange]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                elif 'blue' in self.command_response:
+                    self.command.toggle_light('blue')
+                    self.reply = '[Setting lights to blue]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                elif 'gradient' in self.command_response:
+                    self.command.toggle_light('gradient')
+                    self.reply = '[Setting lights to gradient]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
                 else:
                     print('invalid mode: %s' % self.command_response)
                     self.activation_mode = True # go back to idle...
@@ -319,7 +337,8 @@ class Assistant:
 
             if self.comm_timer_mode: # command has been spoken (app on enter section)
                 self.comm_timer.cancel()
-                print('sending request to GPT3')
+                # print('sending request to GPT3')
+                print("Q: %s\n" % self.speech.activation.text)
                 self.speech.activation.activate = False
                 self.speech.activation.text = ""
 

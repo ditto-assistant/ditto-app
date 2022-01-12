@@ -1,7 +1,7 @@
 /**
  * Teensy logic for light strip and other things.
- * 
- * author: Omar Barazanji 
+ *
+ * author: Omar Barazanji
  **/
 
 #include <FastLED.h>
@@ -12,21 +12,26 @@ FASTLED_USING_NAMESPACE
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define DATA_PIN    23
-#define LED_TYPE    WS2812B
+#define DATA_PIN 23
+#define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
-#define NUM_LEDS    300
+#define NUM_LEDS 300
 CRGB leds[NUM_LEDS];
-#define BRIGHTNESS          164
-#define FRAMES_PER_SECOND  60
+#define BRIGHTNESS 164
+#define FRAMES_PER_SECOND 60
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+uint8_t gHue = 0;                  // rotating "base color" used by many of the patterns
+uint8_t hue1 = 0;
+uint8_t hue2 = 100;
+uint8_t theta = 0;
 uint8_t incomingByte;
+
 
 void white()
 {
   FastLED.setBrightness(50);
-  for (int i=0; i < NUM_LEDS; i++) {
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
     leds[i] = CRGB::White;
   }
 }
@@ -34,37 +39,74 @@ void white()
 void green()
 {
   FastLED.setBrightness(80);
-  for (int i=0; i < NUM_LEDS; i++) {
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
     leds[i] = CRGB::Green;
   }
+}
+
+void orange()
+{
+  FastLED.setBrightness(80);
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Orange;
+  }
+}
+
+void blue()
+{
+  FastLED.setBrightness(80);
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Blue;
+  }
+}
+
+void gradient()
+{
+  // At note off, Fade the LEDs off
+  CHSV c1;
+  hue1 = constrain(sin8(theta), 10, 200) ;
+  c1.hue = hue1;
+  c1.sat = 255;
+  c1.val = 210;
+  
+  CHSV c2;
+  hue2 = constrain(cos8(theta), 50, 150) ;
+  c1.hue = hue2;
+  c1.sat = 255;
+  c1.val = 200;
+  fill_gradient(leds, NUM_LEDS, c1, c2);
+  
 }
 
 void rainbow()
 {
   // FastLED's built-in rainbow generator
-  fill_rainbow( leds, NUM_LEDS, gHue, 7);
+  fill_rainbow(leds, NUM_LEDS, gHue, 7);
 }
 
 void fadeToBlack()
 {
   // At note off, Fade the LEDs off
-  fadeToBlackBy( leds, NUM_LEDS, 60);
+  fadeToBlackBy(leds, NUM_LEDS, 60);
 }
 
 void confetti()
 {
   // random colored speckles that blink in and fade smoothly
-  fadeToBlackBy( leds, NUM_LEDS, 10);
+  fadeToBlackBy(leds, NUM_LEDS, 10);
   int pos = random16(NUM_LEDS);
-  leds[pos] += CHSV( gHue + random8(64), 200, 255);
+  leds[pos] += CHSV(gHue + random8(64), 200, 255);
 }
 
 void sinelon()
 {
   // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( leds, NUM_LEDS, 20);
-  int pos = beatsin16( 13, 0, NUM_LEDS - 1 );
-  leds[pos] += CHSV( gHue, 255, 192);
+  fadeToBlackBy(leds, NUM_LEDS, 20);
+  int pos = beatsin16(13, 0, NUM_LEDS - 1);
+  leds[pos] += CHSV(gHue, 255, 192);
 }
 
 void bpm()
@@ -72,26 +114,29 @@ void bpm()
   // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
   uint8_t BeatsPerMinute = 62;
   CRGBPalette16 palette = PartyColors_p;
-  uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-  for ( int i = 0; i < NUM_LEDS; i++) { //9948
+  uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
+  for (int i = 0; i < NUM_LEDS; i++)
+  { // 9948
     leds[i] = ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10));
   }
 }
 
-void juggle() {
+void juggle()
+{
   // eight colored dots, weaving in and out of sync with each other
-  fadeToBlackBy( leds, NUM_LEDS, 20);
+  fadeToBlackBy(leds, NUM_LEDS, 20);
   byte dothue = 0;
-  for ( int i = 0; i < 8; i++) {
-    leds[beatsin16( i + 7, 0, NUM_LEDS - 1 )] |= CHSV(dothue, 200, 255);
+  for (int i = 0; i < 8; i++)
+  {
+    leds[beatsin16(i + 7, 0, NUM_LEDS - 1)] |= CHSV(dothue, 200, 255);
     dothue += 32;
   }
 }
 
-
-void setup() {
+void setup()
+{
   Serial.begin(9600);
-  delay(1); 
+  delay(1);
 
   FastLED.addLeds<1, LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
 
@@ -101,12 +146,10 @@ void setup() {
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = { rainbow, fadeToBlack, confetti, sinelon, juggle, bpm, white, green };
-
-
+SimplePatternList gPatterns = {rainbow, fadeToBlack, confetti, sinelon, juggle, bpm, white, green, orange, blue, gradient};
 
 void loop()
-{   
+{
 
   EVERY_N_MILLISECONDS(FRAMES_PER_SECOND / 2)
   {
@@ -114,38 +157,64 @@ void loop()
     gPatterns[gCurrentPatternNumber]();
     FastLED.show();
   }
-  EVERY_N_MILLISECONDS( FRAMES_PER_SECOND ) {
-    gHue++;  
+
+  //theta incremementer for sin
+  EVERY_N_MILLISECONDS(300) {theta++;}
+  EVERY_N_MILLISECONDS(FRAMES_PER_SECOND)
+  {
+    gHue++;
   }
-  if (Serial.available()) {
-      incomingByte = Serial.read();
-      if (incomingByte == 0x00) {
-        gCurrentPatternNumber = 0;
-      }
-      if (incomingByte == 0x01) {
-        gCurrentPatternNumber = 1;
-      }
-      if (incomingByte == 0x02) {
-        gCurrentPatternNumber = 2;
-      }
-      if (incomingByte == 0x03) {
-        gCurrentPatternNumber = 3;
-      }
-      if (incomingByte == 0x04) {
-        gCurrentPatternNumber = 4;
-      }
-      if (incomingByte == 0x05) {
-        gCurrentPatternNumber = 5;
-      }
-      if (incomingByte == 0x06) {
-        gCurrentPatternNumber = 6; // white
-      }
-      if (incomingByte == 0x07) {
-        gCurrentPatternNumber = 7; // green
-      }
-      if (incomingByte == 0xF1) {
-        FastLED.setBrightness(80);
-      }
+  if (Serial.available())
+  {
+    incomingByte = Serial.read();
+    if (incomingByte == 0x00)
+    {
+      gCurrentPatternNumber = 0;
+    }
+    if (incomingByte == 0x01)
+    {
+      gCurrentPatternNumber = 1;
+    }
+    if (incomingByte == 0x02)
+    {
+      gCurrentPatternNumber = 2;
+    }
+    if (incomingByte == 0x03)
+    {
+      gCurrentPatternNumber = 3;
+    }
+    if (incomingByte == 0x04)
+    {
+      gCurrentPatternNumber = 4;
+    }
+    if (incomingByte == 0x05)
+    {
+      gCurrentPatternNumber = 5;
+    }
+    if (incomingByte == 0x06)
+    {
+      gCurrentPatternNumber = 6; // white
+    }
+    if (incomingByte == 0x07)
+    {
+      gCurrentPatternNumber = 7; // green
+    }
+    if (incomingByte == 0x08)
+    {
+      gCurrentPatternNumber = 8; // orange
+    }
+    if (incomingByte == 0x09)
+    {
+      gCurrentPatternNumber = 9; // blue
+    }
+    if (incomingByte == 0x0A)
+    {
+      gCurrentPatternNumber = 10; // blue
+    }
+    if (incomingByte == 0xF1)
+    {
+      FastLED.setBrightness(80);
+    }
   }
 }
 
@@ -153,7 +222,5 @@ void loop()
 void nextPattern()
 {
   // add one to the current pattern number, and wrap around at the end
-  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE(gPatterns);
 }
-
-

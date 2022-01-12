@@ -55,7 +55,7 @@ class Command:
 
     def toggle_light(self, mode):
         try:
-            s = serial.Serial('COM3', baudrate=9600, bytesize=8)
+            s = serial.Serial('COM5', baudrate=9600, bytesize=8)
             if mode == 'on':
                 s.write(b'\x00')
                 self.light_status = True
@@ -82,6 +82,15 @@ class Command:
             elif mode == 'green':
                 self.light_mode = mode
                 s.write(b'\x07')
+            elif mode == 'orange':
+                self.light_mode = mode
+                s.write(b'\x08')
+            elif mode == 'blue':
+                self.light_mode = mode
+                s.write(b'\x09')
+            elif mode == 'gradient':
+                self.light_mode = mode
+                s.write(b'\x0A')
             else:
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
@@ -149,12 +158,12 @@ class Command:
                 top_p=1,
                 frequency_penalty=0,
                 presence_penalty=0,
-                stop=["\n"]
+                stop=["\nQ: "]
             )
         elif model == 'light-application':
             self.response = openai.Completion.create(
                 engine="ada-instruct-beta",
-                prompt="Q: turn off the lights.\nA: toggle-light `off`\nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on.\nA: toggle-light `on`\nQ: toggle lights.\nA: toggle-light `off`\nQ: toggle lights.\nA: toggle-light `on`\nQ: set the lights to sparkle.\nA: toggle-light `sparkle`\nQ: put the lights on sparkle mode.\nA: toggle-light `sparkle`\nQ: sparkle.\nA: toggle-light `sparkle`\nQ: turn the lights on.\nA: toggle-light `on`\nQ: set the lights to sparkle.\nA: toggle-light `sparkle`\nQ: turn off the lights.\nA: toggle-light `off`\nQ: set the was to sparkle.\nA: toggle-light `sparkle`\nQ: set the whites to sparkle.\nA: toggle-light `sparkle`\nQ: lights on Green.\nA: toggle-light `green`\nQ: %s" % command,
+                prompt="Q: turn off the lights.\nA: toggle-light `off`\nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on.\nA: toggle-light `on`\nQ: toggle lights.\nA: toggle-light `off`\nQ: toggle lights.\nA: toggle-light `on`\nQ: set the lights to sparkle.\nA: toggle-light `sparkle`\nQ: put the lights on sparkle mode.\nA: toggle-light `sparkle`\nQ: sparkle.\nA: toggle-light `sparkle`\nQ: turn the lights on.\nA: toggle-light `on`\nQ: set the lights to sparkle.\nA: toggle-light `sparkle`\nQ: turn off the lights.\nA: toggle-light `off`\nQ: set the was to sparkle.\nA: toggle-light `sparkle`\nQ: set the whites to sparkle.\nA: toggle-light `sparkle`\nQ: lights on Green.\nA: toggle-light `green`\nQ: can you set the lights to Orange.\nA: toggle-light `orange`\nQ: set the lights to gradient.\nA: toggle-light `gradient`\nQ: %s" % command,
                 temperature=0,
                 max_tokens=64,
                 top_p=1,
