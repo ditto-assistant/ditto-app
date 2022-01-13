@@ -3,7 +3,8 @@ GPT-3 AI Assistant
 
 Custom GPT-3 AI assistant using Vosk, Spotipy, and other APIs. 
 
-![snip](snip.png "snip")
+## Snip
+![Snip](snip.png "Snip")
 
 Installation Guide
 ==================
