@@ -150,6 +150,7 @@ class Assistant:
 
             self.conv_timer.cancel() # reset conversation cooldown (turns on automatically on loop)
             self.speech.activation.activate = True # skip wake-up sequence (name is already called)
+            self.speech.skip_wake = True
             self.speech.idle_loop_count = 1 # skip to listening... print out
             # self.command_timer = 0 # reset command timer 
             self.comm_timer_mode = False # (pause to not iterrupt assistant speaking)
