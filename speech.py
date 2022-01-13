@@ -48,6 +48,7 @@ class Speech:
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
         self.idle_loop_count = 0
+        self.skip_wake = False
 
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
@@ -57,7 +58,7 @@ class Speech:
 
     def record_audio(self, activation_mode=False):
         self.recording = True
-        if activation_mode:
+        if activation_mode and self.skip_wake == False:
             
             # picovoice method
             wake = pico_wake()
@@ -72,6 +73,7 @@ class Speech:
                 if self.idle_loop_count ==1 :print('\nidle...\n')
             else:
                 self.idle_loop_count = 0
+                self.skip_wake = False
                 self.text = self.google_instance.grab_prompt()
                 self.activation.text = self.text
                 self.activation.check_input(activation_mode)
