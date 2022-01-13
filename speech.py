@@ -20,6 +20,9 @@ from google_transcript import Google
 from modules.vosk_model.activation import Activation
 from vosk import Model, KaldiRecognizer, SetLogLevel
 
+# local picovoice - replacing vosk :-)
+from modules.pico_python.picovoice_demo_mic import pico_wake
+
 # suppress Vosk logger
 SetLogLevel(-1)
 
@@ -53,49 +56,16 @@ class Speech:
         self.q.put(bytes(indata))
 
     def record_audio(self, activation_mode=False):
-        chunk = 1024
-        chan = 1
-        self.rate = 16000
-
         self.recording = True
         if activation_mode:
-            with sd.RawInputStream(
-                samplerate = self.rate,
-                blocksize =chunk,
-                # device=
-                dtype='int16',
-                channels=chan,
-                callback=self.callback):
-                    if not self.comm_timer_mode and activation_mode: 
-                        self.idle_loop_count += 1
-                        if self.idle_loop_count ==1 :print('\nidle...\n')
-                    else:
-                        self.idle_loop_count = 0 
-                    
-                    model = Model(self.vosk_model_dir)
-                    rec = KaldiRecognizer(model, self.rate)
-                    while True:
-                        data = self.q.get()
-                        if rec.AcceptWaveform(data):
-                            # print(rec.Result())
-                            self.text = json.loads(rec.Result())['text']
-                            self.activation.text = self.text
-                            self.activation.check_input(activation_mode)
-                            if self.activation.activate:
-                                self.recording = False
-                                break
-                        else:
-                            self.partial_result = json.loads(rec.PartialResult())['partial']
-                            self.activation.partial_text = self.partial_result
-                            self.activation.check_input(activation_mode)
-                            if self.activation.activate:
-                                self.recording = False
-                                break
-                            # print(rec.PartialResult()) 
+            
+            # picovoice method
+            wake = pico_wake()
+            if wake:
+                self.activation.activate = True
+                self.recording = False
+                wake = 0
 
-                        if self.activation.activate: # command timeout
-                            self.recording = False
-                            break
         else:
             if not self.comm_timer_mode and activation_mode: 
                 self.idle_loop_count += 1
@@ -107,7 +77,8 @@ class Speech:
                 self.activation.check_input(activation_mode)
                 if self.activation.activate:
                     self.recording = False
-                   
+
+        # not used (leaving hooks for other purposes)       
         def record_pyaudio(self, max_len_seconds=10):
             chunk = 1024
             fmt = pyaudio.paInt16
@@ -149,6 +120,7 @@ class Speech:
             wf.writeframes(b''.join(frames))
             wf.close()
 
+        # not used (leaving hooks for other purposes)  
         def process_audio_google(self):
             with io.open(self.fname, "rb") as audio_file:
                 content = audio_file.read()
@@ -166,6 +138,7 @@ class Speech:
                 print("Transcript: {}".format(result.alternatives[0].transcript))
                 self.text = "{}".format(result.alternatives[0].transcript)
 
+    # not used (leaving hooks for other purposes)  
     def process_audio_vosk(self):
         self.activation.input(self.fname, self.vosk_model_dir)
         self.text = self.activation.text

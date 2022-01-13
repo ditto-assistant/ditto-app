@@ -6,3 +6,6 @@ google-cloud-speech==2.11.1
 vosk==0.3.32
 spotipy==2.19.0
 dload==0.6
+PyQt5
+picovoice==2.0.3
+pvrecorder==1.0.2
