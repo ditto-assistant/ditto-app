@@ -360,17 +360,14 @@ class Assistant:
                         self.speech.activation.text = ""
 
                     except IndexError as e:
-                        # ref:
-                        # https://beta.openai.com/docs/api-reference/completions/create
-                        print("Error: large prompt to small model (length termination)")
-                        print("command reply error prompt: %s" % self.prompt)
-                        print("raw response: \n")
+                        print('[IndexError from GPT3 Response Handler]\n')
                         print(self.command.response)
-                        print('complete error: \n')
+                        print('\nError Message: ')
                         print(e)
                         self.activation_mode = True # back to idle ...
                         self.speech.text = ""
                         self.speech.activation.text = ""
+                        self.application = 'model-selector'
 
                     except openai.error.InvalidRequestError as e:
                         print('[resetting context]\n')
