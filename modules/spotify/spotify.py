@@ -36,12 +36,12 @@ class Spotify():
         if 'spotify' not in x:
             print('no spotify json found...')
             s = json.dumps({"client-id": "ID", "client-secret": "ID"})
-            with open(path +'\\resources\\spotify.json', 'w') as f:
+            with open(path +'/resources/spotify.json', 'w') as f:
                 f.write(s)
             print('created spotify.json in resources/')
             print('please fill in client app IDs')
         
-        with open(path +'\\resources\\spotify.json') as f:
+        with open(path +'/resources/spotify.json') as f:
             s = ""
             for x in f.readlines():
                 s += x
@@ -172,7 +172,7 @@ class Spotify():
         else: # register device (first time)
             device_id = self.devices['devices'][0]['id'] # grab id
             self.user_values['device-id'] = device_id
-            with open(self.path+'\\resources\\spotify.json', 'w') as f: # store to json
+            with open(self.path+'/resources/spotify.json', 'w') as f: # store to json
                 json.dump(self.user_values, f)
 
 

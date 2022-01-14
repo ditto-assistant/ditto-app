@@ -149,9 +149,12 @@ class PicovoiceDemo(Thread):
 
 def pico_wake():
     access_key = "tXJLvqw/uzXNiLAQSHCMgEuyHdpmThsBt6A9eNkiLvRqNyAz7N53oA=="
-    audio_device_index=5
-    keyword_path = "C:\\Users\\ozanj\\Desktop\Code\\assistant\\modules\\pico_python\\hey-ditto_en_windows_v2_0_0.ppn"
-    context_path = "C:\\Users\\ozanj\\Desktop\Code\\assistant\\modules\\pico_python\\ditto-intent_en_windows_v2_0_0.rhn"
+    devices = PvRecorder.get_audio_devices()
+    for i in range(len(devices)):
+        if 'QuickCam' in devices[i]:
+            audio_device_index=i
+    keyword_path = "/home/pi/assistant/modules/pico_python/hey-ditto_en_raspberry-pi_v2_0_0.ppn"
+    context_path = "/home/pi/assistant/modules/pico_python/ditto-intent_en_raspberry-pi_v2_0_0.rhn"
     PicovoiceDemo(
         access_key=access_key,
         audio_device_index=audio_device_index,

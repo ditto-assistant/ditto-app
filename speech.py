@@ -17,14 +17,14 @@ from google.cloud import speech
 from google_transcript import Google
 
 # local vosk
-from modules.vosk_model.activation import Activation
-from vosk import Model, KaldiRecognizer, SetLogLevel
+# from modules.vosk_model.activation import Activation
+# from vosk import Model, KaldiRecognizer, SetLogLevel
 
 # local picovoice - replacing vosk :-)
 from modules.pico_python.picovoice_demo_mic import pico_wake
 
 # suppress Vosk logger
-SetLogLevel(-1)
+# SetLogLevel(-1)
 
 # pyaudio alternative for real-time stream (supported by Vosk)
 import sounddevice as sd
@@ -147,7 +147,3 @@ class Speech:
 
 if __name__ == "__main__":
     s = Speech()
-    # s.record_audio_google()
-    # s.record_audio(True)
-    # s.process_audio_vosk()
-    # s.process_audio_google()
