@@ -8,8 +8,9 @@ import re
 import sys
 
 from google.cloud import speech
-from playsound import playsound
+# from playsound import playsound
 
+import pygame
 import pyaudio
 from six.moves import queue
 
@@ -174,7 +175,13 @@ class Google():
             print("'(|o_o|)'")
             print(",..\=/..,")
             print('listening...\n')
-            playsound(os.path.abspath('resources/sounds/ditto-on.mp3'))
+            # playsound(os.path.abspath('resources/sounds/ditto-on.mp3'))
+            pygame.mixer.init()
+            pygame.mixer.music.load("resources/sounds/ditto-on.mp3")
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy() == True:
+                continue
+
             responses = self.client.streaming_recognize(self.streaming_config, requests)
 
             # Now, put the transcription responses to use.

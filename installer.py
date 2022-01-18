@@ -7,7 +7,7 @@ import os
 
 current_cir = os.getcwd()
 
-os.system("pip3 install -r requirements.txt")
+os.system("pip3 install -r requirements.txt --user")
 # os.system("cd resources/installer")
 # os.system("pip install https://download.lfd.uci.edu/pythonlibs/w6tyco5e/PyAudio-0.2.11-cp37-cp37m-win_amd64.whl")
 # os.system('resources\\installer\\Hourglassinstaller.exe')

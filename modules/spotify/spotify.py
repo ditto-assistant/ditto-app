@@ -6,14 +6,13 @@ refs:
 2) https://github.com/plamere/spotipy
 """
 
+from lib2to3.pytree import Base
 import os
 import json
 import random
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
-
-from subprocess import Popen, PIPE
 
 class Spotify():
     
@@ -33,7 +32,7 @@ class Spotify():
         l = []
         for x in os.listdir(path + '/resources'):
             l.append(x)
-        if 'spotify' not in x:
+        if 'spotify.json' not in l:
             print('no spotify json found...')
             s = json.dumps({"client-id": "ID", "client-secret": "ID"})
             with open(path +'/resources/spotify.json', 'w') as f:
@@ -50,6 +49,7 @@ class Spotify():
         if not self.user_values['client-id'] == 'ID':
             # pre-save user data
             self.get_user_details()
+            pass
 
 
     def remote(self, command, *args):
@@ -58,7 +58,7 @@ class Spotify():
             client_credentials_manager = SpotifyOAuth(
                 client_id = self.user_values["client-id"],
                 client_secret = self.user_values["client-secret"],
-                scope=scope,
+                # scope=scope,
                 redirect_uri='http://127.0.0.1:8123'
             )                
         )
@@ -80,6 +80,7 @@ class Spotify():
         except:
             pass
 
+
     def play_spotify(self, uri):
         if 'playlist' in uri: context_mode = 'playlist'
         else: context_mode = 'song'
@@ -88,7 +89,7 @@ class Spotify():
             client_credentials_manager = SpotifyOAuth(
                 client_id = self.user_values["client-id"],
                 client_secret = self.user_values["client-secret"],
-                scope=scope,
+                # scope=scope,
                 redirect_uri='http://127.0.0.1:8123'
             )                
         )
@@ -141,10 +142,11 @@ class Spotify():
     def get_user_details(self):
         scope = 'user-top-read, playlist-read-private, user-read-playback-state, user-modify-playback-state'
         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-            scope=scope,
+            # scope=scope,
             client_id = self.user_values["client-id"],
             client_secret = self.user_values["client-secret"],
-            redirect_uri='http://127.0.0.1:8123'))
+            redirect_uri='http://127.0.0.1:8123'),
+            )
 
         # grab top songs
         ranges = ['short_term', 'medium_term', 'long_term']

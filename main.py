@@ -13,15 +13,17 @@ import pyttsx3
 import os 
 import time
 from threading import Timer
-
+import time
 # for top lvl error handling (see Command for full usage)
 import openai
 from serial.serialutil import Timeout
+import json
 
 # for playing activate on / off noise
 # note: pip install playsound==1.2.2
-from playsound import playsound
-from sounddevice import play
+# from playsound import playsound
+import pygame
+# from sounddevice import play
 
 ACTIVATE_SOUND = False
 for x in os.listdir(os.getcwd()):
@@ -39,6 +41,8 @@ class Assistant:
         self.speech = Speech()
         self.command = Command(os.getcwd())
         self.speech_engine = pyttsx3.init()
+        self.speech_engine.setProperty('voice', 'english')
+        self.speech_engine.setProperty('rate', 190)
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector" # first application to boot into when name is spoken
@@ -152,12 +156,14 @@ class Assistant:
             self.speech.activation.activate = True # skip wake-up sequence (name is already called)
             self.speech.skip_wake = True
             self.speech.idle_loop_count = 1 # skip to listening... print out
-            # self.command_timer = 0 # reset command timer 
+            self.command_timer = 0 # reset command timer 
             self.comm_timer_mode = False # (pause to not iterrupt assistant speaking)
-            # self.comm_timer.cancel()
+            self.comm_timer.cancel()
 
             self.speech_engine.say(self.reply)
             self.speech_engine.runAndWait()
+            while self.speech_engine.isBusy(): # wait until finished talking
+                time.sleep(0.1)
             self.reply = ""
 
         elif self.application == "timer-application": # timer application logic
@@ -166,9 +172,8 @@ class Assistant:
             self.speech.activation.text = ""
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-timer' in self.command_response:
-                reply = self.command_response.strip("toggle-timer `").strip("`")     
+                reply = self.command_response.strip("toggle-timer `").strip("`")    
                 self.reply = '[Setting timer for %s]' % reply
-                print(self.reply)
                 self.speech_engine.say(self.reply)
                 self.speech_engine.runAndWait()
                 self.command.toggle_timer(reply)
@@ -185,51 +190,54 @@ class Assistant:
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             cmd = self.command_response.split("`")[0].strip(" ")
             reply = self.command_response.split("`")[1].strip(",")
-            if 'toggle-spotify' == cmd:
-                if isinstance(reply, str):
-                    p = self.command.play_music(reply)
+            try: 
+                if 'toggle-spotify' == cmd:
+                    if isinstance(reply, str):
+                        p = self.command.play_music(reply)
+                        if p==1:
+                            self.reply = '[Playing %s on Spotify]' % reply.title()
+                            print(self.reply)
+                        if (p==-1):
+                            self.reply = '[Could not find %s on Spotify]' % reply.title()
+                            print(self.reply)
+                    else:
+                        p = self.command.play_music(reply[0], reply[1])
+                        if p==1:
+                            self.reply = '[Playing %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
+                            print(self.reply)
+                        if (p==-1):
+                            self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
+                            print(self.reply)
+
+                elif 'toggle-spotify-playlist' == cmd:
+                    p = self.command.play_user_playlist(reply.lower())
                     if p==1:
-                        self.reply = '[Playing %s on Spotify]' % reply.title()
+                        self.reply = '[Playing %s Playlist on Spotify]' % reply.title()
                         print(self.reply)
-                    if (p==-1):
+                    if p==-1:
                         self.reply = '[Could not find %s on Spotify]' % reply.title()
                         print(self.reply)
+
+                elif 'toggle-spotify-player' == cmd:
+                    if reply == 'resume':
+                        self.command.player.remote('resume')
+                    elif reply == 'pause':
+                        self.command.player.remote('pause')
+                    elif reply == 'next':
+                        self.command.player.remote('next')
+                    elif reply == 'previous':
+                        self.command.player.remote('previous')
+
                 else:
-                    p = self.command.play_music(reply[0], reply[1])
-                    if p==1:
-                        self.reply = '[Playing %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
-                        print(self.reply)
-                    if (p==-1):
-                        self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
-                        print(self.reply)
+                    print('invalid spotify command')
 
-            elif 'toggle-spotify-playlist' == cmd:
-                p = self.command.play_user_playlist(reply.lower())
-                if p==1:
-                    self.reply = '[Playing %s Playlist on Spotify]' % reply.title()
-                    print(self.reply)
-                if p==-1:
-                    self.reply = '[Could not find %s on Spotify]' % reply.title()
-                    print(self.reply)
-
-            elif 'toggle-spotify-player' == cmd:
-                if reply == 'resume':
-                    self.command.player.remote('resume')
-                elif reply == 'pause':
-                    self.command.player.remote('pause')
-                elif reply == 'next':
-                    self.command.player.remote('next')
-                elif reply == 'previous':
-                    self.command.player.remote('previous')
-
-            else:
-                print('invalid spotify command')
-
-            self.speech_engine.say(self.reply)
-            self.speech_engine.runAndWait()
-            self.reply = ""
-            self.activation_mode = True # go back to idle...
-            self.application = 'model-selector'
+                self.speech_engine.say(self.reply)
+                self.speech_engine.runAndWait()
+                self.reply = ""
+                self.activation_mode = True # go back to idle...
+                self.application = 'model-selector'
+            except:
+                pass
 
         elif self.application == "memory-application": # memory application logic
             if not self.from_memory_read[0] and not self.from_memory_store:
@@ -332,7 +340,12 @@ class Assistant:
             self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for command
             
             if self.speech.text == 'cancel' or self.speech.text == 'goodbye': # if the user would like to cancel
-                playsound(os.path.abspath('resources/sounds/ditto-off.mp3'))
+                # playsound(os.path.abspath('resources/sounds/ditto-off.mp3'))
+                pygame.mixer.init()
+                pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy() == True:
+                    continue
                 self.comm_timer_mode = False
                 self.comm_timer.cancel()
 
@@ -390,7 +403,13 @@ class Assistant:
         if self.command_timer == timeout:
             self.command_timer = 0
             print('[command timer reset]\n') 
-            if ACTIVATE_SOUND: playsound(os.path.abspath('resources/sounds/ditto-off.mp3'))
+            if ACTIVATE_SOUND:
+                pygame.mixer.init()
+                pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy() == True:
+                    continue
+
              # go back to idle ...
             self.comm_timer.cancel()
             self.comm_timer_mode = False # turn off timer
@@ -416,6 +435,8 @@ class Assistant:
 
         
 if __name__ == "__main__":
+
     assistant = Assistant()
+
     while True:
         assistant.activation_sequence()

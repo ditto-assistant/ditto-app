@@ -7,3 +7,4 @@ vosk-model-small-en-us-0.15/
 *.cache
 *.pyc
 __pycache__/
+LibCST/

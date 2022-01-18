@@ -17,7 +17,7 @@ from google.cloud import speech
 from google_transcript import Google
 
 # local vosk
-# from modules.vosk_model.activation import Activation
+from modules.vosk_model.activation import Activation
 # from vosk import Model, KaldiRecognizer, SetLogLevel
 
 # local picovoice - replacing vosk :-)
