@@ -13,6 +13,8 @@ import random
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
+import spotipy.util as util
+
 
 class Spotify():
     
@@ -34,7 +36,7 @@ class Spotify():
             l.append(x)
         if 'spotify.json' not in l:
             print('no spotify json found...')
-            s = json.dumps({"client-id": "ID", "client-secret": "ID"})
+            s = json.dumps({"client-id": "ID", "client-secret": "ID", "username": "ID"})
             with open(path +'/resources/spotify.json', 'w') as f:
                 f.write(s)
             print('created spotify.json in resources/')
@@ -48,20 +50,21 @@ class Spotify():
 
         if not self.user_values['client-id'] == 'ID':
             # pre-save user data
-            # self.get_user_details()
+            self.get_user_details()
             pass
 
 
     def remote(self, command, *args):
         scope = "user-read-playback-state,user-modify-playback-state"
-        sp = spotipy.Spotify(
-            client_credentials_manager = SpotifyOAuth(
-                client_id = self.user_values["client-id"],
-                client_secret = self.user_values["client-secret"],
-                # scope=scope,
-                redirect_uri='http://127.0.0.1:8124'
-            )                
+        username = self.user_values['username']
+        self.token = util.prompt_for_user_token(
+            username, scope=scope, 
+            redirect_uri='http://127.0.0.1:8124'
         )
+        self.auth = spotipy.SpotifyOAuth(
+            redirect_uri='http://127.0.0.1:8124', username=username
+        )
+        sp = spotipy.Spotify(auth_manager=self.auth)
         try:
             if command == "resume":
                 sp.start_playback(self.user_values['device-id'])
@@ -85,14 +88,15 @@ class Spotify():
         if 'playlist' in uri: context_mode = 'playlist'
         else: context_mode = 'song'
         scope = "user-read-playback-state,user-modify-playback-state"
-        sp = spotipy.Spotify(
-            client_credentials_manager = SpotifyOAuth(
-                client_id = self.user_values["client-id"],
-                client_secret = self.user_values["client-secret"],
-                # scope=scope,
-                redirect_uri='http://127.0.0.1:8124'
-            )                
+        username = self.user_values['username']
+        self.token = util.prompt_for_user_token(
+            username, scope=scope, 
+            redirect_uri='http://127.0.0.1:8124'
         )
+        self.auth = spotipy.SpotifyOAuth(
+            redirect_uri='http://127.0.0.1:8124', username=username
+        )
+        sp = spotipy.Spotify(auth_manager=self.auth)
         try:
             if context_mode=='playlist':
                 for x in self.user_playlists:
@@ -141,12 +145,15 @@ class Spotify():
     
     def get_user_details(self):
         scope = 'user-top-read, playlist-read-private, user-read-playback-state, user-modify-playback-state'
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-            # scope=scope,
-            client_id = self.user_values["client-id"],
-            client_secret = self.user_values["client-secret"],
-            redirect_uri='http://127.0.0.1:8124'),
-            )
+        username = self.user_values['username']
+        self.token = util.prompt_for_user_token(
+            username, scope=scope, 
+            redirect_uri='http://127.0.0.1:8124'
+        )
+        self.auth = spotipy.SpotifyOAuth(
+            redirect_uri='http://127.0.0.1:8124', username=username
+        )
+        sp = spotipy.Spotify(auth_manager=self.auth)
 
         # grab top songs
         ranges = ['short_term', 'medium_term', 'long_term']
