@@ -5,32 +5,16 @@ author: Omar Barazanji
 """
 
 # handles text to speech
-# run the following to install text to speech (windows):
-#    ...python_install\Scripts\pywin32_postinstall.py -install
-# https://stackoverflow.com/questions/22490233/win32com-import-error-python-3-4
 import pyttsx3
 
+# other imports
 import os 
+import sys
 import time
-from threading import Timer
 import time
-# for top lvl error handling (see Command for full usage)
 import openai
-from serial.serialutil import Timeout
-import json
-
-# for playing activate on / off noise
-# note: pip install playsound==1.2.2
-# from playsound import playsound
 import pygame
-# from sounddevice import play
-
-ACTIVATE_SOUND = False
-for x in os.listdir(os.getcwd()):
-    if 'resources' in x:
-        for y in os.listdir('resources'):
-            if 'sounds' in y:
-                ACTIVATE_SOUND = True
+from threading import Timer
 
 from speech import Speech
 from command import Command
@@ -43,17 +27,26 @@ class Assistant:
         self.speech_engine = pyttsx3.init()
         self.speech_engine.setProperty('voice', 'english')
         self.speech_engine.setProperty('rate', 190)
+        self.speech_volume = 70 # percent
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector" # first application to boot into when name is spoken
         self.activation_mode = True # If true then idle and listening for name
         self.from_memory_read = (False,"") # used to handle memory to conversation read request
         self.from_memory_store = False # used to handle mem to conv store req
+
         self.conversation_timer = 0 # used to handle short term memory during conversation
         self.conv_timer_mode = False # used to trigger the resetting of prompt (context)
+
+        self.skip_name = False # used to skip name (conversation app)
+
         self.command_timer = 0 # used to handle the timeout of interaction with assistant
         self.comm_timer_mode = False # will go to false after 5 seconds of inactivity (idle)
-        self.skip_name = False # 
+         
+
+        self.speaker_timer_mode = True # set to keep speaker from sleeping
+        self.speaker_timer = 0
+        self.speaker_mic_timeout_handler(20)
 
     def send_command(self): # application logic
 
@@ -118,8 +111,9 @@ class Assistant:
                 self.application = 'model-selector'
                 print('invalid command')
 
-            self.speech_engine.say(self.reply)
-            self.speech_engine.runAndWait()
+            # self.speech_engine.say(self.reply)
+            # self.speech_engine.runAndWait()
+            self.tts(self.reply, self.speech_volume)
             self.reply = ""
 
         elif self.application == "conversation-application": # conversation application logic
@@ -160,10 +154,11 @@ class Assistant:
             self.comm_timer_mode = False # (pause to not iterrupt assistant speaking)
             self.comm_timer.cancel()
 
-            self.speech_engine.say(self.reply)
-            self.speech_engine.runAndWait()
-            while self.speech_engine.isBusy(): # wait until finished talking
-                time.sleep(0.1)
+            # self.speech_engine.say(self.reply)
+            # self.speech_engine.runAndWait()
+            # while self.speech_engine.isBusy(): # wait until finished talking
+            #     time.sleep(0.1)
+            self.tts(self.reply, self.speech_volume)
             self.reply = ""
 
         elif self.application == "timer-application": # timer application logic
@@ -172,10 +167,12 @@ class Assistant:
             self.speech.activation.text = ""
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-timer' in self.command_response:
-                reply = self.command_response.strip("toggle-timer `").strip("`")    
-                self.reply = '[Setting timer for %s]' % reply
-                self.speech_engine.say(self.reply)
-                self.speech_engine.runAndWait()
+                reply = self.command_response.replace('toggle-timer `', '').strip('`') 
+                self.reply = '[Setting timer for %s]' % reply.replace('s', ' seconds').replace('m', ' minute')
+                print(self.reply)
+                # self.speech_engine.say(self.reply)
+                # self.speech_engine.runAndWait()
+                self.tts(self.reply, self.speech_volume)
                 self.command.toggle_timer(reply)
             else:
                 print('invalid timer command')
@@ -231,8 +228,9 @@ class Assistant:
                 else:
                     print('invalid spotify command')
 
-                self.speech_engine.say(self.reply)
-                self.speech_engine.runAndWait()
+                # self.speech_engine.say(self.reply)
+                # self.speech_engine.runAndWait()
+                self.tts(self.reply, self.speech_volume)
                 self.reply = ""
                 self.activation_mode = True # go back to idle...
                 self.application = 'model-selector'
@@ -282,8 +280,9 @@ class Assistant:
                             self.reply = ("["+reply[0] + " is %s]" % value).replace("my", "Your")
                         print(self.reply)
                 if not self.application=='conversation-application':
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
+                    self.tts(self.reply, self.speech_volume)
                     self.reply = ""
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
@@ -327,6 +326,8 @@ class Assistant:
         self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for name
         if self.speech.activation.activate: # name has been spoken
 
+            self.speaker_timer = 0 # reset speaker + mic timer
+
             self.speech.activation.activate = False
             self.speech.text = ""
             self.speech.activation.text = ""
@@ -340,7 +341,6 @@ class Assistant:
             self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for command
             
             if self.speech.text == 'cancel' or self.speech.text == 'goodbye': # if the user would like to cancel
-                # playsound(os.path.abspath('resources/sounds/ditto-off.mp3'))
                 pygame.mixer.init()
                 pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
                 pygame.mixer.music.play()
@@ -403,12 +403,11 @@ class Assistant:
         if self.command_timer == timeout:
             self.command_timer = 0
             print('[command timer reset]\n') 
-            if ACTIVATE_SOUND:
-                pygame.mixer.init()
-                pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
-                pygame.mixer.music.play()
-                while pygame.mixer.music.get_busy() == True:
-                    continue
+            pygame.mixer.init()
+            pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy() == True:
+                continue
 
              # go back to idle ...
             self.comm_timer.cancel()
@@ -433,10 +432,23 @@ class Assistant:
             self.conv_timer.cancel()
             self.conv_timer_mode = False # turn off timer
 
+    def speaker_mic_timeout_handler(self, timeout):
+        self.speak_timer = Timer(timeout, self.speaker_mic_timeout_handler, [timeout])
+        self.speak_timer.start()
+        if self.speaker_timer_mode: 
+            self.speaker_timer += 1
+        if self.speaker_timer == timeout:
+            os.system('mpg321 -q resources/silence.mp3')
+            self.speaker_timer = 0
+            os.execv(sys.executable, ['python'] + sys.argv)
+
+    def tts(self, prompt, volume_percent):
+        os.system('amixer -q set Master ' + str(volume_percent)+'%')
+        os.system('./resources/speech.sh "%s"' % prompt)
         
 if __name__ == "__main__":
 
     assistant = Assistant()
-
+    os.system('eval $(./resources/export.sh)')
     while True:
         assistant.activation_sequence()

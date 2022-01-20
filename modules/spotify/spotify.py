@@ -48,7 +48,7 @@ class Spotify():
 
         if not self.user_values['client-id'] == 'ID':
             # pre-save user data
-            self.get_user_details()
+            # self.get_user_details()
             pass
 
 
@@ -59,7 +59,7 @@ class Spotify():
                 client_id = self.user_values["client-id"],
                 client_secret = self.user_values["client-secret"],
                 # scope=scope,
-                redirect_uri='http://127.0.0.1:8123'
+                redirect_uri='http://127.0.0.1:8124'
             )                
         )
         try:
@@ -90,7 +90,7 @@ class Spotify():
                 client_id = self.user_values["client-id"],
                 client_secret = self.user_values["client-secret"],
                 # scope=scope,
-                redirect_uri='http://127.0.0.1:8123'
+                redirect_uri='http://127.0.0.1:8124'
             )                
         )
         try:
@@ -145,7 +145,7 @@ class Spotify():
             # scope=scope,
             client_id = self.user_values["client-id"],
             client_secret = self.user_values["client-secret"],
-            redirect_uri='http://127.0.0.1:8123'),
+            redirect_uri='http://127.0.0.1:8124'),
             )
 
         # grab top songs

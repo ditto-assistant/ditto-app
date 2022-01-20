@@ -8,3 +8,4 @@ vosk-model-small-en-us-0.15/
 *.pyc
 __pycache__/
 LibCST/
+export.sh

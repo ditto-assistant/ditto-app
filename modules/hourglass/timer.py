@@ -22,7 +22,7 @@ class Timer:
 
     def set_timer(self, val):
         try:
-            os.system('termdown %s && mpg321 %s' % (val, self.default_path))
+            os.system('termdown %s && mpg321 -q %s' % (val, self.default_path))
         except:
             pass
         pass
