@@ -166,7 +166,7 @@ class Assistant:
             self.speech.activation.text = ""
             self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
             if 'toggle-timer' in self.command_response:
-                reply = self.command_response.strip("toggle-timer `").strip("`")     
+                reply = self.command_response.replace('toggle-timer `', '').strip('`')
                 self.reply = '[Setting timer for %s]' % reply
                 print(self.reply)
                 self.speech_engine.say(self.reply)
