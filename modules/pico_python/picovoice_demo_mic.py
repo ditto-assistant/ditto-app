@@ -149,7 +149,7 @@ class PicovoiceDemo(Thread):
 
 def pico_wake():
     access_key = "tXJLvqw/uzXNiLAQSHCMgEuyHdpmThsBt6A9eNkiLvRqNyAz7N53oA=="
-    audio_device_index=5
+    audio_device_index=0
     keyword_path = "C:\\Users\\ozanj\\Desktop\Code\\assistant\\modules\\pico_python\\hey-ditto_en_windows_v2_0_0.ppn"
     context_path = "C:\\Users\\ozanj\\Desktop\Code\\assistant\\modules\\pico_python\\ditto-intent_en_windows_v2_0_0.rhn"
     PicovoiceDemo(
