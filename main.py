@@ -27,7 +27,7 @@ class Assistant:
         self.speech_engine = pyttsx3.init()
         self.speech_engine.setProperty('voice', 'english')
         self.speech_engine.setProperty('rate', 190)
-        self.speech_volume = 70 # percent
+        self.speech_volume = 50 # percent
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector" # first application to boot into when name is spoken
@@ -46,7 +46,7 @@ class Assistant:
 
         self.speaker_timer_mode = True # set to keep speaker from sleeping
         self.speaker_timer = 0
-        self.speaker_mic_timeout_handler(20)
+        self.speaker_mic_timeout_handler(40)
 
     def send_command(self): # application logic
 
@@ -93,6 +93,24 @@ class Assistant:
                 elif 'blue' in self.command_response:
                     self.command.toggle_light('blue')
                     self.reply = '[Setting lights to blue]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                elif 'red' in self.command_response:
+                    self.command.toggle_light('red')
+                    self.reply = '[Setting lights to red]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                elif 'yellow' in self.command_response:
+                    self.command.toggle_light('yellow')
+                    self.reply = '[Setting lights to yellow]'
+                    print(self.reply)
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                elif 'purple' in self.command_response:
+                    self.command.toggle_light('purple')
+                    self.reply = '[Setting lights to purple]'
                     print(self.reply)
                     self.activation_mode = True # go back to idle...
                     self.application = 'model-selector'
@@ -438,7 +456,7 @@ class Assistant:
         if self.speaker_timer_mode: 
             self.speaker_timer += 1
         if self.speaker_timer == timeout:
-            os.system('mpg321 -q resources/silence.mp3')
+            # os.system('mpg321 -q resources/silence.mp3')
             self.speaker_timer = 0
             os.execv(sys.executable, ['python'] + sys.argv)
 

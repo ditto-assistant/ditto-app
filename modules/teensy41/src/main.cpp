@@ -63,6 +63,33 @@ void blue()
   }
 }
 
+void red()
+{
+  FastLED.setBrightness(80);
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Red;
+  }
+}
+
+void yellow()
+{
+  FastLED.setBrightness(80);
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Yellow;
+  }
+}
+
+void purple()
+{
+  FastLED.setBrightness(80);
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Purple;
+  }
+}
+
 void gradient()
 {
   // At note off, Fade the LEDs off
@@ -146,7 +173,7 @@ void setup()
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = {rainbow, fadeToBlack, confetti, sinelon, juggle, bpm, white, green, orange, blue, gradient};
+SimplePatternList gPatterns = {rainbow, fadeToBlack, confetti, sinelon, juggle, bpm, white, green, orange, blue, red, yellow, purple, gradient};
 
 void loop()
 {
@@ -169,27 +196,27 @@ void loop()
     incomingByte = Serial.read();
     if (incomingByte == 0x00)
     {
-      gCurrentPatternNumber = 0;
+      gCurrentPatternNumber = 0; // rainbow
     }
     if (incomingByte == 0x01)
     {
-      gCurrentPatternNumber = 1;
+      gCurrentPatternNumber = 1; // fadeToBlack
     }
     if (incomingByte == 0x02)
     {
-      gCurrentPatternNumber = 2;
+      gCurrentPatternNumber = 2; // confetti
     }
     if (incomingByte == 0x03)
     {
-      gCurrentPatternNumber = 3;
+      gCurrentPatternNumber = 3; // sinelon
     }
     if (incomingByte == 0x04)
     {
-      gCurrentPatternNumber = 4;
+      gCurrentPatternNumber = 4; // juggle
     }
     if (incomingByte == 0x05)
     {
-      gCurrentPatternNumber = 5;
+      gCurrentPatternNumber = 5; // bpm
     }
     if (incomingByte == 0x06)
     {
@@ -209,8 +236,21 @@ void loop()
     }
     if (incomingByte == 0x0A)
     {
-      gCurrentPatternNumber = 10; // blue
+      gCurrentPatternNumber = 10; // red
     }
+    if (incomingByte == 0x0B)
+    {
+      gCurrentPatternNumber = 11; // yellow
+    }
+    if (incomingByte == 0x0C)
+    {
+      gCurrentPatternNumber = 12; // purple
+    }
+    if (incomingByte == 0x0D)
+    {
+      gCurrentPatternNumber = 13; // gradient
+    }
+
     if (incomingByte == 0xF1)
     {
       FastLED.setBrightness(80);
