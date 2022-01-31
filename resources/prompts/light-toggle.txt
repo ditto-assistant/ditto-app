@@ -1,0 +1,39 @@
+Q: turn off the lights.
+A: toggle-light `off`
+Q: turn on the lights.
+A: toggle-light `on`
+Q: lights on.
+A: toggle-light `on`
+Q: lights off.
+A: toggle-light `off`
+Q: can you turn the lights on.
+A: toggle-light `on`
+Q: toggle lights.
+A: toggle-light `off`
+Q: toggle lights.
+A: toggle-light `on`
+Q: set the lights to sparkle.
+A: toggle-light `sparkle`
+Q: put the lights on sparkle mode.
+A: toggle-light `sparkle`
+Q: sparkle.
+A: toggle-light `sparkle`
+Q: turn the lights on.
+A: toggle-light `on`
+Q: set the lights to sparkle.
+A: toggle-light `sparkle`
+Q: turn off the lights.
+A: toggle-light `off`
+Q: set the was to sparkle.
+A: toggle-light `sparkle`
+Q: set the whites to sparkle.
+A: toggle-light `sparkle`
+Q: lights on Green.
+A: toggle-light `green`
+Q: can you set the lights to Orange.
+A: toggle-light `orange`
+Q: set the lights to gradient.
+A: toggle-light `gradient`
+Q: can you set the lights to Blue please.
+A: toggle-light `blue`
+Q: 

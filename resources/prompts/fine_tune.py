@@ -1,6 +1,6 @@
 # https://beta.openai.com/docs/guides/fine-tuning
 
-with open('model-selector.txt', 'r') as f:
+with open('light-toggle.txt', 'r') as f:
     fmt_str = ""
     prompt = ""
     completion = ""
@@ -11,7 +11,7 @@ with open('model-selector.txt', 'r') as f:
             completion = x.strip("\n")+"\\n"
             fmt_str += '{"prompt": "%s", "completion": "%s"}\n' % (prompt, completion)
 
-    with open('model-selector-fmt.jsonl', 'w') as r:
+    with open('light-toggle-fmt.jsonl', 'w') as r:
         r.writelines(fmt_str)
 
 import os
@@ -21,12 +21,12 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # upload...
 
-# response = openai.File.create(
-#   file=open("model-selector-fmt.jsonl"),
-#   purpose='fine-tune'
-# )
+response = openai.File.create(
+  file=open("light-toggle-fmt.jsonl"),
+  purpose='fine-tune'
+)
 
-# grab...
+# grab all files on account (if needed)...
 
 # files = openai.File.list()
 # files.to_dict()
@@ -34,7 +34,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # create fine tune model...
 
 # resp = response.to_dict()
-# fine_tune_response = openai.FineTune.create(training_file='file-Ck2wJLB0husNbYfkDzc6cFkR', model='ada')
+# fine_tune_response = openai.FineTune.create(training_file='file-Cw3txi0GKaZBbRHhjOcLjG6H', model='ada')
 
 # see all fine tuned models...
 

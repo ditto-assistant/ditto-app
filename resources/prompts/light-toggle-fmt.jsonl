@@ -1,0 +1,19 @@
+{"prompt": "Q: turn off the lights.\n", "completion": "A: toggle-light `off`\n"}
+{"prompt": "Q: turn on the lights.\n", "completion": "A: toggle-light `on`\n"}
+{"prompt": "Q: lights on.\n", "completion": "A: toggle-light `on`\n"}
+{"prompt": "Q: lights off.\n", "completion": "A: toggle-light `off`\n"}
+{"prompt": "Q: can you turn the lights on.\n", "completion": "A: toggle-light `on`\n"}
+{"prompt": "Q: toggle lights.\n", "completion": "A: toggle-light `off`\n"}
+{"prompt": "Q: toggle lights.\n", "completion": "A: toggle-light `on`\n"}
+{"prompt": "Q: set the lights to sparkle.\n", "completion": "A: toggle-light `sparkle`\n"}
+{"prompt": "Q: put the lights on sparkle mode.\n", "completion": "A: toggle-light `sparkle`\n"}
+{"prompt": "Q: sparkle.\n", "completion": "A: toggle-light `sparkle`\n"}
+{"prompt": "Q: turn the lights on.\n", "completion": "A: toggle-light `on`\n"}
+{"prompt": "Q: set the lights to sparkle.\n", "completion": "A: toggle-light `sparkle`\n"}
+{"prompt": "Q: turn off the lights.\n", "completion": "A: toggle-light `off`\n"}
+{"prompt": "Q: set the was to sparkle.\n", "completion": "A: toggle-light `sparkle`\n"}
+{"prompt": "Q: set the whites to sparkle.\n", "completion": "A: toggle-light `sparkle`\n"}
+{"prompt": "Q: lights on Green.\n", "completion": "A: toggle-light `green`\n"}
+{"prompt": "Q: can you set the lights to Orange.\n", "completion": "A: toggle-light `orange`\n"}
+{"prompt": "Q: set the lights to gradient.\n", "completion": "A: toggle-light `gradient`\n"}
+{"prompt": "Q: can you set the lights to Blue please.\n", "completion": "A: toggle-light `blue`\n"}

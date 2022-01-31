@@ -57,7 +57,7 @@ class Assistant:
 
         if self.application == 'light-application': # light application logic
             self.command.send_request(self.prompt+'.', self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
             if 'toggle-light' in self.command_response:
                 if 'off' in self.command_response:
                     self.command.toggle_light('off')
