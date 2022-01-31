@@ -19,10 +19,12 @@ class Face:
         self.face_timer_mode = False
         self.face_cnt = 0
         self.face_cnt_timer = 0
+        self.activate = False
 
     def start_capture(self):
         self.face_cnt = 0
         self.face_timer_mode = True
+        self.activate = False
         self.face_timeout_handler(2)
         while True:
             print(self.face_cnt)
@@ -43,6 +45,7 @@ class Face:
                 self.face_cnt += 1
                 self.face_cnt_timer = 0
                 if self.face_cnt == 40:
+                    self.activate = True
                     return True
 
             
@@ -62,7 +65,6 @@ class Face:
         self.face_timer.start()
         if self.face_timer_mode: 
             self.face_cnt_timer += 1
-            # print ("conversation counter: %d" % self.conversation_timer)
         if self.face_cnt_timer == timeout:
             self.face_cnt_timer = 0
             self.face_cnt = 0

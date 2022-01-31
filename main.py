@@ -32,11 +32,13 @@ for x in os.listdir(os.getcwd()):
 
 from speech import Speech
 from command import Command
+from modules.vision.face_detect import Face
 
 class Assistant:
 
     def __init__(self):
         self.speech = Speech()
+        self.face_detect = Face()
         self.command = Command(os.getcwd())
         self.speech_engine = pyttsx3.init()
         self.prompt = ""
