@@ -192,14 +192,14 @@ class Command:
             )
         elif model == 'light-application':
             self.response = openai.Completion.create(
-                engine="text-ada-001",
-                prompt="Q: turn off the lights.\nA: toggle-light `off`\nQ: turn on the lights.\nA: toggle-light `on`\nQ: lights on.\nA: toggle-light `on`\nQ: lights off.\nA: toggle-light `off`\nQ: can you turn the lights on.\nA: toggle-light `on`\nQ: toggle lights.\nA: toggle-light `off`\nQ: toggle lights.\nA: toggle-light `on`\nQ: set the lights to sparkle.\nA: toggle-light `sparkle`\nQ: put the lights on sparkle mode.\nA: toggle-light `sparkle`\nQ: sparkle.\nA: toggle-light `sparkle`\nQ: turn the lights on.\nA: toggle-light `on`\nQ: set the lights to sparkle.\nA: toggle-light `sparkle`\nQ: turn off the lights.\nA: toggle-light `off`\nQ: set the was to sparkle.\nA: toggle-light `sparkle`\nQ: set the whites to sparkle.\nA: toggle-light `sparkle`\nQ: lights on Green.\nA: toggle-light `green`\nQ: can you set the lights to Orange.\nA: toggle-light `orange`\nQ: set the lights to gradient.\nA: toggle-light `gradient`\nQ: %s" % command,
+                model="ada:ft-omni-aura-llc-2022-01-31-01-36-40",
+                prompt = "Q: " + command + "\nA:",
                 temperature=0,
                 max_tokens=64,
                 top_p=1,
                 frequency_penalty=0,
                 presence_penalty=0,
-                stop=["\nQ: "]
+                stop=["\n"]
             )
         elif model == 'conversation-application':
             self.response = openai.Completion.create(

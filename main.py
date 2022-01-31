@@ -46,13 +46,13 @@ class Assistant:
 
         self.speaker_timer_mode = True # set to keep speaker from sleeping
         self.speaker_timer = 0
-        self.speaker_mic_timeout_handler(40)
+        self.speaker_mic_timeout_handler(20)
 
     def send_command(self): # application logic
 
         if self.application == 'light-application': # light application logic
             self.command.send_request(self.prompt+'.', self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
             if 'toggle-light' in self.command_response:
                 if 'off' in self.command_response:
                     self.command.toggle_light('off')
