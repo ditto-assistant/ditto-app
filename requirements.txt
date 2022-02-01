@@ -9,6 +9,5 @@ dload
 picovoice
 pvrecorder
 PyAudio
-pygobject
 pyserial
 termdown
