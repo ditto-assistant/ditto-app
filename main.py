@@ -53,9 +53,7 @@ class Assistant:
         self.comm_timer_mode = False # will go to false after 5 seconds of inactivity (idle)
          
 
-        self.speaker_timer_mode = True # set to keep speaker from sleeping
-        self.speaker_timer = 0
-        self.speaker_mic_timeout_handler(20)
+        
 
     def send_command(self): # application logic
 
@@ -140,7 +138,6 @@ class Assistant:
 
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
-                    self.command.toggle_timer(reply)
                 else:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
@@ -185,12 +182,10 @@ class Assistant:
 
             if UNIX:
                 self.tts(self.reply, self.speech_volume)
-                self.command.toggle_timer(reply)
             else:
                 self.speech_engine.say(self.reply)
                 self.speech_engine.runAndWait()
 
-            # self.reply = ""
 
         elif self.application == "timer-application": # timer application logic
             self.command.send_request(self.prompt+".", self.application)
@@ -264,7 +259,6 @@ class Assistant:
 
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
-                    self.command.toggle_timer(reply)
                 else:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
@@ -319,7 +313,6 @@ class Assistant:
                 if not self.application=='conversation-application':
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
-                        self.command.toggle_timer(reply)
                     else:
                         self.speech_engine.say(self.reply)
                         self.speech_engine.runAndWait()
@@ -346,7 +339,20 @@ class Assistant:
             # check to see if can be handled offline before GPT-3...
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
             if self.offline_response['category'] == 'lights':
+                if 'off' in self.offline_response['action']:
+                    self.reply = '[Turning off the lights]'
+                if 'on' in self.offline_response['action']:
+                    self.reply = '[Turning on the lights]'
+                else: 
+                    self.reply = '[Setting lights to %s]' % self.offline_response['action']
                 self.command.toggle_light(self.offline_response['action'])
+                print(self.reply+'\n')
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+                
                 self.activation_mode = True # go back to idle...
             else:
                 self.command.send_request(self.prompt+".", self.application)
@@ -478,15 +484,7 @@ class Assistant:
             self.conv_timer.cancel()
             self.conv_timer_mode = False # turn off timer
 
-    def speaker_mic_timeout_handler(self, timeout):
-        self.speak_timer = Timer(timeout, self.speaker_mic_timeout_handler, [timeout])
-        self.speak_timer.start()
-        if self.speaker_timer_mode: 
-            self.speaker_timer += 1
-        if self.speaker_timer == timeout:
-            # os.system('mpg321 -q resources/silence.mp3')
-            self.speaker_timer = 0
-            os.execv(sys.executable, ['python'] + sys.argv)
+    
 
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
