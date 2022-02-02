@@ -13,3 +13,4 @@ pyserial
 termdown
 pygame
 lifxlan
+sklearn

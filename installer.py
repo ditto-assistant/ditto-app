@@ -4,11 +4,17 @@ create fresh venv on 3.7 for best results.
 '''
 
 import os
+import platform
 
-current_cir = os.getcwd()
+UNIX = False
+if platform.system() == 'Linux':
+    UNIX = True
 
 os.system("pip install -r requirements.txt")
-os.system("pipwin install pyaudio")
+if not UNIX: 
+    os.system("pip install pipwin")
+    os.system("pipwin install pyaudio")
+    
 # os.system("cd resources/installer")
 # os.system("pip install https://download.lfd.uci.edu/pythonlibs/w6tyco5e/PyAudio-0.2.11-cp37-cp37m-win_amd64.whl")
 # os.system('resources\\installer\\Hourglassinstaller.exe')
