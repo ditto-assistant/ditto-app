@@ -113,7 +113,7 @@ class PicovoiceDemo(Thread):
     def run(self):
         self.recorder = None
         self.wav_file = None
-
+        self.running = True
         try:
             self.recorder = PvRecorder(device_index=self.audio_device_index, frame_length=self._picovoice.frame_length)
             self.recorder.start()
@@ -126,8 +126,14 @@ class PicovoiceDemo(Thread):
             print('\nidle...\n')
 
             while True:
+                if not self.running:
+                    dummy = [1,2]
+                    num=0
+                    num+=2
+                    err =dummy[num]
+                    
                 pcm = self.recorder.read()
-
+                
                 if self.wav_file is not None:
                     self.wav_file.writeframes(struct.pack("h" * len(pcm), *pcm))
 
@@ -170,12 +176,12 @@ def pico_wake():
         keyword_path = "C:\\Users\\ozanj\\Desktop\\Code\\assistant\\modules\\pico_python\\hey-ditto_en_windows_v2_1_0.ppn"
         context_path = "C:\\Users\\ozanj\\Desktop\\Code\\assistant\\modules\\pico_python\\ditto_en_windows_v2_1_0.rhn"
         
-    PicovoiceDemo(
+    pico = PicovoiceDemo(
         access_key=access_key,
         audio_device_index=audio_device_index,
         keyword_path=keyword_path,
-        context_path=context_path).run()
-    return 1
+        context_path=context_path)
+    return pico
         
 
 if __name__ == '__main__':

@@ -15,6 +15,9 @@ notes:
 # google cloud
 from google.cloud import speech
 from google_transcript import Google
+import os
+import sys
+from threading import Timer
 
 # local vosk
 from modules.vosk_model.activation import Activation
@@ -50,6 +53,11 @@ class Speech:
         self.idle_loop_count = 0
         self.skip_wake = False
 
+        self.wake = 1
+        self.speaker_timer_mode = True # set to keep speaker from sleeping
+        self.speaker_timer = 0
+        
+
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
         if status:
@@ -61,11 +69,15 @@ class Speech:
         if activation_mode and self.skip_wake == False:
             
             # picovoice method
-            wake = pico_wake()
-            if wake:
+            self.pico = pico_wake()
+            self.speaker_mic_timeout_handler(20)
+            self.pico.run()
+            if self.wake: # set to 0 in timer if idle reboot
                 self.activation.activate = True
                 self.recording = False
-                wake = 0
+            else:
+                self.wake = 1
+                print('rebooting picovoice!')
 
         else:
             if not self.comm_timer_mode and activation_mode: 
@@ -79,6 +91,17 @@ class Speech:
                 self.activation.check_input(activation_mode)
                 if self.activation.activate:
                     self.recording = False
+    
+    def speaker_mic_timeout_handler(self, timeout):
+        self.speak_timer = Timer(timeout, self.speaker_mic_timeout_handler, [timeout])
+        self.speak_timer.start()
+        if self.speaker_timer_mode: 
+            self.speaker_timer += 1
+        if self.speaker_timer == timeout:
+            self.speaker_timer = 0
+            self.speak_timer.cancel()
+            self.pico.running = False
+            self.wake = 0
 
         # not used (leaving hooks for other purposes)       
         def record_pyaudio(self, max_len_seconds=10):
