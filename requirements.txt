@@ -8,6 +8,8 @@ spotipy
 dload
 picovoice
 pvrecorder
-PyAudio
+pipwin
 pyserial
 termdown
+pygame
+lifxlan

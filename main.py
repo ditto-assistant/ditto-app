@@ -18,6 +18,12 @@ from threading import Timer
 
 from speech import Speech
 from command import Command
+from modules.offline_nlp.handle import NLP
+import json
+import platform 
+UNIX = False
+if platform.system() == 'Linux':
+    UNIX = True
 
 class Assistant:
 
@@ -25,8 +31,11 @@ class Assistant:
         self.speech = Speech()
         self.command = Command(os.getcwd())
         self.speech_engine = pyttsx3.init()
-        self.speech_engine.setProperty('voice', 'english')
-        self.speech_engine.setProperty('rate', 190)
+        self.nlp = NLP(os.getcwd())
+        self.nlp.initialize()
+        self.nlp.contruct_sentence_vectors()
+        # self.speech_engine.setProperty('voice', 'english')
+        # self.speech_engine.setProperty('rate', 190)
         self.speech_volume = 50 # percent
         self.prompt = ""
         self.reply = ""
@@ -129,10 +138,12 @@ class Assistant:
                 self.application = 'model-selector'
                 print('invalid command')
 
-            # self.speech_engine.say(self.reply)
-            # self.speech_engine.runAndWait()
-            self.tts(self.reply, self.speech_volume)
-            self.reply = ""
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                    self.command.toggle_timer(reply)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
 
         elif self.application == "conversation-application": # conversation application logic
             self.command.send_request(self.prompt+'.', self.application)
@@ -172,12 +183,14 @@ class Assistant:
             self.comm_timer_mode = False # (pause to not iterrupt assistant speaking)
             self.comm_timer.cancel()
 
-            # self.speech_engine.say(self.reply)
-            # self.speech_engine.runAndWait()
-            # while self.speech_engine.isBusy(): # wait until finished talking
-            #     time.sleep(0.1)
-            self.tts(self.reply, self.speech_volume)
-            self.reply = ""
+            if UNIX:
+                self.tts(self.reply, self.speech_volume)
+                self.command.toggle_timer(reply)
+            else:
+                self.speech_engine.say(self.reply)
+                self.speech_engine.runAndWait()
+
+            # self.reply = ""
 
         elif self.application == "timer-application": # timer application logic
             self.command.send_request(self.prompt+".", self.application)
@@ -188,10 +201,13 @@ class Assistant:
                 reply = self.command_response.replace('toggle-timer `', '').strip('`') 
                 self.reply = '[Setting timer for %s]' % reply.replace('s', ' seconds').replace('m', ' minute')
                 print(self.reply)
-                # self.speech_engine.say(self.reply)
-                # self.speech_engine.runAndWait()
-                self.tts(self.reply, self.speech_volume)
-                self.command.toggle_timer(reply)
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                    self.command.toggle_timer(reply)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+                
             else:
                 print('invalid timer command')
 
@@ -246,10 +262,13 @@ class Assistant:
                 else:
                     print('invalid spotify command')
 
-                # self.speech_engine.say(self.reply)
-                # self.speech_engine.runAndWait()
-                self.tts(self.reply, self.speech_volume)
-                self.reply = ""
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                    self.command.toggle_timer(reply)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+                    
                 self.activation_mode = True # go back to idle...
                 self.application = 'model-selector'
             except:
@@ -298,12 +317,14 @@ class Assistant:
                             self.reply = ("["+reply[0] + " is %s]" % value).replace("my", "Your")
                         print(self.reply)
                 if not self.application=='conversation-application':
-                    # self.speech_engine.say(self.reply)
-                    # self.speech_engine.runAndWait()
-                    self.tts(self.reply, self.speech_volume)
-                    self.reply = ""
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
+                    if UNIX:
+                        self.tts(self.reply, self.speech_volume)
+                        self.command.toggle_timer(reply)
+                    else:
+                        self.speech_engine.say(self.reply)
+                        self.speech_engine.runAndWait()
+                        self.activation_mode = True # go back to idle...
+                        self.application = 'model-selector'
             else:
                 if self.from_memory_read[0]: # we need to store result from conversation-app
                     print('forwarding from `conversation` to `memory-store`')
@@ -321,22 +342,29 @@ class Assistant:
 
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
-            self.command.send_request(self.prompt+".", self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
 
-            if 'light-application' in self.command_response:
-                self.application = 'light-application'
-            elif 'conversation-application'in self.command_response:
-                self.application = 'conversation-application'
-            elif 'timer-application' in self.command_response:
-                self.application = 'timer-application'
-            elif 'spotify-application' in self.command_response:
-                self.application = 'spotify-application'
-            elif 'memory-application' in self.command_response:
-                self.application = 'memory-application'
-            else:
+            # check to see if can be handled offline before GPT-3...
+            self.offline_response = json.loads(self.nlp.prompt(self.prompt))
+            if self.offline_response['category'] == 'lights':
+                self.command.toggle_light(self.offline_response['action'])
                 self.activation_mode = True # go back to idle...
-                print('invalid application')
+            else:
+                self.command.send_request(self.prompt+".", self.application)
+                self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
+
+                if 'light-application' in self.command_response:
+                    self.application = 'light-application'
+                elif 'conversation-application'in self.command_response:
+                    self.application = 'conversation-application'
+                elif 'timer-application' in self.command_response:
+                    self.application = 'timer-application'
+                elif 'spotify-application' in self.command_response:
+                    self.application = 'spotify-application'
+                elif 'memory-application' in self.command_response:
+                    self.application = 'memory-application'
+                else:
+                    self.activation_mode = True # go back to idle...
+                    print('invalid application')
         
 
     def activation_sequence(self):
@@ -467,6 +495,7 @@ class Assistant:
 if __name__ == "__main__":
 
     assistant = Assistant()
-    os.system('eval $(./resources/export.sh)')
+    if UNIX:
+        os.system('eval $(./resources/export.sh)')
     while True:
         assistant.activation_sequence()
