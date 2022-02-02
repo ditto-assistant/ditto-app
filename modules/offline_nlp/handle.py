@@ -160,7 +160,7 @@ class NLP:
 
 
 if __name__ == "__main__":
-    nlp = NLP()
+    nlp = NLP(os.getcwd())
     nlp.initialize()
     nlp.contruct_sentence_vectors()
     
