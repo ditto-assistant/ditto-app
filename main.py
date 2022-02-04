@@ -488,7 +488,7 @@ class Assistant:
 
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
-        os.system('pico2wave -w reply.wav "%s" && aplay reply.wav' % prompt)
+        os.system('pico2wave -w reply.wav "%s" && mpg321 -q reply.wav' % prompt.strip("[]"))
         
 if __name__ == "__main__":
 
