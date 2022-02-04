@@ -126,7 +126,7 @@ class PicovoiceDemo(Thread):
             print('\nidle...\n')
 
             while True:
-                if not self.running:
+                if not self.running: # used for rebooting picovoice (to fix mic sleep bug)
                     dummy = [1,2]
                     num=0
                     num+=2
