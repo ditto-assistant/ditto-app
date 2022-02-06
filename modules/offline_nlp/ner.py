@@ -34,6 +34,8 @@ for ndx,data in enumerate(json_data['training_data']):
         word_arr.append(w)
         pos_arr.append(pos[w_ndx][1])
         tag_arr.append(labels[w_ndx])
+    if sentence_num == 1000:
+        break
 
 df_data = pd.DataFrame()
 df_data['Sentence #'] = sentence_num_arr
@@ -123,7 +125,7 @@ from numpy.random import seed
 seed(1)
 tensorflow.random.set_seed(2)
 
-input_dim = len(list(set(data['Word'].to_list())))+1
+input_dim = len(list(set(df_data['Word'].to_list())))+1
 output_dim = 64
 input_length = max([len(s) for s in data_group['Word_idx'].tolist()])
 n_tags = len(tag2idx)
@@ -158,7 +160,7 @@ def train_model(X, y, model):
     loss = list()
     for i in range(25):
         # fit model for one epoch on this sequence
-        hist = model.fit(X, y, batch_size=1000, verbose=1, epochs=1, validation_split=0.2)
+        hist = model.fit(X, y, batch_size=500, verbose=1, epochs=1, validation_split=0.2)
         loss.append(hist.history['loss'][0])
     return loss
 

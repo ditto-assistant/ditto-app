@@ -7,7 +7,7 @@ import os
 import platform
 
 UNIX = False
-if platform.system() == 'Linux':
+if platform.system() == 'Linux' or platform.system() == 'Darwin':
     UNIX = True
 
 os.system("pip install -r requirements.txt")
