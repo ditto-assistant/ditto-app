@@ -124,7 +124,7 @@ class Spotify():
                     return track[2]
                 if not song==None and artist.lower() in track_artist:
                     if song.lower() in track_song:
-                        print('found %s by %s in top songs\n' % song.title(), artist.title())
+                        print('found %s by %s in top songs\n' % (song.title(), artist.title()))
                         return track[2]      
 
         sp = spotipy.Spotify(
