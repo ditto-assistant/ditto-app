@@ -392,7 +392,8 @@ class Assistant:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
                 self.activation_mode = True # go back to idle...
-                
+            elif self.offline_response['category'] == 'music':
+                self.command.player.remote(self.offline_response['action'])
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
