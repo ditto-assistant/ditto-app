@@ -1,0 +1,111 @@
+{
+    "labels": [
+        "O",
+        "B-time",
+        "I-time"
+    ],
+    "training_data": [
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "45",
+                "seconds"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-time",
+                "I-time"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "1",
+                "minute",
+                "and",
+                "30",
+                "seconds"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-time",
+                "I-time",
+                "O",
+                "B-time",
+                "I-time"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "2",
+                "minutes",
+                "and",
+                "32",
+                "seconds"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-time",
+                "I-time",
+                "O",
+                "B-time",
+                "I-time"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "2",
+                "minutes"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-time",
+                "I-time"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "35",
+                "seconds"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-time",
+                "I-time"
+            ]
+        }
+    ]
+}

@@ -34,6 +34,17 @@ lights,none,off,turn off the lights
 lights,none,off,lights off
 lights,none,off,shut off the lights
 lights,none,on,can you you turn on the lights
+music,none,pause,pause music
+music,none,resume,play music
+music,none,pause,can you please pause the music
+music,none,resume,resume music
+music,none,resume,play music please
+music,none,next,next song
+music,none,next,skip this song
+music,none,next,next track
+music,none,previous,go back a song
+music,none,previous,previous song
+music,none,previous,can you go back to the last song
 other,none,none,hello.
 other,none,none,how are you?
 other,none,none,what is your name?
@@ -96,61 +107,53 @@ other,none,none,what is your favorite quote.
 other,none,none,what is your favorite movie.
 other,none,none,don't forget that my favorite thing to do is ride bikes.
 other,none,none,don't forget my shoe size is nine.
-other,none,none,play crucial by false jasmine.
-other,none,none,play false jasmine on spotify.
-other,none,none,play false jasmine.
-other,none,none,play vitamin c by can .
-other,none,none,can we listen to the mars volta.
-other,none,none,throw on some slum village.
-other,none,none,play all my love by led zeppelin.
-other,none,none,play me some sublime .
-other,none,none,can we listen to grace by jeff buckley.
-other,none,none,play roundabout by yes.
-other,none,none,play the widow by the mars volta.
-other,none,none,play deep down by mike patton.
-other,none,none,play djedje by gordon.
-other,none,none,play djedje.
-other,none,none,play dig my grave by goat.
-other,none,none,play the mars volta.
-other,none,none,play jeff buckley.
-other,none,none,play me a good song
-other,none,none,"i want to hear my favorite band, False Jasmine."
-other,none,none,play my playlist baked on spotify.
-other,none,none,play my baked playlist.
-other,none,none,play my discover weekly playlist.
-other,none,none,play the discover weekly playlist on spotify.
-other,none,none,play my playlist your top songs 2019 on spotify.
-other,none,none,play my top songs 2021 playlist.
-other,none,none,play my playlist jazz tunes on spotify.
-other,none,none,play jazz tunes on spotify.
-other,none,none,play the mars volta.
-other,none,none,pause music.
-other,none,none,resume music.
-other,none,none,play.
-other,none,none,play music.
-other,none,none,next song.
-other,none,none,previous song.
-other,none,none,go back to the last song.
-other,none,none,skip this track.
-other,none,none,play my top songs 2020 playlist.
-other,none,none,play jeff buckley.
-other,none,none,play future days by can.
-other,none,none,next song please.
-other,none,none,play jazz tunes playlist on Spotify.
-other,none,none,Guerilla toss on Spotify.
-other,none,none,set a timer for 45 seconds.
-other,none,none,set a timer for 1 minute and 30 seconds.
-other,none,none,timer for 23 seconds.
-other,none,none,count down from 30.
-other,none,none,set the timer for 35 seconds.
-other,none,none,set a timer for one minute.
-other,none,none,it`s dab time.
-other,none,none,time to hit a dab.
-other,none,none,set a dab timer.
-other,none,none,set a timer for half a minute.
-other,none,none,set a timer for a minute and a half.
-other,none,none,set a timer for 2 minutes and a half.
-other,none,none,turn the timer on for half a minute.
-other,none,none,turn the timer on for half a minute.
-other,none,none,toggle timer for 60 seconds.
-other,none,none,time to hit a dab.
+spotify,none,none,play crucial by false jasmine.
+spotify,none,none,play false jasmine on spotify.
+spotify,none,none,play false jasmine.
+spotify,none,none,play vitamin c by can .
+spotify,none,none,can we listen to the mars volta.
+spotify,none,none,throw on some slum village.
+spotify,none,none,play all my love by led zeppelin.
+spotify,none,none,play me some sublime .
+spotify,none,none,can we listen to grace by jeff buckley.
+spotify,none,none,play roundabout by yes.
+spotify,none,none,play the widow by the mars volta.
+spotify,none,none,play deep down by mike patton.
+spotify,none,none,play djedje by gordon.
+spotify,none,none,play djedje.
+spotify,none,none,play dig my grave by goat.
+spotify,none,none,play the mars volta.
+spotify,none,none,play jeff buckley.
+spotify,none,none,play me a good song
+spotify,none,none,"i want to hear my favorite band, False Jasmine."
+spotify,none,none,play my playlist baked on spotify.
+spotify,none,none,play my baked playlist.
+spotify,none,none,play my discover weekly playlist.
+spotify,none,none,play the discover weekly playlist on spotify.
+spotify,none,none,play my playlist your top songs 2019 on spotify.
+spotify,none,none,play my top songs 2021 playlist.
+spotify,none,none,play my playlist jazz tunes on spotify.
+spotify,none,none,play jazz tunes on spotify.
+spotify,none,none,play the mars volta.
+spotify,none,none,pause music.
+spotify,none,none,play my top songs 2020 playlist.
+spotify,none,none,play jeff buckley.
+spotify,none,none,play future days by can.
+spotify,none,none,play jazz tunes playlist on Spotify.
+spotify,none,none,Guerilla toss on Spotify.
+timer,none,none,set a timer for 45 seconds.
+timer,none,none,set a timer for 1 minute and 30 seconds.
+timer,none,none,timer for 23 seconds.
+timer,none,none,count down from 30.
+timer,none,none,set the timer for 35 seconds.
+timer,none,none,set a timer for one minute.
+timer,none,none,it`s dab time.
+timer,none,none,time to hit a dab.
+timer,none,none,set a dab timer.
+timer,none,none,set a timer for half a minute.
+timer,none,none,set a timer for a minute and a half.
+timer,none,none,set a timer for 2 minutes and a half.
+timer,none,none,turn the timer on for half a minute.
+timer,none,none,turn the timer on for half a minute.
+timer,none,none,toggle timer for 60 seconds.
+timer,none,none,time to hit a dab.

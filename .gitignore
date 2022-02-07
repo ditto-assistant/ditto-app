@@ -9,3 +9,4 @@ vosk-model-small-en-us-0.15/
 __pycache__/
 LibCST/
 export.sh
+.DS_Store

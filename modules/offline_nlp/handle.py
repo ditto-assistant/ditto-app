@@ -22,11 +22,15 @@ from sklearn.metrics import accuracy_score
 from numpy import random
 random.seed(2020)
 
+import spacy
+
 class NLP:
 
     def __init__(self, path):
         self.train = False
         self.path = path.replace('\\','/') + '/modules/offline_nlp/'
+        self.ner_play = spacy.load(self.path+'models/ner/play')
+        self.ner_timer = spacy.load(self.path+'models/ner/timer')
 
     def initialize(self):
         # read in data
@@ -156,6 +160,30 @@ class NLP:
         subcat = self.predict(self.mlp_max_iter_model_subcat, self.uniquesubcategories, sentence)
         action = self.predict(self.mlp_max_iter_model_action, self.uniqueactions, sentence)
         response = '{"category" : "%s", "sub_category" : "%s", "action" : "%s"}' % (cat, subcat, action)
+        return response
+
+    def prompt_ner_play(self, sentence):
+        artist = ''
+        song = ''
+        playlist = ''
+        reply = self.ner_play(sentence)
+        for ent in reply.ents:
+            if 'song' in ent.label_:
+                song+=ent.text+' '
+            if 'artist' in ent.label_:
+                artist+=ent.text+' '
+            if 'playlist' in ent.label_:
+                playlist+=ent.text+' '
+        response = '{"song" : "%s", "artist" : "%s", "playlist" : "%s"}' % (song, artist, playlist)
+        return response
+
+    def prompt_ner_timer(self, sentence):
+        time = ''
+        reply = self.ner_timer(sentence)
+        for ent in reply.ents:
+            if 'time' in ent.label_:
+                time+=ent.text+' '
+        response = '{"time" : "%s"}' % time
         return response
 
 
