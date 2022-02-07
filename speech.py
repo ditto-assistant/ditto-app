@@ -32,7 +32,6 @@ from modules.pico_python.picovoice_demo_mic import pico_wake
 # pyaudio alternative for real-time stream (supported by Vosk)
 import sounddevice as sd
 
-import vosk
 import json
 import queue
 import pyaudio
