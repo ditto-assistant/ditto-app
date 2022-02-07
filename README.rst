@@ -1,7 +1,7 @@
-GPT-3 AI Assistant
-===================
+AI Assistant
+=============
 
-Custom GPT-3 AI assistant using Vosk, Spotipy, and other APIs. 
+Custom  AI assistant that can handle natural language (mostly offline) and output commands. 
 
 .. image:: snip.png
   :width: 400
