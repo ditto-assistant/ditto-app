@@ -352,8 +352,60 @@ class Assistant:
                 else:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
-                
                 self.activation_mode = True # go back to idle...
+            elif self.offline_response['category'] == 'spotify':
+                self.ner_response = json.loads(self.nlp.prompt_ner(self.prompt))
+                song = 'none'
+                artist = 'none'
+                playlist = 'none'
+                if not self.ner_response['song'] == '':
+                    song = self.ner_response['song']
+                if not self.ner_response['artist'] == '':
+                    artist = self.ner_response['artist']
+                if not self.ner_response['playlist'] == '':
+                    playlist = self.ner_response['playlist']
+                if playlist != 'none':
+                    if song == 'none':
+                        p = self.command.play_music(artist)
+                        if p==1:
+                            self.reply = '[Playing %s on Spotify]' % artist.title()
+                            print(self.reply)
+                        if (p==-1):
+                            self.reply = '[Could not find %s on Spotify]' % artist.title()
+                            print(self.reply)
+                    elif artist == 'none':
+                        p = self.command.play_music(song)
+                        if p==1:
+                            self.reply = '[Playing %s on Spotify]' % song.title()
+                            print(self.reply)
+                        if (p==-1):
+                            self.reply = '[Could not find %s on Spotify]' % song.title()
+                            print(self.reply)
+                    else:
+                        p = self.command.play_music(artist, song)
+                        if p==1:
+                            self.reply = '[Playing %s by %s on Spotify]' % (song.title(), artist.title())
+                            print(self.reply)
+                        if (p==-1):
+                            self.reply = '[Could not find %s by %s on Spotify]' % (song.title(), artist.title())
+                            print(self.reply)
+                else:
+                    p = self.command.play_user_playlist(playlist.lower())
+                    if p==1:
+                        self.reply = '[Playing %s Playlist on Spotify]' % playlist.title()
+                        print(self.reply)
+                    if p==-1:
+                        self.reply = '[Could not find %s Playlist on Spotify]' % playlist.title()
+                        print(self.reply)
+                
+                print(self.reply+'\n')
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+                self.activation_mode = True # go back to idle...
+                
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
