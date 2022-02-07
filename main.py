@@ -394,6 +394,7 @@ class Assistant:
                 self.activation_mode = True # go back to idle...
             elif self.offline_response['category'] == 'music':
                 self.command.player.remote(self.offline_response['action'])
+                self.activation_mode = True # go back to idle...
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")

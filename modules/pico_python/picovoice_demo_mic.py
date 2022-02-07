@@ -160,7 +160,7 @@ class PicovoiceDemo(Thread):
 
 
 def pico_wake():
-    access_key = "tXJLvqw/uzXNiLAQSHCMgEuyHdpmThsBt6A9eNkiLvRqNyAz7N53oA=="
+    access_key = "pfQo34gvUCblrf57D0n0SvL+1KEETSv3mlW0Xxt7QUsDuHlWlwZOJA=="
     devices = PvRecorder.get_audio_devices()
     for i in range(len(devices)):
         if UNIX:
@@ -170,8 +170,8 @@ def pico_wake():
             if '5' in devices[i]:
                 audio_device_index=i
     if UNIX:            
-        keyword_path = "/home/pi/assistant/modules/pico_python/hey-ditto_en_raspberry-pi_v2_0_0.ppn"
-        context_path = "/home/pi/assistant/modules/pico_python/ditto-intent_en_raspberry-pi_v2_0_0.rhn"
+        keyword_path = "/home/pi/assistant/modules/pico_python/hey-ditto_en_raspberry-pi_v2_1_0.ppn"
+        context_path = "/home/pi/assistant/modules/pico_python/ditto_en_raspberry-pi_v2_1_0.rhn"
     else:
         keyword_path = "C:\\Users\\ozanj\\Desktop\\Code\\assistant\\modules\\pico_python\\hey-ditto_en_windows_v2_1_0.ppn"
         context_path = "C:\\Users\\ozanj\\Desktop\\Code\\assistant\\modules\\pico_python\\ditto_en_windows_v2_1_0.rhn"
