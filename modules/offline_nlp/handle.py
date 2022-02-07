@@ -29,7 +29,8 @@ class NLP:
     def __init__(self, path):
         self.train = False
         self.path = path.replace('\\','/') + '/modules/offline_nlp/'
-        self.ner = spacy.load(self.path+'models/ner')
+        self.ner_play = spacy.load(self.path+'models/ner/play')
+        self.ner_timer = spacy.load(self.path+'models/ner/timer')
 
     def initialize(self):
         # read in data
@@ -161,11 +162,11 @@ class NLP:
         response = '{"category" : "%s", "sub_category" : "%s", "action" : "%s"}' % (cat, subcat, action)
         return response
 
-    def prompt_ner(self, sentence):
+    def prompt_ner_play(self, sentence):
         artist = ''
         song = ''
         playlist = ''
-        reply = self.ner(sentence)
+        reply = self.ner_play(sentence)
         for ent in reply.ents:
             if 'song' in ent.label_:
                 song+=ent.text+' '
@@ -175,6 +176,16 @@ class NLP:
                 playlist+=ent.text+' '
         response = '{"song" : "%s", "artist" : "%s", "playlist" : "%s"}' % (song, artist, playlist)
         return response
+
+    def prompt_ner_timer(self, sentence):
+        time = ''
+        reply = self.ner_timer(sentence)
+        for ent in reply.ents:
+            if 'time' in ent.label_:
+                time+=ent.text+' '
+        response = '{"time" : "%s"}' % time
+        return response
+
 
 if __name__ == "__main__":
     nlp = NLP(os.getcwd())

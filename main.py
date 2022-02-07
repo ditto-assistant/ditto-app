@@ -338,6 +338,7 @@ class Assistant:
 
             # check to see if can be handled offline before GPT-3...
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
+
             if self.offline_response['category'] == 'lights':
                 if 'off' in self.offline_response['action']:
                     self.reply = '[Turning off the lights]'
@@ -353,12 +354,13 @@ class Assistant:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
                 self.activation_mode = True # go back to idle...
+                self.reply = ''
+
             elif self.offline_response['category'] == 'spotify':
-                self.ner_response = json.loads(self.nlp.prompt_ner(self.prompt))
+                self.ner_response = json.loads(self.nlp.prompt_ner_play(self.prompt))
                 song = self.ner_response['song']
                 artist = self.ner_response['artist']
                 playlist = self.ner_response['playlist']
-                print(song, artist, playlist)
                 if playlist == '':
                     if song == '':
                         p = self.command.play_music(artist.strip())
@@ -391,10 +393,30 @@ class Assistant:
                 else:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
+                self.reply = ''
                 self.activation_mode = True # go back to idle...
+
             elif self.offline_response['category'] == 'music':
                 self.command.player.remote(self.offline_response['action'])
                 self.activation_mode = True # go back to idle...
+                self.reply = ''
+                
+            elif self.offline_response['category'] == 'timer':
+                self.ner_response = json.loads(self.nlp.prompt_ner_timer(self.prompt))
+                time = self.ner_response['time']
+                if not time == '':
+                    reply = time.strip(' ').replace('seconds', 's').replace('minutes', 'm').replace(' ', '')
+                    self.reply = '[Setting timer for %s]' % time
+                    print(self.reply+'\n')
+                    if UNIX:
+                        self.tts(self.reply, self.speech_volume)
+                    else:
+                        self.speech_engine.say(self.reply)
+                        self.speech_engine.runAndWait()
+                    self.command.toggle_timer(reply)
+                    
+                self.activation_mode = True # go back to idle...
+                self.reply = ''
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")

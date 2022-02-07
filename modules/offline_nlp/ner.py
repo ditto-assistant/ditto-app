@@ -24,32 +24,53 @@ from spacy.training.example import Example
 
 from tqdm import tqdm
 
+# which model to create
+PLAY=1
+TIMER=0
+
 # def create_load_data():
 # load in and organize data
-with open('data/play_commands.json') as f:
-    json_data = json.load(f)
+if PLAY:
+    with open('data/play_commands.json') as f:
+        json_data = json.load(f)
+elif TIMER:
+    with open('data/timer_commands.json') as f:
+        json_data = json.load(f)
+N_ITER = 100
 
 sentences = []
 entities = []
+
 for ndx,data in enumerate(json_data['training_data']):
-    if ndx == 30: break
-    words = data['words']
-    labels = data['labels']
 
-    ent_ndx = []
-    for ndx,x in enumerate(labels):
-        if 'song' in x or 'artist' in x or 'playlist':
-            if 'song' in x:
-                tag = 'SONG'
-                ent_ndx.append([ndx, x])
-            elif 'artist' in x:
-                tag = 'ARTIST'
-                ent_ndx.append([ndx, x])
-            elif 'playlist' in x:
-                tag = 'PLAYLIST'
-                ent_ndx.append([ndx, x])
+    if PLAY:
+        if ndx == 30: break
+        words = data['words']
+        labels = data['labels']
 
+        ent_ndx = []
+        for ndx,x in enumerate(labels):
+            if 'song' in x or 'artist' in x or 'playlist':
+                if 'song' in x:
+                    tag = 'SONG'
+                    ent_ndx.append([ndx, x])
+                elif 'artist' in x:
+                    tag = 'ARTIST'
+                    ent_ndx.append([ndx, x])
+                elif 'playlist' in x:
+                    tag = 'PLAYLIST'
+                    ent_ndx.append([ndx, x])
+    elif TIMER:
+        if ndx == 30: break
+        words = data['words']
+        labels = data['labels']
 
+        ent_ndx = []
+        for ndx,x in enumerate(labels):
+            if 'time' in x:
+                if 'time' in x:
+                    tag = 'TIME'
+                    ent_ndx.append([ndx, x])
 
     sentence = ''
     for x in words:
@@ -86,8 +107,12 @@ for sent,ent in zip(sentences,entities):
 
 # training time!
 model = None
-output_dir=Path("models/ner")
-n_iter=100
+if PLAY:
+    output_dir=Path("models/ner/play")
+elif TIMER:
+    output_dir=Path("models/ner/timer")
+
+n_iter=N_ITER
 
 if model is not None:
     nlp = spacy.load(model)  
