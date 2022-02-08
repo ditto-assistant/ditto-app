@@ -157,3 +157,6 @@ timer,none,none,turn the timer on for half a minute.
 timer,none,none,turn the timer on for half a minute.
 timer,none,none,toggle timer for 60 seconds.
 timer,none,none,time to hit a dab.
+weather,none,none,what's the weather like today
+weather,location,none,what's the weather like today in Auburn
+weather,none,none,what's the weather

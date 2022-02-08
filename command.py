@@ -21,6 +21,7 @@ import lifxlan
 
 from modules.hourglass.timer import Timer
 from modules.spotify.spotify import Spotify
+from modules.weather.grab import Weather
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -29,6 +30,8 @@ class Command:
     def __init__(self, path):
         # path to memory.json 
         self.mem_path= path+'/modules/memory/memory.json'
+
+        self.weather_app = Weather()
 
         mem=""
         # try to load in memory.json

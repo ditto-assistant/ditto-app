@@ -5,6 +5,7 @@ author: Omar Barazanji
 """
 
 # handles text to speech
+from re import sub
 import pyttsx3
 
 # other imports
@@ -417,6 +418,23 @@ class Assistant:
                     
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
+            
+            elif self.offline_response['category'] == 'weather':
+                sub_cat = self.offline_response['sub_category']
+                if sub_cat == 'none':
+                    response = json.loads(self.command.weather_app.get_weather())['curr_temp']
+                    location = self.command.weather_app.location
+                    self.reply = "[It's currently %s degrees in %s]" % (response, location)
+                    print(self.reply+'\n')
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+
+                self.activation_mode = True # go back to idle...
+                self.reply = ''
+
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
