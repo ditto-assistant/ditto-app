@@ -344,27 +344,31 @@ class Assistant:
                 if self.offline_response['sub_category'] == 'none':
                     if 'off' in self.offline_response['action']:
                         self.reply = '[Turning off the lights]'
-                    if 'on' in self.offline_response['action']:
+                    elif 'on' in self.offline_response['action']:
                         self.reply = '[Turning on the lights]'
                     else: 
                         self.reply = '[Setting lights to %s]' % self.offline_response['action']
                     self.command.toggle_light(self.offline_response['action'])
-                    print(self.reply+'\n')
-                    if UNIX:
-                        self.tts(self.reply, self.speech_volume)
-                    else:
-                        self.speech_engine.say(self.reply)
-                        self.speech_engine.runAndWait()
-                    self.activation_mode = True # go back to idle...
-                    self.reply = ''
                 else:
                     sub_cat = self.offline_response['sub_category']
                     if 'bedroom-light' in sub_cat:
-                        action = self.offline_response['sub_category']
+                        action = self.offline_response['action']
                         self.command.bedroom_light.set_power(action)
+                        self.reply = '[Setting bedroom lights to %s]' % action
                     elif 'bedroom-lamp' in sub_cat:
-                        action = self.offline_response['sub_category']
+                        action = self.offline_response['action']
                         self.command.bedroom_lamp.set_power(action)
+                        self.reply = '[Setting bedroom lamp to %s]' % action
+                
+                print(self.reply+'\n')
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+
+                self.activation_mode = True # go back to idle...
+                self.reply = ''
 
             elif self.offline_response['category'] == 'spotify':
                 self.ner_response = json.loads(self.nlp.prompt_ner_play(self.prompt))
