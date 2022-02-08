@@ -355,8 +355,8 @@ class Assistant:
                         action = self.offline_response['action']
                         self.command.bedroom_light.set_power(action)
                         if action == 'on':
-                            self.reply = '[Turning on the bedroom light]'
-                        else: self.reply = '[Turning off the bedroom light]'
+                            self.reply = '[Turning on the bedroom lights]'
+                        else: self.reply = '[Turning off the bedroom lights]'
                     elif 'bedroom-lamp' in sub_cat:
                         action = self.offline_response['action']
                         self.command.bedroom_lamp.set_power(action)
