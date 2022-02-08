@@ -359,9 +359,12 @@ class Assistant:
                     self.reply = ''
                 else:
                     sub_cat = self.offline_response['sub_category']
-                    if 'bedroom-' in sub_cat:
+                    if 'bedroom-light' in sub_cat:
                         action = self.offline_response['sub_category']
                         self.command.bedroom_light.set_power(action)
+                    elif 'bedroom-lamp' in sub_cat:
+                        action = self.offline_response['sub_category']
+                        self.command.bedroom_lamp.set_power(action)
 
             elif self.offline_response['category'] == 'spotify':
                 self.ner_response = json.loads(self.nlp.prompt_ner_play(self.prompt))
