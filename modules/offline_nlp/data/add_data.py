@@ -46,6 +46,12 @@ df_light = pd.DataFrame([
     ['lights', 'none', 'off', 'lights off'],
     ['lights', 'none', 'off', 'shut off the lights'],
     ['lights', 'none', 'on', 'can you you turn on the lights'],
+    ['lights', 'bedroom-light', 'off', 'can you turn off the bedroom lights'],
+    ['lights', 'bedroom-light', 'on', 'can you turn on the bedroom light'],
+    ['lights', 'bedroom-lamp', 'off', 'can you turn off the bedroom lamp'],
+    ['lights', 'bedroom-lamp', 'off', 'can you turn on the bedroom lamp'],
+    ['lights', 'bedroom-light', 'on', 'turn on the bedroom lights'],
+    ['lights', 'bedroom-lamp', 'on', 'turn on the bedroom lamp'],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_music = pd.DataFrame([
@@ -107,5 +113,5 @@ df = df_light.append(
         df_other, ignore_index=True).append(
             df_weather, ignore_index=True
         )
-        
+
 df.to_csv('dataset_ditto.csv', index=False)

@@ -341,21 +341,27 @@ class Assistant:
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
 
             if self.offline_response['category'] == 'lights':
-                if 'off' in self.offline_response['action']:
-                    self.reply = '[Turning off the lights]'
-                if 'on' in self.offline_response['action']:
-                    self.reply = '[Turning on the lights]'
-                else: 
-                    self.reply = '[Setting lights to %s]' % self.offline_response['action']
-                self.command.toggle_light(self.offline_response['action'])
-                print(self.reply+'\n')
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
+                if self.offline_response['sub_category'] == 'none':
+                    if 'off' in self.offline_response['action']:
+                        self.reply = '[Turning off the lights]'
+                    if 'on' in self.offline_response['action']:
+                        self.reply = '[Turning on the lights]'
+                    else: 
+                        self.reply = '[Setting lights to %s]' % self.offline_response['action']
+                    self.command.toggle_light(self.offline_response['action'])
+                    print(self.reply+'\n')
+                    if UNIX:
+                        self.tts(self.reply, self.speech_volume)
+                    else:
+                        self.speech_engine.say(self.reply)
+                        self.speech_engine.runAndWait()
+                    self.activation_mode = True # go back to idle...
+                    self.reply = ''
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
-                self.activation_mode = True # go back to idle...
-                self.reply = ''
+                    sub_cat = self.offline_response['sub_category']
+                    if 'bedroom-' in sub_cat:
+                        action = self.offline_response['sub_category']
+                        self.command.bedroom_light.set_power(action)
 
             elif self.offline_response['category'] == 'spotify':
                 self.ner_response = json.loads(self.nlp.prompt_ner_play(self.prompt))
