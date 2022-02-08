@@ -49,9 +49,10 @@ df_light = pd.DataFrame([
     ['lights', 'bedroom-light', 'off', 'can you turn off the bedroom lights'],
     ['lights', 'bedroom-light', 'on', 'can you turn on the bedroom light'],
     ['lights', 'bedroom-lamp', 'off', 'can you turn off the bedroom lamp'],
-    ['lights', 'bedroom-lamp', 'off', 'can you turn on the bedroom lamp'],
+    ['lights', 'bedroom-lamp', 'on', 'can you turn on the bedroom lamp'],
     ['lights', 'bedroom-light', 'on', 'turn on the bedroom lights'],
     ['lights', 'bedroom-lamp', 'on', 'turn on the bedroom lamp'],
+    ['lights', 'bedroom-lamp', 'off', 'can you please turn off the bedroom lamp'],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_music = pd.DataFrame([
