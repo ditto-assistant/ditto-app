@@ -99,6 +99,8 @@ time_prompts = extract_prompts('prompts/timer-application.txt')
 other_arr = []
 for prompt in conv_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
+    other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
+    other_arr.append(['other', 'none', 'none', 'can you recall anything'])
 for prompt in mem_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
 for prompt in spot_prompts:
