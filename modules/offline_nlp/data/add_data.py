@@ -57,6 +57,7 @@ df_light = pd.DataFrame([
 
 df_music = pd.DataFrame([
     ['music', 'none', 'pause', 'pause music'],
+    ['music', 'none', 'pause', 'pause'],
     ['music', 'none', 'resume', 'play music'],
     ['music', 'none', 'pause', 'can you please pause the music'],
     ['music', 'none', 'resume', 'resume music'],
@@ -67,6 +68,7 @@ df_music = pd.DataFrame([
     ['music', 'none', 'previous', 'go back a song'],
     ['music', 'none', 'previous', 'previous song'],
     ['music', 'none', 'previous', 'can you go back to the last song'],
+
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_weather = pd.DataFrame([

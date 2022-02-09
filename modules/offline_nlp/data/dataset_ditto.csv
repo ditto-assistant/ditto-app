@@ -42,6 +42,7 @@ lights,bedroom-light,on,turn on the bedroom lights
 lights,bedroom-lamp,on,turn on the bedroom lamp
 lights,bedroom-lamp,off,can you please turn off the bedroom lamp
 music,none,pause,pause music
+music,none,pause,pause
 music,none,resume,play music
 music,none,pause,can you please pause the music
 music,none,resume,resume music
