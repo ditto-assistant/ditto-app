@@ -1,0 +1,67 @@
+Q: play crucial by false jasmine.
+A: toggle-spotify `false jasmine, crucial`
+Q: play false jasmine on spotify.
+A: toggle-spotify `false jasmine`
+Q: play false jasmine.
+A: toggle-spotify `false jasmine`
+Q: play vitamin c by can .
+A: toggle-spotify `can, vitamin c`
+Q: can we listen to the mars volta.
+A: toggle-spotify `the mars volta`
+Q: throw on some slum village.
+A: toggle-spotify `slum village`
+Q: play all my love by led zeppelin.
+A: toggle-spotify `led zeppelin, all my love`
+Q: play me some sublime .
+A: toggle-spotify `sublime`
+Q: can we listen to grace by jeff buckley.
+A: toggle-spotify `jeff buckley, grace`
+Q: play roundabout by yes.
+A: toggle-spotify `yes, roundabout`
+Q: play the widow by the mars volta.
+A: toggle-spotify `the mars volta, the widow`
+Q: play deep down by mike patton.
+A: toggle-spotify `mike patton, deep down`
+Q: play djedje by gordon.
+A: toggle-spotify `gordon, djedje`
+Q: play djedje.
+A: toggle-spotify `djedje`
+Q: play dig my grave by goat.
+A: toggle-spotify `goat, dig my grave`
+Q: play the mars volta.
+A: toggle-spotify `the mars volta`
+Q: play jeff buckley.
+A: toggle-spotify `jeff buckley`
+Q: play me a good song
+A: toggle-spotify `good`
+Q: i want to hear my favorite band, False Jasmine.
+A: toggle-spotify `false jasmine`
+Q: play my playlist baked on spotify.
+A: toggle-spotify-playlist `baked`
+Q: play my baked playlist.
+A: toggle-spotify-playlist `baked`
+Q: play my discover weekly playlist.
+A: toggle-spotify-playlist `discover weekly`
+Q: play the discover weekly playlist on spotify.
+A: toggle-spotify-playlist `discover weekly`
+Q: play my playlist your top songs 2019 on spotify.
+A: toggle-spotify-playlist `your top songs 2019`
+Q: play my top songs 2021 playlist.
+A: toggle-spotify-playlist `your top songs 2021`
+Q: play my playlist jazz tunes on spotify.
+A: toggle-spotify-playlist `djedjetunes`
+Q: play jazz tunes on spotify.
+A: toggle-spotify-playlist `djedjetunes`
+Q: play the mars volta.
+A: toggle-spotify `the mars volta`
+Q: pause music.
+Q: play my top songs 2020 playlist.
+A: toggle-spotify-playlist`your top songs 2020`
+Q: play jeff buckley.
+A: toggle-spotify `jeff buckley`
+Q: play future days by can.
+A: toggle-spotify `can, future days`
+Q: play jazz tunes playlist on Spotify.
+A: toggle-spotify-playlist `Djedjetunes`
+Q: Guerilla toss on Spotify.
+A: toggle-spotify `guerilla toss`

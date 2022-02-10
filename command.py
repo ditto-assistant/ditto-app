@@ -21,6 +21,7 @@ import lifxlan
 
 from modules.hourglass.timer import Timer
 from modules.spotify.spotify import Spotify
+from modules.weather.grab import Weather
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -29,6 +30,8 @@ class Command:
     def __init__(self, path):
         # path to memory.json 
         self.mem_path= path+'/modules/memory/memory.json'
+
+        self.weather_app = Weather()
 
         mem=""
         # try to load in memory.json
@@ -59,11 +62,12 @@ class Command:
         self.conversation_prompt = "Q: hello.\nA: toggle-conversation `Hello! What's up? \nQ: how are you?\nA: toggle-conversation `I'm doing great!` How are you?\nQ: what is your name?\nA: toggle-conversation `My name is Ditto!`\nQ: what is your name?\nA: toggle-conversation `Ditto.`\nQ: what is your purpose?\nA: toggle-conversation `I am here to provide information I was trained on. I will try and be as correct and precise as I can.`\nQ: what's the population of Brazil?\nA: toggle-conversation `212.6 million as of 2020.`\nQ: what's the meaning of life?\nA: toggle-conversation `the meaning of life is to love oneself and to spread love to others.`\nQ: can you take the square root of a negative number?\nA: toggle-conversation `The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.`\nQ: can you write me a poem?\nA: toggle-conversation `Despite the storms, \\nbeauty arrives like \\nit was always going to. \\nDespite the darkness, \\nthe light returns. \\nDespite your loss, \\nyour heart will be \\nfull again. \\nDespite the breaking, \\nyour heart will feel \\nlike it belongs in the \\nland of joy once more. \\nThis is how it will \\nalways be. Keep living.`\nQ: can you tell me who the president of the United States was in 1975?\nA: toggle-conversation `Gerald Ford was the president of the United States in 1975.`\nQ: write me another song or poem.\nA: toggle-conversation `A gift for you \\nA gift for me \\nYou're the one \\nThat lives for me \\nAnd I for you \\nTrue love is thee.`\nQ: Who was the 16th president of the united states?\nA: toggle-conversation `Abraham Lincoln was the 16th president of the United States.`\nQ: What is an atom made up of?\nA: toggle-conversation `The atom is made up of protons and neutrons, which have electrons surrounding them.`\nQ: How can I start my day better?\nA: toggle-conversation `Start your day with a good breakfast. \\nStand up and move around in your living room. \\nRelax for a bit. \\nGo for a walk in the park. \\nTry to get some exercise in the afternoon. \\nEat healthier meals.\\nLeave a little more time for the evening. \\Sleep better the day before.`\nQ: Who are you?\nA: toggle-conversation `I'm Ditto! My backend is on GPT-3, a powerful language model made by openai.`\nQ: how many parameters do you have?\nA: toggle-conversation `I have 175 billion parameters.`\nQ: how do you compare with GPT-2?\nA: toggle-conversation `GPT-3 is a new version of GPT-2. GPT-3 was created to be more robust than GPT-2 in that it is capable of handling more niche topics.`\nQ: how many parameters does GPT-2 have?\nA: toggle-conversation `GPT-2 has 1.5 billion parameters.`\nQ: what is the human population count\nA: toggle-conversation `The human population count is 7,794,798,739 as of 2020.`\nQ: how many notes are there in a scale\nA: toggle-conversation `There are 7 notes in a scale.`\nQ: what is the speed of light?\nA: toggle-conversation `The speed of light is about 300,000 km per second.`\nQ: what is the population of canada?\nA: toggle-conversation `The population of Canada is about 38,000,000 as of 2020.`\nQ: population syria\nA: toggle-conversation `The population of Syria is about 18,000,000 as of 2020.`\nQ: say hello.\nA: toggle-conversation `Hi! How are you? I've been enjoying my time here.`\nQ: "
 
         try:
-            self.bedroom_light = lifxlan.LifxLAN().get_device_by_name('Lamp')
+            self.bedroom_lamp = lifxlan.LifxLAN().get_device_by_name('Lamp')
+            self.bedroom_light = lifxlan.LifxLAN().get_device_by_name('Light')
         except BaseException as e:
             print(e)
+            self.bedroom_lamp = []
             self.bedroom_light = []
-
 
     def toggle_light(self, mode):
         try:
@@ -72,12 +76,14 @@ class Command:
                 s.write(b'\x00')
                 self.light_status = True
                 self.light_mode = mode
+                self.bedroom_lamp.set_power(mode)
                 self.bedroom_light.set_power(mode)
             elif mode == 'off':
-                self.light_status = False
                 s.write(b'\x01')
-                self.bedroom_light.set_power(mode)
+                self.light_status = False
                 self.light_mode = mode
+                self.bedroom_lamp.set_power(mode)
+                self.bedroom_light.set_power(mode)
             elif mode == 'sparkle':
                 self.light_mode = mode
                 s.write(b'\x02')
@@ -93,31 +99,31 @@ class Command:
             elif mode == 'white':
                 self.light_mode = mode
                 s.write(b'\x06')
-                self.bedroom_light.set_color(lifxlan.WHITE)
+                self.bedroom_lamp.set_color(lifxlan.WHITE)
             elif mode == 'green':
                 self.light_mode = mode
                 s.write(b'\x07')
-                self.bedroom_light.set_color(lifxlan.GREEN)
+                self.bedroom_lamp.set_color(lifxlan.GREEN)
             elif mode == 'orange':
                 self.light_mode = mode
                 s.write(b'\x08')
-                self.bedroom_light.set_color(lifxlan.ORANGE)
+                self.bedroom_lamp.set_color(lifxlan.ORANGE)
             elif mode == 'blue':
                 self.light_mode = mode
                 s.write(b'\x09')
-                self.bedroom_light.set_color(lifxlan.BLUE)
+                self.bedroom_lamp.set_color(lifxlan.BLUE)
             elif mode == 'red':
                 self.light_mode = mode
                 s.write(b'\x0A')
-                self.bedroom_light.set_color(lifxlan.RED)
+                self.bedroom_lamp.set_color(lifxlan.RED)
             elif mode == 'yellow':
                 self.light_mode = mode
                 s.write(b'\x0B')
-                self.bedroom_light.set_color(lifxlan.YELLOW)
+                self.bedroom_lamp.set_color(lifxlan.YELLOW)
             elif mode == 'purple':
                 self.light_mode = mode
                 s.write(b'\x0C')
-                self.bedroom_light.set_color(lifxlan.PURPLE)
+                self.bedroom_lamp.set_color(lifxlan.PURPLE)
             elif mode == 'gradient':
                 self.light_mode = mode
                 s.write(b'\x0D')

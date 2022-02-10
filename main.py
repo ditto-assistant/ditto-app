@@ -5,6 +5,7 @@ author: Omar Barazanji
 """
 
 # handles text to speech
+from re import sub
 import pyttsx3
 
 # other imports
@@ -340,19 +341,36 @@ class Assistant:
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
 
             if self.offline_response['category'] == 'lights':
-                if 'off' in self.offline_response['action']:
-                    self.reply = '[Turning off the lights]'
-                if 'on' in self.offline_response['action']:
-                    self.reply = '[Turning on the lights]'
-                else: 
-                    self.reply = '[Setting lights to %s]' % self.offline_response['action']
-                self.command.toggle_light(self.offline_response['action'])
+                if self.offline_response['sub_category'] == 'none':
+                    if 'off' in self.offline_response['action']:
+                        self.reply = '[Turning off the lights]'
+                    elif 'on' in self.offline_response['action']:
+                        self.reply = '[Turning on the lights]'
+                    else: 
+                        self.reply = '[Setting lights to %s]' % self.offline_response['action']
+                    self.command.toggle_light(self.offline_response['action'])
+                else:
+                    sub_cat = self.offline_response['sub_category']
+                    if 'bedroom-light' in sub_cat:
+                        action = self.offline_response['action']
+                        self.command.bedroom_light.set_power(action)
+                        if action == 'on':
+                            self.reply = '[Turning on the bedroom lights]'
+                        else: self.reply = '[Turning off the bedroom lights]'
+                    elif 'bedroom-lamp' in sub_cat:
+                        action = self.offline_response['action']
+                        self.command.bedroom_lamp.set_power(action)
+                        if action == 'on':
+                            self.reply = '[Turning on the bedroom lamp]'
+                        else: self.reply = '[Turning off the bedroom lamp]'
+                
                 print(self.reply+'\n')
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
                     self.speech_engine.say(self.reply)
                     self.speech_engine.runAndWait()
+
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
 
@@ -417,6 +435,23 @@ class Assistant:
                     
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
+            
+            elif self.offline_response['category'] == 'weather':
+                sub_cat = self.offline_response['sub_category']
+                if sub_cat == 'none':
+                    response = json.loads(self.command.weather_app.get_weather())['curr_temp']
+                    location = self.command.weather_app.location
+                    self.reply = "[It's currently %s degrees in %s]" % (response, location)
+                    print(self.reply+'\n')
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.speech_engine.say(self.reply)
+                    self.speech_engine.runAndWait()
+
+                self.activation_mode = True # go back to idle...
+                self.reply = ''
+
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")

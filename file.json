@@ -1,0 +1,44 @@
+{
+    "location": "Auburn, AL",
+    "coordinates": "32.609, -85.482",
+    "provider": "Foreca",
+    "temperature": "5 �C",
+    "feels like": "5 �C",
+    "sky text": "Mostly Cloudy",
+    "humidity": "88%",
+    "wind speeds": "4 km/h",
+    "date": "Monday, 07 February 2022 at 23:30:00 (UTC-5)",
+    "url": "http://a.msn.com/54/en-US/ct32.609,-85.482?ctsrc=outlook",
+    "forecasts": {
+        "Sunday, 06 February 2022 at 00:00:00 (UTC-5)": {
+            "lowest temperature": "5 �C",
+            "highest temperature": "13 �C",
+            "sky text": "Cloudy",
+            "precipitation": "unknown"
+        },
+        "Monday, 07 February 2022 at 00:00:00 (UTC-5)": {
+            "lowest temperature": "2 �C",
+            "highest temperature": "11 �C",
+            "sky text": "Partly Sunny",
+            "precipitation": "unknown"
+        },
+        "Tuesday, 08 February 2022 at 00:00:00 (UTC-5)": {
+            "lowest temperature": "1 �C",
+            "highest temperature": "14 �C",
+            "sky text": "Sunny",
+            "precipitation": "unknown"
+        },
+        "Wednesday, 09 February 2022 at 00:00:00 (UTC-5)": {
+            "lowest temperature": "3 �C",
+            "highest temperature": "15 �C",
+            "sky text": "Sunny",
+            "precipitation": "unknown"
+        },
+        "Thursday, 10 February 2022 at 00:00:00 (UTC-5)": {
+            "lowest temperature": "4 �C",
+            "highest temperature": "16 �C",
+            "sky text": "Sunny",
+            "precipitation": "unknown"
+        }
+    }
+}

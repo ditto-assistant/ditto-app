@@ -1,0 +1,77 @@
+Q: remember that my favorite color is blue.
+A: toggle-memory-store `my favorite color, blue`
+Q: don't forget that my favorite color is blue.
+A: toggle-memory-store `my favorite color, blue`
+Q: what is my favorite color.
+A: toggle-memory-read `my favorite color`
+Q: remember my birthday is on november fifth nineteen ninety seven.
+A: toggle-memory-store `my birthday, november fifth nineteen ninety seven`
+Q: don't forget my birthday is on november fifth nineteen ninety seven.
+A: toggle-memory-store `my birthday, november fifth nineteen ninety seven`
+Q: Q: what is my birthday.
+A: toggle-memory-read `my birthday`
+Q: when was my birthday.
+A: toggle-memory-read `my birthday`
+Q: what is my favorite color.
+A: toggle-memory-read `my favorite color`
+Q: remember my mom's birthday is on october sixth nineteen fifty nine.
+A: toggle-memory-store `my mom's birthday color, october sixth nineteen fifty nine`
+Q: don't forget that my mom's birthday is on october sixth nineteen fifty nine.
+A: toggle-memory-store `my mom's birthday, october sixth nineteen fifty nine`
+Q: when was my mom's birthday.
+A: toggle-memory-read `my mom's birthday`
+Q: when is my birthday.
+A: toggle-memory-read `my birthday`
+Q: don't forget that the mars volta is my favorite band.
+A: toggle-memory-store `my favorite band, the mars volta`
+Q: what is my favorite color.
+A: toggle-memory-read `my favorite color`
+Q: what is my favorite band.
+A: toggle-memory-read `my favorite band`
+Q: don't forget that my friend john's birthday is on july eighteenth ninety ninety eight.
+A: toggle-memory-store `my friend john's birthday, july eighteenth ninety ninety eight`
+Q: when is my friend john's birthday.
+A: toggle-memory-read `my friend john's birthday`
+Q: when was my mom's birthday.
+A: toggle-memory-read `my mom's birthday`
+Q: what is my favorite color.
+A: toggle-memory-read `my favorite color`
+Q: don't forget that my mom's birthday is on october six nineteen fifty nine.
+A: toggle-memory-store `my mom's birthday, october six nineteen fifty nine`
+Q: don't forget my favorite color is blue.
+A: toggle-memory-store `my favorite color, blue`
+Q: don't forget my name is omar.
+A: toggle-memory-store `my name, omar`
+Q: remember that my favorite band is the mars volta.
+A: toggle-memory-store `my favorite band, the mars volta`
+Q: what is my brother's name.
+A: toggle-memory-read `my brother's name`
+Q: don't forget that my brother's birthday is november fourth nineteen ninety six.
+A: toggle-memory-store `my brother's birthday, november fourth nineteen ninety six`
+Q: what is your favorite movie.
+A: toggle-memory-read `your favorite movie`
+Q: who are your parents.
+A: toggle-memory-read `your parents`
+Q: who are my parents.
+A: toggle-memory-read `my parents`
+Q: what are your favorite songs.
+A: toggle-memory-read `your favorite songs`
+Q: who is my favorite band.
+A: toggle-memory-read `my favorite band`
+Q: when is my birthday.
+A: toggle-memory-read `my birthday`
+Q: when is your birthday.
+A: toggle-memory-read `your birthday`
+Q: what is your favorite ice cream.
+A: toggle-memory-read `your favorite ice cream`
+Q: what is my favorite movie.
+A: toggle-memory-read `my favorite movie`
+Q: what is your favorite quote.
+A: toggle-memory-read `your favorite quote`
+Q: what is your favorite movie.
+A: toggle-memory-read `your favorite movie`
+Q: don't forget that my favorite thing to do is ride bikes.
+A: toggle-memory-store `my favorite thing to do, ride bikes`
+Q: don't forget my shoe size is nine.
+A: toggle-memory-store `my shoe size, nine`
+Q: 

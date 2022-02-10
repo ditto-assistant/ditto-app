@@ -1,0 +1,47 @@
+{
+    "labels": [
+        "O",
+        "B-location",
+        "I-location"
+    ],
+    "training_data": [
+        {
+            "words": [
+                "what's",
+                "the",
+                "weather",
+                "like",
+                "in",
+                "Auburn",
+                "Alabama"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-location",
+                "I-location"
+            ]
+        },
+        {
+            "words": [
+                "what's",
+                "the",
+                "weather",
+                "in",
+                "Atlanta",
+                "Georgia"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-location",
+                "I-location"
+            ]
+        }
+    ]
+}

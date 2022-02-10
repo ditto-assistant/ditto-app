@@ -27,7 +27,7 @@ import spacy
 class NLP:
 
     def __init__(self, path):
-        self.train = False
+        self.train = True
         self.path = path.replace('\\','/') + '/modules/offline_nlp/'
         self.ner_play = spacy.load(self.path+'models/ner/play')
         self.ner_timer = spacy.load(self.path+'models/ner/timer')
