@@ -68,20 +68,23 @@ df_music = pd.DataFrame([
     ['music', 'none', 'previous', 'go back a song'],
     ['music', 'none', 'previous', 'previous song'],
     ['music', 'none', 'previous', 'can you go back to the last song'],
-
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_weather = pd.DataFrame([
     ['weather', 'none', 'none', "what's the weather like today"], # weather in default location
     ['weather', 'location', 'none', "what's the weather like today in Auburn"], # forward to NER
-    ['weather', 'none', 'none', "what is the speed of light?"]
+    ['weather', 'none', 'none', "is it cold outside"],
+    ['weather', 'none', 'none', "is it warm outside"],
+    ['weather', 'none', 'none', "what's the temperature today"],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_wolfram = pd.DataFrame([
     ['wolfram', 'none', 'none', "can you tell me who the president of the United States was in 1975?"],
-    ['wolfram', 'none', 'none', "Who was the 16th president of the united states?"],
+    ['wolfram', 'none', 'none', "who was the 16th president of the united states?"],
     ['wolfram', 'none', 'none', "what is the population of canada?"],
-    ['wolfram', 'none', 'none', "what is the human population count"],
+    ['wolfram', 'none', 'none', "what's the human population count"],
+    ['wolfram', 'none', 'none', "what is the speed of light"],
+    ['wolfram', 'none', 'none', "how many cups are in a gallon"],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 
