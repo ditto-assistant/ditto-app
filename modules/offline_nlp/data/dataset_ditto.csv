@@ -68,9 +68,6 @@ other,none,none,can you recall anything
 other,none,none,what is your purpose?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
-other,none,none,what's the population of Brazil?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
 other,none,none,what's the meaning of life?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
@@ -78,15 +75,6 @@ other,none,none,can you take the square root of a negative number?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
 other,none,none,can you write me a poem?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,can you tell me who the president of the United States was in 1975?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,write me another song or poem.
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,Who was the 16th president of the united states?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
 other,none,none,What is an atom made up of?
@@ -108,18 +96,6 @@ other,none,none,how many parameters does GPT-2 have?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
 other,none,none,what is the human population count
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,how many notes are there in a scale
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what is the speed of light?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what is the population of canada?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,population syria
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
 other,none,none,say hello.
@@ -215,4 +191,9 @@ timer,none,none,toggle timer for 60 seconds.
 timer,none,none,time to hit a dab.
 weather,none,none,what's the weather like today
 weather,location,none,what's the weather like today in Auburn
-weather,none,none,what's the weather
+weather,none,none,what is the speed of light?
+wolfram,none,none,can you tell me who the president of the United States was in 1975?
+wolfram,none,none,Who was the 16th president of the united states?
+wolfram,none,none,what is the derivative of 10 x
+wolfram,none,none,what is the population of canada?
+wolfram,none,none,what is the human population count

@@ -22,6 +22,7 @@ import lifxlan
 from modules.hourglass.timer import Timer
 from modules.spotify.spotify import Spotify
 from modules.weather.grab import Weather
+from modules.wolfram.ask import Wolfram
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -32,6 +33,7 @@ class Command:
         self.mem_path= path+'/modules/memory/memory.json'
 
         self.weather_app = Weather()
+        self.wolfram = Wolfram(path)
 
         mem=""
         # try to load in memory.json
@@ -136,7 +138,10 @@ class Command:
 
     def toggle_timer(self, val):
         timer = Timer()
-        timer.set_timer(val)
+        try:
+            timer.set_timer(val)
+        except:
+            pass
 
 
     def play_music(self, artist, song=None):

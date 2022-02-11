@@ -452,6 +452,22 @@ class Assistant:
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
 
+            elif self.offline_response['category'] == 'wolfram':
+                self.reply = self.command.wolfram.get_response(self.prompt)
+                if not self.reply == '' and not self.reply == '(data not available)':
+                    # self.reply = reply.split("(")[0]
+                    print(self.reply+'\n')
+                    if UNIX:
+                        self.tts(self.reply, self.speech_volume)
+                    else:
+                        self.speech_engine.say(self.reply)
+                        self.speech_engine.runAndWait()
+                    self.activation_mode = True # go back to idle...    
+                    self.reply = ''
+                else:
+                    self.application = 'conversation-application'
+                
+                
             else:
                 self.command.send_request(self.prompt+".", self.application)
                 self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
