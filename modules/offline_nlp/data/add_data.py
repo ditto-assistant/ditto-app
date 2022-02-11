@@ -74,8 +74,16 @@ df_music = pd.DataFrame([
 df_weather = pd.DataFrame([
     ['weather', 'none', 'none', "what's the weather like today"], # weather in default location
     ['weather', 'location', 'none', "what's the weather like today in Auburn"], # forward to NER
-    ['weather', 'none', 'none', "what's the weather"]
+    ['weather', 'none', 'none', "what is the speed of light?"]
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
+
+df_wolfram = pd.DataFrame([
+    ['wolfram', 'none', 'none', "can you tell me who the president of the United States was in 1975?"],
+    ['wolfram', 'none', 'none', "Who was the 16th president of the united states?"],
+    ['wolfram', 'none', 'none', "what is the population of canada?"],
+    ['wolfram', 'none', 'none', "what is the human population count"],
+    ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
+
 
 def extract_prompts(filepath):
     with open(filepath, 'r') as f:
@@ -116,7 +124,8 @@ df_other = pd.DataFrame(other_arr, columns=['Category', 'Subcategory', 'Action',
 df = df_light.append(
     df_music, ignore_index=True).append(
         df_other, ignore_index=True).append(
-            df_weather, ignore_index=True
-        )
+            df_weather, ignore_index=True).append(
+                df_wolfram, ignore_index=True
+            )
 
 df.to_csv('dataset_ditto.csv', index=False)
