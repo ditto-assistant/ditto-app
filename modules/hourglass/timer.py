@@ -16,8 +16,8 @@ from subprocess import Popen
 
 class Timer:
     
-    def __init__(self):
-        self.default_path = '/home/pi/assistant/resources/sounds/beep.mp3'
+    def __init__(self, path):
+        self.default_path = path + '/resources/sounds/beep.mp3'
         pass
 
     def set_timer(self, val):

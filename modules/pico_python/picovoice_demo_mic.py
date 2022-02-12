@@ -22,7 +22,8 @@ from pvrecorder import PvRecorder
 
 import platform 
 UNIX = False
-if platform.system() == 'Linux':
+operating_system = platform.system()
+if operating_system == 'Linux' or operating_system == 'Darwin':
     UNIX = True
 
 
@@ -159,22 +160,27 @@ class PicovoiceDemo(Thread):
             print(f'index: {i}, device name: {devices[i]}')
 
 
-def pico_wake():
+def pico_wake(path):
     access_key = "pfQo34gvUCblrf57D0n0SvL+1KEETSv3mlW0Xxt7QUsDuHlWlwZOJA=="
     devices = PvRecorder.get_audio_devices()
     for i in range(len(devices)):
-        if UNIX:
+        if operating_system=='Linux':
             if 'QuickCam' in devices[i]:
                 audio_device_index=i
+        elif operating_system=='Darwin':
+            audio_device_index=0
         else:
             if '5' in devices[i]:
                 audio_device_index=i
-    if UNIX:            
-        keyword_path = "/home/pi/assistant/modules/pico_python/hey-ditto_en_raspberry-pi_v2_1_0.ppn"
-        context_path = "/home/pi/assistant/modules/pico_python/ditto_en_raspberry-pi_v2_1_0.rhn"
+    if operating_system=='Linux':            
+        keyword_path = path+"/modules/pico_python/hey-ditto_en_raspberry-pi_v2_1_0.ppn"
+        context_path = path+"/modules/pico_python/ditto_en_raspberry-pi_v2_1_0.rhn"
+    elif operating_system=='Darwin':
+        keyword_path = path+"/modules/pico_python/hey-ditto_en_mac_v2_1_0.ppn"
+        context_path = path+"/modules/pico_python/ditto_en_mac_v2_1_0.rhn"
     else:
-        keyword_path = "C:\\Users\\ozanj\\Desktop\\Code\\assistant\\modules\\pico_python\\hey-ditto_en_windows_v2_1_0.ppn"
-        context_path = "C:\\Users\\ozanj\\Desktop\\Code\\assistant\\modules\\pico_python\\ditto_en_windows_v2_1_0.rhn"
+        keyword_path = path+"\\modules\\pico_python\\hey-ditto_en_windows_v2_1_0.ppn"
+        context_path = path+"\\modules\\pico_python\\ditto_en_windows_v2_1_0.rhn"
         
     pico = PicovoiceDemo(
         access_key=access_key,
@@ -185,4 +191,4 @@ def pico_wake():
         
 
 if __name__ == '__main__':
-    wake = pico_wake()
+    pass

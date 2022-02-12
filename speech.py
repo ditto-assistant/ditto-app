@@ -68,7 +68,7 @@ class Speech:
         if activation_mode and self.skip_wake == False:
             
             # picovoice method
-            self.pico = pico_wake()
+            self.pico = pico_wake(os.getcwd())
             self.speaker_mic_timeout_handler(60)
             self.pico.run()
             if self.wake: # set to 0 in timer if idle reboot

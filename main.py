@@ -350,20 +350,22 @@ class Assistant:
                         self.reply = '[Setting lights to %s]' % self.offline_response['action']
                     self.command.toggle_light(self.offline_response['action'])
                 else:
-                    sub_cat = self.offline_response['sub_category']
-                    if 'bedroom-light' in sub_cat:
-                        action = self.offline_response['action']
-                        self.command.bedroom_light.set_power(action)
-                        if action == 'on':
-                            self.reply = '[Turning on the bedroom lights]'
-                        else: self.reply = '[Turning off the bedroom lights]'
-                    elif 'bedroom-lamp' in sub_cat:
-                        action = self.offline_response['action']
-                        self.command.bedroom_lamp.set_power(action)
-                        if action == 'on':
-                            self.reply = '[Turning on the bedroom lamp]'
-                        else: self.reply = '[Turning off the bedroom lamp]'
-                
+                    try:
+                        sub_cat = self.offline_response['sub_category']
+                        if 'bedroom-light' in sub_cat:
+                            action = self.offline_response['action']
+                            self.command.bedroom_light.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bedroom lights]'
+                            else: self.reply = '[Turning off the bedroom lights]'
+                        elif 'bedroom-lamp' in sub_cat:
+                            action = self.offline_response['action']
+                            self.command.bedroom_lamp.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bedroom lamp]'
+                            else: self.reply = '[Turning off the bedroom lamp]'
+                    except:
+                        self.reply = '[Light not found]'
                 print(self.reply+'\n')
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
@@ -399,7 +401,10 @@ class Assistant:
                         if (p==-1):
                             self.reply = '[Could not find %s by %s on Spotify]' % (song.title(), artist.title())
                 else:
-                    p = self.command.play_user_playlist(playlist.lower().strip())
+                    try:
+                        p = self.command.play_user_playlist(playlist.lower().strip())
+                    except:
+                        p==-1
                     if p==1:
                         self.reply = '[Playing %s Playlist on Spotify]' % playlist.title()
                     if p==-1:

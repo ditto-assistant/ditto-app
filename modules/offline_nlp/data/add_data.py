@@ -52,7 +52,9 @@ df_light = pd.DataFrame([
     ['lights', 'bedroom-lamp', 'on', 'can you turn on the bedroom lamp'],
     ['lights', 'bedroom-light', 'on', 'turn on the bedroom lights'],
     ['lights', 'bedroom-lamp', 'on', 'turn on the bedroom lamp'],
+    ['lights', 'bedroom-lamp', 'off', 'turn off the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'can you please turn off the bedroom lamp'],
+    ['lights', 'bedroom-light', 'off', 'turn off the bedroom lights'],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_music = pd.DataFrame([
@@ -85,6 +87,11 @@ df_wolfram = pd.DataFrame([
     ['wolfram', 'none', 'none', "what's the human population count"],
     ['wolfram', 'none', 'none', "what is the speed of light"],
     ['wolfram', 'none', 'none', "how many cups are in a gallon"],
+    ['wolfram', 'none', 'none', "can you tell me how many cups are in a gallon"],
+    ['wolfram', 'none', 'none', "who invented the telescope"],
+    ['wolfram', 'none', 'none', "who founded tesla"],
+    ['wolfram', 'none', 'none', "define apple"],
+    ['wolfram', 'none', 'none', "who invented the printing press"],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 
