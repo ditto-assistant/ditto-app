@@ -58,51 +58,67 @@ music,none,previous,can you go back to the last song
 other,none,none,hello.
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,how are you?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,what is your name?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,what is your name?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,what is your purpose?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,what's the meaning of life?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,can you take the square root of a negative number?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,can you write me a poem?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,What is an atom made up of?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,How can I start my day better?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,Who are you?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,how many parameters do you have?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,how do you compare with GPT-2?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,how many parameters does GPT-2 have?
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,what is the human population count
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,say hello.
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
+other,none,none,"is it okay if I ask you some math questions"""
 other,none,none,remember that my favorite color is blue.
 other,none,none,don't forget that my favorite color is blue.
 other,none,none,what is my favorite color.
@@ -207,3 +223,11 @@ wolfram,none,none,who invented the telescope
 wolfram,none,none,who founded tesla
 wolfram,none,none,define apple
 wolfram,none,none,who invented the printing press
+wolfram,math,none,what is 2 + 2
+wolfram,math,none,what's 2 plus 2
+wolfram,math,none,what is 6.6 / 6
+wolfram,math,none,what is x if 6x = 3?
+wolfram,math,none,what is y if 6y equals 397?
+wolfram,math,none,what's 9 * 6
+wolfram,math,none,what's 1000 / 4
+wolfram,math,none,what's 123456789 / 4

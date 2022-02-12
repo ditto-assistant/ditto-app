@@ -458,7 +458,10 @@ class Assistant:
                 self.reply = ''
 
             elif self.offline_response['category'] == 'wolfram':
-                self.reply = self.command.wolfram.get_response(self.prompt)
+                if self.offline_response['sub_category'] == 'math':
+                    self.reply = self.command.wolfram.get_response(self.prompt.lower())
+                else: 
+                    self.reply = self.command.wolfram.get_response(self.prompt)
                 if not self.reply == '' and not self.reply == '(data not available)':
                     # self.reply = reply.split("(")[0]
                     print(self.reply+'\n')

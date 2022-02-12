@@ -92,6 +92,15 @@ df_wolfram = pd.DataFrame([
     ['wolfram', 'none', 'none', "who founded tesla"],
     ['wolfram', 'none', 'none', "define apple"],
     ['wolfram', 'none', 'none', "who invented the printing press"],
+    ['wolfram', 'math', 'none', "what is 2 + 2"],    # math sub_cat should read tts differently ( for example, / = 'over')
+    ['wolfram', 'math', 'none', "what's 2 plus 2"],    
+    ['wolfram', 'math', 'none', "what is 6.6 / 6"],
+    ['wolfram', 'math', 'none', "what is x if 6x = 3?"],
+    ['wolfram', 'math', 'none', "what is y if 6y equals 397?"],
+    ['wolfram', 'math', 'none', "what's 9 * 6"],
+    ['wolfram', 'math', 'none', "what's 1000 / 4"],
+    ['wolfram', 'math', 'none', "what's 123456789 / 4"],
+
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 
@@ -122,6 +131,8 @@ for prompt in conv_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
     other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
     other_arr.append(['other', 'none', 'none', 'can you recall anything'])
+    other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions"'])
+
 for prompt in mem_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
 for prompt in spot_prompts:
