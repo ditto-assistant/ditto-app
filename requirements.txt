@@ -14,3 +14,7 @@ termdown
 pygame
 lifxlan
 sklearn
+spacy
+nltk
+python_weather
+wolframalpha

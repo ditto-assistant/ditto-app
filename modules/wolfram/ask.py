@@ -26,16 +26,18 @@ class Wolfram:
 
     def get_response(self, prompt):
         self.response = ''
-        res = self.client.query(prompt)
+        self.res = self.client.query(prompt)
         try:
-            pod0 = res['pod'][0] # query 
-            pod1 = res['pod'][1] # response
-            if (('definition' in pod1['@title'].lower()) or ('result' in  pod1['@title'].lower()) or (pod1.get('@primary','false') == 'true')):
+            pod0 = self.res['pod'][0] # query 
+            pod1 = self.res['pod'][1] # response
+            if (('definition' in pod1['@title'].lower()) or ('result' in  pod1['@title'].lower()) or ('value' in pod1['@title'].lower()) or ((pod1.get('@primary','false') == 'true'))):
                 self.response = self.resolveListOrDict(pod1['subpod'])
             return self.response
         except:
             return self.response
 
 if __name__ == "__main__":
-    wolf = Wolfram()
-    print(wolf.get_response("what was the temperature in auburn today in 2012"))
+    import os
+    path = os.getcwd()
+    wolf = Wolfram(path)
+    print(wolf.get_response("what is the speed of light"))

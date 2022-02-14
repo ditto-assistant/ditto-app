@@ -52,7 +52,9 @@ df_light = pd.DataFrame([
     ['lights', 'bedroom-lamp', 'on', 'can you turn on the bedroom lamp'],
     ['lights', 'bedroom-light', 'on', 'turn on the bedroom lights'],
     ['lights', 'bedroom-lamp', 'on', 'turn on the bedroom lamp'],
+    ['lights', 'bedroom-lamp', 'off', 'turn off the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'can you please turn off the bedroom lamp'],
+    ['lights', 'bedroom-light', 'off', 'turn off the bedroom lights'],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_music = pd.DataFrame([
@@ -68,20 +70,37 @@ df_music = pd.DataFrame([
     ['music', 'none', 'previous', 'go back a song'],
     ['music', 'none', 'previous', 'previous song'],
     ['music', 'none', 'previous', 'can you go back to the last song'],
-
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_weather = pd.DataFrame([
     ['weather', 'none', 'none', "what's the weather like today"], # weather in default location
     ['weather', 'location', 'none', "what's the weather like today in Auburn"], # forward to NER
-    ['weather', 'none', 'none', "what is the speed of light?"]
+    ['weather', 'none', 'none', "is it cold outside"],
+    ['weather', 'none', 'none', "is it warm outside"],
+    ['weather', 'none', 'none', "what's the temperature today"],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_wolfram = pd.DataFrame([
     ['wolfram', 'none', 'none', "can you tell me who the president of the United States was in 1975?"],
-    ['wolfram', 'none', 'none', "Who was the 16th president of the united states?"],
+    ['wolfram', 'none', 'none', "who was the 16th president of the united states?"],
     ['wolfram', 'none', 'none', "what is the population of canada?"],
-    ['wolfram', 'none', 'none', "what is the human population count"],
+    ['wolfram', 'none', 'none', "what's the human population count"],
+    ['wolfram', 'none', 'none', "what is the speed of light"],
+    ['wolfram', 'none', 'none', "how many cups are in a gallon"],
+    ['wolfram', 'none', 'none', "can you tell me how many cups are in a gallon"],
+    ['wolfram', 'none', 'none', "who invented the telescope"],
+    ['wolfram', 'none', 'none', "who founded tesla"],
+    ['wolfram', 'none', 'none', "define apple"],
+    ['wolfram', 'none', 'none', "who invented the printing press"],
+    ['wolfram', 'math', 'none', "what is 2 + 2"],    # math sub_cat should read tts differently ( for example, / = 'over')
+    ['wolfram', 'math', 'none', "what's 2 plus 2"],    
+    ['wolfram', 'math', 'none', "what is 6.6 / 6"],
+    ['wolfram', 'math', 'none', "what is x if 6x = 3?"],
+    ['wolfram', 'math', 'none', "what is y if 6y equals 397?"],
+    ['wolfram', 'math', 'none', "what's 9 * 6"],
+    ['wolfram', 'math', 'none', "what's 1000 / 4"],
+    ['wolfram', 'math', 'none', "what's 123456789 / 4"],
+
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 
@@ -112,6 +131,8 @@ for prompt in conv_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
     other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
     other_arr.append(['other', 'none', 'none', 'can you recall anything'])
+    other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions"'])
+
 for prompt in mem_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
 for prompt in spot_prompts:

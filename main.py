@@ -20,6 +20,7 @@ from threading import Timer
 from speech import Speech
 from command import Command
 from modules.offline_nlp.handle import NLP
+from modules.google_tts.speak import Speak
 import json
 import platform 
 UNIX = False
@@ -35,6 +36,7 @@ class Assistant:
         self.nlp = NLP(os.getcwd())
         self.nlp.initialize()
         self.nlp.contruct_sentence_vectors()
+        self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
         self.speech_volume = 50 # percent
@@ -350,20 +352,22 @@ class Assistant:
                         self.reply = '[Setting lights to %s]' % self.offline_response['action']
                     self.command.toggle_light(self.offline_response['action'])
                 else:
-                    sub_cat = self.offline_response['sub_category']
-                    if 'bedroom-light' in sub_cat:
-                        action = self.offline_response['action']
-                        self.command.bedroom_light.set_power(action)
-                        if action == 'on':
-                            self.reply = '[Turning on the bedroom lights]'
-                        else: self.reply = '[Turning off the bedroom lights]'
-                    elif 'bedroom-lamp' in sub_cat:
-                        action = self.offline_response['action']
-                        self.command.bedroom_lamp.set_power(action)
-                        if action == 'on':
-                            self.reply = '[Turning on the bedroom lamp]'
-                        else: self.reply = '[Turning off the bedroom lamp]'
-                
+                    try:
+                        sub_cat = self.offline_response['sub_category']
+                        if 'bedroom-light' in sub_cat:
+                            action = self.offline_response['action']
+                            self.command.bedroom_light.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bedroom lights]'
+                            else: self.reply = '[Turning off the bedroom lights]'
+                        elif 'bedroom-lamp' in sub_cat:
+                            action = self.offline_response['action']
+                            self.command.bedroom_lamp.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bedroom lamp]'
+                            else: self.reply = '[Turning off the bedroom lamp]'
+                    except:
+                        self.reply = '[Light not found]'
                 print(self.reply+'\n')
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
@@ -399,7 +403,10 @@ class Assistant:
                         if (p==-1):
                             self.reply = '[Could not find %s by %s on Spotify]' % (song.title(), artist.title())
                 else:
-                    p = self.command.play_user_playlist(playlist.lower().strip())
+                    try:
+                        p = self.command.play_user_playlist(playlist.lower().strip())
+                    except:
+                        p==-1
                     if p==1:
                         self.reply = '[Playing %s Playlist on Spotify]' % playlist.title()
                     if p==-1:
@@ -453,7 +460,10 @@ class Assistant:
                 self.reply = ''
 
             elif self.offline_response['category'] == 'wolfram':
-                self.reply = self.command.wolfram.get_response(self.prompt)
+                if self.offline_response['sub_category'] == 'math':
+                    self.reply = self.command.wolfram.get_response(self.prompt.lower())
+                else: 
+                    self.reply = self.command.wolfram.get_response(self.prompt)
                 if not self.reply == '' and not self.reply == '(data not available)':
                     # self.reply = reply.split("(")[0]
                     print(self.reply+'\n')
@@ -602,7 +612,8 @@ class Assistant:
 
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
-        os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
+        # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
+        self.google.gtts(prompt)
         
 if __name__ == "__main__":
 

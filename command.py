@@ -137,7 +137,7 @@ class Command:
 
 
     def toggle_timer(self, val):
-        timer = Timer()
+        timer = Timer(os.getcwd())
         try:
             timer.set_timer(val)
         except:
