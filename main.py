@@ -36,7 +36,7 @@ class Assistant:
         self.nlp = NLP(os.getcwd())
         self.nlp.initialize()
         self.nlp.contruct_sentence_vectors()
-        self.google = Speak
+        self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
         self.speech_volume = 50 # percent
@@ -613,7 +613,7 @@ class Assistant:
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
         # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
-        self.google.tts(prompt)
+        self.google.gtts(prompt)
         
 if __name__ == "__main__":
 

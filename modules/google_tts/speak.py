@@ -26,7 +26,7 @@ class Speak:
             audio_encoding=texttospeech.AudioEncoding.MP3
         )
 
-    def tts(self, prompt):
+    def gtts(self, prompt):
         # Set the text input to be synthesized
         synthesis_input = texttospeech.SynthesisInput(text=prompt)
 
@@ -49,4 +49,4 @@ class Speak:
     
 if __name__=="__main__":
     speak = Speak()
-    speak.tts("yo")
+    speak.gtts("yo")
