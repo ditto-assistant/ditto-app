@@ -66,10 +66,14 @@ class Command:
         try:
             self.bedroom_lamp = lifxlan.LifxLAN().get_device_by_name('Lamp')
             self.bedroom_light = lifxlan.LifxLAN().get_device_by_name('Light')
+            self.bathroom_left = lifxlan.LifxLAN().get_device_by_name('BathroomLeft')
+            self.bathroom_right = lifxlan.LifxLAN().get_device_by_name('BathroomRight')
         except BaseException as e:
             print(e)
             self.bedroom_lamp = []
             self.bedroom_light = []
+            self.bathroom_left = []
+            self.bathroom_right = []
 
     def toggle_light(self, mode):
         try:

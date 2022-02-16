@@ -40,12 +40,14 @@ df_light = pd.DataFrame([
     ['lights', 'none', 'sparkle', 'can you set the lights to sparkle'],
     ['lights', 'none', 'sparkle', 'put the the lights on sparkle'],
     ['lights', 'none', 'gradient', 'set the lights to gradient'],
+
     ['lights', 'none', 'on', 'turn on the lights'],
     ['lights', 'none', 'on', 'lights on'],
     ['lights', 'none', 'off', 'turn off the lights'],
     ['lights', 'none', 'off', 'lights off'],
     ['lights', 'none', 'off', 'shut off the lights'],
     ['lights', 'none', 'on', 'can you you turn on the lights'],
+
     ['lights', 'bedroom-light', 'off', 'can you turn off the bedroom lights'],
     ['lights', 'bedroom-light', 'on', 'can you turn on the bedroom light'],
     ['lights', 'bedroom-lamp', 'off', 'can you turn off the bedroom lamp'],
@@ -55,6 +57,21 @@ df_light = pd.DataFrame([
     ['lights', 'bedroom-lamp', 'off', 'turn off the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'can you please turn off the bedroom lamp'],
     ['lights', 'bedroom-light', 'off', 'turn off the bedroom lights'],
+
+    ['lights', 'bathroom-light', 'off', 'can you turn off the bathroom lights'],
+    ['lights', 'bathroom-light', 'on', 'can you turn on the bathroom light'],
+    ['lights', 'bathroom-light', 'on', 'bathroom lights on'],
+    ['lights', 'bathroom-light', 'off', 'can you turn off the bathroom '],
+    ['lights', 'bathroom-light', 'on', 'can you turn on the bathroom'],
+    ['lights', 'bathroom-light', 'off', 'can you set the bathroom lights to off'],
+    ['lights', 'bathroom-light', 'on', 'can you set the bathroom lights to on'],
+    ['lights', 'bathroom-light', 'off', 'turn off the bathroom'],
+    ['lights', 'bathroom-light', 'on', 'turn on the bathroom lamp'],
+    ['lights', 'bathroom-light', 'off', 'turn off the bath room lights'],
+    ['lights', 'bathroom-light', 'off', 'can you please turn off the bath room light'],
+    ['lights', 'bathroom-light', 'off', 'turn off the bathroom lights'],
+
+
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 df_music = pd.DataFrame([
