@@ -319,8 +319,8 @@ class Assistant:
                     else:
                         self.speech_engine.say(self.reply)
                         self.speech_engine.runAndWait()
-                        self.activation_mode = True # go back to idle...
-                        self.application = 'model-selector'
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
             else:
                 if self.from_memory_read[0]: # we need to store result from conversation-app
                     print('forwarding from `conversation` to `memory-store`')
