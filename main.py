@@ -366,6 +366,13 @@ class Assistant:
                             if action == 'on':
                                 self.reply = '[Turning on the bedroom lamp]'
                             else: self.reply = '[Turning off the bedroom lamp]'
+                        elif 'bathroom' in sub_cat:
+                            action = self.offline_response['action']
+                            self.command.bathroom_left.set_power(action)
+                            self.command.bathroom_right.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bathroom lights]'
+                            else: self.reply = '[Turning off the bathroom lights]'
                     except:
                         self.reply = '[Light not found]'
                 print(self.reply+'\n')

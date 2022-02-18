@@ -43,6 +43,18 @@ lights,bedroom-lamp,on,turn on the bedroom lamp
 lights,bedroom-lamp,off,turn off the bedroom lamp
 lights,bedroom-lamp,off,can you please turn off the bedroom lamp
 lights,bedroom-light,off,turn off the bedroom lights
+lights,bathroom-light,off,can you turn off the bathroom lights
+lights,bathroom-light,on,can you turn on the bathroom light
+lights,bathroom-light,on,bathroom lights on
+lights,bathroom-light,off,can you turn off the bathroom 
+lights,bathroom-light,on,can you turn on the bathroom
+lights,bathroom-light,off,can you set the bathroom lights to off
+lights,bathroom-light,on,can you set the bathroom lights to on
+lights,bathroom-light,off,turn off the bathroom
+lights,bathroom-light,on,turn on the bathroom lamp
+lights,bathroom-light,off,turn off the bath room lights
+lights,bathroom-light,off,can you please turn off the bath room light
+lights,bathroom-light,off,turn off the bathroom lights
 music,none,pause,pause music
 music,none,pause,pause
 music,none,resume,play music
