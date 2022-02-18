@@ -11,6 +11,8 @@ import os
 
 # light application model
 df_light = pd.DataFrame([
+
+    # basic setting lights globally to colors / modes (no sub-cat)
     ['lights', 'none', 'red', 'set the lights to red'],
     ['lights', 'none', 'red', 'please set the lights to red'],
     ['lights', 'none', 'red', 'set the lights to red'],
@@ -40,7 +42,6 @@ df_light = pd.DataFrame([
     ['lights', 'none', 'sparkle', 'can you set the lights to sparkle'],
     ['lights', 'none', 'sparkle', 'put the the lights on sparkle'],
     ['lights', 'none', 'gradient', 'set the lights to gradient'],
-
     ['lights', 'none', 'on', 'turn on the lights'],
     ['lights', 'none', 'on', 'lights on'],
     ['lights', 'none', 'off', 'turn off the lights'],
@@ -48,16 +49,29 @@ df_light = pd.DataFrame([
     ['lights', 'none', 'off', 'shut off the lights'],
     ['lights', 'none', 'on', 'can you you turn on the lights'],
 
+    # setting bedroom light sub-cat 
     ['lights', 'bedroom-light', 'off', 'can you turn off the bedroom lights'],
     ['lights', 'bedroom-light', 'on', 'can you turn on the bedroom light'],
-    ['lights', 'bedroom-lamp', 'off', 'can you turn off the bedroom lamp'],
-    ['lights', 'bedroom-lamp', 'on', 'can you turn on the bedroom lamp'],
     ['lights', 'bedroom-light', 'on', 'turn on the bedroom lights'],
+    ['lights', 'bedroom-light', 'off', 'turn off the bedroom lights'],
+    ['lights', 'bedroom-light', 'off', 'turn off the bedroom'],
+    ['lights', 'bedroom-light', 'on', 'turn on the bed room'],
+    ['lights', 'bedroom-light', 'on', 'turn on the bedroom'],
+
+    # setting bedroom lamp sub-cat
+    ['lights', 'bedroom-lamp', 'red', 'can you set the bedroom lamp to red'],
+    ['lights', 'bedroom-lamp', 'orange', 'bedroom lamp orange'],
+    ['lights', 'bedroom-lamp', 'yellow', 'change the bed room lamp to yellow'],
+    ['lights', 'bedroom-lamp', 'yellow', 'set the bedroom lamp to yellow'],
+    ['lights', 'bedroom-lamp', 'green', 'please change the bedroom lamp to green'],
+    ['lights', 'bedroom-lamp', 'blue', 'set the lamp to blue'],
     ['lights', 'bedroom-lamp', 'on', 'turn on the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'turn off the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'can you please turn off the bedroom lamp'],
-    ['lights', 'bedroom-light', 'off', 'turn off the bedroom lights'],
+    ['lights', 'bedroom-lamp', 'off', 'can you turn off the bedroom lamp'],
+    ['lights', 'bedroom-lamp', 'on', 'can you turn on the bedroom lamp'],
 
+    # setting bathroom light sub-cat
     ['lights', 'bathroom-light', 'off', 'can you turn off the bathroom lights'],
     ['lights', 'bathroom-light', 'on', 'can you turn on the bathroom light'],
     ['lights', 'bathroom-light', 'on', 'bathroom lights on'],
@@ -66,10 +80,11 @@ df_light = pd.DataFrame([
     ['lights', 'bathroom-light', 'off', 'can you set the bathroom lights to off'],
     ['lights', 'bathroom-light', 'on', 'can you set the bathroom lights to on'],
     ['lights', 'bathroom-light', 'off', 'turn off the bathroom'],
-    ['lights', 'bathroom-light', 'on', 'turn on the bathroom lamp'],
+    ['lights', 'bathroom-light', 'on', 'turn on the bathroom'],
     ['lights', 'bathroom-light', 'off', 'turn off the bath room lights'],
     ['lights', 'bathroom-light', 'off', 'can you please turn off the bath room light'],
     ['lights', 'bathroom-light', 'off', 'turn off the bathroom lights'],
+
 
 
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
