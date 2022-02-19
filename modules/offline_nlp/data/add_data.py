@@ -107,8 +107,6 @@ df_music = pd.DataFrame([
 df_weather = pd.DataFrame([
     ['weather', 'none', 'none', "what's the weather like today"], # weather in default location
     ['weather', 'location', 'none', "what's the weather like today in Auburn"], # forward to NER
-    ['weather', 'none', 'none', "is it cold outside"],
-    ['weather', 'none', 'none', "is it warm outside"],
     ['weather', 'none', 'none', "what's the temperature today"],
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
@@ -163,7 +161,10 @@ for prompt in conv_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
     other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
     other_arr.append(['other', 'none', 'none', 'can you recall anything'])
+    other_arr.append(['other', 'none', 'none', 'like what'])
+    other_arr.append(['other', 'none', 'none', 'pretty good just working on a midi generative network'])
     other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions"'])
+
 
 for prompt in mem_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
