@@ -162,7 +162,7 @@ class PicovoiceDemo(Thread):
 
 
 def pico_wake(path):
-    with open('key.json', 'r') as f:
+    with open(path+'/modules/pico_python/key.json', 'r') as f:
         key = json.load(f)
     access_key = key['key']
     devices = PvRecorder.get_audio_devices()
