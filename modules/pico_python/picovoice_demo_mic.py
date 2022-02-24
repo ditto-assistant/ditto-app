@@ -10,6 +10,7 @@
 #
 
 import argparse
+import json
 import os
 import sys
 import struct
@@ -161,7 +162,9 @@ class PicovoiceDemo(Thread):
 
 
 def pico_wake(path):
-    access_key = "pfQo34gvUCblrf57D0n0SvL+1KEETSv3mlW0Xxt7QUsDuHlWlwZOJA=="
+    with open('key.json', 'r') as f:
+        key = json.load(f)
+    access_key = key['key']
     devices = PvRecorder.get_audio_devices()
     for i in range(len(devices)):
         if operating_system=='Linux':
