@@ -75,6 +75,24 @@ class Command:
             self.bathroom_left = []
             self.bathroom_right = []
 
+        self.lifx_color_map = {
+            "red" : lifxlan.RED,
+            "orange": lifxlan.ORANGE,
+            "yellow": lifxlan.YELLOW,
+            "green" : lifxlan.GREEN,
+            "blue" : lifxlan.BLUE,
+            "purple" : lifxlan.PURPLE,
+            "blue" : lifxlan.BLUE,
+            "pink" : lifxlan.PINK,
+            "white" : lifxlan.WHITE,
+            "warm white" : lifxlan.WARM_WHITE,
+            "cold white" : lifxlan.COLD_WHITE
+        }
+
+    def toggle_lamp_color(self, color):
+        self.bedroom_lamp.set_color(self.lifx_color_map[color])
+
+
     def toggle_light(self, mode):
         try:
             s = serial.Serial('/dev/serial/by-id/usb-Teensyduino_USB_Serial_10498880-if00', baudrate=9600, bytesize=8)
@@ -90,6 +108,8 @@ class Command:
                 self.light_mode = mode
                 self.bedroom_lamp.set_power(mode)
                 self.bedroom_light.set_power(mode)
+                self.bathroom_left.set_power(mode)
+                self.bathroom_right.set_power(mode)
             elif mode == 'sparkle':
                 self.light_mode = mode
                 s.write(b'\x02')
@@ -105,31 +125,31 @@ class Command:
             elif mode == 'white':
                 self.light_mode = mode
                 s.write(b'\x06')
-                self.bedroom_lamp.set_color(lifxlan.WHITE)
+                self.toggle_lamp_color(mode)
             elif mode == 'green':
                 self.light_mode = mode
                 s.write(b'\x07')
-                self.bedroom_lamp.set_color(lifxlan.GREEN)
+                self.toggle_lamp_color(mode)
             elif mode == 'orange':
                 self.light_mode = mode
                 s.write(b'\x08')
-                self.bedroom_lamp.set_color(lifxlan.ORANGE)
+                self.toggle_lamp_color(mode)
             elif mode == 'blue':
                 self.light_mode = mode
                 s.write(b'\x09')
-                self.bedroom_lamp.set_color(lifxlan.BLUE)
+                self.toggle_lamp_color(mode)
             elif mode == 'red':
                 self.light_mode = mode
                 s.write(b'\x0A')
-                self.bedroom_lamp.set_color(lifxlan.RED)
+                self.toggle_lamp_color(mode)
             elif mode == 'yellow':
                 self.light_mode = mode
                 s.write(b'\x0B')
-                self.bedroom_lamp.set_color(lifxlan.YELLOW)
+                self.toggle_lamp_color(mode)
             elif mode == 'purple':
                 self.light_mode = mode
                 s.write(b'\x0C')
-                self.bedroom_lamp.set_color(lifxlan.PURPLE)
+                self.toggle_lamp_color(mode)
             elif mode == 'gradient':
                 self.light_mode = mode
                 s.write(b'\x0D')
