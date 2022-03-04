@@ -31,7 +31,7 @@
                 "bathroom",
                 "brightness",
                 "to ",
-                "7"
+                "seven"
             ],
             "labels": [
                 "O",
@@ -49,6 +49,20 @@
                 "5"
             ],
             "labels": [
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "bathroom",
+                "lights",
+                "to",
+                "one"
+            ],
+            "labels": [
+                "O",
                 "O",
                 "O",
                 "B-numeric"

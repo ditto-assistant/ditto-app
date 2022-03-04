@@ -20,6 +20,9 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from numpy import random
+
+from word2number import w2n
+
 random.seed(2020)
 
 import spacy
@@ -193,6 +196,7 @@ class NLP:
         for ent in reply.ents:
             if 'numeric' in ent.label_:
                 numeric+=ent.text+' '
+        numeric = w2n.word_to_num(numeric.strip())
         response = '{"numeric" : "%s"}' % numeric
         return response
 

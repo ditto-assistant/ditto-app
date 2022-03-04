@@ -18,3 +18,4 @@ spacy
 nltk
 python_weather
 wolframalpha
+word2number

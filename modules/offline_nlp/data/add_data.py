@@ -86,7 +86,7 @@ df_light = pd.DataFrame([
     ['lights', 'bathroom-light', 'off', 'turn off the bathroom lights'],
 
     ['lights', 'bathroom-light', 'numeric', "set the bathroom light's brightness to 5"],
-    ['lights', 'bathroom-light', 'numeric', 'bathroom brightness to 7'],
+    ['lights', 'bathroom-light', 'numeric', 'bathroom brightness to seven'],
     ['lights', 'bathroom-light', 'numeric', 'please change the bathroom brightness to 10'],
     ['lights', 'bathroom-light', 'numeric', 'can you set the bathroom lights to 2'],
 
