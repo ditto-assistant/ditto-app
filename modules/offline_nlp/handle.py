@@ -31,6 +31,7 @@ class NLP:
         self.path = path.replace('\\','/') + '/modules/offline_nlp/'
         self.ner_play = spacy.load(self.path+'models/ner/play')
         self.ner_timer = spacy.load(self.path+'models/ner/timer')
+        self.ner_numeric = spacy.load(self.path+'models/ner/numeric')
 
     def initialize(self):
         # read in data
@@ -184,6 +185,15 @@ class NLP:
             if 'time' in ent.label_:
                 time+=ent.text+' '
         response = '{"time" : "%s"}' % time
+        return response
+
+    def prompt_ner_numeric(self, sentence):
+        numeric = ''
+        reply = self.ner_numeric(sentence)
+        for ent in reply.ents:
+            if 'numeric' in ent.label_:
+                numeric+=ent.text+' '
+        response = '{"numeric" : "%s"}' % numeric
         return response
 
 

@@ -1,0 +1,58 @@
+{
+    "labels": [
+        "O",
+        "B-numeric"
+    ],
+    "training_data": [
+        { 
+            "words": [
+                "set",
+                "the",
+                "bathroom",
+                "light",
+                "brightness",
+                "to",
+                "5"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "bathroom",
+                "brightness",
+                "to ",
+                "7"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "bathroom",
+                "to",
+                "5"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        }
+    ]
+}

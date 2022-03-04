@@ -23,6 +23,8 @@ from modules.offline_nlp.handle import NLP
 from modules.google_tts.speak import Speak
 import json
 import platform 
+import numpy as np
+
 UNIX = False
 if platform.system() == 'Linux':
     UNIX = True
@@ -54,7 +56,8 @@ class Assistant:
 
         self.command_timer = 0 # used to handle the timeout of interaction with assistant
         self.comm_timer_mode = False # will go to false after 5 seconds of inactivity (idle)
-         
+        
+        self.val_map = np.linspace(0, 65535, 10).tolist()
 
         
 
@@ -356,10 +359,17 @@ class Assistant:
                         sub_cat = self.offline_response['sub_category']
                         if 'bedroom-light' in sub_cat:
                             action = self.offline_response['action']
-                            self.command.bedroom_light.set_power(action)
-                            if action == 'on':
-                                self.reply = '[Turning on the bedroom lights]'
-                            else: self.reply = '[Turning off the bedroom lights]'
+                            if not action == 'numeric':
+                                self.command.bedroom_light.set_power(action)
+                                if action == 'on':
+                                    self.reply = '[Turning on the bedroom lights]'
+                                else: self.reply = '[Turning off the bedroom lights]'
+                            else:
+                                self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
+                                value = self.ner_response['numeric']
+                                val_scale = self.val_map[int(value)]
+                                self.command.bedroom_light.set_brightness(val_scale)
+
                         elif 'bedroom-lamp' in sub_cat:
                             action = self.offline_response['action']
                             
@@ -372,15 +382,28 @@ class Assistant:
                             else:
                                 self.reply = '[Setting bedroom lamp to %s]' % action
                                 self.command.toggle_lamp_color(action)
+                                
                         elif 'bathroom' in sub_cat:
                             action = self.offline_response['action']
-                            self.command.bathroom_left.set_power(action)
-                            self.command.bathroom_right.set_power(action)
-                            if action == 'on':
-                                self.reply = '[Turning on the bathroom lights]'
-                            else: self.reply = '[Turning off the bathroom lights]'
+                            if not action == 'numeric':
+                                self.command.bathroom_left.set_power(action)
+                                self.command.bathroom_right.set_power(action)
+                                if action == 'on':
+                                    self.reply = '[Turning on the bathroom lights]'
+                                else: self.reply = '[Turning off the bathroom lights]'
+                            else:
+                                self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
+                                value = self.ner_response['numeric']
+                                if int(value) >= 1 and int(value) <= 10: # (vals 1-10 valid)
+                                    val_scale = self.val_map[int(value)-1]
+                                    self.command.bathroom_left.set_brightness(val_scale)
+                                    self.command.bathroom_right.set_brightness(val_scale)
+                                    self.reply = '[Setting bathroom lights brightness to %d]' % int(value)
+                                else:
+                                    self.reply = 'Brightness values are from 1 to 10.'
                     except:
                         self.reply = '[Light not found]'
+                        
                 print(self.reply+'\n')
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
