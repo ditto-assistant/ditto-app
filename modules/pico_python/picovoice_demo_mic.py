@@ -38,10 +38,10 @@ class PicovoiceDemo(Thread):
             context_path,
             porcupine_library_path=None,
             porcupine_model_path=None,
-            porcupine_sensitivity=0.8,
+            porcupine_sensitivity=0.7,
             rhino_library_path=None,
             rhino_model_path=None,
-            rhino_sensitivity=0.8,
+            rhino_sensitivity=0.7,
             require_endpoint=True,
             output_path=None):
         super(PicovoiceDemo, self).__init__()
