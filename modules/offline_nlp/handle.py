@@ -22,6 +22,7 @@ from sklearn.metrics import accuracy_score
 from numpy import random
 
 from word2number import w2n
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 random.seed(2020)
 
@@ -30,6 +31,7 @@ import spacy
 class NLP:
 
     def __init__(self, path):
+        print('[Fitting Neurons...]')
         self.train = False
         self.path = path.replace('\\','/') + '/modules/offline_nlp/'
         self.ner_play = spacy.load(self.path+'models/ner/play')

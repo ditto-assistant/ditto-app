@@ -32,6 +32,7 @@ if platform.system() == 'Linux':
 class Assistant:
 
     def __init__(self):
+        print('[Booting...]')
         self.speech = Speech()
         self.command = Command(os.getcwd())
         self.speech_engine = pyttsx3.init()
