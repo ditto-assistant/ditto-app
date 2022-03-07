@@ -71,8 +71,6 @@ class Speech:
         self.recording = True
         if activation_mode and self.skip_wake == False:
 
-            
-
             # picovoice method
             self.pico = pico_wake(os.getcwd())
             self.speaker_mic_timeout_handler(300)
@@ -80,7 +78,7 @@ class Speech:
             if self.wake: # set to 0 in timer if idle reboot
                 self.activation.activate = True
                 self.recording = False
-                pyautogui.press('space') # turn display on if asleep
+                pyautogui.press('ctrl') # turn display on if asleep
             else:
                 self.wake = 1
                 print('rebooting picovoice!')

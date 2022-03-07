@@ -229,12 +229,13 @@ class Assistant:
                     reply = time.strip(' ').replace('seconds', 's').replace('minutes', 'm').replace(' ', '')
                     self.reply = '[Setting timer for %s]' % time
                     print(self.reply+'\n')
+                    self.command.toggle_timer(reply)
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
                         self.speech_engine.say(self.reply)
                         self.speech_engine.runAndWait()
-                    self.command.toggle_timer(reply)
+                    
                     
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
