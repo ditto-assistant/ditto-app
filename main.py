@@ -339,6 +339,11 @@ class Assistant:
                         self.speech.activation.text = ""
                         self.application = 'model-selector'
 
+                    except json.decoder.JSONDecodeError as e:
+                        print('[GPT3 Conversation Model Error]')
+                        print(f"prompt: {self.prompt}")
+                        print(f"reply: {self.command.response.choices.copy().pop()['text']}")
+
                     except openai.error.InvalidRequestError as e:
                         print('[resetting context]\n')
                         self.command.reset_conversation()
@@ -388,8 +393,7 @@ class Assistant:
             self.command.reset_conversation() # reset conversation prompt 
             self.conv_timer.cancel()
             self.conv_timer_mode = False # turn off timer
-
-    
+ 
 
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
