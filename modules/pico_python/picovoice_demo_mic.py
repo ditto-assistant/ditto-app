@@ -173,7 +173,7 @@ def pico_wake(path):
         elif operating_system=='Darwin':
             audio_device_index=0
         else:
-            if '5' in devices[i]:
+            if 'Line In 5-6' in devices[i]:
                 audio_device_index=i
     if operating_system=='Linux':            
         keyword_path = path+"/modules/pico_python/hey-ditto_en_raspberry-pi_v2_1_0.ppn"

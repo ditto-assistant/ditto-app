@@ -66,23 +66,24 @@ class Assistant:
 
         if self.application == "conversation-application": # conversation application logic
             self.command.send_request(self.prompt+'.', self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
+            self.command_response = json.loads(self.command.response.choices.copy().pop()['text'])['reply']
             
-            if 'toggle-conversation' in self.command_response:
+            reply = self.command_response
+            self.command.inject_response(self.prompt+'.', reply) # add response to conversation prompt
+            self.reply = ""
 
-                reply = self.command_response.strip("toggle-conversation `").strip("`")
-                self.command.inject_response(self.prompt, reply) # add response to conversation prompt
-                self.reply = ""
-
+            if '\\n' in reply: # render newlines from reply
+                reply = reply.split('\\n')
+                print('\nA: ')
+                for x in reply:
+                    print(x)
+                    self.reply = self.reply + " " + x.strip('\\') 
+            else: 
                 print('\nA: '+ reply)
                 self.reply = reply
 
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
-            else:
-                print('invalid reply')
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
+            self.activation_mode = True # go back to idle...
+            self.application = 'model-selector'
 
             self.conv_timer.cancel() # reset conversation cooldown (turns on automatically on loop)
             self.speech.activation.activate = True # skip wake-up sequence (name is already called)
