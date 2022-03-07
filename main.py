@@ -60,6 +60,7 @@ class Assistant:
         
         self.val_map = np.linspace(0, 65535, 10).tolist()
 
+        self.conv_err_loop = 0
         
 
     def send_command(self): # application logic
@@ -233,7 +234,7 @@ class Assistant:
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
-                        self.speech_engine.say(self.reply)
+                        self.speech_engine.say(self.reply) 
                         self.speech_engine.runAndWait()
                     
                     
@@ -344,6 +345,10 @@ class Assistant:
                         print('[GPT3 Conversation Model Error]')
                         print(f"prompt: {self.prompt}")
                         print(f"reply: {self.command.response.choices.copy().pop()['text']}")
+                        self.conv_err_loop += 1
+                        if self.conv_err_loop == 3:
+                            self.conv_err_loop = 0
+                            break # go back to idle...
 
                     except openai.error.InvalidRequestError as e:
                         print('[resetting context]\n')
