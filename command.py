@@ -198,7 +198,7 @@ class Command:
                 top_p=1,
                 frequency_penalty=1.0,
                 presence_penalty=0.8,
-                stop=["\nQ: "]
+                stop=["\nuser: "]
             )
         
     
