@@ -74,15 +74,8 @@ class Assistant:
                 self.command.inject_response(self.prompt, reply) # add response to conversation prompt
                 self.reply = ""
 
-                if '\\n' in reply:
-                    reply = reply.split('\\n')
-                    print('\nA: ')
-                    for x in reply:
-                        print(x)
-                        self.reply = self.reply + " " + x.strip('\\') 
-                else: 
-                    print('\nA: '+ reply)
-                    self.reply = reply
+                print('\nA: '+ reply)
+                self.reply = reply
 
                 self.activation_mode = True # go back to idle...
                 self.application = 'model-selector'
