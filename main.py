@@ -68,7 +68,7 @@ class Assistant:
         if self.application == "conversation-application": # conversation application logic
             self.command.send_request(self.prompt+'.', self.application)
             self.command_response = json.loads(self.command.response.choices.copy().pop()['text'])['reply']
-            
+            self.conv_err_loop = 0 # reset retry count
             reply = self.command_response
             self.command.inject_response(self.prompt+'.', reply) # add response to conversation prompt
             self.reply = ""
