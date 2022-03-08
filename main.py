@@ -23,6 +23,8 @@ from modules.offline_nlp.handle import NLP
 from modules.google_tts.speak import Speak
 import json
 import platform 
+import numpy as np
+
 UNIX = False
 if platform.system() == 'Linux':
     UNIX = True
@@ -30,6 +32,7 @@ if platform.system() == 'Linux':
 class Assistant:
 
     def __init__(self):
+        print('[Booting...]')
         self.speech = Speech()
         self.command = Command(os.getcwd())
         self.speech_engine = pyttsx3.init()
@@ -54,126 +57,34 @@ class Assistant:
 
         self.command_timer = 0 # used to handle the timeout of interaction with assistant
         self.comm_timer_mode = False # will go to false after 5 seconds of inactivity (idle)
-         
+        
+        self.val_map = np.linspace(0, 65535, 10).tolist()
 
+        self.conv_err_loop = 0
         
 
     def send_command(self): # application logic
 
-        if self.application == 'light-application': # light application logic
+        if self.application == "conversation-application": # conversation application logic
             self.command.send_request(self.prompt+'.', self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
-            if 'toggle-light' in self.command_response:
-                if 'off' in self.command_response:
-                    self.command.toggle_light('off')
-                    self.reply = '[Turning off the lights]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'on' in self.command_response:
-                    self.command.toggle_light('on')
-                    self.reply = '[Turning on the lights]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'sparkle' in self.command_response:
-                    self.command.toggle_light('sparkle')
-                    self.reply = '[Setting lights to sparkle]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'white' in self.command_response:
-                    self.command.toggle_light('white')
-                    self.reply = '[Setting lights to white]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'green' in self.command_response:
-                    self.command.toggle_light('green')
-                    self.reply = '[Setting lights to green]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'orange' in self.command_response:
-                    self.command.toggle_light('orange')
-                    self.reply = '[Setting lights to orange]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'blue' in self.command_response:
-                    self.command.toggle_light('blue')
-                    self.reply = '[Setting lights to blue]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'red' in self.command_response:
-                    self.command.toggle_light('red')
-                    self.reply = '[Setting lights to red]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'yellow' in self.command_response:
-                    self.command.toggle_light('yellow')
-                    self.reply = '[Setting lights to yellow]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'purple' in self.command_response:
-                    self.command.toggle_light('purple')
-                    self.reply = '[Setting lights to purple]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                elif 'gradient' in self.command_response:
-                    self.command.toggle_light('gradient')
-                    self.reply = '[Setting lights to gradient]'
-                    print(self.reply)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-                else:
-                    print('invalid mode: %s' % self.command_response)
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-            else:
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
-                print('invalid command')
+            self.command_response = json.loads(self.command.response.choices.copy().pop()['text'])['reply']
+            self.conv_err_loop = 0 # reset retry count
+            reply = self.command_response
+            self.command.inject_response(self.prompt+'.', reply) # add response to conversation prompt
+            self.reply = ""
 
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+            if '\\n' in reply: # render newlines from reply
+                reply = reply.split('\\n')
+                print('\nA: ')
+                for x in reply:
+                    print(x)
+                    self.reply = self.reply + " " + x.strip('\\') 
+            else: 
+                print('\nA: '+ reply)
+                self.reply = reply
 
-        elif self.application == "conversation-application": # conversation application logic
-            self.command.send_request(self.prompt+'.', self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
-            if 'toggle-conversation' in self.command_response:
-                reply = self.command_response.strip("toggle-conversation `").strip("`")
-                self.command.inject_response(self.prompt, reply) # add response to conversation prompt
-                self.reply = ""
-                if '\\n' in reply:
-                    reply = reply.split('\\n')
-                    print('\nA: ')
-                    for x in reply:
-                        print(x)
-                        self.reply = self.reply + " " + x.strip('\\') 
-                else: 
-                    print('\nA: '+ reply)
-                    self.reply = reply
-                if self.from_memory_store: # used to tell (don't forget) assistant to remember things about itself (your)
-                    self.application = 'memory-application'
-                    self.prompt = self.reply
-                if self.from_memory_read[0]: # used to let (what is) assistant remember things about itself (your)
-                    self.application = 'memory-application'
-                    self.prompt = self.reply
-                else:
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-            else:
-                print('invalid reply')
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
+            self.activation_mode = True # go back to idle...
+            self.application = 'model-selector'
 
             self.conv_timer.cancel() # reset conversation cooldown (turns on automatically on loop)
             self.speech.activation.activate = True # skip wake-up sequence (name is already called)
@@ -188,153 +99,6 @@ class Assistant:
             else:
                 self.speech_engine.say(self.reply)
                 self.speech_engine.runAndWait()
-
-
-        elif self.application == "timer-application": # timer application logic
-            self.command.send_request(self.prompt+".", self.application)
-            self.speech.text = ""
-            self.speech.activation.text = ""
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
-            if 'toggle-timer' in self.command_response:
-                reply = self.command_response.replace('toggle-timer `', '').strip('`') 
-                self.reply = '[Setting timer for %s]' % reply.replace('s', ' seconds').replace('m', ' minute')
-                print(self.reply)
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                    self.command.toggle_timer(reply)
-                else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
-                
-            else:
-                print('invalid timer command')
-
-            self.reply = ""
-            self.activation_mode = True # go back to idle...
-            self.application = 'model-selector'
-
-        elif self.application == "spotify-application": # spotify application logic
-            # added period to end of prompt to prevent GPT3 from adding more to prompt
-            self.command.send_request(self.prompt+".", self.application)
-            self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
-            cmd = self.command_response.split("`")[0].strip(" ")
-            reply = self.command_response.split("`")[1].strip(",")
-            try: 
-                if 'toggle-spotify' == cmd:
-                    if isinstance(reply, str):
-                        p = self.command.play_music(reply)
-                        if p==1:
-                            self.reply = '[Playing %s on Spotify]' % reply.title()
-                            print(self.reply)
-                        if (p==-1):
-                            self.reply = '[Could not find %s on Spotify]' % reply.title()
-                            print(self.reply)
-                    else:
-                        p = self.command.play_music(reply[0], reply[1])
-                        if p==1:
-                            self.reply = '[Playing %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
-                            print(self.reply)
-                        if (p==-1):
-                            self.reply = '[Could not find %s by %s on Spotify]' % (reply[1].title().strip(" "), reply[0].title())
-                            print(self.reply)
-
-                elif 'toggle-spotify-playlist' == cmd:
-                    p = self.command.play_user_playlist(reply.lower())
-                    if p==1:
-                        self.reply = '[Playing %s Playlist on Spotify]' % reply.title()
-                        print(self.reply)
-                    if p==-1:
-                        self.reply = '[Could not find %s on Spotify]' % reply.title()
-                        print(self.reply)
-
-                elif 'toggle-spotify-player' == cmd:
-                    if reply == 'resume':
-                        self.command.player.remote('resume')
-                    elif reply == 'pause':
-                        self.command.player.remote('pause')
-                    elif reply == 'next':
-                        self.command.player.remote('next')
-                    elif reply == 'previous':
-                        self.command.player.remote('previous')
-
-                else:
-                    print('invalid spotify command')
-
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
-                    
-                self.activation_mode = True # go back to idle...
-                self.application = 'model-selector'
-            except:
-                pass
-
-        elif self.application == "memory-application": # memory application logic
-            if not self.from_memory_read[0] and not self.from_memory_store:
-                # added period to end of prompt to prevent GPT3 from adding more to prompt
-                self.command.send_request(self.prompt+".", self.application)
-                self.command_response = self.command.response.choices.copy().pop()['text'].split('\nA: ')[1]
-                if 'toggle-memory-store' in self.command_response:
-
-                    reply = self.command_response.replace("toggle-memory-store `","").strip("`").split(", ")
-                    self.reply = ("[I'll remember %s]" % reply[0]).replace("my", "Your")
-                    print(self.reply)
-                    try:
-                        self.command.store_memory(reply[0], reply[1])
-                    except KeyError:                        
-                        # might not use...
-                        print('forwarding from `memory-store` to `conversation` application')
-                        self.from_memory_store = False
-                        self.prompt = self.speech.text
-                        self.application = 'conversation-application'
-                    except IndexError:
-                        # might not use...
-                        print('forwarding from `memory-store` to `conversation` application')
-                        self.from_memory_store = False
-                        self.prompt = self.speech.text
-                        self.application = 'conversation-application'
-
-                if 'toggle-memory-read' in self.command_response:
-                    reply = self.command_response.replace("toggle-memory-read `","").strip("`").split(", ")
-                    try:
-                        value = self.command.read_memory(reply[0])
-                    except KeyError:
-                        # value doesn't exist in memory, grab value from conversation-application (if your)
-                        if 'my' not in reply[0]: # don't let assistant make things up about user (my)
-                            self.from_memory_read = (True, reply[0]) # save key for conversation app to forward back here for storage
-                            print('forwarding from `memory-read` to `conversation` application')
-                        self.prompt = self.speech.text
-                        self.application = 'conversation-application'
-                    if not self.application=='conversation-application':
-                        if 'your' in reply[0]: # memory about itself ('your' always in key)
-                            self.reply = ("[%s]" % value)
-                        else: # memory about you ('my' always in key)
-                            self.reply = ("["+reply[0] + " is %s]" % value).replace("my", "Your")
-                        print(self.reply)
-                if not self.application=='conversation-application':
-                    if UNIX:
-                        self.tts(self.reply, self.speech_volume)
-                    else:
-                        self.speech_engine.say(self.reply)
-                        self.speech_engine.runAndWait()
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-            else:
-                if self.from_memory_read[0]: # we need to store result from conversation-app
-                    print('forwarding from `conversation` to `memory-store`')
-                    key = self.from_memory_read[1]
-                    val = self.prompt
-                    self.command.store_memory(key, val)
-                    self.from_memory_read = (False,"")
-                    self.reply = ""
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
-
-                if self.from_memory_store: # we need to read (might not use this)
-                    pass
-
 
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
@@ -356,10 +120,17 @@ class Assistant:
                         sub_cat = self.offline_response['sub_category']
                         if 'bedroom-light' in sub_cat:
                             action = self.offline_response['action']
-                            self.command.bedroom_light.set_power(action)
-                            if action == 'on':
-                                self.reply = '[Turning on the bedroom lights]'
-                            else: self.reply = '[Turning off the bedroom lights]'
+                            if not action == 'numeric':
+                                self.command.bedroom_light.set_power(action)
+                                if action == 'on':
+                                    self.reply = '[Turning on the bedroom lights]'
+                                else: self.reply = '[Turning off the bedroom lights]'
+                            else:
+                                self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
+                                value = self.ner_response['numeric']
+                                val_scale = self.val_map[int(value)]
+                                self.command.bedroom_light.set_brightness(val_scale)
+
                         elif 'bedroom-lamp' in sub_cat:
                             action = self.offline_response['action']
                             
@@ -372,15 +143,28 @@ class Assistant:
                             else:
                                 self.reply = '[Setting bedroom lamp to %s]' % action
                                 self.command.toggle_lamp_color(action)
+                                
                         elif 'bathroom' in sub_cat:
                             action = self.offline_response['action']
-                            self.command.bathroom_left.set_power(action)
-                            self.command.bathroom_right.set_power(action)
-                            if action == 'on':
-                                self.reply = '[Turning on the bathroom lights]'
-                            else: self.reply = '[Turning off the bathroom lights]'
+                            if not action == 'numeric':
+                                self.command.bathroom_left.set_power(action)
+                                self.command.bathroom_right.set_power(action)
+                                if action == 'on':
+                                    self.reply = '[Turning on the bathroom lights]'
+                                else: self.reply = '[Turning off the bathroom lights]'
+                            else:
+                                self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
+                                value = self.ner_response['numeric']
+                                if int(value) >= 1 and int(value) <= 10: # (vals 1-10 valid)
+                                    val_scale = self.val_map[int(value)-1]
+                                    self.command.bathroom_left.set_brightness(val_scale)
+                                    self.command.bathroom_right.set_brightness(val_scale)
+                                    self.reply = '[Setting bathroom lights brightness to %d]' % int(value)
+                                else:
+                                    self.reply = 'Brightness values are from 1 to 10.'
                     except:
                         self.reply = '[Light not found]'
+                        
                 print(self.reply+'\n')
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
@@ -446,12 +230,13 @@ class Assistant:
                     reply = time.strip(' ').replace('seconds', 's').replace('minutes', 'm').replace(' ', '')
                     self.reply = '[Setting timer for %s]' % time
                     print(self.reply+'\n')
+                    self.command.toggle_timer(reply)
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
-                        self.speech_engine.say(self.reply)
+                        self.speech_engine.say(self.reply) 
                         self.speech_engine.runAndWait()
-                    self.command.toggle_timer(reply)
+                    
                     
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
@@ -491,24 +276,9 @@ class Assistant:
                     self.application = 'conversation-application'
                 
                 
-            else:
-                self.command.send_request(self.prompt+".", self.application)
-                self.command_response = self.command.response.choices.copy().pop()['text'].strip(" ")
+            else: # send to GPT3 if conversational intent extracted by offline model
 
-                if 'light-application' in self.command_response:
-                    self.application = 'light-application'
-                elif 'conversation-application'in self.command_response:
-                    self.application = 'conversation-application'
-                elif 'timer-application' in self.command_response:
-                    self.application = 'timer-application'
-                elif 'spotify-application' in self.command_response:
-                    self.application = 'spotify-application'
-                elif 'memory-application' in self.command_response:
-                    self.application = 'memory-application'
-                else:
-                    self.activation_mode = True # go back to idle...
-                    print('invalid application')
-        
+                self.application = 'conversation-application'
 
     def activation_sequence(self):
         self.activation_mode = True
@@ -571,6 +341,18 @@ class Assistant:
                         self.speech.activation.text = ""
                         self.application = 'model-selector'
 
+                    except json.decoder.JSONDecodeError as e:
+                        # print('[GPT3 Conversation Model Error]')
+                        # print(f"prompt: {self.prompt}")
+                        # print(f"reply: {self.command.response.choices.copy().pop()['text']}")
+                        self.conv_err_loop += 1
+                        if self.conv_err_loop == 3:
+                            self.conv_err_loop = 0
+                            self.application = 'model-selector'
+                            print('[resetting context]\n')
+                            self.command.reset_conversation()
+                            break # go back to idle...
+
                     except openai.error.InvalidRequestError as e:
                         print('[resetting context]\n')
                         self.command.reset_conversation()
@@ -620,8 +402,7 @@ class Assistant:
             self.command.reset_conversation() # reset conversation prompt 
             self.conv_timer.cancel()
             self.conv_timer_mode = False # turn off timer
-
-    
+ 
 
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')

@@ -32,6 +32,10 @@ from modules.pico_python.picovoice_demo_mic import pico_wake
 # pyaudio alternative for real-time stream (supported by Vosk)
 import sounddevice as sd
 
+# used to send keypress event (keeps display on)
+import pyautogui
+pyautogui.FAILSAFE = False
+
 import json
 import queue
 import pyaudio
@@ -66,7 +70,7 @@ class Speech:
     def record_audio(self, activation_mode=False):
         self.recording = True
         if activation_mode and self.skip_wake == False:
-            
+
             # picovoice method
             self.pico = pico_wake(os.getcwd())
             self.speaker_mic_timeout_handler(300)
@@ -74,6 +78,7 @@ class Speech:
             if self.wake: # set to 0 in timer if idle reboot
                 self.activation.activate = True
                 self.recording = False
+                pyautogui.press('ctrl') # turn display on if asleep
             else:
                 self.wake = 1
                 print('rebooting picovoice!')

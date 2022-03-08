@@ -1,4 +1,6 @@
 from __future__ import unicode_literals, print_function
+
+from sqlalchemy import NUMERIC
 '''
 Named Entity Recognition model.
 
@@ -25,8 +27,9 @@ from spacy.training.example import Example
 from tqdm import tqdm
 
 # which model to create
-PLAY=1
+PLAY=0
 TIMER=0
+NUM=1
 
 # def create_load_data():
 # load in and organize data
@@ -35,6 +38,9 @@ if PLAY:
         json_data = json.load(f)
 elif TIMER:
     with open('data/timer_commands.json') as f:
+        json_data = json.load(f)
+elif NUM:
+    with open('data/numeric_commands.json') as f:
         json_data = json.load(f)
 N_ITER = 100
 
@@ -68,9 +74,20 @@ for ndx,data in enumerate(json_data['training_data']):
         ent_ndx = []
         for ndx,x in enumerate(labels):
             if 'time' in x:
-                if 'time' in x:
+                if 'time' in x: 
                     tag = 'TIME'
                     ent_ndx.append([ndx, x])
+    
+    elif NUM:
+        if ndx == 30: break
+        words = data['words']
+        labels = data['labels']
+
+        ent_ndx = []
+        for ndx,x in enumerate(labels):
+            if 'numeric' in x:
+                tag = 'NUMERIC'
+                ent_ndx.append([ndx, x])
 
     sentence = ''
     for x in words:
@@ -111,6 +128,8 @@ if PLAY:
     output_dir=Path("models/ner/play")
 elif TIMER:
     output_dir=Path("models/ner/timer")
+elif NUM:
+    output_dir=Path("models/ner/numeric")
 
 n_iter=N_ITER
 

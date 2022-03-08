@@ -85,7 +85,14 @@ df_light = pd.DataFrame([
     ['lights', 'bathroom-light', 'off', 'can you please turn off the bath room light'],
     ['lights', 'bathroom-light', 'off', 'turn off the bathroom lights'],
 
-
+    ['lights', 'bathroom-light', 'numeric', "set the bathroom light's brightness to 5"],
+    ['lights', 'bathroom-light', 'numeric', 'bathroom brightness to seven'],
+    ['lights', 'bathroom-light', 'numeric', "set the bathroom brightness to 9"],
+    ['lights', 'bathroom-light', 'numeric', 'please change the bathroom brightness to 10'],
+    ['lights', 'bathroom-light', 'numeric', 'please change the bathroom brightness to 10'],
+    ['lights', 'bathroom-light', 'numeric', 'change brightness in bathroom to 5'],
+    ['lights', 'bathroom-light', 'numeric', 'can you adjust the bathroom brightness to 8'],
+    ['lights', 'bathroom-light', 'numeric', 'can you set the bathroom lights to 2'],
 
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
@@ -122,6 +129,7 @@ df_wolfram = pd.DataFrame([
     ['wolfram', 'none', 'none', "who founded tesla"],
     ['wolfram', 'none', 'none', "define apple"],
     ['wolfram', 'none', 'none', "who invented the printing press"],
+    ['wolfram', 'none', 'none', "convert 135 lb to kilograms"],
     ['wolfram', 'math', 'none', "what is 2 + 2"],    # math sub_cat should read tts differently ( for example, / = 'over')
     ['wolfram', 'math', 'none', "what's 2 plus 2"],    
     ['wolfram', 'math', 'none', "what is 6.6 / 6"],
@@ -161,9 +169,14 @@ for prompt in conv_prompts:
     other_arr.append(['other', 'none', 'none', prompt])
     other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
     other_arr.append(['other', 'none', 'none', 'can you recall anything'])
+    other_arr.append(['other', 'none', 'none', "what's the fastest way to get from point a to point b"])
     other_arr.append(['other', 'none', 'none', 'like what'])
+    other_arr.append(['other', 'none', 'none', 'sorry to bother you'])
+    other_arr.append(['other', 'none', 'none', 'come with us to our flight to Denver'])
+    other_arr.append(['other', 'none', 'none', "I want to play a game with you"])
+    other_arr.append(['other', 'none', 'none', 'good times'])
     other_arr.append(['other', 'none', 'none', 'pretty good just working on a midi generative network'])
-    other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions"'])
+    other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions'])
 
 
 for prompt in mem_prompts:
