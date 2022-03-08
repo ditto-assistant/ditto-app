@@ -342,13 +342,15 @@ class Assistant:
                         self.application = 'model-selector'
 
                     except json.decoder.JSONDecodeError as e:
-                        print('[GPT3 Conversation Model Error]')
-                        print(f"prompt: {self.prompt}")
-                        print(f"reply: {self.command.response.choices.copy().pop()['text']}")
+                        # print('[GPT3 Conversation Model Error]')
+                        # print(f"prompt: {self.prompt}")
+                        # print(f"reply: {self.command.response.choices.copy().pop()['text']}")
                         self.conv_err_loop += 1
                         if self.conv_err_loop == 3:
                             self.conv_err_loop = 0
                             self.application = 'model-selector'
+                            print('[resetting context]\n')
+                            self.command.reset_conversation()
                             break # go back to idle...
 
                     except openai.error.InvalidRequestError as e:
