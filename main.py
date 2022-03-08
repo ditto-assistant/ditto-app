@@ -348,6 +348,7 @@ class Assistant:
                         self.conv_err_loop += 1
                         if self.conv_err_loop == 3:
                             self.conv_err_loop = 0
+                            self.application = 'model-selector'
                             break # go back to idle...
 
                     except openai.error.InvalidRequestError as e:
