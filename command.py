@@ -191,9 +191,9 @@ class Command:
 
         if model == 'conversation-application':
             self.response = openai.Completion.create(
-                engine="text-babbage-001",
+                engine="text-ada-001",
                 prompt=self.conversation_prompt + command,
-                temperature=0.7,
+                temperature=0.6,
                 max_tokens=300,
                 top_p=1,
                 frequency_penalty=0.7,
