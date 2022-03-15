@@ -67,6 +67,78 @@
                 "O",
                 "B-numeric"
             ]
+        },
+        {
+            "words": [
+                "bathroom",
+                "brightness",
+                "to",
+                "two"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "can",
+                "you",
+                "adjust",
+                "the",
+                "bathroom",
+                "brihtness",
+                "to",
+                "three"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "adjust",
+                "the",
+                "bathroom",
+                "brihtness",
+                "to",
+                "9"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "bathroom",
+                "brihtness",
+                "to",
+                "nine"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-numeric"
+            ]
         }
     ]
 }
