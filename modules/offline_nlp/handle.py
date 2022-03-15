@@ -184,12 +184,22 @@ class NLP:
         return response
 
     def prompt_ner_timer(self, sentence):
-        time = ''
+        second = ''
+        minute = ''
         reply = self.ner_timer(sentence)
         for ent in reply.ents:
-            if 'time' in ent.label_:
-                time+=ent.text+' '
-        response = '{"time" : "%s"}' % time
+            if 'second' in ent.label_:
+                second+=ent.text+' '
+            elif 'minute' in ent.label_:
+                minute+=ent.text+' '
+        try:
+            if not second == '': second = w2n.word_to_num(second.strip())
+            if not minute == '': minute = w2n.word_to_num(minute.strip())
+        except:
+            print('\n[word2num error]\n')
+            second = second
+            minute = minute
+        response = '{"second" : "%s", "minute" : "%s"}' % (second, minute)
         return response
 
     def prompt_ner_numeric(self, sentence):
@@ -198,7 +208,11 @@ class NLP:
         for ent in reply.ents:
             if 'numeric' in ent.label_:
                 numeric+=ent.text+' '
-        numeric = w2n.word_to_num(numeric.strip())
+        try:
+            numeric = w2n.word_to_num(numeric.strip())
+        except:
+            print('\n[word2num error]\n')
+            numeric = numeric
         response = '{"numeric" : "%s"}' % numeric
         return response
 
