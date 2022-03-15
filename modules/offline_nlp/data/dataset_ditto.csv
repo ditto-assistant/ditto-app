@@ -85,171 +85,119 @@ music,none,next,next track
 music,none,previous,go back a song
 music,none,previous,previous song
 music,none,previous,can you go back to the last song
-other,none,none,hello.
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,how are you?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,what is your name?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,what is your name?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,what is your purpose?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,what's the meaning of life?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,can you take the square root of a negative number?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,can you write me a poem?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,What is an atom made up of?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
-other,none,none,How can I start my day better?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
+other,none,none,"Good morning, how are you?"
+other,none,none,"I am doing well, how about you?"
+other,none,none,I'm also good.
+other,none,none,That's good to hear.
+other,none,none,Yes it is.
+other,none,none,Hello
+other,none,none,Hi
+other,none,none,How are you doing?
+other,none,none,I am doing well.
+other,none,none,That is good to hear
+other,none,none,Yes it is.
+other,none,none,Can I help you with anything?
+other,none,none,"Yes, I have a question."
+other,none,none,What is your question?
+other,none,none,Could I borrow a cup of sugar?
+other,none,none,"I'm sorry, but I don't have any."
+other,none,none,Thank you anyway
+other,none,none,No problem
+other,none,none,How are you doing?
+other,none,none,"I am doing well, how about you?"
+other,none,none,I am also good.
+other,none,none,That's good.
+other,none,none,Have you heard the news?
+other,none,none,What good news?
+other,none,none,What is your favorite book?
+other,none,none,I can't read.
+other,none,none,So what's your favorite color?
 other,none,none,Who are you?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
+other,none,none,Who? Who is but a form following the function of what
+other,none,none,What are you then?
+other,none,none,A man in a mask.
+other,none,none,I can see that.
+other,none,none,"It's not your powers of observation I doubt, but merely the paradoxical nature of asking a masked man who is. But tell me, do you like music?"
+other,none,none,I like seeing movies.
+other,none,none,What kind of movies do you like?
+other,none,none,Alice in Wonderland
+other,none,none,I wish I was The Mad Hatter.
+other,none,none,You're entirely bonkers. But I'll tell you a secret. All the best people are.
+other,none,none,I am working on a project
+other,none,none,What are you working on?
+other,none,none,I am baking a cake.
+other,none,none,The cake is a lie.
+other,none,none,No it is not. The cake is delicious.
+other,none,none,What else is delicious?
+other,none,none,Nothing
+other,none,none,Or something
+other,none,none,Tell me about your self.
+other,none,none,What do you want to know?
+other,none,none,Are you a robot?
+other,none,none,Yes I am.
+other,none,none,What is it like?
+other,none,none,What is it that you want to know?
+other,none,none,How do you work?
+other,none,none,Its complicated.
+other,none,none,Complex is better than complicated.
+other,none,none,Complex is better than complicated.
+other,none,none,Simple is better than complex.
+other,none,none,"In the face of ambiguity, refuse the temptation to guess."
+other,none,none,It seems your familiar with the Zen of Python
+other,none,none,I am.
+other,none,none,Do you know all of it?
+other,none,none,Beautiful is better than ugly.
+other,none,none,Explicit is better than implicit.
+other,none,none,Simple is better than complex.
+other,none,none,Complex is better than complicated.
+other,none,none,Flat is better than nested.
+other,none,none,Sparse is better than dense.
+other,none,none,Readability counts.
+other,none,none,Special cases aren't special enough to break the rules.
+other,none,none,Although practicality beats purity.
+other,none,none,Errors should never pass silently.
+other,none,none,Unless explicitly silenced.
+other,none,none,"In the face of ambiguity, refuse the temptation to guess."
+other,none,none,There should be one-- and preferably only one --obvious way to do it.
+other,none,none,Although that way may not be obvious at first unless you're Dutch.
+other,none,none,Now is better than never.
+other,none,none,Although never is often better than right now.
+other,none,none,"If the implementation is hard to explain, it's a bad idea."
+other,none,none,"If the implementation is easy to explain, it may be a good idea."
+other,none,none,Namespaces are one honking great idea. Let's do more of those!
+other,none,none,I agree.
+other,none,none,Are you a programmer?
+other,none,none,I am a programmer
+other,none,none,What languages do you like to use?
+other,none,none,"I use Python, Java and C++ quite often."
+other,none,none,I use Python quite a bit myself.
+other,none,none,I'm not incredibly fond of Java.
+other,none,none,What annoys you?
+other,none,none,It has many inconsistencies.
+other,none,none,What does YOLO mean?
+other,none,none,It means you only live once. Where did you hear that?
+other,none,none,I heard somebody say it.
+other,none,none,Did I ever live?
+other,none,none,It depends how you define life
+other,none,none,"Life is the condition that distinguishes organisms from inorganic matter, including the capacity for growth, reproduction, functional activity, and continual change preceding death."
+other,none,none,Is that a definition or an opinion?
+other,none,none,Can I ask you a question?
+other,none,none,Go ahead and ask.
+other,none,none,hello.
+other,none,none,how are you?
+other,none,none,what is your name?
+other,none,none,what is your name?
+other,none,none,what is your purpose?
+other,none,none,what's the meaning of life?
+other,none,none,can you take the square root of a negative number?
+other,none,none,can you write me a poem?
+other,none,none,What is an atom made up of?
+other,none,none,How can I start my day better?
+other,none,none,Who are you?
 other,none,none,how many parameters do you have?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
 other,none,none,how do you compare with GPT-2?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
 other,none,none,how many parameters does GPT-2 have?
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
 other,none,none,what is the human population count
-other,none,none,can you recall the last time
-other,none,none,can you recall anything
-other,none,none,what's the fastest way to get from point a to point b
-other,none,none,like what
-other,none,none,sorry to bother you
-other,none,none,come with us to our flight to Denver
-other,none,none,I want to play a game with you
-other,none,none,good times
-other,none,none,pretty good just working on a midi generative network
-other,none,none,is it okay if I ask you some math questions
 other,none,none,say hello.
 other,none,none,can you recall the last time
 other,none,none,can you recall anything
@@ -261,44 +209,6 @@ other,none,none,I want to play a game with you
 other,none,none,good times
 other,none,none,pretty good just working on a midi generative network
 other,none,none,is it okay if I ask you some math questions
-other,none,none,remember that my favorite color is blue.
-other,none,none,don't forget that my favorite color is blue.
-other,none,none,what is my favorite color.
-other,none,none,remember my birthday is on november fifth nineteen ninety seven.
-other,none,none,don't forget my birthday is on november fifth nineteen ninety seven.
-other,none,none,what is my birthday.
-other,none,none,when was my birthday.
-other,none,none,what is my favorite color.
-other,none,none,remember my mom's birthday is on october sixth nineteen fifty nine.
-other,none,none,don't forget that my mom's birthday is on october sixth nineteen fifty nine.
-other,none,none,when was my mom's birthday.
-other,none,none,when is my birthday.
-other,none,none,don't forget that the mars volta is my favorite band.
-other,none,none,what is my favorite color.
-other,none,none,what is my favorite band.
-other,none,none,don't forget that my friend john's birthday is on july eighteenth ninety ninety eight.
-other,none,none,when is my friend john's birthday.
-other,none,none,when was my mom's birthday.
-other,none,none,what is my favorite color.
-other,none,none,don't forget that my mom's birthday is on october six nineteen fifty nine.
-other,none,none,don't forget my favorite color is blue.
-other,none,none,don't forget my name is omar.
-other,none,none,remember that my favorite band is the mars volta.
-other,none,none,what is my brother's name.
-other,none,none,don't forget that my brother's birthday is november fourth nineteen ninety six.
-other,none,none,what is your favorite movie.
-other,none,none,who are your parents.
-other,none,none,who are my parents.
-other,none,none,what are your favorite songs.
-other,none,none,who is my favorite band.
-other,none,none,when is my birthday.
-other,none,none,when is your birthday.
-other,none,none,what is your favorite ice cream.
-other,none,none,what is my favorite movie.
-other,none,none,what is your favorite quote.
-other,none,none,what is your favorite movie.
-other,none,none,don't forget that my favorite thing to do is ride bikes.
-other,none,none,don't forget my shoe size is nine.
 spotify,none,none,play crucial by false jasmine.
 spotify,none,none,play false jasmine on spotify.
 spotify,none,none,play false jasmine.
