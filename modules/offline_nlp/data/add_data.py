@@ -104,6 +104,7 @@ df_music = pd.DataFrame([
     ['music', 'none', 'resume', 'resume music'],
     ['music', 'none', 'resume', 'play music please'],
     ['music', 'none', 'next', 'next song'],
+    ['music', 'none', 'next', 'go to the next song'],
     ['music', 'none', 'next', 'skip this song'],
     ['music', 'none', 'next', 'next track'],
     ['music', 'none', 'previous', 'go back a song'],
