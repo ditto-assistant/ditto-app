@@ -42,7 +42,7 @@ class Assistant:
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
-        self.speech_volume = 50 # percent
+        self.speech_volume = 70 # percent
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector" # first application to boot into when name is spoken
@@ -225,10 +225,30 @@ class Assistant:
                 
             elif self.offline_response['category'] == 'timer':
                 self.ner_response = json.loads(self.nlp.prompt_ner_timer(self.prompt))
-                time = self.ner_response['time']
-                if not time == '':
-                    reply = time.strip(' ').replace('seconds', 's').replace('minutes', 'm').replace(' ', '')
-                    self.reply = '[Setting timer for %s]' % time
+                second = self.ner_response['second']
+                minute = self.ner_response['minute']
+                second_reply = ''
+                minute_reply = ''
+                
+                if not second == '':
+                    if int(second) == 1:
+                        second_reply = ' second '
+                    else: second_reply = ' seconds '
+                if not minute == '':
+                    if int(minute) == 1:
+                        minute_reply = ' minute '
+                    else: minute_reply = ' minutes '
+                if not second == '' or minute == '':
+                    s = ''
+                    m = ''
+                    if not second == '':
+                        s = 's'
+                    if not minute == '':
+                        m = 'm'
+                    reply = minute + m + second + s
+                    reply.replace(' ', '')
+                    readable = minute + minute_reply + second + second_reply
+                    self.reply = '[Setting timer for %s]' % readable
                     print(self.reply+'\n')
                     self.command.toggle_timer(reply)
                     if UNIX:
@@ -274,8 +294,7 @@ class Assistant:
                     self.reply = ''
                 else:
                     self.application = 'conversation-application'
-                
-                
+                    
             else: # send to GPT3 if conversational intent extracted by offline model
 
                 self.application = 'conversation-application'

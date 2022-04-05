@@ -7,6 +7,7 @@ Python 3.7.x
 '''
 
 import pandas as pd
+import json
 import os
 
 # light application model
@@ -104,6 +105,7 @@ df_music = pd.DataFrame([
     ['music', 'none', 'resume', 'resume music'],
     ['music', 'none', 'resume', 'play music please'],
     ['music', 'none', 'next', 'next song'],
+    ['music', 'none', 'next', 'go to the next song'],
     ['music', 'none', 'next', 'skip this song'],
     ['music', 'none', 'next', 'next track'],
     ['music', 'none', 'previous', 'go back a song'],
@@ -153,34 +155,42 @@ def extract_prompts(filepath):
                 prompt = x.strip('Q: ').strip('\n')
                 if not prompt == '':
                     prompts.append(prompt)
-            elif "A:" in x:
-                completion = x.strip("\n")+"\\n"
-                fmt_str += '{"prompt": "%s", "completion": "%s"}\n' % (prompt, completion)
+            # elif "A:" in x:
+            #     completion = x.strip("\n")+"\\n"
+            #     fmt_str += '{"prompt": "%s", "completion": "%s"}\n' % (prompt, completion)
     return prompts
 
 conv_prompts = extract_prompts('prompts/conversation-application.txt')
-mem_prompts = extract_prompts('prompts/memory-application.txt')
+other_arr = []
+
+# adding more to conversation prompt from a modified Kaggle conversation dataset:
+# https://www.kaggle.com/vaibhavgeek/conversation-json
+with open('conversation.json', 'r') as f:
+    conv = json.load(f)
+    for group in conv['conversations']:
+        for prompt in group:
+            other_arr.append(['other', 'none', 'none', prompt])
+
+# "other" model for GPT-3 conversation and more
+for prompt in conv_prompts:
+    other_arr.append(['other', 'none', 'none', prompt])
+
+other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
+other_arr.append(['other', 'none', 'none', 'can you recall anything'])
+other_arr.append(['other', 'none', 'none', "what's the fastest way to get from point a to point b"])
+other_arr.append(['other', 'none', 'none', 'like what'])
+other_arr.append(['other', 'none', 'none', 'sorry to bother you'])
+other_arr.append(['other', 'none', 'none', 'come with us to our flight to Denver'])
+other_arr.append(['other', 'none', 'none', "I want to play a game with you"])
+other_arr.append(['other', 'none', 'none', 'good times'])
+other_arr.append(['other', 'none', 'none', 'pretty good just working on a midi generative network'])
+other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions'])
+
+
 spot_prompts = extract_prompts('prompts/spotify-application.txt')
 time_prompts = extract_prompts('prompts/timer-application.txt')
 
-# "other" model
-other_arr = []
-for prompt in conv_prompts:
-    other_arr.append(['other', 'none', 'none', prompt])
-    other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
-    other_arr.append(['other', 'none', 'none', 'can you recall anything'])
-    other_arr.append(['other', 'none', 'none', "what's the fastest way to get from point a to point b"])
-    other_arr.append(['other', 'none', 'none', 'like what'])
-    other_arr.append(['other', 'none', 'none', 'sorry to bother you'])
-    other_arr.append(['other', 'none', 'none', 'come with us to our flight to Denver'])
-    other_arr.append(['other', 'none', 'none', "I want to play a game with you"])
-    other_arr.append(['other', 'none', 'none', 'good times'])
-    other_arr.append(['other', 'none', 'none', 'pretty good just working on a midi generative network'])
-    other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions'])
 
-
-for prompt in mem_prompts:
-    other_arr.append(['other', 'none', 'none', prompt])
 for prompt in spot_prompts:
     other_arr.append(['spotify', 'none', 'none', prompt])
 for prompt in time_prompts:
