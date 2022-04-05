@@ -69,33 +69,36 @@ class Speech:
 
     def record_audio(self, activation_mode=False):
         self.recording = True
-        if activation_mode and self.skip_wake == False:
+        try:
+            if activation_mode and self.skip_wake == False:
 
-            # picovoice method
-            self.pico = pico_wake(os.getcwd())
-            self.speaker_mic_timeout_handler(300)
-            self.pico.run()
-            if self.wake: # set to 0 in timer if idle reboot
-                self.activation.activate = True
-                self.recording = False
-                pyautogui.press('ctrl') # turn display on if asleep
-            else:
-                self.wake = 1
-                print('rebooting picovoice!')
-
-        else:
-            if not self.comm_timer_mode and activation_mode: 
-                self.idle_loop_count += 1
-                if self.idle_loop_count ==1 :print('\nidle...\n')
-            else:
-                self.idle_loop_count = 0
-                self.skip_wake = False
-                self.text = self.google_instance.grab_prompt()
-                self.activation.text = self.text
-                self.activation.check_input(activation_mode)
-                if self.activation.activate:
+                # picovoice method
+                self.pico = pico_wake(os.getcwd())
+                self.speaker_mic_timeout_handler(300)
+                self.pico.run()
+                if self.wake: # set to 0 in timer if idle reboot
+                    self.activation.activate = True
                     self.recording = False
-    
+                    pyautogui.press('ctrl') # turn display on if asleep
+                else:
+                    self.wake = 1
+                    print('rebooting picovoice!')
+
+            else:
+                if not self.comm_timer_mode and activation_mode: 
+                    self.idle_loop_count += 1
+                    if self.idle_loop_count ==1 :print('\nidle...\n')
+                else:
+                    self.idle_loop_count = 0
+                    self.skip_wake = False
+                    self.text = self.google_instance.grab_prompt()
+                    self.activation.text = self.text
+                    self.activation.check_input(activation_mode)
+                    if self.activation.activate:
+                        self.recording = False
+        except:
+            self.recording = False
+            
     def speaker_mic_timeout_handler(self, timeout):
         self.speak_timer = Timer(timeout, self.speaker_mic_timeout_handler, [timeout])
         self.speak_timer.start()
