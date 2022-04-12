@@ -76,12 +76,10 @@ class Command:
             self.bathroom_right = []
 
     def toggle_lamp_color(self, color):
-        self.grab_lifx_lights()
         self.bedroom_lamp.set_color(self.lifx_color_map[color])
 
 
     def toggle_light(self, mode):
-        self.grab_lifx_lights()
         try:
             s = serial.Serial('/dev/serial/by-id/usb-Teensyduino_USB_Serial_10498880-if00', baudrate=9600, bytesize=8)
             if mode == 'on':

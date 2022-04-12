@@ -419,6 +419,7 @@ class Assistant:
             self.conversation_timer = 0
             print('[conversation timer reset]\n\nidle...') 
             self.command.reset_conversation() # reset conversation prompt 
+            self.command.grab_lifx_lights() # user idle, use this time to update LAN lights
             self.conv_timer.cancel()
             self.conv_timer_mode = False # turn off timer
  
