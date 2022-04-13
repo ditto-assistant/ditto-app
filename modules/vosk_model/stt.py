@@ -7,6 +7,14 @@ import queue
 import json
 q = queue.Queue()
 
+import platform 
+
+UNIX = False
+DEVICE = 0
+if platform.system() == 'Linux':
+    UNIX = True
+    DEVICE = 2
+
 
 class STT:
 
@@ -27,7 +35,7 @@ class STT:
         print("'(|o_o|)'")
         print(",..\=/..,")
         print('listening...\n')
-        with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=0, dtype='int16',
+        with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=DEVICE, dtype='int16',
         channels=1, callback=self.callback):
             model = Model(self.model_path)
             rec = KaldiRecognizer(model, 16000)
