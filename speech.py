@@ -96,7 +96,8 @@ class Speech:
                     self.activation.check_input(activation_mode)
                     if self.activation.activate:
                         self.recording = False
-        except:
+        except BaseException as e:
+            print(e)
             self.recording = False
             
     def speaker_mic_timeout_handler(self, timeout):
