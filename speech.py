@@ -48,10 +48,13 @@ class Speech:
     def __init__(self):
         self.recording = False
         self.offline_mode = True
+        self.speech_to_text = STT(os.getcwd()+'/modules/vosk_model/model')
+
         self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
         self.google_instance = Google()
+
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
@@ -96,10 +99,10 @@ class Speech:
                     if not self.offline_mode:
                         self.text = self.google_instance.grab_prompt()
                     else:
-                        speech_to_text = STT()
-                        speech_to_text.stt()
-                        self.text = speech_to_text.text
                         
+                        self.speech_to_text.stt()
+                        self.text = self.speech_to_text.text
+
                     # self.activation kind of unneccesary...
                     self.activation.text = self.text
                     self.activation.check_input(activation_mode)
