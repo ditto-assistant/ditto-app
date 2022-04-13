@@ -21,6 +21,7 @@ from threading import Timer
 
 # local vosk
 from modules.vosk_model.activation import Activation
+from modules.vosk_model.stt import STT
 # from vosk import Model, KaldiRecognizer, SetLogLevel
 
 # local picovoice - replacing vosk :-)
@@ -46,6 +47,7 @@ class Speech:
 
     def __init__(self):
         self.recording = False
+        self.offline_mode = True
         self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
@@ -91,7 +93,14 @@ class Speech:
                 else:
                     self.idle_loop_count = 0
                     self.skip_wake = False
-                    self.text = self.google_instance.grab_prompt()
+                    if not self.offline_mode:
+                        self.text = self.google_instance.grab_prompt()
+                    else:
+                        speech_to_text = STT()
+                        speech_to_text.stt()
+                        self.text = speech_to_text.text
+                        
+                    # self.activation kind of unneccesary...
                     self.activation.text = self.text
                     self.activation.check_input(activation_mode)
                     if self.activation.activate:
