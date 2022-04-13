@@ -18,8 +18,8 @@ else:
     os.system("wget http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb")
     os.system("wget http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb")
     os.system("sudo apt-get install -f ./libttspico0_1.0+git20130326-9_armhf.deb ./libttspico-utils_1.0+git20130326-9_armhf.deb")
-    
-    
+    os.system("wget https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl")
+    os.system("pip install vosk-0.3.31-py3-none-linux_aarch64.whl")
 # os.system("cd resources/installer")
 # os.system("pip install https://download.lfd.uci.edu/pythonlibs/w6tyco5e/PyAudio-0.2.11-cp37-cp37m-win_amd64.whl")
 # os.system('resources\\installer\\Hourglassinstaller.exe')

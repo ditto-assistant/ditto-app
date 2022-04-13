@@ -427,7 +427,12 @@ class Assistant:
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
         # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
-        self.google.gtts(prompt)
+        if not self.speech.offline_mode:
+            self.google.gtts(prompt)
+        else:
+            self.speech_engine.say(prompt)
+            self.speech_engine.runAndWait()
+
         
 if __name__ == "__main__":
 
