@@ -47,7 +47,7 @@ class Speech:
 
     def __init__(self):
         self.recording = False
-        self.offline_mode = False
+        self.offline_mode = True
         self.speech_to_text = STT(os.getcwd()+'/modules/vosk_model/model')
 
         self.q = queue.Queue()

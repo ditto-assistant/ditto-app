@@ -13,7 +13,7 @@ UNIX = False
 DEVICE = 0
 if platform.system() == 'Linux':
     UNIX = True
-    DEVICE = 8
+    DEVICE = 1
 
 
 class STT:
@@ -35,20 +35,25 @@ class STT:
         print("'(|o_o|)'")
         print(",..\=/..,")
         print('listening...\n')
-        with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=DEVICE, dtype='int16',
-        channels=1, callback=self.callback):
-            model = Model(self.model_path)
-            rec = KaldiRecognizer(model, 16000)
-            # rec.SetWords(True)
-            while True:
-                data = q.get()
-                if rec.AcceptWaveform(data):
-                    self.text = rec.Result()
-                    self.text = json.loads(self.text)['text']
+        while True:
+            try:
+                with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=DEVICE, dtype='int16',
+                channels=1, callback=self.callback):
+                    model = Model(self.model_path)
+                    rec = KaldiRecognizer(model, 16000)
+                    # rec.SetWords(True)
+                    while True:
+                        data = q.get()
+                        if rec.AcceptWaveform(data):
+                            self.text = rec.Result()
+                            self.text = json.loads(self.text)['text']
+                            break
+                        else:
+                            pass
+                            # print(rec.PartialResult())
                     break
-                else:
-                    pass
-                    # print(rec.PartialResult())
+            except:
+                continue
 
 if __name__ == '__main__':
     speech_to_text = STT()
