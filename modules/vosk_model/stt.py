@@ -13,7 +13,7 @@ UNIX = False
 DEVICE = 0
 if platform.system() == 'Linux':
     UNIX = True
-    DEVICE = 2
+    DEVICE = 8
 
 
 class STT:

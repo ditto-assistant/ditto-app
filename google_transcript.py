@@ -18,6 +18,14 @@ from six.moves import queue
 RATE = 16000
 CHUNK = int(RATE / 10)  # 100ms
 
+import platform
+UNIX = False
+DEVICE = 1
+if platform.system() == 'Linux':
+    UNIX = True
+    DEVICE = 8
+
+
 PROMPT = ""
 
 class MicrophoneStream(object):
@@ -41,6 +49,7 @@ class MicrophoneStream(object):
             rate=self._rate,
             input=True,
             frames_per_buffer=self._chunk,
+            input_device_index=DEVICE,
             # Run the audio stream asynchronously to fill the buffer object.
             # This is necessary so that the input device's buffer doesn't
             # overflow while the calling thread makes network requests, etc.
