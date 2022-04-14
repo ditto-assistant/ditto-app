@@ -23,7 +23,7 @@ UNIX = False
 DEVICE = 1
 if platform.system() == 'Linux':
     UNIX = True
-    DEVICE = 8
+    DEVICE = 3
 
 
 PROMPT = ""
