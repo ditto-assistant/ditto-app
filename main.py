@@ -97,8 +97,9 @@ class Assistant:
             if UNIX:
                 self.tts(self.reply, self.speech_volume)
             else:
-                self.speech_engine.say(self.reply)
-                self.speech_engine.runAndWait()
+                self.google.gtts(self.reply)
+                # self.speech_engine.say(self.reply)
+                # self.speech_engine.runAndWait()
 
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
@@ -169,8 +170,9 @@ class Assistant:
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
 
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
@@ -213,8 +215,9 @@ class Assistant:
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
                 self.reply = ''
                 self.activation_mode = True # go back to idle...
 
@@ -254,8 +257,9 @@ class Assistant:
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
-                        self.speech_engine.say(self.reply) 
-                        self.speech_engine.runAndWait()
+                        self.google.gtts(self.reply)
+                        # self.speech_engine.say(self.reply) 
+                        # self.speech_engine.runAndWait()
                     
                     
                 self.activation_mode = True # go back to idle...
@@ -271,8 +275,9 @@ class Assistant:
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
 
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
@@ -288,8 +293,9 @@ class Assistant:
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
-                        self.speech_engine.say(self.reply)
-                        self.speech_engine.runAndWait()
+                        self.google.gtts(self.reply)
+                        # self.speech_engine.say(self.reply)
+                        # self.speech_engine.runAndWait()
                     self.activation_mode = True # go back to idle...    
                     self.reply = ''
                 else:
@@ -437,7 +443,5 @@ class Assistant:
 if __name__ == "__main__":
 
     assistant = Assistant()
-    if UNIX:
-        os.system('eval $(./resources/export.sh)')
     while True:
         assistant.activation_sequence()

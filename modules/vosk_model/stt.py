@@ -1,4 +1,5 @@
 # for py_audio activation (offline method)
+from lib2to3.pytree import Base
 from vosk import Model, KaldiRecognizer, SetLogLevel
 SetLogLevel(-1)
 import sounddevice as sd
@@ -52,8 +53,9 @@ class STT:
                             pass
                             # print(rec.PartialResult())
                     break
-            except:
-                continue
+            except BaseException as e:
+                print(e)
+                break
 
 if __name__ == '__main__':
     speech_to_text = STT()

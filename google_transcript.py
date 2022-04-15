@@ -18,13 +18,6 @@ from six.moves import queue
 RATE = 16000
 CHUNK = int(RATE / 10)  # 100ms
 
-import platform
-UNIX = False
-DEVICE = 1
-if platform.system() == 'Linux':
-    UNIX = True
-    DEVICE = 1
-
 
 PROMPT = ""
 
@@ -49,7 +42,6 @@ class MicrophoneStream(object):
             rate=self._rate,
             input=True,
             frames_per_buffer=self._chunk,
-            input_device_index=DEVICE,
             # Run the audio stream asynchronously to fill the buffer object.
             # This is necessary so that the input device's buffer doesn't
             # overflow while the calling thread makes network requests, etc.
@@ -103,6 +95,17 @@ class Google():
         # See http://g.co/cloud/speech/docs/languages
         # for a list of supported languages.
         self.language_code = "en-US"  # a BCP-47 language tag
+        self.client = speech.SpeechClient()
+        self.config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=RATE,
+            language_code=self.language_code,
+            audio_channel_count=1,
+        )
+
+        self.streaming_config = speech.StreamingRecognitionConfig(
+            config=self.config, interim_results=True
+        )
 
 
     def listen_print_loop(self, responses):
@@ -134,7 +137,6 @@ class Google():
 
             # Display the transcription of the top alternative.
             transcript = result.alternatives[0].transcript
-
             # Display interim results, but with a carriage return at the end of the
             # line, so subsequent lines will overwrite them.
             #
@@ -163,17 +165,6 @@ class Google():
 
 
     def grab_prompt(self):
-        self.client = speech.SpeechClient()
-        self.config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=RATE,
-            language_code=self.language_code,
-        )
-
-        self.streaming_config = speech.StreamingRecognitionConfig(
-            config=self.config, interim_results=True
-        )
-
         with MicrophoneStream(RATE, CHUNK) as stream:
             audio_generator = stream.generator()
             requests = (
@@ -185,7 +176,6 @@ class Google():
             print("'(|o_o|)'")
             print(",..\=/..,")
             print('listening...\n')
-            # playsound(os.path.abspath('resources/sounds/ditto-on.mp3'))
             pygame.mixer.init()
             pygame.mixer.music.load("resources/sounds/ditto-on.mp3")
             pygame.mixer.music.play()
@@ -196,7 +186,6 @@ class Google():
 
             # Now, put the transcription responses to use.
             self.prompt = self.listen_print_loop(responses)
-        
         return self.prompt
 
 
