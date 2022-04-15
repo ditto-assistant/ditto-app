@@ -104,16 +104,6 @@ class Google():
         # for a list of supported languages.
         self.language_code = "en-US"  # a BCP-47 language tag
 
-        self.client = speech.SpeechClient()
-        self.config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=RATE,
-            language_code=self.language_code,
-        )
-
-        self.streaming_config = speech.StreamingRecognitionConfig(
-            config=self.config, interim_results=True
-        )
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -173,6 +163,17 @@ class Google():
 
 
     def grab_prompt(self):
+        self.client = speech.SpeechClient()
+        self.config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=RATE,
+            language_code=self.language_code,
+        )
+
+        self.streaming_config = speech.StreamingRecognitionConfig(
+            config=self.config, interim_results=True
+        )
+
         with MicrophoneStream(RATE, CHUNK) as stream:
             audio_generator = stream.generator()
             requests = (
