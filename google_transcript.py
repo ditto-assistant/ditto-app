@@ -14,6 +14,8 @@ import pygame
 import pyaudio
 from six.moves import queue
 
+import sounddevice # to suppress ALSA warnings...
+
 # Audio recording parameters
 RATE = 16000
 CHUNK = int(RATE / 10)  # 100ms

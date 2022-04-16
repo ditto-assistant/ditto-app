@@ -15,9 +15,7 @@ if not UNIX:
     os.system("pip install pipwin")
     os.system("pipwin install pyaudio")
 else:
-    os.system("wget http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb")
-    os.system("wget http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb")
-    os.system("sudo apt-get install -f ./libttspico0_1.0+git20130326-9_armhf.deb ./libttspico-utils_1.0+git20130326-9_armhf.deb")
+    # os.system("sudo apt-get install libttspico-utils espeak")
     os.system("wget https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl")
     os.system("pip install vosk-0.3.31-py3-none-linux_aarch64.whl")
 # os.system("cd resources/installer")
