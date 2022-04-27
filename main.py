@@ -97,8 +97,9 @@ class Assistant:
             if UNIX:
                 self.tts(self.reply, self.speech_volume)
             else:
-                self.speech_engine.say(self.reply)
-                self.speech_engine.runAndWait()
+                self.google.gtts(self.reply)
+                # self.speech_engine.say(self.reply)
+                # self.speech_engine.runAndWait()
 
         elif self.application == 'model-selector': # model selector logic
             self.prompt = self.speech.text
@@ -169,8 +170,9 @@ class Assistant:
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
 
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
@@ -213,8 +215,9 @@ class Assistant:
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
                 self.reply = ''
                 self.activation_mode = True # go back to idle...
 
@@ -254,8 +257,9 @@ class Assistant:
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
-                        self.speech_engine.say(self.reply) 
-                        self.speech_engine.runAndWait()
+                        self.google.gtts(self.reply)
+                        # self.speech_engine.say(self.reply) 
+                        # self.speech_engine.runAndWait()
                     
                     
                 self.activation_mode = True # go back to idle...
@@ -271,8 +275,9 @@ class Assistant:
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
                 else:
-                    self.speech_engine.say(self.reply)
-                    self.speech_engine.runAndWait()
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
 
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
@@ -288,8 +293,9 @@ class Assistant:
                     if UNIX:
                         self.tts(self.reply, self.speech_volume)
                     else:
-                        self.speech_engine.say(self.reply)
-                        self.speech_engine.runAndWait()
+                        self.google.gtts(self.reply)
+                        # self.speech_engine.say(self.reply)
+                        # self.speech_engine.runAndWait()
                     self.activation_mode = True # go back to idle...    
                     self.reply = ''
                 else:
@@ -419,6 +425,7 @@ class Assistant:
             self.conversation_timer = 0
             print('[conversation timer reset]\n\nidle...') 
             self.command.reset_conversation() # reset conversation prompt 
+            self.command.grab_lifx_lights() # user idle, use this time to update LAN lights
             self.conv_timer.cancel()
             self.conv_timer_mode = False # turn off timer
  
@@ -426,12 +433,15 @@ class Assistant:
     def tts(self, prompt, volume_percent):
         os.system('amixer -q set Master ' + str(volume_percent)+'%')
         # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
-        self.google.gtts(prompt)
+        if not self.speech.offline_mode:
+            self.google.gtts(prompt)
+        else:
+            self.speech_engine.say(prompt)
+            self.speech_engine.runAndWait()
+
         
 if __name__ == "__main__":
 
     assistant = Assistant()
-    if UNIX:
-        os.system('eval $(./resources/export.sh)')
     while True:
         assistant.activation_sequence()

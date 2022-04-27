@@ -1,9 +1,8 @@
 pyttsx3
 openai
 playsound
-sounddevice
-google-cloud-speech
-vosk
+sounddevice==0.4.3
+google-cloud-speech==2.11.1
 spotipy
 dload
 picovoice

@@ -14,9 +14,12 @@ import pygame
 import pyaudio
 from six.moves import queue
 
+import sounddevice # to suppress ALSA warnings...
+
 # Audio recording parameters
 RATE = 16000
 CHUNK = int(RATE / 10)  # 100ms
+
 
 PROMPT = ""
 
@@ -94,17 +97,18 @@ class Google():
         # See http://g.co/cloud/speech/docs/languages
         # for a list of supported languages.
         self.language_code = "en-US"  # a BCP-47 language tag
-
         self.client = speech.SpeechClient()
         self.config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=RATE,
             language_code=self.language_code,
+            audio_channel_count=1,
         )
 
         self.streaming_config = speech.StreamingRecognitionConfig(
             config=self.config, interim_results=True
         )
+
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -135,7 +139,6 @@ class Google():
 
             # Display the transcription of the top alternative.
             transcript = result.alternatives[0].transcript
-
             # Display interim results, but with a carriage return at the end of the
             # line, so subsequent lines will overwrite them.
             #
@@ -175,7 +178,6 @@ class Google():
             print("'(|o_o|)'")
             print(",..\=/..,")
             print('listening...\n')
-            # playsound(os.path.abspath('resources/sounds/ditto-on.mp3'))
             pygame.mixer.init()
             pygame.mixer.music.load("resources/sounds/ditto-on.mp3")
             pygame.mixer.music.play()
@@ -186,7 +188,6 @@ class Google():
 
             # Now, put the transcription responses to use.
             self.prompt = self.listen_print_loop(responses)
-        
         return self.prompt
 
 
