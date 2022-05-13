@@ -197,6 +197,70 @@
                 "I-playlist",
                 "O"
             ]
+        },
+        {
+            "words": [
+                "play",
+                "sweet",
+                "by",
+                "tyler",
+                "on",
+                "spotify"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "O",
+                "B-artist",
+                "O",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "crucial",
+                "by",
+                "false",
+                "jasmine",
+                "spotify"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "O",
+                "B-artist",
+                "I-artist",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "casio",
+                "vanguard",
+                "by",
+                "kurt",
+                "rosenwinkel"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "I-song",
+                "O",
+                "B-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "gravity"
+            ],
+            "labels": [
+                "O",
+                "B-song"
+            ]
         }
     ]
 }
