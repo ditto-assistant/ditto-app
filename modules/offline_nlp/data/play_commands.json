@@ -237,11 +237,11 @@
         {
             "words": [
                 "play",
-                "casio",
-                "vanguard",
+                "Casio",
+                "Vanguard",
                 "by",
-                "kurt",
-                "rosenwinkel"
+                "Kurt",
+                "Rosenwinkel"
             ],
             "labels": [
                 "O",
@@ -260,6 +260,24 @@
             "labels": [
                 "O",
                 "B-song"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "Sweet",
+                "by",
+                "Tyler",
+                "the",
+                "Creator"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "O",
+                "B-artist",
+                "I-artist",
+                "I-artist"
             ]
         }
     ]

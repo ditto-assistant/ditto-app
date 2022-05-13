@@ -27,9 +27,9 @@ from spacy.training.example import Example
 from tqdm import tqdm
 
 # which model to create
-PLAY=0
+PLAY=1
 TIMER=0
-NUM=1
+NUM=0
 
 # def create_load_data():
 # load in and organize data
