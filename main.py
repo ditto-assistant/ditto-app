@@ -108,38 +108,39 @@ class Assistant:
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
+
+
             if self.offline_response['category'] == 'lights':
+                try:
+                    # global lights handler
+                    if not action == 'numeric' and sub_cat == 'none':
+                        if 'off' in action:
+                            self.reply = '[Turning off the lights]'
+                        elif 'on' in action:
+                            self.reply = '[Turning on the lights]'
+                        else: 
+                            self.reply = '[Setting lights to %s]' % action
+                        self.command.toggle_light(action)
 
-                # global lights handler
-                if not action == 'numeric' and sub_cat == 'none':
-                    if 'off' in action:
-                        self.reply = '[Turning off the lights]'
-                    elif 'on' in action:
-                        self.reply = '[Turning on the lights]'
-                    else: 
-                        self.reply = '[Setting lights to %s]' % action
-                    self.command.toggle_light(action)
-
-                # brightness handlers per light
-                elif action=='numeric':
-                    self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
-                    value = self.ner_response['numeric']
-                    entity = self.ner_response['entity']
-                    if 'lamp' in entity:
-                        val_scale = self.val_map[int(value)-1]
-                        self.command.bedroom_lamp.set_brightness(val_scale)
-                    elif 'bathroom' in entity:
-                        val_scale = self.val_map[int(value)-1]
-                        self.command.bathroom_left.set_brightness(val_scale)
-                        self.command.bathroom_right.set_brightness(val_scale)
-                    elif 'bedroom light' in entity:
-                        val_scale = self.val_map[int(value)-1]
-                        self.command.bedroom_light.set_brightness(val_scale)
-                    self.reply = '[Setting %s brightness to %d]' % (str(entity),int(value))
-               
-                else:
-                    try:
-                        
+                    # brightness handlers per light
+                    elif action=='numeric':
+                        self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
+                        value = self.ner_response['numeric']
+                        entity = self.ner_response['entity']
+                        if 'lamp' in entity:
+                            val_scale = self.val_map[int(value)-1]
+                            self.command.bedroom_lamp.set_brightness(val_scale)
+                        elif 'bathroom' in entity:
+                            val_scale = self.val_map[int(value)-1]
+                            self.command.bathroom_left.set_brightness(val_scale)
+                            self.command.bathroom_right.set_brightness(val_scale)
+                        elif 'bedroom light' in entity:
+                            val_scale = self.val_map[int(value)-1]
+                            self.command.bedroom_light.set_brightness(val_scale)
+                        self.reply = '[Setting %s brightness to %d]' % (str(entity),int(value))
+                
+                    else:
+                            
                         # bedroom light handler
                         if 'bedroom-light' in sub_cat:
                             self.command.bedroom_light.set_power(action)
@@ -167,20 +168,19 @@ class Assistant:
                             if action == 'on':
                                 self.reply = '[Turning on the bathroom lights]'
                             else: self.reply = '[Turning off the bathroom lights]'
-                                    
-                                            
-                    # any errors come here
-                    except BaseException as e:
-                        print(e)
-                        self.reply = '[Light not found]'
-                        
-                print(self.reply+'\n')
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.google.gtts(self.reply)
-                    # self.speech_engine.say(self.reply)
-                    # self.speech_engine.runAndWait()
+                                                
+                # any errors come here
+                except BaseException as e:
+                    print(e)
+                    self.reply = '[Light not found]'
+                            
+                    print(self.reply+'\n')
+                    if UNIX:
+                        self.tts(self.reply, self.speech_volume)
+                    else:
+                        self.google.gtts(self.reply)
+                        # self.speech_engine.say(self.reply)
+                        # self.speech_engine.runAndWait()
 
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
