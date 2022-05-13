@@ -136,6 +136,7 @@ class Spotify():
         try:
             results = sp.search(q=artist, limit=30) # change limit for more results
             for idx, track in enumerate(results['tracks']['items']): 
+                print(track['name'])
                 if song == None: return track['uri']
                 if song.lower() in track['name'].lower():
                     return track['uri']

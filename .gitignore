@@ -11,3 +11,5 @@ LibCST/
 export.sh
 output.mp3
 .DS_Store
+.cache
+.cache*
