@@ -204,16 +204,19 @@ class NLP:
 
     def prompt_ner_numeric(self, sentence):
         numeric = ''
+        entity = ''
         reply = self.ner_numeric(sentence)
         for ent in reply.ents:
             if 'numeric' in ent.label_:
                 numeric+=ent.text+' '
+            if 'entity' in ent.label_:
+                entity+=ent.text+' '
         try:
             numeric = w2n.word_to_num(numeric.strip())
         except:
             print('\n[word2num error]\n')
             numeric = numeric
-        response = '{"numeric" : "%s"}' % numeric
+        response = '{"numeric" : "%s", "entity" : "%s"}' % (numeric, entity)
         return response
 
 

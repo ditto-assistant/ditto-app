@@ -106,35 +106,51 @@ class Assistant:
 
             # check to see if can be handled offline before GPT-3...
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
+            sub_cat = self.offline_response['sub_category']
+            action = self.offline_response['action']
+
 
             if self.offline_response['category'] == 'lights':
-                if self.offline_response['sub_category'] == 'none':
-                    if 'off' in self.offline_response['action']:
-                        self.reply = '[Turning off the lights]'
-                    elif 'on' in self.offline_response['action']:
-                        self.reply = '[Turning on the lights]'
-                    else: 
-                        self.reply = '[Setting lights to %s]' % self.offline_response['action']
-                    self.command.toggle_light(self.offline_response['action'])
-                else:
-                    try:
-                        sub_cat = self.offline_response['sub_category']
-                        if 'bedroom-light' in sub_cat:
-                            action = self.offline_response['action']
-                            if not action == 'numeric':
-                                self.command.bedroom_light.set_power(action)
-                                if action == 'on':
-                                    self.reply = '[Turning on the bedroom lights]'
-                                else: self.reply = '[Turning off the bedroom lights]'
-                            else:
-                                self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
-                                value = self.ner_response['numeric']
-                                val_scale = self.val_map[int(value)]
-                                self.command.bedroom_light.set_brightness(val_scale)
+                try:
+                    # global lights handler
+                    if not action == 'numeric' and sub_cat == 'none':
+                        if 'off' in action:
+                            self.reply = '[Turning off the lights]'
+                        elif 'on' in action:
+                            self.reply = '[Turning on the lights]'
+                        else: 
+                            self.reply = '[Setting lights to %s]' % action
+                        self.command.toggle_light(action)
 
-                        elif 'bedroom-lamp' in sub_cat:
-                            action = self.offline_response['action']
+                    # brightness handlers per light
+                    elif action=='numeric':
+                        self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
+                        value = self.ner_response['numeric']
+                        entity = self.ner_response['entity']
+                        if 'lamp' in entity:
+                            val_scale = self.val_map[int(value)-1]
+                            self.command.bedroom_lamp.set_brightness(val_scale)
+                        elif 'bathroom' in entity:
+                            val_scale = self.val_map[int(value)-1]
+                            self.command.bathroom_left.set_brightness(val_scale)
+                            self.command.bathroom_right.set_brightness(val_scale)
+                        elif 'bedroom light' in entity:
+                            val_scale = self.val_map[int(value)-1]
+                            self.command.bedroom_light.set_brightness(val_scale)
+                        self.reply = '[Setting %s brightness to %d]' % (str(entity),int(value))
+                
+                    else:
                             
+                        # bedroom light handler
+                        if 'bedroom-light' in sub_cat:
+                            self.command.bedroom_light.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bedroom lights]'
+                            else: self.reply = '[Turning off the bedroom lights]'
+
+
+                        # bedroom lamp handler
+                        elif 'bedroom-lamp' in sub_cat:    
                             if action == 'on':
                                 self.reply = '[Turning on the bedroom lamp]'
                                 self.command.bedroom_lamp.set_power(action)
@@ -143,29 +159,21 @@ class Assistant:
                                 self.command.bedroom_lamp.set_power(action)
                             else:
                                 self.reply = '[Setting bedroom lamp to %s]' % action
-                                self.command.toggle_lamp_color(action)
-                                
+                                self.command.toggle_lamp_color(action)      
+
+                        # bathroom handler
                         elif 'bathroom' in sub_cat:
-                            action = self.offline_response['action']
-                            if not action == 'numeric':
-                                self.command.bathroom_left.set_power(action)
-                                self.command.bathroom_right.set_power(action)
-                                if action == 'on':
-                                    self.reply = '[Turning on the bathroom lights]'
-                                else: self.reply = '[Turning off the bathroom lights]'
-                            else:
-                                self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
-                                value = self.ner_response['numeric']
-                                if int(value) >= 1 and int(value) <= 10: # (vals 1-10 valid)
-                                    val_scale = self.val_map[int(value)-1]
-                                    self.command.bathroom_left.set_brightness(val_scale)
-                                    self.command.bathroom_right.set_brightness(val_scale)
-                                    self.reply = '[Setting bathroom lights brightness to %d]' % int(value)
-                                else:
-                                    self.reply = 'Brightness values are from 1 to 10.'
-                    except:
-                        self.reply = '[Light not found]'
-                        
+                            self.command.bathroom_left.set_power(action)
+                            self.command.bathroom_right.set_power(action)
+                            if action == 'on':
+                                self.reply = '[Turning on the bathroom lights]'
+                            else: self.reply = '[Turning off the bathroom lights]'
+                                                
+                # any errors come here
+                except BaseException as e:
+                    print(e)
+                    self.reply = '[Light not found]'
+                            
                 print(self.reply+'\n')
                 if UNIX:
                     self.tts(self.reply, self.speech_volume)
