@@ -174,13 +174,13 @@ class Assistant:
                     print(e)
                     self.reply = '[Light not found]'
                             
-                    print(self.reply+'\n')
-                    if UNIX:
-                        self.tts(self.reply, self.speech_volume)
-                    else:
-                        self.google.gtts(self.reply)
-                        # self.speech_engine.say(self.reply)
-                        # self.speech_engine.runAndWait()
+                print(self.reply+'\n')
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply)
+                    # self.speech_engine.runAndWait()
 
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
