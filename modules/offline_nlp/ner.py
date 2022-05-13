@@ -27,9 +27,9 @@ from spacy.training.example import Example
 from tqdm import tqdm
 
 # which model to create
-PLAY=1
+PLAY=0
 TIMER=0
-NUM=0
+NUM=1
 
 # def create_load_data():
 # load in and organize data
@@ -91,6 +91,9 @@ for ndx,data in enumerate(json_data['training_data']):
         for ndx,x in enumerate(labels):
             if 'numeric' in x:
                 tag = 'NUMERIC'
+                ent_ndx.append([ndx, x])
+            if 'entity' in x:
+                tag = 'ENTITY'
                 ent_ndx.append([ndx, x])
 
     sentence = ''

@@ -61,11 +61,15 @@ df_light = pd.DataFrame([
 
     # setting bedroom lamp sub-cat
     ['lights', 'bedroom-lamp', 'red', 'can you set the bedroom lamp to red'],
+    ['lights', 'bedroom-lamp', 'red', 'can you set the bedroom lamp to blue'],
     ['lights', 'bedroom-lamp', 'orange', 'bedroom lamp orange'],
     ['lights', 'bedroom-lamp', 'yellow', 'change the bed room lamp to yellow'],
     ['lights', 'bedroom-lamp', 'yellow', 'set the bedroom lamp to yellow'],
+    ['lights', 'bedroom-lamp', 'yellow', 'set the bedroom lamp to purple'],
     ['lights', 'bedroom-lamp', 'green', 'please change the bedroom lamp to green'],
     ['lights', 'bedroom-lamp', 'blue', 'set the lamp to blue'],
+    ['lights', 'bedroom-lamp', 'blue', 'set the lamp to Orange'],
+    ['lights', 'bedroom-lamp', 'blue', 'can you change the lamp to yellow'],
     ['lights', 'bedroom-lamp', 'on', 'turn on the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'turn off the bedroom lamp'],
     ['lights', 'bedroom-lamp', 'off', 'can you please turn off the bedroom lamp'],
@@ -86,14 +90,36 @@ df_light = pd.DataFrame([
     ['lights', 'bathroom-light', 'off', 'can you please turn off the bath room light'],
     ['lights', 'bathroom-light', 'off', 'turn off the bathroom lights'],
 
-    ['lights', 'bathroom-light', 'numeric', "set the bathroom light's brightness to 5"],
-    ['lights', 'bathroom-light', 'numeric', 'bathroom brightness to seven'],
-    ['lights', 'bathroom-light', 'numeric', "set the bathroom brightness to 9"],
-    ['lights', 'bathroom-light', 'numeric', 'please change the bathroom brightness to 10'],
-    ['lights', 'bathroom-light', 'numeric', 'please change the bathroom brightness to 10'],
-    ['lights', 'bathroom-light', 'numeric', 'change brightness in bathroom to 5'],
-    ['lights', 'bathroom-light', 'numeric', 'can you adjust the bathroom brightness to 8'],
-    ['lights', 'bathroom-light', 'numeric', 'can you set the bathroom lights to 2'],
+    # adjusting numeric parmeter in lights (forward to NER to extract entity and number)
+    ['lights', 'none', 'numeric', "set the bathroom light's brightness to 5"],
+    ['lights', 'none', 'numeric', 'bathroom brightness to seven'],
+    ['lights', 'none', 'numeric', "set the bathroom brightness to 9"],
+    ['lights', 'none', 'numeric', 'please change the bathroom brightness to 10'],
+    ['lights', 'none', 'numeric', 'please change the bathroom brightness to 10'],
+    ['lights', 'none', 'numeric', 'change brightness in bathroom to 5'],
+    ['lights', 'none', 'numeric', 'can you adjust the bathroom brightness to 8'],
+    ['lights', 'none', 'numeric', "set the bedroom light's brightness to 4"],
+    ['lights', 'none', 'numeric', 'bedroom brightness to eight'],
+    ['lights', 'none', 'numeric', "set the bedroom brightness to 7"],
+    ['lights', 'none', 'numeric', 'please change the bedroom brightness to 4'],
+    ['lights', 'none', 'numeric', 'change the bedroom brightness to 6'],
+    ['lights', 'none', 'numeric', 'change brightness in bedroom to 9'],
+    ['lights', 'none', 'numeric', 'can you adjust the bedroom brightness to 1'],
+    ['lights', 'none', 'numeric', 'can you set the bedroom lights to 9'],
+    ['lights', 'none', 'numeric', "set the bedroom lamp's brightness to 5"],
+    ['lights', 'none', 'numeric', 'bedroom lamp brightness to seven'],
+    ['lights', 'none', 'numeric', "set the bedroom lamp brightness to 9"],
+    ['lights', 'none', 'numeric', "please change the lamp's brightness to 10"],
+    ['lights', 'none', 'numeric', "please change the bedroom lamp's brightness to 10"],
+    ['lights', 'none', 'numeric', 'change brightness of lamp to 5'],
+    ['lights', 'none', 'numeric', 'can you adjust the bedroom lamp brightness to 8'],
+    ['lights', 'none', 'numeric', 'can you set the bedroom lamp to 2'],
+    ['lights', 'none', 'numeric', 'bedroom lamp to 6'],
+    ['lights', 'none', 'numeric', 'bedroom light to 6'],
+    ['lights', 'none', 'numeric', 'can you set the bedroom lights brightness to 6'],
+
+    
+
 
     ], columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 

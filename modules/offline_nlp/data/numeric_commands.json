@@ -1,6 +1,8 @@
 {
     "labels": [
         "O",
+        "B-entity",
+        "I-entity",
         "B-numeric"
     ],
     "training_data": [
@@ -17,8 +19,8 @@
             "labels": [
                 "O",
                 "O",
-                "O",
-                "O",
+                "B-entity",
+                "I-entity",
                 "O",
                 "O",
                 "B-numeric"
@@ -36,7 +38,7 @@
             "labels": [
                 "O",
                 "O",
-                "O",
+                "B-entity",
                 "O",
                 "O",
                 "B-numeric"
@@ -49,7 +51,7 @@
                 "5"
             ],
             "labels": [
-                "O",
+                "B-entity",
                 "O",
                 "B-numeric"
             ]
@@ -62,8 +64,8 @@
                 "one"
             ],
             "labels": [
-                "O",
-                "O",
+                "B-entity",
+                "I-entity",
                 "O",
                 "B-numeric"
             ]
@@ -76,7 +78,7 @@
                 "two"
             ],
             "labels": [
-                "O",
+                "B-entity",
                 "O",
                 "O",
                 "B-numeric"
@@ -98,7 +100,7 @@
                 "O",
                 "O",
                 "O",
-                "O",
+                "B-entity",
                 "O",
                 "O",
                 "B-numeric"
@@ -116,7 +118,7 @@
             "labels": [
                 "O",
                 "O",
-                "O",
+                "B-entity",
                 "O",
                 "O",
                 "B-numeric"
@@ -134,7 +136,67 @@
             "labels": [
                 "O",
                 "O",
+                "B-entity",
                 "O",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "bedroom",
+                "lamp",
+                "to ",
+                "seven"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-entity",
+                "I-entity",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "bedroom",
+                "lamp",
+                "to",
+                "5"
+            ],
+            "labels": [
+                "B-entity",
+                "I-entity",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "bedroom",
+                "lights",
+                "to",
+                "one"
+            ],
+            "labels": [
+                "B-entity",
+                "I-entity",
+                "O",
+                "B-numeric"
+            ]
+        },
+        {
+            "words": [
+                "bedroom",
+                "brightness",
+                "to",
+                "two"
+            ],
+            "labels": [
+                "B-entity",
                 "O",
                 "O",
                 "B-numeric"
