@@ -279,6 +279,104 @@
                 "I-artist",
                 "I-artist"
             ]
+        },
+        {
+            "words": [
+                "play",
+                "beginner's",
+                "luck",
+                "by",
+                "king",
+                "gizzard"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "I-song",
+                "O",
+                "I-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "beginner's",
+                "luck",
+                "by",
+                "king",
+                "gizzard",
+                "and",
+                "the",
+                "lizzard",
+                "wizard"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "I-song",
+                "O",
+                "I-artist",
+                "I-artist",
+                "I-artist",
+                "I-artist",
+                "I-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "Woman",
+                "by",
+                "Doja",
+                "Cat"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "O",
+                "B-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "Slow",
+                "by",
+                "black",
+                "midi"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "O",
+                "B-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "Let's",
+                "Write",
+                "a",
+                "Book",
+                "by",
+                "Field",
+                "Music"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "I-song",
+                "I-song",
+                "I-song",
+                "O",
+                "B-artist",
+                "I-artist"
+            ]
         }
     ]
 }
