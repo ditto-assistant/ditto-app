@@ -194,13 +194,13 @@ class Command:
 
         if model == 'conversation-application':
             self.response = openai.Completion.create(
-                engine="text-ada-001",
+                engine="text-babbage-001",
                 prompt=self.conversation_prompt + command,
                 temperature=0.6,
                 max_tokens=300,
                 top_p=1,
-                frequency_penalty=0.7,
-                presence_penalty=0.1,
+                frequency_penalty=1.7,
+                presence_penalty=1.5,
                 stop=["\nuser: "]
             )
         
