@@ -43,6 +43,7 @@ class Face:
                 self.face_cnt += 1
                 self.face_cnt_timer = 0
                 if self.face_cnt == 40:
+                    self.attention_cnt += 1
                     return True
 
             
@@ -62,7 +63,6 @@ class Face:
         self.face_timer.start()
         if self.face_timer_mode: 
             self.face_cnt_timer += 1
-            # print ("conversation counter: %d" % self.conversation_timer)
         if self.face_cnt_timer == timeout:
             self.face_cnt_timer = 0
             self.face_cnt = 0
