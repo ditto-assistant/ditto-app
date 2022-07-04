@@ -160,6 +160,48 @@
                 "B-second",
                 "O"
             ]
+        },
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "a",
+                "minute"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-minute",
+                "I-minute"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "a",
+                "timer",
+                "for",
+                "a",
+                "minute",
+                "and",
+                "20",
+                "seconds"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-minute",
+                "I-minute",
+                "O",
+                "B-second",
+                "O"
+            ]
         }
     ]
 }
