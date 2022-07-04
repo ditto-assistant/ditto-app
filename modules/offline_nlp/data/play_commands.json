@@ -186,6 +186,39 @@
             "words": [
                 "play",
                 "my",
+                "baked",
+                "playlist"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-playlist",
+                "O"
+
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "my",
+                "playlist",
+                "Justin",
+                "on",
+                "Spotify"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "B-playlist",
+                "O",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "my",
                 "discover",
                 "weekly",
                 "playlist"
@@ -294,7 +327,7 @@
                 "B-song",
                 "I-song",
                 "O",
-                "I-artist",
+                "B-artist",
                 "I-artist"
             ]
         },
@@ -316,7 +349,7 @@
                 "B-song",
                 "I-song",
                 "O",
-                "I-artist",
+                "B-artist",
                 "I-artist",
                 "I-artist",
                 "I-artist",
@@ -373,6 +406,64 @@
                 "I-song",
                 "I-song",
                 "I-song",
+                "O",
+                "B-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "the",
+                "great",
+                "apes",
+                "by",
+                "Red",
+                "Hot",
+                "Chili",
+                "Peppers"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "I-song",
+                "I-song",
+                "O",
+                "B-artist",
+                "I-artist",
+                "I-artist",
+                "I-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "Under",
+                "the",
+                "light",
+                "by",
+                "fleece"
+            ],
+            "labels": [
+                "O",
+                "B-song",
+                "I-song",
+                "I-song",
+                "O",
+                "B-artist"
+            ]
+        },
+        {
+            "words": [
+                "play",
+                "Elliot",
+                "by",
+                "Alex",
+                "Grey"
+            ],
+            "labels": [
+                "O",
+                "B-song",
                 "O",
                 "B-artist",
                 "I-artist"

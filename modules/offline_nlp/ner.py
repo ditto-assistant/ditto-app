@@ -27,8 +27,8 @@ from spacy.training.example import Example
 from tqdm import tqdm
 
 # which model to create
-PLAY=1
-TIMER=0
+PLAY=0
+TIMER=1
 NUM=0
 
 # def create_load_data():
@@ -50,7 +50,7 @@ entities = []
 for ndx,data in enumerate(json_data['training_data']):
 
     if PLAY:
-        if ndx == 30: break
+        # if ndx == 30: break
         words = data['words']
         labels = data['labels']
 
@@ -68,7 +68,7 @@ for ndx,data in enumerate(json_data['training_data']):
                     ent_ndx.append([ndx, x])
 
     elif TIMER:
-        if ndx == 30: break
+        # if ndx == 30: break
         words = data['words']
         labels = data['labels']
 
@@ -83,7 +83,7 @@ for ndx,data in enumerate(json_data['training_data']):
                     ent_ndx.append([ndx, x])
     
     elif NUM:
-        if ndx == 30: break
+        # if ndx == 30: break
         words = data['words']
         labels = data['labels']
 
