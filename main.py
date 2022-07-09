@@ -240,34 +240,41 @@ class Assistant:
                 minute = self.ner_response['minute']
                 second_reply = ''
                 minute_reply = ''
-                
-                if not second == '':
-                    if int(second) == 1:
-                        second_reply = ' second '
-                    else: second_reply = ' seconds '
-                if not minute == '':
-                    if int(minute) == 1:
-                        minute_reply = ' minute '
-                    else: minute_reply = ' minutes '
-                if not second == '' or minute == '':
-                    s = ''
-                    m = ''
+                if not second == '' and minute == '':
+                    
                     if not second == '':
-                        s = 's'
+                        if int(second) == 1:
+                            second_reply = ' second '
+                        else: second_reply = ' seconds '
                     if not minute == '':
-                        m = 'm'
-                    reply = minute + m + second + s
-                    reply.replace(' ', '')
-                    readable = minute + minute_reply + second + second_reply
-                    self.reply = '[Setting timer for %s]' % readable
+                        if int(minute) == 1:
+                            minute_reply = ' minute '
+                        else: minute_reply = ' minutes '
+                    if not second == '' or minute == '':
+                        s = ''
+                        m = ''
+                        if not second == '':
+                            s = 's'
+                        if not minute == '':
+                            m = 'm'
+                        reply = minute + m + second + s
+                        reply.replace(' ', '')
+                        readable = minute + minute_reply + second + second_reply
+                        self.reply = '[Setting timer for %s]' % readable
+                        print(self.reply+'\n')
+                        self.command.toggle_timer(reply)
+
+                else:
+
+                    self.reply = '[Invalid timer command]'
                     print(self.reply+'\n')
-                    self.command.toggle_timer(reply)
-                    if UNIX:
-                        self.tts(self.reply, self.speech_volume)
-                    else:
-                        self.google.gtts(self.reply)
-                        # self.speech_engine.say(self.reply) 
-                        # self.speech_engine.runAndWait()
+
+                if UNIX:
+                    self.tts(self.reply, self.speech_volume)
+                else:
+                    self.google.gtts(self.reply)
+                    # self.speech_engine.say(self.reply) 
+                    # self.speech_engine.runAndWait()
                     
                     
                 self.activation_mode = True # go back to idle...
