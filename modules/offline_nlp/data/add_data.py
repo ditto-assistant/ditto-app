@@ -187,7 +187,7 @@ def extract_prompts(filepath):
     return prompts
 
 conv_prompts = extract_prompts('prompts/conversation-application.txt')
-other_arr = []
+conv_arr = []
 
 # adding more to conversation prompt from a modified Kaggle conversation dataset:
 # https://www.kaggle.com/vaibhavgeek/conversation-json
@@ -195,22 +195,33 @@ with open('conversation.json', 'r') as f:
     conv = json.load(f)
     for group in conv['conversations']:
         for prompt in group:
-            other_arr.append(['other', 'none', 'none', prompt])
+            conv_arr.append(['conv', 'none', 'none', prompt])
 
-# "other" model for GPT-3 conversation and more
+# "conv" model for GPT-3 conversation and more
 for prompt in conv_prompts:
-    other_arr.append(['other', 'none', 'none', prompt])
+    conv_arr.append(['conv', 'none', 'none', prompt])
 
-other_arr.append(['other', 'none', 'none', 'can you recall the last time'])
-other_arr.append(['other', 'none', 'none', 'can you recall anything'])
-other_arr.append(['other', 'none', 'none', "what's the fastest way to get from point a to point b"])
-other_arr.append(['other', 'none', 'none', 'like what'])
-other_arr.append(['other', 'none', 'none', 'sorry to bother you'])
-other_arr.append(['other', 'none', 'none', 'come with us to our flight to Denver'])
-other_arr.append(['other', 'none', 'none', "I want to play a game with you"])
-other_arr.append(['other', 'none', 'none', 'good times'])
-other_arr.append(['other', 'none', 'none', 'pretty good just working on a midi generative network'])
-other_arr.append(['other', 'none', 'none', 'is it okay if I ask you some math questions'])
+conv_arr.append(['conv', 'none', 'none', 'can you recall the last time'])
+conv_arr.append(['conv', 'none', 'none', 'can you recall anything'])
+conv_arr.append(['conv', 'none', 'none', "what's the fastest way to get from point a to point b"])
+conv_arr.append(['conv', 'none', 'none', 'like what'])
+conv_arr.append(['conv', 'none', 'none', 'sorry to bother you'])
+conv_arr.append(['conv', 'none', 'none', 'come with us to our flight to Denver'])
+conv_arr.append(['conv', 'none', 'none', "I want to play a game with you"])
+conv_arr.append(['conv', 'none', 'none', 'good times'])
+conv_arr.append(['conv', 'none', 'none', 'pretty good just working on a midi generative network'])
+conv_arr.append(['conv', 'none', 'none', 'is it okay if I ask you some math questions'])
+conv_arr.append(['conv', 'none', 'exit', 'bye'])
+conv_arr.append(['conv', 'none', 'exit', 'talk to you later'])
+conv_arr.append(['conv', 'none', 'exit', 'goodbye'])
+conv_arr.append(['conv', 'none', 'exit', 'cancel'])
+conv_arr.append(['conv', 'none', 'exit', 'stop'])
+conv_arr.append(['conv', 'none', 'exit', 'stop Ditto'])
+conv_arr.append(['conv', 'none', 'exit', 'thanks Ditto'])
+conv_arr.append(['conv', 'none', 'exit', 'shut up'])
+conv_arr.append(['conv', 'none', 'exit', 'stop talking'])
+conv_arr.append(['conv', 'none', 'exit', 'please stop'])
+
 
 
 spot_prompts = extract_prompts('prompts/spotify-application.txt')
@@ -218,10 +229,10 @@ time_prompts = extract_prompts('prompts/timer-application.txt')
 
 
 for prompt in spot_prompts:
-    other_arr.append(['spotify', 'none', 'none', prompt])
+    conv_arr.append(['spotify', 'none', 'none', prompt])
 for prompt in time_prompts:
-    other_arr.append(['timer', 'none', 'none', prompt])
-df_other = pd.DataFrame(other_arr, columns=['Category', 'Subcategory', 'Action', 'Sentence'])
+    conv_arr.append(['timer', 'none', 'none', prompt])
+df_other = pd.DataFrame(conv_arr, columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
 
 df = df_light.append(
