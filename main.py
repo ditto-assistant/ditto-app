@@ -106,11 +106,12 @@ class Assistant:
 
             # check to see if can be handled offline before GPT-3...
             self.offline_response = json.loads(self.nlp.prompt(self.prompt))
+            cat = self.offline_response['category']
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
 
 
-            if self.offline_response['category'] == 'lights':
+            if  cat == 'lights':
                 try:
                     # global lights handler
                     if not action == 'numeric' and sub_cat == 'none':
@@ -185,7 +186,7 @@ class Assistant:
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
 
-            elif self.offline_response['category'] == 'spotify':
+            elif cat == 'spotify':
                 self.ner_response = json.loads(self.nlp.prompt_ner_play(self.prompt))
                 song = self.ner_response['song']
                 artist = self.ner_response['artist']
@@ -229,12 +230,12 @@ class Assistant:
                 self.reply = ''
                 self.activation_mode = True # go back to idle...
 
-            elif self.offline_response['category'] == 'music':
+            elif cat == 'music':
                 self.command.player.remote(self.offline_response['action'])
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
                 
-            elif self.offline_response['category'] == 'timer':
+            elif cat == 'timer':
                 self.ner_response = json.loads(self.nlp.prompt_ner_timer(self.prompt))
                 second = self.ner_response['second']
                 minute = self.ner_response['minute']
@@ -280,7 +281,7 @@ class Assistant:
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
             
-            elif self.offline_response['category'] == 'weather':
+            elif cat == 'weather':
                 sub_cat = self.offline_response['sub_category']
                 if sub_cat == 'none':
                     response = json.loads(self.command.weather_app.get_weather())['curr_temp']
@@ -297,7 +298,7 @@ class Assistant:
                 self.activation_mode = True # go back to idle...
                 self.reply = ''
 
-            elif self.offline_response['category'] == 'wolfram':
+            elif cat == 'wolfram':
                 if self.offline_response['sub_category'] == 'math':
                     self.reply = self.command.wolfram.get_response(self.prompt.lower())
                 else: 
@@ -316,9 +317,18 @@ class Assistant:
                 else:
                     self.application = 'conversation-application'
                     
-            else: # send to GPT3 if conversational intent extracted by offline model
-
-                self.application = 'conversation-application'
+            elif cat == 'conv': # send to GPT3 if conversational intent extracted by offline model
+                if action == 'exit':
+                    self.activation_mode = True # go back to idle...
+                    self.application = 'model-selector'
+                    pygame.mixer.init()
+                    pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
+                    pygame.mixer.music.play()
+                    while pygame.mixer.music.get_busy() == True:
+                        continue
+                    self.comm_timer_mode = False
+                    self.comm_timer.cancel()
+                else: self.application = 'conversation-application'
 
     def activation_sequence(self):
         self.activation_mode = True
@@ -337,16 +347,7 @@ class Assistant:
             self.command_timer = 0 # (can be used per application for detecting user idle to cancel)
             self.command_timeout_handler(4) # executes every n 'seconds' (used to handle back to idle)
 
-            self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for command
-            
-            if self.speech.text == 'cancel' or self.speech.text == 'goodbye': # if the user would like to cancel
-                pygame.mixer.init()
-                pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
-                pygame.mixer.music.play()
-                while pygame.mixer.music.get_busy() == True:
-                    continue
-                self.comm_timer_mode = False
-                self.comm_timer.cancel()
+            self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for command                
 
             if self.comm_timer_mode: # command has been spoken (app on enter section)
                 self.comm_timer.cancel()
