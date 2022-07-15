@@ -9,7 +9,14 @@ Python 3.7.x
 import pandas as pd
 import json
 import os
+import numpy as np
 
+facts = np.loadtxt('S08_question_answer_pairs.txt', dtype=str, delimiter='\n')
+factual_questions = []
+for question in facts:
+    q = question.split('\t')[1]
+    factual_questions.append(q)
+    
 # light application model
 df_light = pd.DataFrame([
 
@@ -228,18 +235,29 @@ spot_prompts = extract_prompts('prompts/spotify-application.txt')
 time_prompts = extract_prompts('prompts/timer-application.txt')
 
 
+# use conv_arr to append sourced data to reinforce other categories.
 for prompt in spot_prompts:
     conv_arr.append(['spotify', 'none', 'none', prompt])
 for prompt in time_prompts:
     conv_arr.append(['timer', 'none', 'none', prompt])
+cnt = 0
+for prompt in factual_questions:
+    if "NOTTTT  FOUND" in prompt or len(prompt) <= 4:
+        continue
+    conv_arr.append(['wolfram', 'none', 'none', prompt])
+    cnt+=1
+    if cnt==100: break
+
 df_other = pd.DataFrame(conv_arr, columns=['Category', 'Subcategory', 'Action', 'Sentence'])
 
+# append all data together to make corpus
+# df = df_light.append(
+#     df_music, ignore_index=True).append(
+#         df_other, ignore_index=True).append(
+#             df_weather, ignore_index=True).append(
+#                 df_wolfram, ignore_index=True
+# )
 
-df = df_light.append(
-    df_music, ignore_index=True).append(
-        df_other, ignore_index=True).append(
-            df_weather, ignore_index=True).append(
-                df_wolfram, ignore_index=True
-            )
+df = pd.concat([df_light, df_music, df_other, df_weather, df_wolfram], ignore_index=True)
 
 df.to_csv('dataset_ditto.csv', index=False)
