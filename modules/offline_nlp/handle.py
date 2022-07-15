@@ -49,6 +49,10 @@ class NLP:
 
         # Data Preperation
         self.sentences = df['Sentence']
+        temp = []
+        for sentence in self.sentences:
+            if 'str' in str(type(sentence)): temp.append(sentence)
+        self.sentences = temp
         self.categories = df['Category']
         self.subcategories = df['Subcategory']
         self.actions = df['Action']
@@ -56,7 +60,6 @@ class NLP:
         self.uniquecategories = list(set(self.categories))
         self.uniquesubcategories = list(set(self.subcategories))
         self.uniqueactions = list(set(self.actions))
-
         mergesentences = list(itertools.chain.from_iterable([word_tokenize(sentence.lower()) for sentence in self.sentences]))
         self.vocabulary = list(set(mergesentences))
         # print(vocabulary)
