@@ -10,6 +10,7 @@
 #
 
 import argparse
+from email.mime import audio
 import json
 import os
 import sys
@@ -162,19 +163,34 @@ class PicovoiceDemo(Thread):
 
 
 def pico_wake(path):
-    with open(path+'/modules/pico_python/key.json', 'r') as f:
-        key = json.load(f)
+    config_path = path+'/modules/pico_python/config.json'
+    key_path = path+'/modules/pico_python/key.json'
+    try:
+        with open(config_path, 'r') as f:
+            dev = json.load(f)
+    except:
+        print("default dev selected")
+        dev = dict()
+        dev['device'] = 'default'
+        with open(config_path, 'w') as f:
+            f.write('{"dev":"default"}')
+    try:
+        with open(key_path, 'r') as f:
+            key = json.load(f)
+    except:
+        print("blank pico key... fill out 'key.json' with working key")
+        with open(key_path, 'w') as f:
+            f.write('{"key":""}')
+
     access_key = key['key']
     devices = PvRecorder.get_audio_devices()
+    audio_device_index=0
     for i in range(len(devices)):
-        if operating_system=='Linux':
-            if 'QuickCam' in devices[i]:
-                audio_device_index=i
-        elif operating_system=='Darwin':
+        if dev['device'] in devices[i]:
+            audio_device_index=i
+        if dev['device'] == 'default':
             audio_device_index=0
-        else:
-            if 'Line In 5-6' in devices[i]:
-                audio_device_index=i
+        
     if operating_system=='Linux':            
         keyword_path = path+"/modules/pico_python/hey-ditto_en_raspberry-pi_v2_1_0.ppn"
         context_path = path+"/modules/pico_python/ditto_en_raspberry-pi_v2_1_0.rhn"

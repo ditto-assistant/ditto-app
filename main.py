@@ -33,6 +33,7 @@ class Assistant:
 
     def __init__(self):
         print('[Booting...]')
+        self.load_config()
         self.speech = Speech()
         self.command = Command(os.getcwd())
         self.speech_engine = pyttsx3.init()
@@ -42,7 +43,7 @@ class Assistant:
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
-        self.speech_volume = 70 # percent
+        self.speech_volume = self.config['volume'] # percent
         self.prompt = ""
         self.reply = ""
         self.application = "model-selector" # first application to boot into when name is spoken
@@ -61,7 +62,16 @@ class Assistant:
         self.val_map = np.linspace(0, 65535, 10).tolist()
 
         self.conv_err_loop = 0
-        
+
+    def load_config(self):
+        config_path = 'resources/config.json'
+        try:
+            with open(config_path, 'r') as f:
+                self.config = json.load(f)
+        except:
+            self.config = json.loads('{"volume": 70}')
+            with open(config_path, 'w') as f:
+                f.write('{"volume": 70}')
 
     def send_command(self): # application logic
 
