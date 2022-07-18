@@ -79,7 +79,7 @@ class Command:
         self.bedroom_lamp.set_color(self.lifx_color_map[color])
 
     def load_config(self):
-        with open('config.json', 'r') as f:
+        with open('resources/config.json', 'r') as f:
             self.config = json.load(f)
         
 
