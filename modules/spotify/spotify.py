@@ -67,7 +67,7 @@ class Spotify():
         self.user_values = json.loads(s)
 
         try:
-            with open(path +'/resources/config.json', 'r') as f:
+            with open(path +'/config.json', 'r') as f:
                 self.config = json.load(f)
         except:
             self.config = json.loads('{"play_mode": "local"}')
