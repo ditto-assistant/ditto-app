@@ -29,7 +29,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 class Command:
 
     def __init__(self, path):
-
+        self.load_config()
         self.weather_app = Weather()
         self.wolfram = Wolfram(path)
 
@@ -78,10 +78,15 @@ class Command:
     def toggle_lamp_color(self, color):
         self.bedroom_lamp.set_color(self.lifx_color_map[color])
 
+    def load_config(self):
+        with open('config.json', 'r') as f:
+            self.config = json.load(f)
+        
 
     def toggle_light(self, mode):
         try:
-            s = serial.Serial('/dev/serial/by-id/usb-Teensyduino_USB_Serial_10498880-if00', baudrate=9600, bytesize=8)
+            dev_path = self.load_config['teensy_path']
+            s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
             if mode == 'on':
                 s.write(b'\x00')
                 self.light_status = True

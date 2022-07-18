@@ -65,13 +65,14 @@ class Assistant:
 
     def load_config(self):
         config_path = 'resources/config.json'
+        default_config = '{"volume": 70, "teensy_path": ""}'
         try:
             with open(config_path, 'r') as f:
                 self.config = json.load(f)
         except:
-            self.config = json.loads('{"volume": 70}')
+            self.config = json.loads(default_config)
             with open(config_path, 'w') as f:
-                f.write('{"volume": 70}')
+                f.write(default_config)
 
     def send_command(self): # application logic
 
