@@ -85,7 +85,7 @@ class Command:
 
     def toggle_light(self, mode):
         try:
-            dev_path = self.load_config['teensy_path']
+            dev_path = self.config['teensy_path']
             s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
             if mode == 'on':
                 s.write(b'\x00')
