@@ -105,20 +105,20 @@ class Spotify():
 
 
     def play_spotify(self, uri):
-        if 'playlist' in uri: context_mode = 'playlist'
-        else: context_mode = 'song'
-        scope = "user-read-playback-state,user-modify-playback-state"
-        username = self.user_values['username']
-        self.token = util.prompt_for_user_token(
-            username, scope=scope, 
-            redirect_uri='http://127.0.0.1:8124'
-        )
-        self.auth = spotipy.SpotifyOAuth(
-            redirect_uri='http://127.0.0.1:8124', username=username
-        )
-        sp = spotipy.Spotify(auth_manager=self.auth)
-        self.grab_active_id(sp) # update device-id with latest active player
         try:
+            if 'playlist' in uri: context_mode = 'playlist'
+            else: context_mode = 'song'
+            scope = "user-read-playback-state,user-modify-playback-state"
+            username = self.user_values['username']
+            self.token = util.prompt_for_user_token(
+                username, scope=scope, 
+                redirect_uri='http://127.0.0.1:8124'
+            )
+            self.auth = spotipy.SpotifyOAuth(
+                redirect_uri='http://127.0.0.1:8124', username=username
+            )
+            sp = spotipy.Spotify(auth_manager=self.auth)
+            self.grab_active_id(sp) # update device-id with latest active player
             if context_mode=='playlist':
                 for x in self.user_playlists:
                     if uri in x: # find playist 
