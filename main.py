@@ -152,7 +152,7 @@ class Assistant:
                             
                         # bedroom light handler
                         if 'bedroom-light' in sub_cat:
-                            self.command.toggle_light_power(action, 'bedroom light')
+                            self.command.toggle_light_power(action, 'bedroom')
                             if action == 'on':
                                 self.reply = '[Turning on the bedroom lights]'
                             else: self.reply = '[Turning off the bedroom lights]'
