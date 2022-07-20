@@ -11,6 +11,7 @@ notes:
     $env:OPENAI_API_KEY="your-key-here"
 """
 
+from lib2to3.pytree import Base
 import os
 import openai
 import serial
@@ -64,43 +65,72 @@ class Command:
 
     def grab_lifx_lights(self):
         try:
-            self.bedroom_lamp = lifxlan.LifxLAN().get_device_by_name('Lamp')
-            self.bedroom_light = lifxlan.LifxLAN().get_device_by_name('Light')
-            self.bathroom_left = lifxlan.LifxLAN().get_device_by_name('BathroomLeft')
-            self.bathroom_right = lifxlan.LifxLAN().get_device_by_name('BathroomRight')
+            light_groups = self.config['light_groups']
+            self.lifx_lights = []
+            lights = lifxlan.LifxLAN().get_lights()
+            
+            for group in light_groups:
+                for light in lights:
+                    light_group = light.get_group()
+                    if self.config['user'] in light_group:
+                        self.lifx_lights.append(light)
+
         except BaseException as e:
             print(e)
-            self.bedroom_lamp = []
-            self.bedroom_light = []
-            self.bathroom_left = []
-            self.bathroom_right = []
 
-    def toggle_lamp_color(self, color):
-        self.bedroom_lamp.set_color(self.lifx_color_map[color])
+    def set_light_brightness(self, value, light_name=None):
+        if light_name==None:
+            for light in self.lifx_lights:
+                light.set_brightness(value)
+
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    light.set_brightness(value)
+
+    def toggle_light_color(self, color, light_name=None):
+        if light_name==None:
+            for light in self.lifx_lights:
+                if light.supports_color():
+                    light.set_color(self.lifx_color_map[color])
+
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    if light.supports_color():
+                        light.set_color(self.lifx_color_map[color])
 
     def load_config(self):
         with open('resources/config.json', 'r') as f:
             self.config = json.load(f)
-        
+            
+    def toggle_light_power(self, mode, light_name=None):
+        if light_name==None:
+            for light in self.lifx_lights:
+                print(light)
+                light.set_power(mode)
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    light.set_power(mode)
 
     def toggle_light(self, mode):
         try:
             dev_path = self.config['teensy_path']
-            s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
+            try:
+                s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
+            except BaseException as e:
+                print(e)
             if mode == 'on':
-                s.write(b'\x00')
                 self.light_status = True
                 self.light_mode = mode
-                self.bedroom_lamp.set_power(mode)
-                self.bedroom_light.set_power(mode)
+                self.toggle_light_power(mode)
+                s.write(b'\x00')
             elif mode == 'off':
-                s.write(b'\x01')
                 self.light_status = False
                 self.light_mode = mode
-                self.bedroom_lamp.set_power(mode)
-                self.bedroom_light.set_power(mode)
-                self.bathroom_left.set_power(mode)
-                self.bathroom_right.set_power(mode)
+                self.toggle_light_power(mode)
+                s.write(b'\x01')
             elif mode == 'sparkle':
                 self.light_mode = mode
                 s.write(b'\x02')
@@ -116,38 +146,39 @@ class Command:
             elif mode == 'white':
                 self.light_mode = mode
                 s.write(b'\x06')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'green':
                 self.light_mode = mode
                 s.write(b'\x07')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'orange':
                 self.light_mode = mode
                 s.write(b'\x08')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'blue':
                 self.light_mode = mode
                 s.write(b'\x09')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'red':
                 self.light_mode = mode
                 s.write(b'\x0A')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'yellow':
                 self.light_mode = mode
                 s.write(b'\x0B')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'purple':
                 self.light_mode = mode
                 s.write(b'\x0C')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'gradient':
                 self.light_mode = mode
                 s.write(b'\x0D')
             else:
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
-        except:
+        except BaseException as e:
+            print(e)
             print('no device found')
 
 

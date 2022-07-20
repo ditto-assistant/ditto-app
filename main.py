@@ -139,23 +139,20 @@ class Assistant:
                         self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
                         value = self.ner_response['numeric']
                         entity = self.ner_response['entity']
+                        val_scale = self.val_map[int(value)-1]
                         if 'lamp' in entity:
-                            val_scale = self.val_map[int(value)-1]
-                            self.command.bedroom_lamp.set_brightness(val_scale)
+                            self.command.set_light_brightness(val_scale, 'lamp')
                         elif 'bathroom' in entity:
-                            val_scale = self.val_map[int(value)-1]
-                            self.command.bathroom_left.set_brightness(val_scale)
-                            self.command.bathroom_right.set_brightness(val_scale)
+                            self.command.set_light_brightness(val_scale, 'bathroom')
                         elif 'bedroom light' in entity:
-                            val_scale = self.val_map[int(value)-1]
-                            self.command.bedroom_light.set_brightness(val_scale)
+                            self.command.set_light_brightness(val_scale, 'bedroom light')
                         self.reply = '[Setting %s brightness to %d]' % (str(entity),int(value))
                 
                     else:
                             
                         # bedroom light handler
                         if 'bedroom-light' in sub_cat:
-                            self.command.bedroom_light.set_power(action)
+                            self.command.toggle_light_power(action, 'bedroom light')
                             if action == 'on':
                                 self.reply = '[Turning on the bedroom lights]'
                             else: self.reply = '[Turning off the bedroom lights]'
@@ -165,18 +162,17 @@ class Assistant:
                         elif 'bedroom-lamp' in sub_cat:    
                             if action == 'on':
                                 self.reply = '[Turning on the bedroom lamp]'
-                                self.command.bedroom_lamp.set_power(action)
+                                self.command.toggle_light_power(action, 'lamp')
                             elif action == 'off':
                                 self.reply = '[Turning off the bedroom lamp]'
-                                self.command.bedroom_lamp.set_power(action)
+                                self.command.toggle_light_power(action, 'lamp')
                             else:
                                 self.reply = '[Setting bedroom lamp to %s]' % action
-                                self.command.toggle_lamp_color(action)      
+                                self.command.toggle_light_color(action, 'lamp')    
 
                         # bathroom handler
                         elif 'bathroom' in sub_cat:
-                            self.command.bathroom_left.set_power(action)
-                            self.command.bathroom_right.set_power(action)
+                            self.command.toggle_light_power(action, 'bathroom')
                             if action == 'on':
                                 self.reply = '[Turning on the bathroom lights]'
                             else: self.reply = '[Turning off the bathroom lights]'
