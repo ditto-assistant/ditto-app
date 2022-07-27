@@ -181,6 +181,7 @@ class Assistant:
                 except BaseException as e:
                     print(e)
                     self.reply = '[Light not found]'
+                    self.command.grab_lifx_lights()
                             
                 print(self.reply+'\n')
                 if UNIX:

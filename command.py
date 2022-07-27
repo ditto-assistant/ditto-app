@@ -69,15 +69,14 @@ class Command:
 
     def grab_lifx_lights(self):
         try:
-            light_groups = self.config['light_groups']
+            # light_groups = self.config['light_groups']
             self.lifx_lights = []
             lights = lifxlan.LifxLAN().get_lights()
             
-            for group in light_groups:
-                for light in lights:
-                    light_group = light.get_group()
-                    if self.config['user'] in light_group:
-                        self.lifx_lights.append(light)
+            for light in lights:
+                light_group = light.get_group()
+                if self.config['user'] in light_group:
+                    self.lifx_lights.append(light)
 
         except BaseException as e:
             print(e)
@@ -93,7 +92,7 @@ class Command:
                     light.set_brightness(value)
 
     def toggle_light_color(self, color, light_name=None):
-        if light_name==None:
+        if light_name==None: # global light command
             for light in self.lifx_lights:
                 if light.supports_color():
                     light.set_color(self.lifx_color_map[color])
@@ -109,9 +108,9 @@ class Command:
             self.config = json.load(f)
             
     def toggle_light_power(self, mode, light_name=None):
-        if light_name==None:
+        if light_name==None: # global light command
             for light in self.lifx_lights:
-                print(light)
+                # print(light)
                 light.set_power(mode)
         else:
             for light in self.lifx_lights:
@@ -124,7 +123,8 @@ class Command:
             try:
                 s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
             except BaseException as e:
-                print(e)
+                pass
+                # print(e)
             if mode == 'on':
                 self.light_status = True
                 self.light_mode = mode
@@ -182,8 +182,9 @@ class Command:
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
         except BaseException as e:
-            print(e)
-            print('no device found')
+            # print(e)
+            # print('no device found')
+            pass
 
 
     def toggle_timer(self, val):
