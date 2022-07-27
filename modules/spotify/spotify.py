@@ -77,6 +77,13 @@ class Spotify():
     def remote(self, command, *args):
         scope = "user-read-playback-state,user-modify-playback-state"
         username = self.user_values['username']
+        self.auth = spotipy.SpotifyOAuth(
+            scope=scope,
+            redirect_uri='http://127.0.0.1:8124',
+            client_id=self.user_values['client-id'],
+            client_secret=self.user_values['client-secret'],
+        )
+        sp = spotipy.Spotify(auth_manager=self.auth)
         self.token = util.prompt_for_user_token(
             oauth_manager= self.auth,
             username=username, scope=scope, 
@@ -84,10 +91,6 @@ class Spotify():
             client_secret=self.user_values['client-secret'],
             redirect_uri='http://127.0.0.1:8124'
         )
-        self.auth = spotipy.SpotifyOAuth(
-            redirect_uri='http://127.0.0.1:8124', username=username
-        )
-        sp = spotipy.Spotify(auth_manager=self.auth)
         try:
             if command == "resume":
                 sp.start_playback(self.user_values['device-id'])
@@ -113,6 +116,14 @@ class Spotify():
             else: context_mode = 'song'
             scope = "user-read-playback-state,user-modify-playback-state"
             username = self.user_values['username']
+            
+            self.auth = spotipy.SpotifyOAuth(
+                scope=scope,
+                redirect_uri='http://127.0.0.1:8124',
+                client_id=self.user_values['client-id'],
+                client_secret=self.user_values['client-secret'],
+            )
+            sp = spotipy.Spotify(auth_manager=self.auth)
             self.token = util.prompt_for_user_token(
                 oauth_manager= self.auth,
                 username=username, scope=scope, 
@@ -120,12 +131,9 @@ class Spotify():
                 client_secret=self.user_values['client-secret'],
                 redirect_uri='http://127.0.0.1:8124'
             )
-            self.auth = spotipy.SpotifyOAuth(
-                redirect_uri='http://127.0.0.1:8124', username=username
-            )
-            sp = spotipy.Spotify(auth_manager=self.auth)
             self.grab_active_id(sp) # update device-id with latest active player
             if context_mode=='playlist':
+                print('playlist mode')
                 for x in self.user_playlists:
                     if uri in x: # find playist 
                         offset_max = x[2] # grab tack count
