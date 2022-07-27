@@ -171,7 +171,7 @@ def pico_wake(path):
     except:
         print("default dev selected")
         dev = dict()
-        dev['device'] = 'default'
+        dev['dev'] = 'default'
         with open(config_path, 'w') as f:
             f.write('{"dev":"default"}')
     try:
@@ -186,9 +186,9 @@ def pico_wake(path):
     devices = PvRecorder.get_audio_devices()
     audio_device_index=0
     for i in range(len(devices)):
-        if dev['device'] in devices[i]:
+        if dev['dev'] in devices[i]:
             audio_device_index=i
-        if dev['device'] == 'default':
+        if dev['dev'] == 'default':
             audio_device_index=0
         
     if operating_system=='Linux':            
