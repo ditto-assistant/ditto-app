@@ -12,8 +12,8 @@ pyserial
 termdown
 pygame
 lifxlan
-sklearn
-spacy
+scikit-learn==1.0.2
+spacy==3.2.4
 nltk
 python_weather
 wolframalpha
