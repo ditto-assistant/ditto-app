@@ -18,7 +18,7 @@ import pygame
 from threading import Timer
 
 from speech import Speech
-from command import Command
+from command_handlers.command import Command
 from modules.offline_nlp.handle import NLP
 from modules.google_tts.speak import Speak
 import json
@@ -29,13 +29,15 @@ UNIX = False
 if platform.system() == 'Linux':
     UNIX = True
 
+OFFLINE_MODE = True
+
 class Assistant:
 
-    def __init__(self):
+    def __init__(self, offline_mode=OFFLINE_MODE):
         print('[Booting...]')
         self.load_config()
-        self.speech = Speech()
-        self.command = Command(os.getcwd())
+        self.speech = Speech(offline_mode=offline_mode)
+        self.command = Command(os.getcwd(), OFFLINE_MODE)
         self.speech_engine = pyttsx3.init()
         self.nlp = NLP(os.getcwd())
         self.nlp.initialize()
@@ -58,8 +60,6 @@ class Assistant:
 
         self.command_timer = 0 # used to handle the timeout of interaction with assistant
         self.comm_timer_mode = False # will go to false after 5 seconds of inactivity (idle)
-        
-        self.val_map = np.linspace(0, 65535, 10).tolist()
 
         self.conv_err_loop = 0
 
@@ -73,6 +73,14 @@ class Assistant:
             self.config = json.loads(default_config)
             with open(config_path, 'w') as f:
                 f.write(default_config)
+
+    def reset_loop(self):
+        '''
+        Resets the command loop to idle.
+        '''
+        self.activation_mode = True # go back to idle...
+        self.application = 'model-selector'
+        self.reply = ''
 
     def send_command(self): # application logic
 
@@ -108,7 +116,7 @@ class Assistant:
             if UNIX:
                 self.tts(self.reply, self.speech_volume)
             else:
-                self.google.gtts(self.reply)
+                self.tts(self.reply)
                 # self.speech_engine.say(self.reply)
                 # self.speech_engine.runAndWait()
 
@@ -121,214 +129,41 @@ class Assistant:
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
 
-
             if  cat == 'lights':
-                try:
-                    # global lights handler
-                    if not action == 'numeric' and sub_cat == 'none':
-                        if 'off' in action:
-                            self.reply = '[Turning off the lights]'
-                        elif 'on' in action:
-                            self.reply = '[Turning on the lights]'
-                        else: 
-                            self.reply = '[Setting lights to %s]' % action
-                        self.command.toggle_light(action)
-
-                    # brightness handlers per light
-                    elif action=='numeric':
-                        self.ner_response = json.loads(self.nlp.prompt_ner_numeric(self.prompt))
-                        value = self.ner_response['numeric']
-                        entity = self.ner_response['entity']
-                        val_scale = self.val_map[int(value)-1]
-                        if 'lamp' in entity:
-                            self.command.set_light_brightness(val_scale, 'lamp')
-                        elif 'bathroom' in entity:
-                            self.command.set_light_brightness(val_scale, 'bathroom')
-                        elif 'bedroom light' in entity:
-                            self.command.set_light_brightness(val_scale, 'bedroom light')
-                        self.reply = '[Setting %s brightness to %d]' % (str(entity),int(value))
-                
-                    else:
-                            
-                        # bedroom light handler
-                        if 'bedroom-light' in sub_cat:
-                            self.command.toggle_light_power(action, 'bedroom')
-                            if action == 'on':
-                                self.reply = '[Turning on the bedroom lights]'
-                            else: self.reply = '[Turning off the bedroom lights]'
-
-
-                        # bedroom lamp handler
-                        elif 'bedroom-lamp' in sub_cat:    
-                            if action == 'on':
-                                self.reply = '[Turning on the bedroom lamp]'
-                                self.command.toggle_light_power(action, 'lamp')
-                            elif action == 'off':
-                                self.reply = '[Turning off the bedroom lamp]'
-                                self.command.toggle_light_power(action, 'lamp')
-                            else:
-                                self.reply = '[Setting bedroom lamp to %s]' % action
-                                self.command.toggle_light_color(action, 'lamp')    
-
-                        # bathroom handler
-                        elif 'bathroom' in sub_cat:
-                            self.command.toggle_light_power(action, 'bathroom')
-                            if action == 'on':
-                                self.reply = '[Turning on the bathroom lights]'
-                            else: self.reply = '[Turning off the bathroom lights]'
-                                                
-                # any errors come here
-                except BaseException as e:
-                    print(e)
-                    self.reply = '[Light not found]'
-                    self.command.grab_lifx_lights()
-                            
-                print(self.reply+'\n')
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.google.gtts(self.reply)
-                    # self.speech_engine.say(self.reply)
-                    # self.speech_engine.runAndWait()
-
-                self.activation_mode = True # go back to idle...
-                self.reply = ''
+                self.reply = self.command.light_handler.handle_response(self.command, self.nlp, self.prompt, action, sub_cat)
+                self.tts(self.reply)
+                self.reset_loop()
 
             elif cat == 'spotify':
-                self.ner_response = json.loads(self.nlp.prompt_ner_play(self.prompt))
-                song = self.ner_response['song']
-                artist = self.ner_response['artist']
-                playlist = self.ner_response['playlist']
-                if playlist == '':
-                    if song == '':
-                        p = self.command.play_music(artist.strip())
-                        if p==1:
-                            self.reply = '[Playing %s on Spotify]' % artist.title()
-                        if (p==-1):
-                            self.reply = '[Could not find %s on Spotify]' % artist.title()
-                    elif artist == '':
-                        p = self.command.play_music(song.strip())
-                        if p==1:
-                            self.reply = '[Playing %s on Spotify]' % song.title()
-                        if (p==-1):
-                            self.reply = '[Could not find %s on Spotify]' % song.title()
-                    else:
-                        p = self.command.play_music(artist.strip(), song.strip())
-                        if p==1:
-                            self.reply = '[Playing %s by %s on Spotify]' % (song.title(), artist.title())
-                        if (p==-1):
-                            self.reply = '[Could not find %s by %s on Spotify]' % (song.title(), artist.title())
-                else:
-                    try:
-                        p = self.command.play_user_playlist(playlist.lower().strip())
-                    except:
-                        p==-1
-                    if p==1:
-                        self.reply = '[Playing %s Playlist on Spotify]' % playlist.title()
-                    if p==-1:
-                        self.reply = '[Could not find %s Playlist on Spotify]' % playlist.title()
-                
-                print(self.reply+'\n')
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.google.gtts(self.reply)
-                    # self.speech_engine.say(self.reply)
-                    # self.speech_engine.runAndWait()
-                self.reply = ''
-                self.activation_mode = True # go back to idle...
+                self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
+                self.tts(self.reply)
+                self.reset_loop()
 
             elif cat == 'music':
                 self.command.player.remote(self.offline_response['action'])
-                self.activation_mode = True # go back to idle...
-                self.reply = ''
+                self.reset_loop()
                 
             elif cat == 'timer':
-                self.ner_response = json.loads(self.nlp.prompt_ner_timer(self.prompt))
-                second = self.ner_response['second']
-                minute = self.ner_response['minute']
-                second_reply = ''
-                minute_reply = ''
-                if not second == '' and minute == '':
-                    
-                    if not second == '':
-                        if int(second) == 1:
-                            second_reply = ' second '
-                        else: second_reply = ' seconds '
-                    if not minute == '':
-                        if int(minute) == 1:
-                            minute_reply = ' minute '
-                        else: minute_reply = ' minutes '
-                    if not second == '' or minute == '':
-                        s = ''
-                        m = ''
-                        if not second == '':
-                            s = 's'
-                        if not minute == '':
-                            m = 'm'
-                        reply = minute + m + second + s
-                        reply.replace(' ', '')
-                        readable = minute + minute_reply + second + second_reply
-                        self.reply = '[Setting timer for %s]' % readable
-                        print(self.reply+'\n')
-                        self.command.toggle_timer(reply)
-
-                else:
-
-                    self.reply = '[Invalid timer command]'
-                    print(self.reply+'\n')
-
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.google.gtts(self.reply)
-                    # self.speech_engine.say(self.reply) 
-                    # self.speech_engine.runAndWait()
-                    
-                    
-                self.activation_mode = True # go back to idle...
-                self.reply = ''
+                self.reply = self.command.timer_handler.handle_response(self.command, self.nlp, self.prompt)
+                self.tts(self.reply)
+                self.reset_loop()
             
             elif cat == 'weather':
-                sub_cat = self.offline_response['sub_category']
-                if sub_cat == 'none':
-                    response = json.loads(self.command.weather_app.get_weather())['curr_temp']
-                    location = self.command.weather_app.location
-                    self.reply = "[It's currently %s degrees in %s]" % (response, location)
-                    print(self.reply+'\n')
-                if UNIX:
-                    self.tts(self.reply, self.speech_volume)
-                else:
-                    self.google.gtts(self.reply)
-                    # self.speech_engine.say(self.reply)
-                    # self.speech_engine.runAndWait()
-
-                self.activation_mode = True # go back to idle...
-                self.reply = ''
+                self.reply = self.command.weather_handler.handle_response(self.command, sub_cat)
+                self.tts(self.reply)
+                self.reset_loop()
 
             elif cat == 'wolfram':
-                if self.offline_response['sub_category'] == 'math':
-                    self.reply = self.command.wolfram.get_response(self.prompt.lower())
-                else: 
-                    self.reply = self.command.wolfram.get_response(self.prompt)
-                if not self.reply == '' and not self.reply == '(data not available)':
-                    # self.reply = reply.split("(")[0]
-                    print(self.reply+'\n')
-                    if UNIX:
-                        self.tts(self.reply, self.speech_volume)
-                    else:
-                        self.google.gtts(self.reply)
-                        # self.speech_engine.say(self.reply)
-                        # self.speech_engine.runAndWait()
-                    self.activation_mode = True # go back to idle...    
-                    self.reply = ''
+                self.reply = self.command.wolfram_handler.handle_response(self.command, sub_cat, self.prompt)
+                if not self.reply == '':
+                    self.tts(self.reply)
+                    self.reset_loop()
                 else:
                     self.application = 'conversation-application'
                     
             elif cat == 'conv': # send to GPT3 if conversational intent extracted by offline model
                 if action == 'exit':
-                    self.activation_mode = True # go back to idle...
-                    self.application = 'model-selector'
+                    self.reset_loop()
                     pygame.mixer.init()
                     pygame.mixer.music.load("resources/sounds/ditto-off.mp3")
                     pygame.mixer.music.play()
@@ -454,8 +289,9 @@ class Assistant:
             self.conv_timer_mode = False # turn off timer
  
 
-    def tts(self, prompt, volume_percent):
-        os.system('amixer -q set Master ' + str(volume_percent)+'%')
+    def tts(self, prompt):
+        if UNIX:
+            os.system('amixer -q set Master ' + str(self.speech_volume)+'%')
         # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
         if not self.speech.offline_mode:
             self.google.gtts(prompt)

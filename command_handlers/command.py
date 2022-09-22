@@ -25,6 +25,13 @@ from modules.spotify.spotify import Spotify
 from modules.weather.grab import Weather
 from modules.wolfram.ask import Wolfram
 
+# response handlers for main.py to use
+from command_handlers.light_handler import LightHandler
+from command_handlers.spotify_handler import SpotifyHandler
+from command_handlers.timer_handler import TimerHandler
+from command_handlers.weather_handler import WeatherHandler
+from command_handlers.wolfram_handler import WolframHandler
+
 try:
     openai.api_key = os.getenv("OPENAI_API_KEY")
 except:
@@ -32,11 +39,16 @@ except:
 
 class Command:
 
-    def __init__(self, path):
+    def __init__(self, path, offline_mode=False):
+        self.offline_mode = offline_mode
         self.load_config()
         self.weather_app = Weather()
         self.wolfram = Wolfram(path)
-
+        self.light_handler = LightHandler()
+        self.spotify_handler = SpotifyHandler()
+        self.timer_handler = TimerHandler()
+        self.weather_handler = WeatherHandler()
+        self.wolfram_handler = WolframHandler()
         self.path = path
         self.light_status = True
         self.light_mode = 'on'
