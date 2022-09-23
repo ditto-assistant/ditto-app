@@ -6,6 +6,7 @@ class WeatherHandler():
         pass
 
     def handle_response(self, command, sub_cat):
+        reply = ''
         if sub_cat == 'none':
             response = json.loads(command.weather_app.get_weather())['curr_temp']
             location = command.weather_app.location
