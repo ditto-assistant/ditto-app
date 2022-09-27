@@ -53,8 +53,6 @@ class Speech:
     def __init__(self, offline_mode=False):
         self.recording = False
         self.offline_mode = offline_mode
-        self.speech_to_text = STT(os.getcwd())
-
         self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
@@ -105,7 +103,7 @@ class Speech:
                     if not self.offline_mode:
                         self.text = self.google_instance.grab_prompt()
                     else:
-                        
+                        self.speech_to_text = STT(os.getcwd())
                         self.speech_to_text.stt()
                         self.text = self.speech_to_text.text
 
