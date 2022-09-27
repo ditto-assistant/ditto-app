@@ -50,7 +50,7 @@ class Command:
         self.timer_handler = TimerHandler()
         self.weather_handler = WeatherHandler()
         self.wolfram_handler = WolframHandler()
-        self.conversation_handler = ConversationHandler()
+        self.conversation_handler = ConversationHandler(path, offline_mode)
         self.path = path
         self.light_status = True
         self.light_mode = 'on'

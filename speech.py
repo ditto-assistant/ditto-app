@@ -14,7 +14,7 @@ notes:
 
 # google cloud
 from google.cloud import speech
-from google_transcript import Google
+from modules.google_stt.google_transcript import Google
 import os
 import sys
 from threading import Timer

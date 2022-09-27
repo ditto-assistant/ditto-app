@@ -5,7 +5,6 @@ author: Omar Barazanji
 """
 
 # handles text to speech
-from re import sub
 import pyttsx3
 
 # other imports
@@ -37,7 +36,7 @@ class Assistant:
         print('[Booting...]')
         self.load_config()
         self.speech = Speech(offline_mode=offline_mode)
-        self.command = Command(os.getcwd(), OFFLINE_MODE)
+        self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = pyttsx3.init()
         self.nlp = NLP(os.getcwd())
         self.nlp.initialize()

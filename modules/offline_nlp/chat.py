@@ -19,8 +19,8 @@ from sklearn.pipeline import Pipeline
 
 class Chat:
 
-    def __init__(self):
-        self.df = pd.read_csv('data/chatbot/dialogs.txt',sep='\t')
+    def __init__(self, path):
+        self.df = pd.read_csv(path+'/modules/offline_nlp/data/chatbot/dialogs.txt',sep='\t')
         data = pd.Series(self.df.columns)
         data = data.rename({0: self.df.columns[0],1: self.df.columns[1]})
         add1 = {'Questions':"what's your name?",'Answers':"I'm Ditto!"}
