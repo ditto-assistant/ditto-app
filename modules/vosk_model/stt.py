@@ -39,16 +39,16 @@ class STT:
         
         return device_name
 
-    def get_sound_device_id(self) -> int:
+    def get_sound_device_id(self) -> str:
         '''
-        Returns configured sounddevice mic ndx as an integer.  
+        Returns configured sounddevice mic id as string.  
         '''
-        device_id = 0
+        device_id = 'default'
         device_name = self.load_config()
         device_list = sd.query_devices()
-        for ndx,dev in enumerate(device_list):
+        for dev in device_list:
             if device_name in dev['name']:
-                device_id = ndx
+                device_id = dev['name']
                 break
         return device_id
 
