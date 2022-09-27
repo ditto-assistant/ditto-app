@@ -47,7 +47,7 @@ class STT:
         device_name = self.load_config()
         device_list = sd.query_devices()
         for ndx,dev in enumerate(device_list):
-            if device_name in dev:
+            if device_name in dev['name']:
                 device_id = ndx
                 break
         return device_id
