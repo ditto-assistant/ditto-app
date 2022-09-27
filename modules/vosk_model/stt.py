@@ -64,8 +64,7 @@ class STT:
         print('listening...\n')
         while True:
             try:
-                with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=self.device_id, dtype='int16',
-                channels=1, callback=self.callback):
+                with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=self.device_id, dtype='int16', callback=self.callback):
                     model = Model(self.model_path)
                     rec = KaldiRecognizer(model, 16000)
                     # rec.SetWords(True)
