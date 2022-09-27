@@ -53,7 +53,7 @@ class Speech:
     def __init__(self, offline_mode=False):
         self.recording = False
         self.offline_mode = offline_mode
-        self.speech_to_text = STT(os.getcwd()+'/modules/vosk_model/model')
+        self.speech_to_text = STT(os.getcwd())
 
         self.q = queue.Queue()
         self.text = ""

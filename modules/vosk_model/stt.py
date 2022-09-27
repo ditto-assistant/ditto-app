@@ -20,7 +20,8 @@ class STT:
 
     def __init__(self, path):
         self.text = ''
-        self.model_path = path
+        self.path = path+'/modules/vosk_model/'
+        self.model_path = path+'/modules/vosk_model/model'
         self.device_id = self.get_sound_device_id()
 
     def load_config(self) -> str:
@@ -29,7 +30,7 @@ class STT:
         '''
         device_name = 'default'
         try:
-            with open('config.json', 'r') as f:
+            with open(self.path+'config.json', 'r') as f:
                 stt_config = json.load(f)
                 device_name = stt_config['device_name']
                 print(f'\nUsing {device_name} as mic device.\n')
