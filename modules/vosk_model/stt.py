@@ -32,8 +32,10 @@ class STT:
             with open('config.json', 'r') as f:
                 stt_config = json.load(f)
                 device_name = stt_config['device_name']
+                print(f'\nUsing {device_name} as mic device.\n')
         except:
             print('\nDefault mic selected. No config.json found...\n')
+        
         return device_name
 
     def get_sound_device_id(self) -> int:
@@ -64,7 +66,7 @@ class STT:
         print('listening...\n')
         while True:
             try:
-                with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=self.device_id, dtype='int16', callback=self.callback):
+                with sd.RawInputStream(samplerate=16000, blocksize = 8000, device=self.device_id, channels=1, dtype='int16', callback=self.callback):
                     model = Model(self.model_path)
                     rec = KaldiRecognizer(model, 16000)
                     # rec.SetWords(True)
