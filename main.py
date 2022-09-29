@@ -28,7 +28,7 @@ UNIX = False
 if platform.system() == 'Linux':
     UNIX = True
 
-OFFLINE_MODE = True
+OFFLINE_MODE = False
 
 class Assistant:
 
