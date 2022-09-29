@@ -24,26 +24,48 @@ from modules.spotify.spotify import Spotify
 from modules.weather.grab import Weather
 from modules.wolfram.ask import Wolfram
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# response handlers for main.py to use
+from command_handlers.light_handler import LightHandler
+from command_handlers.spotify_handler import SpotifyHandler
+from command_handlers.timer_handler import TimerHandler
+from command_handlers.weather_handler import WeatherHandler
+from command_handlers.wolfram_handler import WolframHandler
+from command_handlers.conversation_handler import ConversationHandler
+
+
+try:
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+except:
+    print('openai key error')
 
 class Command:
 
-    def __init__(self, path):
-
+    def __init__(self, path, offline_mode=False):
+        self.offline_mode = offline_mode
+        self.load_config()
         self.weather_app = Weather()
         self.wolfram = Wolfram(path)
-
+        self.light_handler = LightHandler()
+        self.spotify_handler = SpotifyHandler()
+        self.timer_handler = TimerHandler()
+        self.weather_handler = WeatherHandler()
+        self.wolfram_handler = WolframHandler()
+        self.conversation_handler = ConversationHandler(path, offline_mode)
         self.path = path
         self.light_status = True
         self.light_mode = 'on'
         self.response = ''
         self.command_input = ''
         
-        try:
-            self.player = Spotify(self.path+"/modules/spotify")
-        except BaseException as e:
-            print(e)
-            self.player = []
+        if not offline_mode:
+            try:
+                self.player = Spotify(self.path+"/modules/spotify")
+            except BaseException as e:
+                print(e)
+                print('spotify error')
+                self.player = []
+        else: self.player = []
+
         self.conversation_prompt = "{\"reply\": \"hello, human.\"}\nuser: hello.\n{\"reply\": \"Hello! What's up?\"}\nuser: how are you.\n{\"reply\": \"I'm doing great! How are you?\"}\nuser: what is your name.\n{\"reply\": \"My name is Ditto!\"}\nuser: what is your name.\n{\"reply\": \"Ditto.\"}\nuser: what is your purpose.\n{\"reply\": \"I am here to provide information I was trained on. I will try and be as correct and precise as I can.\"}\nuser: what's the meaning of life.\n{\"reply\": \"the meaning of life is to love oneself and to spread love to others.\"}\nuser: can you take the square root of a negative number.\n{\"reply\": \"The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\"}\nuser: can you write me a poem.\n{\"reply\": \"Despite the storms, \\nbeauty arrives like \\nit was always going to. \\nDespite the darkness, \\nthe light returns. \\nDespite your loss, \\nyour heart will be \\nfull again. \\nDespite the breaking, \\nyour heart will feel \\nlike it belongs in the \\nland of joy once more. \\nThis is how it will \\nalways be. Keep living.\"}\nuser: hey man.\n{\"reply\": \"Hey man!\"}\nuser: can you tell me who the president of the United States was in 1975?\n{\"reply\": \"Gerald Ford was the president of the United States in 1975.\"}\nuser: say something wrong.\n{\"reply\": \"I'm not perfect. I have mistakes. But I'm trying to be better.\"}\nuser: write me another song or poem.\n{\"reply\": \"A gift for you \\nA gift for me \\nYou're the one \\nThat lives for me \\nAnd I for you \\nTrue love is thee.\"}\nuser: Who was the 16th president of the united states.\n{\"reply\": \"Abraham Lincoln was the 16th president of the United States.\"}\nuser: What is an atom made up of.\n{\"reply\": \"The atom is made up of protons and neutrons, which have electrons surrounding them.\"}\nuser: How can I start my day better?\n{\"reply\": \"Start your day with a good breakfast. \\nStand up and move around in your living room. \\nRelax for a bit. \\nGo for a walk in the park. \\nTry to get some exercise in the afternoon. \\nEat healthier meals.\\nLeave a little more time for the evening. \\Sleep better the day before.\"}\nuser: Who are you?\n{\"reply\": \"I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\"}\nuser: "
 
         self.grab_lifx_lights()
@@ -64,38 +86,72 @@ class Command:
 
     def grab_lifx_lights(self):
         try:
-            self.bedroom_lamp = lifxlan.LifxLAN().get_device_by_name('Lamp')
-            self.bedroom_light = lifxlan.LifxLAN().get_device_by_name('Light')
-            self.bathroom_left = lifxlan.LifxLAN().get_device_by_name('BathroomLeft')
-            self.bathroom_right = lifxlan.LifxLAN().get_device_by_name('BathroomRight')
+            # light_groups = self.config['light_groups']
+            self.lifx_lights = []
+            lights = lifxlan.LifxLAN().get_lights()
+            
+            for light in lights:
+                light_group = light.get_group()
+                if self.config['user'] in light_group:
+                    self.lifx_lights.append(light)
+
         except BaseException as e:
             print(e)
-            self.bedroom_lamp = []
-            self.bedroom_light = []
-            self.bathroom_left = []
-            self.bathroom_right = []
 
-    def toggle_lamp_color(self, color):
-        self.bedroom_lamp.set_color(self.lifx_color_map[color])
+    def set_light_brightness(self, value, light_name=None):
+        if light_name==None:
+            for light in self.lifx_lights:
+                light.set_brightness(value)
 
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    light.set_brightness(value)
+
+    def toggle_light_color(self, color, light_name=None):
+        if light_name==None: # global light command
+            for light in self.lifx_lights:
+                if light.supports_color():
+                    light.set_color(self.lifx_color_map[color])
+
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    if light.supports_color():
+                        light.set_color(self.lifx_color_map[color])
+
+    def load_config(self):
+        with open('resources/config.json', 'r') as f:
+            self.config = json.load(f)
+            
+    def toggle_light_power(self, mode, light_name=None):
+        if light_name==None: # global light command
+            for light in self.lifx_lights:
+                # print(light)
+                light.set_power(mode)
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    light.set_power(mode)
 
     def toggle_light(self, mode):
         try:
-            s = serial.Serial('/dev/serial/by-id/usb-Teensyduino_USB_Serial_10498880-if00', baudrate=9600, bytesize=8)
+            dev_path = self.config['teensy_path']
+            try:
+                s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
+            except BaseException as e:
+                pass
+                # print(e)
             if mode == 'on':
-                s.write(b'\x00')
                 self.light_status = True
                 self.light_mode = mode
-                self.bedroom_lamp.set_power(mode)
-                self.bedroom_light.set_power(mode)
+                self.toggle_light_power(mode)
+                s.write(b'\x00')
             elif mode == 'off':
-                s.write(b'\x01')
                 self.light_status = False
                 self.light_mode = mode
-                self.bedroom_lamp.set_power(mode)
-                self.bedroom_light.set_power(mode)
-                self.bathroom_left.set_power(mode)
-                self.bathroom_right.set_power(mode)
+                self.toggle_light_power(mode)
+                s.write(b'\x01')
             elif mode == 'sparkle':
                 self.light_mode = mode
                 s.write(b'\x02')
@@ -111,39 +167,41 @@ class Command:
             elif mode == 'white':
                 self.light_mode = mode
                 s.write(b'\x06')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'green':
                 self.light_mode = mode
                 s.write(b'\x07')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'orange':
                 self.light_mode = mode
                 s.write(b'\x08')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'blue':
                 self.light_mode = mode
                 s.write(b'\x09')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'red':
                 self.light_mode = mode
                 s.write(b'\x0A')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'yellow':
                 self.light_mode = mode
                 s.write(b'\x0B')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'purple':
                 self.light_mode = mode
                 s.write(b'\x0C')
-                self.toggle_lamp_color(mode)
+                self.toggle_light_color(mode)
             elif mode == 'gradient':
                 self.light_mode = mode
                 s.write(b'\x0D')
             else:
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
-        except:
-            print('no device found')
+        except BaseException as e:
+            # print(e)
+            # print('no device found')
+            pass
 
 
     def toggle_timer(self, val):
@@ -189,21 +247,20 @@ class Command:
         og_prompt = "{\"reply\": \"hello, human.\"}\nuser: hello.\n{\"reply\": \"Hello! What's up?\"}\nuser: how are you.\n{\"reply\": \"I'm doing great! How are you?\"}\nuser: what is your name.\n{\"reply\": \"My name is Ditto!\"}\nuser: what is your name.\n{\"reply\": \"Ditto.\"}\nuser: what is your purpose.\n{\"reply\": \"I am here to provide information I was trained on. I will try and be as correct and precise as I can.\"}\nuser: what's the meaning of life.\n{\"reply\": \"the meaning of life is to love oneself and to spread love to others.\"}\nuser: can you take the square root of a negative number.\n{\"reply\": \"The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\"}\nuser: can you write me a poem.\n{\"reply\": \"Despite the storms, \\nbeauty arrives like \\nit was always going to. \\nDespite the darkness, \\nthe light returns. \\nDespite your loss, \\nyour heart will be \\nfull again. \\nDespite the breaking, \\nyour heart will feel \\nlike it belongs in the \\nland of joy once more. \\nThis is how it will \\nalways be. Keep living.\"}\nuser: hey man.\n{\"reply\": \"Hey man!\"}\nuser: can you tell me who the president of the United States was in 1975?\n{\"reply\": \"Gerald Ford was the president of the United States in 1975.\"}\nuser: say something wrong.\n{\"reply\": \"I'm not perfect. I have mistakes. But I'm trying to be better.\"}\nuser: write me another song or poem.\n{\"reply\": \"A gift for you \\nA gift for me \\nYou're the one \\nThat lives for me \\nAnd I for you \\nTrue love is thee.\"}\nuser: Who was the 16th president of the united states.\n{\"reply\": \"Abraham Lincoln was the 16th president of the United States.\"}\nuser: What is an atom made up of.\n{\"reply\": \"The atom is made up of protons and neutrons, which have electrons surrounding them.\"}\nuser: How can I start my day better?\n{\"reply\": \"Start your day with a good breakfast. \\nStand up and move around in your living room. \\nRelax for a bit. \\nGo for a walk in the park. \\nTry to get some exercise in the afternoon. \\nEat healthier meals.\\nLeave a little more time for the evening. \\Sleep better the day before.\"}\nuser: Who are you?\n{\"reply\": \"I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\"}\nuser: "
         self.conversation_prompt = og_prompt
 
-    def send_request(self, command, model):
+    def send_gpt3_command(self, command):
         self.command_input = command
-
-        if model == 'conversation-application':
-            self.response = openai.Completion.create(
-                engine="text-babbage-001",
-                prompt=self.conversation_prompt + command,
-                temperature=0.6,
-                max_tokens=300,
-                top_p=1,
-                frequency_penalty=1.7,
-                presence_penalty=1.5,
-                stop=["\nuser: "]
-            )
-        
+        self.response = openai.Completion.create(
+            engine="text-babbage-001",
+            prompt=self.conversation_prompt + command,
+            temperature=0.6,
+            max_tokens=300,
+            top_p=1,
+            frequency_penalty=1.7,
+            presence_penalty=1.5,
+            stop=["\nuser: "]
+        )
+        response = json.loads(self.response.choices.copy().pop()['text'])['reply']
+        return response
     
 if __name__ == "__main__":
     command = Command(os.getcwd())

@@ -10,7 +10,6 @@ import sys
 from google.cloud import speech
 # from playsound import playsound
 
-import pygame
 import pyaudio
 from six.moves import queue
 
@@ -173,16 +172,12 @@ class Google():
                 speech.StreamingRecognizeRequest(audio_content=content)
                 for content in audio_generator
             )
+
             print('   ,.,')
             print(' ((~"~))')
             print("'(|o_o|)'")
             print(",..\=/..,")
             print('listening...\n')
-            pygame.mixer.init()
-            pygame.mixer.music.load("resources/sounds/ditto-on.mp3")
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy() == True:
-                continue
 
             responses = self.client.streaming_recognize(self.streaming_config, requests)
 

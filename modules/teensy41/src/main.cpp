@@ -12,7 +12,7 @@ FASTLED_USING_NAMESPACE
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define DATA_PIN 23
+#define DATA_PIN 22
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define NUM_LEDS 300

@@ -14,7 +14,7 @@ notes:
 
 # google cloud
 from google.cloud import speech
-from google_transcript import Google
+from modules.google_stt.google_transcript import Google
 import os
 import sys
 from threading import Timer
@@ -34,8 +34,13 @@ from modules.pico_python.picovoice_demo_mic import pico_wake
 import sounddevice as sd
 
 # used to send keypress event (keeps display on)
-import pyautogui
-pyautogui.FAILSAFE = False
+try:
+    import pyautogui
+    pyautogui.FAILSAFE = False
+    headless = False
+except:
+    headless = True
+    print('booting headless...')
 
 import json
 import queue
@@ -45,11 +50,9 @@ import io
 
 class Speech:
 
-    def __init__(self):
+    def __init__(self, offline_mode=False):
         self.recording = False
-        self.offline_mode = False
-        self.speech_to_text = STT(os.getcwd()+'/modules/vosk_model/model')
-
+        self.offline_mode = offline_mode
         self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
@@ -84,7 +87,8 @@ class Speech:
                 if self.wake: # set to 0 in timer if idle reboot
                     self.activation.activate = True
                     self.recording = False
-                    pyautogui.press('ctrl') # turn display on if asleep
+                    if not headless:
+                        pyautogui.press('ctrl') # turn display on if asleep
                 else:
                     self.wake = 1
                     print('rebooting picovoice!')
@@ -99,7 +103,7 @@ class Speech:
                     if not self.offline_mode:
                         self.text = self.google_instance.grab_prompt()
                     else:
-                        
+                        self.speech_to_text = STT(os.getcwd())
                         self.speech_to_text.stt()
                         self.text = self.speech_to_text.text
 
