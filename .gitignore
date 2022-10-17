@@ -13,3 +13,4 @@ output.mp3
 .DS_Store
 .cache
 .cache*
+ditto.db
