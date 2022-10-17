@@ -1,13 +1,13 @@
 {
 	"folders": [
 		{
-			"path": "../gesture-recognition"
+			"path": "."
 		},
 		{
 			"path": "../ditto-activation"
 		},
 		{
-			"path": "."
+			"path": "../gesture-recognition"
 		}
 	],
 	"settings": {}
