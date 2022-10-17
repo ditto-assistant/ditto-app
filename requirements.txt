@@ -3,6 +3,7 @@ openai
 playsound
 sounddevice==0.4.3
 google-cloud-speech==2.11.1
+google-cloud-texttospeech
 spotipy
 dload
 picovoice
@@ -19,3 +20,6 @@ python_weather
 wolframalpha
 word2number
 pyautogui
+vosk
+Flask
+gevent
