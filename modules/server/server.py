@@ -4,12 +4,15 @@ import subprocess
 import psutil
 from flask import Flask
 from flask import request
+from flask_cors import CORS
+
 import json
 
 import sqlite3
 SQL = sqlite3.connect("ditto.db")
 
 app = Flask(__name__)
+CORS(app)
 
 OS = 'Windows'
 if platform.system() == 'Linux':
@@ -18,14 +21,32 @@ elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
 
-def write_prompt_to_db(prompt):
+def actiavte_inject_prompt(prompt):
+    prompt = prompt.replace("'","")
+    SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS prompts (prompt)")
-
-    prompt = prompt.replace('"',"")
-    print(prompt)
-    cur.execute("INSERT INTO prompts VALUES('%s')" % prompt)
+    cur.execute("CREATE TABLE IF NOT EXISTS ditto_requests(request, action)")
     SQL.commit()
+    cur.execute("INSERT INTO ditto_requests VALUES('prompt', '%s')" % prompt.replace('"',""))
+    SQL.commit()
+    SQL.close()
+
+def get_conversation_history():
+    SQL = sqlite3.connect("ditto.db")
+    cur = SQL.cursor()
+    req = cur.execute("SELECT * FROM prompts")
+    prompts = req.fetchall()
+    SQL.commit()
+    cur.execute("SELECT * FROM responses")
+    responses = req.fetchall()
+    SQL.commit()
+    SQL.close()
+    def create_response_arrays(arr):
+        response = dict()
+        for ndx,x in enumerate(arr):
+            response[str(ndx)] = x
+        return json.dumps(response)
+    return create_response_arrays(prompts), create_response_arrays(responses)
 
 # making requests to the OmniSynth instance
 @app.route("/ditto/", methods=['POST', 'GET'])
@@ -33,13 +54,22 @@ def ditto_handler():
     requests = request.args
 
     if request.method == "POST":
+
+        # Request to send prompt to ditto
         if 'prompt' in requests:
             prompt = requests['prompt']
-            write_prompt_to_db(prompt)
-            return '{"prompt": %s}' % prompt
+            actiavte_inject_prompt(prompt)
+            return '{"prompt": "%s"}' % prompt
+
+    elif request.method == "GET":
+
+        # Request to get prompt + response history
+        if 'history' in requests:
+            prompts, responses = get_conversation_history()
+            return '{"prompts": %s, "responses": %s}' % (prompts, responses)
+
     else:
         return '{"error": "invalid"}'
-
 
 # Use Postman for POST Test and more!
 @app.route("/", methods=['POST'])

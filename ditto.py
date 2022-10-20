@@ -81,11 +81,12 @@ class Assistant:
         self.comm_timer.cancel()
 
     def play_sound(self, sound='off'):
-        pygame.mixer.init()
-        pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy() == True:
-            continue
+        if self.speech.from_gui:
+            pygame.mixer.init()
+            pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy() == True:
+                continue
 
     def skip_wake(self):
         '''
@@ -104,6 +105,9 @@ class Assistant:
 
         # grab user's prompt from speech module
         self.prompt = self.speech.text
+
+        # log user's prompt in database
+        self.write_prompt_to_db()
 
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
@@ -146,7 +150,9 @@ class Assistant:
                 self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
                 self.tts(self.reply)
                 self.reset_loop()
-                self.skip_wake()
+                if not self.speech.from_gui: 
+                    self.skip_wake()
+                    self.speech.from_gui = False
                 
         elif cat == 'conv': # send to conversation handler
             if action == 'exit':
@@ -157,15 +163,28 @@ class Assistant:
                 self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
                 self.tts(self.reply)
                 self.reset_loop()
-                self.skip_wake()
+                if not self.speech.from_gui: 
+                    self.skip_wake()
+                    self.speech.from_gui = False
 
 
     def write_response_to_db(self):
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS responses (response)")
+        cur.execute("CREATE TABLE IF NOT EXISTS responses(response)")
         SQL.commit()
-        cur.execute("INSERT INTO responses VALUES('%s')" % self.reply)
+        # filter ' from SQL string
+        cur.execute("INSERT INTO responses VALUES('%s')" % self.reply.replace("'", ""))
+        SQL.commit()
+        SQL.close()
+
+    def write_prompt_to_db(self):
+        SQL = sqlite3.connect("ditto.db")
+        cur = SQL.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt)")
+        SQL.commit()
+        # filter ' from SQL string
+        cur.execute("INSERT INTO prompts VALUES('%s')" % self.prompt.replace("'", ""))
         SQL.commit()
         SQL.close()
 
