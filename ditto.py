@@ -75,6 +75,11 @@ class Assistant:
         Resets the command loop to idle.
         '''
         self.activation_mode = True # go back to idle...
+        if not prompt == '':
+            self.write_prompt_to_db() # logs self.prompt
+            self.write_response_to_db() # logs self.reply 
+        self.speech.text = ''
+        self.prompt = ''
         self.reply = ''
         self.comm_timer_mode = False
         self.comm_timer.cancel()
@@ -105,9 +110,6 @@ class Assistant:
         # grab user's prompt from speech module
         self.prompt = self.speech.text
 
-        # log user's prompt in database
-        self.write_prompt_to_db()
-
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
         cat = self.offline_response['category']
@@ -125,16 +127,20 @@ class Assistant:
                 self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
             except BaseException as e:
                 self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
-
             self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'music':
             self.command.player.remote(self.offline_response['action'])
+            if self.from_gui:
+                self.reply = '[Done.]'
             self.reset_loop()
             
         elif cat == 'timer':
-            self.reply = self.command.timer_handler.handle_response(self.command, self.nlp, self.prompt)
+            try:
+                self.reply = self.command.timer_handler.handle_response(self.command, self.nlp, self.prompt)
+            except BaseException as e:
+                self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
             self.tts(self.reply)
             self.reset_loop()
         
