@@ -86,7 +86,9 @@ class Speech:
                 self.pico = pico_wake(os.getcwd())
                 self.speaker_mic_timeout_handler(300)
                 self.pico.run() # moves to next line of code when "Hey Ditto" detected
-                if self.pico.inject_prompt: self.inject = True
+                if self.pico.inject_prompt: 
+                    self.inject = True
+                    self.pico.inject_prompt = False
                 if self.wake: # set to 0 in timer if idle reboot
                     self.activation.activate = True
                     self.recording = False
@@ -105,7 +107,6 @@ class Speech:
                     self.skip_wake = False
 
                     if not self.inject:
-                        self.inject = False
                         if not self.offline_mode:
                             self.text = self.google_instance.grab_prompt()
                         else:
@@ -113,6 +114,7 @@ class Speech:
                             self.speech_to_text.stt()
                             self.text = self.speech_to_text.text
                     else: 
+                        self.inject = False
                         self.text = self.pico.prompt
                         self.pico.prompt = ""
                         self.from_gui = True

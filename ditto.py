@@ -81,7 +81,7 @@ class Assistant:
         self.comm_timer.cancel()
 
     def play_sound(self, sound='off'):
-        if self.speech.from_gui:
+        if not self.speech.from_gui:
             pygame.mixer.init()
             pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
             pygame.mixer.music.play()
@@ -106,9 +106,6 @@ class Assistant:
         # grab user's prompt from speech module
         self.prompt = self.speech.text
 
-        # log user's prompt in database
-        self.write_prompt_to_db()
-
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
         cat = self.offline_response['category']
@@ -122,7 +119,11 @@ class Assistant:
             self.reset_loop()
 
         elif cat == 'spotify':
-            self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
+            try:
+                self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
+            except BaseException as e:
+                self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
+
             self.tts(self.reply)
             self.reset_loop()
 
