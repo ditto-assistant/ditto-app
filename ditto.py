@@ -155,9 +155,19 @@ class Assistant:
                     self.speech.from_gui = False
                 
         elif cat == 'conv': # send to conversation handler
+
             if action == 'exit':
-                self.reset_loop()
-                self.play_sound('off')
+                if not self.speech.from_gui:
+                    self.reset_loop()
+                    self.play_sound('off')
+                else:
+                    self.conv_err_loop = 0 # set err loop back to 0 (max 3 - defined in JSON decoder exception handler)
+                    self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
+                    self.tts(self.reply)
+                    self.reset_loop()
+                    if not self.speech.from_gui: 
+                        self.skip_wake()
+                        self.speech.from_gui = False
             else:
                 self.conv_err_loop = 0 # set err loop back to 0 (max 3 - defined in JSON decoder exception handler)
                 self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
@@ -171,20 +181,18 @@ class Assistant:
     def write_response_to_db(self):
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS responses(response)")
+        cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR)")
         SQL.commit()
-        # filter ' from SQL string
-        cur.execute("INSERT INTO responses VALUES('%s')" % self.reply.replace("'", ""))
+        cur.execute("INSERT INTO responses VALUES('%s')" % self.reply.replace("'", "''"))
         SQL.commit()
         SQL.close()
 
     def write_prompt_to_db(self):
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt)")
+        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR)")
         SQL.commit()
-        # filter ' from SQL string
-        cur.execute("INSERT INTO prompts VALUES('%s')" % self.prompt.replace("'", ""))
+        cur.execute("INSERT INTO prompts VALUES('%s')" % self.prompt.replace("'", "''"))
         SQL.commit()
         SQL.close()
 

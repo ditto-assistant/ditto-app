@@ -22,12 +22,11 @@ elif platform.system() == 'Darwin':
 
 
 def actiavte_inject_prompt(prompt):
-    prompt = prompt.replace("'","")
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS ditto_requests(request, action)")
+    cur.execute("CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
     SQL.commit()
-    cur.execute("INSERT INTO ditto_requests VALUES('prompt', '%s')" % prompt.replace('"',""))
+    cur.execute("INSERT INTO ditto_requests VALUES('prompt', '%s')" % prompt.replace('""','"').replace("'", "''"))
     SQL.commit()
     SQL.close()
 
@@ -53,23 +52,27 @@ def get_conversation_history():
 def ditto_handler():
     requests = request.args
 
-    if request.method == "POST":
+    try:
+        if request.method == "POST":
 
-        # Request to send prompt to ditto
-        if 'prompt' in requests:
-            prompt = requests['prompt']
-            actiavte_inject_prompt(prompt)
-            return '{"prompt": "%s"}' % prompt
+            # Request to send prompt to ditto
+            if 'prompt' in requests:
+                prompt = requests['prompt']
+                actiavte_inject_prompt(prompt)
+                return '{"prompt": "%s"}' % prompt
 
-    elif request.method == "GET":
+        elif request.method == "GET":
 
-        # Request to get prompt + response history
-        if 'history' in requests:
-            prompts, responses = get_conversation_history()
-            return '{"prompts": %s, "responses": %s}' % (prompts, responses)
+            # Request to get prompt + response history
+            if 'history' in requests:
+                prompts, responses = get_conversation_history()
+                return '{"prompts": %s, "responses": %s}' % (prompts, responses)
 
-    else:
-        return '{"error": "invalid"}'
+        else:
+            return '{"error": "invalid"}'
+    except BaseException as e:
+        print(e)
+        return '{"response": "error"}'
 
 # Use Postman for POST Test and more!
 @app.route("/", methods=['POST'])
