@@ -75,7 +75,6 @@ class Assistant:
         Resets the command loop to idle.
         '''
         self.activation_mode = True # go back to idle...
-        self.write_response_to_db() # logs self.reply
         self.reply = ''
         self.comm_timer_mode = False
         self.comm_timer.cancel()
@@ -105,6 +104,9 @@ class Assistant:
 
         # grab user's prompt from speech module
         self.prompt = self.speech.text
+
+        # log user's prompt in database
+        self.write_prompt_to_db()
 
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
