@@ -75,9 +75,7 @@ class Assistant:
         Resets the command loop to idle.
         '''
         self.activation_mode = True # go back to idle...
-        if not prompt == '':
-            self.write_prompt_to_db() # logs self.prompt
-            self.write_response_to_db() # logs self.reply 
+        self.write_response_to_db() # logs self.reply 
         self.speech.text = ''
         self.prompt = ''
         self.reply = ''
@@ -109,6 +107,10 @@ class Assistant:
 
         # grab user's prompt from speech module
         self.prompt = self.speech.text
+        
+        # log the user's prompt 
+        if not self.prompt == '':
+            self.write_prompt_to_db() 
 
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
@@ -314,14 +316,14 @@ class Assistant:
             self.conv_timer_mode = False # turn off timer
  
 
-    def tts(self, prompt):
+    def tts(self, reply):
         if UNIX:
             os.system('amixer -q set Master ' + str(self.speech_volume)+'%')
         # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
         if not self.speech.offline_mode:
-            self.google.gtts(prompt)
+            self.google.gtts(reply)
         else:
-            self.speech_engine.say(prompt)
+            self.speech_engine.say(reply)
             self.speech_engine.runAndWait()
     
 
