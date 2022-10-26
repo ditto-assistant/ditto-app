@@ -89,6 +89,7 @@ class Speech:
                 if self.pico.inject_prompt: 
                     self.inject = True
                     self.pico.inject_prompt = False
+                    self.from_gui = True
                 if self.wake: # set to 0 in timer if idle reboot
                     self.activation.activate = True
                     self.recording = False

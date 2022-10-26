@@ -150,6 +150,7 @@ class PicovoiceDemo(Thread):
                     self.check_for_request()
                 except BaseException as e:
                     pass
+                    # print(e)
                 if not self.running: # used for rebooting picovoice (to fix mic sleep bug)
                     dummy = [1,2]
                     num=0

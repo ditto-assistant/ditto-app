@@ -259,6 +259,8 @@ class Command:
             presence_penalty=1.5,
             stop=["\nuser: "]
         )
+        raw_response = self.response.choices.copy().pop()['text']
+        print('\n\nGPT-3 Raw Response: ', raw_response)
         response = json.loads(self.response.choices.copy().pop()['text'])['reply']
         return response
     
