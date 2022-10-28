@@ -13,7 +13,6 @@ notes:
 
 import os
 import openai
-import serial
 import json
 
 from modules.hourglass.timer import Timer

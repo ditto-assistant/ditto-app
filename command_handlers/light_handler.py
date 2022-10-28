@@ -4,6 +4,9 @@ import numpy as np
 # https://github.com/mclarkk/lifxlan
 import lifxlan
 
+import serial
+
+
 class LightHandler():
 
     def __init__(self):
