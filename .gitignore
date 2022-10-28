@@ -14,3 +14,4 @@ output.mp3
 .cache
 .cache*
 ditto.db
+config.json

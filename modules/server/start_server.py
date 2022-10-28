@@ -10,7 +10,7 @@ class devnull:
 def start_server():
     server = Server()
     subprocess.Popen(['python', 'ditto.py'])
-    http_server = WSGIServer(('localhost', 42032), server.app, log=devnull)
+    http_server = WSGIServer(('0.0.0.0', 42032), server.app, log=devnull)
     print('\n\n[Server started on port 42032]\n\n')
     http_server.serve_forever()
 
