@@ -48,7 +48,7 @@ class LightHandler():
 
     def toggle_light_color(self, color, light_name=None):            
 
-        if light_name==None: # LED Light Strip handler
+        if light_name=='lights': # LED Light Strip handler
             self.toggle_light(color)
 
         else:
@@ -59,7 +59,7 @@ class LightHandler():
 
     def toggle_light_power(self, mode, light_name=None):
             
-        if light_name==None: # LED Light handler
+        if light_name=='lights': # LED Light handler
             self.toggle_light(mode)
         else:
             for light in self.lifx_lights:
@@ -77,12 +77,10 @@ class LightHandler():
             if mode == 'on':
                 self.light_status = True
                 self.light_mode = mode
-                self.toggle_light_power(mode)
                 s.write(b'\x00')
             elif mode == 'off':
                 self.light_status = False
                 self.light_mode = mode
-                self.toggle_light_power(mode)
                 s.write(b'\x01')
             elif mode == 'sparkle':
                 self.light_mode = mode
@@ -99,31 +97,24 @@ class LightHandler():
             elif mode == 'white':
                 self.light_mode = mode
                 s.write(b'\x06')
-                self.toggle_light_color(mode)
             elif mode == 'green':
                 self.light_mode = mode
                 s.write(b'\x07')
-                self.toggle_light_color(mode)
             elif mode == 'orange':
                 self.light_mode = mode
                 s.write(b'\x08')
-                self.toggle_light_color(mode)
             elif mode == 'blue':
                 self.light_mode = mode
                 s.write(b'\x09')
-                self.toggle_light_color(mode)
             elif mode == 'red':
                 self.light_mode = mode
                 s.write(b'\x0A')
-                self.toggle_light_color(mode)
             elif mode == 'yellow':
                 self.light_mode = mode
                 s.write(b'\x0B')
-                self.toggle_light_color(mode)
             elif mode == 'purple':
                 self.light_mode = mode
                 s.write(b'\x0C')
-                self.toggle_light_color(mode)
             elif mode == 'gradient':
                 self.light_mode = mode
                 s.write(b'\x0D')
