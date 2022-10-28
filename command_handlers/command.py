@@ -41,15 +41,13 @@ class Command:
         self.load_config()
         self.weather_app = Weather()
         self.wolfram = Wolfram(path)
-        self.light_handler = LightHandler()
+        self.light_handler = LightHandler(self.config)
         self.spotify_handler = SpotifyHandler()
         self.timer_handler = TimerHandler()
         self.weather_handler = WeatherHandler()
         self.wolfram_handler = WolframHandler()
         self.conversation_handler = ConversationHandler(path, offline_mode)
         self.path = path
-        self.light_status = True
-        self.light_mode = 'on'
         self.response = ''
         self.command_input = ''
         
@@ -132,5 +130,3 @@ class Command:
     
 if __name__ == "__main__":
     command = Command(os.getcwd())
-    # command.play_music("False Jasmine")
-    command.toggle_light('white')

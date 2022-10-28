@@ -9,7 +9,8 @@ import serial
 
 class LightHandler():
 
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.val_map = np.linspace(0, 65535, 10).tolist()
         self.lifx_color_map = {
             "red" : lifxlan.RED,
@@ -25,6 +26,8 @@ class LightHandler():
             "cold white" : lifxlan.COLD_WHITE
         }
         self.grab_lifx_lights()
+        self.light_status = True
+        self.light_mode = 'on'
     
     def grab_lifx_lights(self):
         try:
