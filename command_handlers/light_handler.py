@@ -46,15 +46,10 @@ class LightHandler():
                 if light_name.lower() in light.get_label().lower().strip():
                     light.set_brightness(value)
 
-    def toggle_light_color(self, color, light_name=None):
+    def toggle_light_color(self, color, light_name=None):            
 
-        if light_name == "lights": # LED Light Strip handler
+        if light_name==None: # LED Light Strip handler
             self.toggle_light(color)
-
-        if light_name==None: # global light command
-            for light in self.lifx_lights:
-                if light.supports_color():
-                    light.set_color(self.lifx_color_map[color])
 
         else:
             for light in self.lifx_lights:
@@ -63,14 +58,9 @@ class LightHandler():
                         light.set_color(self.lifx_color_map[color])
 
     def toggle_light_power(self, mode, light_name=None):
-
-        if light_name == "lights": # LED Light handler
+            
+        if light_name==None: # LED Light handler
             self.toggle_light(mode)
-
-        if light_name==None: # global light command
-            for light in self.lifx_lights:
-                # print(light)
-                light.set_power(mode)
         else:
             for light in self.lifx_lights:
                 if light_name.lower() in light.get_label().lower():
