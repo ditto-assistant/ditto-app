@@ -27,7 +27,8 @@ from spacy.training.example import Example
 from tqdm import tqdm
 
 # which model to create
-PLAY=1
+PLAY=0
+LIGHT=1
 TIMER=0
 NUM=0
 
@@ -35,6 +36,9 @@ NUM=0
 # load in and organize data
 if PLAY:
     with open('data/play_commands.json') as f:
+        json_data = json.load(f)
+if LIGHT:
+    with open('data/light_commands.json') as f:
         json_data = json.load(f)
 elif TIMER:
     with open('data/timer_commands.json') as f:
@@ -50,13 +54,12 @@ entities = []
 for ndx,data in enumerate(json_data['training_data']):
 
     if PLAY:
-        # if ndx == 30: break
         words = data['words']
         labels = data['labels']
 
         ent_ndx = []
         for ndx,x in enumerate(labels):
-            if 'song' in x or 'artist' in x or 'playlist':
+            if 'song' in x or 'artist' in x or 'playlist' in x:
                 if 'song' in x:
                     tag = 'SONG'
                     ent_ndx.append([ndx, x])
@@ -67,8 +70,26 @@ for ndx,data in enumerate(json_data['training_data']):
                     tag = 'PLAYLIST'
                     ent_ndx.append([ndx, x])
 
+    if LIGHT:
+        words = data['words']
+        labels = data['labels']
+
+        ent_ndx = []
+        for ndx,x in enumerate(labels):
+            if 'lightname' in x:
+                tag = 'LIGHTNAME'
+                ent_ndx.append([ndx, x])
+            if 'brightness' in x:
+                tag = 'BRIGHTNESS'
+                ent_ndx.append([ndx, x])
+            if 'color' in x:
+                tag = 'COLOR'
+                ent_ndx.append([ndx, x])
+            if 'command' in x:
+                tag = 'COMMAND'
+                ent_ndx.append([ndx, x])
+
     elif TIMER:
-        # if ndx == 30: break
         words = data['words']
         labels = data['labels']
 
@@ -83,7 +104,6 @@ for ndx,data in enumerate(json_data['training_data']):
                     ent_ndx.append([ndx, x])
     
     elif NUM:
-        # if ndx == 30: break
         words = data['words']
         labels = data['labels']
 
@@ -137,6 +157,8 @@ elif TIMER:
     output_dir=Path("models/ner/timer")
 elif NUM:
     output_dir=Path("models/ner/numeric")
+elif LIGHT:
+    output_dir=Path("models/ner/light")
 
 n_iter=N_ITER
 

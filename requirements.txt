@@ -25,3 +25,4 @@ Flask
 gevent
 flask-cors
 psutil
+plac

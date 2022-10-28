@@ -37,6 +37,8 @@ class NLP:
         self.ner_play = spacy.load(self.path+'models/ner/play')
         self.ner_timer = spacy.load(self.path+'models/ner/timer')
         self.ner_numeric = spacy.load(self.path+'models/ner/numeric')
+        self.ner_light = spacy.load(self.path+'models/ner/light')
+
 
     def initialize(self):
         # read in data
@@ -225,6 +227,24 @@ class NLP:
             print('\n[word2num error]\n')
             numeric = numeric
         response = '{"numeric" : "%s", "entity" : "%s"}' % (numeric, entity)
+        return response
+
+    def prompt_ner_light(self, sentence):
+        lightname = ''
+        brightness = ''
+        color = ''
+        command = ''
+        reply = self.ner_light(sentence)
+        for ent in reply.ents:
+            if 'lightname' in ent.label_:
+                lightname+=ent.text+' '
+            if 'brightness' in ent.label_:
+                brightness+=ent.text+' '
+            if 'color' in ent.label_:
+                color+=ent.text+' '
+            if 'command' in ent.label_:
+                command+=ent.text+' '
+        response = '{"lightname" : "%s", "brightness" : "%s", "color" : "%s", "command" : "%s"}' % (lightname, brightness, color, command)
         return response
 
 

@@ -149,7 +149,7 @@ class Assistant:
 
         # send prompt to application / category 
         if  cat == 'lights':
-            self.reply = self.command.light_handler.handle_response(self.command, self.nlp, self.prompt, action, sub_cat)
+            self.reply = self.command.light_handler.handle_response(self.nlp, self.prompt)
             self.tts(self.reply)
             self.reset_loop()
 

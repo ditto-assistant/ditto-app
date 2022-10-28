@@ -1,73 +1,184 @@
 import json
 import numpy as np
 
+# https://github.com/mclarkk/lifxlan
+import lifxlan
 
 class LightHandler():
 
     def __init__(self):
         self.val_map = np.linspace(0, 65535, 10).tolist()
-
-    def handle_response(self, command, nlp, prompt, action, sub_cat):
-        
+        self.lifx_color_map = {
+            "red" : lifxlan.RED,
+            "orange": lifxlan.ORANGE,
+            "yellow": lifxlan.YELLOW,
+            "green" : lifxlan.GREEN,
+            "blue" : lifxlan.BLUE,
+            "purple" : lifxlan.PURPLE,
+            "blue" : lifxlan.BLUE,
+            "pink" : lifxlan.PINK,
+            "white" : lifxlan.WHITE,
+            "warm white" : lifxlan.WARM_WHITE,
+            "cold white" : lifxlan.COLD_WHITE
+        }
+        self.grab_lifx_lights()
+    
+    def grab_lifx_lights(self):
         try:
-            # global lights handler
-            if not action == 'numeric' and sub_cat == 'none':
-                if 'off' in action:
-                    reply = '[Turning off the lights]'
-                elif 'on' in action:
-                    reply = '[Turning on the lights]'
-                else: 
-                    reply = '[Setting lights to %s]' % action
-                command.toggle_light(action)
+            self.lifx_lights = []
+            lights = lifxlan.LifxLAN().get_lights()
+            for light in lights:
+                self.lifx_lights.append(light)
+        
+        except BaseException as e:
+            print(e)
 
-            # brightness handlers per light
-            elif action=='numeric':
-                ner_response = json.loads(nlp.prompt_ner_numeric(prompt))
-                value = ner_response['numeric']
-                entity = ner_response['entity']
-                val_scale = self.val_map[int(value)-1]
-                if 'lamp' in entity:
-                    command.set_light_brightness(val_scale, 'lamp')
-                elif 'bathroom' in entity:
-                    command.set_light_brightness(val_scale, 'bathroom')
-                elif 'bedroom light' in entity:
-                    command.set_light_brightness(val_scale, 'bedroom light')
-                reply = '[Setting %s brightness to %d]' % (str(entity),int(value))
+    def set_light_brightness(self, value, light_name=None):
+        if light_name==None:
+            for light in self.lifx_lights:
+                light.set_brightness(value)
 
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower().strip():
+                    light.set_brightness(value)
+
+    def toggle_light_color(self, color, light_name=None):
+
+        if light_name == "lights": # LED Light Strip handler
+            self.toggle_light(color)
+
+        if light_name==None: # global light command
+            for light in self.lifx_lights:
+                if light.supports_color():
+                    light.set_color(self.lifx_color_map[color])
+
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower().strip():
+                    if light.supports_color():
+                        light.set_color(self.lifx_color_map[color])
+
+    def toggle_light_power(self, mode, light_name=None):
+
+        if light_name == "lights": # LED Light handler
+            self.toggle_light(mode)
+
+        if light_name==None: # global light command
+            for light in self.lifx_lights:
+                # print(light)
+                light.set_power(mode)
+        else:
+            for light in self.lifx_lights:
+                if light_name.lower() in light.get_label().lower():
+                    light.set_power(mode)
+
+    def toggle_light(self, mode):
+        try:
+            dev_path = self.config['teensy_path']
+            try:
+                s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
+            except BaseException as e:
+                pass
+                # print(e)
+            if mode == 'on':
+                self.light_status = True
+                self.light_mode = mode
+                self.toggle_light_power(mode)
+                s.write(b'\x00')
+            elif mode == 'off':
+                self.light_status = False
+                self.light_mode = mode
+                self.toggle_light_power(mode)
+                s.write(b'\x01')
+            elif mode == 'sparkle':
+                self.light_mode = mode
+                s.write(b'\x02')
+            elif mode == 'mode 3':
+                self.light_mode = mode
+                s.write(b'\x03')
+            elif mode == 'mode 4':
+                self.light_mode = mode
+                s.write(b'\x04')
+            elif mode == 'mode 5':
+                self.light_mode = mode
+                s.write(b'\x05')
+            elif mode == 'white':
+                self.light_mode = mode
+                s.write(b'\x06')
+                self.toggle_light_color(mode)
+            elif mode == 'green':
+                self.light_mode = mode
+                s.write(b'\x07')
+                self.toggle_light_color(mode)
+            elif mode == 'orange':
+                self.light_mode = mode
+                s.write(b'\x08')
+                self.toggle_light_color(mode)
+            elif mode == 'blue':
+                self.light_mode = mode
+                s.write(b'\x09')
+                self.toggle_light_color(mode)
+            elif mode == 'red':
+                self.light_mode = mode
+                s.write(b'\x0A')
+                self.toggle_light_color(mode)
+            elif mode == 'yellow':
+                self.light_mode = mode
+                s.write(b'\x0B')
+                self.toggle_light_color(mode)
+            elif mode == 'purple':
+                self.light_mode = mode
+                s.write(b'\x0C')
+                self.toggle_light_color(mode)
+            elif mode == 'gradient':
+                self.light_mode = mode
+                s.write(b'\x0D')
             else:
-                    
-                # bedroom light handler
-                if 'bedroom-light' in sub_cat:
-                    command.toggle_light_power(action, 'bedroom')
-                    if action == 'on':
-                        reply = '[Turning on the bedroom lights]'
-                    else: reply = '[Turning off the bedroom lights]'
+                print('not a valid light mode')
+                self.light_mode = self.light_mode
+        except BaseException as e:
+            # print(e)
+            # print('no device found')
+            pass
 
 
-                # bedroom lamp handler
-                elif 'bedroom-lamp' in sub_cat:    
-                    if action == 'on':
-                        reply = '[Turning on the bedroom lamp]'
-                        command.toggle_light_power(action, 'lamp')
-                    elif action == 'off':
-                        reply = '[Turning off the bedroom lamp]'
-                        command.toggle_light_power(action, 'lamp')
-                    else:
-                        reply = '[Setting bedroom lamp to %s]' % action
-                        command.toggle_light_color(action, 'lamp')    
+    def handle_response(self, nlp, prompt):
+        try:
+            ner_response = json.loads(nlp.prompt_ner_light(prompt))
+            lightname = ner_response['lightname'].strip()
+            brightness = ner_response['brightness'].strip()
+            color = ner_response['color'].strip()
+            command = ner_response['command'].strip()
 
-                # bathroom handler
-                elif 'bathroom' in sub_cat:
-                    command.toggle_light_power(action, 'bathroom')
-                    if action == 'on':
-                        reply = '[Turning on the bathroom lights]'
-                    else: reply = '[Turning off the bathroom lights]'
+            if command and lightname:
+                if command == 'dim':
+                    val_scale = self.val_map[3]
+                    self.set_light_brightness(val_scale, lightname)
+                    reply = f'[Dimming the {lightname}]'
+                else:
+                    self.toggle_light_power(command, lightname)
+                    reply = f'[Turning {command} the {lightname}]' 
+            
+            elif color and lightname:
+                self.toggle_light_color(color, lightname)
+                reply = f'[Setting {lightname} to {color}]'
+            
+            elif brightness and lightname:
+                if "%" in brightness:
+                    val = int(brightness.replace("%","")) / 10
+                    val_scale = self.val_map[val]
+                else:
+                    val_scale = self.val_map[int(brightness)]
+                self.set_light_brightness(val_scale, lightname)
+                reply = f"[Setting {lightname}'s brightness to {brightness}]"
+
                                                     
         # any errors come here
         except BaseException as e:
             print(e)
-            reply = '[Light not found]'
-            command.grab_lifx_lights()
+            reply = '[Light not found or invalid command]'
+            self.grab_lifx_lights()
                     
         print(reply+'\n')
 
