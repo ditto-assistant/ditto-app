@@ -18,6 +18,8 @@ import struct
 import wave
 from threading import Thread
 
+import sqlite3
+
 import numpy as np
 from picovoice import *
 from pvrecorder import PvRecorder
@@ -27,7 +29,6 @@ UNIX = False
 operating_system = platform.system()
 if operating_system == 'Linux' or operating_system == 'Darwin':
     UNIX = True
-
 
 
 class PicovoiceDemo(Thread):
@@ -96,6 +97,8 @@ class PicovoiceDemo(Thread):
 
         self.audio_device_index = audio_device_index
         self.output_path = output_path
+        self.prompt = ""
+        self.inject_prompt = False
 
     @staticmethod
     def _wake_word_callback():
@@ -107,11 +110,25 @@ class PicovoiceDemo(Thread):
         err =dummy[num]
         
 
-
-
     @staticmethod
     def _inference_callback(inference):
         pass
+
+    def check_for_request(self):
+        ''' 
+        Checks if the user sent a prompt from the client GUI.
+        '''
+        SQL = sqlite3.connect("ditto.db")
+        cur = SQL.cursor()
+        req = cur.execute("select * from ditto_requests")
+        req = req.fetchone()
+        if req[0] == "prompt":
+            self.prompt = req[1]
+            print("\n[GUI prompt received]\n")
+            cur.execute("DROP TABLE ditto_requests")
+            SQL.close()
+            self.running = False
+            self.inject_prompt = True
 
     def run(self):
         self.recorder = None
@@ -129,6 +146,11 @@ class PicovoiceDemo(Thread):
             print('\nidle...\n')
 
             while True:
+                try:
+                    self.check_for_request()
+                except BaseException as e:
+                    pass
+                    # print(e)
                 if not self.running: # used for rebooting picovoice (to fix mic sleep bug)
                     dummy = [1,2]
                     num=0

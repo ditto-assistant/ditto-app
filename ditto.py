@@ -75,17 +75,22 @@ class Assistant:
         Resets the command loop to idle.
         '''
         self.activation_mode = True # go back to idle...
-        self.write_response_to_db() # logs self.reply
+        self.write_response_to_db() # logs self.reply 
+        self.speech.text = ''
+        self.prompt = ''
         self.reply = ''
         self.comm_timer_mode = False
         self.comm_timer.cancel()
+        self.speech.from_gui = False
 
     def play_sound(self, sound='off'):
-        pygame.mixer.init()
-        pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy() == True:
-            continue
+        print(f'Gui Mode {self.speech.from_gui}')
+        if not self.speech.from_gui:
+            pygame.mixer.init()
+            pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy() == True:
+                continue
 
     def skip_wake(self):
         '''
@@ -100,10 +105,37 @@ class Assistant:
         self.comm_timer.cancel()
 
 
+    def conversation_app(self, action=None):
+
+        def conversation_flow():
+            self.conv_err_loop = 0 # set err loop back to 0 (max 3 - defined in JSON decoder exception handler)
+            self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
+            if self.reply == '': self.reply = '...'
+            self.tts(self.reply)
+            if not self.speech.from_gui: 
+                self.skip_wake()
+                self.speech.from_gui = False
+            else:
+                self.reset_loop()
+                
+        if action == 'exit':
+            if not self.speech.from_gui:
+                self.reset_loop()
+                self.play_sound('off')
+            else:
+                conversation_flow()
+        else:
+            conversation_flow()
+
     def send_command(self): # application logic
 
         # grab user's prompt from speech module
         self.prompt = self.speech.text
+        
+        # log the user's prompt 
+        if not self.prompt == '':
+            print('\n\nwriting prompt to db...')
+            self.write_prompt_to_db() 
 
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
@@ -111,61 +143,84 @@ class Assistant:
         sub_cat = self.offline_response['sub_category']
         action = self.offline_response['action']
 
+        print('\n\n')
+        print(cat, sub_cat, action)
+        print('\n\n')
+
         # send prompt to application / category 
         if  cat == 'lights':
-            self.reply = self.command.light_handler.handle_response(self.command, self.nlp, self.prompt, action, sub_cat)
+            self.reply = self.command.light_handler.handle_response(self.nlp, self.prompt)
             self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'spotify':
-            self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
+            try:
+                self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
+            except BaseException as e:
+                self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
             self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'music':
-            self.command.player.remote(self.offline_response['action'])
-            self.reset_loop()
+            try:
+                self.command.player.remote(self.offline_response['action'])
+                if self.speech.from_gui:
+                    self.reply = '[Done.]'
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
             
         elif cat == 'timer':
-            self.reply = self.command.timer_handler.handle_response(self.command, self.nlp, self.prompt)
-            self.tts(self.reply)
-            self.reset_loop()
+            try:
+                self.reply = self.command.timer_handler.handle_response(self.command, self.nlp, self.prompt)
+                self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+            
         
         elif cat == 'weather':
-            self.reply = self.command.weather_handler.handle_response(self.command, sub_cat)
-            self.tts(self.reply)
-            self.reset_loop()
+            try:
+                self.reply = self.command.weather_handler.handle_response(self.command, sub_cat)
+                self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+            
 
         elif cat == 'wolfram':
-            self.reply = self.command.wolfram_handler.handle_response(self.command, sub_cat, self.prompt)
-            if not self.reply == '':
+            try:
+                self.reply = self.command.wolfram_handler.handle_response(self.command, sub_cat, self.prompt)
+                if self.reply == '': self.reply == '...'
                 self.tts(self.reply)
                 self.reset_loop()
-            else: # if wolfram has no reply then send to conversation handler
-                self.conv_err_loop = 0 # set err loop back to 0 (max 3 - defined in JSON decoder exception handler)
-                self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
-                self.tts(self.reply)
-                self.reset_loop()
-                self.skip_wake()
-                
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
         elif cat == 'conv': # send to conversation handler
-            if action == 'exit':
-                self.reset_loop()
-                self.play_sound('off')
-            else:
-                self.conv_err_loop = 0 # set err loop back to 0 (max 3 - defined in JSON decoder exception handler)
-                self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
-                self.tts(self.reply)
-                self.reset_loop()
-                self.skip_wake()
+
+            self.conversation_app(action)
 
 
     def write_response_to_db(self):
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS responses (response)")
+        cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR)")
         SQL.commit()
-        cur.execute("INSERT INTO responses VALUES('%s')" % self.reply)
+        cur.execute("INSERT INTO responses VALUES('%s')" % self.reply.replace("'", "''"))
+        SQL.commit()
+        SQL.close()
+
+    def write_prompt_to_db(self):
+        SQL = sqlite3.connect("ditto.db")
+        cur = SQL.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR)")
+        SQL.commit()
+        cur.execute("INSERT INTO prompts VALUES('%s')" % self.prompt.replace("'", "''"))
         SQL.commit()
         SQL.close()
 
@@ -200,45 +255,16 @@ class Assistant:
                 self.conversation_timeout_handler(15) # executes every n "seconds" (used to handle short term mem)
 
                 ## enter application handler ## (main loop)
-                while not self.activation_mode:
-                    try:
-                        self.send_command()
-                        
-                    except openai.error.APIConnectionError as e:
-                        print("Error: trouble connecting to API (possibly no internet)")
-                        print("Full Error: \n%d" % e)
-                        self.activation_mode = True # back to idle ...
-                        self.speech.text = ""
-                        self.speech.activation.text = ""
+                # while not self.activation_mode:
+                try:
+                    self.send_command()
 
-                    except IndexError as e:
-                        print('[IndexError from GPT3 Response Handler]\n')
-                        print(self.command.response)
-                        print('\nError Message: ')
-                        print(e)
-                        self.activation_mode = True # back to idle ...
-                        self.speech.text = ""
-                        self.speech.activation.text = ""
-                        self.application = 'model-selector'
-
-                    except json.decoder.JSONDecodeError as e:
-                        # print('[GPT3 Conversation Model Error]')
-                        # print(f"prompt: {self.prompt}")
-                        # print(f"reply: {self.command.response.choices.copy().pop()['text']}")
-                        self.conv_err_loop += 1
-                        if self.conv_err_loop == 3:
-                            self.conv_err_loop = 0
-                            self.application = 'model-selector'
-                            print('[resetting context]\n')
-                            self.command.reset_conversation()
-                            break # go back to idle...
-
-                    except openai.error.InvalidRequestError as e:
-                        print('[resetting context]\n')
-                        self.command.reset_conversation()
-
-                if self.activation_mode == True: # going back to idle... (app on exit section)
-                    self.comm_timer_mode = False # pause command timer (auto resumes on wakeup if needed)
+                except BaseException as e:
+                    print('\n\n[Unexpected Error: ]\n')
+                    print(e)
+                    self.reply = '...'
+                    self.tts(self.reply)
+                    self.reset_loop()
                 
             else:
                 self.speech.activation.activate = False # back to idle ...
@@ -278,14 +304,14 @@ class Assistant:
             self.conv_timer_mode = False # turn off timer
  
 
-    def tts(self, prompt):
+    def tts(self, reply):
         if UNIX:
             os.system('amixer -q set Master ' + str(self.speech_volume)+'%')
         # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
         if not self.speech.offline_mode:
-            self.google.gtts(prompt)
+            self.google.gtts(reply)
         else:
-            self.speech_engine.say(prompt)
+            self.speech_engine.say(reply)
             self.speech_engine.runAndWait()
     
 
