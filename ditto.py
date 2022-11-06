@@ -194,9 +194,12 @@ class Assistant:
         elif cat == 'wolfram':
             try:
                 self.reply = self.command.wolfram_handler.handle_response(self.command, sub_cat, self.prompt)
-                if self.reply == '': self.reply == '...'
-                self.tts(self.reply)
-                self.reset_loop()
+                print(f'\nWolfram Reply len: `{len(self.reply)}`\n')
+                if len(self.reply) > 0 and len(self.reply) < 99:
+                    self.tts(self.reply)
+                    self.reset_loop()
+                else:
+                    self.conversation_app()
             except BaseException as e:
                 print(e)
                 self.conversation_app()
