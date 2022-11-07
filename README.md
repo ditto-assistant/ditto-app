@@ -44,3 +44,7 @@ pip install -r requirements.txt
 		2. Windows Instructions:
 			1. Run main.py to generate template config.json in `assistant/resources`.
 			2. Find the COM port in device manager after plugging in / flashing your Teensy and set the `resources/config.json` key "teensy_path" to "COM" or "COM1" depending on your machine.
+
+
+## Running:
+- Simply run `python main.py` to boot the assistant along with a Flask server for communicating with the [Ditto App](https://github.com/omarzanji/ditto-app) front-end client.
