@@ -70,6 +70,7 @@ class LightHandler():
                     light.set_power(mode)
 
     def toggle_light(self, mode):
+        mode = mode.lower()
         try:
             dev_path = self.config['teensy_path']
             try:

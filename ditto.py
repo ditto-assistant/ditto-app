@@ -108,18 +108,18 @@ class Assistant:
     def conversation_app(self, action=None):
 
         def conversation_flow():
-            self.conv_err_loop = 0 # set err loop back to 0 (max 3 - defined in JSON decoder exception handler)
             self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
             if self.reply == '': self.reply = '...'
             self.tts(self.reply)
             if not self.speech.from_gui: 
                 self.skip_wake()
-                self.speech.from_gui = False
+                self.write_response_to_db()
             else:
                 self.reset_loop()
                 
         if action == 'exit':
             if not self.speech.from_gui:
+                self.reply = '[Exiting Conversation Loop]'
                 self.reset_loop()
                 self.play_sound('off')
             else:
@@ -194,9 +194,12 @@ class Assistant:
         elif cat == 'wolfram':
             try:
                 self.reply = self.command.wolfram_handler.handle_response(self.command, sub_cat, self.prompt)
-                if self.reply == '': self.reply == '...'
-                self.tts(self.reply)
-                self.reset_loop()
+                print(f'\nWolfram Reply len: `{len(self.reply)}`\n')
+                if len(self.reply) > 0 and len(self.reply) < 99:
+                    self.tts(self.reply)
+                    self.reset_loop()
+                else:
+                    self.conversation_app()
             except BaseException as e:
                 print(e)
                 self.conversation_app()
@@ -207,6 +210,7 @@ class Assistant:
 
 
     def write_response_to_db(self):
+        if not self.reply: self.reply = '[empty]'
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR)")
