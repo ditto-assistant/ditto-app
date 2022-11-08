@@ -30,6 +30,14 @@ def actiavte_inject_prompt(prompt):
     SQL.commit()
     SQL.close()
 
+def get_prompt_response_count():
+    SQL = sqlite3.connect("ditto.db")
+    cur = SQL.cursor()
+    prompt_count = cur.execute("SELECT COUNT(*) FROM prompts").fetchone()[0]
+    response_count = cur.execute("SELECT COUNT(*) FROM responses").fetchone()[0]
+    SQL.close()
+    return int(prompt_count) + int(response_count)
+
 def get_conversation_history():
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
@@ -67,6 +75,12 @@ def ditto_handler():
             if 'history' in requests:
                 prompts, responses = get_conversation_history()
                 return '{"prompts": %s, "responses": %s}' % (prompts, responses)
+
+            # Request prompt + response history count in database
+            if 'historyCount' in requests:
+                count = get_prompt_response_count()
+                return '{"historyCount": %d}' % count
+
 
         else:
             return '{"error": "invalid"}'
