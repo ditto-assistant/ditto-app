@@ -138,7 +138,7 @@ class LightHandler():
             brightness = ner_response['brightness'].strip()
             color = ner_response['color'].strip()
             command = ner_response['command'].strip()
-
+            reply = ''
             if command and lightname:
                 if command == 'dim':
                     val_scale = self.val_map[3]
