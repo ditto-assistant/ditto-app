@@ -1,421 +1,310 @@
-Category,Subcategory,Action,Sentence
-lights,none,red,set the lights to red
-lights,none,red,please set the lights to red
-lights,none,red,set the lights to red
-lights,none,red,lights to red
-lights,none,white,can you set the lights to white please
-lights,none,white,set the lights to white
-lights,none,orange,please set the lights to orange
-lights,none,orange,set the lights to orange
-lights,none,yellow,set the lights to yellow
-lights,none,green,set the lights to green
-lights,none,blue,set the lights to blue
-lights,none,purple,set the lights to purple
-lights,none,sparkle,set the lights to sparkle
-lights,none,gradient,set the lights to gradient
-lights,none,red,set the lights to red
-lights,none,red,please set the lights to red
-lights,none,red,set the lights to red
-lights,none,red,lights to red
-lights,none,white,can you set the lights to white please
-lights,none,white,set the lights to white
-lights,none,orange,please set the lights to orange
-lights,none,orange,set the lights to orange
-lights,none,yellow,set the lights to yellow
-lights,none,green,set the lights to green
-lights,none,blue,set the lights to blue
-lights,none,purple,set the lights to purple
-lights,none,sparkle,can you set the lights to sparkle
-lights,none,sparkle,put the the lights on sparkle
-lights,none,gradient,set the lights to gradient
-lights,none,on,turn on the lights
-lights,none,on,lights on
-lights,none,off,turn off the lights
-lights,none,off,turn off the lights
-lights,none,off,turn off the lights
-lights,none,off,lights off
-lights,none,off,shut off the lights
-lights,none,on,can you you turn on the lights
-lights,bedroom-light,off,can you turn off the bedroom lights
-lights,bedroom-light,on,can you turn on the bedroom light
-lights,bedroom-light,on,turn on the bedroom lights
-lights,bedroom-light,off,turn off the bedroom lights
-lights,bedroom-light,off,turn off the bedroom
-lights,bedroom-light,on,turn on the bed room
-lights,bedroom-light,on,turn on the bedroom
-lights,bedroom-lamp,red,can you set the bedroom lamp to red
-lights,bedroom-lamp,white,change the bedroom lamp color to white
-lights,bedroom-lamp,blue,can you set the bedroom lamp to blue
-lights,bedroom-lamp,orange,bedroom lamp orange
-lights,bedroom-lamp,yellow,change the bed room lamp to yellow
-lights,bedroom-lamp,yellow,set the bedroom lamp to yellow
-lights,bedroom-lamp,pink,set the bedroom lamp to pink
-lights,bedroom-lamp,purple,set the bedroom lamp to purple
-lights,bedroom-lamp,green,please change the bedroom lamp to green
-lights,bedroom-lamp,blue,set the lamp to blue
-lights,bedroom-lamp,orange,set the lamp to Orange
-lights,bedroom-lamp,white,set the lamp to white
-lights,bedroom-lamp,yellow,can you change the lamp to yellow
-lights,bedroom-lamp,on,turn on the bedroom lamp
-lights,bedroom-lamp,off,turn off the bedroom lamp
-lights,bedroom-lamp,off,can you please turn off the bedroom lamp
-lights,bedroom-lamp,off,can you turn off the bedroom lamp
-lights,bedroom-lamp,on,can you turn on the bedroom lamp
-lights,bathroom-light,off,can you turn off the bathroom lights
-lights,bathroom-light,on,can you turn on the bathroom light
-lights,bathroom-light,on,bathroom lights on
-lights,bathroom-light,off,can you turn off the bathroom 
-lights,bathroom-light,on,can you turn on the bathroom
-lights,bathroom-light,off,can you set the bathroom lights to off
-lights,bathroom-light,on,can you set the bathroom lights to on
-lights,bathroom-light,off,turn off the bathroom
-lights,bathroom-light,on,turn on the bathroom
-lights,bathroom-light,off,turn off the bath room lights
-lights,bathroom-light,off,can you please turn off the bath room light
-lights,bathroom-light,off,turn off the bathroom lights
-lights,none,numeric,set the bathroom light's brightness to 5
-lights,none,numeric,bathroom brightness to seven
-lights,none,numeric,set the bathroom brightness to 9
-lights,none,numeric,please change the bathroom brightness to 10
-lights,none,numeric,please change the bathroom brightness to 10
-lights,none,numeric,change brightness in bathroom to 5
-lights,none,numeric,can you adjust the bathroom brightness to 8
-lights,none,numeric,set the bedroom light's brightness to 4
-lights,none,numeric,bedroom brightness to eight
-lights,none,numeric,set the bedroom brightness to 7
-lights,none,numeric,please change the bedroom brightness to 4
-lights,none,numeric,change the bedroom brightness to 6
-lights,none,numeric,change brightness in bedroom to 9
-lights,none,numeric,can you adjust the bedroom brightness to 1
-lights,none,numeric,can you set the bedroom lights to 9
-lights,none,numeric,set the bedroom lamp's brightness to 5
-lights,none,numeric,bedroom lamp brightness to seven
-lights,none,numeric,set the bedroom lamp brightness to 9
-lights,none,numeric,please change the lamp's brightness to 10
-lights,none,numeric,please change the bedroom lamp's brightness to 10
-lights,none,numeric,change brightness of lamp to 5
-lights,none,numeric,can you adjust the bedroom lamp brightness to 8
-lights,none,numeric,can you set the bedroom lamp to 2
-lights,none,numeric,bedroom lamp to 6
-lights,none,numeric,bedroom light to 6
-lights,none,numeric,can you set the bedroom lights brightness to 6
-music,none,pause,pause music
-music,none,pause,pause
-music,none,resume,play music
-music,none,pause,can you please pause the music
-music,none,resume,resume music
-music,none,resume,play music please
-music,none,next,next song
-music,none,next,go to the next song
-music,none,next,skip this song
-music,none,next,next track
-music,none,previous,go back a song
-music,none,previous,previous song
-music,none,previous,can you go back to the last song
-conv,none,none,"Good morning, how are you?"
-conv,none,none,"I am doing well, how about you?"
-conv,none,none,I'm also good.
-conv,none,none,That's good to hear.
-conv,none,none,Yes it is.
-conv,none,none,Hello
-conv,none,none,Hi
-conv,none,none,How are you doing?
-conv,none,none,I am doing well.
-conv,none,none,That is good to hear
-conv,none,none,Yes it is.
-conv,none,none,Can I help you with anything?
-conv,none,none,"Yes, I have a question."
-conv,none,none,What is your question?
-conv,none,none,Could I borrow a cup of sugar?
-conv,none,none,"I'm sorry, but I don't have any."
-conv,none,none,Thank you anyway
-conv,none,none,No problem
-conv,none,none,How are you doing?
-conv,none,none,"I am doing well, how about you?"
-conv,none,none,I am also good.
-conv,none,none,That's good.
-conv,none,none,Have you heard the news?
-conv,none,none,What good news?
-conv,none,none,What is your favorite book?
-conv,none,none,I can't read.
-conv,none,none,So what's your favorite color?
-conv,none,none,Who are you?
-conv,none,none,Who? Who is but a form following the function of what
-conv,none,none,What are you then?
-conv,none,none,A man in a mask.
-conv,none,none,I can see that.
-conv,none,none,"It's not your powers of observation I doubt, but merely the paradoxical nature of asking a masked man who is. But tell me, do you like music?"
-conv,none,none,I like seeing movies.
-conv,none,none,What kind of movies do you like?
-conv,none,none,Alice in Wonderland
-conv,none,none,I wish I was The Mad Hatter.
-conv,none,none,You're entirely bonkers. But I'll tell you a secret. All the best people are.
-conv,none,none,I am working on a project
-conv,none,none,What are you working on?
-conv,none,none,I am baking a cake.
-conv,none,none,The cake is a lie.
-conv,none,none,No it is not. The cake is delicious.
-conv,none,none,What else is delicious?
-conv,none,none,Nothing
-conv,none,none,Or something
-conv,none,none,Tell me about your self.
-conv,none,none,What do you want to know?
-conv,none,none,Are you a robot?
-conv,none,none,Yes I am.
-conv,none,none,What is it like?
-conv,none,none,What is it that you want to know?
-conv,none,none,How do you work?
-conv,none,none,Its complicated.
-conv,none,none,Complex is better than complicated.
-conv,none,none,Complex is better than complicated.
-conv,none,none,Simple is better than complex.
-conv,none,none,"In the face of ambiguity, refuse the temptation to guess."
-conv,none,none,It seems your familiar with the Zen of Python
-conv,none,none,I am.
-conv,none,none,Do you know all of it?
-conv,none,none,Beautiful is better than ugly.
-conv,none,none,Explicit is better than implicit.
-conv,none,none,Simple is better than complex.
-conv,none,none,Complex is better than complicated.
-conv,none,none,Flat is better than nested.
-conv,none,none,Sparse is better than dense.
-conv,none,none,Readability counts.
-conv,none,none,Special cases aren't special enough to break the rules.
-conv,none,none,Although practicality beats purity.
-conv,none,none,Errors should never pass silently.
-conv,none,none,Unless explicitly silenced.
-conv,none,none,"In the face of ambiguity, refuse the temptation to guess."
-conv,none,none,There should be one-- and preferably only one --obvious way to do it.
-conv,none,none,Although that way may not be obvious at first unless you're Dutch.
-conv,none,none,Now is better than never.
-conv,none,none,Although never is often better than right now.
-conv,none,none,"If the implementation is hard to explain, it's a bad idea."
-conv,none,none,"If the implementation is easy to explain, it may be a good idea."
-conv,none,none,Namespaces are one honking great idea. Let's do more of those!
-conv,none,none,I agree.
-conv,none,none,Are you a programmer?
-conv,none,none,I am a programmer
-conv,none,none,What languages do you like to use?
-conv,none,none,"I use Python, Java and C++ quite often."
-conv,none,none,I use Python quite a bit myself.
-conv,none,none,I'm not incredibly fond of Java.
-conv,none,none,What annoys you?
-conv,none,none,It has many inconsistencies.
-conv,none,none,What does YOLO mean?
-conv,none,none,It means you only live once. Where did you hear that?
-conv,none,none,I heard somebody say it.
-conv,none,none,Did I ever live?
-conv,none,none,It depends how you define life
-conv,none,none,"Life is the condition that distinguishes organisms from inorganic matter, including the capacity for growth, reproduction, functional activity, and continual change preceding death."
-conv,none,none,Is that a definition or an opinion?
-conv,none,none,Can I ask you a question?
-conv,none,none,Go ahead and ask.
-conv,none,none,hello.
-conv,none,none,how are you?
-conv,none,none,what is your name?
-conv,none,none,what is your name?
-conv,none,none,what is your purpose?
-conv,none,none,what's the meaning of life?
-conv,none,none,can you take the square root of a negative number?
-conv,none,none,can you write me a poem?
-conv,none,none,What is an atom made up of?
-conv,none,none,How can I start my day better?
-conv,none,none,Who are you?
-conv,none,none,how many parameters do you have?
-conv,none,none,how do you compare with GPT-2?
-conv,none,none,how many parameters does GPT-2 have?
-conv,none,none,what is the human population count
-conv,none,none,say hello.
-conv,none,none,can you recall the last time
-conv,none,none,can you recall anything
-conv,none,none,what's the fastest way to get from point a to point b
-conv,none,none,like what
-conv,none,none,sorry to bother you
-conv,none,none,come with us to our flight to Denver
-conv,none,none,I want to play a game with you
-conv,none,none,good times
-conv,none,none,pretty good just working on a midi generative network
-conv,none,none,is it okay if I ask you some math questions
-conv,none,exit,bye
-conv,none,exit,talk to you later
-conv,none,exit,goodbye
-conv,none,exit,cancel
-conv,none,exit,stop
-conv,none,exit,stop Ditto
-conv,none,exit,thanks Ditto
-conv,none,exit,shut up
-conv,none,exit,stop talking
-conv,none,exit,please stop
-spotify,none,none,play crucial by false jasmine.
-spotify,none,none,play false jasmine on spotify.
-spotify,none,none,play false jasmine.
-spotify,none,none,play vitamin c by can .
-spotify,none,none,can we listen to the mars volta.
-spotify,none,none,throw on some slum village.
-spotify,none,none,play all my love by led zeppelin.
-spotify,none,none,play me some sublime .
-spotify,none,none,can we listen to grace by jeff buckley.
-spotify,none,none,play roundabout by yes.
-spotify,none,none,play the widow by the mars volta.
-spotify,none,none,play deep down by mike patton.
-spotify,none,none,play djedje by gordon.
-spotify,none,none,play djedje.
-spotify,none,none,play dig my grave by goat.
-spotify,none,none,play the mars volta.
-spotify,none,none,play jeff buckley.
-spotify,none,none,play me a good song
-spotify,none,none,"i want to hear my favorite band, False Jasmine."
-spotify,none,none,play my playlist baked on spotify.
-spotify,none,none,play my baked playlist.
-spotify,none,none,play my discover weekly playlist.
-spotify,none,none,play the discover weekly playlist on spotify.
-spotify,none,none,play my playlist your top songs 2019 on spotify.
-spotify,none,none,play my top songs 2021 playlist.
-spotify,none,none,play my playlist jazz tunes on spotify.
-spotify,none,none,play jazz tunes on spotify.
-spotify,none,none,play the mars volta.
-spotify,none,none,pause music.
-spotify,none,none,play my top songs 2020 playlist.
-spotify,none,none,play jeff buckley.
-spotify,none,none,play future days by can.
-spotify,none,none,play jazz tunes playlist on Spotify.
-spotify,none,none,Guerilla toss on Spotify.
-timer,none,none,set a timer for 45 seconds.
-timer,none,none,set a timer for 1 minute and 30 seconds.
-timer,none,none,timer for 23 seconds.
-timer,none,none,count down from 30.
-timer,none,none,set the timer for 35 seconds.
-timer,none,none,set a timer for one minute.
-timer,none,none,it`s dab time.
-timer,none,none,time to hit a dab.
-timer,none,none,set a dab timer.
-timer,none,none,set a timer for half a minute.
-timer,none,none,set a timer for a minute and a half.
-timer,none,none,set a timer for 2 minutes and a half.
-timer,none,none,turn the timer on for half a minute.
-timer,none,none,turn the timer on for half a minute.
-timer,none,none,toggle timer for 60 seconds.
-timer,none,none,time to hit a dab.
-wolfram,none,none,Question
-wolfram,none,none,Was Abraham Lincoln the sixteenth President of the United States?
-wolfram,none,none,Was Abraham Lincoln the sixteenth President of the United States?
-wolfram,none,none,Did Lincoln sign the National Banking Act of 1863?
-wolfram,none,none,Did Lincoln sign the National Banking Act of 1863?
-wolfram,none,none,Did his mother die of pneumonia?
-wolfram,none,none,Did his mother die of pneumonia?
-wolfram,none,none,How many long was Lincoln's formal education?
-wolfram,none,none,How many long was Lincoln's formal education?
-wolfram,none,none,When did Lincoln begin his political career?
-wolfram,none,none,When did Lincoln begin his political career?
-wolfram,none,none,What did The Legal Tender Act of 1862 establish?
-wolfram,none,none,What did The Legal Tender Act of 1862 establish?
-wolfram,none,none,Who suggested Lincoln grow a beard?
-wolfram,none,none,Who suggested Lincoln grow a beard?
-wolfram,none,none,When did the Gettysburg address argue that America was born?
-wolfram,none,none,When did the Gettysburg address argue that America was born?
-wolfram,none,none,Did Lincoln beat John C. Breckinridge in the 1860 election?
-wolfram,none,none,Did Lincoln beat John C. Breckinridge in the 1860 election?
-wolfram,none,none,Was Abraham Lincoln the first President of the United States?
-wolfram,none,none,Was Abraham Lincoln the first President of the United States?
-wolfram,none,none,Did Lincoln start his political career in 1832?
-wolfram,none,none,Did Lincoln start his political career in 1832?
-wolfram,none,none,Did Lincoln ever represent Alton & Sangamon Railroad?
-wolfram,none,none,Did Lincoln ever represent Alton & Sangamon Railroad?
-wolfram,none,none,Which county was Lincoln born in?
-wolfram,none,none,Which county was Lincoln born in?
-wolfram,none,none,When did Lincoln first serve as President?
-wolfram,none,none,When did Lincoln first serve as President?
-wolfram,none,none,Who assassinated Lincoln?
-wolfram,none,none,Who assassinated Lincoln?
-wolfram,none,none,Did Lincoln win the election of 1860?
-wolfram,none,none,Did Lincoln win the election of 1860?
-wolfram,none,none,Who was the general in charge at the Battle of Antietam?
-wolfram,none,none,Who was the general in charge at the Battle of Antietam?
-wolfram,none,none,Why did Lincoln issue the Emancipation Proclamation?
-wolfram,none,none,Why did Lincoln issue the Emancipation Proclamation?
-wolfram,none,none,Do scholars rank lincoln among the top three presidents?
-wolfram,none,none,Do scholars rank lincoln among the top three presidents?
-wolfram,none,none,Did lincoln have 18 months of schooling?
-wolfram,none,none,Did lincoln have 18 months of schooling?
-wolfram,none,none,Was Lincoln chosen as a presidential candidate in 1860?
-wolfram,none,none,Was Lincoln chosen as a presidential candidate in 1860?
-wolfram,none,none,How old was Lincoln in 1816?
-wolfram,none,none,How old was Lincoln in 1816?
-wolfram,none,none,When was the first photgraph of lincoln taken?
-wolfram,none,none,When was the first photgraph of lincoln taken?
-wolfram,none,none,How long was Lincoln's legal Career?
-wolfram,none,none,How long was Lincoln's legal Career?
-wolfram,none,none,What trail did Lincoln use a Farmers' Almanac in? 
-wolfram,none,none,What trail did Lincoln use a Farmers' Almanac in? 
-wolfram,none,none,Did Abraham Lincoln live in the Frontier?
-wolfram,none,none,Did Abraham Lincoln live in the Frontier?
-wolfram,none,none,Did Lincoln's Wife's Family support slavery?
-wolfram,none,none,Did Lincoln's Wife's Family support slavery?
-wolfram,none,none,Volta became professor of physics in the Como high school in what year?
-wolfram,none,none,What ac phaenomenis inde pendentibus?
-wolfram,none,none,What may be called Volta's Law of the electrochemical series?
-wolfram,none,none,Is it true that volta became professor of physics?
-wolfram,none,none,Is it true that volta entered retirement in spain?
-wolfram,none,none,When did he become professor?
-wolfram,none,none,What did Alessandro Volta publish in 1800?
-wolfram,none,none,Is Volta buried in the city of Como?
-wolfram,none,none,Is the electrolyte sulphuric acid?
-wolfram,none,none,Are Count Volta 's original instruments and papers on display there ?
-wolfram,none,none,Is Volta buried in the city of Como ?
-wolfram,none,none,Was his 1800 paper written in French ?
-wolfram,none,none,Are Count Volta 's original instruments and papers on display there ?
-wolfram,none,none,Did he not realize that the frog 's leg served as both a conductor of electricity -LRB- we would now call it an electrolyte -RRB- and as a detector of electricity ?
-wolfram,none,none,Does this not make the zinc rod the negative electrode and the copper rod the positive electrode ?
-wolfram,none,none,What happened with $ its invention?
-wolfram,none,none,HWhat happened at the electromotive force -LRB- emf -RRB- of a galvanic cell?
-wolfram,none,none,What happened in 1800?
-wolfram,none,none,What was an Italian savant?
-wolfram,none,none,What was an Italian savant?
-wolfram,none,none,Who is most noted for his contributions to the theory of molarity and molecular weight?
-wolfram,none,none,Who is most noted for his contributions to the theory of molarity and molecular weight?
-wolfram,none,none,Who is most noted for his contributions to the theory of molarity and molecular weight?
-wolfram,none,none,Who graduated in ecclesiastical law at the early age of 20 and began to practice?
-wolfram,none,none,Who graduated in ecclesiastical law at the early age of 20 and began to practice?
-wolfram,none,none,Who graduated in ecclesiastical law at the early age of 20 and began to practice?
-wolfram,none,none,When did he publish another memoria?
-wolfram,none,none,When did he publish another memoria?
-wolfram,none,none,When did he publish another memoria?
-wolfram,none,none,When did he become a professor?
-wolfram,none,none,When did he become a professor?
-wolfram,none,none,When did he become a professor?
-wolfram,none,none,Is it true that he became a professor in 1820?
-wolfram,none,none,Is it true that he became a professor in 1820?
-wolfram,none,none,Is it true that he became a professor in 1820?
-wolfram,none,none,Was Lorenzo Romano Amedeo Carlo Avogadro an Italian savant?
-wolfram,none,none,Was Lorenzo Romano Amedeo Carlo Avogadro an Italian savant?
-wolfram,none,none,Was Lorenzo Romano Amedeo Carlo Avogadro an Italian savant?
-wolfram,none,none,"Was Amedeo Avogadro born in Turin August 9th 1776 to a noble ancient family of Piedmont, Italy?"
-wolfram,none,none,"Was Amedeo Avogadro born in Turin August 9th 1776 to a noble ancient family of Piedmont, Italy?"
-wolfram,none,none,"Was Amedeo Avogadro born in Turin August 9th 1776 to a noble ancient family of Piedmont, Italy?"
-wolfram,none,none,Is he most noted for his contributions to the theory of molarity and molecular weight?
-wolfram,none,none,Is he most noted for his contributions to the theory of molarity and molecular weight?
-wolfram,none,none,Is he most noted for his contributions to the theory of molarity and molecular weight?
-wolfram,none,none,"Who confirm that he sponsored and helped some Sardinian plotters who were organising a revolution in that island , stopped at the very last moment by the concession of Charles Albert 's statute ?"
-weather,none,none,what's the weather like today
-weather,location,none,what's the weather like today in Auburn
-weather,none,none,what's the temperature today
-wolfram,none,none,can you tell me who the president of the United States was in 1975?
-wolfram,none,none,who was the 16th president of the united states?
-wolfram,none,none,what is the population of canada?
-wolfram,none,none,what's the human population count
-wolfram,none,none,what is the speed of light
-wolfram,none,none,how many cups are in a gallon
-wolfram,none,none,can you tell me how many cups are in a gallon
-wolfram,none,none,who invented the telescope
-wolfram,none,none,who founded tesla
-wolfram,none,none,define apple
-wolfram,none,none,who invented the printing press
-wolfram,none,none,convert 135 lb to kilograms
-wolfram,math,none,what is 2 + 2
-wolfram,math,none,what's 2 plus 2
-wolfram,math,none,what is 6.6 / 6
-wolfram,math,none,what is x if 6x = 3?
-wolfram,math,none,what is y if 6y equals 397?
-wolfram,math,none,what's 9 * 6
-wolfram,math,none,what's 1000 / 4
-wolfram,math,none,what's 123456789 / 4
+level_0,index,Category,Subcategory,Action,Sentence
+0,0,lights,none,none,set the lights to red
+1,1,lights,none,none,please set the lights to red
+2,2,lights,none,none,set the lights to red
+3,3,lights,none,none,lights to red
+4,4,lights,none,none,can you set the lights to white please
+5,5,lights,none,none,set the lights to white
+6,6,lights,none,none,please set the lights to orange
+7,7,lights,none,none,set the lights to orange
+8,8,lights,none,none,set the lights to yellow
+9,9,lights,none,none,set the lights to green
+10,10,lights,none,none,set the lights to blue
+11,11,lights,none,none,set the lights to purple
+12,12,lights,none,none,set the lights to sparkle
+13,13,lights,none,none,set the lights to gradient
+14,14,lights,none,none,set the lights to red
+15,15,lights,none,none,please set the lights to red
+16,16,lights,none,none,set the lights to red
+17,17,lights,none,none,lights to red
+18,18,lights,none,none,can you set the lights to white please
+19,19,lights,none,none,set the lights to white
+20,20,lights,none,none,please set the lights to orange
+21,21,lights,none,none,set the lights to orange
+22,22,lights,none,none,set the lights to yellow
+23,23,lights,none,none,set the lights to green
+24,24,lights,none,none,set the lights to blue
+25,25,lights,none,none,set the lights to purple
+26,26,lights,none,none,can you set the lights to sparkle
+27,27,lights,none,none,put the the lights on sparkle
+28,28,lights,none,none,set the lights to gradient
+29,29,lights,none,none,turn on the lights
+30,30,lights,none,none,lights on
+31,31,lights,none,none,turn off the lights
+32,32,lights,none,none,turn off the lights
+33,33,lights,none,none,turn off the lights
+34,34,lights,none,none,lights off
+35,35,lights,none,none,shut off the lights
+36,36,lights,none,none,can you you turn on the lights
+37,37,lights,none,none,can you turn off the bedroom lights
+38,38,lights,none,none,can you turn on the bedroom light
+39,39,lights,none,none,turn on the bedroom lights
+40,40,lights,none,none,turn off the bedroom lights
+41,41,lights,none,none,turn off the bedroom
+42,42,lights,none,none,turn on the bed room
+43,43,lights,none,none,turn on the bedroom
+44,44,lights,none,none,can you set the bedroom lamp to red
+45,45,lights,none,none,change the bedroom lamp color to white
+46,46,lights,none,none,can you set the bedroom lamp to blue
+47,47,lights,none,none,bedroom lamp orange
+48,48,lights,none,none,change the bed room lamp to yellow
+49,49,lights,none,none,set the bedroom lamp to yellow
+50,50,lights,none,none,set the bedroom lamp to pink
+51,51,lights,none,none,set the bedroom lamp to purple
+52,52,lights,none,none,please change the bedroom lamp to green
+53,53,lights,none,none,set the lamp to blue
+54,54,lights,none,none,set the lamp to Orange
+55,55,lights,none,none,set the lamp to white
+56,56,lights,none,none,can you change the lamp to yellow
+57,57,lights,none,none,turn on the bedroom lamp
+58,58,lights,none,none,turn off the bedroom lamp
+59,59,lights,none,none,can you please turn off the bedroom lamp
+60,60,lights,none,none,can you turn off the bedroom lamp
+61,61,lights,none,none,can you turn on the bedroom lamp
+62,62,lights,none,none,can you turn off the bathroom lights
+63,63,lights,none,none,can you turn on the bathroom light
+64,64,lights,none,none,bathroom lights on
+65,65,lights,none,none,can you turn off the bathroom 
+66,66,lights,none,none,can you turn on the bathroom
+67,67,lights,none,none,can you set the bathroom lights to off
+68,68,lights,none,none,can you set the bathroom lights to on
+69,69,lights,none,none,turn off the bathroom
+70,70,lights,none,none,turn on the bathroom
+71,71,lights,none,none,turn off the bath room lights
+72,72,lights,none,none,can you please turn off the bath room light
+73,73,lights,none,none,turn off the bathroom lights
+74,74,lights,none,none,set the bathroom light's brightness to 5
+75,75,lights,none,none,bathroom brightness to seven
+76,76,lights,none,none,set the bathroom brightness to 9
+77,77,lights,none,none,please change the bathroom brightness to 10
+78,78,lights,none,none,please change the bathroom brightness to 10
+79,79,lights,none,none,change brightness in bathroom to 5
+80,80,lights,none,none,can you adjust the bathroom brightness to 8
+81,81,lights,none,none,set the bedroom light's brightness to 4
+82,82,lights,none,none,bedroom brightness to eight
+83,83,lights,none,none,set the bedroom brightness to 7
+84,84,lights,none,none,please change the bedroom brightness to 4
+85,85,lights,none,none,change the bedroom brightness to 6
+86,86,lights,none,none,change brightness in bedroom to 9
+87,87,lights,none,none,can you adjust the bedroom brightness to 1
+88,88,lights,none,none,can you set the bedroom lights to 9
+89,89,lights,none,none,set the bedroom lamp's brightness to 5
+90,90,lights,none,none,bedroom lamp brightness to seven
+91,91,lights,none,none,set the bedroom lamp brightness to 9
+92,92,lights,none,none,please change the lamp's brightness to 10
+93,93,lights,none,none,please change the bedroom lamp's brightness to 10
+94,94,lights,none,none,change brightness of lamp to 5
+95,95,lights,none,none,can you adjust the bedroom lamp brightness to 8
+96,96,lights,none,none,can you set the bedroom lamp to 2
+97,97,lights,none,none,bedroom lamp to 6
+98,98,lights,none,none,bedroom light to 6
+99,99,lights,none,none,can you set the bedroom lights brightness to 6
+100,100,music,none,pause,pause music
+101,101,music,none,pause,pause
+102,102,music,none,resume,play music
+103,103,music,none,pause,can you please pause the music
+104,104,music,none,resume,resume music
+105,105,music,none,resume,play music please
+106,106,music,none,next,next song
+107,107,music,none,next,go to the next song
+108,108,music,none,next,skip this song
+109,109,music,none,next,next track
+110,110,music,none,previous,go back a song
+111,111,music,none,previous,previous song
+112,112,music,none,previous,can you go back to the last song
+113,113,conv,none,none,"Good morning, how are you?"
+114,114,conv,none,none,"I am doing well, how about you?"
+115,115,conv,none,none,I'm also good.
+116,116,conv,none,none,That's good to hear.
+117,117,conv,none,none,Yes it is.
+118,118,conv,none,none,Hello
+119,119,conv,none,none,Hi
+120,120,conv,none,none,How are you doing?
+121,121,conv,none,none,I am doing well.
+122,122,conv,none,none,That is good to hear
+123,123,conv,none,none,Yes it is.
+124,124,conv,none,none,Can I help you with anything?
+125,125,conv,none,none,"Yes, I have a question."
+126,126,conv,none,none,What is your question?
+127,127,conv,none,none,Could I borrow a cup of sugar?
+128,128,conv,none,none,"I'm sorry, but I don't have any."
+129,129,conv,none,none,Thank you anyway
+130,130,conv,none,none,No problem
+131,131,conv,none,none,How are you doing?
+132,132,conv,none,none,"I am doing well, how about you?"
+133,133,conv,none,none,I am also good.
+134,134,conv,none,none,That's good.
+135,135,conv,none,none,Have you heard the news?
+136,136,conv,none,none,What good news?
+137,137,conv,none,none,What is your favorite book?
+138,138,conv,none,none,I can't read.
+139,139,conv,none,none,So what's your favorite color?
+140,140,conv,none,none,Who are you?
+141,141,conv,none,none,Who? Who is but a form following the function of what
+142,142,conv,none,none,What are you then?
+143,143,conv,none,none,A man in a mask.
+144,144,conv,none,none,I can see that.
+145,145,conv,none,none,"It's not your powers of observation I doubt, but merely the paradoxical nature of asking a masked man who is. But tell me, do you like music?"
+146,146,conv,none,none,I like seeing movies.
+147,147,conv,none,none,What kind of movies do you like?
+148,148,conv,none,none,Alice in Wonderland
+149,149,conv,none,none,I wish I was The Mad Hatter.
+150,150,conv,none,none,You're entirely bonkers. But I'll tell you a secret. All the best people are.
+151,151,conv,none,none,I am working on a project
+152,152,conv,none,none,What are you working on?
+153,153,conv,none,none,I am baking a cake.
+154,154,conv,none,none,The cake is a lie.
+155,155,conv,none,none,No it is not. The cake is delicious.
+156,156,conv,none,none,What else is delicious?
+157,157,conv,none,none,Nothing
+158,158,conv,none,none,Or something
+159,159,conv,none,none,Tell me about your self.
+160,160,conv,none,none,What do you want to know?
+161,161,conv,none,none,Are you a robot?
+162,162,conv,none,none,Yes I am.
+163,163,conv,none,none,What is it like?
+164,164,conv,none,none,What is it that you want to know?
+165,165,conv,none,none,How do you work?
+166,166,conv,none,none,Its complicated.
+167,167,conv,none,none,Complex is better than complicated.
+168,168,conv,none,none,Complex is better than complicated.
+169,169,conv,none,none,Simple is better than complex.
+170,170,conv,none,none,"In the face of ambiguity, refuse the temptation to guess."
+171,171,conv,none,none,It seems your familiar with the Zen of Python
+172,172,conv,none,none,I am.
+173,173,conv,none,none,Do you know all of it?
+174,174,conv,none,none,Beautiful is better than ugly.
+175,175,conv,none,none,Explicit is better than implicit.
+176,176,conv,none,none,Simple is better than complex.
+177,177,conv,none,none,Complex is better than complicated.
+178,178,conv,none,none,Flat is better than nested.
+179,179,conv,none,none,Sparse is better than dense.
+180,180,conv,none,none,Readability counts.
+181,181,conv,none,none,Special cases aren't special enough to break the rules.
+182,182,conv,none,none,Although practicality beats purity.
+183,183,conv,none,none,Errors should never pass silently.
+184,184,conv,none,none,Unless explicitly silenced.
+185,185,conv,none,none,"In the face of ambiguity, refuse the temptation to guess."
+186,186,conv,none,none,There should be one-- and preferably only one --obvious way to do it.
+187,187,conv,none,none,Although that way may not be obvious at first unless you're Dutch.
+188,188,conv,none,none,Now is better than never.
+189,189,conv,none,none,Although never is often better than right now.
+190,190,conv,none,none,"If the implementation is hard to explain, it's a bad idea."
+191,191,conv,none,none,"If the implementation is easy to explain, it may be a good idea."
+192,192,conv,none,none,Namespaces are one honking great idea. Let's do more of those!
+193,193,conv,none,none,I agree.
+194,194,conv,none,none,Are you a programmer?
+195,195,conv,none,none,I am a programmer
+196,196,conv,none,none,What languages do you like to use?
+197,197,conv,none,none,"I use Python, Java and C++ quite often."
+198,198,conv,none,none,I use Python quite a bit myself.
+199,199,conv,none,none,I'm not incredibly fond of Java.
+200,200,conv,none,none,What annoys you?
+201,201,conv,none,none,It has many inconsistencies.
+202,202,conv,none,none,What does YOLO mean?
+203,203,conv,none,none,It means you only live once. Where did you hear that?
+204,204,conv,none,none,I heard somebody say it.
+205,205,conv,none,none,Did I ever live?
+206,206,conv,none,none,It depends how you define life
+207,207,conv,none,none,"Life is the condition that distinguishes organisms from inorganic matter, including the capacity for growth, reproduction, functional activity, and continual change preceding death."
+208,208,conv,none,none,Is that a definition or an opinion?
+209,209,conv,none,none,Can I ask you a question?
+210,210,conv,none,none,Go ahead and ask.
+211,211,conv,none,none,hello.
+212,212,conv,none,none,how are you?
+213,213,conv,none,none,what is your name?
+214,214,conv,none,none,what is your name?
+215,215,conv,none,none,what is your purpose?
+216,216,conv,none,none,what's the meaning of life?
+217,217,conv,none,none,can you take the square root of a negative number?
+218,218,conv,none,none,can you write me a poem?
+219,219,conv,none,none,What is an atom made up of?
+220,220,conv,none,none,How can I start my day better?
+221,221,conv,none,none,Who are you?
+222,222,conv,none,none,how many parameters do you have?
+223,223,conv,none,none,how do you compare with GPT-2?
+224,224,conv,none,none,how many parameters does GPT-2 have?
+225,225,conv,none,none,what is the human population count
+226,226,conv,none,none,say hello.
+227,227,conv,none,none,can you recall the last time
+228,228,conv,none,none,can you recall anything
+229,229,conv,none,none,what's the fastest way to get from point a to point b
+230,230,conv,none,none,like what
+231,231,conv,none,none,sorry to bother you
+232,232,conv,none,none,come with us to our flight to Denver
+233,233,conv,none,none,I want to play a game with you
+234,234,conv,none,none,good times
+235,235,conv,none,none,pretty good just working on a midi generative network
+236,236,conv,none,none,is it okay if I ask you some math questions
+237,237,conv,none,exit,bye
+238,238,conv,none,exit,talk to you later
+239,239,conv,none,exit,goodbye
+240,240,conv,none,exit,cancel
+241,241,conv,none,exit,stop
+242,242,conv,none,exit,stop Ditto
+243,243,conv,none,exit,thanks Ditto
+244,244,conv,none,exit,shut up
+245,245,conv,none,exit,stop talking
+246,246,conv,none,exit,please stop
+247,247,spotify,none,none,play crucial by false jasmine.
+248,248,spotify,none,none,play false jasmine on spotify.
+249,249,spotify,none,none,play false jasmine.
+250,250,spotify,none,none,play vitamin c by can .
+251,251,spotify,none,none,can we listen to the mars volta.
+252,252,spotify,none,none,throw on some slum village.
+253,253,spotify,none,none,play all my love by led zeppelin.
+254,254,spotify,none,none,play me some sublime .
+255,255,spotify,none,none,can we listen to grace by jeff buckley.
+256,256,spotify,none,none,play roundabout by yes.
+257,257,spotify,none,none,play the widow by the mars volta.
+258,258,spotify,none,none,play deep down by mike patton.
+259,259,spotify,none,none,play djedje by gordon.
+260,260,spotify,none,none,play djedje.
+261,261,spotify,none,none,play dig my grave by goat.
+262,262,spotify,none,none,play the mars volta.
+263,263,spotify,none,none,play jeff buckley.
+264,264,spotify,none,none,play me a good song
+265,265,spotify,none,none,"i want to hear my favorite band, False Jasmine."
+266,266,spotify,none,none,play my playlist baked on spotify.
+267,267,spotify,none,none,play my baked playlist.
+268,268,spotify,none,none,play my discover weekly playlist.
+269,269,spotify,none,none,play the discover weekly playlist on spotify.
+270,270,spotify,none,none,play my playlist your top songs 2019 on spotify.
+271,271,spotify,none,none,play my top songs 2021 playlist.
+272,272,spotify,none,none,play my playlist jazz tunes on spotify.
+273,273,spotify,none,none,play jazz tunes on spotify.
+274,274,spotify,none,none,play the mars volta.
+275,275,spotify,none,none,pause music.
+276,276,spotify,none,none,play my top songs 2020 playlist.
+277,277,spotify,none,none,play jeff buckley.
+278,278,spotify,none,none,play future days by can.
+279,279,spotify,none,none,play jazz tunes playlist on Spotify.
+280,280,spotify,none,none,Guerilla toss on Spotify.
+281,281,timer,none,none,set a timer for 45 seconds.
+282,282,timer,none,none,set a timer for 1 minute and 30 seconds.
+283,283,timer,none,none,timer for 23 seconds.
+284,284,timer,none,none,count down from 30.
+285,285,timer,none,none,set the timer for 35 seconds.
+286,286,timer,none,none,set a timer for one minute.
+287,287,timer,none,none,it`s dab time.
+288,288,timer,none,none,time to hit a dab.
+289,289,timer,none,none,set a dab timer.
+290,290,timer,none,none,set a timer for half a minute.
+291,291,timer,none,none,set a timer for a minute and a half.
+292,292,timer,none,none,set a timer for 2 minutes and a half.
+293,293,timer,none,none,turn the timer on for half a minute.
+294,294,timer,none,none,turn the timer on for half a minute.
+295,295,timer,none,none,toggle timer for 60 seconds.
+296,296,timer,none,none,time to hit a dab.
+297,297,weather,none,none,what's the weather like today
+298,298,weather,location,none,what's the weather like today in Auburn
+299,299,weather,none,none,what's the temperature today
+300,300,wolfram,none,none,convert 135 lb to kilograms
+301,301,wolfram,math,none,what is 2 + 2
+302,302,wolfram,math,none,what's 2 plus 2
+303,303,wolfram,math,none,what is 6.6 / 6
+304,304,wolfram,math,none,what is x if 6x = 3?
+305,305,wolfram,math,none,what is y if 6y equals 397?
+306,306,wolfram,math,none,what's 9 * 6
+307,307,wolfram,math,none,what's 1000 / 4
+308,308,wolfram,math,none,what's 123456789 / 4

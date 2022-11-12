@@ -9,10 +9,7 @@ import pyttsx3
 
 # other imports
 import os 
-import sys
 import time
-import time
-import openai
 import pygame
 from threading import Timer
 

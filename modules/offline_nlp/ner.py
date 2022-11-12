@@ -18,7 +18,6 @@ from nltk import pos_tag
 import json 
 import re
 
-import plac
 import random
 from pathlib import Path
 import spacy
@@ -31,6 +30,8 @@ PLAY=0
 LIGHT=1
 TIMER=0
 NUM=0
+
+EPOCHS = 100
 
 # def create_load_data():
 # load in and organize data
@@ -46,7 +47,6 @@ elif TIMER:
 elif NUM:
     with open('data/numeric_commands.json') as f:
         json_data = json.load(f)
-N_ITER = 100
 
 sentences = []
 entities = []
@@ -160,8 +160,6 @@ elif NUM:
 elif LIGHT:
     output_dir=Path("models/ner/light")
 
-n_iter=N_ITER
-
 if model is not None:
     nlp = spacy.load(model)  
     print("Loaded model '%s'" % model)
@@ -184,7 +182,7 @@ for _, annotations in TRAIN_DATA:
 other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
 with nlp.disable_pipes(*other_pipes):  # only train NER
     optimizer = nlp.begin_training()
-    for itn in range(n_iter):
+    for itn in range(EPOCHS):
         random.shuffle(TRAIN_DATA)
         losses = {}
         for text, annotations in tqdm(TRAIN_DATA):
