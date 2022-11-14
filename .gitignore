@@ -6,7 +6,7 @@ resources/*.txt
 vosk-model-small-en-us-0.15/
 *.cache
 *.pyc
-__pycache__/
+__pycache__
 LibCST/
 export.sh
 output.mp3
@@ -15,3 +15,4 @@ output.mp3
 .cache*
 ditto.db
 config.json
+.vscode/

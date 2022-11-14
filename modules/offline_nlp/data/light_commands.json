@@ -64,6 +64,26 @@
         },
         {
             "words": [
+                "set",
+                "the",
+                "office",
+                "lamp's",
+                "brightness",
+                "to",
+                "9"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-lightname",
+                "I-lightname",
+                "O",
+                "O",
+                "B-brightness"
+            ]
+        },
+        {
+            "words": [
                 "turn",
                 "off",
                 "the",
@@ -150,6 +170,42 @@
                 "B-lightname",
                 "O",
                 "B-color"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "lights",
+                "to",
+                "gradient"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-lightname",
+                "O",
+                "B-color"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "office",
+                "lamp",
+                "to",
+                "pink",
+                "please"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-lightname",
+                "I-lightname",
+                "O",
+                "B-color",
+                "O"
             ]
         },
         {
@@ -251,6 +307,357 @@
                 "I-lightname",
                 "B-color"
             ]
+        },
+        {
+            "words": [
+                "can",
+                "you",
+                "please",
+                "set",
+                "the",
+                "lights",
+                "to",
+                "sparkle"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-lightname",
+                "O",
+                "B-color"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "lights",
+                "to",
+                "sparkle",
+                "please"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-lightname",
+                "O",
+                "B-color",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "hey",
+                "ditto",
+                "can",
+                "you",
+                "please",
+                "turn",
+                "off",
+                "the",
+                "lights"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname"
+            ]
+        },
+        {
+            "words": [
+                "hey",
+                "ditto",
+                "can",
+                "you",
+                "please",
+                "turn",
+                "on",
+                "the",
+                "office",
+                "lamp"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname"
+            ]
+        },
+        {
+            "words": [
+                "hey",
+                "ditto",
+                "can",
+                "you",
+                "please",
+                "dim",
+                "the",
+                "office",
+                "lamp"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname"
+            ]
+        },
+        {
+            "words": [
+                "please",
+                "brighten",
+                "the",
+                "office",
+                "lamp"
+            ],
+            "labels": [
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname"
+            ]
+        },
+        {
+            "words": [
+                "it",
+                "would",
+                "be",
+                "very",
+                "nice",
+                "of",
+                "you",
+                "to",
+                "turn",
+                "off",
+                "the",
+                "lights",
+                "please"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "it",
+                "would",
+                "be",
+                "very",
+                "nice",
+                "of",
+                "you",
+                "to",
+                "turn",
+                "off",
+                "the",
+                "office",
+                "lamp",
+                "please",
+                "thank",
+                "you"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-liightname",
+                "O",
+                "O",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "i",
+                "think",
+                "it",
+                "would",
+                "be",
+                "cool",
+                "to",
+                "set",
+                "the",
+                "lights",
+                "to",
+                "red"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "O",
+                "B-lightname",
+                "O",
+                "B-color"
+            ]
+        },
+        {
+            "words": [
+                "hey",
+                "can",
+                "you",
+                "dim",
+                "the",
+                "laundry",
+                "room's",
+                "lamp",
+                "please"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname",
+                "I-lightname",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "hey",
+                "can",
+                "you",
+                "brighten",
+                "the",
+                "laundry",
+                "room's",
+                "lamp",
+                "please"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname",
+                "I-lightname",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "please",
+                "dim",
+                "the",
+                "office",
+                "lamp"
+            ],
+            "labels": [
+                "O",
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname"
+            ]
+        },
+        {
+            "words": [
+                "brighten",
+                "the",
+                "kitchen",
+                "lamp"
+            ],
+            "labels": [
+                "B-command",
+                "O",
+                "B-lightname",
+                "I-lightname"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "office",
+                "lamp's",
+                "brightness",
+                "to",
+                "10",
+                "please"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-lightname",
+                "I-lightname",
+                "O",
+                "O",
+                "B-brightness",
+                "O"
+            ]
+        },
+        {
+            "words": [
+                "set",
+                "the",
+                "bedroom",
+                "lamp's",
+                "brightness",
+                "to",
+                "2"
+            ],
+            "labels": [
+                "O",
+                "O",
+                "B-lightname",
+                "I-lightname",
+                "O",
+                "O",
+                "B-brightness"
+            ]
         }
     ]
 }
+
