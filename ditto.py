@@ -71,11 +71,9 @@ class Assistant:
         '''
         Resets the command loop to idle.
         '''
-        self.activation_mode = True # go back to idle...
-        self.write_response_to_db() # logs self.reply 
+        self.activation_mode = True # go back to idle... 
         self.speech.text = ''
         self.prompt = ''
-        self.reply = ''
         self.comm_timer_mode = False
         self.comm_timer.cancel()
         self.speech.from_gui = False
@@ -110,7 +108,6 @@ class Assistant:
             self.tts(self.reply)
             if not self.speech.from_gui: 
                 self.skip_wake()
-                self.write_response_to_db()
             else:
                 self.reset_loop()
                 
@@ -130,9 +127,8 @@ class Assistant:
         self.prompt = self.speech.text
         
         # log the user's prompt 
-        if not self.prompt == '':
-            print('\n\nwriting prompt to db...')
-            self.write_prompt_to_db() 
+        print('\n\nwriting prompt to db...')
+        self.write_prompt_to_db() 
 
         # get intent from offline npl module 
         self.offline_response = json.loads(self.nlp.prompt(self.prompt))
@@ -205,6 +201,7 @@ class Assistant:
 
             self.conversation_app(action)
 
+        self.write_response_to_db() # log self.reply
 
     def write_response_to_db(self):
         if not self.reply: self.reply = '[empty]'
@@ -215,6 +212,7 @@ class Assistant:
         cur.execute("INSERT INTO responses VALUES('%s')" % self.reply.replace("'", "''"))
         SQL.commit()
         SQL.close()
+        self.reply = '' # reset for next loop
 
     def write_prompt_to_db(self):
         SQL = sqlite3.connect("ditto.db")
@@ -271,6 +269,9 @@ class Assistant:
                 self.speech.activation.activate = False # back to idle ...
                 self.speech.activation.text = ""
                 # print('Canceling...')
+
+        
+
 
     def command_timeout_handler(self, timeout):
         self.comm_timer = Timer(timeout, self.command_timeout_handler, [timeout])
