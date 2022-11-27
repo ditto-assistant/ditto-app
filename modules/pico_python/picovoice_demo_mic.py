@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import struct
+import time
 import wave
 from threading import Thread
 
@@ -49,6 +50,7 @@ class PicovoiceDemo(Thread):
         super(PicovoiceDemo, self).__init__()
 
         try:
+
             self._picovoice = Picovoice(
                 access_key=access_key,
                 keyword_path=keyword_path,
@@ -62,6 +64,18 @@ class PicovoiceDemo(Thread):
                 rhino_model_path=rhino_model_path,
                 rhino_sensitivity=rhino_sensitivity,
                 require_endpoint=require_endpoint)
+
+            self.audio_device_index = audio_device_index
+            self.output_path = output_path
+            self.prompt = "" # used for GUI skip wake and skip STT (inject prompt)
+            self.inject_prompt = False # set to true in check_for_request function to skip STT module
+            self.gesture = "" # grabbed from gesture_recognition module
+            self.gesture_activation = False # set to true in check_for_gesture function to skip wake using gesture
+
+            self.palm_count = 0 # used to filter false positives
+            self.like_count = 0
+            self.dislike_count = 0 
+
         except PicovoiceInvalidArgumentError as e:
             # print("One or more arguments provided to Picovoice is invalid: {\n" +
             #       f"\t{access_key=}\n" +
@@ -95,10 +109,7 @@ class PicovoiceDemo(Thread):
             print("Failed to initialize Picovoice")
             raise e
 
-        self.audio_device_index = audio_device_index
-        self.output_path = output_path
-        self.prompt = ""
-        self.inject_prompt = False
+        
 
     @staticmethod
     def _wake_word_callback():
@@ -114,21 +125,87 @@ class PicovoiceDemo(Thread):
     def _inference_callback(inference):
         pass
 
+
+
+    def check_for_gesture(self):
+        '''
+        Checks for gesture to skip wake.
+        '''
+        def reset_counts():
+            self.like_count = 0
+            self.dislike_count = 0
+            self.palm_count = 0
+
+        if time.time() > self.timeout:
+            # print('gesture check timeout')
+            self.timeout = time.time() + 4
+            # reset gesture counters
+            reset_counts()
+        try:
+            SQL = sqlite3.connect("ditto.db")
+            cur = SQL.cursor()
+            req = cur.execute("select * from gestures")
+            req = req.fetchall()
+            like_gest = False
+            dislike_gest = False
+            palm_gest = False
+            for i in req:
+                if 'like' in i: like_gest=True
+                if 'dislike' in i: dislike_gest=True
+                if 'palm' in i: palm_gest=True
+            if like_gest or dislike_gest or palm_gest:
+                if like_gest: self.like_count += 1
+                if dislike_gest: self.dislike_count += 1
+                if palm_gest: self.palm_count += 1
+
+                if self.like_count == 5:
+                    reset_counts()
+                    print("\n[Activated from Like Gesture]\n")
+                    self.running = False
+                    self.gesture_activation = True
+                    self.gesture = 'like'
+
+                if self.dislike_count == 5:
+                    reset_counts()
+                    print("\n[Activated from Dislike Gesture]\n")
+                    self.running = False
+                    self.gesture_activation = True
+                    self.gesture = 'dislike'
+
+                if self.palm_count == 5:
+                    reset_counts()
+                    print("\n[Activated from Palm Gesture]\n")
+                    self.running = False
+                    self.gesture_activation = True
+                    self.gesture = 'palm'
+            cur.execute("DROP TABLE gestures")
+            SQL.commit()
+            SQL.close()
+        except BaseException as e:
+            pass
+            # print(e)
+
     def check_for_request(self):
         ''' 
         Checks if the user sent a prompt from the client GUI.
         '''
-        SQL = sqlite3.connect("ditto.db")
-        cur = SQL.cursor()
-        req = cur.execute("select * from ditto_requests")
-        req = req.fetchone()
-        if req[0] == "prompt":
-            self.prompt = req[1]
-            print("\n[GUI prompt received]\n")
-            cur.execute("DROP TABLE ditto_requests")
-            SQL.close()
-            self.running = False
-            self.inject_prompt = True
+        try:
+            
+            SQL = sqlite3.connect("ditto.db")
+            cur = SQL.cursor()
+            req = cur.execute("select * from ditto_requests")
+            req = req.fetchone()
+            if req[0] == "prompt":
+                self.prompt = req[1]
+                print("\n[GUI prompt received]\n")
+                cur.execute("DROP TABLE ditto_requests")
+                SQL.close()
+                self.running = False
+                self.inject_prompt = True
+        except BaseException as e:
+            pass
+            # print(e)
+
 
     def run(self):
         self.recorder = None
@@ -144,13 +221,10 @@ class PicovoiceDemo(Thread):
 
             # print(f"Using device: {self.recorder.selected_device}")
             print('\nidle...\n')
-
+            self.timeout = time.time() + 4 # 4 seconds
             while True:
-                try:
-                    self.check_for_request()
-                except BaseException as e:
-                    pass
-                    # print(e)
+                self.check_for_request()
+                self.check_for_gesture()
                 if not self.running: # used for rebooting picovoice (to fix mic sleep bug)
                     dummy = [1,2]
                     num=0

@@ -13,6 +13,8 @@ notes:
 """
 
 # google cloud
+import sqlite3
+import time
 from google.cloud import speech
 from modules.google_stt.google_transcript import Google
 import os
@@ -61,7 +63,6 @@ class Speech:
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
-        self.idle_loop_count = 0
         self.skip_wake = False
 
         self.wake = 1
@@ -70,6 +71,8 @@ class Speech:
 
         self.inject = False # used for skipping STT by using GUI's prompt in activation loop
         self.from_gui = False # used in ditto.py to handle loop differently
+
+        self.gesture_activation = False
 
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
@@ -90,6 +93,9 @@ class Speech:
                     self.inject = True
                     self.pico.inject_prompt = False
                     self.from_gui = True
+                if self.pico.gesture_activation:
+                    self.gesture_activation = True
+                    self.gesture = self.pico.gesture
                 if self.wake: # set to 0 in timer if idle reboot
                     self.activation.activate = True
                     self.recording = False
@@ -101,25 +107,28 @@ class Speech:
 
             else:
                 if not self.comm_timer_mode and activation_mode: 
-                    self.idle_loop_count += 1
-                    if self.idle_loop_count ==1 :print('\nidle...\n')
+                    print('\nidle...\n')
                 else:
-                    self.idle_loop_count = 0
                     self.skip_wake = False
-
-                    if not self.inject:
+                    if self.gesture_activation:
+                        self.from_gui = True # use from gui ditto loop to avoid accidental conversation loop
+                        if self.gesture == 'palm':
+                            self.text = self.google_instance.grab_prompt()
+                        else:
+                            self.text = f'GestureNet: {self.gesture}'
+                    elif self.inject: 
+                        self.inject = False
+                        self.text = self.pico.prompt
+                        self.pico.prompt = ""
+                        self.from_gui = True
+                    else:
                         if not self.offline_mode:
                             self.text = self.google_instance.grab_prompt()
                         else:
                             self.speech_to_text = STT(os.getcwd())
                             self.speech_to_text.stt()
                             self.text = self.speech_to_text.text
-                    else: 
-                        self.inject = False
-                        self.text = self.pico.prompt
-                        self.pico.prompt = ""
-                        self.from_gui = True
-
+                    
                     # self.activation kind of unneccesary...
                     self.activation.text = self.text
                     self.activation.check_input(activation_mode)
