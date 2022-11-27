@@ -9,7 +9,8 @@ class devnull:
 
 def start_server():
     server = Server()
-    subprocess.Popen(['python', 'ditto.py'])
+    subprocess.Popen(['python', 'ditto.py']) # Ditto Main Loop
+    subprocess.Popen(['python', 'modules/gesture-recognition/main.py', 'production']) # Start gesture recognition sub-porocess
     http_server = WSGIServer(('0.0.0.0', 42032), server.app, log=devnull)
     print('\n\n[Server started on port 42032]\n\n')
     http_server.serve_forever()

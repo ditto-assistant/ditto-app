@@ -71,11 +71,9 @@ class Assistant:
         '''
         Resets the command loop to idle.
         '''
-        self.activation_mode = True # go back to idle...
-        self.write_response_to_db() # logs self.reply 
+        self.activation_mode = True # go back to idle... 
         self.speech.text = ''
         self.prompt = ''
-        self.reply = ''
         self.comm_timer_mode = False
         self.comm_timer.cancel()
         self.speech.from_gui = False
@@ -96,11 +94,9 @@ class Assistant:
         self.conv_timer.cancel() # reset conversation cooldown (turns on automatically on loop)
         self.speech.activation.activate = True # skip wake-up sequence (name is already called)
         self.speech.skip_wake = True
-        self.speech.idle_loop_count = 1 # skip to listening... print out
         self.command_timer = 0 # reset command timer 
         self.comm_timer_mode = False # (pause to not iterrupt assistant speaking)
         self.comm_timer.cancel()
-
 
     def conversation_app(self, action=None):
 
@@ -110,7 +106,6 @@ class Assistant:
             self.tts(self.reply)
             if not self.speech.from_gui: 
                 self.skip_wake()
-                self.write_response_to_db()
             else:
                 self.reset_loop()
                 
@@ -130,15 +125,20 @@ class Assistant:
         self.prompt = self.speech.text
         
         # log the user's prompt 
-        if not self.prompt == '':
-            print('\n\nwriting prompt to db...')
-            self.write_prompt_to_db() 
+        print('\n\nwriting prompt to db...')
+        self.write_prompt_to_db() 
 
-        # get intent from offline npl module 
-        self.offline_response = json.loads(self.nlp.prompt(self.prompt))
-        cat = self.offline_response['category']
-        sub_cat = self.offline_response['sub_category']
-        action = self.offline_response['action']
+        if 'GestureNet' in self.prompt:
+            cat = 'gesture'
+            sub_cat = 'none'
+            action = 'none'
+            gesture = self.speech.gesture
+        else:
+            # get intent from offline npl module 
+            self.offline_response = json.loads(self.nlp.prompt(self.prompt))
+            cat = self.offline_response['category']
+            sub_cat = self.offline_response['sub_category']
+            action = self.offline_response['action']
 
         print('\n\n')
         print(cat, sub_cat, action)
@@ -177,6 +177,13 @@ class Assistant:
                 print(e)
                 self.conversation_app()
             
+        elif cat == 'gesture':
+            if gesture == 'like':
+                self.reply = f'[GestureNet: {gesture}]'
+            elif gesture == 'dislike':
+                self.reply = f'[GestureNet: {gesture}]'
+            self.tts(self.reply)
+            self.reset_loop()
         
         elif cat == 'weather':
             try:
@@ -205,6 +212,7 @@ class Assistant:
 
             self.conversation_app(action)
 
+        self.write_response_to_db() # log self.reply
 
     def write_response_to_db(self):
         if not self.reply: self.reply = '[empty]'
@@ -215,6 +223,7 @@ class Assistant:
         cur.execute("INSERT INTO responses VALUES('%s')" % self.reply.replace("'", "''"))
         SQL.commit()
         SQL.close()
+        self.reply = '' # reset for next loop
 
     def write_prompt_to_db(self):
         SQL = sqlite3.connect("ditto.db")
@@ -241,7 +250,7 @@ class Assistant:
 
             self.comm_timer_mode = True # turn on timer
             self.command_timer = 0 # (can be used per application for detecting user idle to cancel)
-            self.command_timeout_handler(4) # executes every n 'seconds' (used to handle back to idle)
+            self.command_timeout_handler(5) # executes every n 'seconds' (used to handle back to idle)
 
             self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for command                
 
@@ -272,6 +281,7 @@ class Assistant:
                 self.speech.activation.text = ""
                 # print('Canceling...')
 
+
     def command_timeout_handler(self, timeout):
         self.comm_timer = Timer(timeout, self.command_timeout_handler, [timeout])
         self.comm_timer.start()
@@ -286,7 +296,6 @@ class Assistant:
             self.comm_timer.cancel()
             self.comm_timer_mode = False # turn off timer
             self.reset_loop()
-            self.speech.idle_loop_count = 0
             self.speech.comm_timer_mode = False # send to speech submodule for handling 
 
         

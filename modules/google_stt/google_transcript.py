@@ -6,6 +6,7 @@ from __future__ import division
 import os
 import re
 import sys
+import time
 
 from google.cloud import speech
 # from playsound import playsound
@@ -28,7 +29,7 @@ class MicrophoneStream(object):
     def __init__(self, rate, chunk):
         self._rate = rate
         self._chunk = chunk
-
+        self.timeout = time.time() + 10
         # Create a thread-safe buffer of audio data
         self._buff = queue.Queue()
         self.closed = True
@@ -69,6 +70,8 @@ class MicrophoneStream(object):
 
     def generator(self):
         while not self.closed:
+            if time.time() > self.timeout: 
+                self.__exit__()
             # Use a blocking get() to ensure there's at least one chunk of
             # data, and stop iteration if the chunk is None, indicating the
             # end of the audio stream.
@@ -101,7 +104,7 @@ class Google():
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=RATE,
             language_code=self.language_code,
-            audio_channel_count=1,
+            audio_channel_count=1
         )
 
         self.streaming_config = speech.StreamingRecognitionConfig(
@@ -126,6 +129,7 @@ class Google():
         """
         num_chars_printed = 0
         for response in responses:
+            
             if not response.results:
                 continue
 
@@ -165,25 +169,28 @@ class Google():
                 return PROMPT
 
 
-    def grab_prompt(self):
-        with MicrophoneStream(RATE, CHUNK) as stream:
-            audio_generator = stream.generator()
-            requests = (
-                speech.StreamingRecognizeRequest(audio_content=content)
-                for content in audio_generator
-            )
+    def grab_prompt(self): 
+        try:
+            with MicrophoneStream(RATE, CHUNK) as stream:
+                audio_generator = stream.generator()
+                requests = (
+                    speech.StreamingRecognizeRequest(audio_content=content)
+                    for content in audio_generator
+                )
 
-            print('   ,.,')
-            print(' ((~"~))')
-            print("'(|o_o|)'")
-            print(",..\=/..,")
-            print('listening...\n')
+                print('   ,.,')
+                print(' ((~"~))')
+                print("'(|o_o|)'")
+                print(",..\=/..,")
+                print('listening...\n')
+                
+                responses = self.client.streaming_recognize(self.streaming_config, requests)
 
-            responses = self.client.streaming_recognize(self.streaming_config, requests)
-
-            # Now, put the transcription responses to use.
-            self.prompt = self.listen_print_loop(responses)
-        return self.prompt
+                # Now, put the transcription responses to use.
+                self.prompt = self.listen_print_loop(responses)
+            return self.prompt
+        except BaseException as e:
+            return 'cancel'
 
 
 if __name__ == "__main__":

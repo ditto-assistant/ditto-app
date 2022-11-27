@@ -1,0 +1,3 @@
+[submodule "modules/gesture-recognition"]
+	path = modules/gesture-recognition
+	url = git@github.com:omarzanji/gesture-recognition.git
