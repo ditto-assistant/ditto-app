@@ -32,6 +32,7 @@ if operating_system == 'Linux' or operating_system == 'Darwin':
     UNIX = True
 
 
+
 class PicovoiceDemo(Thread):
     def __init__(
             self,
@@ -150,35 +151,41 @@ class PicovoiceDemo(Thread):
             dislike_gest = False
             palm_gest = False
             for i in req:
-                if 'like' in i: like_gest=True
-                if 'dislike' in i: dislike_gest=True
-                if 'palm' in i: palm_gest=True
+                if 'like' in i: 
+                    like_gest=True
+                    print('like')
+                if 'dislike' in i: 
+                    dislike_gest=True
+                    print('dislike')
+                if 'palm' in i: 
+                    print('palm')
+                    palm_gest=True
             if like_gest or dislike_gest or palm_gest:
                 if like_gest: self.like_count += 1
                 if dislike_gest: self.dislike_count += 1
                 if palm_gest: self.palm_count += 1
 
-                if self.like_count == 5:
+                if self.like_count == 3:
                     reset_counts()
                     print("\n[Activated from Like Gesture]\n")
                     self.running = False
                     self.gesture_activation = True
                     self.gesture = 'like'
 
-                if self.dislike_count == 5:
+                if self.dislike_count == 3:
                     reset_counts()
                     print("\n[Activated from Dislike Gesture]\n")
                     self.running = False
                     self.gesture_activation = True
                     self.gesture = 'dislike'
 
-                if self.palm_count == 5:
+                if self.palm_count == 3:
                     reset_counts()
                     print("\n[Activated from Palm Gesture]\n")
                     self.running = False
                     self.gesture_activation = True
                     self.gesture = 'palm'
-            cur.execute("DROP TABLE gestures")
+            cur.execute("DELETE FROM gestures")
             SQL.commit()
             SQL.close()
         except BaseException as e:

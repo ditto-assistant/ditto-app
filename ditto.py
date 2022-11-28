@@ -20,6 +20,8 @@ from modules.google_tts.speak import Speak
 import json
 import platform 
 import numpy as np
+import pyautogui
+
 
 UNIX = False
 if platform.system() == 'Linux':
@@ -180,8 +182,10 @@ class Assistant:
         elif cat == 'gesture':
             if gesture == 'like':
                 self.reply = f'[GestureNet: {gesture}]'
+                pyautogui.press('right')
             elif gesture == 'dislike':
                 self.reply = f'[GestureNet: {gesture}]'
+                pyautogui.press('left')
             self.tts(self.reply)
             self.reset_loop()
         
