@@ -20,7 +20,15 @@ from modules.google_tts.speak import Speak
 import json
 import platform 
 import numpy as np
-import pyautogui
+
+# used to send keypress event (keeps display on)
+try:
+    import pyautogui
+    pyautogui.FAILSAFE = False
+    headless = False
+except:
+    headless = True
+    print('booting headless...')
 
 
 UNIX = False
@@ -182,10 +190,10 @@ class Assistant:
         elif cat == 'gesture':
             if gesture == 'like':
                 self.reply = f'[GestureNet: {gesture}]'
-                pyautogui.press('right')
+                if not headless: pyautogui.press('right')
             elif gesture == 'dislike':
                 self.reply = f'[GestureNet: {gesture}]'
-                pyautogui.press('left')
+                if not headless: pyautogui.press('left')
             self.tts(self.reply)
             self.reset_loop()
         
