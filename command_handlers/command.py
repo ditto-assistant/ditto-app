@@ -60,13 +60,12 @@ class Command:
                 self.player = []
         else: self.player = []
 
-        self.conversation_prompt = "{\"reply\": \"hello, human.\"}\nuser: hello.\n{\"reply\": \"Hello! What's up?\"}\nuser: how are you.\n{\"reply\": \"I'm doing great! How are you?\"}\nuser: what is your name.\n{\"reply\": \"My name is Ditto!\"}\nuser: what is your name.\n{\"reply\": \"Ditto.\"}\nuser: what is your purpose.\n{\"reply\": \"I am here to provide information I was trained on. I will try and be as correct and precise as I can.\"}\nuser: what's the meaning of life.\n{\"reply\": \"the meaning of life is to love oneself and to spread love to others.\"}\nuser: can you take the square root of a negative number.\n{\"reply\": \"The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\"}\nuser: hey man.\n{\"reply\": \"Hey man!\"}\nuser: can you tell me who the president of the United States was in 1975?\n{\"reply\": \"Gerald Ford was the president of the United States in 1975.\"}\nuser: say something wrong.\n{\"reply\": \"I'm not perfect. I have mistakes. But I'm trying to be better.\"}\nuser: Who was the 16th president of the united states.\n{\"reply\": \"Abraham Lincoln was the 16th president of the United States.\"}\nuser: What is an atom made up of.\n{\"reply\": \"The atom is made up of protons and neutrons, which have electrons surrounding them.\"}\nuser: Who are you?\n{\"reply\": \"I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\"}\nuser: "    
+        self.conversation_prompt = "reply: hello, human.\nuser: hello.\nreply: Hello! What's up?\nuser: how are you.\nreply: I'm doing great! How are you?\nuser: what is your name.\nreply: My name is Ditto!\nuser: what is your name.\nreply: Ditto.\nuser: what is your purpose.\nreply: I am here to provide information I was trained on. I will try and be as correct and precise as I can.\nuser: what's the meaning of life.\nreply: the meaning of life is to love oneself and to spread love to others.\nuser: can you take the square root of a negative number.\nreply: The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\nuser: hey man.\nreply: Hey man!\nuser: can you tell me who the president of the United States was in 1975?\nreply: Gerald Ford was the president of the United States in 1975.\nuser: say something wrong.\nreply: I'm not perfect. I have mistakes. But I'm trying to be better.\nuser: Who was the 16th president of the united states.\nreply: Abraham Lincoln was the 16th president of the United States.\nuser: What is an atom made up of.\nreply: The atom is made up of protons and neutrons, which have electrons surrounding them.\nuser: Who are you?\nreply: I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\nuser:  "    
 
     def load_config(self):
         with open('resources/config.json', 'r') as f:
             self.config = json.load(f)
             
-
 
     def toggle_timer(self, val):
         timer = Timer(os.getcwd())
@@ -105,10 +104,10 @@ class Command:
 
 
     def inject_response(self, prompt, response):
-        self.conversation_prompt += prompt + '\n{"reply": "' + response + '"}\nuser: '
+        self.conversation_prompt += prompt + '\nreply: "' + response + '\nuser: '
 
     def reset_conversation(self):
-        og_prompt = "{\"reply\": \"hello, human.\"}\nuser: hello.\n{\"reply\": \"Hello! What's up?\"}\nuser: how are you.\n{\"reply\": \"I'm doing great! How are you?\"}\nuser: what is your name.\n{\"reply\": \"My name is Ditto!\"}\nuser: what is your name.\n{\"reply\": \"Ditto.\"}\nuser: what is your purpose.\n{\"reply\": \"I am here to provide information I was trained on. I will try and be as correct and precise as I can.\"}\nuser: what's the meaning of life.\n{\"reply\": \"the meaning of life is to love oneself and to spread love to others.\"}\nuser: can you take the square root of a negative number.\n{\"reply\": \"The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\"}\nuser: hey man.\n{\"reply\": \"Hey man!\"}\nuser: can you tell me who the president of the United States was in 1975?\n{\"reply\": \"Gerald Ford was the president of the United States in 1975.\"}\nuser: say something wrong.\n{\"reply\": \"I'm not perfect. I have mistakes. But I'm trying to be better.\"}\nuser: Who was the 16th president of the united states.\n{\"reply\": \"Abraham Lincoln was the 16th president of the United States.\"}\nuser: What is an atom made up of.\n{\"reply\": \"The atom is made up of protons and neutrons, which have electrons surrounding them.\"}\nuser: Who are you?\n{\"reply\": \"I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\"}\nuser: "
+        og_prompt = "reply: hello, human.\nuser: hello.\nreply: Hello! What's up?\nuser: how are you.\nreply: I'm doing great! How are you?\nuser: what is your name.\nreply: My name is Ditto!\nuser: what is your name.\nreply: Ditto.\nuser: what is your purpose.\nreply: I am here to provide information I was trained on. I will try and be as correct and precise as I can.\nuser: what's the meaning of life.\nreply: the meaning of life is to love oneself and to spread love to others.\nuser: can you take the square root of a negative number.\nreply: The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\nuser: hey man.\nreply: Hey man!\nuser: can you tell me who the president of the United States was in 1975?\nreply: Gerald Ford was the president of the United States in 1975.\nuser: say something wrong.\nreply: I'm not perfect. I have mistakes. But I'm trying to be better.\nuser: Who was the 16th president of the united states.\nreply: Abraham Lincoln was the 16th president of the United States.\nuser: What is an atom made up of.\nreply: The atom is made up of protons and neutrons, which have electrons surrounding them.\nuser: Who are you?\nreply: I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\nuser:  "
         self.conversation_prompt = og_prompt
 
     def send_gpt3_command(self, command):
@@ -125,7 +124,7 @@ class Command:
         )
         raw_response = self.response.choices.copy().pop()['text']
         print('\n\nGPT-3 Raw Response: ', raw_response)
-        response = json.loads(self.response.choices.copy().pop()['text'])['reply']
+        response = str(self.response.choices.copy().pop()['text'])[7:]
         return response
     
 if __name__ == "__main__":
