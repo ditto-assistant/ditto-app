@@ -17,6 +17,7 @@ from speech import Speech
 from command_handlers.command import Command
 from modules.offline_nlp.handle import NLP
 from modules.google_tts.speak import Speak
+from modules.security_camera.security_cam import SecurityCam
 import json
 import platform 
 import numpy as np
@@ -44,6 +45,7 @@ class Assistant:
     def __init__(self, offline_mode=OFFLINE_MODE):
         print('[Booting...]')
         self.load_config()
+        self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode)
         self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = pyttsx3.init()
@@ -197,6 +199,12 @@ class Assistant:
             self.tts(self.reply)
             self.reset_loop()
         
+        elif cat == 'security':
+            self.reply = f'[Opening {action} camera.]'
+            self.security_camera.open_cam(action)
+            self.tts(self.reply)
+            self.reset_loop()
+
         elif cat == 'weather':
             try:
                 self.reply = self.command.weather_handler.handle_response(self.command, sub_cat)
@@ -206,7 +214,6 @@ class Assistant:
                 print(e)
                 self.conversation_app()
             
-
         elif cat == 'wolfram':
             try:
                 self.reply = self.command.wolfram_handler.handle_response(self.command, sub_cat, self.prompt)
