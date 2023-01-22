@@ -239,7 +239,11 @@ conv,none,none,is it okay if I ask you some math questions
 conv,none,exit,bye
 conv,none,exit,talk to you later
 conv,none,exit,goodbye
+conv,none,exit,good bye
+conv,none,exit,Goodbye
 conv,none,exit,cancel
+conv,none,exit,okay cancel
+conv,none,exit,please cancel
 conv,none,exit,stop
 conv,none,exit,stop Ditto
 conv,none,exit,thanks Ditto
