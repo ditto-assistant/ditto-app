@@ -265,18 +265,8 @@ class PicovoiceDemo(Thread):
             print(f'index: {i}, device name: {devices[i]}')
 
 
-def pico_wake(path):
-    config_path = path+'/modules/pico_python/config.json'
+def pico_wake(path, mic=''):
     key_path = path+'/modules/pico_python/key.json'
-    try:
-        with open(config_path, 'r') as f:
-            dev = json.load(f)
-    except:
-        print("default dev selected")
-        dev = dict()
-        dev['dev'] = 'default'
-        with open(config_path, 'w') as f:
-            f.write('{"dev":"default"}')
     try:
         with open(key_path, 'r') as f:
             key = json.load(f)
@@ -284,15 +274,13 @@ def pico_wake(path):
         print("blank pico key... fill out 'key.json' with working key")
         with open(key_path, 'w') as f:
             f.write('{"key":""}')
-
     access_key = key['key']
+    
     devices = PvRecorder.get_audio_devices()
     audio_device_index=0
     for i in range(len(devices)):
-        if dev['dev'] in devices[i]:
+        if mic.lower() in str(devices[i]).lower():
             audio_device_index=i
-        if dev['dev'] == 'default':
-            audio_device_index=0
         
     if operating_system=='Linux':            
         keyword_path = path+"/modules/pico_python/hey-ditto_en_raspberry-pi_v2_1_0.ppn"

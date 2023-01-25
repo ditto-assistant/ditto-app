@@ -42,7 +42,6 @@ try:
     headless = False
 except:
     headless = True
-    print('booting headless...')
 
 import json
 import queue
@@ -52,13 +51,14 @@ import io
 
 class Speech:
 
-    def __init__(self, offline_mode=False):
+    def __init__(self, offline_mode=False, mic=''):
+        self.mic = mic
         self.recording = False
         self.offline_mode = offline_mode
         self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
-        self.google_instance = Google()
+        self.google_instance = Google(mic=mic)
 
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
@@ -86,7 +86,7 @@ class Speech:
             if activation_mode and self.skip_wake == False:
 
                 # picovoice method
-                self.pico = pico_wake(os.getcwd())
+                self.pico = pico_wake(os.getcwd(), mic=self.mic)
                 self.speaker_mic_timeout_handler(300)
                 self.pico.run() # moves to next line of code when "Hey Ditto" detected
                 if self.pico.inject_prompt: 

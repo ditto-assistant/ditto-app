@@ -46,7 +46,7 @@ class Assistant:
         print('[Booting...]')
         self.load_config()
         self.security_camera = SecurityCam(os.getcwd())
-        self.speech = Speech(offline_mode=offline_mode)
+        self.speech = Speech(offline_mode=offline_mode, mic=self.config['microphone'])
         self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = pyttsx3.init()
         self.nlp = NLP(os.getcwd())

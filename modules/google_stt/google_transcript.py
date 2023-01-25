@@ -26,8 +26,9 @@ PROMPT = ""
 class MicrophoneStream(object):
     """Opens a recording stream as a generator yielding the audio chunks."""
 
-    def __init__(self, rate, chunk):
+    def __init__(self, rate, chunk, audio_device_ndx):
         self._rate = rate
+        self.audio_device_ndx = audio_device_ndx
         self._chunk = chunk
         self.timeout = time.time() + 10
         # Create a thread-safe buffer of audio data
@@ -94,7 +95,11 @@ class MicrophoneStream(object):
 
 class Google():
     
-    def __init__(self):
+    def __init__(self, mic=''):
+        audio_device_ndx = 0
+        for ndx,dev in enumerate(sounddevice.query_devices()):
+            if mic in str(dev).lower(): audio_device_ndx = ndx
+        self.audio_device_ndx = audio_device_ndx
         self.prompt = ""
         # See http://g.co/cloud/speech/docs/languages
         # for a list of supported languages.
@@ -171,7 +176,7 @@ class Google():
 
     def grab_prompt(self): 
         try:
-            with MicrophoneStream(RATE, CHUNK) as stream:
+            with MicrophoneStream(RATE, CHUNK, self.audio_device_ndx) as stream:
                 audio_generator = stream.generator()
                 requests = (
                     speech.StreamingRecognizeRequest(audio_content=content)
