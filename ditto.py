@@ -200,10 +200,15 @@ class Assistant:
             self.reset_loop()
         
         elif cat == 'security':
-            self.reply = f'[Opening {action} camera.]'
-            self.security_camera.open_cam(action)
-            self.tts(self.reply)
-            self.reset_loop()
+            if not headless:
+                self.reply = f'[Opening {action} camera.]'
+                self.security_camera.open_cam(action)
+                self.tts(self.reply)
+                self.reset_loop()
+            else:
+                self.reply = '[Exiting Conversation Loop]'
+                self.reset_loop()
+                self.play_sound('off')
 
         elif cat == 'weather':
             try:
