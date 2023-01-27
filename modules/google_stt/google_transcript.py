@@ -30,7 +30,7 @@ class MicrophoneStream(object):
         self._rate = rate
         self.audio_device_ndx = audio_device_ndx
         self._chunk = chunk
-        self.timeout = time.time() + 10
+        self.timeout = time.time() + 30
         # Create a thread-safe buffer of audio data
         self._buff = queue.Queue()
         self.closed = True
