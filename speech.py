@@ -29,6 +29,8 @@ from modules.vosk_model.stt import STT
 # local picovoice - replacing vosk :-)
 from modules.pico_python.picovoice_demo_mic import pico_wake
 
+from modules.ditto_activation.main import HeyDittoNet
+
 # suppress Vosk logger
 # SetLogLevel(-1)
 
@@ -59,7 +61,10 @@ class Speech:
         self.text = ""
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
-
+        self.heyditto = HeyDittoNet(
+            model_type='CNN-LSTM',
+            path='modules/ditto_activation/'
+        )
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
@@ -86,24 +91,26 @@ class Speech:
             if activation_mode and self.skip_wake == False:
 
                 # picovoice method
-                self.pico = pico_wake(os.getcwd(), mic=self.mic)
-                self.speaker_mic_timeout_handler(300)
-                self.pico.run() # moves to next line of code when "Hey Ditto" detected
-                if self.pico.inject_prompt: 
+                # self.pico = pico_wake(os.getcwd())
+                # self.speaker_mic_timeout_handler(300)
+                # self.pico.run() # moves to next line of code when "Hey Ditto" detected
+                wake = self.heyditto.listen_for_name()
+                # if self.pico.inject_prompt: 
+                if self.heyditto.inject_prompt:
                     self.inject = True
-                    self.pico.inject_prompt = False
+                    # self.pico.inject_prompt = False
+                    self.heyditto.inject_prompt = False
                     self.from_gui = True
-                if self.pico.gesture_activation:
+                # if self.pico.gesture_activation:
+                if self.heyditto.gesture_activation:
                     self.gesture_activation = True
-                    self.gesture = self.pico.gesture
-                if self.wake: # set to 0 in timer if idle reboot
+                    # self.gesture = self.pico.gesture
+                    self.gesture = self.heyditto.gesture
+                if wake: # set to 0 in timer if idle reboot
                     self.activation.activate = True
                     self.recording = False
                     if not headless:
                         pyautogui.press('ctrl') # turn display on if asleep
-                else:
-                    self.wake = 1
-                    print('rebooting picovoice!')
 
             else:
                 if not self.comm_timer_mode and activation_mode: 
@@ -118,8 +125,10 @@ class Speech:
                             self.text = f'GestureNet: {self.gesture}'
                     elif self.inject: 
                         self.inject = False
-                        self.text = self.pico.prompt
-                        self.pico.prompt = ""
+                        # self.text = self.pico.prompt
+                        self.text = self.heyditto.prompt
+                        # self.pico.prompt = ""
+                        self.heyditto.prompt = ""
                         self.from_gui = True
                     else:
                         if not self.offline_mode:
@@ -137,7 +146,7 @@ class Speech:
         except BaseException as e:
             print(e)
             self.recording = False
-            
+                        
     def speaker_mic_timeout_handler(self, timeout):
         self.speak_timer = Timer(timeout, self.speaker_mic_timeout_handler, [timeout])
         self.speak_timer.start()
