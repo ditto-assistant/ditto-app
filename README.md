@@ -30,7 +30,7 @@ pip install -r requirements.txt
 		1. Set `GOOGLE_APPLICATION_CREDENTIALS` to the absolute path of the .json credential key. 
 2. OpenAI API Setup (GPT-3):
 	1. Create an account at openai.com/api and go to account settings to find an API key string. Copy this string and create an OS environment variable with the following name and value:  `OPENAI_API_KEY=insert_key_here`
-3. Picovoice Activation Model (optional):
+3. HeyDitto Activation Model:
 	1. Instructions coming soon...
 4. Spotify API Setup (optional):
 	1. Instructions coming soon...
