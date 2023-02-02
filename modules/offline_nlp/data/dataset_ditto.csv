@@ -334,3 +334,303 @@ conv,none,exit,exit
 conv,none,exit,peace out
 conv,none,exit,see ya later
 conv,none,exit,see you later
+conv,none,none,"hi, how are you doing?"
+conv,none,none,i'm fine. how about yourself?
+conv,none,none,i'm pretty good. thanks for asking.
+conv,none,none,no problem. so how have you been?
+conv,none,none,i've been great. what about you?
+conv,none,none,i've been good. i'm in school right now.
+conv,none,none,what school do you go to?
+conv,none,none,i go to pcc.
+conv,none,none,do you like it there?
+conv,none,none,it's okay. it's a really big campus.
+conv,none,none,good luck with school.
+conv,none,none,how's it going?
+conv,none,none,i'm doing well. how about you?
+conv,none,none,"never better, thanks."
+conv,none,none,so how have you been lately?
+conv,none,none,i've actually been pretty good. you?
+conv,none,none,i'm actually in school right now.
+conv,none,none,which school do you attend?
+conv,none,none,i'm attending pcc right now.
+conv,none,none,are you enjoying it there?
+conv,none,none,it's not bad. there are a lot of people there.
+conv,none,none,good luck with that.
+conv,none,none,how are you doing today?
+conv,none,none,i'm doing great. what about you?
+conv,none,none,"i'm absolutely lovely, thank you."
+conv,none,none,everything's been good with you?
+conv,none,none,i haven't been better. how about yourself?
+conv,none,none,i started school recently.
+conv,none,none,where are you going to school?
+conv,none,none,i'm going to pcc.
+conv,none,none,how do you like it so far?
+conv,none,none,i like it so far. my classes are pretty good right now.
+conv,none,none,it's an ugly day today.
+conv,none,none,i know. i think it may rain.
+conv,none,none,"it's the middle of summer, it shouldn't rain today."
+conv,none,none,that would be weird.
+conv,none,none,"yeah, especially since it's ninety degrees outside."
+conv,none,none,"i know, it would be horrible if it rained and it was hot outside."
+conv,none,none,"yes, it would be. "
+conv,none,none,i really wish it wasn't so hot every day. 
+conv,none,none,me too. i can't wait until winter.
+conv,none,none,"i like winter too, but sometimes it gets too cold."
+conv,none,none,i'd rather be cold than hot.
+conv,none,none,it doesn't look very nice outside today.
+conv,none,none,you're right. i think it's going to rain later.
+conv,none,none,"in the middle of the summer, it shouldn't be raining."
+conv,none,none,that wouldn't seem right.
+conv,none,none,"considering that it's over ninety degrees outside, that would be weird."
+conv,none,none,"exactly, it wouldn't be nice if it started raining. it's too hot."
+conv,none,none,"i know, you're absolutely right."
+conv,none,none,i wish it would cool off one day.
+conv,none,none,"that's how i feel, i want winter to come soon."
+conv,none,none,"i enjoy the winter, but it gets really cold sometimes."
+conv,none,none,"i know what you mean, but i'd rather be cold than hot."
+conv,none,none,i wish it was a nicer day today.
+conv,none,none,that is true. i hope it doesn't rain.
+conv,none,none,it wouldn't rain in the middle of the summer.
+conv,none,none,it wouldn't seem right if it started raining right now.
+conv,none,none,it would be weird if it started raining in ninety degree weather.
+conv,none,none,any rain right now would be pointless.
+conv,none,none,"that's right, it really would be."
+conv,none,none,i want it to cool down some.
+conv,none,none,"i know what you mean, i can't wait until it's winter."
+conv,none,none,winter is great. i wish it didn't get so cold sometimes though.
+conv,none,none,it's such a nice day.
+conv,none,none,"yes, it is."
+conv,none,none,it looks like it may rain soon.
+conv,none,none,"yes, and i hope that it does."
+conv,none,none,why is that?
+conv,none,none,i really love how rain clears the air.
+conv,none,none,me too. it always smells so fresh after it rains.
+conv,none,none,"yes, but i love the night air after it rains."
+conv,none,none,really? why is it?
+conv,none,none,because you can see the stars perfectly.
+conv,none,none,i really hope it rains today.
+conv,none,none,isn't it a nice day?
+conv,none,none,it really is.
+conv,none,none,it seems that it may rain today.
+conv,none,none,hopefully it will.
+conv,none,none,how come?
+conv,none,none,i like how clear the sky gets after it rains.
+conv,none,none,i feel the same way. it smells so good after it rains.
+conv,none,none,i especially love the night air when it rains.
+conv,none,none,really? why?
+conv,none,none,the stars look so much closer after it rains.
+conv,none,none,i really want it to rain today.
+conv,none,none,don't you think it's nice out?
+conv,none,none,"yes, i think so too."
+conv,none,none,i think that it's going to rain.
+conv,none,none,i hope that it does rain.
+conv,none,none,you like the rain?
+conv,none,none,the sky looks so clean after it rains. i love it.
+conv,none,none,i understand. rain does make it smell cleaner.
+conv,none,none,i love most how it is at night after it rains.
+conv,none,none,how come?
+conv,none,none,you can see the stars so much more clearly after it rains.
+conv,none,none,i really want to go to the beach this weekend.
+conv,none,none,that sounds like fun. what's the weather going to be like?
+conv,none,none,i heard that it's going to be warm this weekend.
+conv,none,none,is it going to be perfect beach weather?
+conv,none,none,i believe so.
+conv,none,none,good. i hope it doesn't cool off this weekend.
+conv,none,none,i know. i really want to go to the beach.
+conv,none,none,but you know that california weather is really unpredictable.
+conv,none,none,"you're right. one minute it's hot, and then the next minute it's cold."
+conv,none,none,i really wish the weather would just stay the same.
+conv,none,none,i do too. that way we can have our activities planned ahead of time.
+conv,none,none,i would like to take a trip to the beach this weekend.
+conv,none,none,a trip to the beach would be fun. how is the weather going to be?
+conv,none,none,the forecast says that it will be warm on the weekend.
+conv,none,none,so do you think it'll be perfect weather for the beach?
+conv,none,none,it sounds like it will be.
+conv,none,none,i really hope it doesn't get cold.
+conv,none,none,"that would ruin things, i want to go so badly."
+conv,none,none,"the weather in california is unpredictable, so you never know."
+conv,none,none,that is true. the weather is constantly changing.
+conv,none,none,it would be nice if the weather would never change.
+conv,none,none,"that would be great, then we could plan things sooner."
+conv,none,none,it would be nice to go to the beach sometime this weekend.
+conv,none,none,what's the weather going to be like? i may want to go too.
+conv,none,none,the weather this weekend is supposed to be warm.
+conv,none,none,will it be good beach weather?
+conv,none,none,i think it will be.
+conv,none,none,it wouldn't be good if it got cold this weekend.
+conv,none,none,"i want this trip to be perfect, i hope it stays warm."
+conv,none,none,"this california weather is so uncertain, it's impossible to know what'll happen."
+conv,none,none,i know. every day the weather seems different.
+conv,none,none,i would love it if it wasn't always so unpredictable.
+conv,none,none,"hello, may i speak to alice please?"
+conv,none,none,this is she. how's it going?
+conv,none,none,i've been trying to call you all day.
+conv,none,none,sorry about that. i was cleaning up.
+conv,none,none,it's okay.
+conv,none,none,so what were you calling me about?
+conv,none,none,"oh, i just wanted to see if you wanted to hang out tomorrow."
+conv,none,none,"sure, what did you want to do?"
+conv,none,none,maybe we can go see a movie or something.
+conv,none,none,that sounds like fun. let's do it.
+conv,none,none,i'll see you tomorrow then.
+conv,none,none,"hi, how are you. is alice there?"
+conv,none,none,speaking. what's up?
+conv,none,none,why haven't you answered the phone?
+conv,none,none,"my bad, i had chores to do."
+conv,none,none,that's all right.
+conv,none,none,what was the reason for your call?
+conv,none,none,i want to do something tomorrow with you.
+conv,none,none,sounds good. what did you have in mind?
+conv,none,none,i was thinking about seeing a movie.
+conv,none,none,"okay, let's go see a movie."
+conv,none,none,until then.
+conv,none,none,is alice available?
+conv,none,none,you're talking to her.
+conv,none,none,i've called you a hundred times today.
+conv,none,none,i was busy doing something. i apologize.
+conv,none,none,no problem.
+conv,none,none,did you need something?
+conv,none,none,do you want to do something tomorrow?
+conv,none,none,is there somewhere special you wanted to go?
+conv,none,none,how about a movie?
+conv,none,none,a movie sounds good.
+conv,none,none,have you seen the new girl in school?
+conv,none,none,"no, i haven't."
+conv,none,none,she's really pretty.
+conv,none,none,describe her to me.
+conv,none,none,she's not too tall.
+conv,none,none,"well, how tall is she?"
+conv,none,none,she's about five feet even.
+conv,none,none,"what does she look like, though?"
+conv,none,none,she has pretty light brown eyes.
+conv,none,none,i may know which girl you're talking about.
+conv,none,none,so you have seen her around?
+conv,none,none,"there's a new girl in school, have you seen her yet?"
+conv,none,none,i haven't seen her yet.
+conv,none,none,i think that she is very pretty.
+conv,none,none,tell me how she looks.
+conv,none,none,she's kind of short.
+conv,none,none,what height is she?
+conv,none,none,she's probably about five feet.
+conv,none,none,"that's nice, but tell me what she looks like."
+conv,none,none,the first thing i noticed was her beautiful brown eyes.
+conv,none,none,i think i might've bumped into her before.
+conv,none,none,are you telling me that you've seen her before?
+conv,none,none,have you met the new girl?
+conv,none,none,no. have you?
+conv,none,none,she's one of the prettiest girls at the school.
+conv,none,none,what does she look like?
+conv,none,none,"well, she's quite short."
+conv,none,none,how tall would you say that she is?
+conv,none,none,i would say she's only five feet.
+conv,none,none,what about her facial features?
+conv,none,none,"she has light brown eyes, absolutely beautiful."
+conv,none,none,i think i know who you're talking about.
+conv,none,none,why weren't you at school yesterday?
+conv,none,none,i wasn't really feeling well.
+conv,none,none,what was wrong with you?
+conv,none,none,my stomach was upset.
+conv,none,none,do you feel better now?
+conv,none,none,i don't really feel too well yet.
+conv,none,none,do you want anything to make you feel better?
+conv,none,none,"no, thanks. i already took some medicine."
+conv,none,none,i hope you feel better.
+conv,none,none,what reason do you have for missing school?
+conv,none,none,i was sick.
+conv,none,none,how were you sick?
+conv,none,none,i had a stomachache.
+conv,none,none,did it get any better?
+conv,none,none,i'm still feeling under the weather.
+conv,none,none,would you like anything for your stomach?
+conv,none,none,i took something earlier.
+conv,none,none,get better.
+conv,none,none,why didn't you go to school yesterday?
+conv,none,none,i stayed home because i wasn't feeling well.
+conv,none,none,what was your problem?
+conv,none,none,my stomach was bothering me.
+conv,none,none,are you feeling any better?
+conv,none,none,i'm still feeling a little sick.
+conv,none,none,"i'm going to the store, would you like any pepto bismol?"
+conv,none,none,that's okay.
+conv,none,none,did you hear the good news?
+conv,none,none,"no, i haven't."
+conv,none,none,i got a promotion at my job.
+conv,none,none,did you really?
+conv,none,none,"seriously, i am so excited."
+conv,none,none,"well, congratulations."
+conv,none,none,thank you.
+conv,none,none,i'm so happy for you.
+conv,none,none,really?
+conv,none,none,yes. you really deserved this.
+conv,none,none,you think so?
+conv,none,none,have you heard my good news?
+conv,none,none,you haven't told me anything yet.
+conv,none,none,i got a promotion at work earlier this week.
+conv,none,none,is that right?
+conv,none,none,it's the truth. i am really happy.
+conv,none,none,congratulations on your promotion.
+conv,none,none,thank you very much.
+conv,none,none,i am really excited for you.
+conv,none,none,are you really?
+conv,none,none,i'm serious. you deserved this promotion.
+conv,none,none,is that what you really think?
+conv,none,none,"i haven't told you what happened yet, have i?"
+conv,none,none,i haven't heard anything.
+conv,none,none,"my boss offered me a promotion, and i took it."
+conv,none,none,are you serious?
+conv,none,none,"yes, i am really excited."
+conv,none,none,that's great. congratulations.
+conv,none,none,i appreciate that.
+conv,none,none,you have no idea how happy i am for you.
+conv,none,none,you look really nice today. 
+conv,none,none,thank you. i just got this outfit the other day.
+conv,none,none,"really, where did you get it?"
+conv,none,none,i got it from macy's.
+conv,none,none,it's really nice.
+conv,none,none,"thanks again. you look nice today, too."
+conv,none,none,thank you. i just got these shoes today.
+conv,none,none,really? what kind of shoes are they?
+conv,none,none,these are called all star chuck taylors.
+conv,none,none,i really like those. how much did they cost?
+conv,none,none,they were about forty dollars.
+conv,none,none,i absolutely love what you're wearing today.
+conv,none,none,you do? i just bought this outfit a couple days ago.
+conv,none,none,"seriously, it looks really nice on you. where did you buy it from?"
+conv,none,none,i bought it from the macy's at the santa anita mall.
+conv,none,none,i really like that outfit.
+conv,none,none,"thanks. i think you look nice today, too."
+conv,none,none,thank you. i just bought these new shoes earlier today.
+conv,none,none,those are nice. what are they?
+conv,none,none,these are some chucks.
+conv,none,none,those are great. how much were they?
+conv,none,none,i got them for forty.
+conv,none,none,i think that you look very cute today.
+conv,none,none,is that right? this is a brand new outfit.
+conv,none,none,what store did you get it from?
+conv,none,none,i went to macy's and picked it out.
+conv,none,none,i love your outfit right now.
+conv,none,none,"well, i think you look nice today too."
+conv,none,none,thanks. i found these new shoes earlier at the store.
+conv,none,none,i think that those are some really nice shoes. what kind are they?
+conv,none,none,these are chucks.
+conv,none,none,your shoes look really nice. how much did you get them for?
+conv,none,none,"tell me, what do you enjoy doing in your spare time?"
+conv,none,none,i enjoy drawing and painting.
+conv,none,none,you know how to draw and paint?
+conv,none,none,"yes, i do."
+conv,none,none,when did you learn how to do that?
+conv,none,none,i learned back in high school.
+conv,none,none,"oh, so you took an art class?"
+conv,none,none,"yeah, i loved that class."
+conv,none,none,i see that you're pretty talented.
+conv,none,none,thank you very much.
+conv,none,none,i wish i had a talent like that.
+conv,none,none,what kinds of things do you like to do?
+conv,none,none,i've always liked to draw and paint.
+conv,none,none,i didn't know you knew how to draw and paint.
+conv,none,none,i do it every once in a while.
+conv,none,none,how long have you known how to do that?
+conv,none,none,i first learned how to do it in high school.
+conv,none,none,did you take some sort of art class or something?
+conv,none,none,that was my favorite class.
+conv,none,none,you have got to be talented.

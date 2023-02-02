@@ -275,7 +275,7 @@ def pico_wake(path, mic=''):
         with open(key_path, 'w') as f:
             f.write('{"key":""}')
     access_key = key['key']
-    
+
     devices = PvRecorder.get_audio_devices()
     audio_device_index=0
     for i in range(len(devices)):
