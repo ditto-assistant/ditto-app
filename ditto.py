@@ -5,7 +5,7 @@ author: Omar Barazanji
 """
 
 # handles text to speech
-import pyttsx3
+# import pyttsx3
 
 # other imports
 import os 
@@ -48,7 +48,7 @@ class Assistant:
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode, mic=self.config['microphone'])
         self.command = Command(os.getcwd(), offline_mode)
-        self.speech_engine = pyttsx3.init()
+        self.speech_engine = ''
         self.nlp = NLP(os.getcwd())
         self.nlp.initialize()
         self.nlp.contruct_sentence_vectors()

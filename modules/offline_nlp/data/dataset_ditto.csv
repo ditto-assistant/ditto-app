@@ -634,3 +634,7 @@ conv,none,none,i first learned how to do it in high school.
 conv,none,none,did you take some sort of art class or something?
 conv,none,none,that was my favorite class.
 conv,none,none,you have got to be talented.
+conv,none,exit,"that's enough"
+conv,none,exit,enough
+conv,none,exit,"ok Ditto, that's enough talking"
+conv,none,none,"can you elaborate more on the strain blue dream"
