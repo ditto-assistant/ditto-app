@@ -334,3 +334,10 @@ conv,none,exit,exit
 conv,none,exit,peace out
 conv,none,exit,see ya later
 conv,none,exit,see you later
+conv,none,exit,"that's enough"
+conv,none,exit,enough
+conv,none,exit,"ok Ditto, that's enough talking"
+conv,none,none,"can you elaborate more on the strain blue dream"
+conv,none,exit,"thats enough"
+conv,none,exit,"that's enough ditto"
+conv,none,exit,"that's enough!"
