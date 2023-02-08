@@ -4,10 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../ditto-activation"
-		},
-		{
-			"path": "../gesture-recognition"
+			"path": "../ditto-app"
 		}
 	],
 	"settings": {}
