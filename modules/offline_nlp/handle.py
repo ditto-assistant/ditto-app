@@ -192,19 +192,22 @@ class NLP:
         second = ''
         minute = ''
         reply = self.ner_timer(sentence)
+        # print(reply.ents)
         for ent in reply.ents:
             if 'second' in ent.label_:
                 second+=ent.text+' '
             elif 'minute' in ent.label_:
                 minute+=ent.text+' '
-        print(second, minute)
+        # print(second, minute)
         try:
             if 'second' in second:
                 second = '1' # user said 'a' second 
             if 'minute' in minute:
                 minute = '1' # user said 'a' minute
-            if not second == '1' and not second == '': second = w2n.word_to_num(second.strip())
-            if not minute == '1' and not minute == '': minute = w2n.word_to_num(minute.strip())
+            if not second == '1' and not second == '': second = w2n.word_to_num(second)
+            if not minute == '1' and not minute == '': minute = w2n.word_to_num(minute)
+            # print(second, minute)
+
         except:
             print('\n[word2num error]\n')
             second = second
