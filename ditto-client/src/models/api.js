@@ -80,6 +80,23 @@ export const grabConversationHistoryCount = async() => {
 }
 
 /**
+ * Gets status from database.
+ */
+export const grabStatus = async() => {
+  // console.log('grabbing conversation historyCount from server')
+  try {
+    var statusDB = await sendRequest('GET', 'ditto', {"status": 1})
+    if (statusDB === undefined) {
+      return {status: "off"}
+    } else {
+      return statusDB;
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+/**
  * Send a prompt to Ditto.
  */
 export const sendPrompt = async(prompt) => {
