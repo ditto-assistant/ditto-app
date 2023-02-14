@@ -20,7 +20,7 @@ export default function SendMessage() {
     }
 
     const onEnterPress = async(e) => {
-        if(e.keyCode == 13 && e.shiftKey == false) {
+        if(e.keyCode === 13 && e.shiftKey === false) {
             if (message !== '') {
                 await sendPrompt(message)
                 setMessage("")

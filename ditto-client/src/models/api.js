@@ -56,6 +56,7 @@ const ip = config.ip;
  * @returns 
  */
  export const grabConversationHistory = async() => {
+    // console.log('grabbing conversation hist from server')
     try {
         var history = await sendRequest('GET', 'ditto', {"history": "1"});
         return history;
@@ -63,6 +64,37 @@ const ip = config.ip;
         console.error(e);
     }
   }
+
+/**
+ * Gets conversation history count from database.
+ * @returns Number: count representing prompts + responses
+ */
+export const grabConversationHistoryCount = async() => {
+  // console.log('grabbing conversation historyCount from server')
+  try {
+    var count = await sendRequest('GET', 'ditto', {"historyCount": 1})
+    return count;
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+/**
+ * Gets status from database.
+ */
+export const grabStatus = async() => {
+  // console.log('grabbing conversation historyCount from server')
+  try {
+    var statusDB = await sendRequest('GET', 'ditto', {"status": 1})
+    if (statusDB === undefined) {
+      return {status: "off"}
+    } else {
+      return statusDB;
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 /**
  * Send a prompt to Ditto.

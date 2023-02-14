@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ChatBubble_1 = require("./ChatBubble");
 exports.ChatBubble = ChatBubble_1.default;

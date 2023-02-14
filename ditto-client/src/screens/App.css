@@ -18,27 +18,6 @@
   flex-direction: column;
 }
 
-.StatusBar {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.Status {
-  display: flex;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-
-.Status-text {
-  padding-right: 5px;
-  color: white;
-}
-
-.Status-indicator {
-  color: green
-}
-
 .App-footer {
   display: flex;
   flex-direction: column;
