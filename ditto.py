@@ -44,6 +44,7 @@ class Assistant:
 
     def __init__(self, offline_mode=OFFLINE_MODE):
         print('[Booting...]')
+        self.update_status_db('booting')
         self.load_config()
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode, mic=self.config['microphone'])
@@ -67,6 +68,7 @@ class Assistant:
 
         self.command_timer = 0 # used to handle the timeout of interaction with assistant
         self.comm_timer_mode = False # will go to false after 5 seconds of inactivity (idle)
+        self.update_status_db('on')
 
     def load_config(self):
         config_path = 'resources/config.json'
@@ -258,6 +260,18 @@ class Assistant:
         SQL.commit()
         SQL.close()
 
+    def update_status_db(self, status):
+        SQL = sqlite3.connect("ditto.db")
+        cur = SQL.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS status(status VARCHAR)")
+        SQL.commit()
+        status_arr = cur.execute("SELECT * FROM status").fetchall()
+        if len(status_arr) > 3:
+            cur.execute("DELETE FROM status")
+            SQL.commit()
+        cur.execute("INSERT INTO status VALUES('%s')" % status)
+        SQL.commit()
+        SQL.close()
 
     def activation_sequence(self):
         self.activation_mode = True

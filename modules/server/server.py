@@ -20,7 +20,6 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
-
 def actiavte_inject_prompt(prompt):
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
@@ -37,6 +36,14 @@ def get_prompt_response_count():
     response_count = cur.execute("SELECT COUNT(*) FROM responses").fetchone()[0]
     SQL.close()
     return int(prompt_count) + int(response_count)
+
+def get_status():
+    SQL = sqlite3.connect("ditto.db")
+    cur = SQL.cursor()
+    status_arr = cur.execute("SELECT * FROM status").fetchall()
+    status = status_arr[-1][0]
+    SQL.close()
+    return status
 
 def get_conversation_history():
     SQL = sqlite3.connect("ditto.db")
@@ -80,7 +87,10 @@ def ditto_handler():
             if 'historyCount' in requests:
                 count = get_prompt_response_count()
                 return '{"historyCount": %d}' % count
-
+            
+            if 'status' in requests:
+                status = get_status()
+                return '{"status": "%s"}' % status
 
         else:
             return '{"error": "invalid"}'
