@@ -5,9 +5,9 @@
 .App-header {
   min-height: 10vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: left;
+  justify-content: space-between;
   font-size: calc(10px + 2vmin);
   color: white;
 }

@@ -37,6 +37,8 @@ export default function App () {
 
     const [status, setStatus] = useState("off");
 
+    const [microphoneStatus, setMicrophoneStatus] = useState("on")
+
     /**
      * Gets Conversation history count and updates if local count is different from Server database.
      */
@@ -156,7 +158,14 @@ export default function App () {
         <HashRouter>
             <Redirect to='/' />
             <Switch>
-                <Route exact path='/' render={(props) => <HomeScreen {...props} conv={conv} status={status} />} />
+                <Route exact path='/' render = {(props) => 
+                    <HomeScreen 
+                        {...props} 
+                        conv={conv} 
+                        status={status} 
+                        microphone={microphoneStatus}
+                    />
+                }/>
                 <Route exact path='/SettingsScreen' component={SettingsScreen} />
                 <Route exact path='/SignInScreen' component={SignInScreen} />
             </Switch>

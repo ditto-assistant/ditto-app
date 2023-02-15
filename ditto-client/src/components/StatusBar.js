@@ -12,7 +12,7 @@ export default function StatusBar(props) {
         <div className='StatusBar' >
             <div className='Status'>
                 <p className='Status-text'>Status:</p>
-                <p className='Status-indicator'>{props.status}</p>
+                <p className='Status-indicator' style={{"color": props.statusColor}}>{props.status}</p>
             </div>
             <div className='Status'>
                 <p className='Status-text'>Volume:</p>
