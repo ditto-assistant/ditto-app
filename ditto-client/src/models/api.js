@@ -73,7 +73,7 @@ export const grabConversationHistoryCount = async() => {
   // console.log('grabbing conversation historyCount from server')
   try {
     var count = await sendRequest('GET', 'ditto', {"historyCount": 1})
-    return count;
+    if (count !== undefined) {return count.historyCount};
   } catch (e) {
     console.error(e)
   }
@@ -93,6 +93,7 @@ export const grabStatus = async() => {
     }
   } catch (e) {
     console.error(e)
+    return {status: "off"}
   }
 }
 

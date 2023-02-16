@@ -31,7 +31,7 @@ export default function App () {
         ]
     };
     
-    const [histCount, setCount] = useState(0) 
+    const [histCount, setCount] = useState(0)
 
     const [conv, setConversation] = useState(conversation)
 
@@ -43,36 +43,42 @@ export default function App () {
      * Gets Conversation history count and updates if local count is different from Server database.
      */
     const syncConversationHist = async() => {
-    let hasHistCount = window.electron.store.has('histCount')
-    if (hasHistCount) { // If there is a local histCount variable, check if need to update from Server
-        let serverHistCount = await grabConversationHistoryCount()
-        let localHistCount = window.electron.store.get('histCount')
-        if (serverHistCount===undefined || serverHistCount.historyCount === localHistCount.historyCount) {
-        let localHist = getSavedConversation()
-        createConversation(localHist, false)
-        if (histCount === 0){setCount(localHistCount)}
+        let hasHistCount = window.electron.store.has('histCount')
+        if (hasHistCount) { // If there is a local histCount variable, check if need to update from Server
+            let serverHistCount = await grabConversationHistoryCount()
+            let localHistCount = window.electron.store.get('histCount')
+            if (serverHistCount===undefined || serverHistCount === localHistCount) {
+                let localHist = getSavedConversation()
+                createConversation(localHist, false)
+                if (histCount !== localHistCount){
+                    setCount(localHistCount)
+                }
+            } else { // update state from server
+                let hist = await grabConversationHistory()
+                try {
+                    createConversation(hist, true)
+                    let serverHistCount = await grabConversationHistoryCount() // grab histCount from Server database
+                    if (histCount !== serverHistCount){
+                        setCount(serverHistCount)
+                    }
+                    window.electron.store.set('histCount', histCount) // store histCount locally
+                } catch (e) {
+                    console.log(e)
+                }
+            }
         } else { // update state from server
-        let hist = await grabConversationHistory()
-        try {
-            createConversation(hist, true)
-            let histCount = await grabConversationHistoryCount() // grab histCount from Server database
-            setCount(histCount)
-            window.electron.store.set('histCount', histCount) // store histCount locally
-        } catch (e) {
-            console.log(e)
+            let hist = await grabConversationHistory()
+            try {
+                createConversation(hist, true)
+                let serverHistCount = await grabConversationHistoryCount() // grab histCount from Server database
+                if(histCount !== serverHistCount){
+                    setCount(serverHistCount)
+                }
+                window.electron.store.set('histCount', histCount) // store histCount locally
+            } catch (e) {
+                console.log(e)
+            }
         }
-        }
-    } else { // update state from server
-        let hist = await grabConversationHistory()
-        try {
-        createConversation(hist, true)
-        let histCount = await grabConversationHistoryCount() // grab histCount from Server database
-        setCount(histCount)
-        window.electron.store.set('histCount', histCount) // store histCount locally
-        } catch (e) {
-        console.log(e)
-        }
-    }
     }
 
     /**
@@ -99,34 +105,38 @@ export default function App () {
      * @param save boolean to save locally or not
      */
     const createConversation = async(hist, save) => {
-    if (save) {handleSaveConversation(hist)}
-    let prompts = hist.prompts
-    let responses = hist.responses
-    for (var key in prompts) {
-        if (prompts.hasOwnProperty(key)) {
-        let prompt = prompts[key]
-        let response = responses[key]
-        // console.log(prompt, response)
-        conversation.messages.push(
-            new Message({
-            id: 0,
-            message: prompt
-            })
-        )
-        conversation.messages.push(
-            new Message({
-            id: 1,
-            message: response
-            })
-        )
+        if (save) {handleSaveConversation(hist)}
+        let prompts = hist.prompts
+        let responses = hist.responses
+        for (var key in prompts) {
+            if (prompts.hasOwnProperty(key)) {
+                let prompt = prompts[key]
+                let response = responses[key]
+                // console.log(prompt, response)
+                conversation.messages.push(
+                    new Message({
+                    id: 0,
+                    message: prompt
+                    })
+                )
+                conversation.messages.push(
+                    new Message({
+                    id: 1,
+                    message: response
+                    })
+                )
+            }
         }
-    }
-    setConversation(conversation)
+        if (conv.messages.length !== conversation.messages.length){
+            setConversation(conversation)
+        }
     }
 
     const handleStatus = async() => {
         var statusDb = await grabStatus()
-        setStatus(statusDb.status)
+        if (status !== statusDb.status) {
+            setStatus(statusDb.status)
+        }
     }
 
     useEffect(() => {
@@ -147,12 +157,17 @@ export default function App () {
         handleResize() // apply size rules on render
         
         window.addEventListener('resize', handleResize)
-
-        setTimeout(async() => {
-            await handleStatus()
-            await syncConversationHist()
+        setInterval(async() => {
+            // setTimeout(async() => {
+            try {
+                await handleStatus()
+                await syncConversationHist()
+            } catch (e) {
+                console.log(e)
+            }
+            // }, 1000)
         }, 1000)
-    }, [histCount, conv, status])
+    }, [])
 
     return (
         <HashRouter>
