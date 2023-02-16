@@ -51,4 +51,10 @@ pip install -r requirements.txt
 
 
 ## Common issues
+
+### For Mac
 [How to resolve fatal pyaudio error](https://www.codewithharry.com/blogpost/pyaudio-not-found-error/)
+[portaudio help](https://stackoverflow.com/a/48815345)
+```
+pip install tensorflow-macos matplotlib pandas
+```
