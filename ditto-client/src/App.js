@@ -127,9 +127,9 @@ export default function App () {
                 )
             }
         }
-        if (conv.messages.length !== conversation.messages.length){
+        // if (conv.messages.length !== conversation.messages.length){
             setConversation(conversation)
-        }
+        // }
     }
 
     const handleStatus = async() => {
@@ -157,17 +157,17 @@ export default function App () {
         handleResize() // apply size rules on render
         
         window.addEventListener('resize', handleResize)
-        setInterval(async() => {
-            // setTimeout(async() => {
+        // setInterval(async() => {
+            setTimeout(async() => {
             try {
                 await handleStatus()
                 await syncConversationHist()
             } catch (e) {
                 console.log(e)
             }
-            // }, 1000)
-        }, 1000)
-    }, [])
+            }, 1000)
+        // }, 300)
+    }, [conv, status, histCount])
 
     return (
         <HashRouter>
