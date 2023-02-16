@@ -48,3 +48,13 @@ pip install -r requirements.txt
 
 ## Running:
 - Simply run `python main.py` to boot the assistant along with a Flask server for communicating with the [Ditto App](https://github.com/omarzanji/ditto-app) front-end client.
+
+
+## Common issues
+
+### For Mac
+[How to resolve fatal pyaudio error](https://www.codewithharry.com/blogpost/pyaudio-not-found-error/)
+[portaudio help](https://stackoverflow.com/a/48815345)
+```
+pip install tensorflow-macos matplotlib pandas
+```
