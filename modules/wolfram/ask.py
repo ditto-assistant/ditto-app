@@ -9,12 +9,20 @@ refs:
 
 import wolframalpha
 import json
+import os
 
 class Wolfram:
 
     def __init__(self, path):
         self.path = path.replace('\\','/')
-        with open(self.path+"/modules/wolfram/key.json", "r") as f:
+        self.path += "/modules/wolfram/"
+        self.load_key()
+
+    def load_key(self):
+        if not 'key' in os.listdir(self.path):
+            with open(self.path+"key.json", "w") as f:
+                f.write('{"key": "API_KEY"}')
+        with open(self.path+"key.json", "r") as f:
             key = json.load(f)['key']
             self.client = wolframalpha.Client(key)
 
