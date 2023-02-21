@@ -36,8 +36,6 @@ export default function HomeScreen () {
     let bubblefontSize = 14
     let bubblePadding = 10
 
-    
-
     /**
      * Gets Conversation history count and updates if local count is different from Server database.
      */
@@ -69,11 +67,16 @@ export default function HomeScreen () {
         if (save) {handleSaveConversation(hist)}
         let prompts = hist.prompts
         let responses = hist.responses
-        let newConversation = conversation
+        // let newConversation = conversation
+        let newConversation = {
+            messages: [
+                new Message({
+                id: 1,
+                message: "Hi! I'm Ditto."
+                })
+            ]
+        }
         for (var key in prompts) {
-            if (!prompts[key]) {
-                continue
-            }
             let prompt = prompts[key]
             let response = responses[key]
             // console.log(prompt, response)
@@ -111,7 +114,6 @@ export default function HomeScreen () {
                 let localHistCount = window.electron.store.get('histCount')
                 if (serverHistCount===undefined || serverHistCount === localHistCount) {
                     let localHist = getSavedConversation()
-                    console.log(localHist)
                     createConversation(localHist, false)
                     if (histCount !== localHistCount){
                         setCount(localHistCount)
