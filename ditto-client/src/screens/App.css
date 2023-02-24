@@ -13,7 +13,7 @@
 }
 
 .App-body {
-  max-height: 60vh;
+  max-height: 65vh;
   display: flex;
   flex-direction: column;
 }
