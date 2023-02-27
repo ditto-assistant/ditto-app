@@ -1,12 +1,20 @@
 import json
+import requests
 
 class TimerHandler():
 
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        self.config = config
+        self.nlp_ip = self.config['nlp-server']
 
-    def handle_response(self, command, nlp, prompt):
-        ner_response = json.loads(nlp.prompt_ner_timer(prompt))
+    def prompt_ner_timer(self, prompt):
+        base_url = f"http://{self.nlp_ip}:32032/ner/"
+        response = requests.post(base_url, params={"ner-timer": prompt})
+        return response.content.decode()
+
+
+    def handle_response(self, command, prompt):
+        ner_response = json.loads(self.prompt_ner_timer(prompt))
         second = ner_response['second']
         minute = ner_response['minute']
         second_reply = ''

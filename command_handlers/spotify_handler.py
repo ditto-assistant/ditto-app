@@ -1,13 +1,19 @@
 import json
-
+import requests
 
 class SpotifyHandler():
 
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        self.config = config
+        self.nlp_ip = config['nlp-server']
 
-    def handle_response(self, command, nlp, prompt):
-        ner_response = json.loads(nlp.prompt_ner_play(prompt))
+    def prompt_ner_play(self, prompt):
+        base_url = f"http://{self.nlp_ip}:32032/ner/"
+        response = requests.post(base_url, params={"ner-play": prompt})
+        return response.content.decode()
+    
+    def handle_response(self, command, prompt):
+        ner_response = json.loads(self.prompt_ner_play(prompt))
         song = ner_response['song']
         artist = ner_response['artist']
         playlist = ner_response['playlist']

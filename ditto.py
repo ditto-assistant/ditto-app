@@ -12,10 +12,9 @@ import os
 import time
 import pygame
 from threading import Timer
-
+import requests
 from speech import Speech
 from command_handlers.command import Command
-from modules.offline_nlp.handle import NLP
 from modules.google_tts.speak import Speak
 from modules.security_camera.security_cam import SecurityCam
 import json
@@ -50,9 +49,6 @@ class Assistant:
         self.speech = Speech(offline_mode=offline_mode, mic=self.config['microphone'])
         self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = ''
-        self.nlp = NLP(os.getcwd())
-        self.nlp.initialize()
-        self.nlp.contruct_sentence_vectors()
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
@@ -72,7 +68,7 @@ class Assistant:
 
     def load_config(self):
         config_path = 'resources/config.json'
-        default_config = '{"volume": 70, "teensy_path": ""}'
+        default_config = '{"microphone": "", "nlp-server": "localhost", "volume": 70, "teensy_path": ""}'
         try:
             with open(config_path, 'r') as f:
                 self.config = json.load(f)
@@ -80,6 +76,7 @@ class Assistant:
             self.config = json.loads(default_config)
             with open(config_path, 'w') as f:
                 f.write(default_config)
+        self.nlp_ip = self.config['nlp-server']
 
     def reset_loop(self):
         '''
@@ -111,6 +108,11 @@ class Assistant:
         self.command_timer = 0 # reset command timer 
         self.comm_timer_mode = False # (pause to not iterrupt assistant speaking)
         self.comm_timer.cancel()
+
+    def prompt_intent(self, prompt):
+        base_url = f"http://{self.nlp_ip}:32032/intent/"
+        response = requests.post(base_url, params={"prompt": prompt})
+        return response.content.decode()
 
     def conversation_app(self, action=None):
 
@@ -149,7 +151,7 @@ class Assistant:
             gesture = self.speech.gesture
         else:
             # get intent from offline npl module 
-            self.offline_response = json.loads(self.nlp.prompt(self.prompt))
+            self.offline_response = json.loads(self.prompt_intent(self.prompt))
             cat = self.offline_response['category']
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
@@ -160,13 +162,13 @@ class Assistant:
 
         # send prompt to application / category 
         if  cat == 'lights':
-            self.reply = self.command.light_handler.handle_response(self.nlp, self.prompt)
+            self.reply = self.command.light_handler.handle_response(self.prompt)
             self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'spotify':
             try:
-                self.reply = self.command.spotify_handler.handle_response(self.command, self.nlp, self.prompt)
+                self.reply = self.command.spotify_handler.handle_response(self.command, self.prompt)
             except BaseException as e:
                 self.reply = self.command.conversation_handler.handle_response(self.command, self.prompt)
             self.tts(self.reply)
@@ -184,7 +186,7 @@ class Assistant:
             
         elif cat == 'timer':
             try:
-                self.reply = self.command.timer_handler.handle_response(self.command, self.nlp, self.prompt)
+                self.reply = self.command.timer_handler.handle_response(self.command, self.prompt)
                 self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:

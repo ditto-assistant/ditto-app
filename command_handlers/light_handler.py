@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import requests
 
 # https://github.com/mclarkk/lifxlan
 import lifxlan
@@ -11,6 +12,7 @@ class LightHandler():
 
     def __init__(self, config):
         self.config = config
+        self.nlp_ip = config['nlp-server']
         self.val_map = np.linspace(0, 65535, 10).tolist()
         self.lifx_color_map = {
             "red" : lifxlan.RED,
@@ -29,6 +31,11 @@ class LightHandler():
         self.light_status = True
         self.light_mode = 'on'
     
+    def prompt_ner_light(self, prompt):
+        base_url = f"http://{self.nlp_ip}:32032/ner/"
+        response = requests.post(base_url, params={"ner-light": prompt})
+        return response.content.decode()
+
     def grab_lifx_lights(self):
         try:
             self.lifx_lights = []
@@ -131,9 +138,9 @@ class LightHandler():
             pass
 
 
-    def handle_response(self, nlp, prompt):
+    def handle_response(self, prompt):
         try:
-            ner_response = json.loads(nlp.prompt_ner_light(prompt))
+            ner_response = json.loads(self.prompt_ner_light(prompt))
             lightname = ner_response['lightname'].strip()
             brightness = ner_response['brightness'].strip()
             color = ner_response['color'].strip()
