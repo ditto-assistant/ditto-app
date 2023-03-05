@@ -19,28 +19,30 @@ class TimerHandler():
         minute = ner_response['minute']
         second_reply = ''
         minute_reply = ''
-        if not second == '' and minute == '':
-            if not second == '':
-                if int(second) == 1:
-                    second_reply = ' second '
-                else: second_reply = ' seconds '
-            if not minute == '':
-                if int(minute) == 1:
-                    minute_reply = ' minute '
-                else: minute_reply = ' minutes '
-            if not second == '' or minute == '':
-                s = ''
-                m = ''
-                if not second == '':
-                    s = 's'
-                if not minute == '':
-                    m = 'm'
-                timer_command = minute + m + second + s
-                timer_command.replace(' ', '')
-                command.toggle_timer(timer_command)
-                readable = minute + minute_reply + second + second_reply
-                reply = '[Setting timer for %s]' % readable
-                print(reply+'\n')
+        s = ''
+        m = ''
+
+        if not second == '':
+            s = 's'
+            if int(second) == 1:
+                second_reply = ' second '
+            else: second_reply = ' seconds '
+
+        if not minute == '':
+            m = 'm'
+            if int(minute) == 1:
+                minute_reply = ' minute '
+            else: minute_reply = ' minutes '
+
+        if not second == '' or not minute == '':
+            timer_command = minute + m + second + s
+            timer_command.replace(' ', '')
+            # print(timer_command)
+            command.toggle_timer(timer_command)
+            readable = minute + minute_reply + second + second_reply
+            reply = '[Setting timer for %s]' % readable
+            print(reply+'\n')
+
         else:
             reply = '[Invalid timer command]'
             print(reply+'\n')
