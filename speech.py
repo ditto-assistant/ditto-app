@@ -63,7 +63,8 @@ class Speech:
         self.google_instance = Google(mic=mic)
         self.heyditto = HeyDittoNet(
             model_type='CNN-LSTM',
-            path='modules/ditto_activation/'
+            path='modules/ditto_activation/',
+            tflite=True
         )
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'

@@ -1,13 +1,9 @@
 import json
-from modules.offline_nlp.chat import Chat
-
 
 class ConversationHandler:
 
     def __init__(self, path=None, offline_mode=False):
         self.offline_mode = offline_mode
-        self.offline_chat = Chat(path)
-        self.offline_chat.train()
 
     def handle_response(self, command, prompt):
         if not self.offline_mode:
