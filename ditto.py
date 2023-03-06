@@ -355,17 +355,18 @@ class Assistant:
  
 
     def tts(self, reply):
-        try:
-            if UNIX:
-                os.system('amixer -q set Master ' + str(self.speech_volume)+'%')
-            # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
-            if not self.speech.offline_mode:
-                self.google.gtts(reply)
-            else:
-                self.speech_engine.say(reply)
-                self.speech_engine.runAndWait()
-        except BaseException as e:
-            print(e)
+        if not self.speech.from_gui: # only read reply aloud if command / prompt was spoken by user
+            try:
+                if UNIX:
+                    os.system('amixer -q set Master ' + str(self.speech_volume)+'%')
+                # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
+                if not self.speech.offline_mode:
+                    self.google.gtts(reply)
+                else:
+                    self.speech_engine.say(reply)
+                    self.speech_engine.runAndWait()
+            except BaseException as e:
+                print(e)
     
 
 if __name__ == "__main__":

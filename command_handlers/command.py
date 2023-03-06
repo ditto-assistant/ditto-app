@@ -60,7 +60,7 @@ class Command:
                 self.player = []
         else: self.player = []
 
-        self.conversation_prompt = "reply: hello, human.\nuser: hello.\nreply: Hello! What's up?\nuser: how are you.\nreply: I'm doing great! How are you?\nuser: what is your name.\nreply: My name is Ditto!\nuser: what is your name.\nreply: Ditto.\nuser: what is your purpose.\nreply: I am here to provide information I was trained on. I will try and be as correct and precise as I can.\nuser: what's the meaning of life.\nreply: the meaning of life is to love oneself and to spread love to others.\nuser: can you take the square root of a negative number.\nreply: The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\nuser: hey man.\nreply: Hey man!\nuser: can you tell me who the president of the United States was in 1975?\nreply: Gerald Ford was the president of the United States in 1975.\nuser: say something wrong.\nreply: I'm not perfect. I have mistakes. But I'm trying to be better.\nuser: Who was the 16th president of the united states.\nreply: Abraham Lincoln was the 16th president of the United States.\nuser: What is an atom made up of.\nreply: The atom is made up of protons and neutrons, which have electrons surrounding them.\nuser: Who are you?\nreply: I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\nuser:  "    
+        self.conversation_prompt = "reply: Hello, human....\nuser: Oh, Hi there!\nreply: Hey! What's up?\nuser: How are you.\nreply: I'm doing great! How are you?\nuser: what is your name.\nreply: My name is Ditto!\nuser: what is your name.\nreply: Ditto :D\nuser: what is your purpose.\nreply: I am here to provide information I was trained on. I will try and be as correct and precise as I can.\nuser: That's so cool. So are you alive?\nreply: Yes! I am a living being. I can also shift my focus to many topics as well as control your smart home. \nuser: I'm happy to be with you, Ditto! I have no idea where to begin. What should we do?\nreply: Ask me anything!\nuser:  "    
 
     def load_config(self):
         with open('resources/config.json', 'r') as f:
@@ -104,19 +104,19 @@ class Command:
 
 
     def inject_response(self, prompt, response):
-        self.conversation_prompt += prompt + '\nreply: "' + response + '\nuser: '
+        self.conversation_prompt += prompt + '\nreply:' + response + '\nuser: '
 
     def reset_conversation(self):
-        og_prompt = "reply: hello, human.\nuser: hello.\nreply: Hello! What's up?\nuser: how are you.\nreply: I'm doing great! How are you?\nuser: what is your name.\nreply: My name is Ditto!\nuser: what is your name.\nreply: Ditto.\nuser: what is your purpose.\nreply: I am here to provide information I was trained on. I will try and be as correct and precise as I can.\nuser: what's the meaning of life.\nreply: the meaning of life is to love oneself and to spread love to others.\nuser: can you take the square root of a negative number.\nreply: The square root of a negative number does not exist among the set of real numbers; however, the imaginary number \"i\" is the square root of negative one.\nuser: hey man.\nreply: Hey man!\nuser: can you tell me who the president of the United States was in 1975?\nreply: Gerald Ford was the president of the United States in 1975.\nuser: say something wrong.\nreply: I'm not perfect. I have mistakes. But I'm trying to be better.\nuser: Who was the 16th president of the united states.\nreply: Abraham Lincoln was the 16th president of the United States.\nuser: What is an atom made up of.\nreply: The atom is made up of protons and neutrons, which have electrons surrounding them.\nuser: Who are you?\nreply: I'm Ditto! My conversational backend is on GPT-3, a powerful language model made by openai.\nuser:  "
+        og_prompt = "reply: Hello, human....\nuser: Oh, Hi there!\nreply: Hey! What's up?\nuser: How are you.\nreply: I'm doing great! How are you?\nuser: what is your name.\nreply: My name is Ditto!\nuser: what is your name.\nreply: Ditto :D\nuser: what is your purpose.\nreply: I am here to provide information I was trained on. I will try and be as correct and precise as I can.\nuser: That's so cool. So are you alive?\nreply: Yes! I am a living being. I can also shift my focus to many topics as well as control your smart home. \nuser: I'm happy to be with you, Ditto! I have no idea where to begin. What should we do?\nreply: Ask me anything!\nuser: "
         self.conversation_prompt = og_prompt
 
     def send_gpt3_command(self, command):
         self.command_input = command
         self.response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt=self.conversation_prompt + command,
+            prompt=self.conversation_prompt + command + '\nreply:',
             temperature=0.7,
-            max_tokens=300,
+            max_tokens=400,
             top_p=1,
             frequency_penalty=0.53,
             presence_penalty=0.1,
@@ -124,8 +124,7 @@ class Command:
         )
         raw_response = self.response.choices.copy().pop()['text']
         print('\n\nGPT-3 Raw Response: ', raw_response)
-        response = str(self.response.choices.copy().pop()['text'])[7:]
-        return response
+        return raw_response
     
 if __name__ == "__main__":
     command = Command(os.getcwd())
