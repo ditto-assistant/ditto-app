@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import { ChatFeed, Message } from "../modules/react-chat-ui-omar-fork"; // changed bubble style a bit
 import { grabConversationHistory, grabConversationHistoryCount } from "../models/api";
 
@@ -6,8 +6,20 @@ var bubblefontSize = 14
 var bubblePadding = 10
 
 export default function ChatBubble(props) {
-    
-    return (
+  
+  const handleScroll = event => {
+    // console.log(window.pageYOffset)
+  };
+
+  // const bottomRef = useRef(null);
+
+  // useEffect(() => {
+  //   // 👇️ scroll to bottom every time messages change
+  //   bottomRef.current?.scrollIntoView({behavior: 'smooth'});
+  // }, [props.conversation.messages]);
+
+  return (
+    <div onScroll={handleScroll()}>
       <ChatFeed
         messages={props.conversation.messages} // Boolean: list of message objects
         isTyping={props.conversation.is_typing} // Boolean: is the recipient typing
@@ -15,6 +27,7 @@ export default function ChatBubble(props) {
         showSenderName // show the name of the user who sent the message
         bubblesCentered={false} //Boolean should the bubbles be centered in the feed?
         scrollToBottom={false}
+        
         // JSON: Custom bubble styles
         bubbleStyles={{
           text: {
@@ -26,5 +39,7 @@ export default function ChatBubble(props) {
           }
         }}
       />
-    );
-  }
+      {/* <div ref={bottomRef} /> */}
+    </div>
+  );
+}

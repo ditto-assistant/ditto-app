@@ -1,5 +1,5 @@
 import "./App.css";
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import { grabConversationHistory, grabConversationHistoryCount } from "../models/api";
 import { ChatFeed, Message } from "../modules/react-chat-ui-omar-fork/lib";
 import { status } from "../models/Status";
@@ -32,6 +32,8 @@ export default function HomeScreen () {
     const handleMicPress = () => {
 
     }
+
+    const bottomRef = useRef(null);
 
     let bubblefontSize = 14
     let bubblePadding = 10
@@ -67,7 +69,7 @@ export default function HomeScreen () {
         if (save) {handleSaveConversation(hist)}
         let prompts = hist.prompts
         let responses = hist.responses
-        // let newConversation = conversation
+        let histSize = Object.keys(prompts).length + Object.keys(responses).length
         let newConversation = {
             messages: [
                 new Message({
@@ -92,10 +94,8 @@ export default function HomeScreen () {
                 message: response
                 })
             )
-        }
-        // if (newConversation.messages.length !== conversation.messages.length){
         setConversation(newConversation)
-        // }
+        }
     }
 
     useEffect(() => {
@@ -109,37 +109,25 @@ export default function HomeScreen () {
 
         const syncConversationHist = async() => {
             let hasHistCount = window.electron.store.has('histCount')
+            let serverHistCount = await grabConversationHistoryCount()
+            let localHistCount = window.electron.store.get('histCount')
             if (hasHistCount) { // If there is a local histCount variable, check if need to update from Server
-                let serverHistCount = await grabConversationHistoryCount()
-                let localHistCount = window.electron.store.get('histCount')
-                if (serverHistCount===undefined || serverHistCount === localHistCount) {
-                    let localHist = getSavedConversation()
-                    createConversation(localHist, false)
-                    if (histCount !== localHistCount){
-                        setCount(localHistCount)
-                    }
-                } else { // update state from server
-                    let hist = await grabConversationHistory()
-                    try {
-                        createConversation(hist, true)
-                        let serverHistCount = await grabConversationHistoryCount() // grab histCount from Server database
-                        if (histCount !== serverHistCount){
-                            setCount(serverHistCount)
-                        }
-                        window.electron.store.set('histCount', histCount) // store histCount locally
-                    } catch (e) {
-                        console.log(e)
-                    }
+                console.log(serverHistCount, localHistCount)
+                let localHist = getSavedConversation()
+                if (histCount !== localHistCount){
+                    setCount(localHistCount)
                 }
-            } else { // update state from server
-                let hist = await grabConversationHistory()
+                createConversation(localHist, false)
+            }
+            if (serverHistCount !== localHistCount) {
                 try {
-                    createConversation(hist, true)
-                    let serverHistCount = await grabConversationHistoryCount() // grab histCount from Server database
-                    if(histCount !== serverHistCount){
+                    let hist = await grabConversationHistory()
+                    if (histCount !== serverHistCount){
                         setCount(serverHistCount)
                     }
-                    window.electron.store.set('histCount', histCount) // store histCount locally
+                    createConversation(hist, true)
+                    window.electron.store.set('histCount', serverHistCount) // store histCount locally
+                    // console.log(serverHistCount, histCount)
                 } catch (e) {
                     console.log(e)
                 }
@@ -162,6 +150,8 @@ export default function HomeScreen () {
         
         // window.addEventListener('resize', handleResize)
 
+        
+
         const syncInterval = setInterval(async() => {
 
             try {
@@ -179,6 +169,12 @@ export default function HomeScreen () {
     }, [])
 
     const statusColor = bootStatus === 'on' ? 'green' : 'red'
+
+    useEffect(() => {
+        // 👇️ scroll to bottom every time messages change
+        bottomRef.current?.scrollIntoView({behavior: 'smooth'});
+    }, [histCount]);
+    
 
     return (
         <div className='App'>
@@ -215,10 +211,13 @@ export default function HomeScreen () {
             <Divider />
             <div className='App-body'>
                 <ChatBubbles conversation={conversation}/>
+                <div ref={bottomRef} />
             </div>
+            
             <footer className='App-footer'>
                 <SendMessage />
             </footer>
+            
         </div>
     );
 }
