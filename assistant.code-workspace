@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../nlp_server"
+		},
+		{
+			"path": "../dittoclient"
 		}
 	],
 	"settings": {}

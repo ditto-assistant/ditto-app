@@ -26,3 +26,6 @@ gevent
 flask-cors
 psutil
 plac
+tensorflow
+matplotlib
+pandas
