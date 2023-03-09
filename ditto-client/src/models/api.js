@@ -76,6 +76,7 @@ export const grabConversationHistoryCount = async() => {
     if (count !== undefined) {return count.historyCount};
   } catch (e) {
     console.error(e)
+    return undefined
   }
 }
 

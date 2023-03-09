@@ -7,19 +7,8 @@ var bubblePadding = 10
 
 export default function ChatBubble(props) {
   
-  const handleScroll = event => {
-    // console.log(window.pageYOffset)
-  };
-
-  // const bottomRef = useRef(null);
-
-  // useEffect(() => {
-  //   // 👇️ scroll to bottom every time messages change
-  //   bottomRef.current?.scrollIntoView({behavior: 'smooth'});
-  // }, [props.conversation.messages]);
-
   return (
-    <div onScroll={handleScroll()}>
+    <div>
       <ChatFeed
         messages={props.conversation.messages} // Boolean: list of message objects
         isTyping={props.conversation.is_typing} // Boolean: is the recipient typing
@@ -39,7 +28,6 @@ export default function ChatBubble(props) {
           }
         }}
       />
-      {/* <div ref={bottomRef} /> */}
     </div>
   );
 }

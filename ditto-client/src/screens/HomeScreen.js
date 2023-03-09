@@ -108,6 +108,7 @@ export default function HomeScreen () {
         }
 
         const syncConversationHist = async() => {
+
             let hasHistCount = window.electron.store.has('histCount')
             let serverHistCount = await grabConversationHistoryCount()
             let localHistCount = window.electron.store.get('histCount')
@@ -119,7 +120,7 @@ export default function HomeScreen () {
                 }
                 createConversation(localHist, false)
             }
-            if (serverHistCount !== localHistCount) {
+            if (serverHistCount !== undefined && serverHistCount !== localHistCount) {
                 try {
                     let hist = await grabConversationHistory()
                     if (histCount !== serverHistCount){
