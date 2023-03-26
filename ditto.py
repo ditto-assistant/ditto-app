@@ -121,7 +121,8 @@ class Assistant:
             if self.reply == '': self.reply = '...'
             self.tts(self.reply)
             if not self.speech.from_gui: 
-                self.skip_wake()
+                # self.skip_wake()
+                self.reset_loop()
             else:
                 self.reset_loop()
                 
