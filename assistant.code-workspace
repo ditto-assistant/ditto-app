@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../dittoclient"
+		},
+		{
+			"path": "../dalai_server"
 		}
 	],
 	"settings": {}
