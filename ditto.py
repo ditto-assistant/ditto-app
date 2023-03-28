@@ -196,11 +196,15 @@ class Assistant:
             
         elif cat == 'gesture':
             if gesture == 'like':
-                self.reply = f'[GestureNet: {gesture}]'
-                if not headless: pyautogui.press('right')
+                # self.reply = f'[GestureNet: {gesture}]'
+                self.prompt = 'turn on the lights'
+                self.reply = self.command.light_handler.handle_response(self.prompt)
+                # pyautogui.press('right')
             elif gesture == 'dislike':
-                self.reply = f'[GestureNet: {gesture}]'
-                if not headless: pyautogui.press('left')
+                # self.reply = f'[GestureNet: {gesture}]'
+                # pyautogui.press('left')
+                self.prompt = 'set the lights to sparkle'
+                self.reply = self.command.light_handler.handle_response(self.prompt)
             self.tts(self.reply)
             self.reset_loop()
         
