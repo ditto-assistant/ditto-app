@@ -67,7 +67,7 @@ class Spotify():
         except:
             self.config = json.loads('{"play_mode": "local"}')
             with open('config.json', 'w') as f:
-                f.write('{"play_mode": "local"}')
+                f.write('{"play_mode": "local", "device_name": ""}')
 
     def remote(self, command, *args):
         scope = "user-read-playback-state,user-modify-playback-state"
@@ -216,13 +216,20 @@ class Spotify():
         \nparam:
         sp: spotipy.Spotify() object
         '''
+        device_name = self.config['device_name']
         # grab device-id
         try:
             self.devices = sp.devices()
         except BaseException as e:
             self.devices = {'devices': []}
         if not self.devices['devices'] == []:
-            device_id = self.devices['devices'][0]['id'] # grab id
+            if not device_name: device_id = self.devices['devices'][0]['id'] # grab id
+            else: 
+                for device in self.devices['devices']:
+                    name = device['name']
+                    if device_name in name: 
+                        print(f'\n[Found Spotify device ID for {name}]')
+                        device_id = device['id']
             self.user_values['device-id'] = device_id
             with open(self.path+'/resources/spotify.json', 'w') as f: # store to json
                 json.dump(self.user_values, f)
