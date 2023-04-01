@@ -16,6 +16,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 import spotipy.util as util
 
+REDIRECT_URI = ''
+REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
 
 class Spotify():
     
@@ -74,7 +76,7 @@ class Spotify():
         username = self.user_values['username']
         self.auth = spotipy.SpotifyOAuth(
             scope=scope,
-            redirect_uri='http://127.0.0.1:8124',
+            redirect_uri=REDIRECT_URI,
             client_id=self.user_values['client-id'],
             client_secret=self.user_values['client-secret'],
         )
@@ -84,7 +86,7 @@ class Spotify():
             username=username, scope=scope, 
             client_id=self.user_values['client-id'],
             client_secret=self.user_values['client-secret'],
-            redirect_uri='http://127.0.0.1:8124'
+            redirect_uri=REDIRECT_URI
         )
         try:
             if command == "resume":
@@ -114,7 +116,7 @@ class Spotify():
             
             self.auth = spotipy.SpotifyOAuth(
                 scope=scope,
-                redirect_uri='http://127.0.0.1:8124',
+                redirect_uri=REDIRECT_URI,
                 client_id=self.user_values['client-id'],
                 client_secret=self.user_values['client-secret'],
             )
@@ -124,7 +126,7 @@ class Spotify():
                 username=username, scope=scope, 
                 client_id=self.user_values['client-id'],
                 client_secret=self.user_values['client-secret'],
-                redirect_uri='http://127.0.0.1:8124'
+                redirect_uri=REDIRECT_URI
             )
             self.grab_active_id(sp) # update device-id with latest active player
             if context_mode=='playlist':
@@ -180,7 +182,7 @@ class Spotify():
         
         self.auth = spotipy.SpotifyOAuth(
             scope=scope,
-            redirect_uri='http://127.0.0.1:8124',
+            redirect_uri=REDIRECT_URI,
             client_id=self.user_values['client-id'],
             client_secret=self.user_values['client-secret'],
         )
@@ -190,7 +192,7 @@ class Spotify():
             username=username, scope=scope, 
             client_id=self.user_values['client-id'],
             client_secret=self.user_values['client-secret'],
-            redirect_uri='http://127.0.0.1:8124'
+            redirect_uri=REDIRECT_URI
         )
         # grab top songs
         ranges = ['short_term', 'medium_term', 'long_term']
