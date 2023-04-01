@@ -24,13 +24,8 @@ class Spotify():
         self.path = path 
         self.load_configs(path)
         self.play_mode = self.config['play_mode']
-        if self.play_mode == 'local':
-            webbrowser.open('https://open.spotify.com/')
-            self.auth = spotipy.SpotifyOAuth(
-                redirect_uri='http://127.0.0.1:8124'
-            )
-            sp = spotipy.Spotify(auth_manager=self.auth)
-            self.grab_active_id(sp)
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=False))
+        self.grab_active_id(sp)
         if not self.user_values['client-id'] == 'ID': # only run if configured correctly
             # pre-save user data
             self.get_user_details()
@@ -222,7 +217,10 @@ class Spotify():
         sp: spotipy.Spotify() object
         '''
         # grab device-id
-        self.devices = sp.devices()
+        try:
+            self.devices = sp.devices()
+        except BaseException as e:
+            self.devices = {'devices': []}
         if not self.devices['devices'] == []:
             device_id = self.devices['devices'][0]['id'] # grab id
             self.user_values['device-id'] = device_id
