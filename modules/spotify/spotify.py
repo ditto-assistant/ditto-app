@@ -74,20 +74,20 @@ class Spotify():
     def remote(self, command, *args):
         scope = "user-read-playback-state,user-modify-playback-state"
         username = self.user_values['username']
-        self.auth = spotipy.SpotifyOAuth(
-            scope=scope,
-            redirect_uri=REDIRECT_URI,
-            client_id=self.user_values['client-id'],
-            client_secret=self.user_values['client-secret'],
-        )
-        sp = spotipy.Spotify(auth_manager=self.auth)
-        self.token = util.prompt_for_user_token(
-            oauth_manager= self.auth,
-            username=username, scope=scope, 
-            client_id=self.user_values['client-id'],
-            client_secret=self.user_values['client-secret'],
-            redirect_uri=REDIRECT_URI
-        )
+        # self.auth = spotipy.SpotifyOAuth(
+        #     scope=scope,
+        #     redirect_uri=REDIRECT_URI,
+        #     client_id=self.user_values['client-id'],
+        #     client_secret=self.user_values['client-secret'],
+        # )
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=False))
+        # self.token = util.prompt_for_user_token(
+        #     oauth_manager= self.auth,
+        #     username=username, scope=scope, 
+        #     client_id=self.user_values['client-id'],
+        #     client_secret=self.user_values['client-secret'],
+        #     redirect_uri=REDIRECT_URI
+        # )
         try:
             if command == "resume":
                 sp.start_playback(self.user_values['device-id'])
@@ -114,21 +114,21 @@ class Spotify():
             scope = "user-read-playback-state,user-modify-playback-state"
             username = self.user_values['username']
             
-            self.auth = spotipy.SpotifyOAuth(
-                scope=scope,
-                redirect_uri=REDIRECT_URI,
-                client_id=self.user_values['client-id'],
-                client_secret=self.user_values['client-secret'],
-            )
-            sp = spotipy.Spotify(auth_manager=self.auth)
-            self.token = util.prompt_for_user_token(
-                oauth_manager= self.auth,
-                username=username, scope=scope, 
-                client_id=self.user_values['client-id'],
-                client_secret=self.user_values['client-secret'],
-                redirect_uri=REDIRECT_URI
-            )
-            self.grab_active_id(sp) # update device-id with latest active player
+            # self.auth = spotipy.SpotifyOAuth(
+            #     scope=scope,
+            #     redirect_uri=REDIRECT_URI,
+            #     client_id=self.user_values['client-id'],
+            #     client_secret=self.user_values['client-secret'],
+            # )
+            sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=False))
+            # self.token = util.prompt_for_user_token(
+            #     oauth_manager= self.auth,
+            #     username=username, scope=scope, 
+            #     client_id=self.user_values['client-id'],
+            #     client_secret=self.user_values['client-secret'],
+            #     redirect_uri=REDIRECT_URI
+            # )
+            # self.grab_active_id(sp) # update device-id with latest active player
             if context_mode=='playlist':
                 print('playlist mode')
                 for x in self.user_playlists:
@@ -159,12 +159,13 @@ class Spotify():
                     print('found %s by %s in top songs\n' % (song.title(), artist_song.title()))
                     return track_uri     
 
-        sp = spotipy.Spotify(
-            auth_manager=SpotifyClientCredentials(
-                client_id = self.user_values["client-id"],
-                client_secret = self.user_values["client-secret"],
-            )
-        )
+        # sp = spotipy.Spotify(
+        #     auth_manager=SpotifyClientCredentials(
+        #         client_id = self.user_values["client-id"],
+        #         client_secret = self.user_values["client-secret"],
+        #     )
+        # )
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=False))
         try:
             results = sp.search(q=artist_song, limit=30) # change limit for more results
             for idx, track in enumerate(results['tracks']['items']): 
@@ -180,20 +181,21 @@ class Spotify():
         scope = 'user-top-read, playlist-read-private, user-read-playback-state, user-modify-playback-state'
         username = self.user_values['username']
         
-        self.auth = spotipy.SpotifyOAuth(
-            scope=scope,
-            redirect_uri=REDIRECT_URI,
-            client_id=self.user_values['client-id'],
-            client_secret=self.user_values['client-secret'],
-        )
-        sp = spotipy.Spotify(auth_manager=self.auth)
-        self.token = util.prompt_for_user_token(
-            oauth_manager= self.auth,
-            username=username, scope=scope, 
-            client_id=self.user_values['client-id'],
-            client_secret=self.user_values['client-secret'],
-            redirect_uri=REDIRECT_URI
-        )
+        # self.auth = spotipy.SpotifyOAuth(
+        #     scope=scope,
+        #     redirect_uri=REDIRECT_URI,
+        #     client_id=self.user_values['client-id'],
+        #     client_secret=self.user_values['client-secret'],
+        # )
+        # sp = spotipy.Spotify(auth_manager=self.auth)
+        # self.token = util.prompt_for_user_token(
+        #     oauth_manager= self.auth,
+        #     username=username, scope=scope, 
+        #     client_id=self.user_values['client-id'],
+        #     client_secret=self.user_values['client-secret'],
+        #     redirect_uri=REDIRECT_URI
+        # )
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=False))
         # grab top songs
         ranges = ['short_term', 'medium_term', 'long_term']
         self.top_songs = []
