@@ -181,14 +181,13 @@ class Spotify():
         scope = 'user-top-read, playlist-read-private, user-read-playback-state, user-modify-playback-state'
         username = self.user_values['username']
         
-        # self.auth = spotipy.SpotifyOAuth(
-        #     scope=scope,
-        #     redirect_uri=REDIRECT_URI,
-        #     client_id=self.user_values['client-id'],
-        #     client_secret=self.user_values['client-secret'],
-        # )
-        # sp = spotipy.Spotify(auth_manager=self.auth)
-        self.auth = SpotifyOAuth(open_browser=False)
+        self.auth = spotipy.SpotifyOAuth(
+            scope=scope,
+            open_browser=False,
+            redirect_uri=REDIRECT_URI,
+            client_id=self.user_values['client-id'],
+            client_secret=self.user_values['client-secret'],
+        )
         sp = spotipy.Spotify(auth_manager=self.auth)
         self.token = util.prompt_for_user_token(
             oauth_manager= self.auth,
