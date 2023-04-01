@@ -188,14 +188,16 @@ class Spotify():
         #     client_secret=self.user_values['client-secret'],
         # )
         # sp = spotipy.Spotify(auth_manager=self.auth)
-        # self.token = util.prompt_for_user_token(
-        #     oauth_manager= self.auth,
-        #     username=username, scope=scope, 
-        #     client_id=self.user_values['client-id'],
-        #     client_secret=self.user_values['client-secret'],
-        #     redirect_uri=REDIRECT_URI
-        # )
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=False))
+        self.auth = SpotifyOAuth(open_browser=False)
+        sp = spotipy.Spotify(auth_manager=self.auth)
+        self.token = util.prompt_for_user_token(
+            oauth_manager= self.auth,
+            username=username, scope=scope, 
+            client_id=self.user_values['client-id'],
+            client_secret=self.user_values['client-secret'],
+            redirect_uri=REDIRECT_URI
+        )
+
         # grab top songs
         ranges = ['short_term', 'medium_term', 'long_term']
         self.top_songs = []
