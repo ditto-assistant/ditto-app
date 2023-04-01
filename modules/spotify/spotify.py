@@ -81,6 +81,7 @@ class Spotify():
             client_secret=self.user_values['client-secret'],
             open_browser=False
         )
+        sp = spotipy.Spotify(auth_manager=self.auth)
         self.token = util.prompt_for_user_token(
             oauth_manager= self.auth,
             username=username, scope=scope, 
@@ -121,6 +122,7 @@ class Spotify():
                 client_secret=self.user_values['client-secret'],
                 open_browser=False
             )
+            sp = spotipy.Spotify(auth_manager=self.auth)
             self.token = util.prompt_for_user_token(
                 oauth_manager= self.auth,
                 username=username, scope=scope, 
