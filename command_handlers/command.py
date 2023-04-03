@@ -97,7 +97,8 @@ class Command:
             if name.lower() in x[0].lower():
                 uri = x[1]
         if uri=='':
-            return -1
+            uri = self.player.get_uri_spotify(playlist=name)
+            if uri == -1: return -1
         play = self.player.play_spotify(uri)
         if play: return 1
         else: return -1
