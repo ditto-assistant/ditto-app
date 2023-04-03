@@ -138,18 +138,19 @@ class Spotify():
                         offset_max = x[2] # grab tack count
                         shuffle_val = random.randint(0,offset_max)
                     else:
-                        offset_max = 0
+                        shuffle_val = 10
                 sp.start_playback(context_uri=uri, offset={"position":shuffle_val}, device_id=self.user_values["device-id"])
             if context_mode=='song':
                 sp.start_playback(uris=[uri], device_id=self.user_values["device-id"])
             return 1
-        except:
+        except BaseException as e:
             print("invalid uri: %s" % uri)
+            print(e)
             return -1
 
-    def get_uri_spotify(self, artist_song, song=None):
+    def get_uri_spotify(self, artist_song=None, song=None, playlist=None):
         
-        if self.top_songs:
+        if artist_song and self.top_songs:
             for track in self.top_songs:
                 track_song = track[0].lower()
                 track_artist = track[1].lower()
@@ -168,14 +169,45 @@ class Spotify():
             )
         )
         try:
-            results = sp.search(q=artist_song, limit=30) # change limit for more results
-            for idx, track in enumerate(results['tracks']['items']): 
-                print(track)
-                if song.lower() in track['name'].lower():
-                    return track['external_urls']['spotify']
-            return -1
-        except:
+            if artist_song: 
+                results = sp.search(q=artist_song, limit=30, type='artist,track') # change limit for more results
+                tracks = results['tracks']['items']
+                ret_track = ''
+                for idx, track in enumerate(tracks): 
+                    if artist_song.lower() in track['name'].lower():
+                        ret_track = track['external_urls']['spotify']
+                if ret_track: return ret_track
+                else: 
+                    random.shuffle(tracks)
+                    ret_track = tracks[0]['external_urls']['spotify']
+                    return ret_track
+            elif song: 
+                results = sp.search(q=song, type='track')
+                tracks = results['tracks']['items']
+                for idx, track in enumerate(tracks): 
+                    if song.lower() in track['name'].lower():
+                        ret_track = track['external_urls']['spotify']
+                if ret_track: return ret_track
+                else: 
+                    random.shuffle(tracks)
+                    ret_track = tracks[0]['external_urls']['spotify']
+                    return ret_track
+            elif playlist: 
+                results = sp.search(q=playlist, type='playlist')
+                tracks = results['playlists']['items']
+                for idx, track in enumerate(tracks): 
+                    if playlist.lower() in track['name'].lower():
+                        ret_track = track['uri']
+                if ret_track: return ret_track
+                else: 
+                    random.shuffle(tracks)
+                    ret_track = tracks[0]['uri']
+                    return ret_track
+            else: return -1 # nothning found or all enteties empty from NER
+            
+        except BaseException as e:
             print('invalid search')
+            print(e)
             return -1
     
     def get_user_details(self):
