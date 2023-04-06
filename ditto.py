@@ -68,14 +68,17 @@ class Assistant:
 
     def load_config(self):
         config_path = 'resources/config.json'
-        default_config = '{"microphone": "", "nlp-server": "localhost", "volume": 70, "teensy_path": ""}'
-        try:
+        default_config_path = 'resources/template_config.json'
+        if 'config.json' in os.listdir('resources'):
             with open(config_path, 'r') as f:
                 self.config = json.load(f)
-        except:
-            self.config = json.loads(default_config)
+        else:
+            with open(default_config_path, 'r') as f:
+                self.config = json.load(f)
             with open(config_path, 'w') as f:
-                f.write(default_config)
+                json.dump(self.config, f, indent=4)
+            print('\nRun configgui.py or fill out generated resources/config.json ...\n')
+            exit()
         self.nlp_ip = self.config['nlp-server']
 
     def reset_loop(self):
