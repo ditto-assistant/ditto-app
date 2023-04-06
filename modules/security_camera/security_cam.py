@@ -9,8 +9,8 @@ class SecurityCam:
         self.__load_config()
 
     def __load_config(self):
-        if not 'config' in os.listdir(self.path):
-            with open('config.json', 'w') as f:
+        if not 'config.json' in os.listdir(self.path):
+            with open(self.path+'config.json', 'w') as f:
                 template = '{"camera_name": "http://local_ip:42052"}'
                 f.write(template)
         with open(self.path+'config.json', 'r') as f:
