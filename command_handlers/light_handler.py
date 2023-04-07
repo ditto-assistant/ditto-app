@@ -51,13 +51,14 @@ class LightHandler():
             print(e)
 
     def set_light_brightness(self, value, light_name=None):
+        light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # led strip brightness
             pass
         else: # all other lights
             self.home_assistant.send_google_sdk_command(f'set {light_name} brightness to {value}')
 
     def toggle_light_color(self, color, light_name=None):            
-
+        light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # LED Light Strip handler
             self.toggle_light(color)
 
@@ -65,7 +66,7 @@ class LightHandler():
             self.home_assistant.send_google_sdk_command(f'set {light_name} to {color}')
 
     def toggle_light_power(self, mode, light_name=None):
-            
+        light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # LED Light handler
             self.toggle_light(mode)
         if light_name=='all lights': # turn on/off leds too
