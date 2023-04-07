@@ -46,6 +46,14 @@ class JsonEditorGUI:
                             print('SETTING OPENAI ENV VARIABLE')
                             os.environ[key] = self.json_data[i][key]
                             print("done")
+                        elif 'HOME_ASSISTANT_API_KEY' in str(key):
+                            print('SETTING HOME_ASSISTANT_API_KEY ENV VARIABLE')
+                            os.environ[key] = self.json_data[i][key]
+                            print("done")
+                        elif 'HOME_ASSISTANT_API_URL' in str(key):
+                            print('SETTING HOME_ASSISTANT_API_URL ENV VARIABLE')
+                            os.environ[key] = self.json_data[i][key]
+                            print("done")
                             
                 json.dump(self.json_data[i], f, indent=4)
         

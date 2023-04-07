@@ -7,6 +7,8 @@ import lifxlan
 
 import serial
 
+from modules.home_assistant.home_assistant import HomeAssistant
+
 
 class LightHandler():
 
@@ -30,6 +32,8 @@ class LightHandler():
         self.grab_lifx_lights()
         self.light_status = True
         self.light_mode = 'on'
+        self.home_assistant = HomeAssistant()
+
     
     def prompt_ner_light(self, prompt):
         base_url = f"http://{self.nlp_ip}:32032/ner/"
@@ -47,34 +51,27 @@ class LightHandler():
             print(e)
 
     def set_light_brightness(self, value, light_name=None):
-        if light_name==None:
-            for light in self.lifx_lights:
-                light.set_brightness(value)
-
-        else:
-            for light in self.lifx_lights:
-                if light_name.lower() in light.get_label().lower().strip():
-                    light.set_brightness(value)
+        if light_name=='lights' or light_name=='light': # led strip brightness
+            pass
+        else: # all other lights
+            self.home_assistant.send_google_sdk_command(f'set {light_name} brightness to {value}')
 
     def toggle_light_color(self, color, light_name=None):            
 
-        if light_name=='lights': # LED Light Strip handler
+        if light_name=='lights' or light_name=='light': # LED Light Strip handler
             self.toggle_light(color)
 
-        else:
-            for light in self.lifx_lights:
-                if light_name.lower() in light.get_label().lower().strip():
-                    if light.supports_color():
-                        light.set_color(self.lifx_color_map[color])
+        else: # all other lights
+            self.home_assistant.send_google_sdk_command(f'set {light_name} to {color}')
 
     def toggle_light_power(self, mode, light_name=None):
             
-        if light_name=='lights': # LED Light handler
+        if light_name=='lights' or light_name=='light': # LED Light handler
             self.toggle_light(mode)
-        else:
-            for light in self.lifx_lights:
-                if light_name.lower() in light.get_label().lower():
-                    light.set_power(mode)
+        if light_name=='all lights': # turn on/off leds too
+            self.toggle_light(mode)
+        else: # all other lights
+            self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
 
     def toggle_light(self, mode):
         mode = mode.lower()
