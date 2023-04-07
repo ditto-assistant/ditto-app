@@ -17,3 +17,4 @@ ditto.db
 config.json
 .vscode/
 ditto.exe
+!resources/template_config.json
