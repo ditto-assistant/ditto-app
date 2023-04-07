@@ -69,11 +69,12 @@ class LightHandler():
         light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # LED Light handler
             self.toggle_light(mode)
+        else: # all other lights
+            self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
         if light_name=='all lights': # turn on/off leds too
             self.toggle_light(mode)
             self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
-        else: # all other lights
-            self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
+        
 
     def toggle_light(self, mode):
         mode = mode.lower()
