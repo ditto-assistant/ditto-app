@@ -70,6 +70,7 @@ class LightHandler():
             self.toggle_light(mode)
         if light_name=='all lights': # turn on/off leds too
             self.toggle_light(mode)
+            self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
         else: # all other lights
             self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
 
@@ -151,6 +152,7 @@ class LightHandler():
                 else:
                     self.toggle_light_power(command, lightname)
                     reply = f'[Turning {command} the {lightname}]' 
+                    if lightname == 'all lights': reply = reply.replace('the ','')
             
             elif color and lightname:
                 self.toggle_light_color(color, lightname)
