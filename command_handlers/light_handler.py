@@ -15,21 +15,6 @@ class LightHandler():
     def __init__(self, config):
         self.config = config
         self.nlp_ip = config['nlp-server']
-        self.val_map = np.linspace(0, 65535, 10).tolist()
-        self.lifx_color_map = {
-            "red" : lifxlan.RED,
-            "orange": lifxlan.ORANGE,
-            "yellow": lifxlan.YELLOW,
-            "green" : lifxlan.GREEN,
-            "blue" : lifxlan.BLUE,
-            "purple" : lifxlan.PURPLE,
-            "blue" : lifxlan.BLUE,
-            "pink" : lifxlan.PINK,
-            "white" : lifxlan.WHITE,
-            "warm white" : lifxlan.WARM_WHITE,
-            "cold white" : lifxlan.COLD_WHITE
-        }
-        self.grab_lifx_lights()
         self.light_status = True
         self.light_mode = 'on'
         self.home_assistant = HomeAssistant()
@@ -39,16 +24,6 @@ class LightHandler():
         base_url = f"http://{self.nlp_ip}:32032/ner/"
         response = requests.post(base_url, params={"ner-light": prompt})
         return response.content.decode()
-
-    def grab_lifx_lights(self):
-        try:
-            self.lifx_lights = []
-            lights = lifxlan.LifxLAN().get_lights()
-            for light in lights:
-                self.lifx_lights.append(light)
-        
-        except BaseException as e:
-            print(e)
 
     def set_light_brightness(self, value, light_name=None):
         light_name = light_name.strip()
@@ -162,11 +137,8 @@ class LightHandler():
             
             elif brightness and lightname:
                 if "%" in brightness:
-                    val = int(brightness.replace("%","")) / 10
-                    val_scale = self.val_map[val]
-                else:
-                    val_scale = self.val_map[int(brightness)]
-                self.set_light_brightness(val_scale, lightname)
+                    brightness = int(brightness.replace("%","")) 
+                self.set_light_brightness(int(brightness), lightname)
                 reply = f"[Setting {lightname}'s brightness to {brightness}]"
 
                                                     
@@ -174,7 +146,6 @@ class LightHandler():
         except BaseException as e:
             print(e)
             reply = '[Light not found or invalid command]'
-            self.grab_lifx_lights()
                     
         print(reply+'\n')
 

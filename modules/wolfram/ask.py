@@ -19,7 +19,7 @@ class Wolfram:
         self.load_key()
 
     def load_key(self):
-        if not 'key' in os.listdir(self.path):
+        if not 'key.json' in os.listdir(self.path):
             with open(self.path+"key.json", "w") as f:
                 f.write('{"key": "API_KEY"}')
         with open(self.path+"key.json", "r") as f:

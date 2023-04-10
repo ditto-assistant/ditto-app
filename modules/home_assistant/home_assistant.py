@@ -1,10 +1,10 @@
-import homeassistant_api
 import os
 
 class HomeAssistant:
     
     def __init__(self):
         try:
+            import homeassistant_api
             self.client = homeassistant_api.Client(
                 str(os.environ['HOME_ASSISTANT_API_URL']),
                 str(os.environ['HOME_ASSISTANT_API_KEY'])

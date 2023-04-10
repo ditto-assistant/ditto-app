@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../dalai_server"
+		},
+		{
+			"path": "../security-camera"
 		}
 	],
 	"settings": {}

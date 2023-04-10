@@ -10,6 +10,7 @@ class JsonEditorGUI:
         self.file_paths = ['resources/config.json', 
                            'modules/spotify/resources/spotify.json',
                            'modules/security_camera/config.json',
+                           'modules/wolfram/key.json'
                            ]
         self.json_data = []
         self.json_fields = []
