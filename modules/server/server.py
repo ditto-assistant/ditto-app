@@ -62,6 +62,19 @@ def get_conversation_history():
         return json.dumps(response)
     return create_response_arrays(prompts), create_response_arrays(responses)
 
+def activate_reset_conversation():
+    SQL = sqlite3.connect("ditto.db")
+    cur = SQL.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
+    SQL.commit()
+    cur.execute("INSERT INTO ditto_requests VALUES('resetConversation', 'none')")
+    SQL.commit()
+    cur.execute("DELETE FROM prompts")
+    cur.execute("DELETE FROM responses")
+    SQL.commit()
+    SQL.close()
+
+
 # making requests to the OmniSynth instance
 @app.route("/ditto/", methods=['POST', 'GET'])
 def ditto_handler():
@@ -75,6 +88,10 @@ def ditto_handler():
                 prompt = requests['prompt']
                 actiavte_inject_prompt(prompt)
                 return '{"prompt": "%s"}' % prompt
+        
+            if 'resetConversation' in requests:
+                activate_reset_conversation()
+                return '{"resetConversation": "True"}'
 
         elif request.method == "GET":
 

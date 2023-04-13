@@ -17,4 +17,5 @@ ditto.db
 config.json
 .vscode/
 ditto.exe
+gui.bat
 !resources/template_config.json

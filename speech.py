@@ -79,6 +79,7 @@ class Speech:
         self.from_gui = False # used in ditto.py to handle loop differently
 
         self.gesture_activation = False
+        self.reset_conversation = False
 
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
@@ -91,39 +92,45 @@ class Speech:
         try:
             if activation_mode and self.skip_wake == False:
 
-                # picovoice method
-                # self.pico = pico_wake(os.getcwd())
-                # self.speaker_mic_timeout_handler(300)
-                # self.pico.run() # moves to next line of code when "Hey Ditto" detected
                 wake = self.heyditto.listen_for_name()
-                # if self.pico.inject_prompt: 
                 if self.heyditto.inject_prompt:
                     self.inject = True
-                    # self.pico.inject_prompt = False
                     self.heyditto.inject_prompt = False
-                    self.from_gui = True
-                # if self.pico.gesture_activation:
+                    self.from_gui = True # turn off activation noise
+
                 if self.heyditto.gesture_activation:
                     self.gesture_activation = True
-                    # self.gesture = self.pico.gesture
                     self.gesture = self.heyditto.gesture
-                if wake: # set to 0 in timer if idle reboot
+
+                if self.heyditto.reset_conversation:
+                    self.reset_conversation = True
+                    self.from_gui = True # turn off activation noise
+    
+                if wake: 
                     self.activation.activate = True
                     self.recording = False
                     if not headless:
-                        pyautogui.press('ctrl') # turn display on if asleep
+                        pyautogui.press('ctrl') # turns display on if asleep
 
             else:
                 if not self.comm_timer_mode and activation_mode: 
                     print('\nidle...\n')
                 else:
-                    self.skip_wake = False
+                    self.skip_wake = False # set back to false
+
                     if self.gesture_activation:
+                        self.gesture_activation = False # set back to false
                         self.from_gui = True # use from gui ditto loop to avoid accidental conversation loop
                         if self.gesture == 'palm':
                             self.text = self.google_instance.grab_prompt()
                         else:
                             self.text = f'GestureNet: {self.gesture}'
+
+                    if self.reset_conversation:
+                        self.reset_conversation = False # set back to false
+                        self.from_gui = True # use from gui ditto loop to avoid accidental conversation loop
+                        self.text = f'resetConversation'
+
                     elif self.inject: 
                         self.inject = False
                         # self.text = self.pico.prompt
@@ -131,6 +138,7 @@ class Speech:
                         # self.pico.prompt = ""
                         self.heyditto.prompt = ""
                         self.from_gui = True
+
                     else:
                         if not self.offline_mode:
                             self.text = self.google_instance.grab_prompt()

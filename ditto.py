@@ -57,8 +57,7 @@ class Assistant:
         self.reply = ""
         self.activation_mode = True # If true then idle and listening for name
 
-        self.conversation_timer = 0 # used to handle short term memory during conversation
-        self.conv_timer_mode = False # used to trigger the resetting of prompt (context)
+        self.reset_conversation = False # used to skip writing reset commands to DB
 
         self.skip_name = False # used to skip name (conversation app)
 
@@ -94,7 +93,9 @@ class Assistant:
 
     def play_sound(self, sound='off'):
         print(f'Gui Mode {self.speech.from_gui}')
-        if not self.speech.from_gui:
+        if self.speech.from_gui: return
+        elif self.reset_conversation: return 
+        else:
             pygame.mixer.init()
             pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
             pygame.mixer.music.play()
@@ -105,7 +106,6 @@ class Assistant:
         '''
         For applications that require looping, we can skip wake.
         '''
-        self.conv_timer.cancel() # reset conversation cooldown (turns on automatically on loop)
         self.speech.activation.activate = True # skip wake-up sequence (name is already called)
         self.speech.skip_wake = True
         self.command_timer = 0 # reset command timer 
@@ -153,6 +153,10 @@ class Assistant:
             sub_cat = 'none'
             action = 'none'
             gesture = self.speech.gesture
+        elif 'resetConversation' in self.prompt:
+            cat = 'reset'
+            sub_cat = 'none'
+            action = 'none'
         else:
             # get intent from offline npl module 
             self.offline_response = json.loads(self.prompt_intent(self.prompt))
@@ -162,7 +166,6 @@ class Assistant:
 
         print('\n\n')
         print(cat, sub_cat, action)
-        print('\n\n')
 
         # send prompt to application / category 
         if  cat == 'lights':
@@ -248,10 +251,19 @@ class Assistant:
 
             self.conversation_app(action)
 
+        elif cat == 'reset':
+            self.reply = '[Resetting Conversation...]'
+            self.command.reset_conversation()
+            self.reset_loop()
+
         self.write_response_to_db() # log self.reply
 
     def write_response_to_db(self):
         if not self.reply: self.reply = '[empty]'
+        if self.reset_conversation:
+            self.reset_conversation = False # set back to False
+            self.reply = ''
+            return
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR)")
@@ -262,6 +274,9 @@ class Assistant:
         self.reply = '' # reset for next loop
 
     def write_prompt_to_db(self):
+        if self.reset_conversation:
+            self.reply = ''
+            return
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR)")
@@ -287,6 +302,8 @@ class Assistant:
         self.activation_mode = True
         self.speech.record_audio(activation_mode=self.activation_mode) # record audio and listen for name
         if self.speech.activation.activate: # name has been spoken
+
+            if self.speech.reset_conversation: self.reset_conversation = True
             self.play_sound('on')
             self.speaker_timer = 0 # reset speaker + mic timer
 
@@ -307,10 +324,6 @@ class Assistant:
                 print("Q: %s\n" % self.speech.activation.text)
                 self.speech.activation.activate = False
                 self.speech.activation.text = ""
-
-                self.conv_timer_mode = True # turn on timer
-                self.conversation_timer = 0
-                self.conversation_timeout_handler(15) # executes every n "seconds" (used to handle short term mem)
 
                 ## enter application handler ## (main loop)
                 # while not self.activation_mode:
@@ -345,21 +358,6 @@ class Assistant:
             self.comm_timer_mode = False # turn off timer
             self.reset_loop()
             self.speech.comm_timer_mode = False # send to speech submodule for handling 
-
-        
-    def conversation_timeout_handler(self, timeout):
-        # print(self.command.conversation_prompt[-30:])
-        self.conv_timer = Timer(timeout, self.conversation_timeout_handler, [timeout])
-        self.conv_timer.start()
-        if self.conv_timer_mode: 
-            self.conversation_timer += 1
-            # print ("conversation counter: %d" % self.conversation_timer)
-        if self.conversation_timer == timeout:
-            self.conversation_timer = 0
-            print('[conversation timer reset]\n\nidle...') 
-            self.command.reset_conversation() # reset conversation prompt 
-            self.conv_timer.cancel()
-            self.conv_timer_mode = False # turn off timer
  
 
     def tts(self, reply):
