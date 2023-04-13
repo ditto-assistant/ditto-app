@@ -99,6 +99,18 @@ export const grabStatus = async() => {
 }
 
 /**
+ * Resets conversation history.
+ */
+export const resetConversation = async() => {
+  try {
+    await sendRequest('POST', 'ditto', {"resetConversation": 1})
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+
+/**
  * Send a prompt to Ditto.
  */
 export const sendPrompt = async(prompt) => {

@@ -3,7 +3,7 @@ import React, {useState, useEffect, useRef} from "react";
 import { grabConversationHistory, grabConversationHistoryCount } from "../models/api";
 import { ChatFeed, Message } from "../modules/react-chat-ui-omar-fork/lib";
 import { status } from "../models/Status";
-import { grabStatus } from "../models/api";
+import { grabStatus, resetConversation } from "../models/api";
 import Divider from '@mui/material/Divider';
 import ChatBubbles from "../components/ChatBubbles";
 import SendMessage from "../components/SendMessage";
@@ -15,6 +15,8 @@ export default function HomeScreen () {
     const [bootStatus, setBootStatus] = useState("off");
     
     const [histCount, setCount] = useState(0)
+
+    const [reset, setReset] = useState(false)
 
     const [conversation, setConversation] = useState({
         messages: [
@@ -38,9 +40,12 @@ export default function HomeScreen () {
     let bubblefontSize = 14
     let bubblePadding = 10
 
-    /**
-     * Gets Conversation history count and updates if local count is different from Server database.
-     */
+    const resetConversationHandler = async() => {
+        console.log('Resetting conversation history...')
+        await resetConversation()
+        setReset(true)
+    }
+
 
     /**
      * Gets local electron-store cached conversation history.
@@ -69,7 +74,6 @@ export default function HomeScreen () {
         if (save) {handleSaveConversation(hist)}
         let prompts = hist.prompts
         let responses = hist.responses
-        let histSize = Object.keys(prompts).length + Object.keys(responses).length
         let newConversation = {
             messages: [
                 new Message({
@@ -78,10 +82,14 @@ export default function HomeScreen () {
                 })
             ]
         }
+        if (reset) {
+            setCount(0)
+            setConversation(newConversation)
+            setReset(false)
+        }
         for (var key in prompts) {
             let prompt = prompts[key]
             let response = responses[key]
-            // console.log(prompt, response)
             newConversation.messages.push(
                 new Message({
                 id: 0,
@@ -108,7 +116,6 @@ export default function HomeScreen () {
         }
 
         const syncConversationHist = async() => {
-
             let hasHistCount = window.electron.store.has('histCount')
             let serverHistCount = await grabConversationHistoryCount()
             let localHistCount = window.electron.store.get('histCount')
@@ -167,7 +174,7 @@ export default function HomeScreen () {
         // run when unmounted
         return () => clearInterval(syncInterval) // fixes memory leak 
 
-    }, [])
+    }, [reset])
 
     const statusColor = bootStatus === 'on' ? 'green' : 'red'
 
@@ -197,12 +204,15 @@ export default function HomeScreen () {
                     }}/>
                 }
                 <h2>Ditto Dashboard</h2>
-                <FaUndo style = {{
-                    "paddingRight": 20, 
-                    width:buttonSize, 
-                    height:buttonSize,
-                    color: 'white'
-                }}/>
+                <FaUndo 
+                    style = {{
+                        "paddingRight": 20, 
+                        width:buttonSize, 
+                        height:buttonSize,
+                        color: 'white'
+                    }}
+                    onClick={async()=>{await resetConversationHandler()}}
+                />
             </header>
             <Divider />
             <StatusBar 
