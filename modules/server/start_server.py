@@ -2,11 +2,13 @@ import sqlite3
 from server import Server
 from gevent.pywsgi import WSGIServer
 import subprocess
-import socket 
+import socket
 from flask import g
 
+
 class devnull:
-    write = lambda _: None
+    def write(_): return None
+
 
 def update_status_db(status):
     SQL = sqlite3.connect("ditto.db")
@@ -17,16 +19,17 @@ def update_status_db(status):
     SQL.commit()
     SQL.close()
 
+
 def start_server():
-    update_status_db('off') # set ditto to off (initial state)
+    update_status_db('off')  # set ditto to off (initial state)
     server = Server()
-    subprocess.Popen(['python', 'ditto.py']) # Ditto Main Loop
-    subprocess.Popen(['gui.bat'])
+    subprocess.Popen(['python', 'ditto.py'])  # Ditto Main Loop
+    # subprocess.Popen(['gui.bat'])
     # subprocess.Popen(['python', 'modules/gesture-recognition/main.py', 'production']) # Start gesture recognition sub-porocess
     http_server = WSGIServer(('0.0.0.0', 42032), server.app, log=devnull)
     print('\n\n[Server started on port 42032]\n\n')
     http_server.serve_forever()
 
+
 if __name__ == "__main__":
     start_server()
-    
