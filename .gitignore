@@ -8,14 +8,19 @@ vosk-model-small-en-us-0.15/
 *.pyc
 __pycache__
 LibCST/
-export.sh
 output.mp3
-.DS_Store
 .cache
 .cache*
 ditto.db
-config.json
 .vscode/
 ditto.exe
 gui.bat
 !resources/template_config.json
+
+# environment
+*.env
+export.sh
+config.json
+
+# Mac
+.DS_Store
