@@ -6,21 +6,21 @@ resources/*.txt
 vosk-model-small-en-us-0.15/
 *.cache
 *.pyc
-__pycache__
 LibCST/
 output.mp3
 .cache
 .cache*
 ditto.db
-.vscode/
 ditto.exe
 gui.bat
 !resources/template_config.json
 
 # environment
+.vscode/
 *.env
 export.sh
 config.json
+__pycache__
 
 # Mac
-.DS_Store
+*.DS_Store
