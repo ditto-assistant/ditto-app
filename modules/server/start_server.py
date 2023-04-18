@@ -21,7 +21,7 @@ def start_server():
     update_status_db('off') # set ditto to off (initial state)
     server = Server()
     subprocess.Popen(['python', 'ditto.py']) # Ditto Main Loop
-    # subprocess.Popen(['gui.bat'])
+    subprocess.Popen(['gui.bat'])
     # subprocess.Popen(['python', 'modules/gesture-recognition/main.py', 'production']) # Start gesture recognition sub-porocess
     http_server = WSGIServer(('0.0.0.0', 42032), server.app, log=devnull)
     print('\n\n[Server started on port 42032]\n\n')
