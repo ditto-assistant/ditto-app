@@ -26,14 +26,12 @@ class LightHandler():
         return response.content.decode()
 
     def set_light_brightness(self, value, light_name=None):
-        light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # led strip brightness
-            pass
+            self.toggle_light_brightness(value)
         else: # all other lights
             self.home_assistant.send_google_sdk_command(f'set {light_name} brightness to {value}')
 
     def toggle_light_color(self, color, light_name=None):            
-        light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # LED Light Strip handler
             self.toggle_light(color)
 
@@ -41,7 +39,6 @@ class LightHandler():
             self.home_assistant.send_google_sdk_command(f'set {light_name} to {color}')
 
     def toggle_light_power(self, mode, light_name=None):
-        light_name = light_name.strip()
         if light_name=='lights' or light_name=='light': # LED Light handler
             self.toggle_light(mode)
         else: # all other lights
@@ -50,6 +47,41 @@ class LightHandler():
             self.toggle_light(mode)
             self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
         
+    def toggle_light_brightness(self, brightness):
+        brightness = int(brightness)
+        try:
+            dev_path = self.config['teensy_path']
+            try:
+                s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
+            except:
+                print('\nFailed to connect to Teensy')
+            if brightness == 0:
+                s.write(b'\xF0')
+            elif brightness == 1:
+                s.write(b'\xF1')
+            elif brightness == 2:
+                s.write(b'\xF2')
+            elif brightness == 3:
+                s.write(b'\xF3')
+            elif brightness == 4:
+                s.write(b'\xF4')
+            elif brightness == 5:
+                s.write(b'\xF5')
+            elif brightness == 6:
+                s.write(b'\xF6')
+            elif brightness == 7:
+                s.write(b'\xF7')
+            elif brightness == 8:
+                s.write(b'\xF8')
+            elif brightness == 9:
+                s.write(b'\xF9')
+            elif brightness == 10:
+                s.write(b'\xFA')
+            else:
+                print('not a valid brightness command')
+                self.light_mode = self.light_mode
+        except BaseException as e:
+            print('\nTeensy path not found in config')
 
     def toggle_light(self, mode):
         mode = mode.lower()
@@ -57,9 +89,9 @@ class LightHandler():
             dev_path = self.config['teensy_path']
             try:
                 s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
-            except BaseException as e:
-                pass
-                # print(e)
+            except:
+                print('\nFailed to connect to Teensy')
+
             if mode == 'on':
                 self.light_status = True
                 self.light_mode = mode
@@ -108,23 +140,20 @@ class LightHandler():
                 print('not a valid light mode')
                 self.light_mode = self.light_mode
         except BaseException as e:
-            # print(e)
-            # print('no device found')
-            pass
+            print('\nTeensy path not found in config')
 
 
     def handle_response(self, prompt):
         try:
             ner_response = json.loads(self.prompt_ner_light(prompt))
-            lightname = ner_response['lightname'].strip()
+            lightname = ner_response['lightname'].strip().replace("'", '')
             brightness = ner_response['brightness'].strip()
             color = ner_response['color'].strip()
             command = ner_response['command'].strip()
             reply = ''
             if command and lightname:
                 if command == 'dim':
-                    val_scale = self.val_map[3]
-                    self.set_light_brightness(val_scale, lightname)
+                    self.set_light_brightness(brightness, lightname)
                     reply = f'[Dimming the {lightname}]'
                 else:
                     self.toggle_light_power(command, lightname)
@@ -139,7 +168,7 @@ class LightHandler():
                 if "%" in brightness:
                     brightness = int(brightness.replace("%","")) 
                 self.set_light_brightness(int(brightness), lightname)
-                reply = f"[Setting {lightname}'s brightness to {brightness}]"
+                reply = f"[Setting {lightname} brightness to {brightness}]"
 
                                                     
         # any errors come here

@@ -12,7 +12,8 @@ FASTLED_USING_NAMESPACE
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define DATA_PIN 22
+// #define DATA_PIN 22 
+#define DATA_PIN 23
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define NUM_LEDS 300
@@ -29,7 +30,6 @@ uint8_t incomingByte;
 
 void white()
 {
-  FastLED.setBrightness(50);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::White;
@@ -38,7 +38,6 @@ void white()
 
 void green()
 {
-  FastLED.setBrightness(80);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::Green;
@@ -47,7 +46,6 @@ void green()
 
 void orange()
 {
-  FastLED.setBrightness(80);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::Orange;
@@ -56,7 +54,6 @@ void orange()
 
 void blue()
 {
-  FastLED.setBrightness(80);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::Blue;
@@ -65,7 +62,6 @@ void blue()
 
 void red()
 {
-  FastLED.setBrightness(80);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::Red;
@@ -74,7 +70,6 @@ void red()
 
 void yellow()
 {
-  FastLED.setBrightness(80);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::Yellow;
@@ -83,7 +78,6 @@ void yellow()
 
 void purple()
 {
-  FastLED.setBrightness(80);
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB::Purple;
@@ -251,9 +245,49 @@ void loop()
       gCurrentPatternNumber = 13; // gradient
     }
 
+    if (incomingByte == 0xF0)
+    {
+      FastLED.setBrightness(5);
+    }
     if (incomingByte == 0xF1)
     {
+      FastLED.setBrightness(10);
+    }
+    if (incomingByte == 0xF2)
+    {
+      FastLED.setBrightness(20);
+    }
+    if (incomingByte == 0xF3)
+    {
+      FastLED.setBrightness(30);
+    }
+    if (incomingByte == 0xF4)
+    {
+      FastLED.setBrightness(40);
+    }
+    if (incomingByte == 0xF5)
+    {
+      FastLED.setBrightness(50);
+    }
+    if (incomingByte == 0xF6)
+    {
+      FastLED.setBrightness(60);
+    }
+    if (incomingByte == 0xF7)
+    {
+      FastLED.setBrightness(70);
+    }
+    if (incomingByte == 0xF8)
+    {
       FastLED.setBrightness(80);
+    }
+    if (incomingByte == 0xF9)
+    {
+      FastLED.setBrightness(85);
+    }
+    if (incomingByte == 0xFA)
+    {
+      FastLED.setBrightness(88);
     }
   }
 }
