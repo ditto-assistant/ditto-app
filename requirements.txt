@@ -1,8 +1,8 @@
 pyttsx3
 openai
 playsound
-sounddevice==0.4.3
-google-cloud-speech==2.11.1
+sounddevice
+google-cloud-speech
 google-cloud-texttospeech
 spotipy
 dload
@@ -13,8 +13,8 @@ pyserial
 termdown
 pygame
 lifxlan
-scikit-learn==1.0.2
-spacy==3.2.4
+scikit-learn
+spacy
 nltk
 python_weather
 wolframalpha

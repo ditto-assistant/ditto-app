@@ -26,9 +26,6 @@ from modules.vosk_model.activation import Activation
 from modules.vosk_model.stt import STT
 # from vosk import Model, KaldiRecognizer, SetLogLevel
 
-# local picovoice - replacing vosk :-)
-from modules.pico_python.picovoice_demo_mic import pico_wake
-
 from modules.ditto_activation.main import HeyDittoNet
 
 # suppress Vosk logger
