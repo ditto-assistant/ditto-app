@@ -60,7 +60,7 @@ class Speech:
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
         self.heyditto = HeyDittoNet(
-            model_type='CNN-LSTM',
+            model_type='CNN',
             path='modules/ditto_activation/',
             tflite=True
         )
