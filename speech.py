@@ -48,6 +48,7 @@ import pyaudio
 import wave
 import io
 
+
 class Speech:
 
     def __init__(self, offline_mode=False, mic=''):
@@ -61,7 +62,7 @@ class Speech:
         self.heyditto = HeyDittoNet(
             model_type='CNN-LSTM',
             path='modules/ditto_activation/',
-            tflite=True
+            tflite=False
         )
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
@@ -69,11 +70,11 @@ class Speech:
         self.skip_wake = False
 
         self.wake = 1
-        self.speaker_timer_mode = True # set to keep speaker from sleeping
+        self.speaker_timer_mode = True  # set to keep speaker from sleeping
         self.speaker_timer = 0
 
-        self.inject = False # used for skipping STT by using GUI's prompt in activation loop
-        self.from_gui = False # used in ditto.py to handle loop differently
+        self.inject = False  # used for skipping STT by using GUI's prompt in activation loop
+        self.from_gui = False  # used in ditto.py to handle loop differently
 
         self.gesture_activation = False
         self.reset_conversation = False
@@ -93,7 +94,7 @@ class Speech:
                 if self.heyditto.inject_prompt:
                     self.inject = True
                     self.heyditto.inject_prompt = False
-                    self.from_gui = True # turn off activation noise
+                    self.from_gui = True  # turn off activation noise
 
                 if self.heyditto.gesture_activation:
                     self.gesture_activation = True
@@ -101,34 +102,34 @@ class Speech:
 
                 if self.heyditto.reset_conversation:
                     self.reset_conversation = True
-                    self.from_gui = True # turn off activation noise
-    
-                if wake: 
+                    self.from_gui = True  # turn off activation noise
+
+                if wake:
                     self.activation.activate = True
                     self.recording = False
                     if not headless:
-                        pyautogui.press('ctrl') # turns display on if asleep
+                        pyautogui.press('ctrl')  # turns display on if asleep
 
             else:
-                if not self.comm_timer_mode and activation_mode: 
+                if not self.comm_timer_mode and activation_mode:
                     print('\nidle...\n')
                 else:
-                    self.skip_wake = False # set back to false
+                    self.skip_wake = False  # set back to false
 
                     if self.gesture_activation:
-                        self.gesture_activation = False # set back to false
-                        self.from_gui = True # use from gui ditto loop to avoid accidental conversation loop
+                        self.gesture_activation = False  # set back to false
+                        self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
                         if self.gesture == 'palm':
                             self.text = self.google_instance.grab_prompt()
                         else:
                             self.text = f'GestureNet: {self.gesture}'
 
                     if self.reset_conversation:
-                        self.reset_conversation = False # set back to false
-                        self.from_gui = True # use from gui ditto loop to avoid accidental conversation loop
+                        self.reset_conversation = False  # set back to false
+                        self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
                         self.text = f'resetConversation'
 
-                    elif self.inject: 
+                    elif self.inject:
                         self.inject = False
                         # self.text = self.pico.prompt
                         self.text = self.heyditto.prompt
@@ -143,7 +144,7 @@ class Speech:
                             self.speech_to_text = STT(os.getcwd())
                             self.speech_to_text.stt()
                             self.text = self.speech_to_text.text
-                    
+
                     # self.activation kind of unneccesary...
                     self.activation.text = self.text
                     self.activation.check_input(activation_mode)
@@ -152,11 +153,12 @@ class Speech:
         except BaseException as e:
             print(e)
             self.recording = False
-                        
+
     def speaker_mic_timeout_handler(self, timeout):
-        self.speak_timer = Timer(timeout, self.speaker_mic_timeout_handler, [timeout])
+        self.speak_timer = Timer(
+            timeout, self.speaker_mic_timeout_handler, [timeout])
         self.speak_timer.start()
-        if self.speaker_timer_mode: 
+        if self.speaker_timer_mode:
             self.speaker_timer += 1
         if self.speaker_timer == timeout:
             self.speaker_timer = 0
@@ -164,7 +166,7 @@ class Speech:
             self.pico.running = False
             self.wake = 0
 
-        # not used (leaving hooks for other purposes)       
+        # not used (leaving hooks for other purposes)
         def record_pyaudio(self, max_len_seconds=10):
             chunk = 1024
             fmt = pyaudio.paInt16
@@ -177,13 +179,13 @@ class Speech:
 
             self.recording = True
             stream = p.open(
-                format=fmt, 
-                channels=chan, 
-                rate=self.rate, 
-                input=self.recording, 
+                format=fmt,
+                channels=chan,
+                rate=self.rate,
+                input=self.recording,
                 frames_per_buffer=chunk
             )
-            
+
             frames = []
 
             for x in range(0, int(self.rate / chunk*max_len_seconds)):
@@ -192,7 +194,7 @@ class Speech:
 
                 if not self.recording:
                     break
-            
+
             stream.stop_stream()
             stream.close()
             p.terminate()
@@ -206,28 +208,30 @@ class Speech:
             wf.writeframes(b''.join(frames))
             wf.close()
 
-        # not used (leaving hooks for other purposes)  
+        # not used (leaving hooks for other purposes)
         def process_audio_google(self):
             with io.open(self.fname, "rb") as audio_file:
                 content = audio_file.read()
             client = speech.SpeechClient()
             audio = speech.RecognitionAudio(content=content)
-            config = speech.RecognitionConfig( 
-                encoding = speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                sample_rate_hertz = self.rate,
-                language_code = "en-US"
+            config = speech.RecognitionConfig(
+                encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                sample_rate_hertz=self.rate,
+                language_code="en-US"
             )
             response = client.recognize(config=config, audio=audio)
 
             for result in response.results:
                 print('\n')
-                print("Transcript: {}".format(result.alternatives[0].transcript))
+                print("Transcript: {}".format(
+                    result.alternatives[0].transcript))
                 self.text = "{}".format(result.alternatives[0].transcript)
 
-    # not used (leaving hooks for other purposes)  
+    # not used (leaving hooks for other purposes)
     def process_audio_vosk(self):
         self.activation.input(self.fname, self.vosk_model_dir)
         self.text = self.activation.text
+
 
 if __name__ == "__main__":
     s = Speech()
