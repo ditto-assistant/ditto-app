@@ -62,7 +62,7 @@ class Speech:
         self.heyditto = HeyDittoNet(
             model_type='CNN-LSTM',
             path='modules/ditto_activation/',
-            tflite=False
+            tflite=True
         )
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
