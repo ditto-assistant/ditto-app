@@ -2,6 +2,8 @@
 import sqlite3
 import time
 
+time.sleep(10)
+
 
 class DittoRequests():
 
