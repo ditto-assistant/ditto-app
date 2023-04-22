@@ -1,7 +1,6 @@
 
 import sqlite3
 import time
-time.sleep(20)  # sleep to let server boot
 
 
 class DittoRequests():
