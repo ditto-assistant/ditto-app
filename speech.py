@@ -26,7 +26,8 @@ from modules.vosk_model.activation import Activation
 from modules.vosk_model.stt import STT
 # from vosk import Model, KaldiRecognizer, SetLogLevel
 
-from modules.ditto_activation.main import HeyDittoNet
+# from modules.ditto_activation.main import HeyDittoNet
+from ditto_requests import DittoRequests
 
 # suppress Vosk logger
 # SetLogLevel(-1)
@@ -59,11 +60,12 @@ class Speech:
         self.text = ""
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
-        self.heyditto = HeyDittoNet(
-            model_type='CNN',
-            path='modules/ditto_activation/',
-            tflite=True
-        )
+        # self.heyditto = HeyDittoNet(
+        #     model_type='CNN',
+        #     path='modules/ditto_activation/',
+        #     tflite=True
+        # )
+        self.heyditto = DittoRequests()
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
@@ -90,7 +92,8 @@ class Speech:
         try:
             if activation_mode and self.skip_wake == False:
 
-                wake = self.heyditto.listen_for_name()
+                # wake = self.heyditto.listen_for_name()
+                wake = self.heyditto.poll_for_request()
                 if self.heyditto.inject_prompt:
                     self.inject = True
                     self.heyditto.inject_prompt = False
