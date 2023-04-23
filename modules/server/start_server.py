@@ -38,7 +38,7 @@ def start_server():
     subprocess.Popen(['python', 'ditto.py'])  # Ditto Main Loop
     # Ditto Activation
     subprocess.Popen(
-        ['python', 'modules/ditto_activation/main.py', 'modules/ditto_activation/', micname])
+        ['python', 'modules/ditto_activation/main.py', 'modules/ditto_activation/'])
     # subprocess.Popen(['python', 'modules/gesture-recognition/main.py', 'production']) # Start gesture recognition sub-porocess
     http_server = WSGIServer(('0.0.0.0', 42032), server.app, log=devnull)
     print('\n\n[Server started on port 42032]\n\n')
