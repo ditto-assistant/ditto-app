@@ -92,6 +92,7 @@ class Assistant:
         self.comm_timer_mode = False
         self.comm_timer.cancel()
         self.speech.from_gui = False
+        # self.write_idle_to_activation_model()
 
     def play_sound(self, sound='off'):
         print(f'Gui Mode {self.speech.from_gui}')
@@ -272,6 +273,18 @@ class Assistant:
             self.reset_loop()
 
         self.write_response_to_db()  # log self.reply
+        self.write_idle_to_activation_model()
+
+    def write_idle_to_activation_model(self):
+        SQL = sqlite3.connect("ditto.db")
+        cur = SQL.cursor()
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS ditto_activation_requests(request VARCHAR, action VARCHAR)")
+        SQL.commit()
+        cur.execute(
+            "INSERT INTO ditto_activation_requests VALUES('idle', 'none')")
+        SQL.commit()
+        SQL.close()
 
     def write_response_to_db(self):
         if not self.reply:
