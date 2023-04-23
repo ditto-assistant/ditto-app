@@ -14,7 +14,7 @@ from google.cloud import speech
 import pyaudio
 from six.moves import queue
 
-import sounddevice # to suppress ALSA warnings...
+import sounddevice  # to suppress ALSA warnings...
 
 # Audio recording parameters
 RATE = 16000
@@ -22,6 +22,7 @@ CHUNK = int(RATE / 10)  # 100ms
 
 
 PROMPT = ""
+
 
 class MicrophoneStream(object):
     """Opens a recording stream as a generator yielding the audio chunks."""
@@ -71,7 +72,7 @@ class MicrophoneStream(object):
 
     def generator(self):
         while not self.closed:
-            if time.time() > self.timeout: 
+            if time.time() > self.timeout:
                 self.__exit__()
             # Use a blocking get() to ensure there's at least one chunk of
             # data, and stop iteration if the chunk is None, indicating the
@@ -93,12 +94,14 @@ class MicrophoneStream(object):
 
             yield b"".join(data)
 
+
 class Google():
-    
+
     def __init__(self, mic=''):
         audio_device_ndx = 0
-        for ndx,dev in enumerate(sounddevice.query_devices()):
-            if mic in str(dev).lower(): audio_device_ndx = ndx
+        for ndx, dev in enumerate(sounddevice.query_devices()):
+            if mic in str(dev).lower():
+                audio_device_ndx = ndx
         self.audio_device_ndx = audio_device_ndx
         self.prompt = ""
         # See http://g.co/cloud/speech/docs/languages
@@ -115,7 +118,6 @@ class Google():
         self.streaming_config = speech.StreamingRecognitionConfig(
             config=self.config, interim_results=True
         )
-
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -134,7 +136,7 @@ class Google():
         """
         num_chars_printed = 0
         for response in responses:
-            
+
             if not response.results:
                 continue
 
@@ -173,8 +175,7 @@ class Google():
                 num_chars_printed = 0
                 return PROMPT
 
-
-    def grab_prompt(self): 
+    def grab_prompt(self):
         try:
             with MicrophoneStream(RATE, CHUNK, self.audio_device_ndx) as stream:
                 audio_generator = stream.generator()
@@ -188,8 +189,9 @@ class Google():
                 print("'(|o_o|)'")
                 print(",..\=/..,")
                 print('listening...\n')
-                
-                responses = self.client.streaming_recognize(self.streaming_config, requests)
+
+                responses = self.client.streaming_recognize(
+                    self.streaming_config, requests)
 
                 # Now, put the transcription responses to use.
                 self.prompt = self.listen_print_loop(responses)

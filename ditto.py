@@ -282,7 +282,7 @@ class Assistant:
             "CREATE TABLE IF NOT EXISTS ditto_activation_requests(request VARCHAR, action VARCHAR)")
         SQL.commit()
         cur.execute(
-            "INSERT INTO ditto_activation_requests VALUES('idle', 'none')")
+            "INSERT INTO ditto_activation_requests VALUES('idle', 'idle')")
         SQL.commit()
         SQL.close()
 
