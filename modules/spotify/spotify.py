@@ -250,11 +250,12 @@ class Spotify():
         self.grab_active_id(sp)
 
     def grab_active_id(self, sp):
-        '''grab active or prev saved spotify player's device id
+        '''set active or prev saved spotify player's device id
         \nparam:
         sp: spotipy.Spotify() object
         '''
         device_name = self.user_values['device-name']
+        device_id = self.user_values['device-id']
         # grab device-id
 
         try:
@@ -263,15 +264,18 @@ class Spotify():
             self.devices = {'devices': []}
 
         try:
+
             if not self.devices['devices'] == []:
                 if not device_name:
-                    device_id = self.devices['devices'][0]['id']  # grab id
+                    # grab topmost id (last active)
+                    device_id = self.devices['devices'][0]['id']
                 else:
                     for device in self.devices['devices']:
                         name = device['name']
                         if device_name in name:
                             print(f'\n[Found Spotify device ID for {name}]')
-                            device_id = device['id']
+                            if not device_id:
+                                device_id = device['id']
                 self.user_values['device-id'] = device_id
                 with open(self.path+'/resources/spotify.json', 'w') as f:  # store to json
                     json.dump(self.user_values, f)
