@@ -26,8 +26,8 @@ from modules.vosk_model.activation import Activation
 from modules.vosk_model.stt import STT
 # from vosk import Model, KaldiRecognizer, SetLogLevel
 
-# from modules.ditto_activation.main import HeyDittoNet
-from ditto_requests import DittoRequests
+from modules.ditto_activation.main import HeyDittoNet
+# from ditto_requests import DittoRequests
 
 # suppress Vosk logger
 # SetLogLevel(-1)
@@ -43,8 +43,6 @@ try:
 except:
     headless = True
 
-import json
-import queue
 import pyaudio
 import wave
 import io
@@ -56,16 +54,14 @@ class Speech:
         self.mic = mic
         self.recording = False
         self.offline_mode = offline_mode
-        self.q = queue.Queue()
         self.text = ""
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
-        # self.heyditto = HeyDittoNet(
-        #     model_type='CNN',
-        #     path='modules/ditto_activation/',
-        #     tflite=True
-        # )
-        self.heyditto = DittoRequests()
+        self.heyditto = HeyDittoNet(
+            model_type='HeyDittoNet-v2',
+            path='modules/ditto_activation/',
+            tflite=True
+        )
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
         self.comm_timer_mode = False
@@ -81,19 +77,13 @@ class Speech:
         self.gesture_activation = False
         self.reset_conversation = False
 
-    def callback(self, indata, frames, time, status):
-        """This is called (from a separate thread) for each audio block."""
-        if status:
-            print(status)
-        self.q.put(bytes(indata))
-
     def record_audio(self, activation_mode=False):
         self.recording = True
         try:
             if activation_mode and self.skip_wake == False:
 
-                # wake = self.heyditto.listen_for_name()
-                wake = self.heyditto.poll_for_request()
+                wake = self.heyditto.listen_for_name()
+
                 if self.heyditto.inject_prompt:
                     self.inject = True
                     self.heyditto.inject_prompt = False

@@ -20,22 +20,28 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
+
 def actiavte_inject_prompt(prompt):
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
     SQL.commit()
-    cur.execute("INSERT INTO ditto_requests VALUES('prompt', '%s')" % prompt.replace('""','"').replace("'", "''"))
+    cur.execute("INSERT INTO ditto_requests VALUES('prompt', '%s')" %
+                prompt.replace('""', '"').replace("'", "''"))
     SQL.commit()
     SQL.close()
+
 
 def get_prompt_response_count():
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
     prompt_count = cur.execute("SELECT COUNT(*) FROM prompts").fetchone()[0]
-    response_count = cur.execute("SELECT COUNT(*) FROM responses").fetchone()[0]
+    response_count = cur.execute(
+        "SELECT COUNT(*) FROM responses").fetchone()[0]
     SQL.close()
     return int(prompt_count) + int(response_count)
+
 
 def get_status():
     SQL = sqlite3.connect("ditto.db")
@@ -44,6 +50,7 @@ def get_status():
     status = status_arr[-1][0]
     SQL.close()
     return status
+
 
 def get_conversation_history():
     SQL = sqlite3.connect("ditto.db")
@@ -55,22 +62,37 @@ def get_conversation_history():
     responses = req.fetchall()
     SQL.commit()
     SQL.close()
+
     def create_response_arrays(arr):
         response = dict()
-        for ndx,x in enumerate(arr):
+        for ndx, x in enumerate(arr):
             response[str(ndx)] = x
         return json.dumps(response)
     return create_response_arrays(prompts), create_response_arrays(responses)
 
+
 def activate_reset_conversation():
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
     SQL.commit()
     cur.execute("INSERT INTO ditto_requests VALUES('resetConversation', 'none')")
     SQL.commit()
     cur.execute("DELETE FROM prompts")
     cur.execute("DELETE FROM responses")
+    SQL.commit()
+    SQL.close()
+
+
+def send_ditto_wake(self):  # use to trigger activation and start GTTS audio transcript
+    SQL = sqlite3.connect(f'ditto.db')
+    cur = SQL.cursor()
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
+    SQL.commit()
+    cur.execute(
+        "INSERT INTO ditto_requests VALUES('activation', 'activate')")
     SQL.commit()
     SQL.close()
 
@@ -88,7 +110,7 @@ def ditto_handler():
                 prompt = requests['prompt']
                 actiavte_inject_prompt(prompt)
                 return '{"prompt": "%s"}' % prompt
-        
+
             if 'resetConversation' in requests:
                 activate_reset_conversation()
                 return '{"resetConversation": "True"}'
@@ -104,7 +126,7 @@ def ditto_handler():
             if 'historyCount' in requests:
                 count = get_prompt_response_count()
                 return '{"historyCount": %d}' % count
-            
+
             if 'status' in requests:
                 status = get_status()
                 return '{"status": "%s"}' % status
@@ -116,6 +138,8 @@ def ditto_handler():
         return '{"response": "error"}'
 
 # Use Postman for POST Test and more!
+
+
 @app.route("/", methods=['POST'])
 def post_handler():
     return '{"server_status": "on"}'
