@@ -6,15 +6,15 @@ Note: ssml must be well-formed according to:
 """
 from google.cloud import texttospeech
 import pygame
-import os 
+import os
+
 
 class Speak:
 
-    def __init__(self): 
+    def __init__(self):
 
         # Instantiates a client
         self.client = texttospeech.TextToSpeechClient()
-
 
         # Build the voice request, select the language code ("en-US") and the ssml
         # voice gender ("neutral")
@@ -47,11 +47,11 @@ class Speak:
             pygame.mixer.music.play()
             while pygame.mixer.music.get_busy() == True:
                 continue
-            os.remove('output.mp3')
+            # os.remove('output.mp3')
         except:
             print('GTTS error...')
 
-    
-if __name__=="__main__":
+
+if __name__ == "__main__":
     speak = Speak()
     speak.gtts("yo")
