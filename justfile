@@ -10,4 +10,4 @@ dotenv:
 
 # create venv and install requirements
 install:
-    (cd ..; python -m venv ditto; source ditto/bin/activate; pip install -r requirements.txt)
+    (cd ..; python -m venv ditto; source ditto/bin/activate; cd assistant; pip install -r requirements.txt)
