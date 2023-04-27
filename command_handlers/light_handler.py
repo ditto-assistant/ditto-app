@@ -1,4 +1,5 @@
 import json
+from threading import Thread
 import numpy as np
 import requests
 
@@ -18,35 +19,43 @@ class LightHandler():
         self.light_status = True
         self.light_mode = 'on'
         self.home_assistant = HomeAssistant()
+        self.stopped = False
 
-    
+    def handle_response(self, prompt, tts):
+        Thread(target=self.handle_response_(prompt, tts), args=()).start()
+        return self
+
     def prompt_ner_light(self, prompt):
         base_url = f"http://{self.nlp_ip}:32032/ner/"
         response = requests.post(base_url, params={"ner-light": prompt})
         return response.content.decode()
 
     def set_light_brightness(self, value, light_name=None):
-        if light_name=='lights' or light_name=='light': # led strip brightness
+        if light_name == 'lights' or light_name == 'light':  # led strip brightness
             self.toggle_light_brightness(value)
-        else: # all other lights
-            self.home_assistant.send_google_sdk_command(f'set {light_name} brightness to {value}')
+        else:  # all other lights
+            self.home_assistant.send_google_sdk_command(
+                f'set {light_name} brightness to {value}')
 
-    def toggle_light_color(self, color, light_name=None):            
-        if light_name=='lights' or light_name=='light': # LED Light Strip handler
+    def toggle_light_color(self, color, light_name=None):
+        if light_name == 'lights' or light_name == 'light':  # LED Light Strip handler
             self.toggle_light(color)
 
-        else: # all other lights
-            self.home_assistant.send_google_sdk_command(f'set {light_name} to {color}')
+        else:  # all other lights
+            self.home_assistant.send_google_sdk_command(
+                f'set {light_name} to {color}')
 
     def toggle_light_power(self, mode, light_name=None):
-        if light_name=='lights' or light_name=='light': # LED Light handler
+        if light_name == 'lights' or light_name == 'light':  # LED Light handler
             self.toggle_light(mode)
-        else: # all other lights
-            self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
-        if light_name=='all lights': # turn on/off leds too
+        else:  # all other lights
+            self.home_assistant.send_google_sdk_command(
+                f'turn {mode} {light_name}')
+        if light_name == 'all lights':  # turn on/off leds too
             self.toggle_light(mode)
-            self.home_assistant.send_google_sdk_command(f'turn {mode} {light_name}')
-        
+            self.home_assistant.send_google_sdk_command(
+                f'turn {mode} {light_name}')
+
     def toggle_light_brightness(self, brightness):
         brightness = int(brightness)
         try:
@@ -142,8 +151,9 @@ class LightHandler():
         except BaseException as e:
             print('\nTeensy path not found in config')
 
-
-    def handle_response(self, prompt):
+    def handle_response_(self, prompt, tts):
+        self.running = True
+        self.reply = ''
         try:
             ner_response = json.loads(self.prompt_ner_light(prompt))
             lightname = ner_response['lightname'].strip().replace("'", '')
@@ -153,29 +163,34 @@ class LightHandler():
             reply = ''
             if command and lightname:
                 if command == 'dim':
-                    self.set_light_brightness(brightness, lightname)
                     reply = f'[Dimming the {lightname}]'
+                    tts(reply)
+                    self.set_light_brightness(brightness, lightname)
                 else:
+                    reply = f'[Turning {command} the {lightname}]'
+                    if lightname == 'all lights':
+                        reply = reply.replace('the ', '')
+                    tts(reply)
                     self.toggle_light_power(command, lightname)
-                    reply = f'[Turning {command} the {lightname}]' 
-                    if lightname == 'all lights': reply = reply.replace('the ','')
-            
-            elif color and lightname:
-                self.toggle_light_color(color, lightname)
-                reply = f'[Setting {lightname} to {color}]'
-            
-            elif brightness and lightname:
-                if "%" in brightness:
-                    brightness = int(brightness.replace("%","")) 
-                self.set_light_brightness(int(brightness), lightname)
-                reply = f"[Setting {lightname} brightness to {brightness}]"
 
-                                                    
+            elif color and lightname:
+                reply = f'[Setting {lightname} to {color}]'
+                tts(reply)
+                self.toggle_light_color(color, lightname)
+
+            elif brightness and lightname:
+                reply = f"[Setting {lightname} brightness to {brightness}]"
+                tts(reply)
+                if "%" in brightness:
+                    brightness = int(brightness.replace("%", ""))
+                self.set_light_brightness(int(brightness), lightname)
+
         # any errors come here
         except BaseException as e:
             print(e)
             reply = '[Light not found or invalid command]'
-                    
-        print(reply+'\n')
 
-        return reply
+        print(reply+'\n')
+        self.stopped = True
+        self.reply = reply
+        return

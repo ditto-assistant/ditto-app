@@ -7,11 +7,15 @@ Note: ssml must be well-formed according to:
 from google.cloud import texttospeech
 import pygame
 import os
+from threading import Thread
 
 
 class Speak:
 
     def __init__(self):
+
+        self.running = False
+        self.stopped = False
 
         # Instantiates a client
         self.client = texttospeech.TextToSpeechClient()
@@ -28,6 +32,14 @@ class Speak:
         )
 
     def gtts(self, prompt):
+        Thread(target=self.speak(prompt), args=()).start()
+        return self
+
+    def stop(self):
+        self.stopped = True
+
+    def speak(self, prompt):
+        self.running = True
         # Set the text input to be synthesized
         synthesis_input = texttospeech.SynthesisInput(text=prompt)
 
@@ -46,10 +58,15 @@ class Speak:
             pygame.mixer.music.load('output.mp3')
             pygame.mixer.music.play()
             while pygame.mixer.music.get_busy() == True:
+                if self.stopped:
+                    break
                 continue
             # os.remove('output.mp3')
         except:
             print('GTTS error...')
+        self.running = False
+        self.stop = True
+        return
 
 
 if __name__ == "__main__":

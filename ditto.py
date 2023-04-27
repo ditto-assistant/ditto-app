@@ -171,14 +171,14 @@ class Assistant:
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
 
-        print('\n\n')
+        print('\n')
         print(cat, sub_cat, action)
 
         # send prompt to application / category
         if cat == 'lights':
             self.reply = self.command.light_handler.handle_response(
-                self.prompt)
-            self.tts(self.reply)
+                self.prompt, self.tts).reply
+            # self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'spotify':
