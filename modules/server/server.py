@@ -21,7 +21,7 @@ elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
 
-def actiavte_inject_prompt(prompt):
+def activate_inject_prompt(prompt):
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
     cur.execute(
@@ -52,6 +52,19 @@ def get_status():
     return status
 
 
+def get_ditto_mic_status():
+    SQL = sqlite3.connect("ditto.db")
+    cur = SQL.cursor()
+    mic_status = 'off'
+    status = cur.execute("SELECT * FROM ditto_status_table").fetchall()
+    for stat in status:
+        if 'activation_mic' in stat:
+            mic_status = stat[1]
+    SQL.close()
+    status = '{"ditto_mic_status": "%s"}' % mic_status
+    return status
+
+
 def get_conversation_history():
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
@@ -77,7 +90,7 @@ def activate_reset_conversation():
     cur.execute(
         "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
     SQL.commit()
-    cur.execute("INSERT INTO ditto_requests VALUES('resetConversation', 'none')")
+    cur.execute("INSERT INTO ditto_requests VALUES('resetConversation', 'true')")
     SQL.commit()
     cur.execute("DELETE FROM prompts")
     cur.execute("DELETE FROM responses")
@@ -85,14 +98,26 @@ def activate_reset_conversation():
     SQL.close()
 
 
-def send_ditto_wake(self):  # use to trigger activation and start GTTS audio transcript
+def send_ditto_wake():  # use to trigger activation and start GTTS audio transcript
     SQL = sqlite3.connect(f'ditto.db')
     cur = SQL.cursor()
     cur.execute(
         "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
     SQL.commit()
     cur.execute(
-        "INSERT INTO ditto_requests VALUES('activation', 'activate')")
+        "INSERT INTO ditto_requests VALUES('activation', 'true')")
+    SQL.commit()
+    SQL.close()
+
+
+def toggle_activation_mic():
+    SQL = sqlite3.connect(f'ditto.db')
+    cur = SQL.cursor()
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)")
+    SQL.commit()
+    cur.execute(
+        "INSERT INTO ditto_requests VALUES('toggleMic', 'true')")
     SQL.commit()
     SQL.close()
 
@@ -108,12 +133,16 @@ def ditto_handler():
             # Request to send prompt to ditto
             if 'prompt' in requests:
                 prompt = requests['prompt']
-                actiavte_inject_prompt(prompt)
+                activate_inject_prompt(prompt)
                 return '{"prompt": "%s"}' % prompt
 
             if 'resetConversation' in requests:
                 activate_reset_conversation()
-                return '{"resetConversation": "True"}'
+                return '{"resetConversation": "success"}'
+
+            if 'toggleMic' in requests:
+                toggle_activation_mic()
+                return '{"toggleMic": "success"}'
 
         elif request.method == "GET":
 
@@ -130,6 +159,10 @@ def ditto_handler():
             if 'status' in requests:
                 status = get_status()
                 return '{"status": "%s"}' % status
+
+            if 'dittoMicStatus' in requests:
+                ditto_status = get_ditto_mic_status()
+                return ditto_status
 
         else:
             return '{"error": "invalid"}'

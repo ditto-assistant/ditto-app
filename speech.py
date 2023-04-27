@@ -84,16 +84,16 @@ class Speech:
 
                 wake = self.heyditto.listen_for_name()
 
-                if self.heyditto.inject_prompt:
+                if self.heyditto.activation_requests.inject_prompt:
                     self.inject = True
-                    self.heyditto.inject_prompt = False
+                    self.heyditto.activation_requests.inject_prompt = False
                     self.from_gui = True  # turn off activation noise
 
-                if self.heyditto.gesture_activation:
+                if self.heyditto.activation_requests.gesture_activation:
                     self.gesture_activation = True
-                    self.gesture = self.heyditto.gesture
+                    self.gesture = self.heyditto.activation_requests.gesture
 
-                if self.heyditto.reset_conversation:
+                if self.heyditto.activation_requests.reset_conversation:
                     self.reset_conversation = True
                     self.from_gui = True  # turn off activation noise
 
@@ -125,9 +125,9 @@ class Speech:
                     elif self.inject:
                         self.inject = False
                         # self.text = self.pico.prompt
-                        self.text = self.heyditto.prompt
+                        self.text = self.heyditto.activation_requests.prompt
                         # self.pico.prompt = ""
-                        self.heyditto.prompt = ""
+                        self.heyditto.activation_requests.prompt = ""
                         self.from_gui = True
 
                     else:
