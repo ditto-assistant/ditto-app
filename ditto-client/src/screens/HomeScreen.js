@@ -1,19 +1,18 @@
 import "./App.css";
-import React, {useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { grabConversationHistory, grabConversationHistoryCount } from "../models/api";
 import { ChatFeed, Message } from "../modules/react-chat-ui-omar-fork/lib";
-import { status } from "../models/Status";
-import { grabStatus, resetConversation } from "../models/api";
+import { grabStatus, resetConversation, grabMicStatus, toggleMic } from "../models/api";
 import Divider from '@mui/material/Divider';
 import ChatBubbles from "../components/ChatBubbles";
 import SendMessage from "../components/SendMessage";
 import StatusBar from "../components/StatusBar";
 import { FaUndo, FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa'
 
-export default function HomeScreen () {    
+export default function HomeScreen() {
 
     const [bootStatus, setBootStatus] = useState("off");
-    
+
     const [histCount, setCount] = useState(0)
 
     const [reset, setReset] = useState(false)
@@ -21,18 +20,20 @@ export default function HomeScreen () {
     const [conversation, setConversation] = useState({
         messages: [
             new Message({
-            id: 1,
-            message: "Hi! I'm Ditto."
+                id: 1,
+                message: "Hi! I'm Ditto."
             })
         ]
     })
 
-    const [microphoneStatus, setMicrophoneStatus] = useState("on")
+    const [microphoneStatus, setMicrophoneStatus] = useState("off")
 
     let buttonSize = 25
 
-    const handleMicPress = () => {
-
+    const handleMicPress = async () => {
+        console.log('handling mic press...')
+        await toggleMic()
+        setMicrophoneStatus(!microphoneStatus)
     }
 
     const bottomRef = useRef(null);
@@ -40,7 +41,7 @@ export default function HomeScreen () {
     let bubblefontSize = 14
     let bubblePadding = 10
 
-    const resetConversationHandler = async() => {
+    const resetConversationHandler = async () => {
         console.log('Resetting conversation history...')
         await resetConversation()
         setReset(true)
@@ -52,17 +53,17 @@ export default function HomeScreen () {
      * @returns {prompts, responses} prompts and responses objects 
      */
     const getSavedConversation = () => {
-    let prompts = JSON.parse(window.electron.store.get('prompts'))
-    let responses = JSON.parse(window.electron.store.get('responses'))
-    return {prompts, responses}
+        let prompts = JSON.parse(window.electron.store.get('prompts'))
+        let responses = JSON.parse(window.electron.store.get('responses'))
+        return { prompts, responses }
     }
 
     /**
      * Save updated history locally.
      */
     const handleSaveConversation = (hist) => {
-    window.electron.store.set('prompts', JSON.stringify(hist.prompts));
-    window.electron.store.set('responses', JSON.stringify(hist.responses));
+        window.electron.store.set('prompts', JSON.stringify(hist.prompts));
+        window.electron.store.set('responses', JSON.stringify(hist.responses));
     }
 
     /**
@@ -70,15 +71,15 @@ export default function HomeScreen () {
      * @param {*} hist conversation history response from API
      * @param save boolean to save locally or not
      */
-    const createConversation = async(hist, save) => {
-        if (save) {handleSaveConversation(hist)}
+    const createConversation = async (hist, save) => {
+        if (save) { handleSaveConversation(hist) }
         let prompts = hist.prompts
         let responses = hist.responses
         let newConversation = {
             messages: [
                 new Message({
-                id: 1,
-                message: "Hi! I'm Ditto."
+                    id: 1,
+                    message: "Hi! I'm Ditto."
                 })
             ]
         }
@@ -92,37 +93,44 @@ export default function HomeScreen () {
             let response = responses[key]
             newConversation.messages.push(
                 new Message({
-                id: 0,
-                message: prompt
+                    id: 0,
+                    message: prompt
                 })
             )
             newConversation.messages.push(
                 new Message({
-                id: 1,
-                message: response
+                    id: 1,
+                    message: response
                 })
             )
-        setConversation(newConversation)
+            setConversation(newConversation)
         }
     }
 
     useEffect(() => {
 
-        const handleStatus = async() => {
+        const handleStatus = async () => {
             var statusDb = await grabStatus()
             if (bootStatus !== statusDb.status) {
                 setBootStatus(statusDb.status)
             }
         }
 
-        const syncConversationHist = async() => {
+        const handleMicStatus = async () => {
+            var micStatusDb = await grabMicStatus()
+            if (microphoneStatus !== micStatusDb.ditto_mic_status) {
+                setMicrophoneStatus(micStatusDb.ditto_mic_status)
+            }
+        }
+
+        const syncConversationHist = async () => {
             let hasHistCount = window.electron.store.has('histCount')
             let serverHistCount = await grabConversationHistoryCount()
             let localHistCount = window.electron.store.get('histCount')
             if (hasHistCount) { // If there is a local histCount variable, check if need to update from Server
                 console.log(serverHistCount, localHistCount)
                 let localHist = getSavedConversation()
-                if (histCount !== localHistCount){
+                if (histCount !== localHistCount) {
                     setCount(localHistCount)
                 }
                 createConversation(localHist, false)
@@ -130,7 +138,7 @@ export default function HomeScreen () {
             if (serverHistCount !== undefined && serverHistCount !== localHistCount) {
                 try {
                     let hist = await grabConversationHistory()
-                    if (histCount !== serverHistCount){
+                    if (histCount !== serverHistCount) {
                         setCount(serverHistCount)
                     }
                     createConversation(hist, true)
@@ -141,7 +149,7 @@ export default function HomeScreen () {
                 }
             }
         }
-    
+
         // function handleResize() {
         //     var x = window.innerWidth
         //     var y = window.innerHeight
@@ -155,15 +163,16 @@ export default function HomeScreen () {
         // }
 
         // handleResize() // apply size rules on render
-        
+
         // window.addEventListener('resize', handleResize)
 
-        
 
-        const syncInterval = setInterval(async() => {
+
+        const syncInterval = setInterval(async () => {
 
             try {
                 await handleStatus()
+                await handleMicStatus()
                 await syncConversationHist()
             } catch (e) {
                 console.log(e)
@@ -180,56 +189,61 @@ export default function HomeScreen () {
 
     useEffect(() => {
         // 👇️ scroll to bottom every time messages change
-        bottomRef.current?.scrollIntoView({behavior: 'smooth'});
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [histCount]);
-    
+
 
     return (
         <div className='App'>
             <header className='App-header'>
-                
-                { microphoneStatus === 'on' ? (
-                    <FaMicrophone style = {{
-                        paddingLeft: 20, 
-                        color: 'green', 
-                        width: buttonSize, 
-                        height:buttonSize
-                    }}/>
+
+                {microphoneStatus === 'on' ? (
+                    <FaMicrophone
+                        style={{
+                            paddingLeft: 20,
+                            color: 'green',
+                            width: buttonSize,
+                            height: buttonSize
+                        }}
+                        onClick={async () => { await handleMicPress() }}
+                    />
                 ) :
-                    <FaMicrophoneSlash style = {{
-                        paddingLeft: 20, 
-                        color: 'red', 
-                        width: buttonSize, 
-                        height:buttonSize
-                    }}/>
+                    <FaMicrophoneSlash
+                        style={{
+                            paddingLeft: 20,
+                            color: 'red',
+                            width: buttonSize,
+                            height: buttonSize
+                        }}
+                        onClick={async () => { await handleMicPress() }}
+                    />
                 }
                 <h2>Ditto Dashboard</h2>
-                <FaUndo 
-                    style = {{
-                        "paddingRight": 20, 
-                        width:buttonSize, 
-                        height:buttonSize,
+                <FaUndo
+                    style={{
+                        "paddingRight": 20,
+                        width: buttonSize,
+                        height: buttonSize,
                         color: 'white'
                     }}
-                    onClick={async()=>{await resetConversationHandler()}}
+                    onClick={async () => { await resetConversationHandler() }}
                 />
             </header>
             <Divider />
-            <StatusBar 
-                status={bootStatus} 
+            <StatusBar
+                status={bootStatus}
                 statusColor={statusColor}
             />
             <Divider />
             <div className='App-body'>
-                <ChatBubbles conversation={conversation}/>
+                <ChatBubbles conversation={conversation} />
                 <div ref={bottomRef} />
             </div>
-            
+
             <footer className='App-footer'>
                 <SendMessage />
             </footer>
-            
+
         </div>
     );
 }
-    
