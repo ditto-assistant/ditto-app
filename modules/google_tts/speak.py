@@ -57,10 +57,10 @@ class Speak:
             pygame.mixer.init()
             pygame.mixer.music.load('output.mp3')
             pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy() == True:
-                if self.stopped:
-                    break
-                continue
+            # while pygame.mixer.music.get_busy() == True:
+            #     if self.stopped:
+            #         break
+            #     continue
             # os.remove('output.mp3')
         except:
             print('GTTS error...')
