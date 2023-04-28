@@ -152,7 +152,7 @@ class Assistant:
         self.prompt = self.speech.text
 
         # log the user's prompt
-        print('\nwriting prompt to db...')
+        # print('writing prompt to db...')
         self.write_prompt_to_db()
 
         if 'GestureNet' in self.prompt:
@@ -171,7 +171,6 @@ class Assistant:
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
 
-        print('\n')
         print(cat, sub_cat, action)
 
         # send prompt to application / category
