@@ -240,7 +240,7 @@ class Assistant:
         elif cat == 'weather':
             try:
                 self.reply = self.command.weather_handler.handle_response(
-                    self.command, sub_cat)
+                    sub_cat, action)
                 self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:

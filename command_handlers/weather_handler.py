@@ -1,15 +1,32 @@
 import json
 
+from modules.home_assistant.home_assistant import HomeAssistant
+
+
 class WeatherHandler():
 
     def __init__(self):
-        pass
+        try:
+            self.home_assistant = HomeAssistant()
+        except BaseException as e:
+            print('\nError loading Home Assistant in Weather Module...')
+            print(e)
 
-    def handle_response(self, command, sub_cat):
+    def handle_response(self, sub_cat, action):
         reply = ''
-        if sub_cat == 'none':
-            response = json.loads(command.weather_app.get_weather())['curr_temp']
-            location = command.weather_app.location
-            reply = "[It's currently %s degrees in %s]" % (response, location)
+        self.forecast_obj = self.home_assistant.get_forecast()
+        if sub_cat == 'temperature':
+            temp = self.forecast_obj['attributes']['temperature']
+            unit = self.forecast_obj['attributes']['temperature_unit']
+            reply = "[It's currently %s %s outside.]" % (temp, unit)
+            print(reply+'\n')
+        if sub_cat == 'forecast':
+            temp = self.forecast_obj['attributes']['temperature']
+            unit = self.forecast_obj['attributes']['temperature_unit']
+            forecast = self.forecast_obj['state']
+            if 'partlycloudy' in forecast:
+                forecast = 'partly cloudy'
+            reply = "[Today forecast is %s. It's currently %s %s outside.]" % (forecast,
+                                                                               temp, unit)
             print(reply+'\n')
         return reply
