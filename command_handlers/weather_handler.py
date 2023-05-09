@@ -26,7 +26,7 @@ class WeatherHandler():
             forecast = self.forecast_obj['state']
             if 'partlycloudy' in forecast:
                 forecast = 'partly cloudy'
-            reply = "[Today forecast is %s. It's currently %s %s outside.]" % (forecast,
-                                                                               temp, unit)
+            reply = "[Today's forecast is %s. It's currently %s %s outside.]" % (forecast,
+                                                                                 temp, unit)
             print(reply+'\n')
         return reply
