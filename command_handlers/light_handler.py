@@ -43,6 +43,12 @@ class LightHandler():
             for i in entities:
                 if 'night' in i:
                     entity_id = i
+        elif 'sleep' in command:
+            self.toggle_light('off')
+            entities = self.config['ha_entities']
+            for i in entities:
+                if 'sleep' in i:
+                    entity_id = i
         if not entity_id:
             print('No ha_entities day mode entity found in resources/config.json...')
             return
@@ -198,8 +204,8 @@ class LightHandler():
                     tts(reply)
                     self.toggle_light_power(command, lightname)
 
-            elif 'night' in command or 'day' in command:
-                reply = f'[Setting lights to {command} mode]'
+            elif 'night' in command or 'day' in command or 'sleep' in command:
+                reply = f'[Setting house to {command} mode]'
                 tts(reply)
                 self.toggle_ha_entity(command)
 
