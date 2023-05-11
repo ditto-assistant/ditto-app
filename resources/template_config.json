@@ -4,8 +4,8 @@
     "microphone": "",
     "teensy_path": "",
     "user": "your_name_here",
-    "light_groups": [
-        "Home"
+    "ha_entities": [
+        ""
     ],
     "GOOGLE_APPLICATION_CREDENTIALS": "",
     "PYGAME_HIDE_SUPPORT_PROMPT": 1,

@@ -9,6 +9,8 @@ import lifxlan
 import serial
 
 from modules.home_assistant.home_assistant import HomeAssistant
+from datetime import datetime
+import time
 
 
 class LightHandler():
@@ -16,6 +18,7 @@ class LightHandler():
     def __init__(self, config):
         self.config = config
         self.nlp_ip = config['nlp-server']
+        self.ha_entities = config
         self.light_status = True
         self.light_mode = 'on'
         self.home_assistant = HomeAssistant()
@@ -24,6 +27,28 @@ class LightHandler():
     def handle_response(self, prompt, tts):
         Thread(target=self.handle_response_(prompt, tts), args=()).start()
         return self
+
+    def toggle_ha_entity(self, command):
+        entity_id = ''
+        command = command.strip()
+        if 'day' in command:
+            self.toggle_light('on')
+            entities = self.config['ha_entities']
+            for i in entities:
+                if 'day' in i:
+                    entity_id = i
+        elif 'night' in command:
+            self.toggle_light('red')
+            entities = self.config['ha_entities']
+            for i in entities:
+                if 'night' in i:
+                    entity_id = i
+        if not entity_id:
+            print('No ha_entities day mode entity found in resources/config.json...')
+            return
+        else:
+            self.home_assistant.update_state(
+                entity_id, {"state": str(datetime.fromtimestamp(time.time()))})
 
     def prompt_ner_light(self, prompt):
         base_url = f"http://{self.nlp_ip}:32032/ner/"
@@ -166,12 +191,17 @@ class LightHandler():
                     reply = f'[Dimming the {lightname}]'
                     tts(reply)
                     self.set_light_brightness(brightness, lightname)
-                else:
+                elif 'off' in command or 'on' in command:
                     reply = f'[Turning {command} the {lightname}]'
                     if lightname == 'all lights':
                         reply = reply.replace('the ', '')
                     tts(reply)
                     self.toggle_light_power(command, lightname)
+
+            elif 'night' in command or 'day' in command:
+                reply = f'[Setting lights to {command} mode]'
+                tts(reply)
+                self.toggle_ha_entity(command)
 
             elif color and lightname:
                 reply = f'[Setting {lightname} to {color}]'

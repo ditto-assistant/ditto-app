@@ -1,3 +1,4 @@
+import json
 import os
 
 
@@ -47,6 +48,13 @@ class HomeAssistant:
         if not self.forecast_id == None:
             self.forecast_obj = res[self.forecast_id]
             return self.forecast_obj
+
+    def update_state(self, entity_id: str = None, data: dict = None):
+        if entity_id == None or data == None:
+            print('No entity_id or data object specified...')
+            return
+        self.client.request(
+            f'states/{entity_id}', 'POST', data=json.dumps(data))
 
 
 if __name__ == "__main__":
