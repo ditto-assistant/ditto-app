@@ -1,6 +1,6 @@
 # Package Setup:
 
-1. Tested on Python versions 3.7-3.9. Install whichever you prefer!
+1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
 
 Use your favorite package manager to [Install just](https://github.com/casey/just#packages) then run install:
 
