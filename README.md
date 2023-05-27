@@ -1,6 +1,6 @@
 # Package Setup:
 
-1. Tested on Python versions 3.7-3.9. Install whichever you prefer!
+1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
 
 Use your favorite package manager to [Install just](https://github.com/casey/just#packages) then run install:
 
@@ -52,11 +52,9 @@ pip install -r requirements.txt
       1. Set `GOOGLE_APPLICATION_CREDENTIALS` to the absolute path of the .json credential key.
 2. OpenAI API Setup (GPT-3):
    1. Create an account at openai.com/api and go to account settings to find an API key string. Copy this string and create an OS environment variable with the following name and value: `OPENAI_API_KEY=insert_key_here`
-3. HeyDitto Activation Model:
+3. Spotify API Setup (optional):
    1. Instructions coming soon...
-4. Spotify API Setup (optional):
-   1. Instructions coming soon...
-5. Teensy Setup (optional):
+4. Teensy Setup (optional, for FastLED light strips):
    1. Building to Teensy:
       1. Install platformio and anything else needed to program your Teensy. Simply build and upload the platformio project located in `assistant/modules/teensy41` .
    2. Assistant Setup for Teensy.
