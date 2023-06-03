@@ -63,6 +63,7 @@ class Assistant:
         self.skip_name = False  # used to skip name (conversation app)
 
         self.command_timer = 0  # used to handle the timeout of interaction with assistant
+        self.retries = 0
         # will go to false after 5 seconds of inactivity (idle)
         self.comm_timer_mode = False
         self.update_status_db('on')
@@ -354,10 +355,11 @@ class Assistant:
                     self.send_command()
 
                 except BaseException as e:
-                    print('\n\n[Unexpected Error: ]\n')
+
+                    print('\n[Unexpected Error: ]\n')
                     print(e)
-                    self.reply = '...'
-                    self.tts(self.reply)
+                    self.reply = f"[Unexpected Error: {e}]"
+                    self.tts('Unexpected Error... Please try again!')
                     self.reset_loop()
 
             else:
