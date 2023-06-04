@@ -68,8 +68,6 @@ class Speech:
         self.skip_wake = False
 
         self.wake = 1
-        self.speaker_timer_mode = True  # set to keep speaker from sleeping
-        self.speaker_timer = 0
 
         self.inject = False  # used for skipping STT by using GUI's prompt in activation loop
         self.from_gui = False  # used in ditto.py to handle loop differently
@@ -146,18 +144,6 @@ class Speech:
         except BaseException as e:
             print(e)
             self.recording = False
-
-    def speaker_mic_timeout_handler(self, timeout):
-        self.speak_timer = Timer(
-            timeout, self.speaker_mic_timeout_handler, [timeout])
-        self.speak_timer.start()
-        if self.speaker_timer_mode:
-            self.speaker_timer += 1
-        if self.speaker_timer == timeout:
-            self.speaker_timer = 0
-            self.speak_timer.cancel()
-            self.pico.running = False
-            self.wake = 0
 
         # not used (leaving hooks for other purposes)
         def record_pyaudio(self, max_len_seconds=10):
