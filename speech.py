@@ -58,7 +58,7 @@ class Speech:
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
         self.heyditto = HeyDittoNet(
-            model_type='HeyDittoNet-v1',
+            model_type='HeyDittoNet-v2',
             path='modules/ditto_activation/',
             tflite=True
         )
