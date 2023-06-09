@@ -257,7 +257,7 @@ class Assistant:
             try:
                 self.reply = self.command.soundscapes_handler.handle_response(
                     sub_cat, action)
-                self.tts(self.reply)
+                # self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:
                 print(e)

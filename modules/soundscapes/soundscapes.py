@@ -28,9 +28,9 @@ class SoundScapes:
         if 'noise' or 'white noise' in sound:
             print('Loading and playing white noise (10 hours)')
             mixer.music.load(self.path+'sounds/white_noise.mp3')
-            mixer.music.play()
             self.playing = True
             self.currently_playing = 'white noise'
+            mixer.music.play()
 
     def stop_sound(self):
         mixer.music.stop()

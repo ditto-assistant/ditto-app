@@ -16,6 +16,7 @@ class SoundScapesHandler:
             self.soundscapes.play_sound(sound)
             self.reply = f'[Playing {sound}.]'
         if action == 'exit':
-            self.soundscapes.stop_sound()
             self.reply = f'[Stopping {self.soundscapes.currently_playing}.]'
+            self.soundscapes.stop_sound()
+        print('\n'+self.reply)
         return self.reply
