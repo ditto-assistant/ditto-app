@@ -28,6 +28,7 @@ from command_handlers.timer_handler import TimerHandler
 from command_handlers.weather_handler import WeatherHandler
 from command_handlers.wolfram_handler import WolframHandler
 from command_handlers.conversation_handler import ConversationHandler
+from command_handlers.soundscapes_handler import SoundScapesHandler
 
 
 try:
@@ -49,6 +50,7 @@ class Command:
         self.weather_handler = WeatherHandler()
         self.wolfram_handler = WolframHandler()
         self.conversation_handler = ConversationHandler(path, offline_mode)
+        self.soundscapes_handler = SoundScapesHandler(path=path)
         self.path = path
         self.response = ''
         self.command_input = ''

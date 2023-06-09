@@ -172,6 +172,11 @@ class Assistant:
             sub_cat = self.offline_response['sub_category']
             action = self.offline_response['action']
 
+            if 'exit' in action and self.command.soundscapes_handler.soundscapes.playing:
+                cat = 'soundscapes'
+                sub_cat = 'none'
+                action = 'exit'
+
         print(cat, sub_cat, action)
 
         # send prompt to application / category
@@ -241,6 +246,16 @@ class Assistant:
         elif cat == 'weather':
             try:
                 self.reply = self.command.weather_handler.handle_response(
+                    sub_cat, action)
+                self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
+        elif cat == 'soundscapes':
+            try:
+                self.reply = self.command.soundscapes_handler.handle_response(
                     sub_cat, action)
                 self.tts(self.reply)
                 self.reset_loop()
