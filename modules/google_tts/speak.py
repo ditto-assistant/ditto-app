@@ -31,6 +31,8 @@ class Speak:
             audio_encoding=texttospeech.AudioEncoding.MP3
         )
 
+        pygame.mixer.init(channels=8)
+
     def gtts(self, prompt):
         Thread(target=self.speak(prompt), args=()).start()
         return self
@@ -54,13 +56,14 @@ class Speak:
                 # Write the response to the output file.
                 out.write(response.audio_content)
 
-            pygame.mixer.init()
             pygame.mixer.music.load('output.mp3')
-            pygame.mixer.music.play()
-            # while pygame.mixer.music.get_busy() == True:
-            #     if self.stopped:
-            #         break
-            #     continue
+            channel = pygame.mixer.find_channel(True)
+            pygame.mixer.music.set_volume(1.0)
+            channel.play(pygame.mixer.Sound('output.mp3'))
+            while channel.get_busy() == True:
+                if self.stopped:
+                    break
+                continue
             # os.remove('output.mp3')
         except:
             print('GTTS error...')

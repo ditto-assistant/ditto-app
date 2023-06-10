@@ -15,9 +15,9 @@ class SoundScapes:
         sounds = []
         self.playing = False
         self.currently_playing = ''
+        self.channel = None
         try:
             sounds = os.listdir(self.path+'sounds')
-            mixer.init()
         except BaseException as e:
             print('Error loading SoundScapes resources...')
             print(e)
@@ -27,9 +27,11 @@ class SoundScapes:
     def play_sound(self, sound: str):
         if 'noise' or 'white noise' in sound:
             print('Loading and playing white noise (10 hours)')
-            mixer.music.load(self.path+'sounds/white_noise.mp3')
+
             self.playing = True
             self.currently_playing = 'white noise'
+            self.channel = mixer.find_channel(True)
+            mixer.music.load(self.path+'sounds/white_noise.mp3')
             mixer.music.play()
 
     def stop_sound(self):

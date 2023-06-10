@@ -38,6 +38,8 @@ if platform.system() == 'Linux':
 
 OFFLINE_MODE = False
 
+pygame.mixer.init(channels=8)
+
 
 class Assistant:
 
@@ -101,11 +103,19 @@ class Assistant:
         elif self.reset_conversation:
             return
         else:
-            pygame.mixer.init()
-            pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy() == True:
-                continue
+            if self.command.soundscapes_handler.soundscapes.playing:
+                if sound == 'on':
+                    pygame.mixer.music.set_volume(0.2)
+                if sound == 'off':
+                    pygame.mixer.music.set_volume(1.0)
+            else:
+                channel = pygame.mixer.find_channel(True)
+                pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
+                channel.set_volume(
+                    1.0
+                )
+                channel.play(pygame.mixer.Sound(
+                    f"resources/sounds/ditto-{sound}.mp3"))
 
     def skip_wake(self):
         '''
@@ -407,7 +417,14 @@ class Assistant:
                               str(self.speech_volume)+'%')
                 # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
                 if not self.speech.offline_mode:
-                    self.google.gtts(reply)
+                    soundscapes = self.command.soundscapes_handler.soundscapes
+                    if soundscapes.playing:
+                        speaker = self.google.gtts(reply)
+                        while speaker.running:
+                            continue
+                        soundscapes.play_sound(soundscapes.currently_playing)
+                    else:
+                        self.google.gtts(reply)
                 else:
                     self.speech_engine.say(reply)
                     self.speech_engine.runAndWait()
