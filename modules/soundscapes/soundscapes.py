@@ -32,6 +32,7 @@ class SoundScapes:
             self.currently_playing = 'white noise'
             self.channel = mixer.find_channel(True)
             mixer.music.load(self.path+'sounds/white_noise.mp3')
+            mixer.music.set_volume(1.0)
             mixer.music.play()
 
     def stop_sound(self):
