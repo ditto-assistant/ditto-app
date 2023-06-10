@@ -362,7 +362,7 @@ class Assistant:
             # (can be used per application for detecting user idle to cancel)
             self.command_timer = 0
             # executes every n 'seconds' (used to handle back to idle)
-            self.command_timeout_handler(30)
+            self.command_timeout_handler(60)
 
             # record audio and listen for command
             self.speech.record_audio(activation_mode=self.activation_mode)
