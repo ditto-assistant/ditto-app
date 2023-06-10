@@ -135,8 +135,14 @@ class Google():
         final one, print a newline to preserve the finalized transcription.
         """
         num_chars_printed = 0
+        start_time = int(time.time())
+        timeout = 100  # seconds max prompt length
+        end_time = start_time + timeout
         for response in responses:
-
+            if int(time.time()) >= end_time:
+                if PROMPT == '':
+                    PROMPT = 'cancel'
+                return PROMPT
             if not response.results:
                 continue
 

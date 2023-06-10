@@ -64,7 +64,6 @@ class Speech:
         )
         self.vosk_model_dir = 'modules/vosk_model/model'
         self.fname = 'modules/vosk_model/command.wav'
-        self.comm_timer_mode = False
         self.skip_wake = False
 
         self.wake = 1
@@ -102,45 +101,42 @@ class Speech:
                         pyautogui.press('ctrl')  # turns display on if asleep
 
             else:
-                if not self.comm_timer_mode and activation_mode:
-                    print('\nidle...\n')
-                else:
-                    self.skip_wake = False  # set back to false
+                self.skip_wake = False  # set back to false
 
-                    if self.gesture_activation:
-                        self.gesture_activation = False  # set back to false
-                        self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
-                        if self.gesture == 'palm':
-                            self.text = self.google_instance.grab_prompt()
-                        else:
-                            self.text = f'GestureNet: {self.gesture}'
-
-                    if self.reset_conversation:
-                        self.reset_conversation = False  # set back to false
-                        self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
-                        self.text = f'resetConversation'
-
-                    elif self.inject:
-                        self.inject = False
-                        # self.text = self.pico.prompt
-                        self.text = self.heyditto.activation_requests.prompt
-                        # self.pico.prompt = ""
-                        self.heyditto.activation_requests.prompt = ""
-                        self.from_gui = True
-
+                if self.gesture_activation:
+                    self.gesture_activation = False  # set back to false
+                    self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
+                    if self.gesture == 'palm':
+                        self.text = self.google_instance.grab_prompt()
                     else:
-                        if not self.offline_mode:
-                            self.text = self.google_instance.grab_prompt()
-                        else:
-                            self.speech_to_text = STT(os.getcwd())
-                            self.speech_to_text.stt()
-                            self.text = self.speech_to_text.text
+                        self.text = f'GestureNet: {self.gesture}'
 
-                    # self.activation kind of unneccesary...
-                    self.activation.text = self.text
-                    self.activation.check_input(activation_mode)
-                    if self.activation.activate:
-                        self.recording = False
+                if self.reset_conversation:
+                    self.reset_conversation = False  # set back to false
+                    self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
+                    self.text = f'resetConversation'
+
+                elif self.inject:
+                    self.inject = False
+                    # self.text = self.pico.prompt
+                    self.text = self.heyditto.activation_requests.prompt
+                    # self.pico.prompt = ""
+                    self.heyditto.activation_requests.prompt = ""
+                    self.from_gui = True
+
+                else:
+                    if not self.offline_mode:
+                        self.text = self.google_instance.grab_prompt()
+                    else:
+                        self.speech_to_text = STT(os.getcwd())
+                        self.speech_to_text.stt()
+                        self.text = self.speech_to_text.text
+
+                # self.activation kind of unneccesary...
+                self.activation.text = self.text
+                self.activation.check_input(activation_mode)
+                if self.activation.activate:
+                    self.recording = False
         except BaseException as e:
             print(e)
             self.recording = False

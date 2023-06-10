@@ -12,7 +12,6 @@ import sqlite3
 import os
 import time
 import pygame
-from threading import Timer
 import requests
 from speech import Speech
 from command_handlers.command import Command
@@ -64,10 +63,8 @@ class Assistant:
 
         self.skip_name = False  # used to skip name (conversation app)
 
-        self.command_timer = 0  # used to handle the timeout of interaction with assistant
         self.retries = 0
         # will go to false after 5 seconds of inactivity (idle)
-        self.comm_timer_mode = False
         self.update_status_db('on')
 
     def load_config(self):
@@ -92,8 +89,6 @@ class Assistant:
         self.activation_mode = True  # go back to idle...
         self.speech.text = ''
         self.prompt = ''
-        self.comm_timer_mode = False
-        self.comm_timer.cancel()
         self.speech.from_gui = False
 
     def play_sound(self, sound='off'):
@@ -123,10 +118,6 @@ class Assistant:
         '''
         self.speech.activation.activate = True  # skip wake-up sequence (name is already called)
         self.speech.skip_wake = True
-        self.command_timer = 0  # reset command timer
-        # (pause to not iterrupt assistant speaking)
-        self.comm_timer_mode = False
-        self.comm_timer.cancel()
 
     def prompt_intent(self, prompt):
         base_url = f"http://{self.nlp_ip}:32032/intent/"
@@ -358,56 +349,26 @@ class Assistant:
 
             self.activation_mode = False
 
-            self.comm_timer_mode = True  # turn on timer
-            # (can be used per application for detecting user idle to cancel)
-            self.command_timer = 0
-            # executes every n 'seconds' (used to handle back to idle)
-            self.command_timeout_handler(60)
-
             # record audio and listen for command
             self.speech.record_audio(activation_mode=self.activation_mode)
 
             # command has been spoken (app on enter section)
-            if self.comm_timer_mode:
-                self.comm_timer.cancel()
-                print("Q: %s\n" % self.speech.activation.text)
-                self.speech.activation.activate = False
-                self.speech.activation.text = ""
+            print("Q: %s\n" % self.speech.activation.text)
+            self.speech.activation.activate = False
+            self.speech.activation.text = ""
 
-                # enter application handler ## (main loop)
-                # while not self.activation_mode:
-                try:
-                    self.send_command()
+            # enter application handler ## (main loop)
+            # while not self.activation_mode:
+            try:
+                self.send_command()
 
-                except BaseException as e:
+            except BaseException as e:
 
-                    print('\n[Unexpected Error: ]\n')
-                    print(e)
-                    self.reply = f"[Unexpected Error: {e}]"
-                    self.tts('Unexpected Error... Please try again!')
-                    self.reset_loop()
-
-            else:
-                self.speech.activation.activate = False  # back to idle ...
-                self.speech.activation.text = ""
-                # print('Canceling...')
-
-    def command_timeout_handler(self, timeout):
-        self.comm_timer = Timer(
-            timeout, self.command_timeout_handler, [timeout])
-        self.comm_timer.start()
-        if self.comm_timer_mode:
-            self.command_timer += 1
-            # print("command timer: %d" % self.command_timer)
-        if self.command_timer == timeout:
-            self.command_timer = 0
-            print('[command timer reset]\n')
-            self.play_sound('off')
-            # go back to idle ...
-            self.comm_timer.cancel()
-            self.comm_timer_mode = False  # turn off timer
-            self.reset_loop()
-            self.speech.comm_timer_mode = False  # send to speech submodule for handling
+                print('\n[Unexpected Error: ]\n')
+                print(e)
+                self.reply = f"[Unexpected Error: {e}]"
+                self.tts('Unexpected Error... Please try again!')
+                self.reset_loop()
 
     def tts(self, reply):
         if not self.speech.from_gui:  # only read reply aloud if command / prompt was spoken by user
