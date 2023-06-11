@@ -79,7 +79,7 @@ def get_conversation_history():
     def create_response_arrays(arr):
         response = dict()
         for ndx, x in enumerate(arr):
-            response[str(ndx)] = x
+            response[str(ndx)] = [x[0], x[1]]
         return json.dumps(response)
     return create_response_arrays(prompts), create_response_arrays(responses)
 

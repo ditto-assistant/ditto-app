@@ -20,6 +20,7 @@ from modules.security_camera.security_cam import SecurityCam
 import json
 import platform
 import numpy as np
+from time import localtime
 
 # used to send keypress event (keeps display on)
 try:
@@ -298,10 +299,13 @@ class Assistant:
             return
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR)")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS responses(response VARCHAR, timestamp)")
         SQL.commit()
-        cur.execute("INSERT INTO responses VALUES('%s')" %
-                    self.reply.replace("'", "''"))
+        cur.execute("INSERT INTO responses VALUES('%s', '%s')" %
+                    (self.reply.replace("'", "''"), str(
+                        int(time.time())))
+                    )
         SQL.commit()
         SQL.close()
         self.reply = ''  # reset for next loop
@@ -312,10 +316,13 @@ class Assistant:
             return
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR)")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR, timestamp)")
         SQL.commit()
-        cur.execute("INSERT INTO prompts VALUES('%s')" %
-                    self.prompt.replace("'", "''"))
+        cur.execute("INSERT INTO prompts VALUES('%s', '%s')" %
+                    (self.prompt.replace("'", "''"), str(
+                        int(time.time())))
+                    )
         SQL.commit()
         SQL.close()
 
