@@ -60,10 +60,10 @@ class Speak:
             channel = pygame.mixer.find_channel(True)
             pygame.mixer.music.set_volume(1.0)
             channel.play(pygame.mixer.Sound('output.mp3'))
-            while channel.get_busy() == True:
-                if self.stopped:
-                    break
-                continue
+            # while channel.get_busy() == True:
+            #     if self.stopped:
+            #         break
+            #     continue
             # os.remove('output.mp3')
         except:
             print('GTTS error...')
