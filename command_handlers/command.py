@@ -135,17 +135,24 @@ class Command:
         for i in range(max_retries):
             try:
                 self.command_input = command
-                self.response = openai.Completion.create(
-                    engine="text-davinci-003",
-                    prompt=self.conversation_prompt + command + '\nreply:',
-                    temperature=0.7,
-                    max_tokens=400,
-                    top_p=1,
-                    frequency_penalty=1.1,
-                    presence_penalty=0.94,
-                    stop=["\nuser: "]
+                self.response = openai.ChatCompletion.create(
+                    #     engine="text-davinci-003",
+                    #     prompt=self.conversation_prompt + command + '\nreply:',
+                    #     temperature=0.7,
+                    #     max_tokens=400,
+                    #     top_p=1,
+                    #     frequency_penalty=1.1,
+                    #     presence_penalty=0.94,
+                    #     stop=["\nuser: "]
+
+                    model="gpt-3.5-turbo",
+                    messages=[{
+                        "role": "user",
+                        "content": self.conversation_prompt + command + '\nreply:',
+                    }]
                 )
-                raw_response = self.response.choices.copy().pop()['text']
+                # raw_response = self.response.choices.copy().pop()['text']
+                raw_response = self.response.choices[0].message.content
                 print('\n\nGPT-3 Raw Response: ', raw_response)
                 return raw_response
             except BaseException as e:
