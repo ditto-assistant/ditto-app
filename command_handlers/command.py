@@ -117,7 +117,7 @@ class Command:
             intro = "The following is a conversation between an AI and a human that are best friends: \n\n"
             conversation_list = self.conversation_prompt[len(
                 intro):].split('\n')
-            half_way = int(conversation_list)/2
+            half_way = int(len(conversation_list))/2
             # trim conversation from middle to current.
             trimmed_list = conversation_list[half_way:]
             self.conversation_prompt = intro + \
