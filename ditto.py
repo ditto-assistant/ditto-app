@@ -1,5 +1,5 @@
 """
-Combines speech to text and gpt3 api to make commands.
+Ditto Assistant main logic.
 
 author: Omar Barazanji
 """
