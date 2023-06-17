@@ -25,13 +25,33 @@ class SoundScapes:
         return sounds
 
     def play_sound(self, sound: str):
-        if 'noise' or 'white noise' in sound:
+        if 'white noise' in sound:
             print('Loading and playing white noise (10 hours)')
 
             self.playing = True
             self.currently_playing = 'white noise'
             self.channel = mixer.find_channel(True)
             mixer.music.load(self.path+'sounds/white_noise.mp3')
+            mixer.music.set_volume(1.0)
+            mixer.music.play()
+
+        if 'binaural beats' in sound:
+            print('Loading and playing binaural beats (10 hours)')
+
+            self.playing = True
+            self.currently_playing = 'binaural beats'
+            self.channel = mixer.find_channel(True)
+            mixer.music.load(self.path+'sounds/binaural_beats.mp3')
+            mixer.music.set_volume(1.0)
+            mixer.music.play()
+
+        if 'thunderstorm' in sound:
+            print('Loading and playing thunderstorm (10 hours)')
+
+            self.playing = True
+            self.currently_playing = 'thunderstorm'
+            self.channel = mixer.find_channel(True)
+            mixer.music.load(self.path+'sounds/thunderstorm.mp3')
             mixer.music.set_volume(1.0)
             mixer.music.play()
 
