@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { grabConversationHistory, grabConversationHistoryCount } from "./models/api";
 import { ChatFeed, Message } from "./modules/react-chat-ui-omar-fork/lib";
 import { status } from "./models/Status";
@@ -8,25 +8,25 @@ import "./screens/App.css";
 import {
     HashRouter,
     Redirect,
-    Route, 
+    Route,
     Switch,
-  } from "react-router-dom";
-  
+} from "react-router-dom";
+
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from './screens/SettingsScreen';
 import SignInScreen from './screens/SignInScreen';
 
-export default function App () {
+export default function App() {
 
     return (
         <HashRouter>
             <Redirect to='/' />
             <Switch>
-                <Route exact path='/' component={HomeScreen}/>
+                <Route exact path='/' component={HomeScreen} />
                 <Route exact path='/SettingsScreen' component={SettingsScreen} />
                 <Route exact path='/SignInScreen' component={SignInScreen} />
             </Switch>
         </HashRouter>
     );
 }
-    
+

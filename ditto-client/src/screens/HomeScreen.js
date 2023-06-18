@@ -38,8 +38,6 @@ export default function HomeScreen() {
 
     const bottomRef = useRef(null);
 
-    let bubblefontSize = 14
-    let bubblePadding = 10
 
     const resetConversationHandler = async () => {
         console.log('Resetting conversation history...')
@@ -87,10 +85,11 @@ export default function HomeScreen() {
             setCount(0)
             setConversation(newConversation)
             setReset(false)
+            return
         }
         for (var key in prompts) {
-            let prompt = prompts[key]
-            let response = responses[key]
+            let prompt = prompts[key][0]
+            let response = responses[key][0]
             newConversation.messages.push(
                 new Message({
                     id: 0,
@@ -103,8 +102,8 @@ export default function HomeScreen() {
                     message: response
                 })
             )
-            setConversation(newConversation)
         }
+        setConversation(newConversation)
     }
 
     useEffect(() => {
@@ -128,7 +127,7 @@ export default function HomeScreen() {
             let serverHistCount = await grabConversationHistoryCount()
             let localHistCount = window.electron.store.get('histCount')
             if (hasHistCount) { // If there is a local histCount variable, check if need to update from Server
-                console.log(serverHistCount, localHistCount)
+                // console.log(serverHistCount, localHistCount)
                 let localHist = getSavedConversation()
                 if (histCount !== localHistCount) {
                     setCount(localHistCount)
@@ -150,24 +149,6 @@ export default function HomeScreen() {
             }
         }
 
-        // function handleResize() {
-        //     var x = window.innerWidth
-        //     var y = window.innerHeight
-        //     if (x > 600 && y > 700) {
-        //     bubblefontSize = 25
-        //     bubblePadding = 20
-        //     } else {
-        //     bubblefontSize = 14
-        //     bubblePadding = 10
-        //     }
-        // }
-
-        // handleResize() // apply size rules on render
-
-        // window.addEventListener('resize', handleResize)
-
-
-
         const syncInterval = setInterval(async () => {
 
             try {
@@ -183,7 +164,7 @@ export default function HomeScreen() {
         // run when unmounted
         return () => clearInterval(syncInterval) // fixes memory leak 
 
-    }, [reset])
+    }, [reset, bootStatus, microphoneStatus])
 
     const statusColor = bootStatus === 'on' ? 'green' : 'red'
 
