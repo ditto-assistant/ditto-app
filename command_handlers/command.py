@@ -124,7 +124,7 @@ class Command:
         try:
             ip = self.config['nlp-server']
             res = requests.post(f'http://{ip}:32032/prompt/?prompt={command}')
-            raw_response = str(res.content.decode().strip()).replace('"', '')
+            raw_response = str(res.content.decode().strip())[1:-1]
         except BaseException as e:
             print(e)
             raw_response = '[Error communicating with OpenAI... Please try again!]'
