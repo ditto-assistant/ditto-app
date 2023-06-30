@@ -115,7 +115,7 @@ class Command:
     def reset_conversation(self):
         try:
             ip = self.config['nlp-server']
-            requests.post(f'http://{ip}:32032/prompt/?reset=1')
+            requests.post(f'http://{ip}:32032/prompt/?reset=1', timeout=30)
         except BaseException as e:
             print(e)
 
@@ -123,7 +123,8 @@ class Command:
         raw_response = ''
         try:
             ip = self.config['nlp-server']
-            res = requests.post(f'http://{ip}:32032/prompt/?prompt={command}')
+            res = requests.post(
+                f'http://{ip}:32032/prompt/?prompt={command}', timeout=30)
             raw_response = str(res.content.decode().strip())
             print('\nA: ', raw_response+'\n')
         except BaseException as e:
