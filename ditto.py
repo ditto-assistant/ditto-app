@@ -8,6 +8,7 @@ author: Omar Barazanji
 # import pyttsx3
 
 # other imports
+import pygame._sdl2.audio as sdl2_audio
 import sqlite3
 import os
 import time
@@ -34,11 +35,13 @@ except:
 
 UNIX = False
 if platform.system() == 'Linux':
+    devices = tuple(sdl2_audio.get_audio_device_names(True))
+    pygame.mixer.init(devicename=devices[0], channels=8)
     UNIX = True
+else:
+    pygame.mixer.init(channels=8)
 
 OFFLINE_MODE = False
-
-pygame.mixer.init(channels=8)
 
 
 class Assistant:
