@@ -35,11 +35,9 @@ except:
 
 UNIX = False
 if platform.system() == 'Linux':
-    devices = tuple(sdl2_audio.get_audio_device_names(True))
-    pygame.mixer.init(devicename=devices[0], channels=8)
     UNIX = True
-else:
-    pygame.mixer.init(channels=8)
+
+pygame.mixer.init(channels=8)
 
 OFFLINE_MODE = False
 
