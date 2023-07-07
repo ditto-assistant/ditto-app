@@ -124,10 +124,11 @@ class Command:
         query_with_short_term_memory = query
         stamp = str(datetime.utcfromtimestamp(time.time()))
         if len(self.conversation_memory_buffer) > 1:
-            query_with_short_term_memory = 'Short Term Memory Buffer:\n'
+            query_with_short_term_memory = '<STMEM>Short Term Memory Buffer:\n'
             for q, r, s in self.conversation_memory_buffer:
-                query_with_short_term_memory += f'User ({s}): '+q+'\n'
+                query_with_short_term_memory += f'Human: ({s}): '+q+'\n'
                 query_with_short_term_memory += f'AI: '+r+'\n'
+            query_with_short_term_memory += f'<STMEM>{query}'
         try:
             ip = self.config['nlp-server']
             res = requests.post(
