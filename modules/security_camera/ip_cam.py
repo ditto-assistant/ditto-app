@@ -2,12 +2,13 @@ import cv2
 import time
 from datetime import datetime
 import os
+import json
 
 # Load the Haar cascade XML file for face detection
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
-rtsp_link = "rtsp://192.168.0.208/1"
+rtsp_link = json.load(open('config.json', 'r'))['rtsp_cam1']
 
 # Create a VideoCapture object
 cap = cv2.VideoCapture(rtsp_link)
