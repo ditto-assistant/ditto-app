@@ -56,6 +56,16 @@ class SoundScapes:
             mixer.music.set_volume(1.0)
             mixer.music.play()
 
+        if 'rainforest' in sound:
+            print('Loading and playing rainforest (10 hours)')
+
+            self.playing = True
+            self.currently_playing = 'rainforest'
+            self.channel = mixer.find_channel(True)
+            mixer.music.load(self.path+'sounds/rainforest.mp3')
+            mixer.music.set_volume(1.0)
+            mixer.music.play()
+
     def stop_sound(self):
         mixer.music.stop()
         self.playing = False
