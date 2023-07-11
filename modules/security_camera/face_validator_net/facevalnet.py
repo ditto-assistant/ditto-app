@@ -55,7 +55,7 @@ class FaceValNet:
     def train_model(self, model):
         name = 'FaceValNet'
         self.early_stop_callback = tf.keras.callbacks.EarlyStopping(
-            monitor='loss', patience=3, restore_best_weights=True)
+            monitor='loss', patience=5, restore_best_weights=True)
         xtrain, xtest, ytrain, ytest = train_test_split(
             self.x, self.y, train_size=0.9)
         self.hist = model.fit(xtrain, ytrain, epochs=90,
