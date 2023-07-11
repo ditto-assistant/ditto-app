@@ -3,6 +3,14 @@ import time
 from datetime import datetime
 import os
 import json
+import numpy as np
+from tensorflow import keras
+from keras import backend as K
+
+from face_validator_net.facevalnet import FaceValNet
+
+face_val_net = FaceValNet('production', path='face_validator_net/')
+model = face_val_net.model
 
 # Load the Haar cascade XML file for face detection
 face_cascade = cv2.CascadeClassifier(
@@ -34,6 +42,8 @@ start_time = time.time()
 if not os.path.exists('captures'):
     os.mkdir('captures/')
 
+print('\n[Watching Front Door.]\n')
+
 # Read and display frames from the video stream
 while True:
     try:
@@ -54,6 +64,21 @@ while True:
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
+            # Crop the face region from the frame
+            face_crop = gray[y:y+h, x:x+w]
+
+            # Resize the face crop to 60x60
+            face_crop_resized = cv2.resize(face_crop, (60, 60))
+
+            # Expand dimensions to make it 60x60x1
+            face_crop_resized = np.expand_dims(face_crop_resized, axis=-1)
+
+            # Generate the file name using timestamp
+            stamp = str(datetime.utcfromtimestamp(time.time())).replace(
+                ' ', '').replace(':', '-').replace('.', '-')
+            image_name = 'captures/' + f'{stamp}.jpg'
+            face_name = 'captures/' + f'{stamp}_face.jpg'
+
         # Display the frame with face bounding boxes
         # cv2.imshow("RTSP Stream with Face Detection", frame)
 
@@ -66,18 +91,25 @@ while True:
         if elapsed_time >= 2:
             # Check if at least 10 faces were detected
             if face_counter >= 10:
-                # Generate the file name using timestamp
-                stamp = str(datetime.utcfromtimestamp(time.time())).replace(
-                    ' ', '').replace(':', '-').replace('.', '-')
-                name = 'captures/'+f'{stamp}.jpg'
 
-                # Save the image with the generated file name
-                cv2.imwrite(name, frame)
-                print("Image saved:", name)
+                model_confidence = np.array(model(
+                    np.expand_dims(face_crop_resized, 0)))[0][0] * 100
+                K.clear_session()
+                print('\nFaceValNet Model Confidence:', model_confidence)
+                if model_confidence >= 90:
+                    # Save the entire frame
+                    cv2.imwrite(image_name, frame)
+                    print("Image saved:", image_name)
 
-            # Reset the counter and start time for the next 2-second interval
-            face_counter = 0
-            start_time = time.time()
+                    # Save the cropped face (grayscale)
+                    cv2.imwrite(face_name, face_crop_resized)
+                    print("Cropped face saved:", face_name)
+
+                # Reset the counter and start time for the next 2-second interval
+                face_counter = 0
+                start_time = time.time()
+            else:
+                continue
 
         # Check for the 'q' key to exit
         if cv2.waitKey(1) & 0xFF == ord('q'):

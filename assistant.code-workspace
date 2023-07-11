@@ -1,21 +1,27 @@
 {
 	"folders": [
 		{
+			"name": "assistant",
 			"path": "."
 		},
 		{
+			"name": "ditto-app",
 			"path": "../ditto-app"
 		},
 		{
+			"name": "nlp_server",
 			"path": "../nlp_server"
 		},
 		{
+			"name": "dittoclient",
 			"path": "../dittoclient"
 		},
 		{
+			"name": "dalai_server",
 			"path": "../dalai_server"
 		},
 		{
+			"name": "security-camera",
 			"path": "../security-camera"
 		}
 	],
