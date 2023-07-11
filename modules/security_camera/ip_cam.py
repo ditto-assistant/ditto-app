@@ -95,8 +95,9 @@ while True:
                 model_confidence = np.array(model(
                     np.expand_dims(face_crop_resized, 0)))[0][0] * 100
                 K.clear_session()
-                print('\nFaceValNet Model Confidence:', model_confidence)
-                if model_confidence >= 90:
+
+                if model_confidence >= 98:
+                    print('\nFaceValNet Model Confidence:', model_confidence)
                     # Save the entire frame
                     cv2.imwrite(image_name, frame)
                     print("Image saved:", image_name)
