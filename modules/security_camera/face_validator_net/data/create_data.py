@@ -14,7 +14,7 @@ backgrounds = list(os.listdir(background_dir))
 print(f'\n[Loaded {len(faces)} faces {len(backgrounds)} backgrounds.]\n')
 
 for ndx, face_name in enumerate(faces):
-    if ndx == 501:
+    if ndx == 601:
         break
 
     photo_path = faces_dir+f'/{face_name}'

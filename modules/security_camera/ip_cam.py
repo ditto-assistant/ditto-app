@@ -9,6 +9,10 @@ from keras import backend as K
 
 from face_validator_net.facevalnet import FaceValNet
 
+from..home_assistant.home_assistant import HomeAssistant
+
+home = HomeAssistant()
+
 face_val_net = FaceValNet('production', path='face_validator_net/')
 model = face_val_net.model
 
@@ -97,6 +101,8 @@ while True:
                 K.clear_session()
 
                 if model_confidence >= 98:
+                    home.send_push_camera()
+
                     print('\nFaceValNet Model Confidence:', model_confidence)
                     # Save the entire frame
                     cv2.imwrite(image_name, frame)

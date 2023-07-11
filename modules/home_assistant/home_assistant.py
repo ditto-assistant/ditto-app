@@ -1,5 +1,7 @@
 import json
 import os
+from datetime import datetime
+import time
 
 
 class HomeAssistant:
@@ -20,6 +22,10 @@ class HomeAssistant:
         res = self.client.request(
             'services/google_assistant_sdk/send_text_command', 'POST', data='{"command": "%s"}' % prompt)
         return res
+
+    def send_push_camera(self):
+        self.update_state(
+            'input_button.send_camera_push', {"state": str(datetime.fromtimestamp(time.time()))})
 
     def get_ha_services(self, services=None, states=None):
         get = 'services'

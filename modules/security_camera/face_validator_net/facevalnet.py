@@ -27,7 +27,6 @@ class FaceValNet:
 
     def create_model(self):
 
-        # AlexNet
         model = Sequential([
             # layers.Normalization(),
             layers.Conv2D(filters=32, kernel_size=(5, 5), strides=(
