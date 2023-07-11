@@ -7,20 +7,21 @@ import numpy as np
 from tensorflow import keras
 from keras import backend as K
 
-from face_validator_net.facevalnet import FaceValNet
-
-from..home_assistant.home_assistant import HomeAssistant
+from modules.security_camera.face_validator_net.facevalnet import FaceValNet
+from modules.home_assistant.home_assistant import HomeAssistant
 
 home = HomeAssistant()
 
-face_val_net = FaceValNet('production', path='face_validator_net/')
+face_val_net = FaceValNet(
+    'production', path='modules/security_camera/face_validator_net/')
 model = face_val_net.model
 
 # Load the Haar cascade XML file for face detection
 face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    "modules/security_camera/haarcascade_frontalface_default.xml")
 
-rtsp_link = json.load(open('config.json', 'r'))['rtsp_cam1']
+rtsp_link = json.load(
+    open('modules/security_camera/config.json', 'r'))['rtsp_cam1']
 
 # Create a VideoCapture object
 cap = cv2.VideoCapture(rtsp_link)
@@ -43,8 +44,8 @@ if not cap.isOpened():
 face_counter = 0
 start_time = time.time()
 
-if not os.path.exists('captures'):
-    os.mkdir('captures/')
+if not os.path.exists('modules/security_camera/captures'):
+    os.mkdir('modules/security_camera/captures/')
 
 print('\n[Watching Front Door.]\n')
 
@@ -80,8 +81,9 @@ while True:
             # Generate the file name using timestamp
             stamp = str(datetime.utcfromtimestamp(time.time())).replace(
                 ' ', '').replace(':', '-').replace('.', '-')
-            image_name = 'captures/' + f'{stamp}.jpg'
-            face_name = 'captures/' + f'{stamp}_face.jpg'
+            image_name = 'modules/security_camera/captures/' + f'{stamp}.jpg'
+            face_name = 'modules/security_camera/captures/' + \
+                f'{stamp}_face.jpg'
 
         # Display the frame with face bounding boxes
         # cv2.imshow("RTSP Stream with Face Detection", frame)
