@@ -10,6 +10,8 @@ from keras import backend as K
 from modules.security_camera.face_validator_net.facevalnet import FaceValNet
 from modules.home_assistant.home_assistant import HomeAssistant
 
+CONFIDENCE = 90
+
 home = HomeAssistant()
 
 face_val_net = FaceValNet(
@@ -102,7 +104,7 @@ while True:
                     np.expand_dims(face_crop_resized, 0)))[0][0] * 100
                 K.clear_session()
 
-                if model_confidence >= 98:
+                if model_confidence >= CONFIDENCE:
                     home.send_push_camera()
 
                     print('\nFaceValNet Model Confidence:', model_confidence)

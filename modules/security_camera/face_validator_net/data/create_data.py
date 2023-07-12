@@ -5,7 +5,7 @@ import os
 labels = []
 images = []
 
-faces_dir = 'Lfw_cut'
+faces_dir = 'faces'
 background_dir = 'background'
 
 faces = list(os.listdir(faces_dir))
@@ -13,18 +13,14 @@ backgrounds = list(os.listdir(background_dir))
 
 print(f'\n[Loaded {len(faces)} faces {len(backgrounds)} backgrounds.]\n')
 
-for ndx, face_name in enumerate(faces):
-    if ndx == 601:
+for ndx, face in enumerate(faces):
+    photo_dir = faces_dir+f'/{face}'
+
+    if ndx == 6001:
         break
 
-    photo_path = faces_dir+f'/{face_name}'
-    face_photos = list(os.listdir(photo_path))
-    for f in face_photos:
-        if '.jpg' in f:
-            face_photo = f
-
     # Load the image
-    image = Image.open(photo_path+'/'+face_photo).convert('L')
+    image = Image.open(photo_dir).convert('L')
     image = np.asarray(image.resize((60, 60), Image.Resampling.NEAREST))
 
     images.append(image)
