@@ -104,7 +104,11 @@ while True:
                     np.expand_dims(face_crop_resized, 0)))[0][0] * 100
                 K.clear_session()
 
+<<<<<<< HEAD
                 if model_confidence >= CONFIDENCE:
+=======
+                if model_confidence >= 99:
+>>>>>>> 0da73f87234370b3aee7a7ab81736a51f54527e1
                     home.send_push_camera()
 
                     print('\nFaceValNet Model Confidence:', model_confidence)
