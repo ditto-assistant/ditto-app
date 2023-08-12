@@ -13,16 +13,7 @@
 			"path": "../nlp_server"
 		},
 		{
-			"name": "dittoclient",
-			"path": "../dittoclient"
-		},
-		{
-			"name": "dalai_server",
-			"path": "../dalai_server"
-		},
-		{
-			"name": "security-camera",
-			"path": "../security-camera"
+			"path": "../ditto-reactnative"
 		}
 	],
 	"settings": {}

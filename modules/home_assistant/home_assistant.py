@@ -23,9 +23,13 @@ class HomeAssistant:
             'services/google_assistant_sdk/send_text_command', 'POST', data='{"command": "%s"}' % prompt)
         return res
 
-    def send_push_camera(self):
-        self.update_state(
-            'input_button.send_camera_push', {"state": str(datetime.fromtimestamp(time.time()))})
+    def send_push_camera(self, camera_name):
+        if 'cam1' in camera_name:
+            self.update_state(
+                'input_button.send_camera_push', {"state": str(datetime.fromtimestamp(time.time()))})
+        elif 'cam2' in camera_name:
+            self.update_state(
+                'input_button.send_camera2_push', {"state": str(datetime.fromtimestamp(time.time()))})
 
     def get_ha_services(self, services=None, states=None):
         get = 'services'

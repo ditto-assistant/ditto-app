@@ -30,3 +30,4 @@ tensorflow
 matplotlib
 pandas
 homeassistant-api
+python_speech_features

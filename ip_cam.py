@@ -11,6 +11,7 @@ from modules.security_camera.face_validator_net.facevalnet import FaceValNet
 from modules.home_assistant.home_assistant import HomeAssistant
 
 CONFIDENCE = 90
+CAMERA_NAME = 'rtsp_cam2'
 
 home = HomeAssistant()
 
@@ -23,7 +24,7 @@ face_cascade = cv2.CascadeClassifier(
     "modules/security_camera/haarcascade_frontalface_default.xml")
 
 rtsp_link = json.load(
-    open('modules/security_camera/config.json', 'r'))['rtsp_cam1']
+    open('modules/security_camera/config.json', 'r'))[CAMERA_NAME]
 
 # Create a VideoCapture object
 cap = cv2.VideoCapture(rtsp_link)
@@ -49,7 +50,7 @@ start_time = time.time()
 if not os.path.exists('modules/security_camera/captures'):
     os.mkdir('modules/security_camera/captures/')
 
-print('\n[Watching Front Door.]\n')
+print(f'\n[Watching {CAMERA_NAME}.]\n')
 
 # Read and display frames from the video stream
 while True:
@@ -62,24 +63,24 @@ while True:
             cap = re_init_cap(cap)
 
         # Convert the frame to grayscale for face detection
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Detect faces in the grayscale frame
         faces = face_cascade.detectMultiScale(
-            gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            rgb, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         # Draw bounding boxes around the detected faces
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             # Crop the face region from the frame
-            face_crop = gray[y:y+h, x:x+w]
+            face_crop = rgb[y:y+h, x:x+w]
 
             # Resize the face crop to 60x60
             face_crop_resized = cv2.resize(face_crop, (60, 60))
 
             # Expand dimensions to make it 60x60x1
-            face_crop_resized = np.expand_dims(face_crop_resized, axis=-1)
+            face_crop_model_inp = np.expand_dims(face_crop_resized, axis=-1)
 
             # Generate the file name using timestamp
             stamp = str(datetime.utcfromtimestamp(time.time())).replace(
@@ -102,11 +103,11 @@ while True:
             if face_counter >= 10:
 
                 model_confidence = np.array(model(
-                    np.expand_dims(face_crop_resized, 0)))[0][0] * 100
+                    np.expand_dims(face_crop_model_inp, 0)))[0][0] * 100
                 K.clear_session()
 
                 if model_confidence >= CONFIDENCE:
-                    home.send_push_camera()
+                    home.send_push_camera(CAMERA_NAME)
 
                     print('\nFaceValNet Model Confidence:', model_confidence)
                     # Save the entire frame
