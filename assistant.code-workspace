@@ -13,7 +13,7 @@
 			"path": "../nlp_server"
 		},
 		{
-			"path": "../ditto-reactnative"
+			"path": "../ditto-reactnative-app"
 		}
 	],
 	"settings": {}
