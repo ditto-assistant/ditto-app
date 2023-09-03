@@ -1,10 +1,9 @@
 # The builder image, used to build the virtual environment
 FROM python:3.9
 RUN apt update && apt install -y git
-RUN apt install -y build-essential gcc just
+RUN apt install -y build-essential gcc
 
 COPY data /data
-COPY memory /memory
 COPY models /models
 COPY vectorizers /vectorizers
 
