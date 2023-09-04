@@ -122,7 +122,7 @@ def toggle_activation_mic():
     SQL.close()
 
 
-# making requests to the OmniSynth instance
+# making requests to the Ditto instance
 @app.route("/ditto/", methods=['POST', 'GET'])
 def ditto_handler():
     requests = request.args

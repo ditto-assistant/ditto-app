@@ -22,6 +22,8 @@ import json
 import platform
 import numpy as np
 from time import localtime
+from dotenv import load_dotenv
+
 
 # used to send keypress event (keeps display on)
 try:
@@ -40,6 +42,30 @@ if platform.system() == 'Linux':
 pygame.mixer.init(channels=8)
 
 OFFLINE_MODE = False
+
+load_dotenv()
+
+def read_env_write_config() -> dict:
+    config = {}
+
+    keys_to_lower = ['volume', 'microphone', 'teensy_path', 'user', 'nlp-server']
+
+    for key in os.environ.keys():
+
+            if 'ha_entities' in key.lower():
+                str_arr = os.environ[key].split(",")
+                config['ha_entities'] = str_arr
+            elif key.lower() in keys_to_lower:
+                config[key.lower()] = os.environ[key]
+            else:
+                config[key] = os.environ[key]
+
+    with open('resources/config.json', 'w') as f:
+        json.dump(config, f)
+
+    return config
+        
+
 
 
 class Assistant:
@@ -71,17 +97,11 @@ class Assistant:
 
     def load_config(self):
         config_path = 'resources/config.json'
-        default_config_path = 'resources/template_config.json'
         if 'config.json' in os.listdir('resources'):
             with open(config_path, 'r') as f:
                 self.config = json.load(f)
         else:
-            with open(default_config_path, 'r') as f:
-                self.config = json.load(f)
-            with open(config_path, 'w') as f:
-                json.dump(self.config, f, indent=4)
-            print('\nRun configgui.py or fill out generated resources/config.json ...\n')
-            exit()
+            self.config = read_env_write_config()
         self.nlp_ip = self.config['nlp-server']
 
     def reset_loop(self):
