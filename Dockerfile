@@ -2,15 +2,19 @@ FROM python:3.11.4-slim-bullseye
 
 RUN apt update && \
     apt upgrade -y && \
-    apt install -y --no-install-recommends portaudio19-dev build-essential gcc git && \
+    apt install -y --no-install-recommends pulseaudio portaudio19-dev build-essential gcc git alsa-utils && \
     rm -rf /var/lib/apt/lists/*
 
-# COPY requirements.txt ./
+COPY requirements.txt ./
 
-RUN git clone https://github.com/omarzanji/assistant.git --recursive https://github.com/omarzanji/ditto_activation.git
+RUN git clone -b dockerfile https://github.com/omarzanji/assistant.git --recurse-submodules
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
+
+# RUN pulseaudio -k
+
+# RUN pulseaudio -D
 
 # COPY . ./
 

@@ -32,3 +32,4 @@ termdown
 vosk
 wolframalpha
 word2number
+python-dotenv
