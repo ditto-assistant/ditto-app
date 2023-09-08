@@ -300,6 +300,18 @@ class Assistant:
                 print(e)
                 self.conversation_app()
 
+        elif cat == 'vacuum':
+            try:
+                self.reply = self.command.iot_remote_handler.handle_response(
+                    action, 
+                    device_name='vacuum'
+                )
+                self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                self.reply = '[Error communicating with Vacuum]'
+                self.reset_loop()    
+
         elif cat == 'conv':  # send to conversation handler
 
             self.conversation_app(action)

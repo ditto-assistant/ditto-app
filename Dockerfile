@@ -1,28 +1,26 @@
-# The builder image, used to build the virtual environment
-FROM python:3.9
-RUN apt update && apt install -y git
-RUN apt install -y build-essential gcc
+FROM python:3.11.4-slim-bullseye
 
-COPY data /data
-COPY models /models
-COPY vectorizers /vectorizers
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y --no-install-recommends pulseaudio portaudio19-dev build-essential gcc git alsa-utils && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY chat.py chat.py
-COPY ditto_memory.py ditto_memory.py
-COPY intent.py intent.py
-COPY LICENSE LICENSE
-COPY main.py main.py
-COPY ner.py ner.py
-COPY requirements.txt requirements.txt
-COPY server.py server.py
-COPY start_server.py start_server.py
+COPY requirements.txt ./
 
+RUN git clone -b dockerfile https://github.com/omarzanji/assistant.git --recurse-submodules
 
-ENV HOST=0.0.0.0
-ENV LISTEN_PORT 32032
-EXPOSE 32032
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# RUN pulseaudio -k
 
-CMD [ "python", "main.py" ]
+# RUN pulseaudio -D
+
+# COPY . ./
+
+EXPOSE 42032
+
+# tried to enable coreaudio to make the mac container work
+# ENV SDL_AUDIODRIVER coreaudio
+
+CMD cd assistant && python main.py

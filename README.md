@@ -1,4 +1,18 @@
-# Package Setup:
+# Run with Docker:
+1. Rename .env.example to .env and fill out API credentials you want to use. 
+2. Build the Docker image: 
+
+```bash
+docker build -t ditto .
+```
+
+3. Run the image on a new container:
+
+```bash
+docker run --env-file .env --rm -p 42032:42032 ditto
+```
+
+# Running locally without Docker:
 
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
 
@@ -34,7 +48,7 @@ source ditto/bin/activate
 pip install -r requirements.txt
 ```
 
-## Full Setup (Online Mode)
+## Extra Setup Notes
 
 1. Google Cloud Setup:
    1. Create Google Cloud Console account and create a project with any name to get access to the console.
@@ -49,7 +63,7 @@ pip install -r requirements.txt
       5. Click "Add Key" and select json.
       6. Save the .json key to `assistant/resources` folder.
    4. Set the environment variable:
-      1. Set `GOOGLE_APPLICATION_CREDENTIALS` to the absolute path of the .json credential key.
+      1. Set `GOOGLE_APPLICATION_CREDENTIALS` in `.env` to the absolute path of the .json credential key.
 2. OpenAI API Setup (GPT-3):
    1. Create an account at openai.com/api and go to account settings to find an API key string. Copy this string and create an OS environment variable with the following name and value: `OPENAI_API_KEY=insert_key_here`
 3. Spotify API Setup (optional):
@@ -60,10 +74,10 @@ pip install -r requirements.txt
    2. Assistant Setup for Teensy.
       1. Rpi Instructions:
          1. Run main.py to generate template config.json in `assistant/resources`.
-         2. Find the unique Teensyduino_USB_Serial path, for example: `/dev/serial/by-id/usb-Teensyduino_USB_Serial` and save this to `config.json` as the "teensy_path" key variable.
+         2. Find the unique Teensyduino_USB_Serial path, for example: `/dev/serial/by-id/usb-Teensyduino_USB_Serial` and save this to `.env` as the "teensy_path" key variable.
       2. Windows Instructions:
          1. Run main.py to generate template config.json in `assistant/resources`.
-         2. Find the COM port in device manager after plugging in / flashing your Teensy and set the `resources/config.json` key "teensy_path" to "COM" or "COM1" depending on your machine.
+         2. Find the COM port in device manager after plugging in / flashing your Teensy and set the `.env` key "teensy_path" to "COM" or "COM1" depending on your machine.
 
 ## Running:
 
