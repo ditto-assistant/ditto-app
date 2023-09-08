@@ -9,10 +9,9 @@ class SoundScapesHandler:
         self.path += "/modules/soundscapes/"
         self.soundscapes = SoundScapes(path=self.path)
 
-    def handle_response(self, command, action):
+    def handle_response(self, action, sound):
         self.reply = ''
-        if command == 'play':
-            sound = action
+        if action == 'play':
             self.soundscapes.play_sound(sound)
             self.reply = f'[Playing {sound}.]'
         if action == 'exit':
