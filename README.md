@@ -80,12 +80,9 @@ python main.py
    1. Building to Teensy:
       1. Install platformio and anything else needed to program your Teensy. Simply build and upload the platformio project located in `assistant/modules/teensy41` .
    2. Assistant Setup for Teensy.
-      1. Rpi Instructions:
-         1. Run main.py to generate template config.json in `assistant/resources`.
-         2. Find the unique Teensyduino_USB_Serial path, for example: `/dev/serial/by-id/usb-Teensyduino_USB_Serial` and save this to `.env` as the "teensy_path" key variable.
-      2. Windows Instructions:
-         1. Run main.py to generate template config.json in `assistant/resources`.
-         2. Find the COM port in device manager after plugging in / flashing your Teensy and set the `.env` key "teensy_path" to "COM" or "COM1" depending on your machine.
+         1. Find the unique Teensyduino_USB_Serial path, for example: `/dev/serial/by-id/usb-Teensyduino_USB_Serial` and save this to `.env` as the `teensy_path` key variable, i.e. `teensy_path=/dev/serial/by-id/usb-Teensyduino_USB_Serial`.
+         2. Windows:
+            1. Find the `COM` port in device manager after flashing your Teensy and set the `.env` key `teensy_path` to your COM number, i.e. `teensy_path=COM5`.
 
 ## Running:
 
