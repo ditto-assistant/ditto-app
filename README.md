@@ -75,7 +75,7 @@ python main.py
 3. Spotify API Setup:
    1. Create a Spotify [Developer account](https://developer.spotify.com/documentation/web-api).
    2. Create a new Spotify project to generate API keys.
-   3. Fill out `SPOTIPY_CLIENT_ID`, `SPOTIPY_CLIENT_SECRET`, and `SPOTIPY_REDIRECT_URI` from your Spotify project settings.
+   3. Fill out `SPOTIPY_CLIENT_ID`, `SPOTIPY_CLIENT_SECRET`, and `SPOTIPY_REDIRECT_URI` in `.env` from your Spotify project settings.
 4. Teensy Setup (optional, for FastLED light strips):
    1. Building to Teensy:
       1. Install platformio and anything else needed to program your Teensy. Simply build and upload the platformio project located in `assistant/modules/teensy41` .
