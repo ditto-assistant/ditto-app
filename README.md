@@ -1,5 +1,5 @@
 # Run with Docker (WIP):
-1. Rename .env.example to .env and fill out API credentials you want to use (see Extra Notes below for .env setup instructions). 
+1. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below). 
 2. Build the Docker image: 
 
 ```bash
@@ -15,7 +15,7 @@ docker run --env-file .env --rm -p 42032:42032 ditto
 # Running locally without Docker:
 
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
-2. Rename .env.example to .env and fill out API credentials you want to use (see Extra Notes below for .env setup instructions).
+2. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below).
 
 Use your favorite package manager to [Install just](https://github.com/casey/just#packages) then run install:
 
@@ -48,13 +48,8 @@ source ditto/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-6. Start Ditto by running:
 
-```bash
-python main.py
-```
-
-## Extra Setup Notes
+## Environment Setup Instructions
 
 1. Google Cloud Setup:
    1. Create Google Cloud Console account and create a project with any name to get access to the console.
@@ -84,7 +79,7 @@ python main.py
          2. Windows:
             1. Find the `COM` port in device manager after flashing your Teensy and set the `.env` key `teensy_path` to your COM number, i.e. `teensy_path=COM5`.
 
-## Running:
+## Running (without Docker):
 
 - Simply run `python main.py` to boot the assistant along with a Flask server for communicating with the [Ditto App](https://github.com/omarzanji/ditto-app) front-end client.
 
