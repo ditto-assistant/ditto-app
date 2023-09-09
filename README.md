@@ -1,5 +1,5 @@
 # Run with Docker (WIP):
-1. Rename .env.example to .env and fill out API credentials you want to use. 
+1. Rename .env.example to .env and fill out API credentials you want to use (see Extra Notes below for .env setup instructions). 
 2. Build the Docker image: 
 
 ```bash
@@ -15,6 +15,7 @@ docker run --env-file .env --rm -p 42032:42032 ditto
 # Running locally without Docker:
 
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
+2. Rename .env.example to .env and fill out API credentials you want to use (see Extra Notes below for .env setup instructions).
 
 Use your favorite package manager to [Install just](https://github.com/casey/just#packages) then run install:
 
@@ -30,24 +31,24 @@ just run
 
 If you don't want `just`, continue following #2-5:
 
-2. After installing, create a python environment with the following commands (do this outside of `assistant/`):
+3. After installing, create a python environment with the following commands (do this outside of `assistant/`):
 
 ```bash
 python -m venv ditto
 ```
 
-3. To Activate the environment, run the following:
+4. To Activate the environment, run the following:
 
 ```bash
 source ditto/bin/activate
 ```
 
-4. Navigate into `assistant` and run:
+5. Navigate into `assistant` and run:
 
 ```bash
 pip install -r requirements.txt
 ```
-5. Start Ditto by running:
+6. Start Ditto by running:
 
 ```bash
 python main.py
@@ -69,7 +70,7 @@ python main.py
       6. Save the .json key to `assistant/resources` folder.
    4. Set the environment variable:
       1. Set `GOOGLE_APPLICATION_CREDENTIALS` in `.env` to the absolute path of the .json credential key.
-2. OpenAI API Setup (GPT-3):
+2. OpenAI API Setup:
    1. Create an account at openai.com/api and go to account settings to find an API key string. Copy this string and paste the key into `.env` at `OPENAI_API_KEY=insert_key_here`.
 3. Spotify API Setup:
    1. Create a Spotify [Developer account](https://developer.spotify.com/documentation/web-api).
