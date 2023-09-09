@@ -28,7 +28,7 @@ After turning on the [nlp_server](https://github.com/omarzanji/nlp_server), You 
 just run
 ```
 
-If you don't want `just`, continue following #2-4:
+If you don't want `just`, continue following #2-5:
 
 2. After installing, create a python environment with the following commands (do this outside of `assistant/`):
 
@@ -46,6 +46,11 @@ source ditto/bin/activate
 
 ```bash
 pip install -r requirements.txt
+```
+5. Start Ditto by running:
+
+```bash
+python main.py
 ```
 
 ## Extra Setup Notes
