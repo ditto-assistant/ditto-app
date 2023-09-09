@@ -70,9 +70,11 @@ python main.py
    4. Set the environment variable:
       1. Set `GOOGLE_APPLICATION_CREDENTIALS` in `.env` to the absolute path of the .json credential key.
 2. OpenAI API Setup (GPT-3):
-   1. Create an account at openai.com/api and go to account settings to find an API key string. Copy this string and create an OS environment variable with the following name and value: `OPENAI_API_KEY=insert_key_here`
-3. Spotify API Setup (optional):
-   1. Instructions coming soon...
+   1. Create an account at openai.com/api and go to account settings to find an API key string. Copy this string and paste the key into `.env` at `OPENAI_API_KEY=insert_key_here`.
+3. Spotify API Setup:
+   1. Create a Spotify [Developer account](https://developer.spotify.com/documentation/web-api).
+   2. Create a new Spotify project to generate API keys.
+   3. Fill out `SPOTIPY_CLIENT_ID`, `SPOTIPY_CLIENT_SECRET`, and `SPOTIPY_REDIRECT_URI` from your Spotify project settings.
 4. Teensy Setup (optional, for FastLED light strips):
    1. Building to Teensy:
       1. Install platformio and anything else needed to program your Teensy. Simply build and upload the platformio project located in `assistant/modules/teensy41` .
