@@ -1,4 +1,4 @@
-# Run with Docker:
+# Run with Docker (WIP):
 1. Rename .env.example to .env and fill out API credentials you want to use. 
 2. Build the Docker image: 
 
