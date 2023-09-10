@@ -12,12 +12,6 @@ RUN git clone -b dockerfile https://github.com/omarzanji/assistant.git --recurse
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# RUN pulseaudio -k
-
-# RUN pulseaudio -D
-
-# COPY . ./
-
 EXPOSE 42032
 
 # tried to enable coreaudio to make the mac container work

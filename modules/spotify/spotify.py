@@ -19,13 +19,15 @@ import spotipy.util as util
 
 class Spotify():
 
-    def __init__(self, path):
+    def __init__(self, path, volume):
 
         self.path = path
+        self.volume = volume/100
         self.load_configs(path)
         self.status = 'off'
         if 'SPOTIPY_CLIENT_ID' in os.environ.keys():  # only run if configured correctly
             sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=True))
+            if sp.current_playback() is not None: sp.volume(volume)
             self.grab_active_id(sp)
             # pre-save user data
             self.get_user_details()
@@ -71,6 +73,8 @@ class Spotify():
             open_browser=True
         )
         sp = spotipy.Spotify(auth_manager=self.auth)
+        if sp.current_playback() is None:
+            return
         self.token = util.prompt_for_user_token(
             oauth_manager=self.auth,
             username=username, scope=scope,
@@ -91,10 +95,13 @@ class Spotify():
             elif command == "previous":
                 print('\n[previous]')
                 sp.previous_track(self.user_values['device-id'])
+            elif command == 'volume':
+                volume = args[0]
+                sp.volume(volume)
             else:
                 pass
-        except:
-            pass
+        except BaseException as e:
+            print(e)
 
     def play_spotify(self, uri):
         try:

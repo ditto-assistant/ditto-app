@@ -74,15 +74,16 @@ class Assistant:
         print('[Booting...]')
         self.update_status_db('booting')
         self.load_config()
+        self.volume = int(self.config['volume'])  # percent
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode,
                              mic=self.config['microphone'])
-        self.command = Command(os.getcwd(), offline_mode)
+        self.command = Command(os.getcwd(), offline_mode, self.config, self.volume)
         self.speech_engine = ''
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
-        self.speech_volume = self.config['volume']  # percent
+        
         self.prompt = ""
         self.reply = ""
         self.activation_mode = True  # If true then idle and listening for name
@@ -149,8 +150,7 @@ class Assistant:
     def conversation_app(self, action=None):
 
         def conversation_flow():
-            self.reply = self.command.conversation_handler.handle_response(
-                self.command, self.prompt)
+            self.reply = self.command.conversation_handler.handle_response(self.prompt)
             if self.reply == '':
                 self.reply = '...'
             self.tts(self.reply)
@@ -206,22 +206,18 @@ class Assistant:
         if cat == 'lights':
             self.reply = self.command.light_handler.handle_response(
                 self.prompt, self.tts).reply
-            # self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'spotify':
             try:
-                self.reply = self.command.spotify_handler.handle_response(
-                    self.command, self.prompt)
+                self.reply = self.command.spotify_handler.handle_response(self.prompt)
             except BaseException as e:
-                self.reply = self.command.conversation_handler.handle_response(
-                    self.command, self.prompt)
-            self.tts(self.reply)
-            self.reset_loop()
+                print(e)
+                self.conversation_app()
 
         elif cat == 'music':
             try:
-                self.command.player.remote(self.offline_response['action'])
+                self.command.spotify_handler.player.remote(self.offline_response['action'])
                 if self.speech.from_gui:
                     self.reply = '[Done.]'
                 self.reset_loop()
@@ -288,8 +284,7 @@ class Assistant:
 
         elif cat == 'wolfram':
             try:
-                self.reply = self.command.wolfram_handler.handle_response(
-                    self.command, sub_cat, self.prompt)
+                self.reply = self.command.wolfram_handler.handle_response(sub_cat, self.prompt)
                 print(f'\nWolfram Reply len: `{len(self.reply)}`\n')
                 if len(self.reply) > 0 and len(self.reply) < 99:
                     self.tts(self.reply)
@@ -312,13 +307,27 @@ class Assistant:
                 self.reply = '[Error communicating with Vacuum]'
                 self.reset_loop()    
 
+        elif cat == 'volume':
+            try:
+                volume = self.command.volume_handler.handle_response(self.prompt)
+                self.volume = volume
+                self.reply = f'[Volume set to {volume}.]'
+                self.command.spotify_handler.player.remote(cat, volume)
+                self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
+                print(self.reply)
+                self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
         elif cat == 'conv':  # send to conversation handler
 
             self.conversation_app(action)
 
         elif cat == 'reset':
             self.reply = '[Resetting Conversation...]'
-            self.command.reset_conversation()
+            self.command.conversation_handler.reset_conversation()
             self.reset_loop()
 
         self.write_response_to_db()  # log self.reply
@@ -415,7 +424,7 @@ class Assistant:
             try:
                 if UNIX:
                     os.system('amixer -q set Master ' +
-                              str(self.speech_volume)+'%')
+                              str(self.volume)+'%')
                 # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
                 if not self.speech.offline_mode:
                     soundscapes = self.command.soundscapes_handler.soundscapes
