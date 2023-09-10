@@ -6,18 +6,19 @@ from modules.spotify.spotify import Spotify
 
 class SpotifyHandler():
 
-    def __init__(self, path, config, offline_mode):
+    def __init__(self, path, config, offline_mode, volume=None):
         self.config = config
         self.path = path
         self.offline_mode = offline_mode
-        self.load_spotify_player()
+        self.volume = volume
+        self.load_spotify_player(volume)
         self.nlp_ip = config['nlp-server']
 
 
-    def load_spotify_player(self):
+    def load_spotify_player(self, volume):
         if not self.offline_mode:
             try:
-                self.player = Spotify(self.path+"/modules/spotify")
+                self.player = Spotify(self.path+"/modules/spotify", volume)
                 if self.player.status == 'off':
                     self.player = []
             except BaseException as e:

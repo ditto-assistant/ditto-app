@@ -10,22 +10,25 @@ from command_handlers.wolfram_handler import WolframHandler
 from command_handlers.conversation_handler import ConversationHandler
 from command_handlers.soundscapes_handler import SoundScapesHandler
 from command_handlers.iot_remote_handler import IOTRemoteHandler
+from command_handlers.volume_handler import VolumeHandler
 
 
 class Command:
 
-    def __init__(self, path, offline_mode=False, config=None):
+    def __init__(self, path, offline_mode=False, config=None, volume=None):
         self.offline_mode = offline_mode
         self.config = config
         self.path = path
-        self.light_handler = LightHandler(self.config)
-        self.spotify_handler = SpotifyHandler(path, self.config, offline_mode)
-        self.timer_handler = TimerHandler(path, self.config)
+        self.volume = volume
+        self.light_handler = LightHandler(config)
+        self.spotify_handler = SpotifyHandler(path, config, offline_mode, volume)
+        self.timer_handler = TimerHandler(path, config)
         self.weather_handler = WeatherHandler()
         self.wolfram_handler = WolframHandler(path)
         self.conversation_handler = ConversationHandler(config, offline_mode)
-        self.soundscapes_handler = SoundScapesHandler(path=path)
+        self.soundscapes_handler = SoundScapesHandler(path, volume)
         self.iot_remote_handler = IOTRemoteHandler()
+        self.volume_handler = VolumeHandler(config)
         
 
 

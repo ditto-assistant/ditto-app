@@ -74,15 +74,16 @@ class Assistant:
         print('[Booting...]')
         self.update_status_db('booting')
         self.load_config()
+        self.volume = int(self.config['volume'])  # percent
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode,
                              mic=self.config['microphone'])
-        self.command = Command(os.getcwd(), offline_mode, self.config)
+        self.command = Command(os.getcwd(), offline_mode, self.config, self.volume)
         self.speech_engine = ''
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
-        self.speech_volume = self.config['volume']  # percent
+        
         self.prompt = ""
         self.reply = ""
         self.activation_mode = True  # If true then idle and listening for name
@@ -149,8 +150,7 @@ class Assistant:
     def conversation_app(self, action=None):
 
         def conversation_flow():
-            self.reply = self.command.conversation_handler.handle_response(
-                self.command, self.prompt)
+            self.reply = self.command.conversation_handler.handle_response(self.prompt)
             if self.reply == '':
                 self.reply = '...'
             self.tts(self.reply)
@@ -308,14 +308,13 @@ class Assistant:
                 self.reset_loop()    
 
         elif cat == 'volume':
-            ## TODO 9-9-23:
-            # 1) Create volume handler that can check if there is any spotify music playing or soundscape. 
-            #    If so, adjust that volume and if not adjust device's volume along with self.speech_volume.
             try:
-                self.reply = self.command.iot_remote_handler.handle_response(
-                    action, 
-                    device_name='vacuum'
-                )
+                volume = self.command.volume_handler.handle_response(self.prompt)
+                self.volume = volume
+                self.reply = f'[Volume set to {volume}.]'
+                self.command.spotify_handler.player.remote(cat, volume)
+                self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
+                print(self.reply)
                 self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:
@@ -328,7 +327,7 @@ class Assistant:
 
         elif cat == 'reset':
             self.reply = '[Resetting Conversation...]'
-            self.command.reset_conversation()
+            self.command.conversation_handler.reset_conversation()
             self.reset_loop()
 
         self.write_response_to_db()  # log self.reply
@@ -425,7 +424,7 @@ class Assistant:
             try:
                 if UNIX:
                     os.system('amixer -q set Master ' +
-                              str(self.speech_volume)+'%')
+                              str(self.volume)+'%')
                 # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
                 if not self.speech.offline_mode:
                     soundscapes = self.command.soundscapes_handler.soundscapes

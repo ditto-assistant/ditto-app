@@ -8,8 +8,9 @@ class SoundScapes:
     Module for handling loopable soundscapes such as white noise, binaural beats, and any other custom sounds.
     '''
 
-    def __init__(self, path=''):
+    def __init__(self, path='', volume=None):
         self.path = path
+        self.volume = volume/100
         self.__load_resources()
 
     def __load_resources(self) -> list:
@@ -33,7 +34,7 @@ class SoundScapes:
             self.currently_playing = 'white noise'
             self.channel = mixer.find_channel(True)
             mixer.music.load(self.path+'sounds/white_noise.mp3')
-            mixer.music.set_volume(1.0)
+            mixer.music.set_volume(self.volume)
             mixer.music.play()
 
         if 'binaural beats' in sound:
@@ -43,7 +44,7 @@ class SoundScapes:
             self.currently_playing = 'binaural beats'
             self.channel = mixer.find_channel(True)
             mixer.music.load(self.path+'sounds/binaural_beats.mp3')
-            mixer.music.set_volume(1.0)
+            mixer.music.set_volume(self.volume)
             mixer.music.play()
 
         if 'thunderstorm' in sound:
@@ -53,7 +54,7 @@ class SoundScapes:
             self.currently_playing = 'thunderstorm'
             self.channel = mixer.find_channel(True)
             mixer.music.load(self.path+'sounds/thunderstorm.mp3')
-            mixer.music.set_volume(1.0)
+            mixer.music.set_volume(self.volume)
             mixer.music.play()
 
         if 'rainforest' in sound:
@@ -63,7 +64,7 @@ class SoundScapes:
             self.currently_playing = 'rainforest'
             self.channel = mixer.find_channel(True)
             mixer.music.load(self.path+'sounds/rainforest.mp3')
-            mixer.music.set_volume(1.0)
+            mixer.music.set_volume(self.volume)
             mixer.music.play()
 
     def stop_sound(self):
@@ -71,6 +72,9 @@ class SoundScapes:
         self.playing = False
         self.currently_playing = ''
 
+    def adjust_volume(self, volume):
+        self.volume = volume/100
+        mixer.music.set_volume(self.volume)
 
 if __name__ == '__main__':
     soundscapes = SoundScapes()
