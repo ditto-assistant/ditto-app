@@ -77,7 +77,7 @@ class Assistant:
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode,
                              mic=self.config['microphone'])
-        self.command = Command(os.getcwd(), offline_mode)
+        self.command = Command(os.getcwd(), offline_mode, self.config)
         self.speech_engine = ''
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
@@ -206,22 +206,18 @@ class Assistant:
         if cat == 'lights':
             self.reply = self.command.light_handler.handle_response(
                 self.prompt, self.tts).reply
-            # self.tts(self.reply)
             self.reset_loop()
 
         elif cat == 'spotify':
             try:
-                self.reply = self.command.spotify_handler.handle_response(
-                    self.command, self.prompt)
+                self.reply = self.command.spotify_handler.handle_response(self.prompt)
             except BaseException as e:
-                self.reply = self.command.conversation_handler.handle_response(
-                    self.command, self.prompt)
-            self.tts(self.reply)
-            self.reset_loop()
+                print(e)
+                self.conversation_app()
 
         elif cat == 'music':
             try:
-                self.command.player.remote(self.offline_response['action'])
+                self.command.spotify_handler.player.remote(self.offline_response['action'])
                 if self.speech.from_gui:
                     self.reply = '[Done.]'
                 self.reset_loop()
@@ -288,8 +284,7 @@ class Assistant:
 
         elif cat == 'wolfram':
             try:
-                self.reply = self.command.wolfram_handler.handle_response(
-                    self.command, sub_cat, self.prompt)
+                self.reply = self.command.wolfram_handler.handle_response(sub_cat, self.prompt)
                 print(f'\nWolfram Reply len: `{len(self.reply)}`\n')
                 if len(self.reply) > 0 and len(self.reply) < 99:
                     self.tts(self.reply)
@@ -317,10 +312,10 @@ class Assistant:
             # 1) Create volume handler that can check if there is any spotify music playing or soundscape. 
             #    If so, adjust that volume and if not adjust device's volume along with self.speech_volume.
             try:
-                # self.reply = self.command.iot_remote_handler.handle_response(
-                #     action, 
-                #     device_name='vacuum'
-                # )
+                self.reply = self.command.iot_remote_handler.handle_response(
+                    action, 
+                    device_name='vacuum'
+                )
                 self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:
