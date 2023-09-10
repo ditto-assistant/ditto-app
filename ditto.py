@@ -313,11 +313,14 @@ class Assistant:
                 self.reset_loop()    
 
         elif cat == 'volume':
+            ## TODO 9-9-23:
+            # 1) Create volume handler that can check if there is any spotify music playing or soundscape. 
+            #    If so, adjust that volume and if not adjust device's volume along with self.speech_volume.
             try:
-                self.reply = self.command.iot_remote_handler.handle_response(
-                    action, 
-                    device_name='vacuum'
-                )
+                # self.reply = self.command.iot_remote_handler.handle_response(
+                #     action, 
+                #     device_name='vacuum'
+                # )
                 self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:
