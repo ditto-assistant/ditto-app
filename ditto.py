@@ -67,7 +67,6 @@ def read_env_write_config() -> dict:
         
 
 
-
 class Assistant:
 
     def __init__(self, offline_mode=OFFLINE_MODE):
@@ -211,6 +210,7 @@ class Assistant:
         elif cat == 'spotify':
             try:
                 self.reply = self.command.spotify_handler.handle_response(self.prompt)
+                self.tts(self.reply)
             except BaseException as e:
                 print(e)
                 self.conversation_app()
