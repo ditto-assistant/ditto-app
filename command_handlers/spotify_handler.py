@@ -19,8 +19,6 @@ class SpotifyHandler():
         if not self.offline_mode:
             try:
                 self.player = Spotify(self.path+"/modules/spotify", volume)
-                if self.player.status == 'off':
-                    self.player = []
             except BaseException as e:
                 print(e)
                 print('spotify error')

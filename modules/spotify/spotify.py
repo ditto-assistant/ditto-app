@@ -24,14 +24,14 @@ class Spotify():
         self.path = path
         self.volume = volume/100
         self.load_configs(path)
-        self.status = 'off'
+        self.playing_music = False
         if 'SPOTIPY_CLIENT_ID' in os.environ.keys():  # only run if configured correctly
             sp = spotipy.Spotify(auth_manager=SpotifyOAuth(open_browser=True))
-            if sp.current_playback() is not None: sp.volume(volume)
+            if sp.current_playback() is not None: 
+                sp.volume(volume)
             self.grab_active_id(sp)
             # pre-save user data
             self.get_user_details()
-            self.status = 'on'
         else:
             print("\n[Configure client ID and Secret ID in spotify.json ...]")
 
@@ -74,6 +74,7 @@ class Spotify():
         )
         sp = spotipy.Spotify(auth_manager=self.auth)
         if sp.current_playback() is None:
+            self.playing_music = False
             return
         self.token = util.prompt_for_user_token(
             oauth_manager=self.auth,
@@ -85,9 +86,11 @@ class Spotify():
         try:
             if command == "resume":
                 sp.start_playback(self.user_values['device-id'])
+                self.playing_music = True
                 print('\n[resume]')
             elif command == "pause":
                 sp.pause_playback(self.user_values['device-id'])
+                self.playing_music = False
                 print('\n[pause]')
             elif command == "next":
                 print('\n[next]')
@@ -141,6 +144,8 @@ class Spotify():
             if context_mode == 'song':
                 sp.start_playback(
                     uris=[uri], device_id=self.user_values["device-id"])
+                
+            self.playing_music = True
             return 1
         except BaseException as e:
             print("invalid uri: %s" % uri)

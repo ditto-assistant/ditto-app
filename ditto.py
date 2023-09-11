@@ -119,20 +119,26 @@ class Assistant:
             return
         elif self.reset_conversation:
             return
-        else:
-            if self.command.soundscapes_handler.soundscapes.playing:
-                if sound == 'on':
-                    pygame.mixer.music.set_volume(0.2)
-                if sound == 'off':
-                    pygame.mixer.music.set_volume(1.0)
-            else:
-                channel = pygame.mixer.find_channel(True)
-                pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
-                channel.set_volume(
-                    1.0
-                )
-                channel.play(pygame.mixer.Sound(
-                    f"resources/sounds/ditto-{sound}.mp3"))
+        
+        def play_sound_channel():
+            channel = pygame.mixer.find_channel()
+            pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
+            channel.set_volume(
+                self.volume/100
+            )
+            channel.play(pygame.mixer.Sound(
+                f"resources/sounds/ditto-{sound}.mp3"))
+
+        if self.command.soundscapes_handler.soundscapes.playing or self.command.spotify_handler.player.playing_music:
+            if sound == 'on':
+                pygame.mixer.music.set_volume(int(self.volume*0.5)/100)
+                if self.command.spotify_handler.player.playing_music:
+                    self.command.spotify_handler.player.remote('volume', int(self.volume*0.5))
+            if sound == 'off':
+                pygame.mixer.music.set_volume(self.volume/100)
+                if self.command.spotify_handler.player.playing_music:
+                    self.command.spotify_handler.player.remote('volume', self.volume)
+        play_sound_channel()
 
     def skip_wake(self):
         '''
@@ -315,7 +321,7 @@ class Assistant:
                 self.command.spotify_handler.player.remote(cat, volume)
                 self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
                 print(self.reply)
-                self.tts(self.reply)
+                # self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:
                 print(e)
