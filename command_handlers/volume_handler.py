@@ -2,6 +2,7 @@ import json
 import requests
 
 from modules.home_assistant.home_assistant import HomeAssistant
+from utils.base_url import GetNlpBaseUrl
 
 
 class VolumeHandler:
@@ -11,13 +12,13 @@ class VolumeHandler:
 
     def __init__(self, config):
         try:
-            self.nlp_ip = config["nlp-server"]
+            self.nlp_base_url = GetNlpBaseUrl(config)
         except BaseException as e:
             print("\nError loading NLP Server in in Volume handler...")
             print(e)
 
     def prompt_ner_numeric(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/numeric"
+        base_url = f"{self.nlp_base_url}/ner/numeric"
         response = requests.post(base_url, params={"prompt": prompt})
         return json.loads(response.content.decode())
 

@@ -2,16 +2,18 @@ import json
 import requests
 
 from modules.hourglass.timer import Timer
+from utils.base_url import GetNlpBaseUrl
 
 
 class TimerHandler:
     def __init__(self, path, config):
         self.config = config
         self.timer = Timer(path)
-        self.nlp_ip = self.config["nlp-server"]
+        self.nlp_ip = self.config["nlp_server_ip"]
+        self.nlp_base_url = GetNlpBaseUrl(config)
 
     def prompt_ner_timer(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/timer"
+        base_url = f"{self.nlp_base_url}/ner/timer"
         response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 

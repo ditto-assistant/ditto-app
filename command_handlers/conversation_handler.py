@@ -2,6 +2,7 @@ import os
 import requests
 from datetime import datetime
 import time
+from utils.base_url import GetNlpBaseUrl
 
 import openai
 
@@ -14,16 +15,19 @@ except:
 class ConversationHandler:
     def __init__(self, config, offline_mode=False):
         self.config = config
+        self.user_id = config["user_id"]
+        self.nlp_base_url = GetNlpBaseUrl(config)
         self.offline_mode = offline_mode
         self.conversation_memory_buffer = []
 
     def reset_conversation(self):
         self.conversation_memory_buffer = []
-        # try:
-        #     ip = self.config['nlp-server']
-        #     requests.post(f'http://{ip}:32032/prompt/?reset=1', timeout=30)
-        # except BaseException as e:
-        #     print(e)
+        try:
+            requests.post(
+                f"{self.nlp_base_url}/users/{self.user_id}/reset_memory", timeout=30
+            )
+        except BaseException as e:
+            print(e)
 
     def prompt_ditto_memory_agent(self, query):
         res = ""
@@ -36,9 +40,8 @@ class ConversationHandler:
                 query_with_short_term_memory += f"AI: " + r + "\n"
             query_with_short_term_memory += f"<STMEM>{query}"
         try:
-            ip = self.config["nlp-server"]
             res = requests.post(
-                f"http://{ip}:32032/prompt/?prompt={query_with_short_term_memory}",
+                f"{self.nlp_base_url}/users/{self.user_id}/prompt/?prompt={query_with_short_term_memory}",
                 timeout=30,
             )
             res = str(res.content.decode().strip())

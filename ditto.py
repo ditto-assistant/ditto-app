@@ -50,7 +50,15 @@ load_dotenv()
 def read_env_write_config() -> dict:
     config = {}
 
-    keys_to_lower = ["volume", "microphone", "teensy_path", "user", "nlp-server"]
+    keys_to_lower = [
+        "volume",
+        "microphone",
+        "teensy_path",
+        "user_id",
+        "nlp_server_ip",
+        "nlp_server_port",
+        "nlp_server_protocol",
+    ]
 
     for key in os.environ.keys():
         if "ha_entities" in key.lower():
@@ -100,7 +108,7 @@ class Assistant:
                 self.config = json.load(f)
         else:
             self.config = read_env_write_config()
-        self.nlp_ip = self.config["nlp-server"]
+        self.nlp_ip = self.config["nlp_server_ip"]
 
     def reset_loop(self):
         """

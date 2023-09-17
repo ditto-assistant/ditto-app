@@ -10,13 +10,14 @@ import serial
 
 from modules.home_assistant.home_assistant import HomeAssistant
 from datetime import datetime
+from utils.base_url import GetNlpBaseUrl
 import time
 
 
 class LightHandler:
     def __init__(self, config):
         self.config = config
-        self.nlp_ip = config["nlp-server"]
+        self.nlp_base_url = GetNlpBaseUrl(config)
         self.ha_entities = config
         self.light_status = True
         self.light_mode = "on"
@@ -57,7 +58,7 @@ class LightHandler:
             )
 
     def prompt_ner_light(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/light"
+        base_url = f"{self.nlp_base_url}/ner/light"
         response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 

@@ -2,6 +2,7 @@ import json
 import requests
 
 from modules.spotify.spotify import Spotify
+from utils.base_url import GetNlpBaseUrl
 
 
 class SpotifyHandler:
@@ -11,7 +12,7 @@ class SpotifyHandler:
         self.offline_mode = offline_mode
         self.volume = volume
         self.load_spotify_player(volume)
-        self.nlp_ip = config["nlp-server"]
+        self.nlp_base_url = GetNlpBaseUrl(config)
 
     def load_spotify_player(self, volume):
         if not self.offline_mode:
@@ -25,7 +26,7 @@ class SpotifyHandler:
             self.player = []
 
     def prompt_ner_play(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/play"
+        base_url = f"{self.nlp_base_url}/ner/play"
         response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 
