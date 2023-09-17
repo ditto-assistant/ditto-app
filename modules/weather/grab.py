@@ -1,21 +1,21 @@
-''''
+"""'
 weather application using python-weather.
 
 author: Omar Barazanji
 
 ref:
 1) https://pypi.org/project/python-weather/
-'''
+"""
 
-# import the module 
+# import the module
 import python_weather
 import asyncio
 
-class Weather:
 
-    def __init__(self, location='Auburn Alabama'):
+class Weather:
+    def __init__(self, location="Auburn Alabama"):
         self.location = location
-        self.response = ''
+        self.response = ""
 
     # get weather function... from ref (1)
     async def getweather(self):
@@ -40,7 +40,7 @@ class Weather:
         loop.run_until_complete(self.getweather())
         return self.response
 
+
 if __name__ == "__main__":
     weather = Weather()
     weather.get_weather()
-    

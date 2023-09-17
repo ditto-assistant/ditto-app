@@ -14,7 +14,6 @@ from command_handlers.volume_handler import VolumeHandler
 
 
 class Command:
-
     def __init__(self, path, offline_mode=False, config=None, volume=None):
         self.offline_mode = offline_mode
         self.config = config
@@ -29,9 +28,9 @@ class Command:
         self.soundscapes_handler = SoundScapesHandler(path, volume)
         self.iot_remote_handler = IOTRemoteHandler()
         self.volume_handler = VolumeHandler(config)
-        
 
 
 if __name__ == "__main__":
     import os
+
     command = Command(os.getcwd())

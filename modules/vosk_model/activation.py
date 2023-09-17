@@ -12,15 +12,13 @@ import os
 import wave
 import json
 
-class Activation:
 
+class Activation:
     def __init__(self, name):
         self.name = name
         self.activate = False
-        self.text = ''
-        self.partial_text = ''
-
-    
+        self.text = ""
+        self.partial_text = ""
 
     # check self.text and decide whether or not to activate
     def check_input(self, activation_mode_on):
@@ -30,5 +28,3 @@ class Activation:
         else:
             if not self.text == "":
                 self.activate = True
-
-    
