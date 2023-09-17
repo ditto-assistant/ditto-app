@@ -11,20 +11,21 @@ from modules.security_camera.face_validator_net.facevalnet import FaceValNet
 from modules.home_assistant.home_assistant import HomeAssistant
 
 CONFIDENCE = 90
-CAMERA_NAME = 'rtsp_cam2'
+CAMERA_NAME = "rtsp_cam2"
 
 home = HomeAssistant()
 
 face_val_net = FaceValNet(
-    'production', path='modules/security_camera/face_validator_net/')
+    "production", path="modules/security_camera/face_validator_net/"
+)
 model = face_val_net.model
 
 # Load the Haar cascade XML file for face detection
 face_cascade = cv2.CascadeClassifier(
-    "modules/security_camera/haarcascade_frontalface_default.xml")
+    "modules/security_camera/haarcascade_frontalface_default.xml"
+)
 
-rtsp_link = json.load(
-    open('modules/security_camera/config.json', 'r'))[CAMERA_NAME]
+rtsp_link = json.load(open("modules/security_camera/config.json", "r"))[CAMERA_NAME]
 
 # Create a VideoCapture object
 cap = cv2.VideoCapture(rtsp_link)
@@ -47,10 +48,10 @@ if not cap.isOpened():
 face_counter = 0
 start_time = time.time()
 
-if not os.path.exists('modules/security_camera/captures'):
-    os.mkdir('modules/security_camera/captures/')
+if not os.path.exists("modules/security_camera/captures"):
+    os.mkdir("modules/security_camera/captures/")
 
-print(f'\n[Watching {CAMERA_NAME}.]\n')
+print(f"\n[Watching {CAMERA_NAME}.]\n")
 
 # Read and display frames from the video stream
 while True:
@@ -67,14 +68,15 @@ while True:
 
         # Detect faces in the grayscale frame
         faces = face_cascade.detectMultiScale(
-            rgb, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            rgb, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
+        )
 
         # Draw bounding boxes around the detected faces
-        for (x, y, w, h) in faces:
+        for x, y, w, h in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             # Crop the face region from the frame
-            face_crop = rgb[y:y+h, x:x+w]
+            face_crop = rgb[y : y + h, x : x + w]
 
             # Resize the face crop to 60x60
             face_crop_resized = cv2.resize(face_crop, (60, 60))
@@ -83,11 +85,14 @@ while True:
             face_crop_model_inp = np.expand_dims(face_crop_resized, axis=-1)
 
             # Generate the file name using timestamp
-            stamp = str(datetime.utcfromtimestamp(time.time())).replace(
-                ' ', '').replace(':', '-').replace('.', '-')
-            image_name = 'modules/security_camera/captures/' + f'{stamp}.jpg'
-            face_name = 'modules/security_camera/captures/' + \
-                f'{stamp}_face.jpg'
+            stamp = (
+                str(datetime.utcfromtimestamp(time.time()))
+                .replace(" ", "")
+                .replace(":", "-")
+                .replace(".", "-")
+            )
+            image_name = "modules/security_camera/captures/" + f"{stamp}.jpg"
+            face_name = "modules/security_camera/captures/" + f"{stamp}_face.jpg"
 
         # Display the frame with face bounding boxes
         # cv2.imshow("RTSP Stream with Face Detection", frame)
@@ -101,15 +106,15 @@ while True:
         if elapsed_time >= 2:
             # Check if at least 10 faces were detected
             if face_counter >= 10:
-
-                model_confidence = np.array(model(
-                    np.expand_dims(face_crop_model_inp, 0)))[0][0] * 100
+                model_confidence = (
+                    np.array(model(np.expand_dims(face_crop_model_inp, 0)))[0][0] * 100
+                )
                 K.clear_session()
 
                 if model_confidence >= CONFIDENCE:
                     home.send_push_camera(CAMERA_NAME)
 
-                    print('\nFaceValNet Model Confidence:', model_confidence)
+                    print("\nFaceValNet Model Confidence:", model_confidence)
                     # Save the entire frame
                     cv2.imwrite(image_name, frame)
                     print("Image saved:", image_name)
@@ -125,7 +130,7 @@ while True:
                 continue
 
         # Check for the 'q' key to exit
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord("q"):
             break
     except BaseException as e:
         # Release the VideoCapture object and close any open windows

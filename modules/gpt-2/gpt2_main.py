@@ -10,23 +10,24 @@ import os
 gpt2_model = "124M"
 
 if not os.path.isdir(os.path.join("models", gpt2_model)):
-	print(f"Downloading {gpt2_model} model...")
-	gpt2.download_gpt2(model_name=gpt2_model)   # model is saved into current directory under /models/124M/
+    print(f"Downloading {gpt2_model} model...")
+    gpt2.download_gpt2(
+        model_name=gpt2_model
+    )  # model is saved into current directory under /models/124M/
+
 
 class Prompt:
-
     def __init__(self):
         self.prompt = ""
         self.session = gpt2.start_tf_sess()
-        self.model = ''
-        
+        self.model = ""
+
     def load_model(self, model):
         self.model = model
         self.model_corpus = ""
         with open(self.model) as f:
             for x in f.readlines():
                 self.model_corpus += x
-        
 
     def set_model(self):
         # send to gpt-2 to generate response
@@ -43,7 +44,7 @@ class Prompt:
 
 if __name__ == "__main__":
     prompt = Prompt()
-    prompt.load_model('test.txt')
+    prompt.load_model("test.txt")
     prompt.set_model()
     input("enter to continue...")
-    prompt.generate_response('turn off the lights.')
+    prompt.generate_response("turn off the lights.")

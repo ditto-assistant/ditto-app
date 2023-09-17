@@ -4,12 +4,11 @@ import requests
 from modules.hourglass.timer import Timer
 
 
-class TimerHandler():
-
+class TimerHandler:
     def __init__(self, path, config):
         self.config = config
         self.timer = Timer(path)
-        self.nlp_ip = self.config['nlp-server']
+        self.nlp_ip = self.config["nlp-server"]
 
     def prompt_ner_timer(self, prompt):
         base_url = f"http://{self.nlp_ip}:32032/ner/"
@@ -24,36 +23,38 @@ class TimerHandler():
 
     def handle_response(self, prompt):
         ner_response = json.loads(self.prompt_ner_timer(prompt))
-        second = ner_response['second']
-        minute = ner_response['minute']
-        second_reply = ''
-        minute_reply = ''
-        s = ''
-        m = ''
+        second = ner_response["second"]
+        minute = ner_response["minute"]
+        second_reply = ""
+        minute_reply = ""
+        s = ""
+        m = ""
 
-        if not second == '':
-            s = 's'
+        if not second == "":
+            s = "s"
             if int(second) == 1:
-                second_reply = ' second '
-            else: second_reply = ' seconds '
+                second_reply = " second "
+            else:
+                second_reply = " seconds "
 
-        if not minute == '':
-            m = 'm'
+        if not minute == "":
+            m = "m"
             if int(minute) == 1:
-                minute_reply = ' minute '
-            else: minute_reply = ' minutes '
+                minute_reply = " minute "
+            else:
+                minute_reply = " minutes "
 
-        if not second == '' or not minute == '':
+        if not second == "" or not minute == "":
             timer_command = minute + m + second + s
-            timer_command.replace(' ', '')
+            timer_command.replace(" ", "")
             # print(timer_command)
             self.toggle_timer(timer_command)
             readable = minute + minute_reply + second + second_reply
-            reply = '[Setting timer for %s]' % readable
-            print(reply+'\n')
+            reply = "[Setting timer for %s]" % readable
+            print(reply + "\n")
 
         else:
-            reply = '[Invalid timer command]'
-            print(reply+'\n')
+            reply = "[Invalid timer command]"
+            print(reply + "\n")
 
         return reply
