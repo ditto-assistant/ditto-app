@@ -17,8 +17,8 @@ class VolumeHandler:
             print(e)
 
     def prompt_ner_numeric(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/"
-        response = requests.post(base_url, params={"ner-numeric": prompt})
+        base_url = f"http://{self.nlp_ip}:32032/ner/numeric"
+        response = requests.post(base_url, params={"prompt": prompt})
         return json.loads(response.content.decode())
 
     def handle_response(self, prompt: str) -> int:

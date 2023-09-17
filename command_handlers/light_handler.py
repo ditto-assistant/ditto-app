@@ -57,8 +57,8 @@ class LightHandler:
             )
 
     def prompt_ner_light(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/"
-        response = requests.post(base_url, params={"ner-light": prompt})
+        base_url = f"http://{self.nlp_ip}:32032/ner/light"
+        response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 
     def set_light_brightness(self, value, light_name=None):

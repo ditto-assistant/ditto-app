@@ -11,8 +11,8 @@ class TimerHandler:
         self.nlp_ip = self.config["nlp-server"]
 
     def prompt_ner_timer(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/"
-        response = requests.post(base_url, params={"ner-timer": prompt})
+        base_url = f"http://{self.nlp_ip}:32032/ner/timer"
+        response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 
     def toggle_timer(self, val):

@@ -25,8 +25,8 @@ class SpotifyHandler:
             self.player = []
 
     def prompt_ner_play(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/ner/"
-        response = requests.post(base_url, params={"ner-play": prompt})
+        base_url = f"http://{self.nlp_ip}:32032/ner/play"
+        response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 
     def play_music(self, artist, song=None):
