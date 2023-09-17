@@ -124,10 +124,13 @@ class Assistant:
             channel.set_volume(self.volume / 100)
             channel.play(pygame.mixer.Sound(f"resources/sounds/ditto-{sound}.mp3"))
 
-        if (
-            self.command.soundscapes_handler.soundscapes.playing
-            or self.command.spotify_handler.player.playing_music
-        ):
+        playing_soundscapes = getattr(
+            self.command.soundscapes_handler.soundscapes, "playing", False
+        )
+        playing_music = getattr(
+            self.command.spotify_handler.player, "playing_music", False
+        )
+        if playing_soundscapes or playing_music:
             if sound == "on":
                 pygame.mixer.music.set_volume(int(self.volume * 0.5) / 100)
                 if self.command.spotify_handler.player.playing_music:
