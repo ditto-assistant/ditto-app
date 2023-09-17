@@ -28,15 +28,16 @@ from dotenv import load_dotenv
 # used to send keypress event (keeps display on)
 try:
     import pyautogui
+
     pyautogui.FAILSAFE = False
     headless = False
 except:
     headless = True
-    print('booting headless...')
+    print("booting headless...")
 
 
 UNIX = False
-if platform.system() == 'Linux':
+if platform.system() == "Linux":
     UNIX = True
 
 pygame.mixer.init(channels=8)
@@ -45,44 +46,41 @@ OFFLINE_MODE = False
 
 load_dotenv()
 
+
 def read_env_write_config() -> dict:
     config = {}
 
-    keys_to_lower = ['volume', 'microphone', 'teensy_path', 'user', 'nlp-server']
+    keys_to_lower = ["volume", "microphone", "teensy_path", "user", "nlp-server"]
 
     for key in os.environ.keys():
+        if "ha_entities" in key.lower():
+            str_arr = os.environ[key].split(",")
+            config["ha_entities"] = str_arr
+        elif key.lower() in keys_to_lower:
+            config[key.lower()] = os.environ[key]
+        else:
+            config[key] = os.environ[key]
 
-            if 'ha_entities' in key.lower():
-                str_arr = os.environ[key].split(",")
-                config['ha_entities'] = str_arr
-            elif key.lower() in keys_to_lower:
-                config[key.lower()] = os.environ[key]
-            else:
-                config[key] = os.environ[key]
-
-    with open('resources/config.json', 'w') as f:
+    with open("resources/config.json", "w") as f:
         json.dump(config, f)
 
     return config
-        
 
 
 class Assistant:
-
     def __init__(self, offline_mode=OFFLINE_MODE):
-        print('[Booting...]')
-        self.update_status_db('booting')
+        print("[Booting...]")
+        self.update_status_db("booting")
         self.load_config()
-        self.volume = int(self.config['volume'])  # percent
+        self.volume = int(self.config["volume"])  # percent
         self.security_camera = SecurityCam(os.getcwd())
-        self.speech = Speech(offline_mode=offline_mode,
-                             mic=self.config['microphone'])
+        self.speech = Speech(offline_mode=offline_mode, mic=self.config["microphone"])
         self.command = Command(os.getcwd(), offline_mode, self.config, self.volume)
-        self.speech_engine = ''
+        self.speech_engine = ""
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
-        
+
         self.prompt = ""
         self.reply = ""
         self.activation_mode = True  # If true then idle and listening for name
@@ -93,58 +91,62 @@ class Assistant:
 
         self.retries = 0
         # will go to false after 5 seconds of inactivity (idle)
-        self.update_status_db('on')
+        self.update_status_db("on")
 
     def load_config(self):
-        config_path = 'resources/config.json'
-        if 'config.json' in os.listdir('resources'):
-            with open(config_path, 'r') as f:
+        config_path = "resources/config.json"
+        if "config.json" in os.listdir("resources"):
+            with open(config_path, "r") as f:
                 self.config = json.load(f)
         else:
             self.config = read_env_write_config()
-        self.nlp_ip = self.config['nlp-server']
+        self.nlp_ip = self.config["nlp-server"]
 
     def reset_loop(self):
-        '''
+        """
         Resets the command loop to idle.
-        '''
+        """
         self.activation_mode = True  # go back to idle...
-        self.speech.text = ''
-        self.prompt = ''
+        self.speech.text = ""
+        self.prompt = ""
         self.speech.from_gui = False
 
-    def play_sound(self, sound='off'):
-        print(f'Gui Mode {self.speech.from_gui}')
+    def play_sound(self, sound="off"):
+        print(f"Gui Mode {self.speech.from_gui}")
         if self.speech.from_gui:
             return
         elif self.reset_conversation:
             return
-        
+
         def play_sound_channel():
             channel = pygame.mixer.find_channel()
             pygame.mixer.music.load(f"resources/sounds/ditto-{sound}.mp3")
-            channel.set_volume(
-                self.volume/100
-            )
-            channel.play(pygame.mixer.Sound(
-                f"resources/sounds/ditto-{sound}.mp3"))
+            channel.set_volume(self.volume / 100)
+            channel.play(pygame.mixer.Sound(f"resources/sounds/ditto-{sound}.mp3"))
 
-        if self.command.soundscapes_handler.soundscapes.playing or self.command.spotify_handler.player.playing_music:
-            if sound == 'on':
-                pygame.mixer.music.set_volume(int(self.volume*0.5)/100)
+        if (
+            self.command.soundscapes_handler.soundscapes.playing
+            or self.command.spotify_handler.player.playing_music
+        ):
+            if sound == "on":
+                pygame.mixer.music.set_volume(int(self.volume * 0.5) / 100)
                 if self.command.spotify_handler.player.playing_music:
-                    self.command.spotify_handler.player.remote('volume', int(self.volume*0.5))
-            if sound == 'off':
-                pygame.mixer.music.set_volume(self.volume/100)
+                    self.command.spotify_handler.player.remote(
+                        "volume", int(self.volume * 0.5)
+                    )
+            if sound == "off":
+                pygame.mixer.music.set_volume(self.volume / 100)
                 if self.command.spotify_handler.player.playing_music:
-                    self.command.spotify_handler.player.remote('volume', self.volume)
+                    self.command.spotify_handler.player.remote("volume", self.volume)
         play_sound_channel()
 
     def skip_wake(self):
-        '''
+        """
         For applications that require looping, we can skip wake.
-        '''
-        self.speech.activation.activate = True  # skip wake-up sequence (name is already called)
+        """
+        self.speech.activation.activate = (
+            True  # skip wake-up sequence (name is already called)
+        )
         self.speech.skip_wake = True
 
     def prompt_intent(self, prompt):
@@ -153,11 +155,10 @@ class Assistant:
         return response.content.decode()
 
     def conversation_app(self, action=None):
-
         def conversation_flow():
             self.reply = self.command.conversation_handler.handle_response(self.prompt)
-            if self.reply == '':
-                self.reply = '...'
+            if self.reply == "":
+                self.reply = "..."
             self.tts(self.reply)
             if not self.speech.from_gui:
                 # self.skip_wake()
@@ -165,212 +166,218 @@ class Assistant:
             else:
                 self.reset_loop()
 
-        if action == 'exit':
+        if action == "exit":
             if not self.speech.from_gui:
-                self.reply = '[Exiting Conversation Loop]'
+                self.reply = "[Exiting Conversation Loop]"
                 self.reset_loop()
-                self.play_sound('off')
+                self.play_sound("off")
             else:
                 conversation_flow()
         else:
             conversation_flow()
 
     def send_command(self):  # application logic
-
         # grab user's prompt from speech module
         self.prompt = self.speech.text
 
         # log the user's prompt
         # print('writing prompt to db...')
         self.write_prompt_to_db()
-
-        if 'GestureNet' in self.prompt:
-            cat = 'gesture'
-            sub_cat = 'none'
-            action = 'none'
+        if "GestureNet" in self.prompt:
+            cat = "gesture"
+            sub_cat = "none"
+            action = "none"
             gesture = self.speech.gesture
-        elif 'resetConversation' in self.prompt:
-            cat = 'reset'
-            sub_cat = 'none'
-            action = 'none'
+        elif "resetConversation" in self.prompt:
+            cat = "reset"
+            sub_cat = "none"
+            action = "none"
         else:
             # get intent from offline npl module
             self.offline_response = json.loads(self.prompt_intent(self.prompt))
-            cat = self.offline_response['category']
-            sub_cat = self.offline_response['sub_category']
-            action = self.offline_response['action']
+            cat = self.offline_response["category"]
+            sub_cat = self.offline_response["sub_category"]
+            action = self.offline_response["action"]
 
-            if 'exit' in action and self.command.soundscapes_handler.soundscapes.playing:
-                cat = 'soundscapes'
-                sub_cat = 'none'
-                action = 'exit'
+            if (
+                "exit" in action
+                and self.command.soundscapes_handler.soundscapes.playing
+            ):
+                cat = "soundscapes"
+                sub_cat = "none"
+                action = "exit"
 
         print(cat, sub_cat, action)
 
         # send prompt to application / category
-        if cat == 'lights':
-            self.reply = self.command.light_handler.handle_response(
-                self.prompt, self.tts).reply
-            self.reset_loop()
-
-        elif cat == 'spotify':
-            try:
-                self.reply = self.command.spotify_handler.handle_response(self.prompt)
-                self.tts(self.reply)
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
-
-        elif cat == 'music':
-            try:
-                self.command.spotify_handler.player.remote(self.offline_response['action'])
-                if self.speech.from_gui:
-                    self.reply = '[Done.]'
-                self.reset_loop()
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
-
-        elif cat == 'timer':
-            try:
-                self.reply = self.command.timer_handler.handle_response(
-                    self.command, self.prompt)
-                self.tts(self.reply)
-                self.reset_loop()
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
-
-        elif cat == 'gesture':
-            if gesture == 'like':
-                # self.reply = f'[GestureNet: {gesture}]'
-                self.prompt = 'turn on the lights'
+        match cat:
+            case "lights":
                 self.reply = self.command.light_handler.handle_response(
-                    self.prompt)
-                # pyautogui.press('right')
-            elif gesture == 'dislike':
-                # self.reply = f'[GestureNet: {gesture}]'
-                # pyautogui.press('left')
-                self.prompt = 'set the lights to sparkle'
-                self.reply = self.command.light_handler.handle_response(
-                    self.prompt)
-            self.tts(self.reply)
-            self.reset_loop()
+                    self.prompt, self.tts
+                ).reply
+                self.reset_loop()
 
-        elif cat == 'security':
-            if not headless:
-                self.reply = f'[Opening {action} camera.]'
-                self.security_camera.open_cam(action)
+            case "spotify":
+                try:
+                    self.reply = self.command.spotify_handler.handle_response(
+                        self.prompt
+                    )
+                    self.tts(self.reply)
+                except BaseException as e:
+                    print(e)
+                    self.conversation_app()
+
+            case "music":
+                try:
+                    self.command.spotify_handler.player.remote(
+                        self.offline_response["action"]
+                    )
+                    if self.speech.from_gui:
+                        self.reply = "[Done.]"
+                    self.reset_loop()
+                except BaseException as e:
+                    print(e)
+                    self.conversation_app()
+
+            case "timer":
+                try:
+                    self.reply = self.command.timer_handler.handle_response(
+                        self.command, self.prompt
+                    )
+                    self.tts(self.reply)
+                    self.reset_loop()
+                except BaseException as e:
+                    print(e)
+                    self.conversation_app()
+
+            case "gesture":
+                if gesture == "like":
+                    # self.reply = f'[GestureNet: {gesture}]'
+                    self.prompt = "turn on the lights"
+                    self.reply = self.command.light_handler.handle_response(self.prompt)
+                    # pyautogui.press('right')
+                elif gesture == "dislike":
+                    # self.reply = f'[GestureNet: {gesture}]'
+                    # pyautogui.press('left')
+                    self.prompt = "set the lights to sparkle"
+                    self.reply = self.command.light_handler.handle_response(self.prompt)
                 self.tts(self.reply)
                 self.reset_loop()
-            else:
-                self.reply = '[Exiting Conversation Loop]'
-                self.reset_loop()
-                self.play_sound('off')
 
-        elif cat == 'weather':
-            try:
-                self.reply = self.command.weather_handler.handle_response(
-                    sub_cat, action)
-                self.tts(self.reply)
-                self.reset_loop()
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
-
-        elif cat == 'soundscapes':
-            try:
-                self.reply = self.command.soundscapes_handler.handle_response(
-                    sub_cat, action)
-                # self.tts(self.reply)
-                self.reset_loop()
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
-
-        elif cat == 'wolfram':
-            try:
-                self.reply = self.command.wolfram_handler.handle_response(sub_cat, self.prompt)
-                print(f'\nWolfram Reply len: `{len(self.reply)}`\n')
-                if len(self.reply) > 0 and len(self.reply) < 99:
+            case "security":
+                if not headless:
+                    self.reply = f"[Opening {action} camera.]"
+                    self.security_camera.open_cam(action)
                     self.tts(self.reply)
                     self.reset_loop()
                 else:
+                    self.reply = "[Exiting Conversation Loop]"
+                    self.reset_loop()
+                    self.play_sound("off")
+
+            case "weather":
+                try:
+                    self.reply = self.command.weather_handler.handle_response(
+                        sub_cat, action
+                    )
+                    self.tts(self.reply)
+                    self.reset_loop()
+                except BaseException as e:
+                    print(e)
                     self.conversation_app()
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
 
-        elif cat == 'vacuum':
-            try:
-                self.reply = self.command.iot_remote_handler.handle_response(
-                    action, 
-                    device_name='vacuum'
-                )
-                self.tts(self.reply)
+            case "soundscapes":
+                try:
+                    self.reply = self.command.soundscapes_handler.handle_response(
+                        sub_cat, action
+                    )
+                    # self.tts(self.reply)
+                    self.reset_loop()
+                except BaseException as e:
+                    print(e)
+                    self.conversation_app()
+
+            case "wolfram":
+                try:
+                    self.reply = self.command.wolfram_handler.handle_response(
+                        sub_cat, self.prompt
+                    )
+                    print(f"\nWolfram Reply len: `{len(self.reply)}`\n")
+                    if len(self.reply) > 0 and len(self.reply) < 99:
+                        self.tts(self.reply)
+                        self.reset_loop()
+                    else:
+                        self.conversation_app()
+                except BaseException as e:
+                    print(e)
+                    self.conversation_app()
+
+            case "vacuum":
+                try:
+                    self.reply = self.command.iot_remote_handler.handle_response(
+                        action, device_name="vacuum"
+                    )
+                    self.tts(self.reply)
+                    self.reset_loop()
+                except BaseException as e:
+                    self.reply = "[Error communicating with Vacuum]"
+                    self.reset_loop()
+
+            case "volume":
+                try:
+                    volume = self.command.volume_handler.handle_response(self.prompt)
+                    self.volume = volume
+                    self.reply = f"[Volume set to {volume}.]"
+                    self.command.spotify_handler.player.remote(cat, volume)
+                    self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
+                    print(self.reply)
+                    # self.tts(self.reply)
+                    self.reset_loop()
+                except BaseException as e:
+                    print(e)
+                    self.conversation_app()
+
+            case "conv":  # send to conversation handler
+                self.conversation_app(action)
+
+            case "reset":
+                self.reply = "[Resetting Conversation...]"
+                self.command.conversation_handler.reset_conversation()
                 self.reset_loop()
-            except BaseException as e:
-                self.reply = '[Error communicating with Vacuum]'
-                self.reset_loop()    
-
-        elif cat == 'volume':
-            try:
-                volume = self.command.volume_handler.handle_response(self.prompt)
-                self.volume = volume
-                self.reply = f'[Volume set to {volume}.]'
-                self.command.spotify_handler.player.remote(cat, volume)
-                self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
-                print(self.reply)
-                # self.tts(self.reply)
-                self.reset_loop()
-            except BaseException as e:
-                print(e)
-                self.conversation_app()
-
-        elif cat == 'conv':  # send to conversation handler
-
-            self.conversation_app(action)
-
-        elif cat == 'reset':
-            self.reply = '[Resetting Conversation...]'
-            self.command.conversation_handler.reset_conversation()
-            self.reset_loop()
 
         self.write_response_to_db()  # log self.reply
 
     def write_response_to_db(self):
         if not self.reply:
-            self.reply = '[empty]'
+            self.reply = "[empty]"
         if self.reset_conversation:
             self.reset_conversation = False  # set back to False
-            self.reply = ''
+            self.reply = ""
             return
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS responses(response VARCHAR, timestamp)")
+        cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR, timestamp)")
         SQL.commit()
-        cur.execute("INSERT INTO responses VALUES('%s', '%s')" %
-                    (self.reply.replace("'", "''"), str(
-                        int(time.time())))
-                    )
+        cur.execute(
+            "INSERT INTO responses VALUES('%s', '%s')"
+            % (self.reply.replace("'", "''"), str(int(time.time())))
+        )
         SQL.commit()
         SQL.close()
-        self.reply = ''  # reset for next loop
+        self.reply = ""  # reset for next loop
 
     def write_prompt_to_db(self):
         if self.reset_conversation:
-            self.reply = ''
+            self.reply = ""
             return
         SQL = sqlite3.connect("ditto.db")
         cur = SQL.cursor()
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR, timestamp)")
+        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR, timestamp)")
         SQL.commit()
-        cur.execute("INSERT INTO prompts VALUES('%s', '%s')" %
-                    (self.prompt.replace("'", "''"), str(
-                        int(time.time())))
-                    )
+        cur.execute(
+            "INSERT INTO prompts VALUES('%s', '%s')"
+            % (self.prompt.replace("'", "''"), str(int(time.time())))
+        )
         SQL.commit()
         SQL.close()
 
@@ -392,10 +399,9 @@ class Assistant:
         # record audio and listen for name
         self.speech.record_audio(activation_mode=self.activation_mode)
         if self.speech.activation.activate:  # name has been spoken
-
             if self.speech.reset_conversation:
                 self.reset_conversation = True
-            self.play_sound('on')
+            self.play_sound("on")
             self.speaker_timer = 0  # reset speaker + mic timer
 
             self.speech.activation.activate = False
@@ -418,19 +424,19 @@ class Assistant:
                 self.send_command()
 
             except BaseException as e:
-
-                print('\n[Unexpected Error: ]\n')
+                print("\n[Unexpected Error: ]\n")
                 print(e)
                 self.reply = f"[Unexpected Error: {e}]"
-                self.tts('Unexpected Error... Please try again!')
+                self.tts("Unexpected Error... Please try again!")
                 self.reset_loop()
 
     def tts(self, reply):
-        if not self.speech.from_gui:  # only read reply aloud if command / prompt was spoken by user
+        if (
+            not self.speech.from_gui
+        ):  # only read reply aloud if command / prompt was spoken by user
             try:
                 if UNIX:
-                    os.system('amixer -q set Master ' +
-                              str(self.volume)+'%')
+                    os.system("amixer -q set Master " + str(self.volume) + "%")
                 # os.system('pico2wave -w reply.wav "%s" && aplay -q reply.wav' % prompt.strip("[]"))
                 if not self.speech.offline_mode:
                     soundscapes = self.command.soundscapes_handler.soundscapes
@@ -449,7 +455,6 @@ class Assistant:
 
 
 if __name__ == "__main__":
-
     assistant = Assistant()
     while True:
         assistant.activation_sequence()
