@@ -2,15 +2,13 @@ import json
 import requests
 
 from modules.hourglass.timer import Timer
-from utils.base_url import GetNlpBaseUrl
+from config import AppConfig
 
 
 class TimerHandler:
-    def __init__(self, path, config):
-        self.config = config
+    def __init__(self, path):
         self.timer = Timer(path)
-        self.nlp_ip = self.config["nlp_server_ip"]
-        self.nlp_base_url = GetNlpBaseUrl(config)
+        self.nlp_base_url = AppConfig().base_url()
 
     def prompt_ner_timer(self, prompt):
         base_url = f"{self.nlp_base_url}/ner/timer"

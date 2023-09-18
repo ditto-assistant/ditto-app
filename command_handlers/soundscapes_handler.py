@@ -1,12 +1,16 @@
 from modules.soundscapes.soundscapes import SoundScapes
+from config import AppConfig
 
 
 class SoundScapesHandler:
-    def __init__(self, path, volume):
+    def __init__(
+        self,
+        path,
+    ):
         self.path = path
         self.path = path.replace("\\", "/")
         self.path += "/modules/soundscapes/"
-        self.soundscapes = SoundScapes(self.path, volume)
+        self.soundscapes = SoundScapes(self.path, AppConfig().volume)
 
     def handle_response(self, sound, action):
         self.reply = ""

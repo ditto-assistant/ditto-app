@@ -23,6 +23,11 @@ import platform
 import numpy as np
 from time import localtime
 from dotenv import load_dotenv
+from config import AppConfig
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 # used to send keypress event (keeps display on)
@@ -47,43 +52,16 @@ OFFLINE_MODE = False
 load_dotenv()
 
 
-def read_env_write_config() -> dict:
-    config = {}
-
-    keys_to_lower = [
-        "volume",
-        "microphone",
-        "teensy_path",
-        "user_id",
-        "nlp_server_ip",
-        "nlp_server_port",
-        "nlp_server_protocol",
-    ]
-
-    for key in os.environ.keys():
-        if "ha_entities" in key.lower():
-            str_arr = os.environ[key].split(",")
-            config["ha_entities"] = str_arr
-        elif key.lower() in keys_to_lower:
-            config[key.lower()] = os.environ[key]
-        else:
-            config[key] = os.environ[key]
-
-    with open("resources/config.json", "w") as f:
-        json.dump(config, f)
-
-    return config
-
-
 class Assistant:
     def __init__(self, offline_mode=OFFLINE_MODE):
-        print("[Booting...]")
+        log.info("[Booting...]")
         self.update_status_db("booting")
-        self.load_config()
-        self.volume = int(self.config["volume"])  # percent
+        self.config = AppConfig()
+        self.base_url: str = self.config.base_url()
+        self.volume = int(self.config.volume)  # percent
         self.security_camera = SecurityCam(os.getcwd())
-        self.speech = Speech(offline_mode=offline_mode, mic=self.config["microphone"])
-        self.command = Command(os.getcwd(), offline_mode, self.config, self.volume)
+        self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
+        self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = ""
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
@@ -102,13 +80,7 @@ class Assistant:
         self.update_status_db("on")
 
     def load_config(self):
-        config_path = "resources/config.json"
-        if "config.json" in os.listdir("resources"):
-            with open(config_path, "r") as f:
-                self.config = json.load(f)
-        else:
-            self.config = read_env_write_config()
-        self.nlp_ip = self.config["nlp_server_ip"]
+        config = AppConfig()
 
     def reset_loop(self):
         """
@@ -161,7 +133,7 @@ class Assistant:
         self.speech.skip_wake = True
 
     def prompt_intent(self, prompt):
-        base_url = f"http://{self.nlp_ip}:32032/intent/"
+        base_url = f"{self.base_url}/intent"
         response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 
@@ -408,7 +380,9 @@ class Assistant:
     def activation_sequence(self):
         self.activation_mode = True
         # record audio and listen for name
+        log.info("Recording audio...")
         self.speech.record_audio(activation_mode=self.activation_mode)
+        log.info("Done recording audio...")
         if self.speech.activation.activate:  # name has been spoken
             if self.speech.reset_conversation:
                 self.reset_conversation = True
@@ -425,7 +399,7 @@ class Assistant:
             self.speech.record_audio(activation_mode=self.activation_mode)
 
             # command has been spoken (app on enter section)
-            print("Q: %s\n" % self.speech.activation.text)
+            log.info("Q: %s\n" % self.speech.activation.text)
             self.speech.activation.activate = False
             self.speech.activation.text = ""
 
@@ -435,11 +409,13 @@ class Assistant:
                 self.send_command()
 
             except BaseException as e:
-                print("\n[Unexpected Error: ]\n")
-                print(e)
-                self.reply = f"[Unexpected Error: {e}]"
+                err_msg = f"[Unexpected Error: {e}]"
+                log.error(err_msg)
+                self.reply = err_msg
                 self.tts("Unexpected Error... Please try again!")
                 self.reset_loop()
+        else:
+            log.info("No name spoken...")
 
     def tts(self, reply):
         if (
@@ -454,6 +430,7 @@ class Assistant:
                     if soundscapes.playing:
                         speaker = self.google.gtts(reply)
                         while speaker.running:
+                            time.sleep(0.2)
                             continue
                         soundscapes.play_sound(soundscapes.currently_playing)
                     else:

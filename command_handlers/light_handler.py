@@ -2,6 +2,7 @@ import json
 from threading import Thread
 import numpy as np
 import requests
+from config import AppConfig
 
 # https://github.com/mclarkk/lifxlan
 import lifxlan
@@ -10,15 +11,14 @@ import serial
 
 from modules.home_assistant.home_assistant import HomeAssistant
 from datetime import datetime
-from utils.base_url import GetNlpBaseUrl
 import time
 
 
 class LightHandler:
-    def __init__(self, config):
-        self.config = config
-        self.nlp_base_url = GetNlpBaseUrl(config)
-        self.ha_entities = config
+    def __init__(self):
+        self.config = AppConfig()
+        self.nlp_base_url: str = self.config.base_url()
+        self.ha_entities = self.config.ha_entities
         self.light_status = True
         self.light_mode = "on"
         self.home_assistant = HomeAssistant()
@@ -33,20 +33,17 @@ class LightHandler:
         command = command.strip()
         if "day" in command:
             self.toggle_light("on")
-            entities = self.config["ha_entities"]
-            for i in entities:
+            for i in self.ha_entities:
                 if "day" in i:
                     entity_id = i
         elif "night" in command:
             self.toggle_light("red")
-            entities = self.config["ha_entities"]
-            for i in entities:
+            for i in self.ha_entities:
                 if "night" in i:
                     entity_id = i
         elif "sleep" in command:
             self.toggle_light("off")
-            entities = self.config["ha_entities"]
-            for i in entities:
+            for i in self.ha_entities:
                 if "sleep" in i:
                     entity_id = i
         if not entity_id:
@@ -89,7 +86,7 @@ class LightHandler:
     def toggle_light_brightness(self, brightness):
         brightness = int(brightness)
         try:
-            dev_path = self.config["teensy_path"]
+            dev_path = self.config.teensy_path
             try:
                 s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
             except:
@@ -125,7 +122,7 @@ class LightHandler:
     def toggle_light(self, mode):
         mode = mode.lower()
         try:
-            dev_path = self.config["teensy_path"]
+            dev_path = self.config.teensy_path
             try:
                 s = serial.Serial(dev_path, baudrate=9600, bytesize=8)
             except:

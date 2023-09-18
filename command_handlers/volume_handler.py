@@ -2,7 +2,7 @@ import json
 import requests
 
 from modules.home_assistant.home_assistant import HomeAssistant
-from utils.base_url import GetNlpBaseUrl
+from config import AppConfig
 
 
 class VolumeHandler:
@@ -10,9 +10,9 @@ class VolumeHandler:
     Handler for changing volume across multiple applications.
     """
 
-    def __init__(self, config):
+    def __init__(self):
         try:
-            self.nlp_base_url = GetNlpBaseUrl(config)
+            self.nlp_base_url: str = AppConfig().base_url()
         except BaseException as e:
             print("\nError loading NLP Server in in Volume handler...")
             print(e)

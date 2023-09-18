@@ -2,17 +2,17 @@ import json
 import requests
 
 from modules.spotify.spotify import Spotify
-from utils.base_url import GetNlpBaseUrl
+from config import AppConfig
 
 
 class SpotifyHandler:
-    def __init__(self, path, config, offline_mode, volume=None):
-        self.config = config
+    def __init__(self, path, offline_mode):
+        self.config = AppConfig()
         self.path = path
         self.offline_mode = offline_mode
-        self.volume = volume
-        self.load_spotify_player(volume)
-        self.nlp_base_url = GetNlpBaseUrl(config)
+        self.volume = self.config.volume
+        self.load_spotify_player(self.config.volume)
+        self.nlp_base_url = self.config.base_url()
 
     def load_spotify_player(self, volume):
         if not self.offline_mode:

@@ -2,8 +2,7 @@ import os
 import requests
 from datetime import datetime
 import time
-from utils.base_url import GetNlpBaseUrl
-
+from config import AppConfig
 import openai
 
 try:
@@ -14,9 +13,9 @@ except:
 
 class ConversationHandler:
     def __init__(self, config, offline_mode=False):
-        self.config = config
-        self.user_id = config["user_id"]
-        self.nlp_base_url = GetNlpBaseUrl(config)
+        self.config = AppConfig()
+        self.user_id = self.config.user_id
+        self.nlp_base_url = self.config.base_url()
         self.offline_mode = offline_mode
         self.conversation_memory_buffer = []
 

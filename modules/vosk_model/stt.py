@@ -12,6 +12,7 @@ import json
 q = queue.Queue()
 
 import platform
+from config import AppConfig
 
 
 UNIX = False
@@ -26,27 +27,12 @@ class STT:
         self.model_path = path + "/modules/vosk_model/model"
         self.device_id = self.get_sound_device_id()
 
-    def load_config(self) -> str:
-        """
-        Load config reads config.json for "device_name" and returns the mic name as a string.
-        """
-        device_name = "default"
-        try:
-            with open(self.path + "config.json", "r") as f:
-                stt_config = json.load(f)
-                device_name = stt_config["device_name"]
-                print(f"\nUsing {device_name} as mic device.\n")
-        except:
-            print("\nDefault mic selected. No config.json found...\n")
-
-        return device_name
-
     def get_sound_device_id(self) -> str:
         """
         Returns configured sounddevice mic id as string.
         """
         device_id = "default"
-        device_name = self.load_config()
+        device_name = AppConfig().microphone
         device_list = sd.query_devices()
         for dev in device_list:
             if device_name in dev["name"]:
