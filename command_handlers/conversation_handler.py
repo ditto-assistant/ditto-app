@@ -40,7 +40,7 @@ class ConversationHandler:
             query_with_short_term_memory += f"<STMEM>{query}"
         try:
             res = requests.post(
-                f"{self.nlp_base_url}/users/{self.user_id}/prompt/?prompt={query_with_short_term_memory}",
+                f"{self.nlp_base_url}/users/{self.user_id}/prompt?prompt={query_with_short_term_memory}",
                 timeout=30,
             )
             res = str(res.content.decode().strip())

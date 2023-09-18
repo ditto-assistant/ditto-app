@@ -321,6 +321,7 @@ class Assistant:
                     self.conversation_app()
 
             case "conv":  # send to conversation handler
+                log.debug("Calling conversation app; Q: %s" % self.prompt)
                 self.conversation_app(action)
 
             case "reset":
