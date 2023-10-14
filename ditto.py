@@ -224,9 +224,7 @@ class Assistant:
 
             case "timer":
                 try:
-                    self.reply = self.command.timer_handler.handle_response(
-                        self.command, self.prompt
-                    )
+                    self.reply = self.command.timer_handler.handle_response(self.prompt)
                     self.tts(self.reply)
                     self.reset_loop()
                 except BaseException as e:
