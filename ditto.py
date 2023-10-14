@@ -193,139 +193,138 @@ class Assistant:
         print(cat, sub_cat, action)
 
         # send prompt to application / category
-        match cat:
-            case "lights":
-                self.reply = self.command.light_handler.handle_response(
-                    self.prompt, self.tts
-                ).reply
+        if cat == "lights":
+            self.reply = self.command.light_handler.handle_response(
+                self.prompt, self.tts
+            ).reply
+            self.reset_loop()
+
+        elif cat == "spotify":
+            try:
+                self.reply = self.command.spotify_handler.handle_response(
+                    self.prompt
+                )
+                self.tts(self.reply)
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
+        elif cat == "music":
+            try:
+                self.command.spotify_handler.player.remote(
+                    self.offline_response["action"]
+                )
+                if self.speech.from_gui:
+                    self.reply = "[Done.]"
                 self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
 
-            case "spotify":
-                try:
-                    self.reply = self.command.spotify_handler.handle_response(
-                        self.prompt
-                    )
-                    self.tts(self.reply)
-                except BaseException as e:
-                    print(e)
-                    self.conversation_app()
-
-            case "music":
-                try:
-                    self.command.spotify_handler.player.remote(
-                        self.offline_response["action"]
-                    )
-                    if self.speech.from_gui:
-                        self.reply = "[Done.]"
-                    self.reset_loop()
-                except BaseException as e:
-                    print(e)
-                    self.conversation_app()
-
-            case "timer":
-                try:
-                    self.reply = self.command.timer_handler.handle_response(self.prompt)
-                    self.tts(self.reply)
-                    self.reset_loop()
-                except BaseException as e:
-                    print(e)
-                    self.conversation_app()
-
-            case "gesture":
-                if gesture == "like":
-                    # self.reply = f'[GestureNet: {gesture}]'
-                    self.prompt = "turn on the lights"
-                    self.reply = self.command.light_handler.handle_response(self.prompt)
-                    # pyautogui.press('right')
-                elif gesture == "dislike":
-                    # self.reply = f'[GestureNet: {gesture}]'
-                    # pyautogui.press('left')
-                    self.prompt = "set the lights to sparkle"
-                    self.reply = self.command.light_handler.handle_response(self.prompt)
+        elif cat == "timer":
+            try:
+                self.reply = self.command.timer_handler.handle_response(self.prompt)
                 self.tts(self.reply)
                 self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
 
-            case "security":
-                if not headless:
-                    self.reply = f"[Opening {action} camera.]"
-                    self.security_camera.open_cam(action)
+        elif cat == "gesture":
+            if gesture == "like":
+                # self.reply = f'[GestureNet: {gesture}]'
+                self.prompt = "turn on the lights"
+                self.reply = self.command.light_handler.handle_response(self.prompt)
+                # pyautogui.press('right')
+            elif gesture == "dislike":
+                # self.reply = f'[GestureNet: {gesture}]'
+                # pyautogui.press('left')
+                self.prompt = "set the lights to sparkle"
+                self.reply = self.command.light_handler.handle_response(self.prompt)
+            self.tts(self.reply)
+            self.reset_loop()
+
+        elif cat == "security":
+            if not headless:
+                self.reply = f"[Opening {action} camera.]"
+                self.security_camera.open_cam(action)
+                self.tts(self.reply)
+                self.reset_loop()
+            else:
+                self.reply = "[Exiting Conversation Loop]"
+                self.reset_loop()
+                self.play_sound("off")
+
+        elif cat == "weather":
+            try:
+                self.reply = self.command.weather_handler.handle_response(
+                    sub_cat, action
+                )
+                self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
+        elif cat == "soundscapes":
+            try:
+                self.reply = self.command.soundscapes_handler.handle_response(
+                    sub_cat, action
+                )
+                # self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
+        elif cat == "wolfram":
+            try:
+                self.reply = self.command.wolfram_handler.handle_response(
+                    sub_cat, self.prompt
+                )
+                print(f"\nWolfram Reply len: `{len(self.reply)}`\n")
+                if len(self.reply) > 0 and len(self.reply) < 99:
                     self.tts(self.reply)
                     self.reset_loop()
                 else:
-                    self.reply = "[Exiting Conversation Loop]"
-                    self.reset_loop()
-                    self.play_sound("off")
-
-            case "weather":
-                try:
-                    self.reply = self.command.weather_handler.handle_response(
-                        sub_cat, action
-                    )
-                    self.tts(self.reply)
-                    self.reset_loop()
-                except BaseException as e:
-                    print(e)
                     self.conversation_app()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
 
-            case "soundscapes":
-                try:
-                    self.reply = self.command.soundscapes_handler.handle_response(
-                        sub_cat, action
-                    )
-                    # self.tts(self.reply)
-                    self.reset_loop()
-                except BaseException as e:
-                    print(e)
-                    self.conversation_app()
-
-            case "wolfram":
-                try:
-                    self.reply = self.command.wolfram_handler.handle_response(
-                        sub_cat, self.prompt
-                    )
-                    print(f"\nWolfram Reply len: `{len(self.reply)}`\n")
-                    if len(self.reply) > 0 and len(self.reply) < 99:
-                        self.tts(self.reply)
-                        self.reset_loop()
-                    else:
-                        self.conversation_app()
-                except BaseException as e:
-                    print(e)
-                    self.conversation_app()
-
-            case "vacuum":
-                try:
-                    self.reply = self.command.iot_remote_handler.handle_response(
-                        action, device_name="vacuum"
-                    )
-                    self.tts(self.reply)
-                    self.reset_loop()
-                except BaseException as e:
-                    self.reply = "[Error communicating with Vacuum]"
-                    self.reset_loop()
-
-            case "volume":
-                try:
-                    volume = self.command.volume_handler.handle_response(self.prompt)
-                    self.volume = volume
-                    self.reply = f"[Volume set to {volume}.]"
-                    self.command.spotify_handler.player.remote(cat, volume)
-                    self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
-                    print(self.reply)
-                    # self.tts(self.reply)
-                    self.reset_loop()
-                except BaseException as e:
-                    print(e)
-                    self.conversation_app()
-
-            case "conv":  # send to conversation handler
-                log.debug("Calling conversation app; Q: %s" % self.prompt)
-                self.conversation_app(action)
-
-            case "reset":
-                self.reply = "[Resetting Conversation...]"
-                self.command.conversation_handler.reset_conversation()
+        elif cat == "vacuum":
+            try:
+                self.reply = self.command.iot_remote_handler.handle_response(
+                    action, device_name="vacuum"
+                )
+                self.tts(self.reply)
                 self.reset_loop()
+            except BaseException as e:
+                self.reply = "[Error communielif cating with Vacuum]"
+                self.reset_loop()
+
+        elif cat == "volume":
+            try:
+                volume = self.command.volume_handler.handle_response(self.prompt)
+                self.volume = volume
+                self.reply = f"[Volume set to {volume}.]"
+                self.command.spotify_handler.player.remote(cat, volume)
+                self.command.soundscapes_handler.soundscapes.adjust_volume(volume)
+                print(self.reply)
+                # self.tts(self.reply)
+                self.reset_loop()
+            except BaseException as e:
+                print(e)
+                self.conversation_app()
+
+        elif cat == "conv":  # send to conversation handler
+            log.debug("Calling conversation app; Q: %s" % self.prompt)
+            self.conversation_app(action)
+
+        elif cat == "reset":
+            self.reply = "[Resetting Conversation...]"
+            self.command.conversation_handler.reset_conversation()
+            self.reset_loop()
 
         self.write_response_to_db()  # log self.reply
 
