@@ -9,6 +9,7 @@ import sys
 import time
 
 from google.cloud import speech
+
 # from playsound import playsound
 
 import pyaudio
@@ -95,9 +96,8 @@ class MicrophoneStream(object):
             yield b"".join(data)
 
 
-class Google():
-
-    def __init__(self, mic=''):
+class Google:
+    def __init__(self, mic=""):
         audio_device_ndx = 0
         for ndx, dev in enumerate(sounddevice.query_devices()):
             if mic in str(dev).lower():
@@ -112,7 +112,7 @@ class Google():
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=RATE,
             language_code=self.language_code,
-            audio_channel_count=1
+            audio_channel_count=1,
         )
 
         self.streaming_config = speech.StreamingRecognitionConfig(
@@ -140,8 +140,8 @@ class Google():
         end_time = start_time + timeout
         for response in responses:
             if int(time.time()) >= end_time:
-                if PROMPT == '':
-                    PROMPT = 'cancel'
+                if PROMPT == "":
+                    PROMPT = "cancel"
                 return PROMPT
             if not response.results:
                 continue
@@ -190,20 +190,21 @@ class Google():
                     for content in audio_generator
                 )
 
-                print('   ,.,')
+                print("   ,.,")
                 print(' ((~"~))')
                 print("'(|o_o|)'")
                 print(",..\=/..,")
-                print('listening...\n')
+                print("listening...\n")
 
                 responses = self.client.streaming_recognize(
-                    self.streaming_config, requests)
+                    self.streaming_config, requests
+                )
 
                 # Now, put the transcription responses to use.
                 self.prompt = self.listen_print_loop(responses)
             return self.prompt
         except BaseException as e:
-            return 'cancel'
+            return "cancel"
 
 
 if __name__ == "__main__":

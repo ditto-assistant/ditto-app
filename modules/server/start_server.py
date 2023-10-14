@@ -7,7 +7,8 @@ from flask import g
 
 
 class devnull:
-    def write(_): return None
+    def write(_):
+        return None
 
 
 def update_status_db(status):
@@ -21,13 +22,13 @@ def update_status_db(status):
 
 
 def start_server():
-    update_status_db('off')  # set ditto to off (initial state)
+    update_status_db("off")  # set ditto to off (initial state)
     server = Server()
-    subprocess.Popen(['python', 'ditto.py'])  # Ditto Main Loop
+    subprocess.Popen(["python", "ditto.py"])  # Ditto Main Loop
     # subprocess.Popen(['python', 'reboot_script.py'])
     # subprocess.Popen(['python', 'modules/gesture-recognition/main.py', 'production']) # Start gesture recognition sub-porocess
-    http_server = WSGIServer(('0.0.0.0', 42032), server.app, log=devnull)
-    print('\n\n[Server started on port 42032]\n\n')
+    http_server = WSGIServer(("0.0.0.0", 42032), server.app, log=devnull)
+    print("\n\n[Server started on port 42032]\n\n")
     http_server.serve_forever()
 
 

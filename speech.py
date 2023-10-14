@@ -24,9 +24,11 @@ from threading import Timer
 # local vosk
 from modules.vosk_model.activation import Activation
 from modules.vosk_model.stt import STT
+
 # from vosk import Model, KaldiRecognizer, SetLogLevel
 
 from modules.ditto_activation.main import HeyDittoNet
+
 # from ditto_requests import DittoRequests
 
 # suppress Vosk logger
@@ -38,6 +40,7 @@ import sounddevice as sd
 # used to send keypress event (keeps display on)
 try:
     import pyautogui
+
     pyautogui.FAILSAFE = False
     headless = False
 except:
@@ -49,8 +52,7 @@ import io
 
 
 class Speech:
-
-    def __init__(self, offline_mode=False, mic=''):
+    def __init__(self, offline_mode=False, mic=""):
         self.mic = mic
         self.recording = False
         self.offline_mode = offline_mode
@@ -58,17 +60,17 @@ class Speech:
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
         self.heyditto = HeyDittoNet(
-            model_type='HeyDittoNet-v2',
-            path='modules/ditto_activation/',
-            tflite=True
+            model_type="HeyDittoNet-v2", path="modules/ditto_activation/", tflite=True
         )
-        self.vosk_model_dir = 'modules/vosk_model/model'
-        self.fname = 'modules/vosk_model/command.wav'
+        self.vosk_model_dir = "modules/vosk_model/model"
+        self.fname = "modules/vosk_model/command.wav"
         self.skip_wake = False
 
         self.wake = 1
 
-        self.inject = False  # used for skipping STT by using GUI's prompt in activation loop
+        self.inject = (
+            False  # used for skipping STT by using GUI's prompt in activation loop
+        )
         self.from_gui = False  # used in ditto.py to handle loop differently
 
         self.gesture_activation = False
@@ -78,7 +80,6 @@ class Speech:
         self.recording = True
         try:
             if activation_mode and self.skip_wake == False:
-
                 wake = self.heyditto.listen_for_name()
 
                 if self.heyditto.activation_requests.inject_prompt:
@@ -98,7 +99,7 @@ class Speech:
                     self.activation.activate = True
                     self.recording = False
                     if not headless:
-                        pyautogui.press('ctrl')  # turns display on if asleep
+                        pyautogui.press("ctrl")  # turns display on if asleep
 
             else:
                 self.skip_wake = False  # set back to false
@@ -106,15 +107,15 @@ class Speech:
                 if self.gesture_activation:
                     self.gesture_activation = False  # set back to false
                     self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
-                    if self.gesture == 'palm':
+                    if self.gesture == "palm":
                         self.text = self.google_instance.grab_prompt()
                     else:
-                        self.text = f'GestureNet: {self.gesture}'
+                        self.text = f"GestureNet: {self.gesture}"
 
                 if self.reset_conversation:
                     self.reset_conversation = False  # set back to false
                     self.from_gui = True  # use from gui ditto loop to avoid accidental conversation loop
-                    self.text = f'resetConversation'
+                    self.text = f"resetConversation"
 
                 elif self.inject:
                     self.inject = False
@@ -150,7 +151,7 @@ class Speech:
 
             p = pyaudio.PyAudio()
 
-            print('recording...')
+            print("recording...")
 
             self.recording = True
             stream = p.open(
@@ -158,12 +159,12 @@ class Speech:
                 channels=chan,
                 rate=self.rate,
                 input=self.recording,
-                frames_per_buffer=chunk
+                frames_per_buffer=chunk,
             )
 
             frames = []
 
-            for x in range(0, int(self.rate / chunk*max_len_seconds)):
+            for x in range(0, int(self.rate / chunk * max_len_seconds)):
                 data = stream.read(chunk)
                 frames.append(data)
 
@@ -174,13 +175,13 @@ class Speech:
             stream.close()
             p.terminate()
 
-            print('done.')
+            print("done.")
 
-            wf = wave.open(self.fname, 'wb')
+            wf = wave.open(self.fname, "wb")
             wf.setnchannels(chan)
             wf.setsampwidth(p.get_sample_size(fmt))
             wf.setframerate(self.rate)
-            wf.writeframes(b''.join(frames))
+            wf.writeframes(b"".join(frames))
             wf.close()
 
         # not used (leaving hooks for other purposes)
@@ -192,14 +193,13 @@ class Speech:
             config = speech.RecognitionConfig(
                 encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
                 sample_rate_hertz=self.rate,
-                language_code="en-US"
+                language_code="en-US",
             )
             response = client.recognize(config=config, audio=audio)
 
             for result in response.results:
-                print('\n')
-                print("Transcript: {}".format(
-                    result.alternatives[0].transcript))
+                print("\n")
+                print("Transcript: {}".format(result.alternatives[0].transcript))
                 self.text = "{}".format(result.alternatives[0].transcript)
 
     # not used (leaving hooks for other purposes)

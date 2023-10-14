@@ -11,9 +11,7 @@ from threading import Thread
 
 
 class Speak:
-
     def __init__(self):
-
         self.running = False
         self.stopped = False
 
@@ -56,17 +54,17 @@ class Speak:
                 # Write the response to the output file.
                 out.write(response.audio_content)
 
-            pygame.mixer.music.load('output.mp3')
+            pygame.mixer.music.load("output.mp3")
             channel = pygame.mixer.find_channel(True)
             pygame.mixer.music.set_volume(1.0)
-            channel.play(pygame.mixer.Sound('output.mp3'))
+            channel.play(pygame.mixer.Sound("output.mp3"))
             # while channel.get_busy() == True:
             #     if self.stopped:
             #         break
             #     continue
             # os.remove('output.mp3')
         except:
-            print('GTTS error...')
+            print("GTTS error...")
         self.running = False
         self.stop = True
         return
