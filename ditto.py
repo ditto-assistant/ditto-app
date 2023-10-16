@@ -57,7 +57,7 @@ class Assistant:
         log.info("[Booting...]")
         self.update_status_db("booting")
         self.config = AppConfig()
-        self.base_url: str = self.config.base_url()
+        self.nlp_base_url: str = self.config.base_url()
         self.volume = int(self.config.volume)  # percent
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
@@ -133,7 +133,7 @@ class Assistant:
         self.speech.skip_wake = True
 
     def prompt_intent(self, prompt):
-        base_url = f"{self.base_url}/intent"
+        base_url = f"{self.nlp_base_url}/intent"
         response = requests.post(base_url, params={"prompt": prompt})
         return response.content.decode()
 
@@ -165,7 +165,8 @@ class Assistant:
 
         # log the user's prompt
         # print('writing prompt to db...')
-        self.write_prompt_to_db()
+        if not self.speech.from_gui: 
+            self.write_prompt_to_db()
         if "GestureNet" in self.prompt:
             cat = "gesture"
             sub_cat = "none"
@@ -300,7 +301,7 @@ class Assistant:
                 self.tts(self.reply)
                 self.reset_loop()
             except BaseException as e:
-                self.reply = "[Error communielif cating with Vacuum]"
+                self.reply = "[Error communicating with Vacuum]"
                 self.reset_loop()
 
         elif cat == "volume":
@@ -326,7 +327,8 @@ class Assistant:
             self.command.conversation_handler.reset_conversation()
             self.reset_loop()
 
-        self.write_response_to_db()  # log self.reply
+        if not self.speech.from_gui:
+            self.write_response_to_db()  # log self.reply to nlp server db
 
     def write_response_to_db(self):
         if not self.reply:
@@ -335,32 +337,26 @@ class Assistant:
             self.reset_conversation = False  # set back to False
             self.reply = ""
             return
-        SQL = sqlite3.connect("ditto.db")
-        cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS responses(response VARCHAR, timestamp)")
-        SQL.commit()
-        cur.execute(
-            "INSERT INTO responses VALUES('%s', '%s')"
-            % (self.reply.replace("'", "''"), str(int(time.time())))
-        )
-        SQL.commit()
-        SQL.close()
+        try:
+            requests.post(
+                f"{self.nlp_base_url}/users/{self.config.user_id}/write_response?response={self.reply}",
+                timeout=30,
+            )
+        except BaseException as e:
+            print(e)
         self.reply = ""  # reset for next loop
 
     def write_prompt_to_db(self):
         if self.reset_conversation:
             self.reply = ""
             return
-        SQL = sqlite3.connect("ditto.db")
-        cur = SQL.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS prompts(prompt VARCHAR, timestamp)")
-        SQL.commit()
-        cur.execute(
-            "INSERT INTO prompts VALUES('%s', '%s')"
-            % (self.prompt.replace("'", "''"), str(int(time.time())))
-        )
-        SQL.commit()
-        SQL.close()
+        try:
+            requests.post(
+                f"{self.nlp_base_url}/users/{self.config.user_id}/write_prompt?prompt={self.prompt}",
+                timeout=30,
+            )
+        except BaseException as e:
+            print(e)
 
     def update_status_db(self, status):
         SQL = sqlite3.connect("ditto.db")
