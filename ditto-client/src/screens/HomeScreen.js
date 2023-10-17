@@ -132,6 +132,7 @@ export default function HomeScreen() {
                 if (histCount !== localHistCount) {
                     setCount(localHistCount)
                 }
+                console.log(localHist)
                 createConversation(localHist, false)
             }
             if (serverHistCount !== undefined && serverHistCount !== localHistCount) {
