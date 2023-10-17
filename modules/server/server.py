@@ -12,9 +12,6 @@ import sqlite3
 
 SQL = sqlite3.connect("ditto.db")
 
-## 10/15/23 TODO: move conversation history and any promp / response related functions to nlp_server.
-## note: this will require a new table in ditto.db to keep track of prompts and responses per user.
-
 app = Flask(__name__)
 CORS(app)
 
@@ -39,17 +36,6 @@ def activate_inject_prompt(prompt):
     SQL.commit()
     SQL.close()
 
-
-# TODO: move to nlp_server.py
-# def get_prompt_response_count():
-#     SQL = sqlite3.connect("ditto.db")
-#     cur = SQL.cursor()
-#     prompt_count = cur.execute("SELECT COUNT(*) FROM prompts").fetchone()[0]
-#     response_count = cur.execute("SELECT COUNT(*) FROM responses").fetchone()[0]
-#     SQL.close()
-#     return int(prompt_count) + int(response_count)
-
-
 def get_status():
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
@@ -70,41 +56,6 @@ def get_ditto_mic_status():
     SQL.close()
     status = '{"ditto_mic_status": "%s"}' % mic_status
     return status
-
-
-# def get_conversation_history():
-#     SQL = sqlite3.connect("ditto.db")
-#     cur = SQL.cursor()
-#     req = cur.execute("SELECT * FROM prompts")
-#     prompts = req.fetchall()
-#     SQL.commit()
-#     cur.execute("SELECT * FROM responses")
-#     responses = req.fetchall()
-#     SQL.commit()
-#     SQL.close()
-
-#     def create_response_arrays(arr):
-#         response = dict()
-#         for ndx, x in enumerate(arr):
-#             response[str(ndx)] = [x[0], x[1]]
-#         return json.dumps(response)
-
-#     return create_response_arrays(prompts), create_response_arrays(responses)
-
-
-# def activate_reset_conversation():
-#     SQL = sqlite3.connect("ditto.db")
-#     cur = SQL.cursor()
-#     cur.execute(
-#         "CREATE TABLE IF NOT EXISTS ditto_requests(request VARCHAR, action VARCHAR)"
-#     )
-#     SQL.commit()
-#     cur.execute("INSERT INTO ditto_requests VALUES('resetConversation', 'true')")
-#     SQL.commit()
-#     cur.execute("DELETE FROM prompts")
-#     cur.execute("DELETE FROM responses")
-#     SQL.commit()
-#     SQL.close()
 
 
 def send_ditto_wake():  # use to trigger activation and start GTTS audio transcript
