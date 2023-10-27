@@ -257,14 +257,15 @@ class Assistant:
                 self.play_sound("off")
 
         elif cat == "weather":
-            try:
-                self.reply = self.command.weather_handler.handle_response(
-                    sub_cat, action
-                )
-                self.tts(self.reply)
-                self.reset_loop()
-            except BaseException as e:
-                print(e)
+            ## TODO: remove because conversation app handles weather via LLM google tool
+            # try:
+            #     self.reply = self.command.weather_handler.handle_response(
+            #         sub_cat, action
+            #     )
+            #     self.tts(self.reply)
+            #     self.reset_loop()
+            # except BaseException as e:
+            #     print(e)
                 self.conversation_app()
 
         elif cat == "soundscapes":
