@@ -1,65 +1,42 @@
-# import requests
-import base64
-import json
+from transformers import AutoModelForCausalLM, AutoProcessor
+from PIL import Image
+import torch
 
-import google.auth.transport.requests as requests
-from google.oauth2 import service_account
-# creds, project = google.auth.default( scopes=['googleapis.com/auth/cloud-platform'])
+class DittoImageCaption:
+    def __init__(self):
+        self.load_model()
+        self.generated_caption = "Loading..."
 
+    def load_model(self):
+        try:
+            checkpoint = "microsoft/git-base"
+            self.processor = AutoProcessor.from_pretrained(checkpoint)
+            self.model = AutoModelForCausalLM.from_pretrained(checkpoint)
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        except:
+            print("Error loading image caption model...")
+            self.model  = []
 
-import os
+    def get_caption(self, image_path=None, image: Image = None):
+        if image_path:
+            image = Image.open(full_path)
+        elif image:
+            image = image
+        else:
+            print("No image provided...")
+            return None
+        inputs = self.processor(images=image, return_tensors="pt").to(self.device)
+        pixel_values = inputs.pixel_values
+        generated_ids = self.model.generate(pixel_values=pixel_values, max_length=50)
+        self.generated_caption = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-from dotenv import load_dotenv
-load_dotenv()
+if __name__ == '__main__':
 
-GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-DITTO_PROJECT_ID = os.environ.get('DITTO_PROJECT_ID')
+    path = 'C:/Users/ozanj/Pictures/Screenshots/'
+    image = 'Screenshot_20221110_022553.png'
+    full_path = path + image
 
-creds = service_account.Credentials.from_service_account_file(
-    GOOGLE_APPLICATION_CREDENTIALS, 
-    scopes=['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-vision'])
+    ditto_image_caption = DittoImageCaption()
 
-auth_req = requests.Request()
-creds.refresh(auth_req)
-
-def caption_image(image_path, project_id, response_count, language_code):
-    # Read image file as bytes
-    with open(image_path, 'rb') as f:
-        image_bytes = f.read()
-
-    # Encode image bytes as base64
-    image_base64 = base64.b64encode(image_bytes).decode('utf-8')
-
-    # Create JSON request body
-    request_body = {
-        "instances": [
-            {
-                "image": {
-                    "bytesBase64Encoded": image_base64
-                }
-            }
-        ],
-        "parameters": {
-            "sampleCount": response_count,
-            "language": language_code
-        }
-    }
-
-    # Send POST request to Vertex AI endpoint
-    endpoint = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagetext:predict"
-    # response = requests.post(endpoint, json=request_body, auth=creds.token)
-    response = requests.requests.api.post(endpoint, json=request_body, headers={'Authorization': 'Bearer ' + creds.token})
-
-    # # Parse response JSON and return captions
-    response_json = json.loads(response.text)
-    print(response_json)
-    exit()
-
-
-    return caption
-
-path = 'C:/Users/ozanj/Pictures/Screenshots/'
-image = 'Screenshot_20221110_022553.png'
-full_path = path + image
-
-captions = caption_image(full_path, DITTO_PROJECT_ID, 1, 'en')
+    generated_caption = ditto_image_caption.get_caption(image_path=full_path)
+    print(generated_caption)
