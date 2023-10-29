@@ -355,6 +355,15 @@ class Assistant:
                         self.reply = json.loads(response.content.decode())['response']
                         self.tts(self.reply)
                         self.reset_loop()
+                    else:
+                        params = {"prompt": self.prompt, "mode": "caption"}
+                        response = requests.post(
+                            url, files={"image": image}, params=params
+                        )
+                        self.reply = json.loads(response.content.decode())['response']
+                        self.tts(self.reply)
+                        self.reset_loop()
+
                 except BaseException as e:
                     print('Error in vision handler')
                     print(e)
