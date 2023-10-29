@@ -338,24 +338,25 @@ class Assistant:
         elif cat == "vision":
             if self.ditto_eyes.running:
                 try: 
+                    url = f"{self.nlp_base_url}/users/{self.config.user_id}/image_rag"
+                    image = self.ditto_eyes.latest_frame
                     if action == 'caption':
-                        # convert image to bytes and send to vision server
-                        image = self.ditto_eyes.latest_frame
+                        params = {"prompt": self.prompt, "mode": "caption"}
                         response = requests.post(
-                            f"{self.vision_base_url}/caption", files={"image": image}
+                            url, files={"image": image}, params=params
                         )
                         self.reply = json.loads(response.content.decode())['response']
                         self.tts(self.reply)
                         self.reset_loop()
                     elif action == 'qa':
-                        image = self.ditto_eyes.latest_frame
+                        params = {"prompt": self.prompt, "mode": "qa"}
                         response = requests.post(
-                            f"{self.vision_base_url}/qa", files={"image": image}, params={"prompt": self.prompt}
-                        )
+                            url, files={"image": image}, params=params)
                         self.reply = json.loads(response.content.decode())['response']
                         self.tts(self.reply)
                         self.reset_loop()
                 except BaseException as e:
+                    print('Error in vision handler')
                     print(e)
                     self.conversation_app()
             else:

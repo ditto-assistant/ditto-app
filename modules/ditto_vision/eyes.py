@@ -8,6 +8,7 @@ from io import BytesIO
 class Eyes:
     def __init__(self):
         self.latest_frame = None
+        self.refresh_rate = 3 # seconds
         self.running = False
 
     def run(self):
@@ -23,7 +24,7 @@ class Eyes:
                 base64_str = base64.b64encode(buffered.getvalue())
                 self.latest_frame = base64_str
 
-            time.sleep(3)
+            time.sleep(self.refresh_rate)
 
         cap.release()
 

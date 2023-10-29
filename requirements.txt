@@ -33,3 +33,4 @@ vosk
 wolframalpha
 word2number
 python-dotenv
+opencv-python
