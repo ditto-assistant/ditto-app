@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gallery</title>
+    <style>
+        body {
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gallery</h1>
+    <div id="image-container">
+        {% for image_file in image_files %}
+            <img src="{{ url_for('serve_image', filename=image_file) }}" alt="{{ image_file }}">
+        {% endfor %}
+    </div>
+</body>
+</html>
