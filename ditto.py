@@ -181,7 +181,7 @@ class Assistant:
 
         # log the user's prompt
         # print('writing prompt to db...')
-        if not self.speech.from_gui: 
+        if not self.speech.from_gui:
             self.write_prompt_to_db()
         if "GestureNet" in self.prompt:
             cat = "gesture"
@@ -218,9 +218,7 @@ class Assistant:
 
         elif cat == "spotify":
             try:
-                self.reply = self.command.spotify_handler.handle_response(
-                    self.prompt
-                )
+                self.reply = self.command.spotify_handler.handle_response(self.prompt)
                 self.tts(self.reply)
             except BaseException as e:
                 print(e)
@@ -282,7 +280,7 @@ class Assistant:
             #     self.reset_loop()
             # except BaseException as e:
             #     print(e)
-                self.conversation_app()
+            self.conversation_app()
 
         elif cat == "soundscapes":
             try:
@@ -337,22 +335,23 @@ class Assistant:
 
         elif cat == "vision":
             if self.ditto_eyes.running:
-                try: 
+                try:
                     url = f"{self.nlp_base_url}/users/{self.config.user_id}/image_rag"
                     image = self.ditto_eyes.latest_frame
-                    if action == 'caption':
+                    if action == "caption":
                         params = {"prompt": self.prompt, "mode": "caption"}
                         response = requests.post(
                             url, files={"image": image}, params=params
                         )
-                        self.reply = json.loads(response.content.decode())['response']
+                        self.reply = json.loads(response.content.decode())["response"]
                         self.tts(self.reply)
                         self.reset_loop()
-                    elif action == 'qa':
+                    elif action == "qa":
                         params = {"prompt": self.prompt, "mode": "qa"}
                         response = requests.post(
-                            url, files={"image": image}, params=params)
-                        self.reply = json.loads(response.content.decode())['response']
+                            url, files={"image": image}, params=params
+                        )
+                        self.reply = json.loads(response.content.decode())["response"]
                         self.tts(self.reply)
                         self.reset_loop()
                     else:
@@ -360,12 +359,12 @@ class Assistant:
                         response = requests.post(
                             url, files={"image": image}, params=params
                         )
-                        self.reply = json.loads(response.content.decode())['response']
+                        self.reply = json.loads(response.content.decode())["response"]
                         self.tts(self.reply)
                         self.reset_loop()
 
                 except BaseException as e:
-                    print('Error in vision handler')
+                    print("Error in vision handler")
                     print(e)
                     self.conversation_app()
             else:

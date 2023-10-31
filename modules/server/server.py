@@ -36,6 +36,7 @@ def activate_inject_prompt(prompt):
     SQL.commit()
     SQL.close()
 
+
 def get_status():
     SQL = sqlite3.connect("ditto.db")
     cur = SQL.cursor()
@@ -100,7 +101,6 @@ def ditto_handler():
                 return '{"toggleMic": "success"}'
 
         elif request.method == "GET":
-
             if "status" in requests:
                 status = get_status()
                 return '{"status": "%s"}' % status

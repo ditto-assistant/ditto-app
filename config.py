@@ -50,8 +50,6 @@ class AppConfig(metaclass=SingletonMeta):
         return (
             f"{self.nlp_server_protocol}://{self.nlp_server_ip}:{self.nlp_server_port}"
         )
-    
+
     def base_url_vision(self):
-        return (
-            f"{self.vision_server_protocol}://{self.vision_server_ip}:{self.vision_server_port}"
-        )
+        return f"{self.vision_server_protocol}://{self.vision_server_ip}:{self.vision_server_port}"
