@@ -5,10 +5,11 @@ from PIL import Image
 import base64
 from io import BytesIO
 
+
 class Eyes:
     def __init__(self):
         self.latest_frame = None
-        self.refresh_rate = 3 # seconds
+        self.refresh_rate = 3  # seconds
         self.running = False
 
     def run(self):
