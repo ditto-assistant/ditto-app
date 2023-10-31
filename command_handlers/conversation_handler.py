@@ -41,7 +41,7 @@ class ConversationHandler:
             print(e)
             res = "[Error communicating with OpenAI... Please try again!]"
 
-        return res['response']
+        return res["response"]
 
     def handle_response(self, prompt):
         if not self.offline_mode:
