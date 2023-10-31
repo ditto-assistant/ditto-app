@@ -23,6 +23,9 @@ class AppConfig(metaclass=SingletonMeta):
         self.nlp_server_ip = os.getenv("nlp_server_ip")
         self.nlp_server_port = int(os.getenv("nlp_server_port", 32032))
         self.nlp_server_protocol = os.getenv("nlp_server_protocol", "http")
+        self.vision_server_ip = os.getenv("vision_server_ip")
+        self.vision_server_port = int(os.getenv("vision_server_port", 52032))
+        self.vision_server_protocol = os.getenv("vision_server_protocol", "http")
         self.volume = int(os.getenv("volume", 70))
         self.microphone = os.getenv("microphone", "default")
         self.teensy_path = os.getenv("teensy_path", "")
@@ -46,4 +49,9 @@ class AppConfig(metaclass=SingletonMeta):
     def base_url(self):
         return (
             f"{self.nlp_server_protocol}://{self.nlp_server_ip}:{self.nlp_server_port}"
+        )
+    
+    def base_url_vision(self):
+        return (
+            f"{self.vision_server_protocol}://{self.vision_server_ip}:{self.vision_server_port}"
         )

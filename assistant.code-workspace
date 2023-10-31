@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../ditto-reactnative-app"
+		},
+		{
+			"path": "../vision_server"
 		}
 	],
 	"settings": {}

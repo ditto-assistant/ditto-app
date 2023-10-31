@@ -9,6 +9,7 @@ author: Omar Barazanji
 
 # other imports
 import pygame._sdl2.audio as sdl2_audio
+from PIL import Image
 import sqlite3
 import os
 import time
@@ -18,6 +19,7 @@ from speech import Speech
 from command_handlers.command import Command
 from modules.google_tts.speak import Speak
 from modules.security_camera.security_cam import SecurityCam
+from modules.ditto_vision.eyes import Eyes
 import json
 import platform
 import numpy as np
@@ -58,6 +60,9 @@ class Assistant:
         self.update_status_db("booting")
         self.config = AppConfig()
         self.nlp_base_url: str = self.config.base_url()
+        self.vision_base_url: str = self.config.base_url_vision()
+        self.ditto_eyes = Eyes()
+        self.check_if_vision_server_running()
         self.volume = int(self.config.volume)  # percent
         self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
@@ -81,6 +86,17 @@ class Assistant:
 
     def load_config(self):
         config = AppConfig()
+
+    def check_if_vision_server_running(self):
+        try:
+            url = f"{self.vision_base_url}/status"
+            requests.get(url)
+            self.ditto_eyes.start()
+            log.info("[Eyes started...]")
+            return True
+        except BaseException as e:
+            log.error(e)
+            return False
 
     def reset_loop(self):
         """
@@ -317,6 +333,42 @@ class Assistant:
                 self.reset_loop()
             except BaseException as e:
                 print(e)
+                self.conversation_app()
+
+        elif cat == "vision":
+            if self.ditto_eyes.running:
+                try: 
+                    url = f"{self.nlp_base_url}/users/{self.config.user_id}/image_rag"
+                    image = self.ditto_eyes.latest_frame
+                    if action == 'caption':
+                        params = {"prompt": self.prompt, "mode": "caption"}
+                        response = requests.post(
+                            url, files={"image": image}, params=params
+                        )
+                        self.reply = json.loads(response.content.decode())['response']
+                        self.tts(self.reply)
+                        self.reset_loop()
+                    elif action == 'qa':
+                        params = {"prompt": self.prompt, "mode": "qa"}
+                        response = requests.post(
+                            url, files={"image": image}, params=params)
+                        self.reply = json.loads(response.content.decode())['response']
+                        self.tts(self.reply)
+                        self.reset_loop()
+                    else:
+                        params = {"prompt": self.prompt, "mode": "caption"}
+                        response = requests.post(
+                            url, files={"image": image}, params=params
+                        )
+                        self.reply = json.loads(response.content.decode())['response']
+                        self.tts(self.reply)
+                        self.reset_loop()
+
+                except BaseException as e:
+                    print('Error in vision handler')
+                    print(e)
+                    self.conversation_app()
+            else:
                 self.conversation_app()
 
         elif cat == "conv":  # send to conversation handler
