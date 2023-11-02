@@ -4,13 +4,42 @@ from threading import Thread
 from PIL import Image
 import base64
 from io import BytesIO
+import requests
+import json
 
+import logging
+log = logging.getLogger("eyes")
+log.setLevel(logging.INFO)
 
 class Eyes:
-    def __init__(self):
+    def __init__(self, vision_base_url: str):
+        self.vision_base_url = vision_base_url
         self.latest_frame = None
+        self.face_name = None # str when a face is detected in the frame otherwise resets to None
+        self.person_in_frame = 'no' # yes when a person is detected in the frame otherwise resets to no
         self.refresh_rate = 3  # seconds
         self.running = False
+
+    def check_frame_for_face(self):
+        '''uses vison_base_url to check if a face is in the frame'''
+        if self.latest_frame is not None:
+            try:
+                response = requests.post(
+                    url=f'{self.vision_base_url}/scan_face',
+                    files={'image': self.latest_frame},
+                    timeout=3 # seconds
+                )
+                response = json.loads(str(response.content.decode()))
+                self.face_name = response['face_name']
+                self.person_in_frame = response['person_detected']
+            except BaseException as e:
+                log.error(e)
+                log.info(f'response: {response}')
+                self.face_name = None
+                self.person_in_frame = 'no'
+        else:
+            self.face_name = None
+            self.person_in_frame = 'no'
 
     def run(self):
         cap = cv2.VideoCapture(0)
@@ -24,6 +53,10 @@ class Eyes:
                 image.save(buffered, format="JPEG")
                 base64_str = base64.b64encode(buffered.getvalue())
                 self.latest_frame = base64_str
+                try:
+                    self.check_frame_for_face()
+                except BaseException as e:
+                    log.error(e)
 
             time.sleep(self.refresh_rate)
 

@@ -18,7 +18,7 @@ import requests
 from speech import Speech
 from command_handlers.command import Command
 from modules.google_tts.speak import Speak
-from modules.security_camera.security_cam import SecurityCam
+# from modules.security_camera.security_cam import SecurityCam
 from modules.ditto_vision.eyes import Eyes
 import json
 import platform
@@ -61,10 +61,10 @@ class Assistant:
         self.config = AppConfig()
         self.nlp_base_url: str = self.config.base_url()
         self.vision_base_url: str = self.config.base_url_vision()
-        self.ditto_eyes = Eyes()
+        self.ditto_eyes = Eyes(self.vision_base_url)
         self.check_if_vision_server_running()
         self.volume = int(self.config.volume)  # percent
-        self.security_camera = SecurityCam(os.getcwd())
+        # self.security_camera = SecurityCam(os.getcwd())
         self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
         self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = ""
@@ -155,7 +155,11 @@ class Assistant:
 
     def conversation_app(self, action=None):
         def conversation_flow():
-            self.reply = self.command.conversation_handler.handle_response(self.prompt)
+            self.reply = self.command.conversation_handler.handle_response(
+                self.prompt, 
+                self.ditto_eyes.face_name if self.ditto_eyes.face_name else "none"
+            )
+            
             if self.reply == "":
                 self.reply = "..."
             self.tts(self.reply)
@@ -262,7 +266,7 @@ class Assistant:
         elif cat == "security":
             if not headless:
                 self.reply = f"[Opening {action} camera.]"
-                self.security_camera.open_cam(action)
+                # self.security_camera.open_cam(action)
                 self.tts(self.reply)
                 self.reset_loop()
             else:
@@ -354,6 +358,23 @@ class Assistant:
                         self.reply = json.loads(response.content.decode())["response"]
                         self.tts(self.reply)
                         self.reset_loop()
+                    elif action == "name":
+                        if self.ditto_eyes.person_in_frame == "yes":
+                            # ner name
+                            response = requests.post(
+                                f"{self.nlp_base_url}/ner/name",
+                                params={"prompt": self.prompt},
+                            )
+                            name = json.loads(response.content.decode())["name"]
+                            # save name and image using vision server
+                            requests.post(
+                                f"{self.vision_base_url}/save_face",
+                                params={"face_name": name},
+                                files={"image": image},
+                            )
+                            self.conversation_app()
+                            self.tts(self.reply)
+                            self.reset_loop()
                     else:
                         params = {"prompt": self.prompt, "mode": "caption"}
                         response = requests.post(
