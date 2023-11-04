@@ -33,8 +33,8 @@ class Eyes:
                 self.face_name = response['face_name']
                 self.person_in_frame = response['person_detected']
             except BaseException as e:
-                log.error(e)
-                log.info(f'response: {response}')
+                # log.error(e)
+                # log.info(f'response: {response}')
                 self.face_name = None
                 self.person_in_frame = 'no'
         else:
