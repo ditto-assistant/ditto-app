@@ -59,24 +59,28 @@ class Assistant:
         log.info("[Booting...]")
         self.update_status_db("booting")
         self.config = AppConfig()
+        self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
         self.nlp_base_url: str = self.config.base_url()
         self.vision_base_url: str = self.config.base_url_vision()
-        self.ditto_eyes = Eyes(self.vision_base_url)
+        self.ditto_eyes = Eyes(
+            vision_base_url=self.vision_base_url, 
+            eyes_on=self.speech.heyditto.activation_requests.mic_on
+            )
         self.check_if_vision_server_running()
         self.volume = int(self.config.volume)  # percent
         # self.security_camera = SecurityCam(os.getcwd())
-        self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
+        
         self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = ""
         self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
-
         self.prompt = ""
         self.reply = ""
         self.activation_mode = True  # If true then idle and listening for name
 
         self.reset_conversation = False  # used to skip writing reset commands to DB
+        self.toggle_eyes = False # used to skip writing toggle eyes commands to DB
 
         self.skip_name = False  # used to skip name (conversation app)
 
@@ -91,8 +95,9 @@ class Assistant:
         try:
             url = f"{self.vision_base_url}/status"
             requests.get(url)
-            self.ditto_eyes.start()
-            log.info("[Eyes started...]")
+            ret = self.ditto_eyes.start()
+            if ret==1:
+                log.info("[Eyes started...]")
             return True
         except BaseException as e:
             log.error(e)
@@ -196,6 +201,10 @@ class Assistant:
             cat = "reset"
             sub_cat = "none"
             action = "none"
+        elif "toggleEyes" in self.prompt:
+            cat = "toggleEyes"
+            sub_cat = "none"
+            action = "none"
         else:
             # get intent from offline npl module
             self.offline_response = json.loads(self.prompt_intent(self.prompt))
@@ -262,7 +271,16 @@ class Assistant:
                 self.reply = self.command.light_handler.handle_response(self.prompt)
             self.tts(self.reply)
             self.reset_loop()
-
+        
+        elif cat == "toggleEyes":
+            self.ditto_eyes.toggle()
+            if self.ditto_eyes.eyes_on: 
+                log.info("[Eyes started...]")
+            else:
+                log.info("[Eyes stopped...]")
+            self.reset_loop()
+            self.toggle_eyes = True # skip writing to db
+            
         elif cat == "security":
             if not headless:
                 self.reply = f"[Opening {action} camera.]"
@@ -410,6 +428,10 @@ class Assistant:
             self.reset_conversation = False  # set back to False
             self.reply = ""
             return
+        if self.toggle_eyes == True:
+            self.toggle_eyes = False # set back to False
+            self.reply = ""
+            return
         try:
             requests.post(
                 f"{self.nlp_base_url}/users/{self.config.user_id}/write_response?response={self.reply}",
@@ -422,6 +444,8 @@ class Assistant:
     def write_prompt_to_db(self):
         if self.reset_conversation:
             self.reply = ""
+            return
+        if self.toggle_eyes:
             return
         try:
             requests.post(
