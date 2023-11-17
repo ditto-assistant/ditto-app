@@ -4,12 +4,15 @@ from datetime import datetime
 import time
 
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 class HomeAssistant:
     def __init__(self):
         try:
             import homeassistant_api
+
             self.client = homeassistant_api.Client(
                 str(os.environ["HOME_ASSISTANT_API_URL"]),
                 str(os.environ["HOME_ASSISTANT_API_KEY"]),
