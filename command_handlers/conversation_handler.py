@@ -29,10 +29,15 @@ class ConversationHandler:
         except BaseException as e:
             print(e)
 
-    def prompt_ditto_memory_agent(self, query):
+    def prompt_ditto_memory_agent(self, query, face_name="none"):
         try:
+            params = {
+                "prompt": query,
+                "face_name": face_name,
+            }
             res = requests.post(
-                f"{self.nlp_base_url}/users/{self.user_id}/prompt_llm?prompt={query}",
+                f"{self.nlp_base_url}/users/{self.user_id}/prompt_llm",
+                params=params,
                 timeout=30,
             )
             res = json.loads(str(res.content.decode().strip()))
@@ -43,9 +48,9 @@ class ConversationHandler:
 
         return res["response"]
 
-    def handle_response(self, prompt):
+    def handle_response(self, prompt, face_name=None):
         if not self.offline_mode:
-            reply = self.prompt_ditto_memory_agent(prompt)
+            reply = self.prompt_ditto_memory_agent(prompt, face_name=face_name)
         else:
             # offline chat ...
             pass
