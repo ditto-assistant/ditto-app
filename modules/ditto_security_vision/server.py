@@ -51,6 +51,8 @@ def gallery():
     image_files.sort(key=lambda x: x[1], reverse=True)
     # Extract only the filenames from the sorted list
     sorted_image_files = [f[0] for f in image_files]
+    # only show latest 30 images
+    sorted_image_files = sorted_image_files[:30]
     # Render the gallery template with the list of sorted image files
     return render_template("gallery.html", image_files=sorted_image_files)
 
