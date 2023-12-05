@@ -168,7 +168,12 @@ class Assistant:
 
             if self.reply == "":
                 self.reply = "..."
-            self.tts(self.reply)
+            
+            if "-LLM Tools: Code Compiler-" in self.reply: # avoid speaking code (lol)
+                self.tts("[Code Compiled with LLM Tools.]")
+            else:
+                self.tts(self.reply)
+
             if not self.speech.from_gui:
                 # self.skip_wake()
                 self.reset_loop()

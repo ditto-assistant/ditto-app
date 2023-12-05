@@ -38,7 +38,7 @@ class ConversationHandler:
             res = requests.post(
                 f"{self.nlp_base_url}/users/{self.user_id}/prompt_llm",
                 params=params,
-                timeout=30,
+                timeout=120,
             )
             res = json.loads(str(res.content.decode().strip()))
 
