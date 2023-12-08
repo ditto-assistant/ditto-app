@@ -168,8 +168,8 @@ class Assistant:
 
             if self.reply == "":
                 self.reply = "..."
-            
-            if "-LLM Tools: Code Compiler-" in self.reply: # avoid speaking code (lol)
+
+            if "-LLM Tools: Code Compiler-" in self.reply:  # avoid speaking code (lol)
                 self.tts("[Code Compiled with LLM Tools.]")
             else:
                 self.tts(self.reply)
