@@ -23,7 +23,7 @@ Use your favorite package manager to [Install just](https://github.com/casey/jus
 just install
 ```
 
-After turning on the [nlp_server](https://github.com/omarzanji/nlp_server), You may run assistant with:
+After turning on the [nlp_server](https://github.com/ditto-assistant/nlp_server) and the optional [vision_server](https://github.com/ditto-assistant/vision_server), You may run assistant with:
 
 ```bash
 just run
