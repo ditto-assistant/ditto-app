@@ -135,10 +135,11 @@ class Assistant:
         if playing_soundscapes or playing_music:
             if sound == "on":
                 pygame.mixer.music.set_volume(int(self.volume * 0.5) / 100)
-                if self.command.spotify_handler.player.playing_music:
-                    self.command.spotify_handler.player.remote(
-                        "volume", int(self.volume * 0.5)
-                    )
+                if not self.command.spotify_handler.player == []:
+                    if self.command.spotify_handler.player.playing_music:
+                        self.command.spotify_handler.player.remote(
+                            "volume", int(self.volume * 0.5)
+                        )
             if sound == "off":
                 pygame.mixer.music.set_volume(self.volume / 100)
                 if self.command.spotify_handler.player.playing_music:

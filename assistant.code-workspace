@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "../vision_server"
+		},
+		{
+			"path": "../ditto-agent-js"
 		}
 	],
 	"settings": {}
