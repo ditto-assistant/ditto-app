@@ -250,7 +250,7 @@ class Spotify:
         ranges = ["short_term", "medium_term", "long_term"]
         self.top_songs = []
         for sp_range in ranges:
-            results = sp.current_user_top_tracks(time_range=sp_range, limit=75)
+            results = sp.current_user_top_tracks(time_range=sp_range, limit=30)
             for i, item in enumerate(results["items"]):
                 self.top_songs.append(
                     [item["name"], item["artists"][0]["name"], item["uri"]]

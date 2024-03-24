@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../ditto-app"
+		},
+		{
+			"path": "../../../nlp_server"
+		}
+	],
+	"settings": {}
+}
