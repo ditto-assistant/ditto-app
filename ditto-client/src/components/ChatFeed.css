@@ -1,0 +1,59 @@
+.chat-feed {
+    background-color: #282c34; /* Discord black */
+    padding: 10px;
+    overflow-y: auto;
+    height: 100%;
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-bubble {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 15px;
+    word-wrap: break-word;
+  }
+  
+  .chat-bubble.User {
+    align-self: flex-end; /* Align the bubble to the right */
+    background-color: #7289da; /* Blue bubble */
+    color: #000000; /* Ensure the text is white */
+    text-align: right; /* Right-align the text */
+  }
+  
+  .chat-bubble.Ditto {
+    align-self: flex-start;
+    background-color: #99aab5; /* Grey bubble */
+    color: #000000; /* Ensure the text is white */
+  }
+  
+  .sender-name {
+    font-size: 12px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #2f3031; /* Ensure the sender name is white */
+  }
+  
+  .message-text {
+    font-size: 14px;
+    color: #000000; /* Ensure the message text is white */
+  }
+  
+  .typing-indicator {
+    font-size: 14px;
+    color: #99aab5; /* Grey */
+    margin-top: 10px;
+  }
+  
+  .chat-input-field {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    margin-top: 10px;
+  }

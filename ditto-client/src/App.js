@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { grabConversationHistory, grabConversationHistoryCount } from "./models/api";
-import { ChatFeed, Message } from "./modules/react-chat-ui-omar-fork/lib";
 import { status } from "./models/Status";
 import { grabStatus } from "./models/api";
 

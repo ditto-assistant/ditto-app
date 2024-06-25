@@ -14,9 +14,10 @@
 
 .App-body {
   max-height: 65vh;
+  /* min-height: fit-content; */
   display: flex;
-  flex-direction: column;
-  overflow-y: scroll;
+  /* flex-direction: column; */
+  /* overflow-y: scroll; */
 }
 
 .App-footer {

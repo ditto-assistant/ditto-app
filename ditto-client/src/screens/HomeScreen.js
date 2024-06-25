@@ -1,7 +1,6 @@
 import "./App.css";
 import React, { useState, useEffect, useRef } from "react";
 import { grabConversationHistory, grabConversationHistoryCount } from "../models/api";
-import { ChatFeed, Message } from "../modules/react-chat-ui-omar-fork/lib";
 import { grabStatus, resetConversation, grabMicStatus, toggleMic } from "../models/api";
 import Divider from '@mui/material/Divider';
 import ChatBubbles from "../components/ChatBubbles";
@@ -19,12 +18,10 @@ export default function HomeScreen() {
 
     const [conversation, setConversation] = useState({
         messages: [
-            new Message({
-                id: 1,
-                message: "Hi! I'm Ditto."
-            })
-        ]
-    })
+          { sender: 'Ditto', text: "Hi! I'm Ditto." }
+        ],
+        is_typing: false
+      })
 
     const [microphoneStatus, setMicrophoneStatus] = useState("off")
 
@@ -75,12 +72,10 @@ export default function HomeScreen() {
         let responses = hist.responses
         let newConversation = {
             messages: [
-                new Message({
-                    id: 1,
-                    message: "Hi! I'm Ditto."
-                })
-            ]
-        }
+              { sender: 'Ditto', text: "Hi! I'm Ditto." },
+            ],
+            is_typing: false
+          }
         if (reset) {
             setCount(0)
             setConversation(newConversation)
@@ -90,18 +85,8 @@ export default function HomeScreen() {
         for (var key in prompts) {
             let prompt = prompts[key][0]
             let response = responses[key][0]
-            newConversation.messages.push(
-                new Message({
-                    id: 0,
-                    message: prompt
-                })
-            )
-            newConversation.messages.push(
-                new Message({
-                    id: 1,
-                    message: response
-                })
-            )
+            newConversation.messages.push({ sender: 'User', text: prompt })
+            newConversation.messages.push({ sender: 'Ditto', text: response })
         }
         setConversation(newConversation)
     }
@@ -169,10 +154,10 @@ export default function HomeScreen() {
 
     const statusColor = bootStatus === 'on' ? 'green' : 'red'
 
-    useEffect(() => {
-        // 👇️ scroll to bottom every time messages change
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [histCount]);
+    // useEffect(() => {
+    //     // 👇️ scroll to bottom every time messages change
+    //     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // }, [histCount]);
 
 
     return (
@@ -218,7 +203,7 @@ export default function HomeScreen() {
             />
             <Divider />
             <div className='App-body'>
-                <ChatBubbles conversation={conversation} />
+                <ChatBubbles conversation={conversation} histCount={histCount} />
                 <div ref={bottomRef} />
             </div>
 
