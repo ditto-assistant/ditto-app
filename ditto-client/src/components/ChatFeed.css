@@ -22,7 +22,7 @@
     align-self: flex-end; /* Align the bubble to the right */
     background-color: #7289da; /* Blue bubble */
     color: #000000; /* Ensure the text is white */
-    text-align: right; /* Right-align the text */
+    text-align: center; /* Right-align the text */
   }
   
   .chat-bubble.Ditto {

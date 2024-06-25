@@ -13,10 +13,11 @@
 }
 
 .App-body {
-  max-height: 65vh;
+  /* max-height: 30vh; */
   /* min-height: fit-content; */
   display: flex;
-  /* flex-direction: column; */
+  /* width: 100%; */
+  flex-direction: column-reverse;
   /* overflow-y: scroll; */
 }
 
