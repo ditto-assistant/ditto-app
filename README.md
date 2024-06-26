@@ -1,17 +1,3 @@
-# Run with Docker (WIP):
-1. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below). 
-2. Build the Docker image: 
-
-```bash
-docker build -t ditto .
-```
-
-3. Run the image on a new container:
-
-```bash
-docker run --env-file .env --rm -p 42032:42032 ditto
-```
-
 # Running locally without Docker:
 
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
@@ -49,6 +35,10 @@ source ditto/bin/activate
 pip install -r requirements.txt
 ```
 
+## Running
+1. `just run` if using just, otherwise:
+2. Simply run `python main.py` to boot the assistant server, ready for [ditto_app](https://github.com/ditto-assistant/ditto-app) front-end.
+
 ## Environment Setup Instructions
 
 1. Google Cloud Setup:
@@ -81,14 +71,9 @@ pip install -r requirements.txt
 
 ## Running (without Docker):
 
-- Simply run `python main.py` to boot the assistant along with a Flask server for communicating with the [Ditto App](https://github.com/omarzanji/ditto-app) front-end client.
 
-## Common issues
 
-### For Mac
 
-[How to resolve fatal pyaudio error](https://www.codewithharry.com/blogpost/pyaudio-not-found-error/)
-[portaudio help](https://stackoverflow.com/a/48815345)
 
 ```
 pip install tensorflow-macos matplotlib pandas
