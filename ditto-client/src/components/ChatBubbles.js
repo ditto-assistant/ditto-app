@@ -2,7 +2,7 @@ import React from "react";
 import ChatFeed from "./ChatFeed";
 
 const bubblefontSize = 14;
-const bubblePadding = 10;
+const bubblePadding = 15;
 
 export default function ChatBubbles(props) {
   return (

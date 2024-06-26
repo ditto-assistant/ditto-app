@@ -27,6 +27,7 @@
   
   .chat-bubble.Ditto {
     align-self: flex-start;
+    text-align: left;
     background-color: #99aab5; /* Grey bubble */
     color: #000000; /* Ensure the text is white */
   }
