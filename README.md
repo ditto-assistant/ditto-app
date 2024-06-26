@@ -2,7 +2,7 @@
 - Welcome to Ditto Assistant! This is the main logic for a Ditto Unit, which can exist on a Mac, Windows, Rasperry Pi, or anything that runs Python.
 The full setup can support multiple Ditto Units around the house on the same network (LAN). The goal is to provide an open source LLM Smart Home experience to work just like your Google Home or Alexa, with much more capabilities.
 - We have a seperate repository, which is a required server, that houses custom ML models for intent and named-entity recognition to handle smart home commands and much more. This server is [nlp_server](https://github.com/ditto-assistant/nlp_server) and it also contains the main logic for the LLM agent, a complex agent pipeline that supports Google Search, Compiling Code, and Long Term Memory with [Langchain](https://www.langchain.com/) integration.
-- Optionally, and super cool, run our [vision_server](https://github.com/ditto-assistant/vision_server) to give Ditto some eyes! This supports image captioning- see vision server's readme for Image RAG visual and Demo.
+- Optionally, run our [vision_server](https://github.com/ditto-assistant/vision_server) to give Ditto some eyes! This supports image captioning- see vision server's readme for Image RAG visual and Demo.
 ## Mac / Windows 
 - Comes with a [chat interface](https://github.com/ditto-assistant/ditto-app) for interacting with Ditto.
 - Supports Wake word "Hey Ditto" activation and spoken prompting.
