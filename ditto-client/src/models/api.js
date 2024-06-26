@@ -21,7 +21,7 @@ export const sendRequest = async (fetchMethod, APIRequest, params = {}, timeout 
   if (isEmpty) {
     try {
       const fetchLink = `http://${ip}:${port}/users/${user}/${APIRequest}`
-      console.log('[API Request] ' + fetchLink)
+      // console.log('[API Request] ' + fetchLink)
       const fetchResponse = await fetch(fetchLink, {
         method: fetchMethod,
         signal: controller.signal
@@ -39,7 +39,7 @@ export const sendRequest = async (fetchMethod, APIRequest, params = {}, timeout 
     const key = parameters[0];
     try {
       const fetchLink = `http://${ip}:${port}/users/${user}/${APIRequest}?${parameters[0]}=${params[key]}`;
-      console.log('[API Request] ' + fetchLink);
+      // console.log('[API Request] ' + fetchLink);
       const fetchResponse = await fetch(fetchLink, {
         method: fetchMethod,
         signal: controller.signal

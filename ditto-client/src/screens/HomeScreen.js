@@ -67,34 +67,39 @@ export default function HomeScreen() {
      * @param save boolean to save locally or not
      */
     const createConversation = async (hist, save) => {
-        if (save) { handleSaveConversation(hist) }
-        let prompts = hist.prompts
-        let responses = hist.responses
-        let newConversation = {
-            messages: [
-              { sender: 'Ditto', text: "Hi! I'm Ditto." },
-            ],
-            is_typing: false
-          }
-        if (reset) {
-            setCount(0)
+        try {
+            if (save) { handleSaveConversation(hist) }
+            let prompts = hist.prompts
+            let responses = hist.responses
+            let newConversation = {
+                messages: [
+                { sender: 'Ditto', text: "Hi! I'm Ditto." },
+                ],
+                is_typing: false
+            }
+            if (reset) {
+                setCount(0)
+                setConversation(newConversation)
+                setReset(false)
+                return
+            }
+            for (var key in prompts) {
+                let prompt = prompts[key][0]
+                let response = responses[key][0]
+                newConversation.messages.push({ sender: 'User', text: prompt })
+                newConversation.messages.push({ sender: 'Ditto', text: response })
+            }
             setConversation(newConversation)
-            setReset(false)
-            return
+        } catch (e) {
+            console.log(e)
         }
-        for (var key in prompts) {
-            let prompt = prompts[key][0]
-            let response = responses[key][0]
-            newConversation.messages.push({ sender: 'User', text: prompt })
-            newConversation.messages.push({ sender: 'Ditto', text: response })
-        }
-        setConversation(newConversation)
     }
 
     useEffect(() => {
 
         const handleStatus = async () => {
             var statusDb = await grabStatus()
+            // console.log(statusDb.status)
             if (bootStatus !== statusDb.status) {
                 setBootStatus(statusDb.status)
             }
@@ -102,6 +107,7 @@ export default function HomeScreen() {
 
         const handleMicStatus = async () => {
             var micStatusDb = await grabMicStatus()
+            // console.log(micStatusDb.ditto_mic_status)
             if (microphoneStatus !== micStatusDb.ditto_mic_status) {
                 setMicrophoneStatus(micStatusDb.ditto_mic_status)
             }
@@ -117,7 +123,7 @@ export default function HomeScreen() {
                 if (histCount !== localHistCount) {
                     setCount(localHistCount)
                 }
-                console.log(localHist)
+                // console.log(localHist)
                 createConversation(localHist, false)
             }
             if (serverHistCount !== undefined && serverHistCount !== localHistCount) {
