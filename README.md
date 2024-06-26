@@ -81,12 +81,3 @@ pip install -r requirements.txt
          2. Windows:
             1. Find the `COM` port in device manager after flashing your Teensy and set the `.env` key `teensy_path` to your COM number, i.e. `teensy_path=COM5`.
 
-## Running (without Docker):
-
-
-
-
-
-```
-pip install tensorflow-macos matplotlib pandas
-```
