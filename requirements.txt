@@ -7,7 +7,6 @@ google-cloud-texttospeech
 homeassistant-api
 lifxlan
 matplotlib
-nltk
 openai
 pandas
 picovoice
@@ -18,14 +17,13 @@ psutil
 pvrecorder
 pyaudio
 pyautogui
-pygame
+pygame==2.5.0
 pyserial
 python_speech_features
 python_weather
 pyttsx3
 scikit-learn
 sounddevice
-spacy
 spotipy
 tensorflow
 termdown

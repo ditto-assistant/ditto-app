@@ -15,8 +15,7 @@ from entities import entities as ENTITIES
 from home_assistant import HomeAssistant
 
 log = logging.getLogger("ditto_security_vision")
-log.setLevel(level=logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stdout))
+logging.basicConfig(level=logging.INFO)
 
 from dotenv import load_dotenv
 
@@ -25,6 +24,8 @@ load_dotenv()
 import cv2
 import os
 from collections import deque
+
+whitelisted_files = []
 
 class IPCamera:
     def __init__(self):
@@ -166,7 +167,7 @@ class DittoSecurityVision:
             if "camera" in camera:
                 self.cameras.append(camera)
         if self.cameras == []:
-            print("No cameras found")
+            log.info("No cameras found")
             exit()
 
     def init_vision_server_endpoint(self):
@@ -196,10 +197,28 @@ class DittoSecurityVision:
             else:
                 continue
         return entities
+    
+    def reset_camera_folders(self):
+        log.info("Resetting camera folders...")
+        for camera in self.cameras:
+            # delete each folder in the camera folder
+            for folder in os.listdir(self.path + "ftp/" + camera):
+                # iterate through each file in the folder and delete it
+                for file in os.listdir(self.path + "ftp/" + camera + "/" + folder + "/images/"):
+                    try:
+                        os.remove(self.path + "ftp/" + camera + "/" + folder + "/images/" + file)
+                    except BaseException as e:
+                        bad_file = self.path + "ftp/" + camera + "/" + folder + "/images/" + file
+                        log.error(f"Could not delete file: {bad_file}")
+                        return bad_file
+        log.info("Done.")
+        return None
 
     def check_ftp_for_entities(self, max_retries=10):
         log.info("Waiting for images...")
         retries = 0
+
+        global whitelisted_files
 
         # IP Camera object to save video buffer
         ip_camera = IPCamera()
@@ -225,6 +244,14 @@ class DittoSecurityVision:
                             self.path + "ftp/" + camera + "/" + camera_day + "/images/"
                         )
                         for image in os.listdir(camera_day_path):
+                            white_listed = False
+                            for f in whitelisted_files:
+                                if image in str(f):
+                                    # log.info(f"Skipping whitelisted file: {image}")
+                                    white_listed = True
+                                    break
+                            if white_listed:
+                                continue
                             image_path = camera_day_path + image
                             image = Image.open(image_path).convert("RGB")
                             log.info(f"Checking image: {image_path}")
@@ -268,16 +295,13 @@ class DittoSecurityVision:
                 log.error(e)
                 time.sleep(1)
                 shutil.rmtree(self.path + "ftp/marked_for_deletion/")
-                retries += 1
+                bad_file = self.reset_camera_folders()
+                if bad_file:
+                    log.info(f"Whitelisting file: {bad_file}")
+                    whitelisted_files.append(bad_file)
                 continue
 
 
 if __name__ == "__main__":
     ditto_security_vision = DittoSecurityVision()
-    while True:
-        try:
-            ditto_security_vision.check_ftp_for_entities(max_retries=100)
-        except BaseException as e:
-            log.error(e)
-            time.sleep(5)
-            continue
+    ditto_security_vision.check_ftp_for_entities(max_retries=10)

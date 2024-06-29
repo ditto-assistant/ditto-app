@@ -7,7 +7,7 @@ RUN apt update && \
 
 COPY requirements.txt ./
 
-RUN git clone -b dockerfile https://github.com/omarzanji/assistant.git --recurse-submodules
+RUN git clone https://github.com/ditto-assistant/assistant.git --recurse-submodules
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt

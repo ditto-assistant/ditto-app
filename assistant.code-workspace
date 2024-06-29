@@ -1,25 +1,19 @@
 {
 	"folders": [
 		{
-			"name": "assistant",
 			"path": "."
 		},
 		{
-			"name": "ditto-app",
-			"path": "../ditto-app"
-		},
-		{
-			"name": "nlp_server",
 			"path": "../nlp_server"
-		},
-		{
-			"path": "../ditto-reactnative-app"
 		},
 		{
 			"path": "../vision_server"
 		},
 		{
-			"path": "../ditto-agent-js"
+			"path": "../ditto-app"
+		},
+		{
+			"path": "../ditto-reactnative-app"
 		}
 	],
 	"settings": {}

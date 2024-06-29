@@ -6,7 +6,7 @@ run-rm:
 
 # Run container, detaching (daemonize)
 run:
-    docker run -d --env-file .env -p 42032:42032 --name assistant assistant
+    docker run -d --env-file .env -p 42032:42032 --device /dev/snd:/dev/snd --name assistant assistant
 
 # Run container, interactive mode
 run-it:

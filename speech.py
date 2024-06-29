@@ -76,6 +76,8 @@ class Speech:
         self.gesture_activation = False
         self.reset_conversation = False
 
+        self.listening_indicator = None
+
     def record_audio(self, activation_mode=False):
         self.recording = True
         try:
@@ -100,6 +102,7 @@ class Speech:
                     self.recording = False
                     if not headless:
                         pyautogui.press("ctrl")  # turns display on if asleep
+                        self.listening_indicator = 'listening...'
 
             else:
                 self.skip_wake = False  # set back to false

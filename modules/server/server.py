@@ -42,6 +42,10 @@ def get_status():
     cur = SQL.cursor()
     status_arr = cur.execute("SELECT * FROM status").fetchall()
     status = status_arr[-1][0]
+    # if status_arr is greater than 5, reset the table
+    if len(status_arr) > 5:
+        cur.execute("DELETE FROM status")
+        SQL.commit()
     SQL.close()
     return status
 

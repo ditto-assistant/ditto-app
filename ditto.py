@@ -52,7 +52,7 @@ pygame.mixer.init(channels=8)
 
 OFFLINE_MODE = False
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 class Assistant:
@@ -478,16 +478,19 @@ class Assistant:
     def activation_sequence(self):
         self.activation_mode = True
         # record audio and listen for name
-        log.info("Recording audio...")
+        log.info("Waitng for prompt...")
         self.speech.record_audio(activation_mode=self.activation_mode)
-        log.info("Done recording audio...")
+        log.info("Done recording audio...")       
         if self.speech.activation.activate:  # name has been spoken
             if self.speech.reset_conversation:
                 self.reset_conversation = True
             self.play_sound("on")
+            self.update_status_db(self.speech.listening_indicator)
             self.speaker_timer = 0  # reset speaker + mic timer
 
             self.speech.activation.activate = False
+            # set listening indicator to None
+            self.speech.listening_indicator = None
             self.speech.text = ""
             self.speech.activation.text = ""
 
@@ -495,6 +498,9 @@ class Assistant:
 
             # record audio and listen for command
             self.speech.record_audio(activation_mode=self.activation_mode)
+
+            # set status back to on
+            self.update_status_db("on")
 
             # command has been spoken (app on enter section)
             log.info("Q: %s\n" % self.speech.activation.text)
