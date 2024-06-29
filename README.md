@@ -1,19 +1,19 @@
-# Run with Docker (WIP):
-1. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below). 
-2. Build the Docker image: 
+# Ditto Assistant (Ditto Unit):
+- Welcome to Ditto Assistant! This is the main logic for a Ditto Unit, which can exist on a Mac, Windows, Rasperry Pi, or anything that runs Python.
+The full setup can support multiple Ditto Units around the house on the same network (LAN). The goal is to provide an open source LLM Smart Home experience to work just like your Google Home or Alexa, with much more capabilities.
+- We have a seperate repository, which is a required server, that houses custom ML models for intent and named-entity recognition to handle smart home commands and much more. This server is [nlp_server](https://github.com/ditto-assistant/nlp_server) and it also contains the main logic for the LLM agent, a complex agent pipeline that supports Google Search, Compiling Code, and Long Term Memory with [Langchain](https://www.langchain.com/) integration.
+- Optionally, run our [vision_server](https://github.com/ditto-assistant/vision_server) to give Ditto some eyes! This supports image captioning- see vision server's readme for Image RAG visual and Demo.
+## Mac / Windows 
+- Comes with a [chat interface](https://github.com/ditto-assistant/ditto-app) for interacting with Ditto.
+- Supports Wake word "Hey Ditto" activation and spoken prompting.
+- Generated Knowledge Graphs (Neo4j) visualization from our [nlp_server](https://github.com/ditto-assistant/nlp_server) and [Home Assistant](https://github.com/home-assistant) integration.
+- Home Assistant configuration can be found in `.env.example` when creating `.env`.
+## Rasperry Pi
+- Works like any other smart home assistant! Has access to your Google or Alexa smart home setup via [Home Assistant](https://github.com/home-assistant).
+- Requires a mic and speaker for wake word and playing spotify music.
+- Supports Wake word "Hey Ditto" activation and spoken prompting.
 
-```bash
-docker build -t ditto .
-```
-
-3. Run the image on a new container:
-
-```bash
-docker run --env-file .env --rm -p 42032:42032 ditto
-```
-
-# Running locally without Docker:
-
+## Setup Instructions
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
 2. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below).
 
@@ -49,6 +49,10 @@ source ditto/bin/activate
 pip install -r requirements.txt
 ```
 
+## Running
+1. `just run` if using just, otherwise:
+2. Simply run `python main.py` to boot the assistant server, ready for [ditto_app](https://github.com/ditto-assistant/ditto-app) front-end.
+
 ## Environment Setup Instructions
 
 1. Google Cloud Setup:
@@ -79,17 +83,3 @@ pip install -r requirements.txt
          2. Windows:
             1. Find the `COM` port in device manager after flashing your Teensy and set the `.env` key `teensy_path` to your COM number, i.e. `teensy_path=COM5`.
 
-## Running (without Docker):
-
-- Simply run `python main.py` to boot the assistant along with a Flask server for communicating with the [Ditto App](https://github.com/omarzanji/ditto-app) front-end client.
-
-## Common issues
-
-### For Mac
-
-[How to resolve fatal pyaudio error](https://www.codewithharry.com/blogpost/pyaudio-not-found-error/)
-[portaudio help](https://stackoverflow.com/a/48815345)
-
-```
-pip install tensorflow-macos matplotlib pandas
-```
