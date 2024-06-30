@@ -37,7 +37,7 @@ class Spotify:
             l.append(x)
 
         if not "resources" in l:
-            os.system("mkdir resources")
+            os.system(f"mkdir {path}/resources")
 
         l = []
         for x in os.listdir(path + "/resources"):

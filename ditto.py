@@ -75,7 +75,9 @@ class Assistant:
 
         self.command = Command(os.getcwd(), offline_mode)
         self.speech_engine = ""
-        self.google = Speak()
+        self.google = None
+        if not NO_MIC_MODE:
+            self.google = Speak()
         # self.speech_engine.setProperty('voice', 'english')
         # self.speech_engine.setProperty('rate', 190)
         self.prompt = ""
