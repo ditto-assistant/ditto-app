@@ -15,8 +15,9 @@ from config import AppConfig
 
 
 class Command:
-    def __init__(self, path, offline_mode=False):
+    def __init__(self, path, offline_mode=False, no_mic_mode=False):
         self.offline_mode = offline_mode
+        self.no_mic_mode = no_mic_mode
         self.config = AppConfig()
         self.path = path
         self.volume = self.config.volume
@@ -24,6 +25,7 @@ class Command:
         self.spotify_handler = SpotifyHandler(
             path,
             offline_mode,
+            no_mic_mode,
         )
         self.timer_handler = TimerHandler(
             path,

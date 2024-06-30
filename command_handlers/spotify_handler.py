@@ -6,12 +6,15 @@ from config import AppConfig
 
 
 class SpotifyHandler:
-    def __init__(self, path, offline_mode):
+    def __init__(self, path, offline_mode, no_mic_mode=False):
         self.config = AppConfig()
         self.path = path
         self.offline_mode = offline_mode
         self.volume = self.config.volume
-        self.load_spotify_player(self.config.volume)
+        if no_mic_mode:
+            self.player = []
+        else:
+            self.load_spotify_player(self.config.volume)
         self.nlp_base_url = self.config.base_url()
 
     def load_spotify_player(self, volume):
