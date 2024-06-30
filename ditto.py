@@ -44,7 +44,12 @@ UNIX = False
 if platform.system() == "Linux":
     UNIX = True
 
-pygame.mixer.init(channels=8)
+NO_MIC_MODE = False
+try:
+    pygame.mixer.init(channels=8)
+except:
+    log.info("No audio device detected... Continuing in no-mic mode.")
+    NO_MIC_MODE = True
 
 OFFLINE_MODE = False
 
@@ -52,12 +57,12 @@ load_dotenv(override=True)
 
 
 class Assistant:
-    
+
     def __init__(self, offline_mode=OFFLINE_MODE):
         log.info("[Booting...]")
         self.update_status_db("booting")
         self.config = AppConfig()
-        self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone)
+        self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone, no_mic_mode=NO_MIC_MODE)
         self.nlp_base_url: str = self.config.base_url()
         self.vision_base_url: str = self.config.base_url_vision()
         self.ditto_eyes = Eyes(

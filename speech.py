@@ -52,10 +52,11 @@ import io
 
 
 class Speech:
-    def __init__(self, offline_mode=False, mic=""):
-        self.mic = mic
-        self.recording = False
+    def __init__(self, offline_mode=False, mic="", no_mic_mode=False):
         self.offline_mode = offline_mode
+        self.mic = mic
+        self.no_mic_mode = no_mic_mode
+        self.recording = False
         self.text = ""
         self.activation = Activation("ditto")
         self.google_instance = Google(mic=mic)
@@ -82,7 +83,7 @@ class Speech:
         self.recording = True
         try:
             if activation_mode and self.skip_wake == False:
-                wake = self.heyditto.listen_for_name()
+                wake = self.heyditto.listen_for_name(no_mic_mode=self.no_mic_mode)
 
                 if self.heyditto.activation_requests.inject_prompt:
                     self.inject = True
