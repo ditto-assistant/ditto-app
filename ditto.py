@@ -8,8 +8,6 @@ author: Omar Barazanji
 # import pyttsx3
 
 # other imports
-import pygame._sdl2.audio as sdl2_audio
-from PIL import Image
 import sqlite3
 import os
 import time
@@ -23,8 +21,6 @@ from modules.google_tts.speak import Speak
 from modules.ditto_vision.eyes import Eyes
 import json
 import platform
-import numpy as np
-from time import localtime
 from dotenv import load_dotenv
 from config import AppConfig
 import logging
@@ -56,6 +52,7 @@ load_dotenv(override=True)
 
 
 class Assistant:
+    
     def __init__(self, offline_mode=OFFLINE_MODE):
         log.info("[Booting...]")
         self.update_status_db("booting")
@@ -425,8 +422,8 @@ class Assistant:
             self.command.conversation_handler.reset_conversation()
             self.reset_loop()
 
-        if not self.speech.from_gui:
-            self.write_response_to_db()  # log self.reply to nlp server db
+        # if not self.speech.from_gui:
+        self.write_response_to_db()  # log self.reply to nlp server db
 
     def write_response_to_db(self):
         if not self.reply:

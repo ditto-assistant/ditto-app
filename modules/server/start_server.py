@@ -2,8 +2,6 @@ import sqlite3
 from server import Server
 from gevent.pywsgi import WSGIServer
 import subprocess
-import socket
-from flask import g
 
 
 class devnull:

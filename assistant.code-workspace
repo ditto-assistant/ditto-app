@@ -1,19 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "."
-		},
-		{
-			"path": "../nlp_server"
-		},
-		{
-			"path": "../vision_server"
-		},
-		{
-			"path": "../ditto-app"
-		},
-		{
-			"path": "../ditto-reactnative-app"
+			"path": ".."
 		}
 	],
 	"settings": {}

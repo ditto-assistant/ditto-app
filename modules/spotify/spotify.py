@@ -6,12 +6,9 @@ refs:
 2) https://github.com/plamere/spotipy
 """
 
-from lib2to3.pytree import Base
 import os
 import json
 import random
-import webbrowser
-
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 import spotipy.util as util

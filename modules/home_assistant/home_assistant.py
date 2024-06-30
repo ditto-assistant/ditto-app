@@ -9,7 +9,7 @@ class HomeAssistant:
     def __init__(self):
         try:
             self.client = homeassistant_api.Client(
-                str(os.environ["HOME_ASSISTANT_API_URL"]),
+                "localhost:8123/api/",
                 str(os.environ["HOME_ASSISTANT_API_KEY"]),
             )
             self.forecast_id = None  # initialize forecast service id

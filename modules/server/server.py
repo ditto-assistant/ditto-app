@@ -1,13 +1,7 @@
 import platform
-import re
-import subprocess
-import psutil
 from flask import Flask
 from flask import request
 from flask_cors import CORS
-
-import json
-
 import sqlite3
 
 SQL = sqlite3.connect("ditto.db")

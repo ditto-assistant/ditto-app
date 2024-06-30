@@ -7,7 +7,7 @@ google-cloud-texttospeech
 homeassistant-api
 lifxlan
 matplotlib
-openai
+openai==0.27.8
 pandas
 picovoice
 pipwin
@@ -25,10 +25,10 @@ pyttsx3
 scikit-learn
 sounddevice
 spotipy
-tensorflow
+tensorflow==2.13.0
 termdown
 vosk
 wolframalpha
 word2number
-python-dotenv
+python-dotenv==1.0.0
 opencv-python
