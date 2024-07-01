@@ -73,7 +73,7 @@ class Assistant:
         self.volume = int(self.config.volume)  # percent
         # self.security_camera = SecurityCam(os.getcwd())
 
-        self.command = Command(os.getcwd(), offline_mode)
+        self.command = Command(os.getcwd(), offline_mode, no_mic_mode=NO_MIC_MODE)
         self.speech_engine = ""
         self.google = None
         if not NO_MIC_MODE:
