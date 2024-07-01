@@ -105,6 +105,7 @@ class Assistant:
                 log.info("[Eyes started...]")
             return True
         except BaseException as e:
+            log.info("Continuing without vision server... error below:")
             log.error(e)
             return False
 
