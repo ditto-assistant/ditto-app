@@ -2,4 +2,4 @@
 - `cd ditto-client && npm run electron`
 
 ## GUI Screenshot
-![](/images/ui.png=100x20)
+![](/images/ui.png)
