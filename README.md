@@ -10,8 +10,8 @@ The full setup can support multiple Ditto Units around the house on the same net
 - Home Assistant configuration can be found in `.env.example` when creating `.env`.
 - Works like any other smart home assistant! Has access to your Google or Alexa smart home setup via [Home Assistant](https://github.com/home-assistant).
 - Requires a mic and speaker for wake word and playing spotify music.
-## Requirements
-This is just the logic for a Ditto Unit. Running this requires the [Ditto Stack](https://github.com/ditto-assistant/ditto-stack) Docker container to be running.
+## Requirements (And important note)
+This is just the logic for a Ditto Unit. Running this requires the [Ditto Stack](https://github.com/ditto-assistant/ditto-stack) Docker container to be running. If you just want to run this on your PC and have about 16GB of RAM for all the models, simply run the deafult ditto stack which automates and runs the below setup.
 ## Setup Instructions
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
 2. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below).
