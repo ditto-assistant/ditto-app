@@ -2,4 +2,4 @@
 - `cd ditto-client && npm run electron`
 
 ## GUI Screenshot
-![](/images/ui.png | width=100)
+![](https://github.com/ditto-assistant/ditto-app/blob/main/images/ui.png | width=100)
