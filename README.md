@@ -3,16 +3,15 @@
 The full setup can support multiple Ditto Units around the house on the same network (LAN). The goal is to provide an open source LLM Smart Home experience to work just like your Google Home or Alexa, with much more capabilities.
 - We have a seperate repository, which is a required server, that houses custom ML models for intent and named-entity recognition to handle smart home commands and much more. This server is [nlp_server](https://github.com/ditto-assistant/nlp_server) and it also contains the main logic for the LLM agent, a complex agent pipeline that supports Google Search, Compiling Code, and Long Term Memory with [Langchain](https://www.langchain.com/) integration.
 - Optionally, run our [vision_server](https://github.com/ditto-assistant/vision_server) to give Ditto some eyes! This supports image captioning- see vision server's readme for Image RAG visual and Demo.
-## Mac / Windows 
+## Mac / Windows / Linux (Rpi too)
 - Comes with a [chat interface](https://github.com/ditto-assistant/ditto-app) for interacting with Ditto.
 - Supports Wake word "Hey Ditto" activation and spoken prompting.
 - Generated Knowledge Graphs (Neo4j) visualization from our [nlp_server](https://github.com/ditto-assistant/nlp_server) and [Home Assistant](https://github.com/home-assistant) integration.
 - Home Assistant configuration can be found in `.env.example` when creating `.env`.
-## Rasperry Pi
 - Works like any other smart home assistant! Has access to your Google or Alexa smart home setup via [Home Assistant](https://github.com/home-assistant).
 - Requires a mic and speaker for wake word and playing spotify music.
-- Supports Wake word "Hey Ditto" activation and spoken prompting.
-
+## Requirements (And important note)
+This is just the logic for a Ditto Unit. Running this requires the [Ditto Stack](https://github.com/ditto-assistant/ditto-stack) Docker container to be running. If you just want to run this on your PC and have about 16GB of RAM for all the models, simply run the deafult ditto stack which automates and runs the below setup.
 ## Setup Instructions
 1. Tested on Python versions 3.7-3.10. Install whichever you prefer!
 2. Rename .env.example to .env and fill out API credentials you want to use (see Environment Setup Instructions below).
