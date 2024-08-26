@@ -8,11 +8,12 @@ from requests import get, post
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("home_assistant")
 
+
 class HomeAssistant:
     def __init__(self):
         try:
             self.url = "http://localhost:8123/api/"
-            self.headers ={
+            self.headers = {
                 "Authorization": f'Bearer {str(os.environ["HOME_ASSISTANT_API_KEY"])}',
                 "Content-Type": "application/json",
             }
@@ -29,7 +30,7 @@ class HomeAssistant:
         res = post(url, headers=headers, data=data)
         log.info(f"Google Assistant SDK Command Response: {res.text}")
         return res
-        
+
     def send_push_camera(self, camera_name):
         if "camera1" in camera_name:
             self.update_state(
