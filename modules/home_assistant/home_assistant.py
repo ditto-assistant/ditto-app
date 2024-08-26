@@ -50,7 +50,7 @@ class HomeAssistant:
         elif states:
             endpoint = "states"
         res = get(self.url + endpoint, headers=self.headers)
-        log.info(f"HA Services Response: {res.text}")
+        # log.info(f"HA Services Response: {res.text}")
         return res
 
     def get_forecast(self):
@@ -58,7 +58,6 @@ class HomeAssistant:
         Updates HomeAssistant class's forecast state with full forecast service's state.
         Returns response from HA server.
         """
-        # res = self.client.request("states", "GET")
         res = self.get_ha_services(states=True).json()
         if self.forecast_id == None:
             for i, service in enumerate(res):
