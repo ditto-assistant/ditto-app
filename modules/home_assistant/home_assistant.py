@@ -44,12 +44,12 @@ class HomeAssistant:
 
     def get_ha_services(self, services=None, states=None):
         log.info(f"Getting HA Services... Services: {services}, States: {states}")
-        get = "services"
+        endpoint = "services"
         if services:
-            get = "services"
+            endpoint = "services"
         elif states:
-            get = "states"
-        res = get(self.url + get, headers=self.headers)
+            endpoint = "states"
+        res = get(self.url + endpoint, headers=self.headers)
         log.info(f"HA Services Response: {res.text}")
         return res
 
