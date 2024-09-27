@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../ditto-activation"
+		},
+		{
+			"path": "../ditto_landing_page"
+		}
+	],
+	"settings": {}
+}

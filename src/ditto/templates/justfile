@@ -1,0 +1,4 @@
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
+generate:
+    af gen prompts -i . -o . -l js

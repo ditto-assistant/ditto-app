@@ -1,0 +1,202 @@
+.Contents {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: auto;
+}
+
+.Bar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.Form {
+    display: flex;
+    flex: 1;
+    max-width: 100%;
+    padding: 5px 10px;
+    background-color: #2f3136;
+    border-radius: 10px;
+    position: relative;
+}
+
+.InputWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.TextArea {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    resize: none;
+    background-color: #40444b;
+    color: white;
+    padding: 10px 15px;
+    overflow: hidden;
+    line-height: 1.5;
+    font-size: 16px;
+    max-height: 300px;
+    box-shadow: none;
+    outline: none !important;
+    padding-right: 90px;
+}
+
+.TextArea:focus {
+    border: 1px solid #7289da;
+    box-shadow: 0 0 3px #7289da;
+}
+
+.Mic, 
+.ImageUpload,
+.Camera {
+    position: absolute;
+    color: white;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.Mic {
+    right: 70px;
+}
+
+.ImageUpload {
+    right: 40px;
+}
+
+.Camera {
+    right: 10px;
+}
+
+.Mic:hover, 
+.ImageUpload:hover, 
+.Camera:hover {
+    color: #7289da;
+}
+
+.Mic.listening {
+    animation: pulse 1s infinite;
+    color: #ff5050;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.Submit {
+    background-color: #7289da;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.Submit:hover {
+    background-color: #5b6eae;
+}
+
+.Submit:active {
+    background-color: #4a5899;
+}
+
+.ImagePreview {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
+    max-width: 90%;
+    z-index: 2;
+}
+
+.ImagePreview img {
+    width: 50px;
+    height: auto;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.RemoveImage {
+    color: white;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.RemoveImage:hover {
+    color: #ff5050;
+}
+
+.CameraOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
+}
+
+.CameraFeed {
+    width: 90%;
+    max-height: 80%;
+    border-radius: 10px;
+    position: relative;
+}
+
+.CameraSnap, .CameraClose {
+    background-color: #7289da;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.CameraSnap:hover, .CameraClose:hover {
+    background-color: #5b6eae;
+}
+
+.CameraSnap:active, .CameraClose:active {
+    background-color: #4a5899;
+}
+
+.FlipCameraIcon {
+    position: relative;
+    bottom: -4px; /* Adjust this value for desired spacing */
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.FlipCameraIcon:hover {
+    color: #7289da;
+}

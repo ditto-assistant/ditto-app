@@ -1,0 +1,1 @@
+gcloud run deploy websocket-server --source . --region us-central1 --allow-unauthenticated
