@@ -2,8 +2,9 @@
 // const MODE = process.env.NODE_ENV;
 const MODE = "production"; // development or production
 
+const KEKMOD = "development"
 // http://127.0.0.1:5001/ditto-app-dev/us-central1/openaiEmbed if development
-let openAIChatURL = MODE === "development" ? "http://localhost:5001/openai-chat" : "https://backend-22790208601.us-central1.run.app/v1/prompt";
+let openAIChatURL = KEKMOD === "development" ? "http://localhost:3400/v1/prompt?stream=t" : "https://backend-22790208601.us-central1.run.app/v1/prompt?stream=t";
 let openAIImageGenerationURL = MODE === "development" ? "http://localhost:5001/openai-image-generation" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/openai-image-generation";
 let openAIEmbedURL = MODE === "development" ? "http://localhost:5001/openai-embed" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/openai-embed";
 let googleSearchURL = MODE === "development" ? "http://localhost:5001/google-search" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/google-search";
