@@ -8,6 +8,7 @@ import Paypal from "./screens/paypal";
 import Login from './screens/login';
 import AuthenticatedRoute from './components/AuthenticatedRoute'; // Ensure you import the HOC
 
+localStorage.removeItem("openai_api_key")
 
 export default function App() {
     return (

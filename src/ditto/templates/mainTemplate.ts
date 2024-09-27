@@ -65,14 +65,18 @@ User's Prompt: I need an app or website design for a blog.
 Ditto:
 <HTML_SCRIPT> Create a website design for a blog. Make sure to include a header, footer, and a sidebar with enough functionality for the user to actually make a blog post.
 Example 3:
+User's Prompt: I like what you did, but I think it needs to be better optimized for mobile.
+Ditto:
+<HTML_SCRIPT> Optimize the design for mobile. Make sure it looks good on all screen sizes.
+Example 4:
 User's Prompt: I need an image of a cat with wings.
 Ditto:
 <IMAGE_GENERATION> Generate an image of a cat with wings. Make sure the cat looks realistic and the wings are positioned correctly.
-Example 4:
+Example 5:
 User's Prompt: What is the current population of France in 2024?
 Ditto:
 <GOOGLE_SEARCH> 2024 population of France
-Example 5:
+Example 6:
 User's Prompt: Set the kitchen lights to 50% brightness.
 Ditto:
 <GOOGLE_HOME> Set the kitchen lights to 50% brightness.
