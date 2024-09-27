@@ -1,6 +1,6 @@
 // Your web app's Firebase configuration
-const MODE = process.env.NODE_ENV;
-// const MODE = "production"; // development or production
+// const MODE = process.env.NODE_ENV;
+const MODE = "production"; // development or production
 
 // http://127.0.0.1:5001/ditto-app-dev/us-central1/openaiEmbed if development
 let openAIChatURL = MODE === "development" ? "http://localhost:5001/openai-chat" : "https://backend-22790208601.us-central1.run.app/v1/prompt";

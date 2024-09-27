@@ -107,8 +107,7 @@ export const openaiEmbed = async (text) => {
     });
 
     const data = await response.json();
-    console.log(data);
-    return data;
+    return data.embedding;
   } catch (error) {
     console.error(error);
     alert("Please check your OpenAI API Key or your OpenAI account.");
