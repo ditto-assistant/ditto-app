@@ -112,27 +112,6 @@ const Settings = () => {
               <div style={styles.keyInputContainer}>
                 <TextField
                   variant="outlined"
-                  label="OpenAI API Key"
-                  type={showApiKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  style={styles.input}
-                  InputProps={{
-                    style: { color: 'white' },
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowApiKey(!showApiKey)}>
-                          {showApiKey ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  InputLabelProps={{
-                    style: { color: 'white' },
-                  }}
-                />
-                <TextField
-                  variant="outlined"
                   label="Home Assistant API Key"
                   type={showHaApiKey ? 'text' : 'password'}
                   value={haApiKey}
