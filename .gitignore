@@ -26,3 +26,6 @@ yarn-error.log*
 
 # ignore the .firebase directory
 .firebase
+
+# ignore code workspace settings
+ditto-app.code-workspace
