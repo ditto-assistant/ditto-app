@@ -1,6 +1,9 @@
 import { firebaseConfig } from "../../firebaseConfig";
 import { getAuth } from "firebase/auth";
 
+// import { app } from "../../control/firebase";
+import { auth } from "../../control/firebase";
+
 // openaiChat function
 export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "") => {
   let responseMessage = "";
@@ -13,26 +16,40 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
     if (usersOpenaiKey === "" && (Number(balance) <= 0 || balance === "NaN")) {
       return "You have no API key or your balance is too low to use. Please add more tokens in the settings page.";
     }
-    const tok = await getAuth().currentUser.getIdToken(true);
-
+    if (!auth.currentUser) {
+      return "You are not logged in. Please log in to use this feature.";
+    }
+    const requestBody = {
+      data: {
+        userID,
+        userPrompt,
+        systemPrompt,
+        model,
+        imageURL,
+        usersOpenaiKey,
+        // balance
+      }
+    }
+    const tok = await auth.currentUser.getIdToken();
     const response = await fetch(firebaseConfig.openAIChatURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${tok}`
       },
-      body: JSON.stringify({
-        userPrompt,
-        systemPrompt,
-        model,
-        imageURL,
-        usersOpenaiKey,
-        balance
-      }),
+      body: JSON.stringify(requestBody),
     });
 
-    const data = await response.json();
-    responseMessage = data.response;
+    let data = await response.text();
+    // remove last character 2 chars only if they are \n
+    let lastTwoChars = data.slice(-2);
+    console.log(lastTwoChars);
+    if (lastTwoChars === "\\n") {
+      data = data.slice(0, -2);
+    }
+    console.log(data);
+    let responseJSON = JSON.parse(data);
+    responseMessage = responseJSON.result;
   } catch (error) {
     console.error(error);
     alert("Response Error: please check your internet connection or OpenAI API Key / permissions.");

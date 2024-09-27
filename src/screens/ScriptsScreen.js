@@ -146,8 +146,6 @@ function ScriptsScreen() {
     const getBaseName = (name) => {
         const match = name.match(/^[^\-]+/);
         let res = match ? match[0].replace(/([a-z])([A-Z])/g, '$1 $2').trim() : name;
-        console.log("Name:", name);
-        console.log("Base name:", res);
         return res
     };
 

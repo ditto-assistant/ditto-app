@@ -10,12 +10,15 @@ import {
 } from "firebase/firestore";
 
 import { getStorage, ref, uploadBytes, deleteObject, getDownloadURL, listAll } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+
 const mode = process.env.NODE_ENV;
 
 // if (mode === 'development') {
