@@ -5,13 +5,13 @@
 - Ditto can create apps in the form of Web Apps and 3D models with OpenSCAD all from natural language prompts.
 
 ## Get Started
-1. Simply visit [heyditto.ai](https://heyditto.ai) to get started with Ditto Assistant.
+Simply visit [heyditto.ai](https://heyditto.ai) to get started with Ditto Assistant.
 
-# Installation for Development Environment
+### Installation for Development Environment
 - `npm install`
 
-# Running the App Locally
+### Running the App Locally
 - `npm run start`
 
-## GUI Screenshot
+### GUI Screenshot
 ![](/images/ui.png)
