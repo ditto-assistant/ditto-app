@@ -1,4 +1,5 @@
 import { firebaseConfig } from "../../firebaseConfig";
+import { getAuth } from "firebase/auth";
 
 // openaiChat function
 export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "") => {
@@ -12,11 +13,13 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
     if (usersOpenaiKey === "" && (Number(balance) <= 0 || balance === "NaN")) {
       return "You have no API key or your balance is too low to use. Please add more tokens in the settings page.";
     }
+    const tok = await getAuth().currentUser.getIdToken(true);
 
     const response = await fetch(firebaseConfig.openAIChatURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tok}`
       },
       body: JSON.stringify({
         userPrompt,
