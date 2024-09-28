@@ -1,5 +1,5 @@
 import { collection, addDoc } from "firebase/firestore";
-import { openaiChat, openaiEmbed, openaiImageGeneration } from "../ditto/modules/openaiChat";
+import { openaiChat, openaiEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/openaiChat";
 import { googleSearch } from "../ditto/modules/googleSearch";
 import { handleHomeAssistantTask } from "./agentTools";
 import { countTokens } from "./tokens";
@@ -65,6 +65,9 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     const { embedding, shortTermMemory, longTermMemory } =
       await fetchMemories(userID, prompt);
 
+    // fetch relevant examples from the endpoint
+    const examplesString = await getRelevantExamples(prompt, 5);
+
     if (embedding === "") {
       localStorage.removeItem("thinking");
       return "An error occurred while processing your request. Please try again.";
@@ -75,6 +78,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     const constructedPrompt = mainTemplate(
       longTermMemory,
       shortTermMemory,
+      examplesString,
       firstName,
       new Date().toISOString(),
       prompt,

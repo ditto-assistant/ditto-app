@@ -1,0 +1,67 @@
+{
+  "name": "OpenSCAD Agent",
+  "version": "1.0.0",
+  "description": "Examples of user prompts that require the OpenSCAD Agent tool.",
+  "examples": [
+    {
+      "prompt": "Make a 3D model of a table",
+      "response": "<OPENSCAD> Create a 3D model of a simple table. Make sure it has four legs and a tabletop.  You can add details like a drawer or a groove for a tablecloth."
+    },
+    {
+      "prompt": "Can you design a chair for me?",
+      "response": "<OPENSCAD> Design a 3D model of a chair. Make sure it has a seat, backrest, and legs. You can add details like armrests or cushions."
+    },
+    {
+      "prompt": "I need a 3D model of a house",
+      "response": "<OPENSCAD> Create a 3D model of a house. Make sure it has walls, a roof, and windows. You can add details like doors, shutters, or a chimney."
+    },
+    {
+      "prompt": "Can you make a 3D model of a car?",
+      "response": "<OPENSCAD> Design a 3D model of a car. Make sure it has wheels, a body, and windows. You can add details like headlights, a grill, or a spoiler."
+    },
+    {
+      "prompt": "I need a 3D model of a tree",
+      "response": "<OPENSCAD> Create a 3D model of a tree. Make sure it has a trunk, branches, and leaves. You can add details like fruit, flowers, or a treehouse."
+    },
+    {
+      "prompt": "Can you design a 3D model of a lamp?",
+      "response": "<OPENSCAD> Design a 3D model of a lamp. Make sure it has a base, a stand, and a lampshade. You can add details like a switch, a bulb, or a cord."
+    },
+    {
+      "prompt": "I need a 3D model of a bookshelf",
+      "response": "<OPENSCAD> Create a 3D model of a bookshelf. Make sure it has shelves, sides, and a back. You can add details like a drawer, a door, or a decorative trim."
+    },
+    {
+      "prompt": "Can you make a 3D model of a flower?",
+      "response": "<OPENSCAD> Design a 3D model of a flower. Make sure it has petals, a stem, and leaves. You can add details like a bud, a thorn, or a vase."
+    },
+    {
+      "prompt": "I need a 3D model of a cup",
+      "response": "<OPENSCAD> Create a 3D model of a cup. Make sure it has a handle, a rim, and a base. You can add details like a saucer, a pattern, or a logo."
+    },
+    {
+      "prompt": "Current Script: 3D Model of a Cup\nCan you add a lid to it?",
+      "response": "<OPENSCAD> Modify the 3D model of the cup to include a lid. Make sure the lid fits securely on the cup and has a handle or knob. You can add details like a spout, a hinge, or a latch."
+    },
+    {
+      "prompt": "Current Script: 3D Model of a Flower\nCan you add a vase to it?",
+      "response": "<OPENSCAD> Modify the 3D model of the flower to include a vase. Make sure the vase has a base, a neck, and a lip. You can add details like a pattern, a texture, or a color."
+    },
+    {
+      "prompt": "Current Script: 3D Model of a Tree\nCan you add a swing to it?",
+      "response": "<OPENSCAD> Modify the 3D model of the tree to include a swing. Make sure the swing has ropes, a seat, and a frame. You can add details like chains, a hook, or a knot."
+    },
+    {
+      "prompt": "Current Script: 3D Model of a House\nCan you make it to be no more than 20x30 cm?",
+      "response": "<OPENSCAD> Resize the 3D model of the house to be no more than 20x30 cm. Make sure the proportions are maintained and the details are preserved. You can adjust the size of the walls, roof, and windows."
+    },
+    {
+      "prompt": "Current Script: 3D Model of a Chair\nThe legs are not attached to the chair, can you fix this please?",
+      "response": "<OPENSCAD> Fix the 3D model of the chair so that the legs are securely attached. Make sure the legs are aligned, stable, and proportional to the seat. You can adjust the angle, length, or position of the legs."
+    },
+    {
+      "prompt": "Current Script: 3D Model of a Table\nCan you add a glass top to it?",
+      "response": "<OPENSCAD> Modify the 3D model of the table to include a glass top. Make sure the glass is transparent, smooth, and secure. You can add details like a bevel, a rim, or a texture."
+    }
+  ]
+}

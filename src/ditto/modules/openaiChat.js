@@ -114,3 +114,27 @@ export const openaiEmbed = async (text) => {
     return "";
   }
 }
+
+// getExamples function
+export const getRelevantExamples = async (text, k) => {
+  console.log("Getting examples");
+  try {
+    const response = await fetch(firebaseConfig.getExamplesURL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        k
+      }),
+    });
+
+    const data = await response.json();
+    return data.examples;
+  } catch (error) {
+    console.error(error);
+    alert("Please check your OpenAI API Key or your OpenAI account.");
+    return [];
+  }
+}

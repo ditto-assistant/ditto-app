@@ -1,12 +1,15 @@
 // Your web app's Firebase configuration
 // const MODE = process.env.NODE_ENV;
-const MODE = "production"; // development or production
+const MODE = "development"; // development or production
+
+const peytonsMODE = "production"; // development or production
 
 // http://127.0.0.1:5001/ditto-app-dev/us-central1/openaiEmbed if development
-let openAIChatURL = MODE === "development" ? "http://localhost:5001/openai-chat" : "https://backend-22790208601.us-central1.run.app/v1/prompt";
+let openAIChatURL = peytonsMODE === "development" ? "http://localhost:5001/openai-chat" : "https://backend-22790208601.us-central1.run.app/v1/prompt";
 let openAIImageGenerationURL = MODE === "development" ? "http://localhost:5001/openai-image-generation" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/openai-image-generation";
 let openAIEmbedURL = MODE === "development" ? "http://localhost:5001/openai-embed" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/openai-embed";
 let googleSearchURL = MODE === "development" ? "http://localhost:5001/google-search" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/google-search";
+let getExamplesURL = MODE === "development" ? "http://localhost:5001/get-examples" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/get-examples";
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const firebaseConfig = {
@@ -21,5 +24,6 @@ export const firebaseConfig = {
   openAIChatURL: openAIChatURL,
   openaiImageGenerationURL: openAIImageGenerationURL,
   openaiEmbedURL: openAIEmbedURL,
-  googleSearchURL: googleSearchURL
+  googleSearchURL: googleSearchURL,
+  getExamplesURL: getExamplesURL
 };

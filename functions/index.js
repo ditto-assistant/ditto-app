@@ -5,6 +5,12 @@ const bodyParser = require('body-parser');
 // iport dotenv 
 require('dotenv').config({ path: '.env', override: true });
 
+// import ExampleStore
+const ExampleStore = require('./modules/ExampleStore');
+
+// Initialize the ExampleStore
+const exampleStore = new ExampleStore();
+
 // Initialize express app
 const app = express();
 
@@ -166,6 +172,21 @@ app.post('/google-search', async (req, res) => {
     }
 });
 
+
+// get Examples Endpoint
+app.get('/get-examples', async (req, res) => {
+    console.log("Getting examples");
+    // load the examples
+    await exampleStore.loadStore('./modules/examples.json');
+    try {
+        const { query, k } = req.body;
+        const examples = await exampleStore.getTopKSimilarExamples(query, k);
+        return res.status(200).json({ examples });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 
 // Start the server

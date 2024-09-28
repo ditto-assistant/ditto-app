@@ -1,0 +1,47 @@
+{
+  "name": "Google Search",
+  "version": "1.0.0",
+  "description": "Examples of user prompts that require the Google Search tool.",
+  "examples": [
+    {
+      "prompt": "Can you look up the weather in New York City?",
+      "response": "<GOOGLE_SEARCH> weather in New York City"
+    },
+    {
+      "prompt": "Can you find the capital of France?",
+      "response": "<GOOGLE_SEARCH> capital of France"
+    },
+    {
+      "prompt": "Can you search for the latest news?",
+      "response": "<GOOGLE_SEARCH> latest news"
+    },
+    {
+      "prompt": "Can you find the best restaurants in San Francisco?",
+      "response": "<GOOGLE_SEARCH> best restaurants in San Francisco"
+    },
+    {
+      "prompt": "Can you look up the tallest building in the world?",
+      "response": "<GOOGLE_SEARCH> tallest building in the world"
+    },
+    {
+      "prompt": "I want to know how many people live in Tokyo.",
+      "response": "<GOOGLE_SEARCH> population of Tokyo"
+    },
+    {
+      "prompt": "Find me the best beaches in the world.",
+      "response": "<GOOGLE_SEARCH> best beaches in the world"
+    },
+    {
+      "prompt": "Can you search for the latest movies?",
+      "response": "<GOOGLE_SEARCH> latest movies"
+    },
+    {
+      "prompt": "Can you look up the best hotels in Paris?",
+      "response": "<GOOGLE_SEARCH> best hotels in Paris"
+    },
+    {
+      "prompt": "Can you find the most popular songs in 2024?",
+      "response": "<GOOGLE_SEARCH> most popular songs in 2024"
+    }
+  ]
+}

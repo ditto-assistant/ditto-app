@@ -1,0 +1,47 @@
+{
+  "name": "HTML Agent",
+  "version": "1.0.0",
+  "description": "Examples of user prompts that require the HTML agent.",
+  "examples": [
+    {
+      "prompt": "Make an app that is a todo list for all my needs",
+      "response": "<HTML_SCRIPT> Create a web app that is a to-do list. It should have features for adding, editing, and deleting tasks. It should also allow users to categorize tasks and set deadlines. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "Current Script: To-Do List App\nThat's great, but I need it to be more like a calendar",
+      "response": "<HTML_SCRIPT> Modify the web app to function more like a calendar. It should allow users to view tasks by day, week, or month. Users should be able to set reminders for tasks and view upcoming deadlines. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "Can we make an app together that incorporates the history of the world in a timeline?",
+      "response": "<HTML_SCRIPT> Create a web app that displays a timeline of world history. Users should be able to navigate through different time periods and view key events. The app should include images, videos, and descriptions for each event. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "Current Script: History of the World App\nCan you fix the app so that it works on mobile devices?",
+      "response": "<HTML_SCRIPT> Optimize the web app for mobile devices. It should be responsive and work well on both smartphones and tablets. Make sure the app is easy to use and visually appealing on all screen sizes."
+    },
+    {
+      "prompt": "Current Script: To-Do List App\nThere is a bug on this one... When I press save nothing happens.",
+      "response": "<HTML_SCRIPT> Fix the bug in the web app that prevents users from saving tasks. The save button should trigger the appropriate action and update the task list. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "I need an app that allows me to create a resume and export it to PDF",
+      "response": "<HTML_SCRIPT> Create a web app that helps users create a resume. It should have templates for different types of resumes and allow users to customize the content. The app should also have an option to export the resume to PDF. Make sure the app is easy to use and visually appealing and works well on all devices."
+    },
+    {
+      "prompt": "Current Script: Resume Builder App\nThere are a few things wrong with it. Can you add the ability to change fonts and colors?",
+      "response": "<HTML_SCRIPT> Add customization options to the web app that allow users to change fonts and colors. Users should be able to select from a variety of fonts and colors for different sections of the resume. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "I need an app that can help me track my expenses and create reports",
+      "response": "<HTML_SCRIPT> Create a web app that helps users track expenses and generate reports. It should allow users to categorize expenses, set budgets, and view spending trends. The app should also have features for generating detailed reports and visualizing data. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "Current Script: Expense Tracker App\nI need to be able to import data from my bank account",
+      "response": "<HTML_SCRIPT> Add a feature to the web app that allows users to import data from their bank account. Users should be able to connect their bank account and automatically import transactions. Make sure the app is secure and easy to use."
+    },
+    {
+      "prompt": "Can you create an app that helps me learn a new language?",
+      "response": "<HTML_SCRIPT> Create a web app that helps users learn a new language. It should have features for practicing vocabulary, grammar, and pronunciation. The app should also include quizzes, games, and interactive lessons. Make sure the app is easy to use and visually appealing."
+    }
+  ]
+}
