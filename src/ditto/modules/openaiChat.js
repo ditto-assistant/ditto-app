@@ -39,23 +39,25 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
       },
       body: JSON.stringify(requestBody),
     });
-
-    let data = await response.text();
-    // remove last character 2 chars only if they are \n
-    let lastTwoChars = data.slice(-2);
-    console.log(lastTwoChars);
-    if (lastTwoChars === "\\n") {
-      data = data.slice(0, -2);
+    // Handle the response stream
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      console.log(chunk)
+      const match = chunk.match(/^\{"result": "(.*)"}/);
+      if (match) {
+        responseMessage = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+      }
     }
-    console.log(data);
-    let responseJSON = JSON.parse(data);
-    responseMessage = responseJSON.result;
+
+    return responseMessage;
   } catch (error) {
-    console.error(error);
-    alert("Response Error: please check your internet connection or OpenAI API Key / permissions.");
-    responseMessage = "Response Error: please check your internet connection or OpenAI API Key / permissions.";
+    console.error("Error in openaiChat:", error);
+    return "An error occurred. Please try again later.";
   }
-  return responseMessage;
 }
 
 // openaiImageGeneration function
