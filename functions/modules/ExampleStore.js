@@ -1,10 +1,6 @@
 const fs = require('fs');
-require('dotenv').config({ path: '../.env', override: true });
 const { promisify } = require('util');
 const readFileAsync = promisify(fs.readFile);
-
-// OPENAI API Key
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
 class ExampleStore {
     constructor() {
@@ -20,16 +16,14 @@ class ExampleStore {
         }
     }
 
-    async getTopKSimilarExamples(query, k) {
+    async getTopKSimilarExamples(embedding, k=5) {
         try {
-            const queryEmbedding = calculateEmbedding(query);
-            console.log("Query Embedding: ", queryEmbedding);
             const similarities = await Promise.all(
                 this.store.map(async (category) => {
                     const categorySimilarities = await Promise.all(
                         category.examples.map(async (example) => {
                             const exampleEmbedding = example.promptEmbedding;
-                            const similarity = calculateCosineSimilarity(queryEmbedding, exampleEmbedding);
+                            const similarity = calculateCosineSimilarity(embedding, exampleEmbedding);
                             return { example, similarity };
                         })
                     );
@@ -38,11 +32,17 @@ class ExampleStore {
             );
             const flattenedSimilarities = similarities.flatMap((category) => category.similarities);
             let sortedSimilarities = flattenedSimilarities.sort((a, b) => b.similarity - a.similarity);
-            sortedSimilarities.slice(0, k).map((item) => item.example);
-            const joinedExamplesString = sortedSimilarities.map((item) => {
-                return `User: ${item.example.prompt}\nDitto:\n${item.example.response}\n`;
+            sortedSimilarities.map((item) => item.example);
+            // top k examples
+            let topKExamples = sortedSimilarities.slice(0, k);
+            // format examples
+            let num = 0;
+            let examplesList = topKExamples.map((item) => {
+                num++;
+                return `Example ${num}:\nUser: ${item.example.prompt}\nDitto:\n${item.example.response}\n`;
             });
-            return joinedExamplesString;
+            const joinedExamplesString = examplesList.join('\n');
+            return "\n" + joinedExamplesString
         } catch (error) {
             console.error('Error retrieving top K similar examples:', error);
             return [];
@@ -59,7 +59,7 @@ const calculateEmbedding = async (text) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
             },
             body: JSON.stringify({
                 "input": text,
@@ -67,7 +67,6 @@ const calculateEmbedding = async (text) => {
                 "encoding_format": "float"
             })
         });
-
         const data = await apiResponse.json();
         responseEmbeddings = data.data[0].embedding;
         return responseEmbeddings

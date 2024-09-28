@@ -8,9 +8,6 @@ require('dotenv').config({ path: '.env', override: true });
 // import ExampleStore
 const ExampleStore = require('./modules/ExampleStore');
 
-// Initialize the ExampleStore
-const exampleStore = new ExampleStore();
-
 // Initialize express app
 const app = express();
 
@@ -33,6 +30,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY || "";
 const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID || "";
+
+// Initialize the ExampleStore
+const exampleStore = new ExampleStore(
+    key = OPENAI_API_KEY,
+);
 
 // OPENAI Chat Endpoint
 app.post('/openai-chat', async (req, res) => {
@@ -174,13 +176,13 @@ app.post('/google-search', async (req, res) => {
 
 
 // get Examples Endpoint
-app.get('/get-examples', async (req, res) => {
+app.post('/get-examples', async (req, res) => {
     console.log("Getting examples");
     // load the examples
-    await exampleStore.loadStore('./modules/examples.json');
+    await exampleStore.loadStore('./modules/exampleStore.json');
     try {
-        const { query, k } = req.body;
-        const examples = await exampleStore.getTopKSimilarExamples(query, k);
+        const { embedding, k } = req.body;
+        const examples = await exampleStore.getTopKSimilarExamples(embedding, k);
         return res.status(200).json({ examples });
     } catch (error) {
         console.error(error);
