@@ -46,13 +46,14 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
       const { value, done } = await reader.read();
       if (done) break;
       const chunk = decoder.decode(value, { stream: true });
-      console.log(chunk)
+      // console.log(chunk)
       const match = chunk.match(/^\{"result": "(.*)"}/);
       if (match) {
         responseMessage = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
       }
     }
-
+    // replace ALL unicode characters with their ASCII equivalent
+    responseMessage = responseMessage.replace(/\\u[0-9A-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
     return responseMessage;
   } catch (error) {
     console.error("Error in openaiChat:", error);
@@ -118,16 +119,16 @@ export const openaiEmbed = async (text) => {
 }
 
 // getExamples function
-export const getRelevantExamples = async (text, k) => {
+export const getRelevantExamples = async (embedding, k) => {
   console.log("Getting examples");
   try {
     const response = await fetch(firebaseConfig.getExamplesURL, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text,
+        embedding: embedding,
         k
       }),
     });

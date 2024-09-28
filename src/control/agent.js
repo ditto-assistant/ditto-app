@@ -49,7 +49,6 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     await handleInitialization(prompt);
     const apiKeyExist = await checkApiKey();
     if (!apiKeyExist) return;
-
     // check if user using their balance or userApiKey
     let docBalanceMode = false;
     let userApiKey = localStorage.getItem("openai_api_key") || "";
@@ -62,18 +61,24 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
 
     let currentBalance = localStorage.getItem(`${userID}_balance`);
 
-    const { embedding, shortTermMemory, longTermMemory } =
-      await fetchMemories(userID, prompt);
+    // fetch user prompt embedddings
+    let userPromptEmbedding = await openaiEmbed(prompt);
 
-    // fetch relevant examples from the endpoint
-    const examplesString = await getRelevantExamples(prompt, 5);
-
-    if (embedding === "") {
+    if (userPromptEmbedding === "") {
       localStorage.removeItem("thinking");
       return "An error occurred while processing your request. Please try again.";
     }
 
-    const { scriptName, scriptType, scriptContents } = fetchScriptDetails();
+    // do the above three with a promise.all
+    const allResponses = await Promise.all([
+      fetchMemories(userID, userPromptEmbedding), // fetch memories
+      getRelevantExamples(userPromptEmbedding, 5), // fetch relevant examples
+      fetchScriptDetails() // fetch script details
+    ]);
+
+    const [memories, examplesString, scriptDetails] = allResponses;
+    const { shortTermMemory, longTermMemory } = memories;
+    const { scriptName, scriptType, scriptContents } = scriptDetails;
 
     const constructedPrompt = mainTemplate(
       longTermMemory,
@@ -97,7 +102,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     const response = await openaiChat(
       constructedPrompt,
       systemTemplate(),
-      "gpt-4o-mini-2024-07-18",
+      "gemini-1.5-flash",
       image
     );
     allTokensOutput += response
@@ -105,7 +110,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     let finalResponse = await processResponse(
       response,
       prompt,
-      embedding,
+      userPromptEmbedding,
       userID,
       scriptContents,
       scriptName,
@@ -152,8 +157,7 @@ const checkApiKey = async () => {
   return true;
 };
 
-const fetchMemories = async (userID, prompt) => {
-  const embedding = await openaiEmbed(prompt);
+const fetchMemories = async (userID, embedding) => {
   // if embedding is ""
   if (embedding === "") {
     return { embedding: "", shortTermMemory: "", longTermMemory: "" };
@@ -161,7 +165,7 @@ const fetchMemories = async (userID, prompt) => {
   // const embedding = await huggingFaceEmbed(prompt); // TODO: use bert embeddings locally instead of OpenAI or huggingface API
   const shortTermMemory = await getShortTermMemory(userID, 5);
   const longTermMemory = await getLongTermMemory(userID, embedding, 5);
-  return { embedding, shortTermMemory, longTermMemory };
+  return { shortTermMemory, longTermMemory };
 };
 
 const fetchScriptDetails = () => {
@@ -270,7 +274,7 @@ const processResponse = async (
     // print the prompt in green
     console.log("%c" + googleSearchAgentTemplate, "color: green");
     allTokensInput += googleSearchAgentTemplate
-    const googleSearchAgentResponse = await openaiChat(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gpt-4o-mini-2024-07-18");
+    const googleSearchAgentResponse = await openaiChat(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
     // print the response in yellow
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
     allTokensOutput += googleSearchAgentResponse
@@ -381,7 +385,7 @@ const handleScriptGeneration = async (
   const scriptResponse = await openaiChat(
     constructedPrompt,
     systemTemplateFunction(),
-    "gpt-4o-2024-08-06",
+    "gemini-1.5-flash",
     image
   );
   allTokensOutput = scriptResponse
@@ -399,7 +403,7 @@ const handleScriptGeneration = async (
     const scriptToNameResponse = await openaiChat(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gpt-4o-mini-2024-07-18"
+      "gemini-1.5-flash"
     );
     // print the response in yellow
     console.log("%c" + scriptToNameResponse, "color: yellow");

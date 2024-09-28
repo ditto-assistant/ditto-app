@@ -1,6 +1,5 @@
 // Your web app's Firebase configuration
-// const MODE = process.env.NODE_ENV;
-const MODE = "development"; // development or production
+const MODE = process.env.NODE_ENV;
 
 const KEKMOD = "production"; // development or production
 let openAIChatURL = KEKMOD === "development" ? "http://localhost:5001/openai-chat" : "https://backend-22790208601.us-central1.run.app/v1/prompt";
