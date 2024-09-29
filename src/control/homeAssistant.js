@@ -1,7 +1,12 @@
 const API_URL = localStorage.getItem('home_assistant_url');
 const API_KEY = localStorage.getItem('ha_api_key');
 
+const MODE = process.env.NODE_ENV;
+
 const sendGoogleSdkCommand = async (prompt) => {
+    if (prompt.includes('\n')) {
+        prompt = prompt.split('\n')[0];
+    }
     try {
         const url = `${API_URL}/api/services/google_assistant_sdk/send_text_command`;
         const headers = {
@@ -16,8 +21,9 @@ const sendGoogleSdkCommand = async (prompt) => {
             headers: headers,
             body: JSON.stringify(data),
         });
-        // Note: With no-cors mode, you won't be able to read the response body
-        console.log('Request sent, but response cannot be read due to no-cors mode.');
+        if (MODE === 'development') {
+            console.log("Google Assistant SDK Command:", prompt);
+        }
     } catch (error) {
         console.error('Error sending Google Assistant SDK command:', error);
         throw error;

@@ -1,5 +1,7 @@
 // Your web app's Firebase configuration
-const MODE = process.env.NODE_ENV;
+// const MODE = process.env.NODE_ENV;
+
+const MODE = 'production';
 
 export const promptURL = MODE === "development" ? "http://localhost:3400/v1/prompt" : "https://backend-22790208601.us-central1.run.app/v1/prompt";
 let embedURL = MODE === "development" ? "http://localhost:3400/v1/embed" : "https://backend-22790208601.us-central1.run.app/v1/embed";
