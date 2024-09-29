@@ -202,7 +202,6 @@ const styles = {
         borderRadius: '5px',
         cursor: 'pointer',
         flex: 1,
-        // marginLeft: '5px',
     },
 };
 
