@@ -46,15 +46,15 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
       const { value, done } = await reader.read();
       if (done) break;
       const chunk = decoder.decode(value, { stream: true });
-      // console.log(chunk)
-      const match = chunk.match(/^\{"result": "(.*)"}/);
-      if (match) {
-        responseMessage = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
-      }
+      responseMessage += chunk;
     }
-    // replace ALL unicode characters with their ASCII equivalent
-    responseMessage = responseMessage.replace(/\\u[0-9A-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
-    return responseMessage;
+    // console.log("responseMessage:", responseMessage);
+    if (responseMessage.slice(-2) === "\\n") {
+      responseMessage = responseMessage.slice(0, -2);
+    }
+    let responseString = JSON.parse(responseMessage).result;
+    responseString = responseString.replace(/\\u[0-9A-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
+    return responseString.trim();
   } catch (error) {
     console.error("Error in openaiChat:", error);
     return "An error occurred. Please try again later.";

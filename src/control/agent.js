@@ -44,6 +44,7 @@ const mode = process.env.NODE_ENV;
  */
 export const sendPrompt = async (userID, firstName, prompt, image) => {
   try {
+    localStorage.setItem("idle", "false");
     let allTokensInput = "";
     let allTokensOutput = "";
     await handleInitialization(prompt);
@@ -66,6 +67,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
 
     if (userPromptEmbedding === "") {
       localStorage.removeItem("thinking");
+      localStorage.setItem("idle", "true");
       return "An error occurred while processing your request. Please try again.";
     }
 
@@ -125,9 +127,12 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
       saveBalanceToFirestore(userID, currentBalance);
     } 
 
+    localStorage.setItem("idle", "true");
+
     return finalResponse;
   } catch (e) {
     localStorage.removeItem("thinking");
+    localStorage.setItem("idle", "true");
     console.error(e);
     return "An error occurred while processing your request. Please try again.";
   }
@@ -388,6 +393,8 @@ const handleScriptGeneration = async (
     "gemini-1.5-flash",
     image
   );
+  /// print the response in yellow
+  console.log("%c" + scriptResponse, "color: yellow");
   allTokensOutput = scriptResponse
   let errorMessage = "Response Error: please check your internet connection or OpenAI API Key / permissions.";
   if (scriptResponse === errorMessage) {
@@ -435,14 +442,25 @@ const handleScriptGeneration = async (
   await saveBalanceToFirestore(userID, newBalance);
   await saveToMemory(userID, prompt, newResponse, embedding);
   await saveToLocalStorage(prompt, newResponse);
-  saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
   handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
+  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
   localStorage.removeItem("thinking");
   return newResponse;
 };
 
 const cleanScriptResponse = (response) => {
-  return response.replace(/^```.*\n/, "").split("```")[0];
+  // add conditionals to not error out for each of the three operations above
+  let cleanedScript = response;
+  if (cleanedScript.includes("```")) {
+    cleanedScript = cleanedScript.split("```")[1];
+  }
+  if (cleanedScript.includes("\n")) {
+    cleanedScript = cleanedScript.split("\n").slice(1).join("\n");
+  }
+  if (cleanedScript.includes("```")) {
+    cleanedScript = cleanedScript.split("```")[0];
+  }
+  return cleanedScript;
 };
 
 export const saveToMemory = async (
