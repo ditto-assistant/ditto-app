@@ -390,7 +390,7 @@ const handleScriptGeneration = async (
   const scriptResponse = await openaiChat(
     constructedPrompt,
     systemTemplateFunction(),
-    "gemini-1.5-flash",
+    "gemini-1.5-pro",
     image
   );
   /// print the response in yellow

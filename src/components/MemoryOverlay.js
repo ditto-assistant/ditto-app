@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
 
+import { resetConversation, deleteAllUserImagesFromFirebaseStorageBucket } from "../control/firebase";
+
 const darkModeColors = {
     primary: '#7289DA',
     text: '#FFFFFF',
@@ -48,6 +50,22 @@ function MemoryOverlay({ closeOverlay }) {
         console.log(`Deactivate ${memoryType} memory: ${memoryStatus[memoryType]}`);
     };
 
+    const deleteAllMemory = async() => {
+        const confirmReset = window.confirm(
+            "Are you sure you want to delete all memory? This action cannot be undone."
+          );
+          if (confirmReset) {
+            console.log("Resetting conversation history...");
+            localStorage.setItem("resetMemory", "true");
+            const userID = localStorage.getItem("userID");
+            localStorage.removeItem("prompts");
+            localStorage.removeItem("responses");
+            localStorage.removeItem("histCount");
+            await resetConversation(userID);
+            await deleteAllUserImagesFromFirebaseStorageBucket(userID);
+          }
+    }
+
     return (
         <div style={styles.overlay}>
             <div ref={overlayContentRef} style={{ ...styles.overlayContent, width: '40%', margin: '0 auto' }}>
@@ -80,6 +98,19 @@ function MemoryOverlay({ closeOverlay }) {
                             onClick={() => toggleMemoryActivation("shortTerm")}
                         >
                             {memoryStatus.shortTerm ? "Activate" : "Deactivate"}
+                        </button>
+                    </div>
+                </div>
+                <div style={{ ...styles.category, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <h4 style={styles.categoryTitle}>
+                        Memory Manager
+                    </h4>
+                    <div style={styles.memoryActions}>
+                        <button
+                            style={styles.memoryDeleteButton}
+                            onClick={() => deleteAllMemory()}
+                        >
+                            Delete All Memory
                         </button>
                     </div>
                 </div>

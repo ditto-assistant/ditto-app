@@ -1,3 +1,13 @@
+/* import a nice Google font for titles */
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap');
+
+.App-title {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 1.5em;
+  margin: 0;
+}
+
 .App {
   display: flex;
   flex-direction: column;

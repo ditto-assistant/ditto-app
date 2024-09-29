@@ -7,6 +7,12 @@ import { syncLocalScriptsWithFirestore } from "../control/firebase";
 
 function StatusBar() {
     const navigate = useNavigate();
+    let userID = localStorage.getItem("userID");
+    const balance = Number(localStorage.getItem(`${userID}_balance`)) || 0;
+    const tokensLeftInput = (balance / 0.6) * 1000000;
+    const tokensLeftOutput = (balance / 2.4) * 1000000;
+    const totalTokens = tokensLeftInput + tokensLeftOutput;
+    const [tokensLeft, setTokensLeft] = useState(totalTokens);
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
     const [selectedScript, setSelectedScript] = useState(
         localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null
@@ -68,6 +74,23 @@ function StatusBar() {
         localStorage.setItem("openSCAD", JSON.stringify(openSCAD));
     }, [scripts]);
 
+    const formatNumber = (num) => {
+        if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+        if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+        if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+        return num.toString();
+    };
+
+    useEffect(() => {
+        let userID = localStorage.getItem("userID");
+        const balance = Number(localStorage.getItem(`${userID}_balance`)) || 0;
+        const tokensLeftInput = (balance / 0.6) * 1000000;
+        const tokensLeftOutput = (balance / 2.4) * 1000000;
+        const totalTokens = tokensLeftInput + tokensLeftOutput;
+        setTokensLeft(totalTokens);
+    }, [balance]);
+
     return (
         <div style={styles.statusBar}>
             <div style={styles.status}>
@@ -76,15 +99,15 @@ function StatusBar() {
             </div>
 
             <StatusIcons
-                handleSettingsClick={handleSettingsClick}
+                // handleSettingsClick={handleSettingsClick}
                 handleBookmarkClick={handleBookmarkClick}
                 handleMemoryClick={handleMemoryClick}
                 selectedScript={selectedScript}
             />
 
             <div style={styles.status}>
-                <p style={styles.statusText}>Volume:</p>
-                <p style={styles.statusIndicator}>{statusTemp.volume}</p>
+                <p style={styles.statusText}>Tokens:</p>
+                <p style={styles.statusIndicator}>{formatNumber(totalTokens)}</p>
             </div>
 
             {isMemoryOverlayOpen && (
@@ -109,6 +132,7 @@ const styles = {
         alignItems: "center",
         paddingLeft: "20px",
         paddingRight: "20px",
+        fontSize: "18px",
     },
     statusText: {
         paddingRight: "5px",

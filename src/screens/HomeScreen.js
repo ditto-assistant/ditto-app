@@ -1,5 +1,6 @@
 import "./App.css";
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   grabStatus,
   resetConversation,
@@ -13,6 +14,7 @@ import ChatFeed from "../components/ChatFeed";
 import SendMessage from "../components/SendMessage";
 import StatusBar from "../components/StatusBar";
 import { FaUndo } from "react-icons/fa";
+import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 
 // import heyDitto
@@ -27,7 +29,7 @@ DittoActivation.loadModel();
 
 
 export default function HomeScreen() {
-
+  const navigate = useNavigate();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);
@@ -115,21 +117,20 @@ export default function HomeScreen() {
     }, 1000);
   };
 
-  const resetConversationHandler = async () => {
-    const confirmReset = window.confirm(
-      "Are you sure you want to delete all memory? This action cannot be undone."
-    );
-    if (confirmReset) {
-      console.log("Resetting conversation history...");
-      const userID = localStorage.getItem("userID");
-      localStorage.removeItem("prompts");
-      localStorage.removeItem("responses");
-      localStorage.removeItem("histCount");
+
+  // check for localStorage memoryWipe being set to true and reset cound and create new conversation
+  useEffect(() => {
+    if (localStorage.getItem("resetMemory") === "true") {
+      localStorage.setItem("resetMemory", "false");
       setCount(0);
       createConversation({ prompts: [], responses: [] }, true);
-      await resetConversation(userID);
-      await deleteAllUserImagesFromFirebaseStorageBucket(userID);
     }
+  }, [localStorage.getItem("resetMemory")]);
+
+
+
+  const handleSettingsClick = () => {
+    navigate("/settings");
   };
 
 
@@ -281,16 +282,17 @@ export default function HomeScreen() {
             }}
           />
         )}
-        <h2>Ditto Dashboard</h2>
-        <FaUndo
+        <h2 className="App-title">Ditto</h2>
+        <MdSettings
           style={{
             paddingRight: 20,
-            width: buttonSize,
-            height: buttonSize,
+            width: buttonSize+6,
+            height: buttonSize+6,
             color: "white",
+            cursor: "pointer",
           }}
           onClick={async () => {
-            await resetConversationHandler();
+            handleSettingsClick()
           }}
         />
       </header>

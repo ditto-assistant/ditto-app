@@ -52,12 +52,19 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
     if (responseMessage.slice(-2) === "\\n") {
       responseMessage = responseMessage.slice(0, -2);
     }
-    let responseString = JSON.parse(responseMessage).result;
+    let responseString = "";
+    try {
+      responseString = JSON.parse(responseMessage).result;
+    } catch (error) {
+      console.log("message:", responseMessage);
+      console.error("Error in openaiChat:", error);
+      return "An error occurred. Please try again.";
+    }
     responseString = responseString.replace(/\\u[0-9A-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
     return responseString.trim();
   } catch (error) {
     console.error("Error in openaiChat:", error);
-    return "An error occurred. Please try again later.";
+    return "An error occurred. Please try again.";
   }
 }
 
