@@ -439,11 +439,11 @@ const handleScriptGeneration = async (
   let totalCost = inputCost + outputCost + miniInputCost + miniOutputCost;
   let newBalance = currentBalance - totalCost;
   localStorage.setItem(`${userID}_balance`, newBalance);
+  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
+  handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
   await saveBalanceToFirestore(userID, newBalance);
   await saveToMemory(userID, prompt, newResponse, embedding);
   await saveToLocalStorage(prompt, newResponse);
-  handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
   localStorage.removeItem("thinking");
   return newResponse;
 };

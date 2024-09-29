@@ -1,5 +1,5 @@
 // const CACHE_VERSION = process.env.VERSION || "0.0.1"; // fallback version in case of an issue
-CACHE_VERSION = '0.6.44';
+CACHE_VERSION = '0.6.47';
 const CACHE_NAME = `ditto-pwa-${CACHE_VERSION}`;
 
 const urlsToCache = ['/'];

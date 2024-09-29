@@ -559,10 +559,10 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
       scripts.push(scriptObj);
     });
     localStorage.setItem(scriptType, JSON.stringify(scripts));
-    let localScripts = JSON.parse(localStorage.getItem(scriptType));
-    if (mode === 'development') {
-      console.log("Local scripts after syncing with Firestore: ", localScripts);
-    }
+    // let localScripts = JSON.parse(localStorage.getItem(scriptType));
+    // if (mode === 'development') {
+    //   console.log("Local scripts after syncing with Firestore: ", localScripts);
+    // }
   } catch (e) {
     console.error("Error getting documents from scripts collection: ", e);
     return [];

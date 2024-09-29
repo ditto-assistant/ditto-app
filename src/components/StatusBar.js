@@ -34,7 +34,7 @@ function StatusBar() {
         setScripts(scriptsLocal);
         navigate("/scripts", { 
             state: { 
-                scripts: scriptsLocal,
+                scripts: scripts,
                 selectedScript: selectedScript 
             } 
         });
