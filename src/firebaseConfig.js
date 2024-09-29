@@ -1,14 +1,15 @@
 // Your web app's Firebase configuration
-// const MODE = process.env.NODE_ENV;
+const MODE = process.env.NODE_ENV;
+const KEKMOD = "production";
 
-const MODE = 'production';
+export const URL = {
+  prompt: MODE === "development" ? "http://localhost:3400/v1/prompt" : "https://backend-22790208601.us-central1.run.app/v1/prompt",
+  embed: MODE === "development" ? "http://localhost:3400/v1/embed" : "https://backend-22790208601.us-central1.run.app/v1/embed",
+  search: MODE === "development" ? "http://localhost:3400/v1/google-search" : "https://backend-22790208601.us-central1.run.app/v1/google-search",
+  imageGeneration: MODE === "development" ? "http://localhost:3400/v1/generate-image" : "https://backend-22790208601.us-central1.run.app/v1/generate-image",
+  getExamples: KEKMOD === "development" ? "http://localhost:5001/get-examples" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/get-examples"
+}
 
-export const promptURL = MODE === "development" ? "http://localhost:3400/v1/prompt" : "https://backend-22790208601.us-central1.run.app/v1/prompt";
-let embedURL = MODE === "development" ? "http://localhost:3400/v1/embed" : "https://backend-22790208601.us-central1.run.app/v1/embed";
-let googleSearchURL = MODE === "development" ? "http://localhost:3400/v1/google-search" : "https://backend-22790208601.us-central1.run.app/v1/google-search";
-
-let openAIImageGenerationURL = MODE === "development" ? "http://localhost:5001/openai-image-generation" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/openai-image-generation";
-let getExamplesURL = MODE === "development" ? "http://localhost:5001/get-examples" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/get-examples";
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const firebaseConfig = {
@@ -20,8 +21,4 @@ export const firebaseConfig = {
   appId: "1:22790208601:web:b6ee532b2e8a048d1a0548",
   measurementId: "G-KJFMK6PHML",
   webSocketURL: "wss://websocket-server-m4cg7rn54q-uc.a.run.app",
-  openaiImageGenerationURL: openAIImageGenerationURL,
-  openaiEmbedURL: embedURL,
-  googleSearchURL: googleSearchURL,
-  getExamplesURL: getExamplesURL
 };

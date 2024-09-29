@@ -1,8 +1,7 @@
-import { firebaseConfig } from "../../firebaseConfig";
 import { auth } from "../../control/firebase";
-import { promptURL } from "../../firebaseConfig";
+import { URL } from "../../firebaseConfig";
 
-export async function promptLLM(userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "") {
+export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "") {
   let responseMessage = "";
   try {
     let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
@@ -28,7 +27,7 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gpt-4o-2024-0
       }
     }
     const tok = await auth.currentUser.getIdToken();
-    const response = await fetch(promptURL, {
+    const response = await fetch(URL.prompt, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -67,26 +66,25 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gpt-4o-2024-0
 
 // openaiImageGeneration function
 export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
-  let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
-  let userID = localStorage.getItem('userID') || "";
-  let balanceKey = `${userID}_balance`;
-  let balance = localStorage.getItem(balanceKey) || 0;
-
-  const response = await fetch(firebaseConfig.openaiImageGenerationURL, {
+  if (!auth.currentUser) {
+    return "You are not logged in. Please log in to use this feature.";
+  }
+  let userID = auth.currentUser.uid;
+  let tok = await auth.currentUser.getIdToken();
+  // TODO: handle balance server side
+  const response = await fetch(URL.imageGeneration, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${tok}`
     },
     body: JSON.stringify({
+      userID,
       prompt,
       model,
-      usersOpenaiKey,
-      balance
     }),
   });
-
-  const data = await response.json();
-  return data.response;
+  return await response.text();
 }
 
 export async function textEmbed(text) {
@@ -104,7 +102,7 @@ export async function textEmbed(text) {
       return "You have no API key or your balance is too low to use. Please add more tokens in the settings page.";
     }
 
-    const response = await fetch(firebaseConfig.openaiEmbedURL, {
+    const response = await fetch(URL.embed, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -131,7 +129,7 @@ export async function textEmbed(text) {
 export async function getRelevantExamples(embedding, k) {
   console.log("Getting examples");
   try {
-    const response = await fetch(firebaseConfig.getExamplesURL, {
+    const response = await fetch(URL.getExamples, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

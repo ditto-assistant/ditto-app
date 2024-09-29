@@ -245,9 +245,8 @@ const processResponse = async (
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     // handle image generation
     const query = response.split("<IMAGE_GENERATION>")[1];
-    const imageResponse = await openaiImageGeneration(query);
+    const imageURL = await openaiImageGeneration(query);
     // console.log("Image Response: ", imageResponse);
-    const imageURL = imageResponse.data[0].url;
     let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${imageURL})`;
     let inputTokens = countTokens(allTokensInput);
     let outputTokens = countTokens(allTokensOutput)
