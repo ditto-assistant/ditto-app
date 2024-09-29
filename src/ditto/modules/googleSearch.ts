@@ -20,27 +20,3 @@ export const googleSearch = async (query: string, numResults: number = 5) => {
         return "Error: Unable to retrieve search results.";
     }
 }
-
-// openaiImageGeneration function
-// export const openaiImageGeneration = async (prompt, model = 'dall-e-3') => {
-//     let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
-//     let userID = localStorage.getItem('userID') || "";
-//     let balanceKey = `${userID}_balance`;
-//     let balance = localStorage.getItem(balanceKey) || 0;
-  
-//     const response = await fetch(firebaseConfig.openaiImageGenerationURL, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         prompt,
-//         model,
-//         usersOpenaiKey,
-//         balance
-//       }),
-//     });
-  
-//     const data = await response.json();
-//     return data.response;
-//   }
