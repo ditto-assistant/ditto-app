@@ -1,5 +1,5 @@
 import { collection, addDoc } from "firebase/firestore";
-import { openaiChat, openaiEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/openaiChat";
+import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/openaiChat";
 import { googleSearch } from "../ditto/modules/googleSearch";
 import { handleHomeAssistantTask } from "./agentTools";
 import { countTokens } from "./tokens";
@@ -21,7 +21,7 @@ import {
 import {
   scriptToNameSystemTemplate,
   scriptToNameTemplate,
-} from "../ditto/templates/scriptToNameTemplate"; 
+} from "../ditto/templates/scriptToNameTemplate";
 import {
   googleSearchTemplate,
   googleSearchSystemTemplate,
@@ -63,7 +63,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     let currentBalance = localStorage.getItem(`${userID}_balance`);
 
     // fetch user prompt embedddings
-    let userPromptEmbedding = await openaiEmbed(prompt);
+    let userPromptEmbedding = await textEmbed(prompt);
 
     if (userPromptEmbedding === "") {
       localStorage.removeItem("thinking");
@@ -95,13 +95,13 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
 
     // print constructed prompt in green
     console.log("%c" + constructedPrompt, "color: green");
-    allTokensInput += constructedPrompt 
+    allTokensInput += constructedPrompt
     let imageTokens = 0;
     if (image) {
       imageTokens = 765;
     }
     allTokensInput += imageTokens
-    const response = await openaiChat(
+    const response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
       "gemini-1.5-flash",
@@ -125,7 +125,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     if (!docBalanceMode) {
       localStorage.setItem(`${userID}_balance`, currentBalance);
       saveBalanceToFirestore(userID, currentBalance);
-    } 
+    }
 
     localStorage.setItem("idle", "true");
 
@@ -279,7 +279,7 @@ const processResponse = async (
     // print the prompt in green
     console.log("%c" + googleSearchAgentTemplate, "color: green");
     allTokensInput += googleSearchAgentTemplate
-    const googleSearchAgentResponse = await openaiChat(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
+    const googleSearchAgentResponse = await promptLLM(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
     // print the response in yellow
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
     allTokensOutput += googleSearchAgentResponse
@@ -325,7 +325,7 @@ const processResponse = async (
     let inputCost = (inputTokens / 1000000) * 0.6;
     // $0.600 / 1M tokens
     let outputCost = (outputTokens / 1000000) * 2.4;
-    let totalCost = inputCost + outputCost;    
+    let totalCost = inputCost + outputCost;
     let newBalance = currentBalance - totalCost;
     localStorage.setItem(`${userID}_balance`, newBalance);
     await saveBalanceToFirestore(userID, newBalance);
@@ -387,7 +387,7 @@ const handleScriptGeneration = async (
     imageTokens = 765;
   }
   allTokensInput += imageTokens
-  const scriptResponse = await openaiChat(
+  const scriptResponse = await promptLLM(
     constructedPrompt,
     systemTemplateFunction(),
     "gemini-1.5-pro",
@@ -407,7 +407,7 @@ const handleScriptGeneration = async (
     // print the prompt in green
     console.log("%c" + scriptToNameConstructedPrompt, "color: green");
     allTokensInput += scriptToNameConstructedPrompt
-    const scriptToNameResponse = await openaiChat(
+    const scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
       "gemini-1.5-flash"

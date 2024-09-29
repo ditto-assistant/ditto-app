@@ -1,10 +1,8 @@
 import { firebaseConfig } from "../../firebaseConfig";
-
-// import { app } from "../../control/firebase";
 import { auth } from "../../control/firebase";
+import { promptURL } from "../../firebaseConfig";
 
-// openaiChat function
-export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "") => {
+export async function promptLLM(userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "") {
   let responseMessage = "";
   try {
     let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
@@ -30,7 +28,7 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
       }
     }
     const tok = await auth.currentUser.getIdToken();
-    const response = await fetch(firebaseConfig.openAIChatURL, {
+    const response = await fetch(promptURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +66,7 @@ export const openaiChat = async (userPrompt, systemPrompt, model = 'gpt-4o-2024-
 }
 
 // openaiImageGeneration function
-export const openaiImageGeneration = async (prompt, model = 'dall-e-3') => {
+export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
   let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
   let userID = localStorage.getItem('userID') || "";
   let balanceKey = `${userID}_balance`;
@@ -91,11 +89,14 @@ export const openaiImageGeneration = async (prompt, model = 'dall-e-3') => {
   return data.response;
 }
 
-// openaiEmbed function
-export const openaiEmbed = async (text) => {
+export async function textEmbed(text) {
   try {
+    if (!auth.currentUser) {
+      return "You are not logged in. Please log in to use this feature.";
+    }
+    const tok = await auth.currentUser.getIdToken();
+    const userID = auth.currentUser.uid;
     let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
-    let userID = localStorage.getItem('userID') || "";
     let balanceKey = `${userID}_balance`;
     let balance = localStorage.getItem(balanceKey) || 0;
 
@@ -107,16 +108,18 @@ export const openaiEmbed = async (text) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tok}`
       },
       body: JSON.stringify({
+        userID,
         text,
-        usersOpenaiKey,
-        balance
+        // usersOpenaiKey,
+        // balance
       }),
     });
 
     const data = await response.json();
-    return data.embedding;
+    return data;
   } catch (error) {
     console.error(error);
     alert("Please check your OpenAI API Key or your OpenAI account.");
@@ -125,7 +128,7 @@ export const openaiEmbed = async (text) => {
 }
 
 // getExamples function
-export const getRelevantExamples = async (embedding, k) => {
+export async function getRelevantExamples(embedding, k) {
   console.log("Getting examples");
   try {
     const response = await fetch(firebaseConfig.getExamplesURL, {
