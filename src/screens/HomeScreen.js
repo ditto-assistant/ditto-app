@@ -3,29 +3,21 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   grabStatus,
-  resetConversation,
   getBalanceFromFirestore,
-  saveBalanceToFirestore,
   syncLocalScriptsWithFirestore,
-  loadConversationHistoryFromFirestore
 } from "../control/firebase";
 import Divider from "@mui/material/Divider";
 import ChatFeed from "../components/ChatFeed";
 import SendMessage from "../components/SendMessage";
 import StatusBar from "../components/StatusBar";
-import { FaUndo } from "react-icons/fa";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 
 // import heyDitto
 import HeyDitto from "../ditto/activation/heyDitto";
 
-// import delete all images from firebase
-import { deleteAllUserImagesFromFirebaseStorageBucket } from "../control/firebase";
-
 export const DittoActivation = new HeyDitto();
 DittoActivation.loadModel();
-
 
 
 export default function HomeScreen() {
@@ -107,14 +99,6 @@ export default function HomeScreen() {
       is_typing: true,
     }));
 
-    // Simulate delayed response from Ditto
-    setTimeout(() => {
-      setConversation(prevState => ({
-        ...prevState,
-        messages: [...prevState.messages, { sender: "Ditto", text: "Response from Ditto" }],
-        is_typing: false,
-      }));
-    }, 1000);
   };
 
 
