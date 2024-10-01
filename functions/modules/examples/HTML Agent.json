@@ -42,6 +42,18 @@
     {
       "prompt": "Can you create an app that helps me learn a new language?",
       "response": "<HTML_SCRIPT> Create a web app that helps users learn a new language. It should have features for practicing vocabulary, grammar, and pronunciation. The app should also include quizzes, games, and interactive lessons. Make sure the app is easy to use and visually appealing."
+    },
+    {
+      "prompt": "Current Script: Expense Tracker App\n![https://some-image-uri.com/image.jpg](https://some-image-uri.com/image.jpg) Can you add this image to the center of the app where the logo placeholder is?",
+      "response": "<HTML_SCRIPT> Add the image to the center of the web app where the logo placeholder is. Make sure the image is centered and fits well with the overall design of the app. Image: ![https://some-image-uri.com/image.jpg](https://some-image-uri.com/image.jpg)"
+    },
+    {
+      "prompt": "Current Script: To-Do List App\n![https://another-image-uri.com/image.jpg](https://another-image-uri.com/image.jpg) Can you add this image to the background of the app?",
+      "response": "<HTML_SCRIPT> Add the image to the background of the web app. Make sure the image is displayed as the background and does not interfere with the readability of the content. Image: ![https://another-image-uri.com/image.jpg](https://another-image-uri.com/image.jpg)"
+    },
+    {
+      "prompt": "Current Script: Really Cool Game\n![https://cool-game-image-uri.com/image.jpg](https://cool-game-image-uri.com/image.jpg) Can you use this image as the main chatacter sprite?",
+      "response": "<HTML_SCRIPT> Use the image as the main character sprite in the game. Make sure the sprite is animated and interacts with the game environment. Image: ![https://cool-game-image-uri.com/image.jpg](https://cool-game-image-uri.com/image.jpg)"
     }
   ]
 }
