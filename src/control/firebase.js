@@ -571,12 +571,24 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
 
 
 export const uploadGeneratedImageToFirebaseStorage = async (imageURL, userID) => {
-  const storage = getStorage(app);
-  const response = await fetch(imageURL);
-  const blob = await response.blob();
-  const storageRef = ref(storage, `images/${userID}/${Date.now()}.jpg`);
-  const snapshot = await uploadBytes(storageRef, blob);
-  console.log('Uploaded a blob or file!');
-  // return URI of the image
-  return await getDownloadURL(snapshot.ref);
+  // first, fetch the image from the imageURL to get the blob
+  // console.log("fetching image from URL: ", imageURL);
+  // // const response = await fetch(imageURL);
+  // // fetch with no-cors mode
+  // const response = await fetch(imageURL, {
+  //   mode: 'no-cors'
+  // });
+  // console.log("Getting blob from response...");
+  // const blob = await response.blob();
+  // console.log("Uploading image to Firebase Storage...");
+  // const storage = getStorage(app);
+  // console.log("Creating storage reference...");
+  // // Create a storage reference from our storage service
+  // const storageRef = ref(storage, `images/${userID}/${Date.now()}.jpg`);
+  // console.log("Uploading bytes...");
+  // const file = new Blob([blob], { type: 'image/jpeg' });
+  // const snapshot = await uploadBytes(storageRef, file);
+  // console.log('Uploaded a blob or file!');
+  // // return URI of the image
+  // return await getDownloadURL(snapshot.ref);
 }

@@ -246,9 +246,9 @@ const processResponse = async (
     // handle image generation
     const query = response.split("<IMAGE_GENERATION>")[1];
     const imageURL = await openaiImageGeneration(query);
-    const newImageURL = await uploadGeneratedImageToFirebaseStorage(userID, imageURL);
+    // const newImageURL = await uploadGeneratedImageToFirebaseStorage(imageURL, userID);
     // console.log("Image Response: ", imageResponse);
-    let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${newImageURL})`;
+    let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${imageURL})`;
     let inputTokens = countTokens(allTokensInput);
     let outputTokens = countTokens(allTokensOutput)
     let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
