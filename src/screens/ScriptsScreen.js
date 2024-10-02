@@ -136,6 +136,11 @@ function ScriptsScreen() {
         setEditScript(null);
         const userID = localStorage.getItem("userID");
         saveScriptToFirestore(userID, temporaryEditContent, category, scripts[category].find((s) => s.id === id).name, true);
+        // update working on script 
+        const workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
+        if (workingOnScript && workingOnScript.script === scripts[category].find((s) => s.id === id).name) {
+            localStorage.setItem("workingOnScript", JSON.stringify({ script: workingOnScript.script, contents: temporaryEditContent, scriptType: category }));
+        }
     };
 
     const handleCancelEditScript = () => {

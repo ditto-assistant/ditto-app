@@ -568,3 +568,15 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     return [];
   }
 }
+
+
+export const uploadGeneratedImageToFirebaseStorage = async (imageURL, userID) => {
+  const storage = getStorage(app);
+  const response = await fetch(imageURL);
+  const blob = await response.blob();
+  const storageRef = ref(storage, `images/${userID}/${Date.now()}.jpg`);
+  const snapshot = await uploadBytes(storageRef, blob);
+  console.log('Uploaded a blob or file!');
+  // return URI of the image
+  return await getDownloadURL(snapshot.ref);
+}

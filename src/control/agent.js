@@ -3,7 +3,7 @@ import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from
 import { googleSearch } from "../ditto/modules/googleSearch";
 import { handleHomeAssistantTask } from "./agentTools";
 import { countTokens } from "./tokens";
-import { saveBalanceToFirestore } from "./firebase";
+import { saveBalanceToFirestore, uploadGeneratedImageToFirebaseStorage } from "./firebase";
 
 // import { huggingFaceEmbed } from "../ditto/modules/huggingFaceChat";
 import {
@@ -246,8 +246,9 @@ const processResponse = async (
     // handle image generation
     const query = response.split("<IMAGE_GENERATION>")[1];
     const imageURL = await openaiImageGeneration(query);
+    const newImageURL = await uploadGeneratedImageToFirebaseStorage(userID, imageURL);
     // console.log("Image Response: ", imageResponse);
-    let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${imageURL})`;
+    let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${newImageURL})`;
     let inputTokens = countTokens(allTokensInput);
     let outputTokens = countTokens(allTokensOutput)
     let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
