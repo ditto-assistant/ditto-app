@@ -13,7 +13,7 @@ const app = express();
 
 // Middleware setup
 let originList = [
-    'http://localhost:3000', 'https://ditto-app-dev.web.app', 
+    'http://localhost:3000', 'https://ditto-app-dev.web.app',
     'https://ditto-app-dev.firebaseapp.com', 'https://assistant.heyditto.ai'];
 if (process.env.NODE_ENV === 'production') {
     // remove localhost from the list

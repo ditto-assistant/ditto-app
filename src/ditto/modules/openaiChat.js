@@ -111,8 +111,7 @@ export async function textEmbed(text) {
       body: JSON.stringify({
         userID,
         text,
-        // usersOpenaiKey,
-        // balance
+        model: "text-embedding-3-small",
       }),
     });
 
