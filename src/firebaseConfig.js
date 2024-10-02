@@ -1,17 +1,13 @@
 // Your web app's Firebase configuration
-// const MODE = process.env.NODE_ENV;
-const MODE = "production";
-// const KEKMOD = "production";
-const KEKMOD = "development";
+const MODE = process.env.NODE_ENV;
 
 export const URL = {
   prompt: MODE === "development" ? "http://localhost:3400/v1/prompt" : "https://backend-22790208601.us-central1.run.app/v1/prompt",
   embed: MODE === "development" ? "http://localhost:3400/v1/embed" : "https://backend-22790208601.us-central1.run.app/v1/embed",
   search: MODE === "development" ? "http://localhost:3400/v1/google-search" : "https://backend-22790208601.us-central1.run.app/v1/google-search",
   imageGeneration: MODE === "development" ? "http://localhost:3400/v1/generate-image" : "https://backend-22790208601.us-central1.run.app/v1/generate-image",
-  getExamples: KEKMOD === "development" ? "http://localhost:5001/get-examples" : "https://openai-chat-m4cg7rn54q-uc.a.run.app/get-examples"
+  searchExamples: MODE === "development" ? "http://localhost:3400/v1/search-examples" : "https://backend-22790208601.us-central1.run.app/v1/search-examples"
 }
-
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const firebaseConfig = {

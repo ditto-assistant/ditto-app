@@ -111,7 +111,6 @@ export async function textEmbed(text) {
       body: JSON.stringify({
         userID,
         text,
-        model: "text-embedding-3-small",
       }),
     });
 
@@ -128,19 +127,26 @@ export async function textEmbed(text) {
 export async function getRelevantExamples(embedding, k) {
   console.log("Getting examples");
   try {
-    const response = await fetch(URL.getExamples, {
+    if (!auth.currentUser) {
+      return "You are not logged in. Please log in to use this feature.";
+    }
+
+    const tok = await auth.currentUser.getIdToken();
+    const userID = auth.currentUser.uid;
+    const response = await fetch(URL.searchExamples, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tok}`
       },
       body: JSON.stringify({
-        embedding: embedding,
-        k
+        embedding,
+        k,
+        userID,
       }),
     });
+    return await response.text();
 
-    const data = await response.json();
-    return data.examples;
   } catch (error) {
     console.error(error);
     alert("Please check your OpenAI API Key or your OpenAI account.");
