@@ -80,8 +80,6 @@ export const getLongTermMemory = async (userID, embedding, k) => {
     console.log("Getting long term memory...");
     const history = await grabConversationHistory(userID);
     let isDeactivated = localStorage.getItem("deactivateLongTermMemory");
-    console.log("historyLength: ", history.length);
-    console.log("isDeactivated: ", isDeactivated);
     if (history.length === 0 || isDeactivated == "true") {
       // if (history.length === 0) {
       return "No history! :)";
