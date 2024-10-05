@@ -71,7 +71,14 @@ export default function ChatFeed({
       components={{
         img: (props) => <img {...props} className='chat-image' alt='' style={{ width: '95%', height: '95%', paddingTop: '4px' }} />,
         code({ node, inline, className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || '');
+          let match = /language-(\w+)/.exec(className || '');
+          let hasCodeBlock;
+          if (text.match(/```/g)) {
+            hasCodeBlock = text.match(/```/g).length % 2 === 0;
+          }
+          if (match === null && hasCodeBlock) {
+            match = ['language-txt', 'txt'];
+          }
           if (!inline && match) {
             return (
               <div className='code-container'>

@@ -53,6 +53,8 @@ const styles = {
         fontWeight: 'bold',
         marginLeft: '10px',
         position: 'absolute',
+        // bring to top
+        zIndex: 1,
         flex: 1,
         display: 'flex',
         justifyContent: 'center',

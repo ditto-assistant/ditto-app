@@ -405,16 +405,16 @@ export const getVersionsOfScriptFromFirestore = async (userID, scriptType, filen
           let version = { versionNumber: versionNumber, script: doc.data().script };
           versions.push(version);
         } else {
-          let version = { versionNumber: 0, script: doc.data().script };
+          let version = { versionNumber: 0, script: doc.data().script, timestamp: doc.data().timestamp };
           versions.push(version);
         }
       }
     });
     // sort if versions is not empty
     if (versions.length > 0) {
-      // sort the versions by version number
+      // sort the versions by timestamp
       versions.sort((a, b) => {
-        return a.versionNumber - b.versionNumber;
+        return a.timestamp - b.timestamp;
       });
     }
     return versions;
@@ -555,7 +555,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     // [{ id: Date.now(), name: filename, content: cleanedScript }, ] is what scriptType in localstorage looks like
     let scripts = [];
     querySnapshot.forEach((doc) => {
-      let scriptObj = { id: doc.data().timestampString, name: doc.data().filename, content: doc.data().script, scriptType: scriptType };
+      let scriptObj = { id: doc.data().timestampString, name: doc.data().filename, content: doc.data().script, scriptType: scriptType, timestamp: doc.data().timestamp };
       scripts.push(scriptObj);
     });
     localStorage.setItem(scriptType, JSON.stringify(scripts));
