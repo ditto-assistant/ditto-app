@@ -10,12 +10,15 @@ import {
 } from "firebase/firestore";
 
 import { getStorage, ref, uploadBytes, deleteObject, getDownloadURL, listAll } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+
 const mode = process.env.NODE_ENV;
 
 // if (mode === 'development') {
@@ -402,16 +405,16 @@ export const getVersionsOfScriptFromFirestore = async (userID, scriptType, filen
           let version = { versionNumber: versionNumber, script: doc.data().script };
           versions.push(version);
         } else {
-          let version = { versionNumber: 0, script: doc.data().script };
+          let version = { versionNumber: 0, script: doc.data().script, timestamp: doc.data().timestamp };
           versions.push(version);
         }
       }
     });
     // sort if versions is not empty
     if (versions.length > 0) {
-      // sort the versions by version number
+      // sort the versions by timestamp
       versions.sort((a, b) => {
-        return a.versionNumber - b.versionNumber;
+        return a.timestamp - b.timestamp;
       });
     }
     return versions;
@@ -552,16 +555,40 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     // [{ id: Date.now(), name: filename, content: cleanedScript }, ] is what scriptType in localstorage looks like
     let scripts = [];
     querySnapshot.forEach((doc) => {
-      let scriptObj = { id: doc.data().timestampString, name: doc.data().filename, content: doc.data().script, scriptType: scriptType };
+      let scriptObj = { id: doc.data().timestampString, name: doc.data().filename, content: doc.data().script, scriptType: scriptType, timestamp: doc.data().timestamp };
       scripts.push(scriptObj);
     });
     localStorage.setItem(scriptType, JSON.stringify(scripts));
-    let localScripts = JSON.parse(localStorage.getItem(scriptType));
-    if (mode === 'development') {
-      console.log("Local scripts after syncing with Firestore: ", localScripts);
-    }
+    // let localScripts = JSON.parse(localStorage.getItem(scriptType));
+    // if (mode === 'development') {
+    //   console.log("Local scripts after syncing with Firestore: ", localScripts);
+    // }
   } catch (e) {
     console.error("Error getting documents from scripts collection: ", e);
     return [];
   }
+}
+
+
+export const uploadGeneratedImageToFirebaseStorage = async (imageURL, userID) => {
+  // first, fetch the image from the imageURL to get the blob
+  // console.log("fetching image from URL: ", imageURL);
+  // // const response = await fetch(imageURL);
+  // // fetch with no-cors mode
+  // const response = await fetch(imageURL, {
+  //   mode: 'no-cors'
+  // });
+  // console.log("Getting blob from response...");
+  // const blob = await response.blob();
+  // console.log("Uploading image to Firebase Storage...");
+  // const storage = getStorage(app);
+  // console.log("Creating storage reference...");
+  // // Create a storage reference from our storage service
+  // const storageRef = ref(storage, `images/${userID}/${Date.now()}.jpg`);
+  // console.log("Uploading bytes...");
+  // const file = new Blob([blob], { type: 'image/jpeg' });
+  // const snapshot = await uploadBytes(storageRef, file);
+  // console.log('Uploaded a blob or file!');
+  // // return URI of the image
+  // return await getDownloadURL(snapshot.ref);
 }

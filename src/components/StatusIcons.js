@@ -1,5 +1,5 @@
 import React from "react";
-import { MdSettings } from "react-icons/md";
+// import { MdSettings } from "react-icons/md";
 import { FaBrain } from "react-icons/fa";
 import { HiMiniDocument } from "react-icons/hi2";
 
@@ -11,9 +11,9 @@ const darkModeColors = {
 function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryClick, selectedScript }) {
     return (
         <div style={styles.icons}>
-            <div style={styles.iconItem} onClick={handleSettingsClick}>
+            {/* <div style={styles.iconItem} onClick={handleSettingsClick}>
                 <MdSettings style={styles.icon} />
-            </div>
+            </div> */}
 
             <div style={styles.iconItem} onClick={handleBookmarkClick}>
                 <HiMiniDocument style={styles.icon} />
@@ -53,6 +53,8 @@ const styles = {
         fontWeight: 'bold',
         marginLeft: '10px',
         position: 'absolute',
+        // bring to top
+        zIndex: 1,
         flex: 1,
         display: 'flex',
         justifyContent: 'center',

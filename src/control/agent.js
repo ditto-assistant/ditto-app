@@ -1,9 +1,9 @@
 import { collection, addDoc } from "firebase/firestore";
-import { openaiChat, openaiEmbed, openaiImageGeneration } from "../ditto/modules/openaiChat";
+import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/openaiChat";
 import { googleSearch } from "../ditto/modules/googleSearch";
 import { handleHomeAssistantTask } from "./agentTools";
 import { countTokens } from "./tokens";
-import { saveBalanceToFirestore } from "./firebase";
+import { saveBalanceToFirestore, uploadGeneratedImageToFirebaseStorage } from "./firebase";
 
 // import { huggingFaceEmbed } from "../ditto/modules/huggingFaceChat";
 import {
@@ -21,7 +21,7 @@ import {
 import {
   scriptToNameSystemTemplate,
   scriptToNameTemplate,
-} from "../ditto/templates/scriptToNameTemplate"; 
+} from "../ditto/templates/scriptToNameTemplate";
 import {
   googleSearchTemplate,
   googleSearchSystemTemplate,
@@ -44,12 +44,12 @@ const mode = process.env.NODE_ENV;
  */
 export const sendPrompt = async (userID, firstName, prompt, image) => {
   try {
+    localStorage.setItem("idle", "false");
     let allTokensInput = "";
     let allTokensOutput = "";
     await handleInitialization(prompt);
     const apiKeyExist = await checkApiKey();
     if (!apiKeyExist) return;
-
     // check if user using their balance or userApiKey
     let docBalanceMode = false;
     let userApiKey = localStorage.getItem("openai_api_key") || "";
@@ -62,19 +62,30 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
 
     let currentBalance = localStorage.getItem(`${userID}_balance`);
 
-    const { embedding, shortTermMemory, longTermMemory } =
-      await fetchMemories(userID, prompt);
+    // fetch user prompt embedddings
+    let userPromptEmbedding = await textEmbed(prompt);
 
-    if (embedding === "") {
+    if (userPromptEmbedding === "") {
       localStorage.removeItem("thinking");
+      localStorage.setItem("idle", "true");
       return "An error occurred while processing your request. Please try again.";
     }
 
-    const { scriptName, scriptType, scriptContents } = fetchScriptDetails();
+    // do the above three with a promise.all
+    const allResponses = await Promise.all([
+      fetchMemories(userID, userPromptEmbedding), // fetch memories
+      getRelevantExamples(userPromptEmbedding, 5), // fetch relevant examples
+      fetchScriptDetails() // fetch script details
+    ]);
+
+    const [memories, examplesString, scriptDetails] = allResponses;
+    const { shortTermMemory, longTermMemory } = memories;
+    const { scriptName, scriptType, scriptContents } = scriptDetails;
 
     const constructedPrompt = mainTemplate(
       longTermMemory,
       shortTermMemory,
+      examplesString,
       firstName,
       new Date().toISOString(),
       prompt,
@@ -84,16 +95,16 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
 
     // print constructed prompt in green
     console.log("%c" + constructedPrompt, "color: green");
-    allTokensInput += constructedPrompt 
+    allTokensInput += constructedPrompt
     let imageTokens = 0;
     if (image) {
       imageTokens = 765;
     }
     allTokensInput += imageTokens
-    const response = await openaiChat(
+    const response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
-      "gpt-4o-mini-2024-07-18",
+      "gemini-1.5-flash",
       image
     );
     allTokensOutput += response
@@ -101,7 +112,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     let finalResponse = await processResponse(
       response,
       prompt,
-      embedding,
+      userPromptEmbedding,
       userID,
       scriptContents,
       scriptName,
@@ -114,11 +125,14 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     if (!docBalanceMode) {
       localStorage.setItem(`${userID}_balance`, currentBalance);
       saveBalanceToFirestore(userID, currentBalance);
-    } 
+    }
+
+    localStorage.setItem("idle", "true");
 
     return finalResponse;
   } catch (e) {
     localStorage.removeItem("thinking");
+    localStorage.setItem("idle", "true");
     console.error(e);
     return "An error occurred while processing your request. Please try again.";
   }
@@ -148,8 +162,7 @@ const checkApiKey = async () => {
   return true;
 };
 
-const fetchMemories = async (userID, prompt) => {
-  const embedding = await openaiEmbed(prompt);
+const fetchMemories = async (userID, embedding) => {
   // if embedding is ""
   if (embedding === "") {
     return { embedding: "", shortTermMemory: "", longTermMemory: "" };
@@ -157,7 +170,7 @@ const fetchMemories = async (userID, prompt) => {
   // const embedding = await huggingFaceEmbed(prompt); // TODO: use bert embeddings locally instead of OpenAI or huggingface API
   const shortTermMemory = await getShortTermMemory(userID, 5);
   const longTermMemory = await getLongTermMemory(userID, embedding, 5);
-  return { embedding, shortTermMemory, longTermMemory };
+  return { shortTermMemory, longTermMemory };
 };
 
 const fetchScriptDetails = () => {
@@ -232,9 +245,9 @@ const processResponse = async (
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     // handle image generation
     const query = response.split("<IMAGE_GENERATION>")[1];
-    const imageResponse = await openaiImageGeneration(query);
+    const imageURL = await openaiImageGeneration(query);
+    // const newImageURL = await uploadGeneratedImageToFirebaseStorage(imageURL, userID);
     // console.log("Image Response: ", imageResponse);
-    const imageURL = imageResponse.data[0].url;
     let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${imageURL})`;
     let inputTokens = countTokens(allTokensInput);
     let outputTokens = countTokens(allTokensOutput)
@@ -266,7 +279,7 @@ const processResponse = async (
     // print the prompt in green
     console.log("%c" + googleSearchAgentTemplate, "color: green");
     allTokensInput += googleSearchAgentTemplate
-    const googleSearchAgentResponse = await openaiChat(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gpt-4o-mini-2024-07-18");
+    const googleSearchAgentResponse = await promptLLM(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
     // print the response in yellow
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
     allTokensOutput += googleSearchAgentResponse
@@ -312,7 +325,7 @@ const processResponse = async (
     let inputCost = (inputTokens / 1000000) * 0.6;
     // $0.600 / 1M tokens
     let outputCost = (outputTokens / 1000000) * 2.4;
-    let totalCost = inputCost + outputCost;    
+    let totalCost = inputCost + outputCost;
     let newBalance = currentBalance - totalCost;
     localStorage.setItem(`${userID}_balance`, newBalance);
     await saveBalanceToFirestore(userID, newBalance);
@@ -374,12 +387,14 @@ const handleScriptGeneration = async (
     imageTokens = 765;
   }
   allTokensInput += imageTokens
-  const scriptResponse = await openaiChat(
+  const scriptResponse = await promptLLM(
     constructedPrompt,
     systemTemplateFunction(),
-    "gpt-4o-2024-08-06",
+    "gemini-1.5-pro",
     image
   );
+  /// print the response in yellow
+  console.log("%c" + scriptResponse, "color: yellow");
   allTokensOutput = scriptResponse
   let errorMessage = "Response Error: please check your internet connection or OpenAI API Key / permissions.";
   if (scriptResponse === errorMessage) {
@@ -392,10 +407,10 @@ const handleScriptGeneration = async (
     // print the prompt in green
     console.log("%c" + scriptToNameConstructedPrompt, "color: green");
     allTokensInput += scriptToNameConstructedPrompt
-    const scriptToNameResponse = await openaiChat(
+    const scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gpt-4o-mini-2024-07-18"
+      "gemini-1.5-flash"
     );
     // print the response in yellow
     console.log("%c" + scriptToNameResponse, "color: yellow");
@@ -424,17 +439,28 @@ const handleScriptGeneration = async (
   let totalCost = inputCost + outputCost + miniInputCost + miniOutputCost;
   let newBalance = currentBalance - totalCost;
   localStorage.setItem(`${userID}_balance`, newBalance);
+  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
+  handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
   await saveBalanceToFirestore(userID, newBalance);
   await saveToMemory(userID, prompt, newResponse, embedding);
   await saveToLocalStorage(prompt, newResponse);
-  saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
-  handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
   localStorage.removeItem("thinking");
   return newResponse;
 };
 
 const cleanScriptResponse = (response) => {
-  return response.replace(/^```.*\n/, "").split("```")[0];
+  // add conditionals to not error out for each of the three operations above
+  let cleanedScript = response;
+  if (cleanedScript.includes("```")) {
+    cleanedScript = cleanedScript.split("```")[1];
+  }
+  if (cleanedScript.includes("\n")) {
+    cleanedScript = cleanedScript.split("\n").slice(1).join("\n");
+  }
+  if (cleanedScript.includes("```")) {
+    cleanedScript = cleanedScript.split("```")[0];
+  }
+  return cleanedScript;
 };
 
 export const saveToMemory = async (

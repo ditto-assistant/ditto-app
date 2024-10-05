@@ -76,6 +76,14 @@ function ScriptsScreen() {
         setSelectedScript(null);
     };
 
+    const handleLaunchScript = () => {
+        console.log("selectedScript:", selectedScript); // Bowling App (for example)
+        const selected = scripts.webApps.find((script) => script.name === selectedScript) || scripts.openSCAD.find((script) => script.name === selectedScript);
+        if (selected) {
+            handlePlayScript(selected);
+        }
+    };
+
     const handleRenameScript = (category, id, newName) => {
         setScripts((prevState) => ({
             ...prevState,
@@ -128,6 +136,11 @@ function ScriptsScreen() {
         setEditScript(null);
         const userID = localStorage.getItem("userID");
         saveScriptToFirestore(userID, temporaryEditContent, category, scripts[category].find((s) => s.id === id).name, true);
+        // update working on script 
+        const workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
+        if (workingOnScript && workingOnScript.script === scripts[category].find((s) => s.id === id).name) {
+            localStorage.setItem("workingOnScript", JSON.stringify({ script: workingOnScript.script, contents: temporaryEditContent, scriptType: category }));
+        }
     };
 
     const handleCancelEditScript = () => {
@@ -146,9 +159,7 @@ function ScriptsScreen() {
     const getBaseName = (name) => {
         const match = name.match(/^[^\-]+/);
         let res = match ? match[0].replace(/([a-z])([A-Z])/g, '$1 $2').trim() : name;
-        console.log("Name:", name);
-        console.log("Base name:", res);
-        return res
+        return res;
     };
 
     const getScriptsByBaseName = (scripts) => {
@@ -318,10 +329,13 @@ function ScriptsScreen() {
                 <div style={styles.content}>
                     {selectedScript && (
                         <div style={styles.selectedScript}>
-                            <p style={{color: "white"}}>Currently Selected:</p>
+                            <p style={{ color: "white" }}>Currently Selected:</p>
                             <p style={{ color: darkModeColors.primary }}>{selectedScript}</p>
                             <Button variant="contained" style={styles.deselectButton} onClick={handleDeselectScript}>
                                 Deselect Script
+                            </Button>
+                            <Button variant="contained" style={styles.launchButton} onClick={handleLaunchScript}>
+                                Launch Script
                             </Button>
                         </div>
                     )}
@@ -448,6 +462,11 @@ const styles = {
     deselectButton: {
         marginTop: '10px',
         backgroundColor: darkModeColors.danger,
+    },
+    launchButton: {
+        marginTop: '10px',
+        marginLeft: '10px',
+        backgroundColor: darkModeColors.primary,
     },
     category: {
         marginBottom: '20px',

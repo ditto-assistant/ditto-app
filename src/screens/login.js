@@ -14,6 +14,8 @@ export const withRouter = (Component) => {
     return Wrapper;
 }
 
+export const auth = getAuth();
+
 const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePasswordVisibility }) => (
     <div style={styles.passwordInputContainer}>
         <input
@@ -40,7 +42,7 @@ const Login = (props) => {
     const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
     const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
 
-    const auth = getAuth();
+    
 
     const handleSignIn = async () => {
         try {

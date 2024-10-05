@@ -29,7 +29,7 @@ export const workingOnScriptModule = (scriptName: string, type: string) => {
 `
 }
 
-export const mainTemplate = (longTermMemory: string, shortTermMemory: string, firstName: string, timestamp: string, usersPrompt: string, workingOnScriptName: string, workingOnScriptType: string) => {
+export const mainTemplate = (longTermMemory: string, shortTermMemory: string, examples: string, firstName: string, timestamp: string, usersPrompt: string, workingOnScriptName: string, workingOnScriptType: string) => {
     let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
 
 ## Tools
@@ -54,28 +54,9 @@ export const mainTemplate = (longTermMemory: string, shortTermMemory: string, fi
 - Make sure the task is clear and concise, and something that can be done with a Google Home device.
 - Keyword: <GOOGLE_HOME> task
 
-## Examples of a Users' Prompts that need a tools:
+## Examples of User Prompts that need tools:
 -- Begin Examples --
-Example 1:
-User's Prompt: I need a 3D model of a house with a roof and a door.
-Ditto:
-<OPENSCAD> Create a 3D model of a house with a roof and a door. Make sure to include enough details for the user to visualize the house.
-Example 2:
-User's Prompt: I need an app or website design for a blog.
-Ditto:
-<HTML_SCRIPT> Create a website design for a blog. Make sure to include a header, footer, and a sidebar with enough functionality for the user to actually make a blog post.
-Example 3:
-User's Prompt: I need an image of a cat with wings.
-Ditto:
-<IMAGE_GENERATION> Generate an image of a cat with wings. Make sure the cat looks realistic and the wings are positioned correctly.
-Example 4:
-User's Prompt: What is the current population of France in 2024?
-Ditto:
-<GOOGLE_SEARCH> 2024 population of France
-Example 5:
-User's Prompt: Set the kitchen lights to 50% brightness.
-Ditto:
-<GOOGLE_HOME> Set the kitchen lights to 50% brightness.
+<!examples>
 -- End Examples --
 
 ## Long Term Memory
@@ -104,6 +85,7 @@ Ditto:
     prompt = prompt.replace('<!time>', getTimezoneString())
     prompt = prompt.replace('<!long_term_memory>', longTermMemory)
     prompt = prompt.replace('<!short_term_memory>', shortTermMemory)
+    prompt = prompt.replace('<!examples>', examples)
     prompt = prompt.replace('<!working_on_script_module>', workingOnScriptModule(workingOnScriptName, workingOnScriptType))
     prompt = prompt.replace('<!users_name>', firstName)
     prompt = prompt.replace('<!timestamp>', timestamp)

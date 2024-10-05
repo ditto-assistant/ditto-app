@@ -59,14 +59,26 @@ export default function ChatFeed({
     setTimeout(() => setCopied(false), 2000); // Hide "copied" message after 2 seconds
   };
 
-  const renderMessageText = (text) => (
+  const renderMessageText = (text) => {
+    // clean up code blocks that have ```scriptname with text on the same line by
+    // putting a new line after all ```scriptname occurrences with ```scriptname\n
+    text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
+    // now replace all instances of ```. with ```\n.
+    text = text.replace(/```\./g, '```\n');
+    return (
     <ReactMarkdown
       children={text}
       components={{
         img: (props) => <img {...props} className='chat-image' alt='' style={{ width: '95%', height: '95%', paddingTop: '4px' }} />,
         code({ node, inline, className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || '');
-
+          let match = /language-(\w+)/.exec(className || '');
+          let hasCodeBlock;
+          if (text.match(/```/g)) {
+            hasCodeBlock = text.match(/```/g).length % 2 === 0;
+          }
+          if (match === null && hasCodeBlock) {
+            match = ['language-txt', 'txt'];
+          }
           if (!inline && match) {
             return (
               <div className='code-container'>
@@ -104,8 +116,8 @@ export default function ChatFeed({
           }
         },
       }}
-    />
-  );
+    />);
+  };
 
   return (
     <div className='chat-feed' ref={feedRef}>

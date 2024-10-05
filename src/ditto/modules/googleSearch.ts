@@ -1,46 +1,34 @@
-import { firebaseConfig } from "../../firebaseConfig";
+import { auth } from "../../control/firebase";
+import { URL } from "../../firebaseConfig";
 
-// convert the above export into a function that I can use in my app to get the top k results from a google search
 export const googleSearch = async (query: string, numResults: number = 5) => {
+    if (!auth.currentUser) {
+        return "Error: User not logged in.";
+    }
+    let tok;
+    let userID = auth.currentUser.uid;
     try {
-        const response = await fetch(firebaseConfig.googleSearchURL, {
+        tok = await auth.currentUser.getIdToken();
+    } catch (e) {
+        console.error(e)
+        return "Error: Unable to retrieve search results.";
+    }
+    try {
+        const response = await fetch(URL.search, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${tok}`
             },
             body: JSON.stringify({
                 query,
-                numResults
+                numResults,
+                userID
             }),
         });
-        const responseJSON = await response.json();
-        return responseJSON.searchResults;
+        return await response.text();
     } catch (error) {
         console.error(error);
-        return "Error: Unable to retrieve search results.";
+        return `Unable to retrieve search results. Error: ${error}`;
     }
 }
-
-// openaiImageGeneration function
-// export const openaiImageGeneration = async (prompt, model = 'dall-e-3') => {
-//     let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
-//     let userID = localStorage.getItem('userID') || "";
-//     let balanceKey = `${userID}_balance`;
-//     let balance = localStorage.getItem(balanceKey) || 0;
-  
-//     const response = await fetch(firebaseConfig.openaiImageGenerationURL, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         prompt,
-//         model,
-//         usersOpenaiKey,
-//         balance
-//       }),
-//     });
-  
-//     const data = await response.json();
-//     return data.response;
-//   }

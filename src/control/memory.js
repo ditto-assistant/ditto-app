@@ -87,8 +87,15 @@ export const getLongTermMemory = async (userID, embedding, k) => {
     const scores = [];
     history.forEach(pair => {
       const pairEmbedding = pair.embedding;
-      const similarityScore = cosineSimilarity(embedding, pairEmbedding);
-      scores.push({ pair: pair, score: similarityScore });
+      // console.log("pairEmbedding: ", pairEmbedding);
+      // if pair.response == 'You have no API key or your balance is too low.' then skip and make similarityScore = 0
+      if (pairEmbedding.response == 'You have no API key or your balance is too low.') {
+        const similarityScore = 0;
+        scores.push({ pair: pair, score: similarityScore });
+      } else {
+        const similarityScore = cosineSimilarity(embedding, pairEmbedding);
+        scores.push({ pair: pair, score: similarityScore });
+      }
     }
     );
     scores.sort((a, b) => b.score - a.score);

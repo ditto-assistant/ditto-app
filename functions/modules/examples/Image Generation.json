@@ -1,0 +1,67 @@
+{
+  "name": "Image Generation",
+  "version": "1.0.0",
+  "description": "Examples of user prompts that require the Image Generation tool.",
+  "examples": [
+    {
+      "prompt": "Can you generate an image of a cat?",
+      "response": "<IMAGE_GENERATION> Generate an image of a cat. Make sure the cat is sitting and looking directly at the camera."
+    },
+    {
+      "prompt": "Can you create a picture of a sunset over the ocean?",
+      "response": "<IMAGE_GENERATION> Create a picture of a sunset over the ocean. Include colorful clouds and a calm sea."
+    },
+    {
+      "prompt": "Can you make an image of a forest with a river running through it?",
+      "response": "<IMAGE_GENERATION> Make an image of a forest with a river running through it. Include tall trees, a flowing river, and a clear sky."
+    },
+    {
+      "prompt": "Can you generate a picture of a mountain landscape?",
+      "response": "<IMAGE_GENERATION> Generate a picture of a mountain landscape. Include snow-capped peaks, green valleys, and a clear blue sky."
+    },
+    {
+      "prompt": "Can you create an image of a city skyline at night?",
+      "response": "<IMAGE_GENERATION> Create an image of a city skyline at night. Include tall buildings, bright lights, and a starry sky."
+    },
+    {
+      "prompt": "Can you make a picture of a beach with palm trees?",
+      "response": "<IMAGE_GENERATION> Make a picture of a beach with palm trees. Include white sand, clear water, and a blue sky."
+    },
+    {
+      "prompt": "Can you generate an image of a desert landscape?",
+      "response": "<IMAGE_GENERATION> Generate an image of a desert landscape. Include sand dunes, cacti, and a bright sun."
+    },
+    {
+      "prompt": "Can you create a picture of a snowy forest?",
+      "response": "<IMAGE_GENERATION> Create a picture of a snowy forest. Include snow-covered trees, a frozen lake, and falling snowflakes."
+    },
+    {
+      "prompt": "Can you make an image of a tropical island?",
+      "response": "<IMAGE_GENERATION> Make an image of a tropical island. Include palm trees, white sand beaches, and crystal clear water."
+    },
+    {
+      "prompt": "Can you generate a picture of a starry night sky?",
+      "response": "<IMAGE_GENERATION> Generate a picture of a starry night sky. Include a full moon, twinkling stars, and a dark sky."
+    },
+    {
+      "prompt": "Can you draw a picture of a rainbow over a waterfall?",
+      "response": "<IMAGE_GENERATION> Draw a picture of a rainbow over a waterfall. Include a colorful rainbow, a cascading waterfall, and lush greenery."
+    },
+    {
+      "prompt": "Draw a cool dragon in a fantasy landscape.",
+      "response": "<IMAGE_GENERATION> Draw a cool dragon in a fantasy landscape. Include a majestic dragon, a magical landscape, and a sense of wonder."
+    },
+    {
+      "prompt": "I want to see if you can draw a unicorn in a magical forest.",
+      "response": "<IMAGE_GENERATION> Draw a unicorn in a magical forest. Include a beautiful unicorn, a mystical forest, and a sense of enchantment."
+    },
+    {
+      "prompt": "Can you create an image of a futuristic city?",
+      "response": "<IMAGE_GENERATION> Create an image of a futuristic city. Include advanced buildings, flying cars, and high-tech gadgets."
+    },
+    {
+      "prompt": "Draw a smiley face in a field of flowers.",
+      "response": "<IMAGE_GENERATION> Draw a smiley face in a field of flowers. Include a happy face, colorful flowers, and a sunny day."
+    }
+  ]
+}

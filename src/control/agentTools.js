@@ -26,7 +26,7 @@ export const downloadHTMLScript = (script, scriptName = "") => {
   openHTMLScriptInNewWindow(script);
   console.log("Opened HTML script in new window...");
   // print script in blue
-  console.log(`%c${script}`, 'color: orange');
+  // console.log(`%c${script}`, 'color: orange');
   // package the string in script as a .html file and request to download to user's browser
   // const blob = new Blob([script], { type: 'text/plain' });
   // const url = URL.createObjectURL(blob);
@@ -56,7 +56,7 @@ export const downloadHTMLScript = (script, scriptName = "") => {
 export const downloadOpenscadScript = (script, scriptName = "") => {
   console.log("Downloading OpenSCAD script...");
   // print script in blue
-  console.log(`%c${script}`, 'color: orange');
+  // console.log(`%c${script}`, 'color: orange');
   // package the string in script as a .scad file and request to download to user's browser
   const blob = new Blob([script], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);

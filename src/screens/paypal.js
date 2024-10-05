@@ -103,7 +103,7 @@ const Checkout = () => {
                 <Divider style={styles.divider} />
                 <div style={styles.paypalContent}>
                     <div style={styles.infoContainer}>
-                        <p>Current Balance: <span style={{ color: '#7289da' }}>${balance}</span></p>
+                        <p>Current Balance: <span style={{ color: '#7289da' }}>${balance.toFixed(2)}</span></p>
                         <p>Input Tokens: <span style={{ color: '#7289da' }}>{tokensLeftInputPretty}</span></p>
                         <p>Output Tokens: <span style={{ color: '#7289da' }}>{tokensLeftOutputPretty}</span></p>
                         <p>Images: <span style={{ color: '#7289da' }}>{tokensInImagesPretty}</span></p>
