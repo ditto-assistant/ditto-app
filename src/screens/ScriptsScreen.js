@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
 import { FaPlay } from "react-icons/fa";
@@ -38,6 +38,7 @@ function ScriptsScreen() {
     const [showAddForm, setShowAddForm] = useState({ webApps: false, openSCAD: false });
     const [versionOverlay, setVersionOverlay] = useState(null);
     const [currentVersion, setCurrentVersion] = useState({});
+    const versionOverlayRef = useRef(null);
 
     const handleAddScriptClick = (category) => {
         setShowAddForm((prev) => ({ ...prev, [category]: true }));
@@ -156,6 +157,12 @@ function ScriptsScreen() {
         setVersionOverlay(null);
     };
 
+    const handleOverlayClick = (event) => {
+        if (versionOverlayRef.current && !versionOverlayRef.current.contains(event.target)) {
+            setVersionOverlay(null);
+        }
+    };
+
     const getBaseName = (name) => {
         const match = name.match(/^[^\-]+/);
         let res = match ? match[0].replace(/([a-z])([A-Z])/g, '$1 $2').trim() : name;
@@ -171,6 +178,7 @@ function ScriptsScreen() {
         });
         // for each base name, sort the scripts by name to where the one without a version number is first
         // and the rest are sorted by version number, where the highest is first
+        // exception for top-most: if currently selected script is not the top-most, then it should be the top-most
         let sortedGrouped = {};
         Object.keys(grouped).forEach((baseName) => {
             const sorted = grouped[baseName].sort((a, b) => {
@@ -180,8 +188,15 @@ function ScriptsScreen() {
                 if (!aMatch) return -1;
                 if (!bMatch) return 1;
                 return parseInt(bMatch[1]) - parseInt(aMatch[1]);
-            });
+            }
+            );
             sortedGrouped[baseName] = sorted;
+            const selected = sorted.find((s) => s.name === selectedScript);
+            if (selected) {
+                const idx = sorted.indexOf(selected);
+                sorted.splice(idx, 1);
+                sorted.unshift(selected);
+            }
         });
         return sortedGrouped;
     };
@@ -304,7 +319,7 @@ function ScriptsScreen() {
                                 </>
                             )}
                             {versionOverlay === baseName && (
-                                <div style={styles.versionOverlay}>
+                                <div style={styles.versionOverlay} ref={versionOverlayRef}>
                                     {scriptsList.map((version) => (
                                         <p key={version.id} style={styles.versionItem} onClick={() => handleSelectVersion(version)}>
                                             {version.name}
@@ -333,7 +348,7 @@ function ScriptsScreen() {
     }, []);
 
     return (
-        <div style={styles.overlay}>
+        <div style={styles.overlay} onClick={handleOverlayClick}>
             <div style={styles.container}>
                 <header style={styles.header}>
                     <Button variant="contained" style={styles.backButton} onClick={() => navigate(-1)}>

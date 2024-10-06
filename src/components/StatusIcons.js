@@ -1,7 +1,7 @@
-import React from "react";
-// import { MdSettings } from "react-icons/md";
 import { FaBrain } from "react-icons/fa";
 import { HiMiniDocument } from "react-icons/hi2";
+import { FaPlay } from "react-icons/fa";
+import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
 
 const darkModeColors = {
     primary: '#7289DA',
@@ -9,6 +9,24 @@ const darkModeColors = {
 };
 
 function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryClick, selectedScript }) {
+
+    const handlePlayScript = () => {
+        try {
+            let workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
+            let scriptType = workingOnScript.scriptType;
+            let content = workingOnScript.contents;
+            let name = workingOnScript.script;
+            if (scriptType === "webApps") {
+                downloadHTMLScript(content, name);
+            } else if (scriptType === "openSCAD") {
+                downloadOpenscadScript(content, name);
+            }
+        }
+        catch (error) {
+            console.error("Error playing script:", error);
+        }
+    };
+
     return (
         <div style={styles.icons}>
             {/* <div style={styles.iconItem} onClick={handleSettingsClick}>
@@ -22,13 +40,16 @@ function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryCli
             <div style={styles.iconItem} onClick={handleMemoryClick}>
                 <FaBrain style={styles.icon} />
             </div>
-
+            
+            {/* Below is the Focus Overlay */}
             {selectedScript && (
                 <div style={styles.selectedScriptIndicator}>
                     <p style={{ color: darkModeColors.primary }}>Focus: </p>
                     <p style={styles.selectedScriptText}>{selectedScript}</p>
+                    <FaPlay style={styles.playIcon} onClick={() => handlePlayScript()} />
                 </div>
             )}
+
         </div>
     );
 }
@@ -47,6 +68,15 @@ const styles = {
     icon: {
         fontSize: '24px',
         color: darkModeColors.primary,
+    },
+    playIcon: {
+        fontSize: '20px',
+        cursor: 'pointer',
+        color: darkModeColors.primary,
+        marginRight: '10px',
+        // move it down a bit to align with the text
+        marginTop: '18px',
+        marginLeft: '10px',
     },
     selectedScriptIndicator: {
         color: darkModeColors.text,
