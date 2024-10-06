@@ -169,7 +169,21 @@ function ScriptsScreen() {
             if (!grouped[baseName]) grouped[baseName] = [];
             grouped[baseName].push(script);
         });
-        return grouped;
+        // for each base name, sort the scripts by name to where the one without a version number is first
+        // and the rest are sorted by version number, where the highest is first
+        let sortedGrouped = {};
+        Object.keys(grouped).forEach((baseName) => {
+            const sorted = grouped[baseName].sort((a, b) => {
+                const aMatch = a.name.match(/v(\d+)/);
+                const bMatch = b.name.match(/v(\d+)/);
+                if (!aMatch && !bMatch) return 0;
+                if (!aMatch) return -1;
+                if (!bMatch) return 1;
+                return parseInt(bMatch[1]) - parseInt(aMatch[1]);
+            });
+            sortedGrouped[baseName] = sorted;
+        });
+        return sortedGrouped;
     };
 
     const handleDownloadScript = (script) => {
@@ -188,6 +202,7 @@ function ScriptsScreen() {
 
     const renderScripts = (category) => {
         const groupedScripts = getScriptsByBaseName(scripts[category]);
+        console.log("groupedScripts:", groupedScripts);
         return (
             <>
                 {Object.keys(groupedScripts).map((baseName) => {
