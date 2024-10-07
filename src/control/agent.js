@@ -149,7 +149,7 @@ const checkApiKey = async () => {
     let balance = localStorage.getItem(`${userID}_balance`) || 0;
     if (Number(balance) <= 0 || balance === "NaN") {
       alert(
-        "New? Please set your OpenAI API key or Add Tokens in the settings menu."
+        "New? Please Add Tokens in the settings menu."
       );
       localStorage.removeItem("thinking");
       return false;
@@ -203,7 +203,7 @@ const processResponse = async (
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
   // check if response is blank ""
-  let errorMessage = "Response Error: please check your internet connection or OpenAI API Key / permissions.";
+  let errorMessage = "Response Error: please check your internet connection or token balance.";
   if (response === errorMessage) {
     isValidResponse = false;
     response = errorMessage;
@@ -396,7 +396,7 @@ const handleScriptGeneration = async (
   /// print the response in yellow
   console.log("%c" + scriptResponse, "color: yellow");
   allTokensOutput = scriptResponse
-  let errorMessage = "Response Error: please check your internet connection or OpenAI API Key / permissions.";
+  let errorMessage = "Response Error: please check your internet connection or token balance.";
   if (scriptResponse === errorMessage) {
     return errorMessage;
   }

@@ -3,6 +3,7 @@ import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import HomeScreen from "./screens/HomeScreen";
 import ScriptsScreen from "./screens/ScriptsScreen";
+import DittoCanvas from "./screens/DittoCanvas";
 import Settings from './screens/settings';
 import Paypal from "./screens/paypal";
 import Login from './screens/login';
@@ -32,6 +33,11 @@ export default function App() {
                 <Route path="/scripts" element={
                     <AuthenticatedRoute>
                         <ScriptsScreen />
+                    </AuthenticatedRoute>
+                } />
+                <Route path="/canvas" element={
+                    <AuthenticatedRoute>
+                        <DittoCanvas />
                     </AuthenticatedRoute>
                 } />
                 <Route path="/login" element={<Login />} />

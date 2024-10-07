@@ -4,8 +4,15 @@
 .App-title {
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
-  font-size: 1.5em;
+  font-size: 1.8em;
   margin: 0;
+  position: absolute;
+  /*scale move to right a little based on device screen size */
+  left: 50.5%;
+  transform: translateX(-50%);
+  /* top: 10px;
+  color: white; */
+  text-align: center;
 }
 
 .App {

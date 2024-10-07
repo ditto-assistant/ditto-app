@@ -23,7 +23,7 @@ const webpack = require('webpack');
      },
      plugins: [
        new webpack.DefinePlugin({
-         'process.env.VERSION': JSON.stringify(packageJson.version)
+         'process.env.VERSION': packageJson.version
        }),
        new HtmlWebpackPlugin({
          template: './public/index.html'

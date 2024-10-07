@@ -132,7 +132,7 @@ const styles = {
         alignItems: "center",
         paddingLeft: "20px",
         paddingRight: "20px",
-        fontSize: "18px",
+        fontSize: "1.1em",
     },
     statusText: {
         paddingRight: "5px",

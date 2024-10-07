@@ -116,7 +116,8 @@ function ScriptsScreen() {
     const handlePlayScript = (script) => {
         const { content, name, scriptType } = script;
         if (scriptType === "webApps") {
-            downloadHTMLScript(content, name);
+            // downloadHTMLScript(content, name);
+            navigate("/canvas", { state: { script: content, scriptName: name } });
         } else if (scriptType === "openSCAD") {
             downloadOpenscadScript(content, name);
         }

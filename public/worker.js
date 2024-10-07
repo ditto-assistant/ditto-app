@@ -1,5 +1,4 @@
-// const CACHE_VERSION = process.env.VERSION || "0.0.1"; // fallback version in case of an issue
-CACHE_VERSION = '0.7.0';
+CACHE_VERSION = "0.7.2";
 const CACHE_NAME = `ditto-pwa-${CACHE_VERSION}`;
 
 const urlsToCache = ['/'];
@@ -38,6 +37,22 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      // Check for updates
+      if (self.registration.waiting) {
+        // New version is available
+        self.registration.waiting.postMessage({ type: 'updateAvailable' });
+      }
     })
   );
+});
+
+// Listen for messages from the new service worker
+self.addEventListener('message', function(event) {
+  if (event.data.type === 'updateAvailable') {
+    // Notify the user that a new version is available
+    console.log('New version available.  Please refresh the page.');
+    // You can replace the console log with a more user-friendly notification
+    // using the Notification API or a custom alert.
+  }
 });

@@ -1,6 +1,7 @@
 import { FaBrain } from "react-icons/fa";
 import { HiMiniDocument } from "react-icons/hi2";
 import { FaPlay } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
 
 const darkModeColors = {
@@ -9,6 +10,7 @@ const darkModeColors = {
 };
 
 function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryClick, selectedScript }) {
+    const navigate = useNavigate();
 
     const handlePlayScript = () => {
         try {
@@ -17,7 +19,8 @@ function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryCli
             let content = workingOnScript.contents;
             let name = workingOnScript.script;
             if (scriptType === "webApps") {
-                downloadHTMLScript(content, name);
+                // downloadHTMLScript(content, name);
+                navigate("/canvas", { state: { script: content, scriptName: name } });
             } else if (scriptType === "openSCAD") {
                 downloadOpenscadScript(content, name);
             }
@@ -41,12 +44,17 @@ function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryCli
                 <FaBrain style={styles.icon} />
             </div>
             
+            {selectedScript && (
+                <div style={styles.iconItem} onClick={handlePlayScript}>
+                    <FaPlay style={styles.playIcon} />
+                </div>
+            )}
+            
             {/* Below is the Focus Overlay */}
             {selectedScript && (
                 <div style={styles.selectedScriptIndicator}>
-                    <p style={{ color: darkModeColors.primary }}>Focus: </p>
+                    <p style={{ color: darkModeColors.primary, fontSize: '0.9em' }}>Focus: </p>
                     <p style={styles.selectedScriptText}>{selectedScript}</p>
-                    <FaPlay style={styles.playIcon} onClick={() => handlePlayScript()} />
                 </div>
             )}
 
@@ -58,7 +66,10 @@ const styles = {
     icons: {
         display: 'flex',
         alignItems: 'center',
-        position: 'relative',
+        position: 'absolute',
+        justifyContent: 'center',
+        left: '50%',
+        transform: 'translateX(-50%)',
     },
     iconItem: {
         marginLeft: '10px',
@@ -70,13 +81,8 @@ const styles = {
         color: darkModeColors.primary,
     },
     playIcon: {
-        fontSize: '20px',
-        cursor: 'pointer',
+        fontSize: '22px',
         color: darkModeColors.primary,
-        marginRight: '10px',
-        // move it down a bit to align with the text
-        marginTop: '18px',
-        marginLeft: '10px',
     },
     selectedScriptIndicator: {
         color: darkModeColors.text,
@@ -91,7 +97,7 @@ const styles = {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        top: '80px',
+        top: '81px',
         // backgroundColor: darkModeColors.foreground,
         // make the background color the same as the chat bubble
         backgroundColor: '#36393f',
@@ -102,8 +108,9 @@ const styles = {
         flexDirection: 'row',
     },
     selectedScriptText: {
+        fontSize: '0.9em',
         margin: 0,
-        paddingTop: '16px',
+        paddingTop: '1.0em',
     },
 };
 

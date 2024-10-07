@@ -1,12 +1,13 @@
 {
   "name": "ditto-pwa",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@huggingface/inference": "^2.8.0",
-    "@mui/material": "^6.0.0",
+    "@mui/icons-material": "^6.1.2",
+    "@mui/material": "^6.1.2",
     "@paypal/react-paypal-js": "^8.7.0",
     "@tensorflow/tfjs": "^4.20.0",
     "@tensorflow/tfjs-tflite": "^0.0.1-alpha.9",
