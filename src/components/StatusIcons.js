@@ -72,7 +72,8 @@ const styles = {
         transform: 'translateX(-50%)',
     },
     iconItem: {
-        marginLeft: '10px',
+        // marginLeft: '10px',
+        margin: '0px 3px',
         cursor: 'pointer',
         position: 'relative',
     },
@@ -87,7 +88,7 @@ const styles = {
     selectedScriptIndicator: {
         color: darkModeColors.text,
         fontWeight: 'bold',
-        marginLeft: '10px',
+        // marginLeft: '10px',
         position: 'absolute',
         // bring to top
         zIndex: 1,
@@ -97,7 +98,7 @@ const styles = {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        top: '81px',
+        top: '74px',
         // backgroundColor: darkModeColors.foreground,
         // make the background color the same as the chat bubble
         backgroundColor: '#36393f',

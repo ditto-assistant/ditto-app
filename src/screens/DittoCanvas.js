@@ -34,7 +34,7 @@ const styles = {
         border: 'none',
         borderRadius: '12px', // Added rounded corners
         overflow: 'hidden', // Ensure content respects border radius
-        marginTop: '-4px', // Aligns edges with AppBar
+        marginTop: '-0px', // Aligns edges with AppBar
     },
     backButton: {
         margin: '0 10px',

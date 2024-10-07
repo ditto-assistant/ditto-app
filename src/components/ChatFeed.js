@@ -69,6 +69,8 @@ export default function ChatFeed({
     <ReactMarkdown
       children={text}
       components={{
+        // styling for []() link, make them nice Discord dark, bold deep purple, slight reflection
+        a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
         img: (props) => <img {...props} className='chat-image' alt='' style={{ width: '95%', height: '95%', paddingTop: '4px' }} />,
         code({ node, inline, className, children, ...props }) {
           let match = /language-(\w+)/.exec(className || '');

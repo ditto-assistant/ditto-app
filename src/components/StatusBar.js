@@ -125,17 +125,17 @@ const styles = {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "10px",
+        padding: "5px",
     },
     status: {
         display: "flex",
         alignItems: "center",
         paddingLeft: "20px",
         paddingRight: "20px",
-        fontSize: "1.1em",
+        fontSize: "1.0em",
     },
     statusText: {
-        paddingRight: "5px",
+        // paddingRight: "2px",
         color: "#FFFFFF",
     },
     statusIndicator: {
