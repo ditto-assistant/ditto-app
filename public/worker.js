@@ -1,4 +1,4 @@
-CACHE_VERSION = "0.7.5";
+CACHE_VERSION = "0.7.6";
 const CACHE_NAME = `ditto-pwa-${CACHE_VERSION}`;
 
 const urlsToCache = ['/'];

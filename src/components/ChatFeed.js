@@ -20,8 +20,8 @@ export default function ChatFeed({
       fontSize: 14,
     },
     chatbubble: {
-      borderRadius: 50,
-      padding: 15,
+      borderRadius: 20,
+      padding: 10,
     },
   },
 }) {

@@ -42,6 +42,9 @@
   color: #000000;
   text-align: left;
   margin-left: 10px; /* Space between bubble and avatar */
+  padding-right: 15px !important; /* Add padding to the right of the bubble */
+  padding-top: 0 !important; /* Remove padding from the top of the bubble */
+  padding-bottom: 0 !important; /* Remove padding from the bottom of the bubble */
 }
 
 .chat-bubble.Ditto {
@@ -49,6 +52,8 @@
   color: #000000;
   text-align: left;
   margin-right: 10px; /* Space between avatar and bubble */
+  padding-top: 0 !important; /* Remove padding from the top of the bubble */
+  padding-bottom: 0 !important; /* Remove padding from the bottom of the bubble */
 }
 
 .sender-name {
@@ -68,6 +73,7 @@
   max-width: 100%;
   height: auto;
   border-radius: 5px;
+  padding-left: 5px;
 }
 
 @keyframes bounce {
