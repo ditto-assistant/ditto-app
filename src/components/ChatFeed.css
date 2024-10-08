@@ -7,28 +7,48 @@
   flex-direction: column;
 }
 
+.message-container {
+  display: flex;
+  align-items: flex-end; /* Align children to flex-end to position avatar at the bottom */
+  margin-bottom: 10px;
+}
+
+.message-container.Ditto {
+  flex-direction: row; /* Avatar first, then bubble */
+}
+
+.message-container.User {
+  justify-content: flex-end; /* Push bubble to the left */
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 10px;
+}
+
 .chat-bubble {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
-  max-width: 60%;
   padding: 10px;
   border-radius: 15px;
   word-wrap: break-word;
+  max-width: 60%;
 }
 
 .chat-bubble.User {
-  align-self: flex-end;
   background-color: #7289da;
   color: #000000;
   text-align: left;
+  margin-left: 10px; /* Space between bubble and avatar */
 }
 
 .chat-bubble.Ditto {
-  align-self: flex-start;
-  text-align: left;
   background-color: #99aab5;
   color: #000000;
+  text-align: left;
+  margin-right: 10px; /* Space between avatar and bubble */
 }
 
 .sender-name {
@@ -51,12 +71,10 @@
 }
 
 @keyframes bounce {
-
   0%,
   100% {
     transform: translateY(0);
   }
-
   50% {
     transform: translateY(-10px);
   }
@@ -109,6 +127,7 @@
 .inline-code {
   background: #282c34;
   color: #ffffff;
+  color: red;
   padding: 2px 5px;
   border-radius: 5px;
   font-family: 'Courier New', Courier, monospace;
@@ -145,10 +164,8 @@
   position: absolute;
   top: 5px;
   right: 5px;
-  /* // make the button slightly bigger  */
   padding: 10px;
   border-radius: 5px;
-
 }
 
 .copied-notification {
@@ -157,7 +174,6 @@
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(0, 128, 0, 0.75);
-  /* slightly transparent green */
   color: white;
   padding: 10px;
   border-radius: 5px;

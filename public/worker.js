@@ -1,4 +1,4 @@
-CACHE_VERSION = "0.7.2";
+CACHE_VERSION = "0.7.5";
 const CACHE_NAME = `ditto-pwa-${CACHE_VERSION}`;
 
 const urlsToCache = ['/'];
@@ -54,5 +54,6 @@ self.addEventListener('message', function(event) {
     console.log('New version available.  Please refresh the page.');
     // You can replace the console log with a more user-friendly notification
     // using the Notification API or a custom alert.
+    alert('A new version of Ditto is available. Please refresh the page.');
   }
 });

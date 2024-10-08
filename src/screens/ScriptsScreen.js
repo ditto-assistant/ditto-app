@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
 import { FaPlay } from "react-icons/fa";
@@ -29,8 +29,17 @@ const darkModeColors = {
 function ScriptsScreen() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [scripts, setScripts] = useState(location.state?.scripts || { webApps: [], openSCAD: [] });
-    const [selectedScript, setSelectedScript] = useState(location.state?.selectedScript || null);
+    // const [scripts, setScripts] = useState(location.state?.scripts || { webApps: [], openSCAD: [] });
+    // const [selectedScript, setSelectedScript] = useState(location.state?.selectedScript || null);
+    const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
+    const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+    const [scripts, setScripts] = useState({
+        webApps: localWebApps,
+        openSCAD: localOpenSCAD,
+    });
+    const localWorkingOnScript = JSON.parse(localStorage.getItem("workingOnScript")) || {};
+    const [selectedScript, setSelectedScript] = useState(localWorkingOnScript.script || null);
+    
     const [activeCard, setActiveCard] = useState(null);
     const [renameScriptId, setRenameScriptId] = useState(null);
     const [editScript, setEditScript] = useState(null);
@@ -39,6 +48,13 @@ function ScriptsScreen() {
     const [versionOverlay, setVersionOverlay] = useState(null);
     const [currentVersion, setCurrentVersion] = useState({});
     const versionOverlayRef = useRef(null);
+
+    // re-set location state if scripts are updated via useEffect
+    useEffect(() => {
+        // update localStorages for scripts
+        localStorage.setItem("webApps", JSON.stringify(scripts.webApps));
+        localStorage.setItem("openSCAD", JSON.stringify(scripts.openSCAD));
+    }, [scripts]);
 
     const handleAddScriptClick = (category) => {
         setShowAddForm((prev) => ({ ...prev, [category]: true }));
@@ -94,7 +110,12 @@ function ScriptsScreen() {
         }));
         const userID = localStorage.getItem("userID");
         const script = scripts[category].find((script) => script.id === id);
-        renameScriptInFirestore(userID, category, script.name, newName);
+        renameScriptInFirestore(userID, id, category, script.name, newName);
+        // update selectedScript and localStorage's workingOnScript if the renamed script is the selected script
+        if (selectedScript === script.name) {
+            localStorage.setItem("workingOnScript", JSON.stringify({ script: newName, contents: script.content, scriptType: category }));
+            setSelectedScript(newName);
+        }
         setRenameScriptId(null);
     };
 
@@ -218,7 +239,6 @@ function ScriptsScreen() {
 
     const renderScripts = (category) => {
         const groupedScripts = getScriptsByBaseName(scripts[category]);
-        console.log("groupedScripts:", groupedScripts);
         return (
             <>
                 {Object.keys(groupedScripts).map((baseName) => {

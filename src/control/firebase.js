@@ -484,7 +484,7 @@ export const isScriptInFirestore = async (userID, scriptType, filename) => {
 }
 
 
-export const renameScriptInFirestore = async (userID, scriptType, oldFilename, newFilename) => {
+export const renameScriptInFirestore = async (userID, scriptId, scriptType, oldFilename, newFilename) => {
   try {
     if (mode === 'development') {
       console.log("Renaming script in Firestore collection with filename: ", oldFilename
@@ -495,7 +495,7 @@ export const renameScriptInFirestore = async (userID, scriptType, oldFilename, n
       return;
     }
     querySnapshot.forEach((doc) => {
-      if (doc.data().filename === oldFilename) {
+      if (doc.data().id === scriptId) {
         const docRef = doc.ref;
         updateDoc(docRef, {
           filename: newFilename
