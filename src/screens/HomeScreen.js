@@ -30,6 +30,18 @@ export default function HomeScreen() {
     openSCAD: [],
   });
 
+  // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
+  // canvas takes the script and scriptName as props
+  useEffect(() => {
+    const latestWorkingOnScript = localStorage.getItem("latestWorkingOnScript");
+    if (latestWorkingOnScript) {
+      const { script, scriptName } = JSON.parse(latestWorkingOnScript);
+      localStorage.removeItem("latestWorkingOnScript");
+      navigate("/canvas", { state: { script, scriptName } });
+    }
+  }
+    , [localStorage.getItem("latestWorkingOnScript")]);
+
   const createConversation = (hist, reset, onload) => {
     try {
       let newConversation = {
@@ -54,7 +66,7 @@ export default function HomeScreen() {
         setStartAtBottom(false);
         setConversation(newConversation);
       }
-      
+
     } catch (e) {
       console.log(e);
     }
@@ -69,7 +81,7 @@ export default function HomeScreen() {
   let convo = getSavedConversation();
   let previousConversation = createConversation(convo, false, true)
   const [conversation, setConversation] = useState(previousConversation);
-  
+
   const localStorageMicrophoneStatus = localStorage.getItem("microphoneStatus") === "true";
   const [microphoneStatus, setMicrophoneStatus] = useState(localStorageMicrophoneStatus);
   const [loading, setLoading] = useState(true);
@@ -168,7 +180,7 @@ export default function HomeScreen() {
     if (isNaN(localHistCount)) {
       setCount(0);
     }
-  };    
+  };
 
 
   const syncBalance = async () => {
@@ -235,7 +247,7 @@ export default function HomeScreen() {
   }, []);
 
   if (loading) {
-  //   return <div>Loading...</div>;
+    //   return <div>Loading...</div>;
   }
 
   return (
@@ -270,8 +282,8 @@ export default function HomeScreen() {
         <MdSettings
           style={{
             paddingRight: 20,
-            width: buttonSize+6,
-            height: buttonSize+6,
+            width: buttonSize + 6,
+            height: buttonSize + 6,
             color: "white",
             cursor: "pointer",
           }}

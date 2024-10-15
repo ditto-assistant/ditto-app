@@ -1,5 +1,5 @@
 import { collection, addDoc } from "firebase/firestore";
-import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/openaiChat";
+import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/LLM";
 import { googleSearch } from "../ditto/modules/googleSearch";
 import { handleHomeAssistantTask } from "./agentTools";
 import { countTokens } from "./tokens";

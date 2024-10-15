@@ -1,18 +1,21 @@
-/* import a nice Google font for titles */
+/* Import Google font for titles */
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap');
 
+/* Your existing styles */
 .App-title {
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
   font-size: 1.8em;
   margin: 0;
   position: absolute;
-  /*scale move to right a little based on device screen size */
   left: 50.5%;
   transform: translateX(-50%);
-  /* top: 10px;
-  color: white; */
   text-align: center;
+}
+
+/* disable zoom on mobile */
+@viewport {
+  zoom: 1.0;
 }
 
 .App {
@@ -58,4 +61,32 @@
 
 .App-link {
   color: #61dafb;
+}
+
+/* New styles for futuristic Discord-inspired scrollbars */
+/* For Webkit browsers like Chrome and Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(32, 34, 37, 0.6);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7289da;
+  border-radius: 10px;
+  transition: background 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5b6eae;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #7289da rgba(32, 34, 37, 0.6);
 }

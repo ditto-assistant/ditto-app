@@ -1,14 +1,15 @@
-const API_URL = localStorage.getItem('home_assistant_url');
-const API_KEY = localStorage.getItem('ha_api_key');
+
 
 const MODE = process.env.NODE_ENV;
 
 const sendGoogleSdkCommand = async (prompt) => {
+    const API_URL = localStorage.getItem('home_assistant_url');
+    const API_KEY = localStorage.getItem('ha_api_key');
     if (prompt.includes('\n')) {
         prompt = prompt.split('\n')[0];
     }
     try {
-        const url = `${API_URL}/api/services/google_assistant_sdk/send_text_command`;
+        const url = API_URL + "/api/services/google_assistant_sdk/send_text_command";
         const headers = {
             Authorization: `Bearer ${API_KEY}`,
             'Content-Type': 'application/json',
@@ -45,6 +46,8 @@ const sendPushCamera = async (cameraName) => {
 };
 
 const getHaServices = async (services = null, states = null) => {
+    const API_URL = localStorage.getItem('home_assistant_url');
+    const API_KEY = localStorage.getItem('ha_api_key');
     try {
         const endpoint = services ? 'services' : states ? 'states' : 'services';
         const url = `${API_URL}${endpoint}`;
@@ -85,6 +88,8 @@ const getForecast = async () => {
 };
 
 const updateState = async (entityId, data) => {
+    const API_URL = localStorage.getItem('home_assistant_url');
+    const API_KEY = localStorage.getItem('ha_api_key');
     try {
         const url = `${API_URL}states/${entityId}`;
         const headers = {

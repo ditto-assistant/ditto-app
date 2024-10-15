@@ -11,14 +11,14 @@ const Settings = () => {
   const navigate = useNavigate();
 
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const [apiKey, setApiKey] = useState(localStorage.getItem("openai_api_key") || '');
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
-  const [showApiKey, setShowApiKey] = useState(false);
   const [showHaApiKey, setShowHaApiKey] = useState(false);
 
   const handleLogout = () => {
-    console.log("Logged out");
+    console.log("logging out");
+    localStorage.clear();
+    auth.signOut();
     navigate("/login");
   };
 
@@ -51,7 +51,6 @@ const Settings = () => {
   };
 
   const handleSaveKey = () => {
-    localStorage.setItem("openai_api_key", apiKey);
     localStorage.setItem("ha_api_key", haApiKey);
     localStorage.setItem("home_assistant_url", haRemoteUrl);
     setKeyInputVisible(false);
@@ -60,7 +59,6 @@ const Settings = () => {
 
   const handleCancelKey = () => {
     setKeyInputVisible(false);
-    setApiKey(localStorage.getItem("openai_api_key") || '');
     setHaApiKey(localStorage.getItem("ha_api_key") || '');
     setHaRemoteUrl(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   };

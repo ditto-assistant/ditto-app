@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { auth } from '../control/firebase';
 import PropTypes from 'prop-types';
 import ReactMarkdown from 'react-markdown';
 import { getAuth } from 'firebase/auth';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './ChatFeed.css';
+
+const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 
 export default function ChatFeed({
   messages,
@@ -26,6 +29,9 @@ export default function ChatFeed({
   },
 }) {
   const [copied, setCopied] = useState(false);
+  const [selectedReaction, setSelectedReaction] = useState({});
+  const [actionOverlay, setActionOverlay] = useState(null);
+  const [reactionOverlay, setReactionOverlay] = useState(null);
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(null);
@@ -53,7 +59,6 @@ export default function ChatFeed({
     }
   }, [messages, scrollToBottom]);
 
-  // check if the user has a profile picture using firebase auth and save as a state
   useEffect(() => {
     const auth = getAuth();
     if (auth.currentUser) {
@@ -66,15 +71,60 @@ export default function ChatFeed({
     }
   }, []);
 
-
+  useEffect(() => {
+    const handleClickAway = (e) => {
+      if (!e.target.closest('.action-overlay') && !e.target.closest('.reaction-overlay')) {
+        setActionOverlay(null);
+        setReactionOverlay(null);
+      }
+    };
+    document.addEventListener('click', handleClickAway);
+    return () => document.removeEventListener('click', handleClickAway);
+  }, []);    
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    setActionOverlay(null);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const renderMessageText = (text) => {
+  const handleReaction = (index, emoji) => {
+    setSelectedReaction((prevReactions) => ({
+      ...prevReactions,
+      [index]: emoji,
+    }));
+    setReactionOverlay(null);
+    setActionOverlay(null);
+  };
+
+  const handleLongPress = (e, index, type = 'text') => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (actionOverlay === index) {
+      setActionOverlay(null);
+    } else {
+      setActionOverlay({ index, type });
+      setReactionOverlay(null);
+    }
+  };
+
+  const handleReactionOverlay = (index) => {
+    setReactionOverlay(index);
+    setActionOverlay(null);
+  };
+
+  const handleImageOpen = (messageText) => {
+    window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
+    setActionOverlay(null);
+  };
+
+  const handleImageDownload = async(messageText) => {
+    window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
+    setActionOverlay(null);
+  };
+
+  const renderMessageText = (text, index) => {
     text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     text = text.replace(/```\./g, '```\n');
     return (
@@ -82,7 +132,15 @@ export default function ChatFeed({
         children={text}
         components={{
           a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
-          img: (props) => <img {...props} className='chat-image' alt='' style={{ width: '95%', height: '95%', paddingTop: '4px' }} />,
+          img: ({ src, alt, ...props }) => (
+            <img
+              {...props}
+              src={src}
+              alt={alt}
+              className='chat-image'
+              onClick={(e) => handleLongPress(e, index, 'image')}
+            />
+          ),
           code({ node, inline, className, children, ...props }) {
             let match = /language-(\w+)/.exec(className || '');
             let hasCodeBlock;
@@ -142,16 +200,54 @@ export default function ChatFeed({
         <img src='../logo512.png' alt='Ditto' className='avatar ditto-avatar' />
       )}
       <div
-        className={`chat-bubble ${message.sender === 'User' ? 'User' : 'Ditto'}`}
+        className={`chat-bubble ${message.sender === 'User' ? 'User' : 'Ditto'} ${actionOverlay && actionOverlay.index === index ? 'blurred' : ''}`}
         style={bubbleStyles.chatbubble}
+        onContextMenu={(e) => handleLongPress(e, index)}
       >
         {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
         <div className='message-text' style={bubbleStyles.text}>
-          {renderMessageText(message.text)}
+          {renderMessageText(message.text, index)}
         </div>
+        {selectedReaction[index] && (
+          <div className='reaction'>
+            <span className='reaction-badge'>{selectedReaction[index]}</span>
+          </div>
+        )}
       </div>
       {message.sender === 'User' && (
         <img src={profilePic} alt='User' className='avatar user-avatar' />
+      )}
+      {actionOverlay && actionOverlay.index === index && (
+        <div className='action-overlay' onClick={(e) => e.stopPropagation()}>
+          {actionOverlay.type === 'text' ? (
+            <>
+              <button onClick={() => handleCopy(message.text)} className='action-button'>
+                Copy
+              </button>
+              <button onClick={() => handleReactionOverlay(index)} className='action-button'>
+                React
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => handleImageOpen(message.text)} className='action-button'>
+                Open
+              </button>
+              <button onClick={async() => handleImageDownload(message.text)} className='action-button'>
+                Download
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      {reactionOverlay === index && (
+        <div className='reaction-overlay' onClick={(e) => e.stopPropagation()}>
+          {emojis.map((emoji) => (
+            <button key={emoji} onClick={() => handleReaction(index, emoji)} className='emoji-button'>
+              {emoji}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -167,7 +263,7 @@ export default function ChatFeed({
         </div>
       )}
       {hasInputField && <input type='text' className='chat-input-field' />}
-      {copied && <div className='copied-notification'>Copied to clipboard!</div>}
+      {copied && <div className='copied-notification'>Copied!</div>}
       <div ref={bottomRef} />
     </div>
   );
