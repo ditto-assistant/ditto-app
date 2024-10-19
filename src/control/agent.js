@@ -2,8 +2,6 @@ import { collection, addDoc } from "firebase/firestore";
 import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../api/LLM";
 import { googleSearch } from "../api/searchEngine";
 import { handleHomeAssistantTask } from "./agentTools";
-import { countTokens } from "./tokens";
-import { saveBalanceToFirestore, uploadGeneratedImageToFirebaseStorage } from "./firebase";
 
 // import { huggingFaceEmbed } from "../ditto/modules/huggingFaceChat";
 import {
@@ -25,13 +23,7 @@ import {
 import {
   googleSearchTemplate,
   googleSearchSystemTemplate,
-  websiteToRelevantContentsTemplate,
-  googleSearchResultsAndWebsiteSummary
 } from "../ditto/templates/googleSearchTemplate";
-import {
-  urlReaderTemplate,
-  urlReaderSystemTemplate
-} from "../ditto/templates/urlReaderTemplate";
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
@@ -47,18 +39,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     localStorage.setItem("idle", "false");
     let allTokensInput = "";
     let allTokensOutput = "";
-    await handleInitialization(prompt);
-    // check if user using their balance or userApiKey
-    let docBalanceMode = false;
-    let userApiKey = localStorage.getItem("openai_api_key") || "";
-    if (userApiKey !== "") {
-      // user has an API key, using it
-      docBalanceMode = false;
-    } else {
-      docBalanceMode = true;
-    }
-
-    let currentBalance = localStorage.getItem(`${userID}_balance`);
+    handleInitialization(prompt);
 
     // fetch user prompt embedddings
     let userPromptEmbedding = await textEmbed(prompt);
@@ -130,7 +111,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
   }
 };
 
-const handleInitialization = async (prompt) => {
+const handleInitialization = (prompt) => {
   localStorage.setItem("thinking", JSON.stringify({ prompt: prompt }));
 };
 
@@ -220,7 +201,7 @@ const processResponse = async (
     const imageURL = await openaiImageGeneration(query);
     // const newImageURL = await uploadGeneratedImageToFirebaseStorage(imageURL, userID);
     // console.log("Image Response: ", imageResponse);
-    let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${imageURL})`;
+    let newresponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
     saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
       console.error("Error saving to memory: ", e);
     });
@@ -258,9 +239,9 @@ const processResponse = async (
     let success = await handleHomeAssistantTask(query);
     let newresponse;
     if (success) {
-      newresponse = "Home Assistant Task: " + query + "\n\n" + "Task completed successfully.";
+      newresponse = `Home Assistant Task: ${query}\n\nTask completed successfully.`;
     } else {
-      newresponse = "Home Assistant Task: " + query + "\n\n" + "Task failed.";
+      newresponse = `Home Assistant Task: ${query}\n\nTask failed.`;
     }
     saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
       console.error("Error saving to memory: ", e);
