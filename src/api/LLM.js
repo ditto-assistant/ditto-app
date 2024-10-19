@@ -1,6 +1,19 @@
-import { auth } from "../../control/firebase";
-import { routes } from "../../firebaseConfig";
+import { auth } from "../control/firebase";
+import { routes } from "../firebaseConfig";
+import { getToken } from "./auth";
 
+/**
+ * Sends a prompt to the LLM and returns the response.
+ *
+ * @async
+ * @function promptLLM
+ * @param {string} userPrompt - The user's prompt.
+ * @param {string} systemPrompt - The system's prompt.
+ * @param {string} [model='gemini-1.5-flash'] - The model to use for the LLM.
+ * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
+ * @returns {Promise<string>} A promise that resolves to the LLM's response.
+ * @throws {Error} If there's an error during the LLM call.
+ */
 export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "") {
   let responseMessage = "";
   let retries = 0;
@@ -74,7 +87,16 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
   return "An error occurred. Please try again.";
 }
 
-// openaiImageGeneration function
+/**
+ * Generates an image using OpenAI's DALL-E API.
+ *
+ * @async
+ * @function openaiImageGeneration
+ * @param {string} prompt - The prompt for image generation.
+ * @param {string} [model='dall-e-3'] - The model to use for image generation.
+ * @returns {Promise<string>} A promise that resolves to the generated image URL.
+ * @throws {Error} If there's an error during the image generation process.
+ */
 export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
   if (!auth.currentUser) {
     return "You are not logged in. Please log in to use this feature.";
@@ -97,6 +119,15 @@ export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
   return await response.text();
 }
 
+/**
+ * Embeds a text into a vector space.
+ *
+ * @async
+ * @function textEmbed
+ * @param {string} text - The text to embed.
+ * @returns {Promise<number[]>} A promise that resolves to an array of numbers representing the embedding.
+ * @throws {Error} If there's an error during the embedding process.
+ */
 export async function textEmbed(text) {
   try {
     if (!auth.currentUser) {
@@ -129,30 +160,39 @@ export async function textEmbed(text) {
   } catch (error) {
     console.error(error);
     alert("Error. Please check your balance or contact support.");
-    return "";
+    return [];
   }
 }
 
-// getExamples function
+/**
+ * Retrieves relevant examples based on an embedding vector.
+ *
+ * @async
+ * @function getRelevantExamples
+ * @param {number[]} embedding - The embedding vector to use for similarity search.
+ * @param {number} k - The number of relevant examples to retrieve.
+ * @returns {Promise<string|string[]>} A promise that resolves to either:
+ *   - A string containing an error message if there's an issue with authentication or the API call.
+ *   - An array of strings representing the relevant examples if the call is successful.
+ * @throws {Error} If there's an unexpected error during the API call.
+ */
 export async function getRelevantExamples(embedding, k) {
-  console.log("Getting examples");
+  const tok = await getToken();
+  if (tok.err) {
+    console.error(tok.err);
+    return "Error: Unable to get relevant examples";
+  }
   try {
-    if (!auth.currentUser) {
-      return "You are not logged in. Please log in to use this feature.";
-    }
-
-    const tok = await auth.currentUser.getIdToken();
-    const userID = auth.currentUser.uid;
     const response = await fetch(routes.searchExamples, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tok}`
+        'Authorization': `Bearer ${tok.ok.token}`
       },
       body: JSON.stringify({
         embedding,
         k,
-        userID,
+        userID: tok.ok.userID,
       }),
     });
     return await response.text();
