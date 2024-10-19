@@ -18,36 +18,25 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
   let responseMessage = "";
   let retries = 0;
   const maxRetries = 3;
+  const tok = await getToken();
+  if (tok.err) {
+    console.error(tok.err);
+    return "Error: Unable to get LLM response";
+  }
   while (retries < maxRetries) {
     try {
-      let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
-      let userID = localStorage.getItem('userID') || "";
-      let balanceKey = `${userID}_balance`;
-      let balance = localStorage.getItem(balanceKey) || 0;
-
-      if (usersOpenaiKey === "" && (Number(balance) <= 0 || balance === "NaN")) {
-        return "You have no API key or your balance is too low to use. Please add more tokens in the settings page.";
-      }
-      if (!auth.currentUser) {
-        return "You are not logged in. Please log in to use this feature.";
-      }
       const requestBody = {
-        data: {
-          userID,
-          userPrompt,
-          systemPrompt,
-          model,
-          imageURL,
-          usersOpenaiKey,
-          // balance
-        }
+        userID: tok.ok.userID,
+        userPrompt,
+        systemPrompt,
+        model,
+        imageURL,
       }
-      const tok = await auth.currentUser.getIdToken();
       const response = await fetch(routes.prompt, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tok}`
+          'Authorization': `Bearer ${tok.ok.token}`
         },
         body: JSON.stringify(requestBody),
       });
@@ -60,22 +49,8 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
         const chunk = decoder.decode(value, { stream: true });
         responseMessage += chunk;
       }
-      // console.log("responseMessage:", responseMessage);
-      if (responseMessage.slice(-2) === "\\n") {
-        responseMessage = responseMessage.slice(0, -2);
-      }
-      let responseString = "";
-      try {
-        responseString = JSON.parse(responseMessage).result;
-      } catch (error) {
-        console.log("message:", responseMessage);
-        console.error("Error in promptLLM:", error);
-        retries++;
-        console.log("Retry: ", retries);
-        // return "An error occurred. Please try again.";
-      }
-      responseString = responseString.replace(/\\u[0-9A-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
-      return responseString.trim();
+      return responseMessage;
+
     } catch (error) {
       console.error("Error in promptLLM:", error);
       retries++;
