@@ -198,24 +198,6 @@ export default function SendMessage() {
         if (event) event.preventDefault();
 
         const thinkingObjectString = localStorage.getItem('thinking');
-        if (!localStorage.getItem('openai_api_key')) {
-            // check if the user has a balance
-            let balance = localStorage.getItem(`${localStorage.getItem('userID')}_balance`) || 0;
-            if (balance) {
-                if (Number(balance) <= 0 || balance === 'NaN') {
-                    alert('No OpenAI API key found and No Tokens left. Please set your key or add more tokens in the settings.');
-                    return;
-                } else{
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log('User has balance');
-                    }
-                }
-            } else {
-                alert('No OpenAI API key found and No Tokens left. Please set your key or add more tokens in the settings.');
-                return;
-            }
-        }
-
         const isThinking = thinkingObjectString !== null;
 
         if ((message !== '' || finalTranscriptRef.current) && !isThinking) {

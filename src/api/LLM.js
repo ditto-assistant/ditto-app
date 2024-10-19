@@ -77,20 +77,19 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
  * @throws {Error} If there's an error during the image generation process.
  */
 export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
-  if (!auth.currentUser) {
-    return "You are not logged in. Please log in to use this feature.";
+  const tok = await getToken();
+  if (tok.err) {
+    console.error(tok.err);
+    return "Error: Unable to get image generation";
   }
-  let userID = auth.currentUser.uid;
-  let tok = await auth.currentUser.getIdToken();
-  // TODO: handle balance server side
   const response = await fetch(routes.imageGeneration, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${tok}`
+      'Authorization': `Bearer ${tok.ok.token}`
     },
     body: JSON.stringify({
-      userID,
+      userID: tok.ok.userID,
       prompt,
       model,
     }),
@@ -114,14 +113,6 @@ export async function textEmbed(text) {
     }
     const tok = await auth.currentUser.getIdToken();
     const userID = auth.currentUser.uid;
-    let usersOpenaiKey = localStorage.getItem('openai_api_key') || "";
-    let balanceKey = `${userID}_balance`;
-    let balance = localStorage.getItem(balanceKey) || 0;
-
-    if (usersOpenaiKey === "" && (Number(balance) <= 0 || balance === "NaN")) {
-      return "You have no tokens or your balance is too low to use. Please add more tokens in the settings page.";
-    }
-
     const response = await fetch(routes.embed, {
       method: 'POST',
       headers: {

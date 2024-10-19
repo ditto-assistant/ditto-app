@@ -75,7 +75,6 @@ function StatusBar() {
     }, [scripts]);
 
     const formatNumber = (num) => {
-        console.log("num", num);
         const absNum = Math.abs(num);
         let formattedNum;
         if (absNum >= 1e12) formattedNum = (absNum / 1e12).toFixed(1) + 'T';

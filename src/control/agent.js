@@ -48,8 +48,6 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     let allTokensInput = "";
     let allTokensOutput = "";
     await handleInitialization(prompt);
-    const apiKeyExist = await checkApiKey();
-    if (!apiKeyExist) return;
     // check if user using their balance or userApiKey
     let docBalanceMode = false;
     let userApiKey = localStorage.getItem("openai_api_key") || "";
@@ -121,12 +119,6 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
       allTokensOutput
     );
 
-    // if docBalanceMode is false, set the balance back to the user's balance
-    if (!docBalanceMode) {
-      localStorage.setItem(`${userID}_balance`, currentBalance);
-      saveBalanceToFirestore(userID, currentBalance);
-    }
-
     localStorage.setItem("idle", "true");
 
     return finalResponse;
@@ -140,26 +132,6 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
 
 const handleInitialization = async (prompt) => {
   localStorage.setItem("thinking", JSON.stringify({ prompt: prompt }));
-};
-
-const checkApiKey = async () => {
-  const hasOpenaiApiKey = localStorage.getItem("openai_api_key");
-  if (!hasOpenaiApiKey) {
-    let userID = localStorage.getItem("userID");
-    let balance = localStorage.getItem(`${userID}_balance`) || 0;
-    if (Number(balance) <= 0 || balance === "NaN") {
-      alert(
-        "New? Please Add Tokens in the settings menu."
-      );
-      localStorage.removeItem("thinking");
-      return false;
-    } else {
-      // user has a balance, continue
-      return true;
-    }
-  }
-  // user has an API key, continue
-  return true;
 };
 
 const fetchMemories = async (userID, embedding) => {
@@ -328,8 +300,6 @@ const handleScriptGeneration = async (
   allTokensInput,
   allTokensOutput
 ) => {
-  let miniInputCost = (countTokens(allTokensInput) / 1000000) * 0.6;
-  let miniOutputCost = (countTokens(allTokensOutput) / 1000000) * 2.4;
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents);
   // print constructed prompt in green
@@ -382,21 +352,16 @@ const handleScriptGeneration = async (
   const newResponse =
     `**${scriptTypeToWords} Script Generated and Downloaded.**\n- Task:` +
     query;
-  let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
-  let tokensInputCount = countTokens(allTokensInput);
-  let tokensOutputCount = countTokens(allTokensOutput);
-  // $2.50 / 1M input tokens
-  let inputCost = (tokensInputCount / 1000000) * 2.5;
-  // $10.00 / 1M output tokens
-  let outputCost = (tokensOutputCount / 1000000) * 10;
-  let totalCost = inputCost + outputCost + miniInputCost + miniOutputCost;
-  let newBalance = currentBalance - totalCost;
-  localStorage.setItem(`${userID}_balance`, newBalance);
-  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
+  saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt).catch((e) => {
+    console.error("Error saving to firestore: ", e);
+  });
   handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-  await saveBalanceToFirestore(userID, newBalance);
-  await saveToMemory(userID, prompt, newResponse, embedding);
-  await saveToLocalStorage(prompt, newResponse);
+  saveToMemory(userID, prompt, newResponse, embedding).catch((e) => {
+    console.error("Error saving to memory: ", e);
+  });
+  saveToLocalStorage(prompt, newResponse).catch((e) => {
+    console.error("Error saving to local storage: ", e);
+  });
   localStorage.removeItem("thinking");
   return newResponse;
 };
