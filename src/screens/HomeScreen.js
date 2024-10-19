@@ -15,6 +15,7 @@ import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 
 // import heyDitto
 import HeyDitto from "../ditto/activation/heyDitto";
+import { getBalance } from "../api/get-balance";
 
 export const DittoActivation = new HeyDitto();
 DittoActivation.loadModel();
@@ -185,14 +186,13 @@ export default function HomeScreen() {
 
   const syncBalance = async () => {
     let userID = localStorage.getItem("userID");
-    // update local storage with balance from firestore
-    getBalanceFromFirestore(userID).then((balance) => {
-      if (balance) {
-        localStorage.setItem(`${userID}_balance`, balance);
-      } else {
-        localStorage.setItem(`${userID}_balance`, 0);
-      }
-    });
+    const balance = await getBalance();
+    if (balance.err) {
+      console.error(balance.err);
+      return;
+    }
+    console.log(`${userID}_balance`, balance.ok);
+    localStorage.setItem(`${userID}_balance`, balance.ok);
   };
 
   useEffect(() => {

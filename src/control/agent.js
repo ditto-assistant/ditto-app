@@ -1,6 +1,6 @@
 import { collection, addDoc } from "firebase/firestore";
 import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/LLM";
-import { googleSearch } from "../ditto/modules/googleSearch";
+import { googleSearch } from "../api/searchEngine";
 import { handleHomeAssistantTask } from "./agentTools";
 import { countTokens } from "./tokens";
 import { saveBalanceToFirestore, uploadGeneratedImageToFirebaseStorage } from "./firebase";

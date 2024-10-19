@@ -1,5 +1,5 @@
 import { auth } from "../../control/firebase";
-import { URL } from "../../firebaseConfig";
+import { routes } from "../../firebaseConfig";
 
 export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "") {
   let responseMessage = "";
@@ -30,7 +30,7 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
         }
       }
       const tok = await auth.currentUser.getIdToken();
-      const response = await fetch(URL.prompt, {
+      const response = await fetch(routes.prompt, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
   let userID = auth.currentUser.uid;
   let tok = await auth.currentUser.getIdToken();
   // TODO: handle balance server side
-  const response = await fetch(URL.imageGeneration, {
+  const response = await fetch(routes.imageGeneration, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export async function textEmbed(text) {
       return "You have no tokens or your balance is too low to use. Please add more tokens in the settings page.";
     }
 
-    const response = await fetch(URL.embed, {
+    const response = await fetch(routes.embed, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ export async function getRelevantExamples(embedding, k) {
 
     const tok = await auth.currentUser.getIdToken();
     const userID = auth.currentUser.uid;
-    const response = await fetch(URL.searchExamples, {
+    const response = await fetch(routes.searchExamples, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
