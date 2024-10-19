@@ -11,10 +11,11 @@ import { getToken } from "./auth";
  * @param {string} systemPrompt - The system's prompt.
  * @param {string} [model='gemini-1.5-flash'] - The model to use for the LLM.
  * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
+ * @param {function} textCallback - A callback function that handles the text as it comes in.
  * @returns {Promise<string>} A promise that resolves to the LLM's response.
  * @throws {Error} If there's an error during the LLM call.
  */
-export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "") {
+export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "", textCallback = null) {
   let responseMessage = "";
   let retries = 0;
   const maxRetries = 3;
@@ -47,6 +48,9 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
         const { value, done } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
+        if (textCallback) {
+          textCallback(chunk);
+        }
         responseMessage += chunk;
       }
       return responseMessage;
