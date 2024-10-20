@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import ReactMarkdown from 'react-markdown';
 import { getAuth } from 'firebase/auth';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './ChatFeed.css';
+
+const ReactMarkdown = lazy(() => import('react-markdown'));
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 

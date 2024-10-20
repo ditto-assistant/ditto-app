@@ -69,7 +69,7 @@ const router = createBrowserRouter(
 
 export default function App() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>Loading Router...</div>}>
             <RouterProvider router={router} />
         </Suspense>
     );
