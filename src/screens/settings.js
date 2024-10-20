@@ -5,11 +5,19 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { getAuth, deleteUser } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
+import { useBalanceContext } from '../App';
 
+/**
+ * Settings component for managing user settings and account.
+ * 
+ * @param {Object} props - The component props.
+ * @param {{balance: string, images: string}} props.balance - The user's current balance.
+ * @returns {React.Component} The rendered Settings component.
+ */
 const Settings = () => {
   const auth = getAuth();
   const navigate = useNavigate();
-
+  const balance = useBalanceContext();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
@@ -63,15 +71,12 @@ const Settings = () => {
     setHaRemoteUrl(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   };
 
-  // TODO: FIX IMAGE COUNTER
-  let userID = localStorage.getItem("userID");
-  const balance = Number(localStorage.getItem(`${userID}_balance`)) || 0;
-  const tokensLeftInput = (balance / 0.6) * 1000000;
-  const tokensLeftOutput = (balance / 2.4) * 1000000;
+  // Remove the balance calculation from localStorage
+  const tokensLeftInput = balance ? (balance / 0.6) * 1000000 : 0;
+  const tokensLeftOutput = balance ? (balance / 2.4) * 1000000 : 0;
   const totalTokens = tokensLeftInput + tokensLeftOutput;
   const tokensPerImage = 765;
   const ImagesLeft = Math.floor(tokensLeftOutput / tokensPerImage);
-
 
   const formatNumber = (num) => {
     if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
@@ -90,9 +95,9 @@ const Settings = () => {
         <Divider style={styles.divider} />
         <div style={styles.settingsContent}>
           <div style={styles.tokensInfo}>
-            {/* <p><span style={{ color: 'white' }}>Current Balance:</span> <span style={{ color: 'green' }}>${balance.toFixed(2)}</span></p> */}
-            <p><span style={{ color: 'white' }}>Tokens:</span> <span style={{ color: '#7289da' }}>{formatNumber(totalTokens)}</span></p>
-            <p><span style={{ color: 'white' }}>Images:</span> <span style={{ color: '#7289da' }}>{formatNumber(ImagesLeft)}</span></p>
+            <p><span style={{ color: 'white' }}>Ditto Tokens:</span> <span style={{ color: 'green' }}>{balance.balance}</span></p>
+            {/* <p><span style={{ color: 'white' }}>Tokens:</span> <span style={{ color: '#7289da' }}>{formatNumber(totalTokens)}</span></p> */}
+            <p><span style={{ color: 'white' }}>Images:</span> <span style={{ color: '#7289da' }}>{balance.images}</span></p>
           </div>
           <div style={styles.settingsOptions}>
             <Button variant="contained" onClick={handleLogout} style={styles.button}>

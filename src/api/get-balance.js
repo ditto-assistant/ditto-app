@@ -4,7 +4,7 @@ import { routes } from "../firebaseConfig";
 /**
  * Retrieves the user's balance from the server.
  * 
- * @returns {Promise<{ok?: string, err?: string}>} A promise that resolves to an object:
+ * @returns {Promise<{ok?: {balance: string, images: string}, err?: string}>} A promise that resolves to an object:
  *   - If successful, returns {ok: balance} where balance is a formatted string.
  *   - If unsuccessful, returns {err: errorMessage} where errorMessage is a string describing the error.
  */
@@ -22,7 +22,7 @@ export async function getBalance() {
     });
     if (response.ok) {
         const data = await response.json();
-        return { ok: data.balance };
+        return { ok: data };
     } else {
         return { err: `getBalance: Unable to get balance: ${response.status}` };
     }

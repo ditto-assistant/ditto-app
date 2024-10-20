@@ -42,8 +42,6 @@ const Login = (props) => {
     const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
     const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
 
-    
-
     const handleSignIn = async () => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);

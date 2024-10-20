@@ -5,10 +5,8 @@ import MemoryOverlay from "./MemoryOverlay";
 import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 
-function StatusBar() {
+function StatusBar({ balance }) {
     const navigate = useNavigate();
-    let userID = localStorage.getItem("userID");
-    const balance = (localStorage.getItem(`${userID}_balance`)) || "0";
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
     const [selectedScript, setSelectedScript] = useState(
         localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null

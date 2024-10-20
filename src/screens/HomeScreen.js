@@ -11,17 +11,15 @@ import SendMessage from "../components/SendMessage";
 import StatusBar from "../components/StatusBar";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
-
-// import heyDitto
 import HeyDitto from "../ditto/activation/heyDitto";
-import { getBalance } from "../api/get-balance";
+import { useBalanceContext } from '../App';
 
 export const DittoActivation = new HeyDitto();
 DittoActivation.loadModel();
 
-
-export default function HomeScreen() {
+export default function HomeScreen(props) {
   const navigate = useNavigate();
+  const balance = useBalanceContext();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);
@@ -183,23 +181,9 @@ export default function HomeScreen() {
   };
 
 
-  const syncBalance = async () => {
-    let userID = localStorage.getItem("userID");
-    const balance = await getBalance();
-    if (balance.err) {
-      console.error(balance.err);
-      return;
-    }
-    console.log(`${userID}_balance`, balance.ok);
-    localStorage.setItem(`${userID}_balance`, balance.ok);
-  };
-
   useEffect(() => {
     syncScripts();
-    syncBalance();
-  }, []);
-
-  useEffect(() => {
+    balance.refetch();
     const handleStatus = async () => {
       var statusDb = await grabStatus();
       if (bootStatus !== statusDb.status) {
@@ -221,7 +205,6 @@ export default function HomeScreen() {
 
   const statusColor = bootStatus === "on" ? "green" : "red";
 
-  // New useEffect to handle keyboard
   useEffect(() => {
     const handleResize = () => {
       const chatContainer = appBodyRef.current;
@@ -292,7 +275,7 @@ export default function HomeScreen() {
         />
       </header>
       <Divider />
-      <StatusBar status={bootStatus} statusColor={statusColor} />
+      <StatusBar status={bootStatus} statusColor={statusColor} balance={balance.balance} />
       <Divider />
       <div className="App-body" ref={appBodyRef}>
         <div className="chat-container">

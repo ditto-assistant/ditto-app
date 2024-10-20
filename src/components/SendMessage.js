@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaMicrophone, FaImage, FaTimesCircle, FaCamera } from 'react-icons/fa';
 import { MdFlipCameraIos } from 'react-icons/md';
 import { sendPrompt } from '../control/agent';
-import { uploadImageToFirebaseStorageBucket } from '../control/firebase';
+import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
 import { DittoActivation } from '../screens/HomeScreen';
 import sharedMic from '../sharedMic';
 import { firebaseConfig } from '../firebaseConfig';
@@ -201,7 +201,8 @@ export default function SendMessage() {
         const isThinking = thinkingObjectString !== null;
 
         if ((message !== '' || finalTranscriptRef.current) && !isThinking) {
-            const userID = localStorage.getItem('userID');
+            // const userID = localStorage.getItem('userID');
+            const userID = auth.currentUser.uid;
             const firstName = localStorage.getItem('firstName');
             let messageToSend = finalTranscriptRef.current || message;
             let imageURI = '';
