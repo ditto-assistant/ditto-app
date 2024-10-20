@@ -63,6 +63,7 @@ const Settings = () => {
     setHaRemoteUrl(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   };
 
+  // TODO: FIX IMAGE COUNTER
   let userID = localStorage.getItem("userID");
   const balance = Number(localStorage.getItem(`${userID}_balance`)) || 0;
   const tokensLeftInput = (balance / 0.6) * 1000000;
