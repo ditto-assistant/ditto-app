@@ -1,2 +1,2 @@
 start:
-	npm run start
+	bun run start

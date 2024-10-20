@@ -29,7 +29,7 @@ import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
 import { db, saveScriptToFirestore, grabConversationHistoryCount } from "./firebase";
 
-const mode = process.env.NODE_ENV;
+const mode = import.meta.env.MODE;
 
 /**
  * Send a prompt to Ditto.

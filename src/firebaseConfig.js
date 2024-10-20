@@ -1,5 +1,5 @@
 // Your web app's Firebase configuration
-const MODE = process.env.NODE_ENV;
+const MODE = import.meta.env.MODE;
 // const MODE = "production";
 
 function getBaseURL(dittoEnv) {

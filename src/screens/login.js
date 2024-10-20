@@ -65,7 +65,7 @@ const Login = (props) => {
                 localStorage.setItem('firstName', firstName);
                 localStorage.setItem('lastName', lastName);
             }
-            props.history("/dashboard"); // Navigate to dashboard or any other page
+            props.history("/");
         } catch (error) {
             console.error("Error signing in:", error.message);
             // Handle errors (e.g., show an error message to the user)
@@ -151,7 +151,7 @@ const Login = (props) => {
                 localStorage.setItem('histCount', conversationHistory.prompts.length);
             }
 
-            props.history("/dashboard");
+            props.history("/");
         } catch (error) {
             console.error("Error signing in with Google:", error.message);
             // Handle errors (e.g., show an error message to the user)
