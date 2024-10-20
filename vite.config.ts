@@ -47,7 +47,7 @@ export default defineConfig({
     },
     build: {
         outDir: 'build',
-        sourcemap: true,
+        sourcemap: false,
     },
     esbuild: {
         loader: 'tsx', // Change from 'jsx' to 'tsx'

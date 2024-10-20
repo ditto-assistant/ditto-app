@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { auth } from '../control/firebase';
 import PropTypes from 'prop-types';
 import ReactMarkdown from 'react-markdown';
 import { getAuth } from 'firebase/auth';
@@ -36,10 +35,10 @@ export default function ChatFeed({
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(null);
 
-  const scrollToBottomOfFeed = (quick=false) => {
+  const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
       if (quick) {
-        bottomRef.current.scrollIntoView();      
+        bottomRef.current.scrollIntoView();
       } else {
         bottomRef.current.scrollIntoView({ behavior: 'smooth' });
       }
@@ -80,7 +79,7 @@ export default function ChatFeed({
     };
     document.addEventListener('click', handleClickAway);
     return () => document.removeEventListener('click', handleClickAway);
-  }, []);    
+  }, []);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -119,7 +118,7 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
-  const handleImageDownload = async(messageText) => {
+  const handleImageDownload = async (messageText) => {
     window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
     setActionOverlay(null);
   };
@@ -233,7 +232,7 @@ export default function ChatFeed({
               <button onClick={() => handleImageOpen(message.text)} className='action-button'>
                 Open
               </button>
-              <button onClick={async() => handleImageDownload(message.text)} className='action-button'>
+              <button onClick={async () => handleImageDownload(message.text)} className='action-button'>
                 Download
               </button>
             </>

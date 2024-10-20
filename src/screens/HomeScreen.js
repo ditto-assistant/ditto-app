@@ -1,18 +1,20 @@
 import "./App.css";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   grabStatus,
   syncLocalScriptsWithFirestore,
 } from "../control/firebase";
-import Divider from "@mui/material/Divider";
-import ChatFeed from "../components/ChatFeed";
-import SendMessage from "../components/SendMessage";
-import StatusBar from "../components/StatusBar";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 import HeyDitto from "../ditto/activation/heyDitto";
 import { useBalanceContext } from '../App';
+
+// Lazy load components
+const ChatFeed = lazy(() => import("../components/ChatFeed"));
+const SendMessage = lazy(() => import("../components/SendMessage"));
+const StatusBar = lazy(() => import("../components/StatusBar"));
+const Divider = lazy(() => import("@mui/material/Divider"));
 
 export const DittoActivation = new HeyDitto();
 DittoActivation.loadModel();
@@ -279,18 +281,22 @@ export default function HomeScreen(props) {
       <Divider />
       <div className="App-body" ref={appBodyRef}>
         <div className="chat-container">
-          <ChatFeed
-            messages={conversation.messages}
-            histCount={histCount}
-            isTyping={conversation.is_typing}
-            scrollToBottom={true}
-            startAtBottom={startAtBottom}
-          /> {/* Passing isTyping and scrollToBottom prop */}
+          <Suspense fallback={<div>Loading chat...</div>}>
+            <ChatFeed
+              messages={conversation.messages}
+              histCount={histCount}
+              isTyping={conversation.is_typing}
+              scrollToBottom={true}
+              startAtBottom={startAtBottom}
+            />
+          </Suspense>
         </div>
       </div>
 
       <footer className="App-footer">
-        <SendMessage sendMessage={sendMessage} />
+        <Suspense fallback={<div>Loading message input...</div>}>
+          <SendMessage sendMessage={sendMessage} />
+        </Suspense>
       </footer>
     </div>
   );

@@ -1,14 +1,16 @@
-import { Suspense, createContext, useContext } from "react";
+import { Suspense, createContext, useContext, lazy } from "react";
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements, Outlet } from "react-router-dom";
 
-import HomeScreen from "./screens/HomeScreen";
-import ScriptsScreen from "./screens/ScriptsScreen";
-import DittoCanvas from "./screens/DittoCanvas";
-import Settings from './screens/settings';
-import Paypal from "./screens/paypal";
-import Login from './screens/login';
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 import { useBalance } from './api/useBalance';
+import Login from './screens/login';
+
+// Lazy load components
+const HomeScreen = lazy(() => import("./screens/HomeScreen"));
+const ScriptsScreen = lazy(() => import("./screens/ScriptsScreen"));
+const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
+const Settings = lazy(() => import('./screens/settings'));
+const Paypal = lazy(() => import("./screens/paypal"));
 
 const BalanceContext = createContext();
 
@@ -49,7 +51,9 @@ const router = createBrowserRouter(
             <Route element={
                 <AuthenticatedRoute>
                     <BalanceProvider>
-                        <Outlet />
+                        <Suspense fallback={<div>Loading Page...</div>}>
+                            <Outlet />
+                        </Suspense>
                     </BalanceProvider>
                 </AuthenticatedRoute>
             }>
