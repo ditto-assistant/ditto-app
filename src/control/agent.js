@@ -212,7 +212,7 @@ const processResponse = async (
     return newresponse;
   } else if (response.includes("<GOOGLE_SEARCH>") && isValidResponse) {
     // handle google search
-    const query = response.split("<GOOGLE_SEARCH>")[1];
+    const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
     const googleSearchResponse = await googleSearch(query);
     let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);

@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   grabStatus,
-  getBalanceFromFirestore,
   syncLocalScriptsWithFirestore,
 } from "../control/firebase";
 import Divider from "@mui/material/Divider";
