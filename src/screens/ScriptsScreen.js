@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
 import { FaPlay } from "react-icons/fa";
 import {
@@ -7,7 +7,7 @@ import {
     saveScriptToFirestore,
     renameScriptInFirestore,
 } from "../control/firebase";
-import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
+import { downloadOpenscadScript } from "../control/agentTools";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/mode-javascript";
@@ -27,7 +27,6 @@ const darkModeColors = {
 };
 
 function ScriptsScreen() {
-    const location = useLocation();
     const navigate = useNavigate();
     // const [scripts, setScripts] = useState(location.state?.scripts || { webApps: [], openSCAD: [] });
     // const [selectedScript, setSelectedScript] = useState(location.state?.selectedScript || null);
@@ -39,7 +38,7 @@ function ScriptsScreen() {
     });
     const localWorkingOnScript = JSON.parse(localStorage.getItem("workingOnScript")) || {};
     const [selectedScript, setSelectedScript] = useState(localWorkingOnScript.script || null);
-    
+
     const [activeCard, setActiveCard] = useState(null);
     const [renameScriptId, setRenameScriptId] = useState(null);
     const [editScript, setEditScript] = useState(null);

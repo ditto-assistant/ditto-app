@@ -1,13 +1,35 @@
 // Your web app's Firebase configuration
-const MODE = process.env.NODE_ENV;
+const MODE = import.meta.env.MODE;
 // const MODE = "production";
 
-export const URL = {
-  prompt: MODE === "development" ? "http://localhost:3400/v1/prompt" : "https://backend-22790208601.us-central1.run.app/v1/prompt",
-  embed: MODE === "development" ? "http://localhost:3400/v1/embed" : "https://backend-22790208601.us-central1.run.app/v1/embed",
-  search: MODE === "development" ? "http://localhost:3400/v1/google-search" : "https://backend-22790208601.us-central1.run.app/v1/google-search",
-  imageGeneration: MODE === "development" ? "http://localhost:3400/v1/generate-image" : "https://backend-22790208601.us-central1.run.app/v1/generate-image",
-  searchExamples: MODE === "development" ? "http://localhost:3400/v1/search-examples" : "https://backend-22790208601.us-central1.run.app/v1/search-examples"
+function getBaseURL(dittoEnv) {
+  switch (dittoEnv) {
+    case "development":
+      return "http://localhost:3400";
+    case "production":
+      return "https://backend-22790208601.us-central1.run.app";
+    case "staging":
+      return "https://staging-backend-22790208601.us-central1.run.app";
+    default:
+      return "https://backend-22790208601.us-central1.run.app";
+  }
+}
+
+const BASE_URL = getBaseURL(MODE);
+
+export const routes = {
+  prompt: BASE_URL + "/v1/prompt",
+  embed: BASE_URL + "/v1/embed",
+  search: BASE_URL + "/v1/google-search",
+  imageGeneration: BASE_URL + "/v1/generate-image",
+  searchExamples: BASE_URL + "/v1/search-examples",
+  /**
+   * Generates the URL for retrieving the user's balance.
+   * 
+   * @param {string} userID - The unique identifier of the user.
+   * @returns {string} The complete URL for the balance endpoint.
+   */
+  balance: (userID) => `${BASE_URL}/v1/balance?userID=${userID}`,
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

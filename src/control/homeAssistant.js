@@ -1,6 +1,6 @@
 
 
-const MODE = process.env.NODE_ENV;
+const MODE = import.meta.env.MODE;
 
 const sendGoogleSdkCommand = async (prompt) => {
     const API_URL = localStorage.getItem('home_assistant_url');

@@ -1,9 +1,7 @@
 import { collection, addDoc } from "firebase/firestore";
-import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../ditto/modules/LLM";
-import { googleSearch } from "../ditto/modules/googleSearch";
+import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../api/LLM";
+import { googleSearch } from "../api/searchEngine";
 import { handleHomeAssistantTask } from "./agentTools";
-import { countTokens } from "./tokens";
-import { saveBalanceToFirestore, uploadGeneratedImageToFirebaseStorage } from "./firebase";
 
 // import { huggingFaceEmbed } from "../ditto/modules/huggingFaceChat";
 import {
@@ -25,19 +23,13 @@ import {
 import {
   googleSearchTemplate,
   googleSearchSystemTemplate,
-  websiteToRelevantContentsTemplate,
-  googleSearchResultsAndWebsiteSummary
 } from "../ditto/templates/googleSearchTemplate";
-import {
-  urlReaderTemplate,
-  urlReaderSystemTemplate
-} from "../ditto/templates/urlReaderTemplate";
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
 import { db, saveScriptToFirestore, grabConversationHistoryCount } from "./firebase";
 
-const mode = process.env.NODE_ENV;
+const mode = import.meta.env.MODE;
 
 /**
  * Send a prompt to Ditto.
@@ -47,20 +39,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     localStorage.setItem("idle", "false");
     let allTokensInput = "";
     let allTokensOutput = "";
-    await handleInitialization(prompt);
-    const apiKeyExist = await checkApiKey();
-    if (!apiKeyExist) return;
-    // check if user using their balance or userApiKey
-    let docBalanceMode = false;
-    let userApiKey = localStorage.getItem("openai_api_key") || "";
-    if (userApiKey !== "") {
-      // user has an API key, using it
-      docBalanceMode = false;
-    } else {
-      docBalanceMode = true;
-    }
-
-    let currentBalance = localStorage.getItem(`${userID}_balance`);
+    handleInitialization(prompt);
 
     // fetch user prompt embedddings
     let userPromptEmbedding = await textEmbed(prompt);
@@ -121,12 +100,6 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
       allTokensOutput
     );
 
-    // if docBalanceMode is false, set the balance back to the user's balance
-    if (!docBalanceMode) {
-      localStorage.setItem(`${userID}_balance`, currentBalance);
-      saveBalanceToFirestore(userID, currentBalance);
-    }
-
     localStorage.setItem("idle", "true");
 
     return finalResponse;
@@ -138,28 +111,8 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
   }
 };
 
-const handleInitialization = async (prompt) => {
+const handleInitialization = (prompt) => {
   localStorage.setItem("thinking", JSON.stringify({ prompt: prompt }));
-};
-
-const checkApiKey = async () => {
-  const hasOpenaiApiKey = localStorage.getItem("openai_api_key");
-  if (!hasOpenaiApiKey) {
-    let userID = localStorage.getItem("userID");
-    let balance = localStorage.getItem(`${userID}_balance`) || 0;
-    if (Number(balance) <= 0 || balance === "NaN") {
-      alert(
-        "New? Please Add Tokens in the settings menu."
-      );
-      localStorage.removeItem("thinking");
-      return false;
-    } else {
-      // user has a balance, continue
-      return true;
-    }
-  }
-  // user has an API key, continue
-  return true;
 };
 
 const fetchMemories = async (userID, embedding) => {
@@ -248,31 +201,18 @@ const processResponse = async (
     const imageURL = await openaiImageGeneration(query);
     // const newImageURL = await uploadGeneratedImageToFirebaseStorage(imageURL, userID);
     // console.log("Image Response: ", imageResponse);
-    let newresponse = "Image Task: " + query + "\n" + `![DittoImage](${imageURL})`;
-    let inputTokens = countTokens(allTokensInput);
-    let outputTokens = countTokens(allTokensOutput)
-    let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
-    // $2.50 / 1M input tokens
-    // let inputCost = (inputTokens / 1000000) * 2.5;
-    // $10.00 / 1M output tokens
-    // let outputCost = (outputTokens / 1000000) * 10;
-    // $0.150 / 1M tokens
-    let inputCost = (inputTokens / 1000000) * 0.6;
-    // $0.600 / 1M tokens
-    let outputCost = (outputTokens / 1000000) * 2.4;
-    let totalCost = inputCost + outputCost;
-    // images $0.040 / image
-    let imageCost = 0.040;
-    let newBalance = currentBalance - totalCost - imageCost;
-    localStorage.setItem(`${userID}_balance`, newBalance);
-    await saveBalanceToFirestore(userID, newBalance);
-    await saveToMemory(userID, prompt, newresponse, embedding);
-    await saveToLocalStorage(prompt, newresponse);
+    let newresponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
+    saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
+      console.error("Error saving to memory: ", e);
+    });
+    saveToLocalStorage(prompt, newresponse).catch((e) => {
+      console.error("Error saving to local storage: ", e);
+    });
     localStorage.removeItem("thinking");
     return newresponse;
   } else if (response.includes("<GOOGLE_SEARCH>") && isValidResponse) {
     // handle google search
-    const query = response.split("<GOOGLE_SEARCH>")[1];
+    const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
     const googleSearchResponse = await googleSearch(query);
     let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
@@ -285,23 +225,12 @@ const processResponse = async (
     allTokensOutput += googleSearchAgentResponse
     // check if <WEBSITE> is in the response
     let newresponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
-    let inputTokens = countTokens(allTokensInput);
-    let outputTokens = countTokens(allTokensOutput)
-    let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
-    // $2.50 / 1M input tokens
-    // let inputCost = (inputTokens / 1000000) * 2.5;
-    // $10.00 / 1M output tokens
-    // let outputCost = (outputTokens / 1000000) * 10;
-    // $0.150 / 1M tokens
-    let inputCost = (inputTokens / 1000000) * 0.6;
-    // $0.600 / 1M tokens
-    let outputCost = (outputTokens / 1000000) * 2.4;
-    let totalCost = inputCost + outputCost;
-    let newBalance = currentBalance - totalCost;
-    localStorage.setItem(`${userID}_balance`, newBalance);
-    await saveBalanceToFirestore(userID, newBalance);
-    await saveToMemory(userID, prompt, newresponse, embedding);
-    await saveToLocalStorage(prompt, newresponse);
+    saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
+      console.error("Error saving to memory: ", e);
+    });
+    saveToLocalStorage(prompt, newresponse).catch((e) => {
+      console.error("Error saving to local storage: ", e);
+    });
     localStorage.removeItem("thinking");
     return newresponse;
   } else if (response.includes("<GOOGLE_HOME>") && isValidResponse) {
@@ -310,49 +239,26 @@ const processResponse = async (
     let success = await handleHomeAssistantTask(query);
     let newresponse;
     if (success) {
-      newresponse = "Home Assistant Task: " + query + "\n\n" + "Task completed successfully.";
+      newresponse = `Home Assistant Task: ${query}\n\nTask completed successfully.`;
     } else {
-      newresponse = "Home Assistant Task: " + query + "\n\n" + "Task failed.";
+      newresponse = `Home Assistant Task: ${query}\n\nTask failed.`;
     }
-    let inputTokens = countTokens(allTokensInput);
-    let outputTokens = countTokens(allTokensOutput)
-    let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
-    // $2.50 / 1M input tokens
-    // let inputCost = (inputTokens / 1000000) * 2.5;
-    // $10.00 / 1M output tokens
-    // let outputCost = (outputTokens / 1000000) * 10;
-    // $0.150 / 1M tokens
-    let inputCost = (inputTokens / 1000000) * 0.6;
-    // $0.600 / 1M tokens
-    let outputCost = (outputTokens / 1000000) * 2.4;
-    let totalCost = inputCost + outputCost;
-    let newBalance = currentBalance - totalCost;
-    localStorage.setItem(`${userID}_balance`, newBalance);
-    await saveBalanceToFirestore(userID, newBalance);
-    await saveToMemory(userID, prompt, newresponse, embedding);
-    await saveToLocalStorage(prompt, newresponse);
+    saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
+      console.error("Error saving to memory: ", e);
+    });
+    saveToLocalStorage(prompt, newresponse).catch((e) => {
+      console.error("Error saving to local storage: ", e);
+    });
     localStorage.removeItem("thinking");
     return newresponse;
   }
   else {
-    // handle normal response
-    let inputTokens = countTokens(allTokensInput);
-    let outputTokens = countTokens(allTokensOutput)
-    let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
-    // $2.50 / 1M input tokens
-    // let inputCost = (inputTokens / 1000000) * 2.5;
-    // $10.00 / 1M output tokens
-    // let outputCost = (outputTokens / 1000000) * 10;
-    // $0.150 / 1M tokens
-    let inputCost = (inputTokens / 1000000) * 0.150;
-    // $0.600 / 1M tokens
-    let outputCost = (outputTokens / 1000000) * 0.600;
-    let totalCost = inputCost + outputCost;
-    let newBalance = currentBalance - totalCost;
-    localStorage.setItem(`${userID}_balance`, newBalance);
-    await saveBalanceToFirestore(userID, newBalance);
-    await saveToMemory(userID, prompt, response, embedding);
-    await saveToLocalStorage(prompt, response);
+    saveToMemory(userID, prompt, response, embedding).catch((e) => {
+      console.error("Error saving to memory: ", e);
+    });
+    saveToLocalStorage(prompt, response).catch((e) => {
+      console.error("Error saving to local storage: ", e);
+    });
     localStorage.removeItem("thinking");
     return response;
   }
@@ -375,8 +281,6 @@ const handleScriptGeneration = async (
   allTokensInput,
   allTokensOutput
 ) => {
-  let miniInputCost = (countTokens(allTokensInput) / 1000000) * 0.6;
-  let miniOutputCost = (countTokens(allTokensOutput) / 1000000) * 2.4;
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents);
   // print constructed prompt in green
@@ -429,21 +333,16 @@ const handleScriptGeneration = async (
   const newResponse =
     `**${scriptTypeToWords} Script Generated and Downloaded.**\n- Task:` +
     query;
-  let currentBalance = Number(localStorage.getItem(`${userID}_balance`));
-  let tokensInputCount = countTokens(allTokensInput);
-  let tokensOutputCount = countTokens(allTokensOutput);
-  // $2.50 / 1M input tokens
-  let inputCost = (tokensInputCount / 1000000) * 2.5;
-  // $10.00 / 1M output tokens
-  let outputCost = (tokensOutputCount / 1000000) * 10;
-  let totalCost = inputCost + outputCost + miniInputCost + miniOutputCost;
-  let newBalance = currentBalance - totalCost;
-  localStorage.setItem(`${userID}_balance`, newBalance);
-  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
+  saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt).catch((e) => {
+    console.error("Error saving to firestore: ", e);
+  });
   handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-  await saveBalanceToFirestore(userID, newBalance);
-  await saveToMemory(userID, prompt, newResponse, embedding);
-  await saveToLocalStorage(prompt, newResponse);
+  saveToMemory(userID, prompt, newResponse, embedding).catch((e) => {
+    console.error("Error saving to memory: ", e);
+  });
+  saveToLocalStorage(prompt, newResponse).catch((e) => {
+    console.error("Error saving to local storage: ", e);
+  });
   localStorage.removeItem("thinking");
   return newResponse;
 };

@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusIcons from "./StatusIcons";
 import MemoryOverlay from "./MemoryOverlay";
 import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 
-function StatusBar() {
+function StatusBar({ balance }) {
     const navigate = useNavigate();
-    let userID = localStorage.getItem("userID");
-    const balance = Number(localStorage.getItem(`${userID}_balance`)) || 0;
-    const tokensLeftInput = (balance / 0.6) * 1000000;
-    const tokensLeftOutput = (balance / 2.4) * 1000000;
-    const totalTokens = tokensLeftInput + tokensLeftOutput;
-    const [tokensLeft, setTokensLeft] = useState(totalTokens);
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
     const [selectedScript, setSelectedScript] = useState(
         localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null
@@ -26,10 +20,6 @@ function StatusBar() {
         return { webApps, openSCAD };
     });
 
-    const handleSettingsClick = () => {
-        navigate("/settings");
-    };
-
     const handleBookmarkClick = async () => {
         let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
         let openSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
@@ -38,11 +28,11 @@ function StatusBar() {
         openSCAD.sort((a, b) => a.name.localeCompare(b.name));
         let scriptsLocal = { webApps, openSCAD };
         setScripts(scriptsLocal);
-        navigate("/scripts", { 
-            state: { 
+        navigate("/scripts", {
+            state: {
                 scripts: scripts,
-                selectedScript: selectedScript 
-            } 
+                selectedScript: selectedScript
+            }
         });
     };
 
@@ -74,23 +64,6 @@ function StatusBar() {
         localStorage.setItem("openSCAD", JSON.stringify(openSCAD));
     }, [scripts]);
 
-    const formatNumber = (num) => {
-        if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
-        if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-        if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-        return num.toString();
-    };
-
-    useEffect(() => {
-        let userID = localStorage.getItem("userID");
-        const balance = Number(localStorage.getItem(`${userID}_balance`)) || 0;
-        const tokensLeftInput = (balance / 0.6) * 1000000;
-        const tokensLeftOutput = (balance / 2.4) * 1000000;
-        const totalTokens = tokensLeftInput + tokensLeftOutput;
-        setTokensLeft(totalTokens);
-    }, [balance]);
-
     return (
         <div style={styles.statusBar}>
             <div style={styles.status}>
@@ -106,8 +79,8 @@ function StatusBar() {
             />
 
             <div style={styles.status}>
-                <p style={styles.statusText}>Tokens:</p>
-                <p style={styles.statusIndicator}>{formatNumber(totalTokens)}</p>
+                <p style={styles.statusText}>Balance:</p>
+                <p style={styles.statusIndicator}>{(balance)}</p>
             </div>
 
             {isMemoryOverlayOpen && (

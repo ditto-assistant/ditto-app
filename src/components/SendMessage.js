@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaMicrophone, FaImage, FaTimesCircle, FaCamera } from 'react-icons/fa';
 import { MdFlipCameraIos } from 'react-icons/md';
 import { sendPrompt } from '../control/agent';
-import { uploadImageToFirebaseStorageBucket } from '../control/firebase';
+import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
 import { DittoActivation } from '../screens/HomeScreen';
 import sharedMic from '../sharedMic';
 import { firebaseConfig } from '../firebaseConfig';
@@ -196,27 +196,11 @@ export default function SendMessage() {
         if (event) event.preventDefault();
 
         const thinkingObjectString = localStorage.getItem('thinking');
-        if (!localStorage.getItem('openai_api_key')) {
-            let balance = localStorage.getItem(`${localStorage.getItem('userID')}_balance`) || 0;
-            if (balance) {
-                if (Number(balance) <= 0 || balance === 'NaN') {
-                    alert('No OpenAI API key found and No Tokens left. Please set your key or add more tokens in the settings.');
-                    return;
-                } else{
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log('User has balance');
-                    }
-                }
-            } else {
-                alert('No OpenAI API key found and No Tokens left. Please set your key or add more tokens in the settings.');
-                return;
-            }
-        }
-
         const isThinking = thinkingObjectString !== null;
 
         if ((message !== '' || finalTranscriptRef.current) && !isThinking) {
-            const userID = localStorage.getItem('userID');
+            // const userID = localStorage.getItem('userID');
+            const userID = auth.currentUser.uid;
             const firstName = localStorage.getItem('firstName');
             let messageToSend = finalTranscriptRef.current || message;
             let imageURI = '';

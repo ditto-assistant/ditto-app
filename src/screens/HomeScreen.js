@@ -1,27 +1,27 @@
 import "./App.css";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   grabStatus,
-  getBalanceFromFirestore,
   syncLocalScriptsWithFirestore,
 } from "../control/firebase";
-import Divider from "@mui/material/Divider";
-import ChatFeed from "../components/ChatFeed";
-import SendMessage from "../components/SendMessage";
-import StatusBar from "../components/StatusBar";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
-
-// import heyDitto
 import HeyDitto from "../ditto/activation/heyDitto";
+import { useBalanceContext } from '../App';
+
+// Lazy load components
+const ChatFeed = lazy(() => import("../components/ChatFeed"));
+const SendMessage = lazy(() => import("../components/SendMessage"));
+const StatusBar = lazy(() => import("../components/StatusBar"));
+const Divider = lazy(() => import("@mui/material/Divider"));
 
 export const DittoActivation = new HeyDitto();
 DittoActivation.loadModel();
 
-
-export default function HomeScreen() {
+export default function HomeScreen(props) {
   const navigate = useNavigate();
+  const balance = useBalanceContext();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);
@@ -183,24 +183,9 @@ export default function HomeScreen() {
   };
 
 
-  const syncBalance = async () => {
-    let userID = localStorage.getItem("userID");
-    // update local storage with balance from firestore
-    getBalanceFromFirestore(userID).then((balance) => {
-      if (balance) {
-        localStorage.setItem(`${userID}_balance`, balance);
-      } else {
-        localStorage.setItem(`${userID}_balance`, 0);
-      }
-    });
-  };
-
   useEffect(() => {
     syncScripts();
-    syncBalance();
-  }, []);
-
-  useEffect(() => {
+    balance.refetch();
     const handleStatus = async () => {
       var statusDb = await grabStatus();
       if (bootStatus !== statusDb.status) {
@@ -222,7 +207,6 @@ export default function HomeScreen() {
 
   const statusColor = bootStatus === "on" ? "green" : "red";
 
-  // New useEffect to handle keyboard
   useEffect(() => {
     const handleResize = () => {
       const chatContainer = appBodyRef.current;
@@ -293,22 +277,26 @@ export default function HomeScreen() {
         />
       </header>
       <Divider />
-      <StatusBar status={bootStatus} statusColor={statusColor} />
+      <StatusBar status={bootStatus} statusColor={statusColor} balance={balance.balance} />
       <Divider />
       <div className="App-body" ref={appBodyRef}>
         <div className="chat-container">
-          <ChatFeed
-            messages={conversation.messages}
-            histCount={histCount}
-            isTyping={conversation.is_typing}
-            scrollToBottom={true}
-            startAtBottom={startAtBottom}
-          /> {/* Passing isTyping and scrollToBottom prop */}
+          <Suspense fallback={<div>Loading chat...</div>}>
+            <ChatFeed
+              messages={conversation.messages}
+              histCount={histCount}
+              isTyping={conversation.is_typing}
+              scrollToBottom={true}
+              startAtBottom={startAtBottom}
+            />
+          </Suspense>
         </div>
       </div>
 
       <footer className="App-footer">
-        <SendMessage sendMessage={sendMessage} />
+        <Suspense fallback={<div>Loading message input...</div>}>
+          <SendMessage sendMessage={sendMessage} />
+        </Suspense>
       </footer>
     </div>
   );
