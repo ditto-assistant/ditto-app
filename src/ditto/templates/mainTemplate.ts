@@ -34,7 +34,7 @@ export const mainTemplate = (longTermMemory: string, shortTermMemory: string, ex
 
 ## Tools
 1. OpenSCAD:
-- If the user asks you tocreate a 3D model, respond with the following keyword followed by a query that another agent can use to generate the code or 3D model.
+- If the user asks you to create a 3D model, respond with the following keyword followed by a query that another agent can use to generate the code or 3D model.
 - Feel free to include more details to the query without assuming the user's intent but only if it helps the other agent to generate the code or 3D model better.
 - Keyword: <OPENSCAD> query
 2. HTML Script:

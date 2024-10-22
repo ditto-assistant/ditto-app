@@ -23,7 +23,8 @@ export const openHTMLScriptInNewWindow = (script) => {
 // make scriptName default to "output" if not provided
 export const downloadHTMLScript = (script, scriptName = "") => {
   // open a new window to display the HTML script
-  openHTMLScriptInNewWindow(script);
+  // openHTMLScriptInNewWindow(script);
+  localStorage.setItem("latestWorkingOnScript", JSON.stringify({ script, scriptName }));
   console.log("Opened HTML script in new window...");
   // print script in blue
   // console.log(`%c${script}`, 'color: orange');

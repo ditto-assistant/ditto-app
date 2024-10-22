@@ -1,4 +1,3 @@
-import React from "react";
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import HomeScreen from "./screens/HomeScreen";
@@ -12,6 +11,7 @@ import AuthenticatedRoute from './components/AuthenticatedRoute'; // Ensure you 
 localStorage.removeItem("openai_api_key")
 
 export default function App() {
+
     return (
         <HashRouter>
             <Routes>

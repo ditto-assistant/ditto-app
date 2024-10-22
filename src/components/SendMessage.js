@@ -52,7 +52,6 @@ export default function SendMessage() {
             stopRecording();
         } else {
             try {
-                // Reset finalTranscriptRef when a new transcription session starts
                 finalTranscriptRef.current = '';
                 setMessage('');
 
@@ -75,7 +74,7 @@ export default function SendMessage() {
                         stopRecording();
                     };
 
-                    mediaRecorder.start(100); // Collect data in small chunks to ensure real-time processing
+                    mediaRecorder.start(100);
                     mediaRecorderRef.current = mediaRecorder;
                     setIsListening(true);
                 };
@@ -119,7 +118,6 @@ export default function SendMessage() {
         if (wsRef.current) {
             wsRef.current.close();
         }
-        // the mic indicator turns off but the mic is still on i nthe background
         sharedMic.stopMicStream();
         if (DittoActivation.isListening) {
             DittoActivation.startListening();
@@ -199,7 +197,6 @@ export default function SendMessage() {
 
         const thinkingObjectString = localStorage.getItem('thinking');
         if (!localStorage.getItem('openai_api_key')) {
-            // check if the user has a balance
             let balance = localStorage.getItem(`${localStorage.getItem('userID')}_balance`) || 0;
             if (balance) {
                 if (Number(balance) <= 0 || balance === 'NaN') {
@@ -231,7 +228,6 @@ export default function SendMessage() {
             setImage('');
             finalTranscriptRef.current = '';
             resizeTextArea();
-            // stop transcribing if it's still going
             if (isListening) {
                 stopRecording();
             }
@@ -261,6 +257,14 @@ export default function SendMessage() {
         if (textArea) {
             textArea.style.height = 'auto';
             textArea.style.height = textArea.scrollHeight + 'px';
+
+            if (textArea.scrollHeight >= 200) {
+                textArea.style.overflowY = 'scroll';
+                textArea.style.maxHeight = '200px'; // Ensure a max height
+            } else {
+                textArea.style.overflowY = 'hidden';
+                textArea.style.maxHeight = 'none';
+            }
 
             const imagePreview = document.querySelector('.ImagePreview');
             if (imagePreview) {
@@ -296,7 +300,10 @@ export default function SendMessage() {
                                 }
                             }}
                             rows={1}
-                            style={{ overflow: 'hidden' }}
+                            style={{ 
+                                overflowY: 'hidden', 
+                                marginRight: '-5px',
+                             }}
                         />
                         <FaMicrophone
                             className={`Mic ${isListening ? 'listening' : ''}`}

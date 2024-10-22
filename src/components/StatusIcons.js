@@ -3,6 +3,7 @@ import { HiMiniDocument } from "react-icons/hi2";
 import { FaPlay } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
+import zIndex from "@mui/material/styles/zIndex";
 
 const darkModeColors = {
     primary: '#7289DA',
@@ -69,6 +70,7 @@ const styles = {
         position: 'absolute',
         justifyContent: 'center',
         left: '50%',
+        zIndex: 3000,
         transform: 'translateX(-50%)',
     },
     iconItem: {
@@ -91,7 +93,7 @@ const styles = {
         // marginLeft: '10px',
         position: 'absolute',
         // bring to top
-        zIndex: 1,
+        zIndex: 3000,
         flex: 1,
         display: 'flex',
         justifyContent: 'center',

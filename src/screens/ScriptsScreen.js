@@ -49,6 +49,7 @@ function ScriptsScreen() {
     const [currentVersion, setCurrentVersion] = useState({});
     const versionOverlayRef = useRef(null);
 
+
     // re-set location state if scripts are updated via useEffect
     useEffect(() => {
         // update localStorages for scripts
