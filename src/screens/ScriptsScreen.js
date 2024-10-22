@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
 import { FaPlay } from "react-icons/fa";
@@ -8,14 +8,7 @@ import {
     renameScriptInFirestore,
 } from "../control/firebase";
 import { downloadOpenscadScript } from "../control/agentTools";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/ext-language_tools";
-import ace from "ace-builds/src-noconflict/ace";
 import { Button } from '@mui/material';
-
-ace.config.set("workerPath", "./");
 
 const darkModeColors = {
     background: '#2C2F33',
@@ -26,7 +19,24 @@ const darkModeColors = {
     danger: '#F04747',
 };
 
-function ScriptsScreen() {
+const AceEditor = lazy(() => import("react-ace"));
+
+const ScriptsScreen = () => {
+    const [aceLoaded, setAceLoaded] = useState(false);
+    const [aceEditor, setAceEditor] = useState(null);
+
+    useEffect(() => {
+        const loadAce = async () => {
+            const ace = await import("ace-builds");
+            await import("ace-builds/src-noconflict/theme-monokai");
+            await import("ace-builds/src-noconflict/mode-javascript");
+            await import("ace-builds/src-noconflict/ext-language_tools");
+            ace.config.set("workerPath", "./");
+            setAceLoaded(true);
+        };
+        loadAce();
+    }, []);
+
     const navigate = useNavigate();
     // const [scripts, setScripts] = useState(location.state?.scripts || { webApps: [], openSCAD: [] });
     // const [selectedScript, setSelectedScript] = useState(location.state?.selectedScript || null);
@@ -296,7 +306,7 @@ function ScriptsScreen() {
                                     )}
                                 </div>
                             </div>
-                            {editScript === currentScript.id && (
+                            {aceLoaded && editScript === currentScript.id && (
                                 <>
                                     <AceEditor
                                         mode="javascript"

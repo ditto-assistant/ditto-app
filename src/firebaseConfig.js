@@ -15,7 +15,7 @@ function getBaseURL(dittoEnv) {
   }
 }
 
-const BASE_URL = getBaseURL(MODE);
+export const BASE_URL = getBaseURL(MODE);
 
 export const routes = {
   prompt: BASE_URL + "/v1/prompt",

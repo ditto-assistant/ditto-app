@@ -4,13 +4,18 @@ import { FaMicrophone, FaImage, FaTimesCircle, FaCamera } from 'react-icons/fa';
 import { MdFlipCameraIos } from 'react-icons/md';
 import { sendPrompt } from '../control/agent';
 import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
-import { DittoActivation } from '../screens/HomeScreen';
 import sharedMic from '../sharedMic';
 import { firebaseConfig } from '../firebaseConfig';
+import HeyDitto from "../ditto/activation/heyDitto";
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
-
-export default function SendMessage() {
+/**
+ * SendMessage component for handling user input and message sending
+ * @param {Object} props - The component props
+ * @param {HeyDitto} props.activationModel - The activation model for Ditto
+ * @param {boolean} props.activationModelLoading - Indicates if the activation model is loading
+ */
+export default function SendMessage(props) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
     const [isListening, setIsListening] = useState(false);
@@ -36,16 +41,16 @@ export default function SendMessage() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            if (DittoActivation.activated) {
+            if (props.activationModel.activated) {
                 localStorage.setItem('transcribingFromDitto', 'true');
-                DittoActivation.activated = false;
+                props.activationModel.activated = false;
                 handleMicClick();
             }
         }, 100);
         return () => {
             clearInterval(interval);
         };
-    }, []);
+    }, [props.activationModelLoading]);
 
     const handleMicClick = async () => {
         if (isListening) {
@@ -119,8 +124,8 @@ export default function SendMessage() {
             wsRef.current.close();
         }
         sharedMic.stopMicStream();
-        if (DittoActivation.isListening) {
-            DittoActivation.startListening();
+        if (props.activationModel.isListening) {
+            props.activationModel.startListening();
         }
         mediaRecorderRef.current = null;
         wsRef.current = null;
@@ -284,10 +289,10 @@ export default function SendMessage() {
                                 }
                             }}
                             rows={1}
-                            style={{ 
-                                overflowY: 'hidden', 
+                            style={{
+                                overflowY: 'hidden',
                                 marginRight: '-5px',
-                             }}
+                            }}
                         />
                         <FaMicrophone
                             className={`Mic ${isListening ? 'listening' : ''}`}

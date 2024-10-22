@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="Hey Ditto!" />
   <link rel="apple-touch-icon" href="/logo192.png" />
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <title>Ditto App</title>
   <style type="text/css">
     body {
@@ -55,6 +55,25 @@
       font-weight: 600;
     }
   </style>
+  <script>
+    // Check and unregister old service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        registrations.forEach(function (registration) {
+          if (registration.active && !registration.active.scriptURL.endsWith('/sw.js')) {
+            registration.unregister().then(function () {
+              console.log('Old service worker unregistered');
+            });
+          }
+        });
+      });
+    }
+  </script>
+  <!-- Add preload tags for critical JS files -->
+  <link rel="preload" href="/src/index.js" as="script">
+  <link rel="preload" href="/src/components/AuthenticatedRoute.js" as="script">
+  <link rel="preload" href="/src/components/LoadingSpinner.js" as="script">
+  <link rel="preload" href="/src/App.js" as="script">
 </head>
 
 <body>

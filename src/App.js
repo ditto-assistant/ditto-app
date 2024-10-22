@@ -1,6 +1,6 @@
 import { Suspense, createContext, useContext, lazy } from "react";
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements, Outlet } from "react-router-dom";
-
+import LoadingSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 import { useBalance } from './api/useBalance';
 import Login from './screens/login';
@@ -30,15 +30,8 @@ export function useBalanceContext() {
 
 function BalanceProvider({ children }) {
     const { ok, error, loading, refetch } = useBalance();
-    if (loading) {
-        return <div>Loading balance...</div>;
-    }
-    if (error) {
-        console.error("Error fetching balance:", error);
-        return <div>Error loading balance. Please try again.</div>;
-    }
     return (
-        <BalanceContext.Provider value={{ balance: ok.balance, images: ok.images, refetch }}>
+        <BalanceContext.Provider value={{ balance: ok?.balance, images: ok?.images, loading, error, refetch }}>
             {children}
         </BalanceContext.Provider>
     );
@@ -51,7 +44,7 @@ const router = createBrowserRouter(
             <Route element={
                 <AuthenticatedRoute>
                     <BalanceProvider>
-                        <Suspense fallback={<div>Loading Page...</div>}>
+                        <Suspense fallback={<LoadingSpinner />}>
                             <Outlet />
                         </Suspense>
                     </BalanceProvider>
@@ -69,7 +62,7 @@ const router = createBrowserRouter(
 
 export default function App() {
     return (
-        <Suspense fallback={<div>Loading Router...</div>}>
+        <Suspense fallback={<LoadingSpinner />}>
             <RouterProvider router={router} />
         </Suspense>
     );

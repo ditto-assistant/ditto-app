@@ -9,19 +9,19 @@ import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 import HeyDitto from "../ditto/activation/heyDitto";
 import { useBalanceContext } from '../App';
+import LoadingSpinner from "../components/LoadingSpinner";
+import { Divider } from "@mui/material";
 
 // Lazy load components
 const ChatFeed = lazy(() => import("../components/ChatFeed"));
 const SendMessage = lazy(() => import("../components/SendMessage"));
 const StatusBar = lazy(() => import("../components/StatusBar"));
-const Divider = lazy(() => import("@mui/material/Divider"));
 
-export const DittoActivation = new HeyDitto();
-DittoActivation.loadModel();
-
-export default function HomeScreen(props) {
+export default function HomeScreen() {
+  const DittoActivation = new HeyDitto();
   const navigate = useNavigate();
   const balance = useBalanceContext();
+  const [dittoActivationLoading, setDittoActivationLoading] = useState(true);
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);
@@ -29,6 +29,10 @@ export default function HomeScreen(props) {
     webApps: [],
     openSCAD: [],
   });
+
+  useEffect(() => {
+    DittoActivation.loadModel().then(() => { setDittoActivationLoading(false); });
+  }, []);
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -84,7 +88,6 @@ export default function HomeScreen(props) {
 
   const localStorageMicrophoneStatus = localStorage.getItem("microphoneStatus") === "true";
   const [microphoneStatus, setMicrophoneStatus] = useState(localStorageMicrophoneStatus);
-  const [loading, setLoading] = useState(true);
 
   let buttonSize = 25;
 
@@ -102,17 +105,6 @@ export default function HomeScreen(props) {
   };
 
   const appBodyRef = useRef(null); // Reference to App-body
-
-  const sendMessage = async (message) => {
-    // Simulate sending message
-    setConversation(prevState => ({
-      ...prevState,
-      messages: [...prevState.messages, { sender: "User", text: message }],
-      is_typing: true,
-    }));
-
-  };
-
 
   // check for localStorage memoryWipe being set to true and reset cound and create new conversation
   useEffect(() => {
@@ -143,8 +135,6 @@ export default function HomeScreen(props) {
         setLocalScripts({ webApps, openSCAD });
       } catch (e) {
         console.error("Error syncing scripts:", e);
-      } finally {
-        setLoading(false);
       }
     }
   };
@@ -230,10 +220,6 @@ export default function HomeScreen(props) {
     };
   }, []);
 
-  if (loading) {
-    //   return <div>Loading...</div>;
-  }
-
   return (
     <div className="App">
       <header className="App-header">
@@ -294,8 +280,8 @@ export default function HomeScreen(props) {
       </div>
 
       <footer className="App-footer">
-        <Suspense fallback={<div>Loading message input...</div>}>
-          <SendMessage sendMessage={sendMessage} />
+        <Suspense fallback={<LoadingSpinner />}>
+          <SendMessage activationModel={DittoActivation} activationModelLoading={dittoActivationLoading} />
         </Suspense>
       </footer>
     </div>
