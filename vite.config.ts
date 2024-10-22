@@ -32,13 +32,7 @@ export default defineConfig({
                 skipWaiting: true,
                 maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
             },
-        }),
-        {
-            name: 'copy-files',
-            writeBundle() {
-                copyFileSync('public/model.json', 'build/model.json');
-            }
-        }
+        })
     ],
     resolve: {
         alias: {
