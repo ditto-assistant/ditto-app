@@ -55,6 +55,22 @@
       font-weight: 600;
     }
   </style>
+  <script>
+    // Check and unregister old service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        registrations.forEach(function (registration) {
+          // Check if the service worker is from a different origin or an old version
+          if (registration.scope !== window.location.origin + '/' ||
+            (registration.active && registration.active.scriptURL.includes('webpack-dev-server'))) {
+            registration.unregister().then(function () {
+              console.log('Old service worker unregistered');
+            });
+          }
+        });
+      });
+    }
+  </script>
 </head>
 
 <body>

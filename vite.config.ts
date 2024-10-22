@@ -2,14 +2,15 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { resolve } from 'path';
+import pkg from './package.json';
 
 export default defineConfig({
     plugins: [
         react(),
         VitePWA({
-            injectRegister: false,
             strategies: 'injectManifest',
             srcDir: 'src',
+            filename: 'sw.js',
             registerType: 'autoUpdate',
             manifest: {
                 name: 'Ditto App',
@@ -24,22 +25,20 @@ export default defineConfig({
                     }
                 ]
             },
+            injectManifest: {
+                injectionPoint: undefined,
+                rollupFormat: 'iife',
+            },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
             },
-            injectManifest: {
-                maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
-            }
         })
     ],
-    define: {
-        'process.env.VERSION': JSON.stringify(process.env.npm_package_version)
-    },
     resolve: {
         alias: {
             '@': resolve(__dirname, 'src')
         },
-        extensions: ['.js', '.jsx', '.ts', '.tsx'] // Add TypeScript extensions
+        extensions: ['.js', '.jsx', '.ts', '.tsx']
     },
     publicDir: 'public',
     server: {
@@ -50,15 +49,15 @@ export default defineConfig({
         sourcemap: false,
     },
     esbuild: {
-        loader: 'tsx', // Change from 'jsx' to 'tsx'
-        include: /src\/.*\.[jt]sx?$/, // Include TypeScript files
+        loader: 'tsx',
+        include: /src\/.*\.[jt]sx?$/,
         exclude: [],
     },
     optimizeDeps: {
         esbuildOptions: {
             loader: {
                 '.js': 'jsx',
-                '.ts': 'tsx', // Add TypeScript loader
+                '.ts': 'tsx',
             },
         },
     },
