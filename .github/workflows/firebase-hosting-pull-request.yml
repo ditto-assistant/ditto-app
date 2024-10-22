@@ -12,6 +12,10 @@ jobs:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - uses: actions/checkout@v4
       - run: bun run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
