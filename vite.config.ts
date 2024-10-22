@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [
         react(),
         VitePWA({
-            strategies: 'injectManifest',
+            // strategies: 'injectManifest',
             srcDir: 'src',
             filename: 'sw.js',
             registerType: 'autoUpdate',
@@ -28,7 +28,8 @@ export default defineConfig({
             workbox: {
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
-                skipWaiting: true
+                skipWaiting: true,
+                maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
             },
         })
     ],

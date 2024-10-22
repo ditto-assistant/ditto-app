@@ -18,7 +18,7 @@ const AuthenticatedRoute = ({ children }) => {
     }, []);
 
     if (loading) {
-        return <div></div>; // Or any loading indicator
+        return <div>Authenticating...</div>; // Or any loading indicator
     }
 
     return isAuthenticated ? children : <Navigate to="/login" />;
