@@ -53,6 +53,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "build:staging": "vite build --mode staging",
     "serve": "vite preview"
   },
   "eslintConfig": {
