@@ -25,12 +25,10 @@ export default defineConfig({
                     }
                 ]
             },
-            injectManifest: {
-                injectionPoint: undefined,
-                rollupFormat: 'iife',
-            },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+                cleanupOutdatedCaches: true,
+                clientsClaim: true,
+                skipWaiting: true
             },
         })
     ],

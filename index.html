@@ -60,9 +60,7 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (registrations) {
         registrations.forEach(function (registration) {
-          // Check if the service worker is from a different origin or an old version
-          if (registration.scope !== window.location.origin + '/' ||
-            (registration.active && registration.active.scriptURL.includes('webpack-dev-server'))) {
+          if (registration.active && !registration.active.scriptURL.endsWith('/sw.js')) {
             registration.unregister().then(function () {
               console.log('Old service worker unregistered');
             });
