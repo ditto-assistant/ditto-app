@@ -30,4 +30,4 @@ yarn-error.log*
 # ignore code workspace settings
 ditto-app.code-workspace
 
-functions/models/
+functions/modules/models/
