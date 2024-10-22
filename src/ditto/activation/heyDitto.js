@@ -1,5 +1,4 @@
 // HeyDitto.js 
-import * as tf from '@tensorflow/tfjs';
 import sharedMic from '../../sharedMic';
 
 export default class HeyDitto {
@@ -12,11 +11,16 @@ export default class HeyDitto {
         this.sampleRate = 16000; // Target sample rate 
         this.bufferSize = this.sampleRate; // 1-second buffer size for 16kHz 
         this.processorNode = null;
+        this.tf = null; // TensorFlow.js instance
     }
 
     async loadModel() {
-        this.model = await tf.loadLayersModel('./model.json');
-        console.log('Model loaded');
+        if (!this.tf) {
+            this.tf = await import('@tensorflow/tfjs');
+            console.log('TensorFlow.js loaded');
+        }
+        this.model = await this.tf.loadLayersModel('/model.json');
+        console.log('Activation model loaded');
     }
 
     async startListening() {
@@ -107,6 +111,10 @@ export default class HeyDitto {
             return;
         }
 
+        if (!this.tf) {
+            this.tf = await import('@tensorflow/tfjs');
+        }
+
         let buffer = this.audioBuffer;
         // raise the volume of the audio to make it louder by about 3dB, with a max db of -1 db 
         const max = Math.max(...buffer);
@@ -115,7 +123,7 @@ export default class HeyDitto {
         const scale = Math.min(1.0, 1.0 / maxAbs);
         buffer = buffer.map(x => x * scale);
 
-        let inputTensor = tf.signal.stft(tf.tensor1d(buffer), 255, 128).abs();
+        let inputTensor = this.tf.signal.stft(this.tf.tensor1d(buffer), 255, 128).abs();
         inputTensor = inputTensor.expandDims(0).expandDims(-1);
         const prediction = this.model.predict(inputTensor);
         const result = await prediction.data();

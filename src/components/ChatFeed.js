@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import { getAuth } from 'firebase/auth';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ReactMarkdown from 'react-markdown';
 import './ChatFeed.css';
-
-const ReactMarkdown = lazy(() => import('react-markdown'));
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 

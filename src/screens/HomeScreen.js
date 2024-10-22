@@ -10,12 +10,12 @@ import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 import HeyDitto from "../ditto/activation/heyDitto";
 import { useBalanceContext } from '../App';
 import LoadingSpinner from "../components/LoadingSpinner";
+import { Divider } from "@mui/material";
 
 // Lazy load components
 const ChatFeed = lazy(() => import("../components/ChatFeed"));
 const SendMessage = lazy(() => import("../components/SendMessage"));
 const StatusBar = lazy(() => import("../components/StatusBar"));
-const Divider = lazy(() => import("@mui/material/Divider"));
 
 export default function HomeScreen() {
   const DittoActivation = new HeyDitto();
