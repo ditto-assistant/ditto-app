@@ -6,6 +6,7 @@ import { getAuth, deleteUser } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
 import { useBalanceContext } from '../App';
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * Settings component for managing user settings and account.
@@ -18,6 +19,7 @@ const Settings = () => {
   const auth = getAuth();
   const navigate = useNavigate();
   const balance = useBalanceContext();
+  const { signOut } = useAuth();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
@@ -26,7 +28,7 @@ const Settings = () => {
   const handleLogout = () => {
     console.log("logging out");
     localStorage.clear();
-    auth.signOut();
+    signOut();
     navigate("/login");
   };
 

@@ -1,26 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import LoadingSpinner from "./LoadingSpinner";
+import { useAuth } from "../hooks/useAuth";
 
 const AuthenticatedRoute = ({ children }) => {
-    const [loading, setLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setIsAuthenticated(!!user);
-            setLoading(false);
-        });
-
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-    }, []);
-
+    const { isAuthenticated, loading } = useAuth();
     if (loading) {
-        return <div>Authenticating...</div>; // Or any loading indicator
+        return <LoadingSpinner text="Logging In..." />;
     }
-
     return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
