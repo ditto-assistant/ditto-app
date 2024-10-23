@@ -2,14 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { resolve } from 'path';
-import { copyFileSync } from 'fs';
-import pkg from './package.json';
 
 export default defineConfig({
     plugins: [
         react(),
         VitePWA({
-            // strategies: 'injectManifest',
             srcDir: 'src',
             filename: 'sw.js',
             registerType: 'autoUpdate',
@@ -86,6 +83,12 @@ export default defineConfig({
         exclude: [],
     },
     optimizeDeps: {
+        esbuildOptions: {
+            loader: {
+                '.js': 'jsx',
+                '.ts': 'tsx',
+            },
+        },
         include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage']
     }
 });
