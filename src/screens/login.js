@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
-
+import { auth } from "../control/firebase";
 import { saveUserToFirestore, getUserObjectFromFirestore, loadConversationHistoryFromFirestore } from "../control/firebase";
 
 export const withRouter = (Component) => {
@@ -13,8 +13,6 @@ export const withRouter = (Component) => {
     };
     return Wrapper;
 }
-
-export const auth = getAuth();
 
 const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePasswordVisibility }) => (
     <div style={styles.passwordInputContainer}>

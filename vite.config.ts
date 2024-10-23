@@ -83,12 +83,25 @@ export default defineConfig({
         exclude: [],
     },
     optimizeDeps: {
+        include: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            'firebase/app',
+            'firebase/auth',
+            'firebase/firestore',
+            'firebase/storage',
+            'ace-builds',
+            'react-ace',
+            'ace-builds/src-noconflict/mode-javascript',
+            'ace-builds/src-noconflict/theme-monokai',
+            'ace-builds/src-noconflict/ext-language_tools'
+        ],
         esbuildOptions: {
             loader: {
                 '.js': 'jsx',
                 '.ts': 'tsx',
             },
         },
-        include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage']
     }
 });

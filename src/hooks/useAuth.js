@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
+import { auth } from "../control/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const AUTH_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -29,8 +30,7 @@ export const useAuth = () => {
     });
 
     useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
             const newState = { loading: false, isAuthenticated: !!user };
             setAuthState(newState);
             localStorage.setItem('authState', JSON.stringify({
@@ -43,7 +43,6 @@ export const useAuth = () => {
     }, []);
 
     const signOut = () => {
-        const auth = getAuth();
         auth.signOut().then(() => {
             const newState = { loading: false, isAuthenticated: false };
             setAuthState(newState);

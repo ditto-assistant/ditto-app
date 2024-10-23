@@ -6,16 +6,10 @@ import { sendPrompt } from '../control/agent';
 import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
 import sharedMic from '../sharedMic';
 import { firebaseConfig } from '../firebaseConfig';
-import HeyDitto from "../ditto/activation/heyDitto";
-
+import { useDittoActivation } from '../App';
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
-/**
- * SendMessage component for handling user input and message sending
- * @param {Object} props - The component props
- * @param {HeyDitto} props.activationModel - The activation model for Ditto
- * @param {boolean} props.activationModelLoading - Indicates if the activation model is loading
- */
-export default function SendMessage(props) {
+
+export default function SendMessage() {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
     const [isListening, setIsListening] = useState(false);
@@ -29,6 +23,7 @@ export default function SendMessage(props) {
     const isMobile = useRef(false);
     const wsRef = useRef(null);
     const inactivityTimeoutRef = useRef(null);
+    const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -41,16 +36,16 @@ export default function SendMessage(props) {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            if (props.activationModel.activated) {
+            if (model.activated) {
                 localStorage.setItem('transcribingFromDitto', 'true');
-                props.activationModel.activated = false;
+                model.activated = false;
                 handleMicClick();
             }
         }, 100);
         return () => {
             clearInterval(interval);
         };
-    }, [props.activationModelLoading]);
+    }, [dittoActivationLoaded]);
 
     const handleMicClick = async () => {
         if (isListening) {
@@ -124,8 +119,8 @@ export default function SendMessage(props) {
             wsRef.current.close();
         }
         sharedMic.stopMicStream();
-        if (props.activationModel.isListening) {
-            props.activationModel.startListening();
+        if (model.isListening) {
+            model.startListening();
         }
         mediaRecorderRef.current = null;
         wsRef.current = null;

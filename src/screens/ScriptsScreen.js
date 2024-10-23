@@ -9,6 +9,7 @@ import {
 } from "../control/firebase";
 import { downloadOpenscadScript } from "../control/agentTools";
 import { Button } from '@mui/material';
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const darkModeColors = {
     background: '#2C2F33',
@@ -23,23 +24,7 @@ const AceEditor = lazy(() => import("react-ace"));
 
 const ScriptsScreen = () => {
     const [aceLoaded, setAceLoaded] = useState(false);
-    const [aceEditor, setAceEditor] = useState(null);
-
-    useEffect(() => {
-        const loadAce = async () => {
-            const ace = await import("ace-builds");
-            await import("ace-builds/src-noconflict/theme-monokai");
-            await import("ace-builds/src-noconflict/mode-javascript");
-            await import("ace-builds/src-noconflict/ext-language_tools");
-            ace.config.set("workerPath", "./");
-            setAceLoaded(true);
-        };
-        loadAce();
-    }, []);
-
     const navigate = useNavigate();
-    // const [scripts, setScripts] = useState(location.state?.scripts || { webApps: [], openSCAD: [] });
-    // const [selectedScript, setSelectedScript] = useState(location.state?.selectedScript || null);
     const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
     const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
     const [scripts, setScripts] = useState({
@@ -58,6 +43,16 @@ const ScriptsScreen = () => {
     const [currentVersion, setCurrentVersion] = useState({});
     const versionOverlayRef = useRef(null);
 
+    useEffect(() => {
+        const loadAce = async () => {
+            await import("ace-builds/src-noconflict/ace");
+            await import("ace-builds/src-noconflict/mode-javascript");
+            await import("ace-builds/src-noconflict/theme-monokai");
+            await import("ace-builds/src-noconflict/ext-language_tools");
+            setAceLoaded(true);
+        };
+        loadAce();
+    }, []);
 
     // re-set location state if scripts are updated via useEffect
     useEffect(() => {
@@ -111,7 +106,7 @@ const ScriptsScreen = () => {
         }
     };
 
-    const handleRenameScript = (category, id, newName) => {
+    const handleRenameScript = async(category, id, newName) => {
         setScripts((prevState) => ({
             ...prevState,
             [category]: prevState[category].map((script) =>
@@ -120,7 +115,7 @@ const ScriptsScreen = () => {
         }));
         const userID = localStorage.getItem("userID");
         const script = scripts[category].find((script) => script.id === id);
-        renameScriptInFirestore(userID, id, category, script.name, newName);
+        await renameScriptInFirestore(userID, id, category, script.name, newName);
         // update selectedScript and localStorage's workingOnScript if the renamed script is the selected script
         if (selectedScript === script.name) {
             localStorage.setItem("workingOnScript", JSON.stringify({ script: newName, contents: script.content, scriptType: category }));
@@ -269,7 +264,7 @@ const ScriptsScreen = () => {
                                     <input
                                         type="text"
                                         defaultValue={currentScript.name}
-                                        onBlur={(e) => handleRenameScript(category, currentScript.id, e.target.value)}
+                                        onBlur={async(e) => await handleRenameScript(category, currentScript.id, e.target.value)}
                                         style={styles.renameInput}
                                         autoFocus
                                     />
@@ -306,8 +301,8 @@ const ScriptsScreen = () => {
                                     )}
                                 </div>
                             </div>
-                            {aceLoaded && editScript === currentScript.id && (
-                                <>
+                            {editScript === currentScript.id && aceLoaded && (
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <AceEditor
                                         mode="javascript"
                                         theme="monokai"
@@ -329,6 +324,7 @@ const ScriptsScreen = () => {
                                             useWorker: false,
                                             wrap: true,
                                         }}
+                                        editorProps={{ $blockScrolling: true }}
                                         style={styles.editContent}
                                     />
                                     <div style={styles.editActions}>
@@ -347,7 +343,7 @@ const ScriptsScreen = () => {
                                             Cancel
                                         </Button>
                                     </div>
-                                </>
+                                </Suspense>
                             )}
                             {versionOverlay === baseName && (
                                 <div style={styles.versionOverlay} ref={versionOverlayRef}>

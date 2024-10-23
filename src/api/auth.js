@@ -1,4 +1,4 @@
-import { getAuth } from "firebase/auth";
+import { auth } from "../control/firebase";
 
 /**
  * Retrieves the authentication token for the current user.
@@ -8,7 +8,6 @@ import { getAuth } from "firebase/auth";
  *   - If unsuccessful, returns {err: error} where error is an Error object.
  */
 export async function getToken() {
-    const auth = getAuth();
     if (!auth.currentUser) {
         return { err: new Error("User not logged in") };
     }

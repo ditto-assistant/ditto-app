@@ -495,7 +495,7 @@ export const renameScriptInFirestore = async (userID, scriptId, scriptType, oldF
       return;
     }
     querySnapshot.forEach((doc) => {
-      if (doc.data().id === scriptId) {
+      if (doc.data().timestampString === scriptId) {
         const docRef = doc.ref;
         updateDoc(docRef, {
           filename: newFilename
