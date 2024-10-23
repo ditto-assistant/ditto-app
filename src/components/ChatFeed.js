@@ -1,6 +1,6 @@
-import React, { lazy, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { getAuth } from 'firebase/auth';
+import { auth } from '../control/firebase';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
@@ -59,7 +59,6 @@ export default function ChatFeed({
   }, [messages, scrollToBottom]);
 
   useEffect(() => {
-    const auth = getAuth();
     if (auth.currentUser) {
       const photoURL = auth.currentUser.photoURL;
       if (photoURL) {

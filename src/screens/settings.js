@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Divider, Button, TextField, IconButton, InputAdornment } from '@mui/material';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { getAuth, deleteUser } from "firebase/auth";
+import { deleteUser } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
 import { useBalanceContext } from '../App';
-
+import { auth } from "../control/firebase";
 /**
  * Settings component for managing user settings and account.
  * 
@@ -15,7 +15,6 @@ import { useBalanceContext } from '../App';
  * @returns {React.Component} The rendered Settings component.
  */
 const Settings = () => {
-  const auth = getAuth();
   const navigate = useNavigate();
   const balance = useBalanceContext();
   const [keyInputVisible, setKeyInputVisible] = useState(false);

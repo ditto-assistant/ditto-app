@@ -15,6 +15,9 @@ export default class HeyDitto {
     }
 
     async loadModel() {
+        if (this.model) {
+            return;
+        }
         if (!this.tf) {
             this.tf = await import('@tensorflow/tfjs');
             console.log('TensorFlow.js loaded');
@@ -110,9 +113,8 @@ export default class HeyDitto {
             console.warn('Insufficient audio buffer to make prediction.');
             return;
         }
-
         if (!this.tf) {
-            this.tf = await import('@tensorflow/tfjs');
+            return;
         }
 
         let buffer = this.audioBuffer;
@@ -125,6 +127,10 @@ export default class HeyDitto {
 
         let inputTensor = this.tf.signal.stft(this.tf.tensor1d(buffer), 255, 128).abs();
         inputTensor = inputTensor.expandDims(0).expandDims(-1);
+        if (!this.model) {
+            console.error('Model not loaded');
+            return;
+        }
         const prediction = this.model.predict(inputTensor);
         const result = await prediction.data();
 

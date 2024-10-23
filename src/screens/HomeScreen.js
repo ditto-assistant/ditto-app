@@ -7,21 +7,18 @@ import {
 } from "../control/firebase";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
-import HeyDitto from "../ditto/activation/heyDitto";
 import { useBalanceContext } from '../App';
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Divider } from "@mui/material";
-
+import { useDittoActivation } from '../App';
 // Lazy load components
 const ChatFeed = lazy(() => import("../components/ChatFeed"));
 const SendMessage = lazy(() => import("../components/SendMessage"));
 const StatusBar = lazy(() => import("../components/StatusBar"));
 
 export default function HomeScreen() {
-  const DittoActivation = new HeyDitto();
   const navigate = useNavigate();
   const balance = useBalanceContext();
-  const [dittoActivationLoading, setDittoActivationLoading] = useState(true);
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);
@@ -29,10 +26,7 @@ export default function HomeScreen() {
     webApps: [],
     openSCAD: [],
   });
-
-  useEffect(() => {
-    DittoActivation.loadModel().then(() => { setDittoActivationLoading(false); });
-  }, []);
+  const { model: DittoActivation, isLoaded: dittoActivationLoaded } = useDittoActivation();
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -227,7 +221,7 @@ export default function HomeScreen() {
           <FaEarListen
             style={{
               paddingLeft: 20,
-              color: "green",
+              color: dittoActivationLoaded ? "green" : "gray",
               width: buttonSize,
               height: buttonSize,
             }}
@@ -281,7 +275,7 @@ export default function HomeScreen() {
 
       <footer className="App-footer">
         <Suspense fallback={<LoadingSpinner />}>
-          <SendMessage activationModel={DittoActivation} activationModelLoading={dittoActivationLoading} />
+          <SendMessage />
         </Suspense>
       </footer>
     </div>

@@ -1,9 +1,10 @@
-import { Suspense, createContext, useContext, lazy } from "react";
+import React, { Suspense, createContext, useContext, lazy, useState, useEffect } from "react";
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements, Outlet } from "react-router-dom";
 import LoadingSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 import { useBalance } from './api/useBalance';
 import Login from './screens/login';
+import HeyDitto from './ditto/activation/heyDitto';
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -13,6 +14,7 @@ const Settings = lazy(() => import('./screens/settings'));
 const Paypal = lazy(() => import("./screens/paypal"));
 
 const BalanceContext = createContext();
+const DittoActivationContext = createContext();
 
 /**
  * Custom hook to access the balance context.
@@ -37,6 +39,37 @@ function BalanceProvider({ children }) {
     );
 }
 
+function DittoActivationProvider({ children }) {
+    const [DittoActivation] = useState(() => new HeyDitto());
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        DittoActivation.loadModel().then(() => { setIsLoaded(true); });
+    }, [DittoActivation]);
+
+    return (
+        <DittoActivationContext.Provider value={{ isLoaded, model: DittoActivation }}>
+            {children}
+        </DittoActivationContext.Provider>
+    );
+}
+
+/**
+ * Custom hook to access the DittoActivation context.
+ * 
+ * @returns {{isLoaded: boolean, model: HeyDitto}} An object containing:
+ *   - isLoaded: A boolean indicating whether the DittoActivation model has finished loading.
+ *   - model: The HeyDitto instance for voice activation.
+ * @throws {Error} Throws an error if used outside of a DittoActivationProvider.
+ */
+export function useDittoActivation() {
+    const context = useContext(DittoActivationContext);
+    if (context === undefined) {
+        throw new Error('useDittoActivation must be used within a DittoActivationProvider');
+    }
+    return context;
+}
+
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route path="/">
@@ -50,7 +83,11 @@ const router = createBrowserRouter(
                     </BalanceProvider>
                 </AuthenticatedRoute>
             }>
-                <Route index element={<HomeScreen />} />
+                <Route index element={
+                    <DittoActivationProvider>
+                        <HomeScreen />
+                    </DittoActivationProvider>
+                } />
                 <Route path="settings" element={<Settings />} />
                 <Route path="paypal" element={<Paypal />} />
                 <Route path="scripts" element={<ScriptsScreen />} />
