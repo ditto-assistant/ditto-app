@@ -111,7 +111,7 @@ const ScriptsScreen = () => {
         }
     };
 
-    const handleRenameScript = (category, id, newName) => {
+    const handleRenameScript = async(category, id, newName) => {
         setScripts((prevState) => ({
             ...prevState,
             [category]: prevState[category].map((script) =>
@@ -120,7 +120,7 @@ const ScriptsScreen = () => {
         }));
         const userID = localStorage.getItem("userID");
         const script = scripts[category].find((script) => script.id === id);
-        renameScriptInFirestore(userID, id, category, script.name, newName);
+        await renameScriptInFirestore(userID, id, category, script.name, newName);
         // update selectedScript and localStorage's workingOnScript if the renamed script is the selected script
         if (selectedScript === script.name) {
             localStorage.setItem("workingOnScript", JSON.stringify({ script: newName, contents: script.content, scriptType: category }));
@@ -269,7 +269,7 @@ const ScriptsScreen = () => {
                                     <input
                                         type="text"
                                         defaultValue={currentScript.name}
-                                        onBlur={(e) => handleRenameScript(category, currentScript.id, e.target.value)}
+                                        onBlur={async(e) => await handleRenameScript(category, currentScript.id, e.target.value)}
                                         style={styles.renameInput}
                                         autoFocus
                                     />
