@@ -1,6 +1,6 @@
 import { FaSpinner } from "react-icons/fa";
 
-export default function LoadingSpinner() {
+export default function LoadingSpinner({ text }) {
     return (
         <div style={{
             display: 'flex',
@@ -19,6 +19,17 @@ export default function LoadingSpinner() {
                 animation: 'spin 1s linear infinite',
                 color: '#7289da' // Updated spinner color to match the app's theme
             }} />
+            {text && (
+                <div style={{
+                    position: 'absolute',
+                    top: '60%',
+                    color: '#7289da',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold'
+                }}>
+                    {text}
+                </div>
+            )}
         </div>
     );
 }

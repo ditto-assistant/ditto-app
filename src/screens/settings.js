@@ -5,19 +5,13 @@ import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { deleteUser } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
-import { useBalanceContext } from '../App';
-import { auth } from "../control/firebase";
+import { useBalance } from '../hooks/useBalance';
+import { useAuth } from "@/hooks/useAuth";
 
-/**
- * Settings component for managing user settings and account.
- * 
- * @param {Object} props - The component props.
- * @param {{balance: string, images: string}} props.balance - The user's current balance.
- * @returns {React.Component} The rendered Settings component.
- */
 const Settings = () => {
   const navigate = useNavigate();
-  const balance = useBalanceContext();
+  const balance = useBalance();
+  const { signOut, auth } = useAuth();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
@@ -26,7 +20,7 @@ const Settings = () => {
   const handleLogout = () => {
     console.log("logging out");
     localStorage.clear();
-    auth.signOut();
+    signOut();
     navigate("/login");
   };
 

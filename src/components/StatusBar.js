@@ -4,11 +4,11 @@ import StatusIcons from "./StatusIcons";
 import MemoryOverlay from "./MemoryOverlay";
 import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
-import { useBalanceContext } from '../App';
+import { useBalance } from "../hooks/useBalance";
 
 function StatusBar() {
     const navigate = useNavigate();
-    const balance = useBalanceContext();
+    const balance = useBalance();
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
     const [workingScript, setWorkingScript] = useState(() => {
         const storedScript = localStorage.getItem("workingOnScript");
