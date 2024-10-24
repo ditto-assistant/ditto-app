@@ -84,8 +84,8 @@ const Settings = () => {
         <div style={styles.settingsContent}>
           <div style={styles.tokensInfo}>
             <p><span style={{ color: 'white' }}>Ditto Tokens:</span> <span style={{ color: 'green' }}>{balance.balance}</span></p>
-            {/* <p><span style={{ color: 'white' }}>Tokens:</span> <span style={{ color: '#7289da' }}>{formatNumber(totalTokens)}</span></p> */}
             <p><span style={{ color: 'white' }}>Images:</span> <span style={{ color: '#7289da' }}>{balance.images}</span></p>
+            <p><span style={{ color: 'white' }}>Searches:</span> <span style={{ color: '#7289da' }}>{balance.searches}</span></p>
           </div>
           <div style={styles.settingsOptions}>
             <Button variant="contained" onClick={handleLogout} style={styles.button}>
