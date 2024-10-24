@@ -4,18 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore, } from "../control/firebase";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
-import { useBalanceContext } from '../App';
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Divider } from "@mui/material";
-import { useDittoActivation } from '../App';
+import { useBalance } from "@/hooks/useBalance";
+import { useDittoActivation } from "@/hooks/useDittoActivation";
 // Lazy load components
-const ChatFeed = lazy(() => import("../components/ChatFeed"));
-const SendMessage = lazy(() => import("../components/SendMessage"));
-const StatusBar = lazy(() => import("../components/StatusBar"));
+const ChatFeed = lazy(() => import("@/components/ChatFeed"));
+const SendMessage = lazy(() => import("@/components/SendMessage"));
+const StatusBar = lazy(() => import("@/components/StatusBar"));
 
 export default function HomeScreen() {
   const navigate = useNavigate();
-  const balance = useBalanceContext();
+  const balance = useBalance();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);

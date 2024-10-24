@@ -6,7 +6,7 @@ import { sendPrompt } from '../control/agent';
 import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
 import sharedMic from '../sharedMic';
 import { firebaseConfig } from '../firebaseConfig';
-import { useDittoActivation } from '../App';
+import { useDittoActivation } from '@/hooks/useDittoActivation';
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
 export default function SendMessage() {

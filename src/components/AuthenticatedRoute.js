@@ -1,14 +1,19 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-import LoadingSpinner from "./LoadingSpinner";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const AuthenticatedRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
-    if (loading) {
-        return <LoadingSpinner text="Logging In..." />;
-    }
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loading && !isAuthenticated) {
+            navigate("/login");
+        }
+    }, [loading, isAuthenticated, navigate]);
+
+    if (loading) return null; // or a minimal loading indicator if preferred
+    return isAuthenticated ? children : null;
 };
 
 export default AuthenticatedRoute;

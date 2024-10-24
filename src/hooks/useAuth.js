@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { createContext, useState, useContext, useEffect } from 'react';
 import { auth } from "../control/firebase";
 
-const AUTH_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
 /**
- * Custom hook for managing authentication state.
+ * Access the authentication state.
  * 
  * This hook provides the current authentication state of the user,
  * including whether the auth state is still loading and if the user
@@ -16,13 +14,18 @@ const AUTH_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
  * 
  * @returns {{loading: boolean, isAuthenticated: boolean, signOut: () => Promise<void>, auth: import("@firebase/auth").Auth}}
  */
-export const useAuth = () => {
+export const useAuth = () => useContext(AuthContext);
+
+const AUTH_EXPIRY_TIME = 60 * 60 * 1000; // 1 hour in milliseconds
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState(() => {
         const cachedState = localStorage.getItem('authState');
         if (cachedState) {
             const { state, expiry } = JSON.parse(cachedState);
             if (Date.now() < expiry) {
-                return state;
+                return { ...state, loading: false };
             }
         }
         return { loading: true, isAuthenticated: false };
@@ -32,24 +35,31 @@ export const useAuth = () => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             const newState = { loading: false, isAuthenticated: !!user };
             setAuthState(newState);
-            localStorage.setItem('authState', JSON.stringify({
-                state: newState,
-                expiry: Date.now() + AUTH_EXPIRY_TIME
-            }));
+            if (user) {
+                localStorage.setItem('authState', JSON.stringify({
+                    state: newState,
+                    expiry: Date.now() + AUTH_EXPIRY_TIME
+                }));
+            } else {
+                localStorage.removeItem('authState');
+            }
         });
 
         return () => unsubscribe();
     }, []);
 
     const signOut = () => {
-        auth.signOut().then(() => {
-            const newState = { loading: false, isAuthenticated: false };
-            setAuthState(newState);
+        return auth.signOut().then(() => {
             localStorage.removeItem('authState');
-        }).catch((error) => {
-            console.error("Error signing out:", error);
+            setAuthState({ loading: false, isAuthenticated: false });
         });
     };
 
-    return { ...authState, signOut, auth };
+    const value = {
+        ...authState,
+        signOut,
+        auth
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

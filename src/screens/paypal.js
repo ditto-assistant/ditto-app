@@ -3,7 +3,7 @@ import { PayPalButtons, PayPalScriptProvider, usePayPalScriptReducer } from "@pa
 import { saveBalanceToFirestore } from '../control/firebase';
 import { PAYPAL_CLIENT_ID } from '../config';
 import { Button, Divider, TextField } from '@mui/material';
-import { useBalanceContext } from '../App';
+import { useBalance } from '../hooks/useBalance';
 
 const Paypal = () => {
     const initialOptions = {
@@ -22,7 +22,7 @@ const Paypal = () => {
 };
 
 const Checkout = () => {
-    const balance = useBalanceContext();
+    const balance = useBalance();
     const [amount, setAmount] = useState('5.00'); // Default amount as string
     const [{ options, isPending }, dispatch] = usePayPalScriptReducer();
     const [currency, setCurrency] = useState(options.currency || "USD");

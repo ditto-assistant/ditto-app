@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useAuth } from "../hooks/useAuth";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
 import { auth } from "../control/firebase";
@@ -30,7 +30,9 @@ const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePassw
     </div>
 );
 
-const Login = (props) => {
+const Login = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated, auth } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [retypePassword, setRetypePassword] = useState(""); // For re-type password
@@ -40,12 +42,17 @@ const Login = (props) => {
     const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
     const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
 
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/");
+        }
+    }, [isAuthenticated, navigate]);
+
     const handleSignIn = async () => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Check if user's email is verified
             if (!user.emailVerified) {
                 setVerificationMessage("Please verify your email before signing in.");
                 return;
@@ -57,16 +64,14 @@ const Login = (props) => {
 
             if (userObject !== false) {
                 const { firstName, lastName } = userObject;
-                // Save to local storage
                 localStorage.setItem('userID', user.uid);
                 localStorage.setItem('email', email);
                 localStorage.setItem('firstName', firstName);
                 localStorage.setItem('lastName', lastName);
             }
-            props.history("/");
+            // The navigation will be handled by the useEffect hook
         } catch (error) {
             console.error("Error signing in:", error.message);
-            // Handle errors (e.g., show an error message to the user)
             alert("Invalid email or password. Please try again.");
         }
     };
@@ -149,7 +154,7 @@ const Login = (props) => {
                 localStorage.setItem('histCount', conversationHistory.prompts.length);
             }
 
-            props.history("/");
+            navigate("/");
         } catch (error) {
             console.error("Error signing in with Google:", error.message);
             // Handle errors (e.g., show an error message to the user)
@@ -345,4 +350,4 @@ const styles = {
     },
 };
 
-export default withRouter(Login);
+export default Login;

@@ -5,12 +5,12 @@ import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { deleteUser } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
-import { useBalanceContext } from '../App';
-import { useAuth } from "../hooks/useAuth";
+import { useBalance } from '../hooks/useBalance';
+import { useAuth } from "@/hooks/useAuth";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const balance = useBalanceContext();
+  const balance = useBalance();
   const { signOut, auth } = useAuth();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
