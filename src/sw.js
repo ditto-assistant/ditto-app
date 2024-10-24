@@ -93,25 +93,26 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === BASE_URL,
   async ({ event }) => {
-    const cache = await caches.open('api-responses');
-    const cachedResponse = await cache.match(event.request);
-
-    if (cachedResponse && event.request.url.includes('balance')) {
-      // For balance requests, return cached response immediately
-      // Then fetch new data in the background
-      event.waitUntil(
-        fetch(event.request)
-          .then(async (response) => {
-            if (response.ok) {
-              // Update cache with new response
-              await cache.put(event.request, response.clone());
-            }
-          })
-          .catch(() => {
-            console.error('Failed to fetch balance data');
-          })
-      );
-      return cachedResponse;
+    if (event.request.url.includes('balance')) {
+      const cache = await caches.open('api-responses');
+      const cachedResponse = await cache.match(event.request);
+      if (cachedResponse) {
+        // For balance requests, return cached response immediately
+        // Then fetch new data in the background
+        event.waitUntil(
+          fetch(event.request)
+            .then(async (response) => {
+              if (response.ok) {
+                // Update cache with new response
+                await cache.put(event.request, response.clone());
+              }
+            })
+            .catch(() => {
+              console.error('Failed to fetch balance data');
+            })
+        );
+        return cachedResponse;
+      }
     }
 
     // For all other API requests, or if no cache exists, fetch from network
