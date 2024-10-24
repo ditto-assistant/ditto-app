@@ -97,19 +97,25 @@ registerRoute(
     const cachedResponse = await cache.match(event.request);
 
     if (cachedResponse && event.request.url.includes('balance')) {
-      // For balance requests, use cached response only once, then delete it
-      await cache.delete(event.request);
+      // For balance requests, return cached response immediately
+      // Then fetch new data in the background
+      event.waitUntil(
+        fetch(event.request)
+          .then(async (response) => {
+            if (response.ok) {
+              // Update cache with new response
+              await cache.put(event.request, response.clone());
+            }
+          })
+          .catch(() => {
+            console.error('Failed to fetch balance data');
+          })
+      );
       return cachedResponse;
     }
 
     // For all other API requests, or if no cache exists, fetch from network
     const response = await fetch(event.request);
-
-    // Cache only successful responses
-    if (response.ok && event.request.url.includes('balance')) {
-      await cache.put(event.request, response.clone());
-    }
-
     return response;
   }
 );
