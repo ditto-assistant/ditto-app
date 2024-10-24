@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PayPalButtons, PayPalScriptProvider, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import { saveBalanceToFirestore } from '../control/firebase';
 import { PAYPAL_CLIENT_ID } from '../config';
-import { Button, Divider, TextField } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import { useBalance } from '../hooks/useBalance';
 
 const Paypal = () => {
@@ -11,9 +11,6 @@ const Paypal = () => {
         currency: "USD",
         intent: "capture",
     };
-
-    useEffect(() => { }, [localStorage.getItem(`${localStorage.getItem("userID")}_balance"`)]);
-
     return (
         <PayPalScriptProvider options={initialOptions}>
             <Checkout />
@@ -71,8 +68,6 @@ const Checkout = () => {
             let newBalance = Number(localBalance) + Number(amount);
             localStorage.setItem(`${userID}_balance`, newBalance);
             saveBalanceToFirestore(userID, newBalance);
-            // Assuming setBalance is a function to update the balance context
-            setBalance(newBalance);
         });
     };
 
