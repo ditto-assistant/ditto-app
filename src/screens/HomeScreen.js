@@ -1,10 +1,7 @@
 import "./App.css";
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  grabStatus,
-  syncLocalScriptsWithFirestore,
-} from "../control/firebase";
+import { grabStatus, syncLocalScriptsWithFirestore, } from "../control/firebase";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 import { useBalanceContext } from '../App';
@@ -85,9 +82,8 @@ export default function HomeScreen() {
 
   let buttonSize = 25;
 
-  const handleMicPress = async () => {
+  function handleMicPress() {
     console.log("handling mic press...");
-    // set value in localStorage
     localStorage.setItem("microphoneStatus", !microphoneStatus);
     setMicrophoneStatus((prevStatus) => !prevStatus);
     // if mic status is false stop listening for name
@@ -98,7 +94,7 @@ export default function HomeScreen() {
     }
   };
 
-  const appBodyRef = useRef(null); // Reference to App-body
+  const appBodyRef = useRef(null);
 
   // check for localStorage memoryWipe being set to true and reset cound and create new conversation
   useEffect(() => {
@@ -108,13 +104,6 @@ export default function HomeScreen() {
       createConversation({ prompts: [], responses: [] }, true);
     }
   }, [localStorage.getItem("resetMemory")]);
-
-
-
-  const handleSettingsClick = () => {
-    navigate("/settings");
-  };
-
 
   const syncScripts = async () => {
     const userID = localStorage.getItem("userID");
@@ -187,9 +176,7 @@ export default function HomeScreen() {
     }, 500);
 
     return () => clearInterval(syncInterval);
-  }, [conversation, histCount]);
-
-  const statusColor = bootStatus === "on" ? "green" : "red";
+  }, [conversation]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -225,9 +212,7 @@ export default function HomeScreen() {
               width: buttonSize,
               height: buttonSize,
             }}
-            onClick={async () => {
-              await handleMicPress();
-            }}
+            onClick={handleMicPress}
           />
         ) : (
           <FaEarDeaf
@@ -237,9 +222,7 @@ export default function HomeScreen() {
               width: buttonSize,
               height: buttonSize,
             }}
-            onClick={async () => {
-              await handleMicPress();
-            }}
+            onClick={handleMicPress}
           />
         )}
         <h2 className="App-title">Ditto</h2>
@@ -251,13 +234,11 @@ export default function HomeScreen() {
             color: "white",
             cursor: "pointer",
           }}
-          onClick={async () => {
-            handleSettingsClick()
-          }}
+          onClick={() => { navigate("/settings"); }}
         />
       </header>
       <Divider />
-      <StatusBar status={bootStatus} statusColor={statusColor} balance={balance.balance} />
+      <StatusBar />
       <Divider />
       <div className="App-body" ref={appBodyRef}>
         <div className="chat-container">

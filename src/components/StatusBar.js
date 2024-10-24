@@ -4,13 +4,23 @@ import StatusIcons from "./StatusIcons";
 import MemoryOverlay from "./MemoryOverlay";
 import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
+import { useBalanceContext } from '../App';
 
-function StatusBar({ balance }) {
+function StatusBar() {
     const navigate = useNavigate();
+    const balance = useBalanceContext();
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
     const [selectedScript, setSelectedScript] = useState(
         localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null
     );
+    const [showUSD, setShowUSD] = useState(() => {
+        let savedMode = localStorage.getItem("status_bar_fiat_balance");
+        if (savedMode == null) {
+            savedMode = 't';
+            localStorage.setItem("status_bar_fiat_balance", savedMode);
+        }
+        return savedMode === 't';
+    });
 
     const [scripts, setScripts] = useState(() => {
         let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
@@ -64,10 +74,16 @@ function StatusBar({ balance }) {
         localStorage.setItem("openSCAD", JSON.stringify(openSCAD));
     }, [scripts]);
 
+    const toggleBalanceDisplay = () => {
+        const newShowUSD = !showUSD;
+        setShowUSD(newShowUSD);
+        localStorage.setItem("status_bar_fiat_balance", newShowUSD ? 't' : 'f');
+    };
+
     return (
         <div style={styles.statusBar}>
             <div style={styles.status}>
-                <p style={styles.statusText}>Status:</p>
+                {/* <p style={styles.statusText}>Status:</p> */}
                 <p style={styles.statusIndicator}>{statusTemp.status}</p>
             </div>
 
@@ -77,9 +93,11 @@ function StatusBar({ balance }) {
                 selectedScript={selectedScript}
             />
 
-            <div style={styles.status}>
-                <p style={styles.statusText}>Balance:</p>
-                <p style={styles.statusIndicator}>{(balance)}</p>
+            <div style={styles.status} onClick={toggleBalanceDisplay}>
+                {/* <p style={styles.statusText}>Balance:</p> */}
+                <p style={styles.statusIndicator}>
+                    {showUSD ? balance.usd : balance.balance}
+                </p>
             </div>
 
             {isMemoryOverlayOpen && (
@@ -105,6 +123,7 @@ const styles = {
         paddingLeft: "20px",
         paddingRight: "20px",
         fontSize: "1.0em",
+        cursor: "pointer",
     },
     statusText: {
         // paddingRight: "2px",
