@@ -2,10 +2,22 @@ import { getToken } from "./auth";
 import { routes } from "../firebaseConfig";
 
 /**
- * Retrieves the user's balance from the server.
+ * Retrieves the user's balance and usage information from the server.
  * 
- * @returns {Promise<{ok?: {balance: string, images: string}, err?: string}>} A promise that resolves to an object:
- *   - If successful, returns {ok: balance} where balance is a formatted string.
+ * @returns {Promise<{
+ * ok?: {
+ *  balance: string, 
+ *  usd: string, 
+ *  images: string, 
+ *  searches: string
+ * }, 
+ * err?: string
+ * }>} A promise that resolves to an object:
+ *   - If successful, returns {ok: {balance, usd, images, searches}} where:
+ *     - balance is a formatted string representing the balance in tokens
+ *     - usd is a formatted string representing the balance in USD
+ *     - images is a string representing the balance in number of images generated
+ *     - searches is a string representing the balance in number of searches performed
  *   - If unsuccessful, returns {err: errorMessage} where errorMessage is a string describing the error.
  */
 export async function getBalance() {

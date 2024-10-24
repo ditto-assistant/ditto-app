@@ -17,9 +17,16 @@ const BalanceContext = createContext();
 const DittoActivationContext = createContext();
 
 /**
- * Custom hook to access the balance context.
+ * Access the user's balance context.
  * 
- * @returns {{balance: string, images: string, refetch: (() => void)}} The balance object containing the user's balance and available images, and a function to refetch the balance.
+ * @returns {{
+ *   balance: string,
+ *   usd: string,
+ *   images: string,
+ *   searches: string,
+ *   refetch: (() => void)
+ * }} The balance object containing the user's balance and available images,
+ *    and a function to refetch the balance.
  * @throws {Error} Throws an error if used outside of a BalanceProvider.
  */
 export function useBalanceContext() {
@@ -33,7 +40,15 @@ export function useBalanceContext() {
 function BalanceProvider({ children }) {
     const { ok, error, loading, refetch } = useBalance();
     return (
-        <BalanceContext.Provider value={{ balance: ok?.balance, images: ok?.images, loading, error, refetch }}>
+        <BalanceContext.Provider value={{
+            balance: ok?.balance,
+            usd: ok?.usd,
+            images: ok?.images,
+            searches: ok?.searches,
+            loading,
+            error,
+            refetch
+        }}>
             {children}
         </BalanceContext.Provider>
     );
