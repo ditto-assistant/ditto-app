@@ -73,17 +73,6 @@ const Settings = () => {
   // Remove the balance calculation from localStorage
   const tokensLeftInput = balance ? (balance / 0.6) * 1000000 : 0;
   const tokensLeftOutput = balance ? (balance / 2.4) * 1000000 : 0;
-  const totalTokens = tokensLeftInput + tokensLeftOutput;
-  const tokensPerImage = 765;
-  const ImagesLeft = Math.floor(tokensLeftOutput / tokensPerImage);
-
-  const formatNumber = (num) => {
-    if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
-    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toString();
-  };
 
   return (
     <div style={styles.overlay}>
@@ -120,18 +109,20 @@ const Settings = () => {
                   value={haApiKey}
                   onChange={(e) => setHaApiKey(e.target.value)}
                   style={styles.input}
-                  InputProps={{
-                    style: { color: 'white' },
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowHaApiKey(!showHaApiKey)}>
-                          {showHaApiKey ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  InputLabelProps={{
-                    style: { color: 'white' },
+                  slotProps={{
+                    input: {
+                      style: { color: 'white' },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setShowHaApiKey(!showHaApiKey)}>
+                            {showHaApiKey ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                    label: {
+                      style: { color: 'white' },
+                    }
                   }}
                 />
                 <TextField
@@ -141,11 +132,13 @@ const Settings = () => {
                   value={haRemoteUrl}
                   onChange={(e) => setHaRemoteUrl(e.target.value)}
                   style={styles.input}
-                  InputProps={{
-                    style: { color: 'white' }
-                  }}
-                  InputLabelProps={{
-                    style: { color: 'white' },
+                  slotProps={{
+                    input: {
+                      style: { color: 'white' }
+                    },
+                    label: {
+                      style: { color: 'white' }
+                    }
                   }}
                 />
                 <div style={styles.buttonGroup}>

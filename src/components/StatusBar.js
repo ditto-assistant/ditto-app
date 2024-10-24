@@ -72,7 +72,6 @@ function StatusBar({ balance }) {
             </div>
 
             <StatusIcons
-                // handleSettingsClick={handleSettingsClick}
                 handleBookmarkClick={handleBookmarkClick}
                 handleMemoryClick={handleMemoryClick}
                 selectedScript={selectedScript}
