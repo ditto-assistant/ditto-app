@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router';
 import { useAuth } from "../hooks/useAuth";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
-import { auth } from "../control/firebase";
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import { saveUserToFirestore, getUserObjectFromFirestore, loadConversationHistoryFromFirestore } from "../control/firebase";
 
 export const withRouter = (Component) => {
