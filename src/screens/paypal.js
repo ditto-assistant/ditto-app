@@ -23,7 +23,7 @@ const Paypal = () => {
 
 const Checkout = () => {
     const balance = useBalanceContext();
-    const [amount, setAmount] = useState('5.00'); // Default amount
+    const [amount, setAmount] = useState('5.00'); // Default amount as string
     const [{ options, isPending }, dispatch] = usePayPalScriptReducer();
     const [currency, setCurrency] = useState(options.currency || "USD");
 
@@ -42,7 +42,7 @@ const Checkout = () => {
         return actions.order.create({
             purchase_units: [{
                 amount: {
-                    value: Number(amount),
+                    value: amount,
                 },
             }],
         });
@@ -71,6 +71,7 @@ const Checkout = () => {
             let newBalance = Number(localBalance) + Number(amount);
             localStorage.setItem(`${userID}_balance`, newBalance);
             saveBalanceToFirestore(userID, newBalance);
+            // Assuming setBalance is a function to update the balance context
             setBalance(newBalance);
         });
     };
@@ -102,10 +103,11 @@ const Checkout = () => {
                             type="number"
                             label="Amount"
                             value={amount}
-                            onChange={(e) => setAmount(Number(e.target.value))}
+                            onChange={(e) => setAmount(e.target.value)} // Store as string
                             variant="outlined"
                             InputProps={{
                                 style: { color: 'white', backgroundColor: '#40444b' },
+                                inputProps: { min: "1.00", step: "1.00" } // Add min and step
                             }}
                             InputLabelProps={{
                                 style: { color: '#8e9297' },

@@ -10,9 +10,10 @@ function StatusBar() {
     const navigate = useNavigate();
     const balance = useBalanceContext();
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
-    const [selectedScript, setSelectedScript] = useState(
-        localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null
-    );
+    const [workingScript, setWorkingScript] = useState(() => {
+        const storedScript = localStorage.getItem("workingOnScript");
+        return storedScript ? JSON.parse(storedScript).script : null;
+    });
     const [showUSD, setShowUSD] = useState(() => {
         let savedMode = localStorage.getItem("status_bar_fiat_balance");
         if (savedMode == null) {
@@ -41,7 +42,7 @@ function StatusBar() {
         navigate("/scripts", {
             state: {
                 scripts: scripts,
-                selectedScript: selectedScript
+                selectedScript: workingScript
             }
         });
     };
@@ -61,11 +62,24 @@ function StatusBar() {
         setScripts({ webApps, openSCAD });
     }
 
-    // sync local scripts on mount
+    // Update working script when localStorage changes
     useEffect(() => {
         syncLocalScripts();
-        setSelectedScript(localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null);
-    }, [localStorage.getItem("workingOnScript")]);
+        const handleStorageChange = (e) => {
+            if (e.key === "workingOnScript") {
+                const newScript = e.newValue ? JSON.parse(e.newValue).script : null;
+                syncLocalScripts().then(() => {
+                    setWorkingScript(newScript);
+                });
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
 
     useEffect(() => {
         let webApps = scripts.webApps;
@@ -90,7 +104,7 @@ function StatusBar() {
             <StatusIcons
                 handleBookmarkClick={handleBookmarkClick}
                 handleMemoryClick={handleMemoryClick}
-                selectedScript={selectedScript}
+                selectedScript={workingScript}
             />
 
             <div style={styles.status} onClick={toggleBalanceDisplay}>
