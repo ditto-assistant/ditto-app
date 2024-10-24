@@ -10,7 +10,7 @@ const darkModeColors = {
     text: '#FFFFFF',
 };
 
-function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryClick, selectedScript }) {
+function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript }) {
     const navigate = useNavigate();
 
     const handlePlayScript = () => {
@@ -33,10 +33,6 @@ function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryCli
 
     return (
         <div style={styles.icons}>
-            {/* <div style={styles.iconItem} onClick={handleSettingsClick}>
-                <MdSettings style={styles.icon} />
-            </div> */}
-
             <div style={styles.iconItem} onClick={handleBookmarkClick}>
                 <HiMiniDocument style={styles.icon} />
             </div>
@@ -44,14 +40,13 @@ function StatusIcons({ handleSettingsClick, handleBookmarkClick, handleMemoryCli
             <div style={styles.iconItem} onClick={handleMemoryClick}>
                 <FaBrain style={styles.icon} />
             </div>
-            
+
             {selectedScript && (
                 <div style={styles.iconItem} onClick={handlePlayScript}>
                     <FaPlay style={styles.playIcon} />
                 </div>
             )}
-            
-            {/* Below is the Focus Overlay */}
+
             {selectedScript && (
                 <div style={styles.selectedScriptIndicator}>
                     <p style={{ color: darkModeColors.primary, fontSize: '0.9em' }}>Focus: </p>
@@ -74,7 +69,6 @@ const styles = {
         transform: 'translateX(-50%)',
     },
     iconItem: {
-        // marginLeft: '10px',
         margin: '0px 3px',
         cursor: 'pointer',
         position: 'relative',
@@ -90,24 +84,18 @@ const styles = {
     selectedScriptIndicator: {
         color: darkModeColors.text,
         fontWeight: 'bold',
-        // marginLeft: '10px',
         position: 'absolute',
-        // bring to top
         zIndex: 3000,
         flex: 1,
         display: 'flex',
         justifyContent: 'center',
-        top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         top: '74px',
-        // backgroundColor: darkModeColors.foreground,
-        // make the background color the same as the chat bubble
         backgroundColor: '#36393f',
         padding: '0px 10px',
         borderRadius: '5px',
         whiteSpace: 'nowrap',
-        display: 'flex',
         flexDirection: 'row',
     },
     selectedScriptText: {

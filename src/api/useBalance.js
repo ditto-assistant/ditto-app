@@ -4,7 +4,7 @@ import { getBalance } from './get-balance';
 /**
  * Custom hook to fetch and manage the user's balance.
  * 
- * @returns {{ok?: {balance: string, images: string}, error?: string, loading?: boolean, refetch: (() => void)}} An object containing the balance, any error that occurred, a loading state, and a function to refetch the balance.
+ * @returns {{ok?: {balance: string, usd: string, images: string, searches: string}, error?: string, loading?: boolean, refetch: (() => void)}} An object containing the balance, any error that occurred, a loading state, and a function to refetch the balance.
  */
 export function useBalance() {
     const [ok, setOk] = useState(null);
@@ -13,9 +13,6 @@ export function useBalance() {
     const [refetch, setRefetch] = useState(false);
 
     useEffect(() => {
-        /**
-         * Asynchronous function to fetch the user's balance.
-         */
         async function fetchBalance() {
             try {
                 const result = await getBalance();

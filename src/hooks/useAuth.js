@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { auth } from "../control/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 const AUTH_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -15,7 +14,7 @@ const AUTH_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
  * the auth state across page reloads, while ensuring proper behavior
  * during sign-in and sign-out.
  * 
- * @returns {{loading: boolean, isAuthenticated: boolean, signOut: () => Promise<void>}}
+ * @returns {{loading: boolean, isAuthenticated: boolean, signOut: () => Promise<void>, auth: import("@firebase/auth").Auth}}
  */
 export const useAuth = () => {
     const [authState, setAuthState] = useState(() => {
@@ -52,5 +51,5 @@ export const useAuth = () => {
         });
     };
 
-    return { ...authState, signOut };
+    return { ...authState, signOut, auth };
 };

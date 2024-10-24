@@ -4,13 +4,24 @@ import StatusIcons from "./StatusIcons";
 import MemoryOverlay from "./MemoryOverlay";
 import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
+import { useBalanceContext } from '../App';
 
-function StatusBar({ balance }) {
+function StatusBar() {
     const navigate = useNavigate();
+    const balance = useBalanceContext();
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
-    const [selectedScript, setSelectedScript] = useState(
-        localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null
-    );
+    const [workingScript, setWorkingScript] = useState(() => {
+        const storedScript = localStorage.getItem("workingOnScript");
+        return storedScript ? JSON.parse(storedScript).script : null;
+    });
+    const [showUSD, setShowUSD] = useState(() => {
+        let savedMode = localStorage.getItem("status_bar_fiat_balance");
+        if (savedMode == null) {
+            savedMode = 't';
+            localStorage.setItem("status_bar_fiat_balance", savedMode);
+        }
+        return savedMode === 't';
+    });
 
     const [scripts, setScripts] = useState(() => {
         let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
@@ -31,7 +42,7 @@ function StatusBar({ balance }) {
         navigate("/scripts", {
             state: {
                 scripts: scripts,
-                selectedScript: selectedScript
+                selectedScript: workingScript
             }
         });
     };
@@ -51,11 +62,24 @@ function StatusBar({ balance }) {
         setScripts({ webApps, openSCAD });
     }
 
-    // sync local scripts on mount
+    // Update working script when localStorage changes
     useEffect(() => {
         syncLocalScripts();
-        setSelectedScript(localStorage.getItem("workingOnScript") ? JSON.parse(localStorage.getItem("workingOnScript")).script : null);
-    }, [localStorage.getItem("workingOnScript")]);
+        const handleStorageChange = (e) => {
+            if (e.key === "workingOnScript") {
+                const newScript = e.newValue ? JSON.parse(e.newValue).script : null;
+                syncLocalScripts().then(() => {
+                    setWorkingScript(newScript);
+                });
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
 
     useEffect(() => {
         let webApps = scripts.webApps;
@@ -64,23 +88,30 @@ function StatusBar({ balance }) {
         localStorage.setItem("openSCAD", JSON.stringify(openSCAD));
     }, [scripts]);
 
+    const toggleBalanceDisplay = () => {
+        const newShowUSD = !showUSD;
+        setShowUSD(newShowUSD);
+        localStorage.setItem("status_bar_fiat_balance", newShowUSD ? 't' : 'f');
+    };
+
     return (
         <div style={styles.statusBar}>
             <div style={styles.status}>
-                <p style={styles.statusText}>Status:</p>
+                {/* <p style={styles.statusText}>Status:</p> */}
                 <p style={styles.statusIndicator}>{statusTemp.status}</p>
             </div>
 
             <StatusIcons
-                // handleSettingsClick={handleSettingsClick}
                 handleBookmarkClick={handleBookmarkClick}
                 handleMemoryClick={handleMemoryClick}
-                selectedScript={selectedScript}
+                selectedScript={workingScript}
             />
 
-            <div style={styles.status}>
-                <p style={styles.statusText}>Balance:</p>
-                <p style={styles.statusIndicator}>{(balance)}</p>
+            <div style={styles.status} onClick={toggleBalanceDisplay}>
+                {/* <p style={styles.statusText}>Balance:</p> */}
+                <p style={styles.statusIndicator}>
+                    {showUSD ? balance.usd : balance.balance}
+                </p>
             </div>
 
             {isMemoryOverlayOpen && (
@@ -106,6 +137,7 @@ const styles = {
         paddingLeft: "20px",
         paddingRight: "20px",
         fontSize: "1.0em",
+        cursor: "pointer",
     },
     statusText: {
         // paddingRight: "2px",
