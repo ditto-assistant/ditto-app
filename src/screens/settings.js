@@ -7,6 +7,8 @@ import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../c
 import packageJson from '../../package.json';
 import { useBalanceContext } from '../App';
 import { auth } from "../control/firebase";
+import { useAuth } from "../hooks/useAuth";
+
 /**
  * Settings component for managing user settings and account.
  * 
