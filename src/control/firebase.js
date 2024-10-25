@@ -299,14 +299,15 @@ export const loadConversationHistoryFromFirestore = async (userID) => {
   try {
     const history = await grabConversationHistory(userID);
     if (history.length === 0) {
-      return { prompts: [], responses: [] };
+      return { prompts: [], responses: [], timestamps: [] };
     }
     const prompts = history.map(pair => pair.prompt);
     const responses = history.map(pair => pair.response);
-    return { prompts, responses };
+    const timestamps = history.map(pair => pair.timestamp.toDate().getTime());
+    return { prompts, responses, timestamps };
   } catch (e) {
     console.error(e);
-    return { prompts: [], responses: [] };
+    return { prompts: [], responses: [], timestamps: [] };
   }
 }
 
