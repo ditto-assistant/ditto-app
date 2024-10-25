@@ -38,6 +38,7 @@
   max-width: 60%;
   position: relative;
   transition: filter 0.2s;
+  min-width: 80px; /* Add a minimum width for small messages */
 }
 
 .blurred {
@@ -50,9 +51,6 @@
   text-align: left;
   margin-left: 10px;
   margin-right: 5px;
-  padding-right: 15px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
 }
 
 .chat-bubble.Ditto {
@@ -61,9 +59,6 @@
   text-align: left;
   margin-right: 10px;
   margin-left: 5px;
-  padding-left: 15px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
 }
 
 .sender-name {
@@ -77,6 +72,8 @@
 .message-text {
   font-size: 14px;
   color: #000000;
+  padding-bottom: 25px; /* Increase padding to ensure space for footer */
+  min-height: 20px; /* Ensure minimum height for small messages */
 }
 
 .chat-image {
@@ -111,17 +108,15 @@
 
 .action-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background-color: #3941b8;
   border-radius: 10px;
   padding: 5px;
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
-  width: 12.0em;
+  width: 100px;
   z-index: 11;
-  margin-left: -30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .image-action-overlay {
@@ -283,4 +278,51 @@
   .chat-bubble {
     user-select: none;
   }
+}
+
+.message-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 5px 10px;
+  box-sizing: border-box;
+  border-top: 1px solid rgba(0, 0, 0, 0.2); /* Slightly darker border */
+  background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque background */
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.message-timestamp {
+  font-size: 0.75em;
+  color: rgba(0, 0, 0, 0.7); /* Darker color for better visibility */
+}
+
+.message-options {
+  cursor: pointer;
+  font-size: 1.2em;
+  color: rgba(0, 0, 0, 0.7); /* Darker color for better visibility */
+}
+
+.message-options span {
+  display: inline-block;
+  transform: rotate(90deg);
+}
+
+/* Adjust padding for both bubble types */
+.chat-bubble.User,
+.chat-bubble.Ditto {
+  padding-bottom: 30px; /* Increase bottom padding to accommodate the footer */
+}
+
+/* Add styles for small messages */
+.chat-bubble.small-message {
+  min-height: 50px; /* Minimum height for small messages */
+}
+
+.chat-bubble.small-message .message-text {
+  min-height: 20px; /* Minimum height for text in small messages */
 }

@@ -205,7 +205,8 @@ const processResponse = async (
     saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
       console.error("Error saving to memory: ", e);
     });
-    saveToLocalStorage(prompt, newresponse).catch((e) => {
+    const timestamp = Date.now();
+    saveToLocalStorage(prompt, newresponse, timestamp).catch((e) => {
       console.error("Error saving to local storage: ", e);
     });
     localStorage.removeItem("thinking");
@@ -228,7 +229,8 @@ const processResponse = async (
     saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
       console.error("Error saving to memory: ", e);
     });
-    saveToLocalStorage(prompt, newresponse).catch((e) => {
+    const timestamp = Date.now();
+    saveToLocalStorage(prompt, newresponse, timestamp).catch((e) => {
       console.error("Error saving to local storage: ", e);
     });
     localStorage.removeItem("thinking");
@@ -246,7 +248,8 @@ const processResponse = async (
     saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
       console.error("Error saving to memory: ", e);
     });
-    saveToLocalStorage(prompt, newresponse).catch((e) => {
+    const timestamp = Date.now();
+    saveToLocalStorage(prompt, newresponse, timestamp).catch((e) => {
       console.error("Error saving to local storage: ", e);
     });
     localStorage.removeItem("thinking");
@@ -256,7 +259,8 @@ const processResponse = async (
     saveToMemory(userID, prompt, response, embedding).catch((e) => {
       console.error("Error saving to memory: ", e);
     });
-    saveToLocalStorage(prompt, response).catch((e) => {
+    const timestamp = Date.now();
+    saveToLocalStorage(prompt, response, timestamp).catch((e) => {
       console.error("Error saving to local storage: ", e);
     });
     localStorage.removeItem("thinking");
@@ -340,7 +344,8 @@ const handleScriptGeneration = async (
   saveToMemory(userID, prompt, newResponse, embedding).catch((e) => {
     console.error("Error saving to memory: ", e);
   });
-  saveToLocalStorage(prompt, newResponse).catch((e) => {
+  const timestamp = Date.now();
+  saveToLocalStorage(prompt, newResponse, timestamp).catch((e) => {
     console.error("Error saving to local storage: ", e);
   });
   localStorage.removeItem("thinking");
@@ -397,9 +402,10 @@ export const saveToMemory = async (
   }
 };
 
-const saveToLocalStorage = async (prompt, response) => {
+const saveToLocalStorage = async (prompt, response, timestamp) => {
   const prompts = loadFromLocalStorage("prompts", []);
   const responses = loadFromLocalStorage("responses", []);
+  const timestamps = loadFromLocalStorage("timestamps", []);
   let userID = localStorage.getItem("userID");
   let histCount = await grabConversationHistoryCount(userID);
   if (mode === "development") {
@@ -407,8 +413,10 @@ const saveToLocalStorage = async (prompt, response) => {
   }
   prompts.push(prompt);
   responses.push(response);
+  timestamps.push(timestamp);
   localStorage.setItem("prompts", JSON.stringify(prompts));
   localStorage.setItem("responses", JSON.stringify(responses));
+  localStorage.setItem("timestamps", JSON.stringify(timestamps));
 
   // histCount++;
   localStorage.setItem("histCount", histCount);
