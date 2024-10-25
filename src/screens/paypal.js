@@ -4,6 +4,7 @@ import { saveBalanceToFirestore } from '../control/firebase';
 import { PAYPAL_CLIENT_ID } from '../config';
 import { Button, TextField } from '@mui/material';
 import { useBalance } from '../hooks/useBalance';
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 const Paypal = () => {
     const initialOptions = {
@@ -81,15 +82,23 @@ const Checkout = () => {
                     <div style={styles.infoContainer}>
                         <h3 style={styles.balanceHeader}>Current Balance</h3>
                         <div style={styles.balanceGrid}>
-                            <p style={styles.balanceItem}>
-                                USD: <span style={styles.highlightText}>{balance.usd}</span> (<span style={styles.highlightText}>{balance.balance}</span> tokens)
-                            </p>
-                            <p style={styles.balanceItem}>
-                                Images: <span style={styles.highlightText}>{balance.images}</span>
-                            </p>
-                            <p style={styles.balanceItem}>
-                                Searches: <span style={styles.highlightText}>{balance.searches}</span>
-                            </p>
+                            {!balance.loading ? (
+                                <>
+                                    <p style={styles.balanceItem}>
+                                        USD: <span style={styles.highlightText}>{balance.usd}</span> (<span style={styles.highlightText}>{balance.balance}</span> tokens)
+                                    </p>
+                                    <p style={styles.balanceItem}>
+                                        Images: <span style={styles.highlightText}>{balance.images}</span>
+                                    </p>
+                                    <p style={styles.balanceItem}>
+                                        Searches: <span style={styles.highlightText}>{balance.searches}</span>
+                                    </p>
+                                </>
+                            ) : (
+                                <div style={styles.spinnerContainer}>
+                                    <LoadingSpinner size={45} inline={true} />
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div style={styles.divider}></div>
@@ -187,6 +196,7 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        minHeight: '90px',
     },
     balanceItem: {
         margin: '2px 0',
@@ -235,6 +245,12 @@ const styles = {
         '&:hover': {
             backgroundColor: '#5b6eae',
         },
+    },
+    spinnerContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '90px',
     },
 };
 

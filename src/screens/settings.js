@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Divider, Button, TextField, IconButton, InputAdornment } from '@mui/material';
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
@@ -7,6 +7,7 @@ import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../c
 import packageJson from '../../package.json';
 import { useBalance } from '../hooks/useBalance';
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -85,9 +86,17 @@ const Settings = () => {
         </header>
         <div style={styles.settingsContent}>
           <div style={styles.tokensInfo}>
-            <p style={styles.balanceItem}>Ditto Tokens: <span style={styles.highlightText}>{balance.balance}</span></p>
-            <p style={styles.balanceItem}>Images: <span style={styles.highlightText}>{balance.images}</span></p>
-            <p style={styles.balanceItem}>Searches: <span style={styles.highlightText}>{balance.searches}</span></p>
+            {!balance.loading ? (
+              <>
+                <p style={styles.balanceItem}>Ditto Tokens: <span style={styles.highlightText}>{balance.balance}</span></p>
+                <p style={styles.balanceItem}>Images: <span style={styles.highlightText}>{balance.images}</span></p>
+                <p style={styles.balanceItem}>Searches: <span style={styles.highlightText}>{balance.searches}</span></p>
+              </>
+            ) : (
+              <div style={styles.spinnerContainer}>
+                <LoadingSpinner size={45} inline={true} />
+              </div>
+            )}
           </div>
           <div style={styles.settingsOptions}>
             <Button variant="contained" onClick={() => navigate("/paypal")} style={styles.button}>
@@ -210,6 +219,10 @@ const styles = {
     color: 'white',
     textAlign: 'center',
     marginBottom: '20px',
+    minHeight: '80px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   balanceItem: {
     margin: '5px 0',
@@ -292,7 +305,13 @@ const styles = {
     color: '#8e9297',
     fontSize: '0.8em',
     textAlign: 'center',
-  }
+  },
+  spinnerContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '80px',
+  },
 };
 
 export default Settings;
