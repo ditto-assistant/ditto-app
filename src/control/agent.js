@@ -34,7 +34,7 @@ const mode = import.meta.env.MODE;
 /**
  * Send a prompt to Ditto.
  */
-export const sendPrompt = async (userID, firstName, prompt, image) => {
+export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmbedding) => {
   try {
     localStorage.setItem("idle", "false");
     let allTokensInput = "";
@@ -42,7 +42,7 @@ export const sendPrompt = async (userID, firstName, prompt, image) => {
     handleInitialization(prompt);
 
     // fetch user prompt embedddings
-    let userPromptEmbedding = await textEmbed(prompt);
+    // let userPromptEmbedding = await textEmbed(prompt);
 
     if (userPromptEmbedding === "") {
       localStorage.removeItem("thinking");

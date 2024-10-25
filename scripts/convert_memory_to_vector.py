@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from dotenv import load_dotenv
+import firebase_admin.auth
 from google.cloud.firestore_v1.vector import Vector
 
 
@@ -19,6 +20,25 @@ firebase_admin.initialize_app(cred)
 
 # Get a Firestore client
 db = firestore.client()
+
+def print_all_user_name_and_email():
+    try:
+        # Get all users from Firebase Authentication
+        users = firebase_admin.auth.list_users()
+        
+        # mailing list csv ensure utf-8 encoding
+        with open('mailing_list.csv', 'w', encoding='utf-8') as f:
+            f.write("Name,Email\n")
+            for user in users.users:
+                f.write(f"{user.display_name},{user.email}\n")
+
+        # also make a single .txt with To add contacts manually, just provide a valid email address (e.g john.doe@example.com or "John Doe" <jd@example.com>) syntax
+        with open('mailing_list.txt', 'w', encoding='utf-8') as f:
+            for user in users.users:
+                f.write(f"{user.display_name} <{user.email}>\n")
+
+    except Exception as e:
+        print(f"Error getting users: {e}")
 
 def get_user_conversations(user_id):
     try:
@@ -71,6 +91,8 @@ def update_user_conversations(user_id):
 
 if __name__ == "__main__":
     # Replace with actual user ID
-    user_id = "FBRvXjguXdYv4nEtgMviZ1dOmRm1"
-    get_user_conversations(user_id)
-    update_user_conversations(user_id)
+    # user_id = "FBRvXjguXdYv4nEtgMviZ1dOmRm1"
+    # get_user_conversations(user_id)
+    # update_user_conversations(user_id)
+
+    print_all_user_name_and_email()

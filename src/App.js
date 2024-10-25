@@ -5,6 +5,7 @@ import AuthenticatedRoute from './components/AuthenticatedRoute';
 import { AuthProvider } from './hooks/useAuth';
 import { BalanceProvider } from './hooks/useBalance';
 import { DittoActivationProvider } from './hooks/useDittoActivation';
+import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import Login from './screens/login';
 
 // Lazy load components
@@ -40,11 +41,13 @@ const router = createBrowserRouter(
 export default function App() {
     return (
         <AuthProvider>
-            <DittoActivationProvider>
-                <BalanceProvider>
-                    <RouterProvider router={router} />
-                </BalanceProvider>
-            </DittoActivationProvider>
+            <IntentRecognitionProvider>
+                <DittoActivationProvider>
+                    <BalanceProvider>
+                        <RouterProvider router={router} />
+                    </BalanceProvider>
+                </DittoActivationProvider>
+            </IntentRecognitionProvider>
         </AuthProvider>
     );
 }
