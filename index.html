@@ -56,17 +56,14 @@
     }
   </style>
   <script>
-    // Check and unregister old service workers
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        registrations.forEach(function (registration) {
-          if (registration.active && !registration.active.scriptURL.endsWith('/sw.js')) {
-            registration.unregister().then(function () {
-              console.log('Old service worker unregistered');
-            });
-          }
+      navigator.serviceWorker.register('/worker.js')
+        .then(function(registration) {
+          console.log('Worker registration successful', registration.scope);
+        })
+        .catch(function(err) {
+          console.log('Worker registration failed', err);
         });
-      });
     }
   </script>
   <!-- Add preload tags for critical JS files -->
