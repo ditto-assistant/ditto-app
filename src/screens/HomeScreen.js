@@ -49,11 +49,13 @@ export default function HomeScreen() {
       }
       let prompts = hist.prompts || [];
       let responses = hist.responses || [];
+      let timestamps = hist.timestamps || [];
       for (let i = 0; i < prompts.length; i++) {
         let prompt = prompts[i];
         let response = responses[i];
-        newConversation.messages.push({ sender: "User", text: prompt });
-        newConversation.messages.push({ sender: "Ditto", text: response });
+        let timestamp = timestamps[i];
+        newConversation.messages.push({ sender: "User", text: prompt, timestamp: timestamp });
+        newConversation.messages.push({ sender: "Ditto", text: response, timestamp: timestamp });
       }
       if (onload) {
         return newConversation;
@@ -70,7 +72,8 @@ export default function HomeScreen() {
   const getSavedConversation = () => {
     let prompts = JSON.parse(localStorage.getItem("prompts"));
     let responses = JSON.parse(localStorage.getItem("responses"));
-    return { prompts, responses };
+    let timestamps = JSON.parse(localStorage.getItem("timestamps"));
+    return { prompts, responses, timestamps };
   };
 
   let convo = getSavedConversation();
@@ -101,7 +104,7 @@ export default function HomeScreen() {
     if (localStorage.getItem("resetMemory") === "true") {
       localStorage.setItem("resetMemory", "false");
       setCount(0);
-      createConversation({ prompts: [], responses: [] }, true);
+      createConversation({ prompts: [], responses: [], timestamps: [] }, true);
     }
   }, [localStorage.getItem("resetMemory")]);
 
@@ -245,6 +248,7 @@ export default function HomeScreen() {
           <Suspense fallback={<div>Loading chat...</div>}>
             <ChatFeed
               messages={conversation.messages}
+              showSenderName={false}
               histCount={histCount}
               isTyping={conversation.is_typing}
               scrollToBottom={true}

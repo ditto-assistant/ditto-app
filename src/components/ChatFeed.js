@@ -102,7 +102,10 @@ export default function ChatFeed({
     if (actionOverlay === index) {
       setActionOverlay(null);
     } else {
-      setActionOverlay({ index, type });
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setActionOverlay({ index, type, x, y });
       setReactionOverlay(null);
     }
   };
@@ -189,66 +192,91 @@ export default function ChatFeed({
     );
   };
 
-  const renderMessageWithAvatar = (message, index) => (
-    <div
-      key={index}
-      className={`message-container ${message.sender === 'User' ? 'User' : 'Ditto'}`}
-    >
-      {message.sender === 'Ditto' && (
-        <img src='../logo512.png' alt='Ditto' className='avatar ditto-avatar' />
-      )}
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return new Intl.DateTimeFormat('default', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: browserTimezone
+    }).format(date);
+  };
+
+  const renderMessageWithAvatar = (message, index) => {
+    const isSmallMessage = message.text.length <= 5; // Adjust this threshold as needed
+
+    return (
       <div
-        className={`chat-bubble ${message.sender === 'User' ? 'User' : 'Ditto'} ${actionOverlay && actionOverlay.index === index ? 'blurred' : ''}`}
-        style={bubbleStyles.chatbubble}
-        onContextMenu={(e) => handleLongPress(e, index)}
+        key={index}
+        className={`message-container ${message.sender === 'User' ? 'User' : 'Ditto'}`}
       >
-        {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
-        <div className='message-text' style={bubbleStyles.text}>
-          {renderMessageText(message.text, index)}
+        {message.sender === 'Ditto' && (
+          <img src='../logo512.png' alt='Ditto' className='avatar ditto-avatar' />
+        )}
+        <div
+          className={`chat-bubble ${message.sender === 'User' ? 'User' : 'Ditto'} ${
+            actionOverlay && actionOverlay.index === index ? 'blurred' : ''
+          } ${isSmallMessage ? 'small-message' : ''}`}
+          style={bubbleStyles.chatbubble}
+          onContextMenu={(e) => handleLongPress(e, index)}
+        >
+          {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
+          <div className='message-text' style={bubbleStyles.text}>
+            {renderMessageText(message.text, index)}
+          </div>
+          <div className='message-footer'>
+            <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
+            <div className='message-options' onClick={(e) => handleLongPress(e, index)}>
+              <span>&#8942;</span>
+            </div>
+          </div>
         </div>
-        {selectedReaction[index] && (
-          <div className='reaction'>
-            <span className='reaction-badge'>{selectedReaction[index]}</span>
+        {message.sender === 'User' && (
+          <img src={profilePic} alt='User' className='avatar user-avatar' />
+        )}
+        {actionOverlay && actionOverlay.index === index && (
+          <div 
+            className='action-overlay' 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              left: `${actionOverlay.x}px`,
+              top: `${actionOverlay.y}px`,
+            }}
+          >
+            {actionOverlay.type === 'text' ? (
+              <>
+                <button onClick={() => handleCopy(message.text)} className='action-button'>
+                  Copy
+                </button>
+                <button onClick={() => handleReactionOverlay(index)} className='action-button'>
+                  React
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => handleImageOpen(message.text)} className='action-button'>
+                  Open
+                </button>
+                <button onClick={async () => handleImageDownload(message.text)} className='action-button'>
+                  Download
+                </button>
+              </>
+            )}
+          </div>
+        )}
+        {reactionOverlay === index && (
+          <div className='reaction-overlay' onClick={(e) => e.stopPropagation()}>
+            {emojis.map((emoji) => (
+              <button key={emoji} onClick={() => handleReaction(index, emoji)} className='emoji-button'>
+                {emoji}
+              </button>
+            ))}
           </div>
         )}
       </div>
-      {message.sender === 'User' && (
-        <img src={profilePic} alt='User' className='avatar user-avatar' />
-      )}
-      {actionOverlay && actionOverlay.index === index && (
-        <div className='action-overlay' onClick={(e) => e.stopPropagation()}>
-          {actionOverlay.type === 'text' ? (
-            <>
-              <button onClick={() => handleCopy(message.text)} className='action-button'>
-                Copy
-              </button>
-              <button onClick={() => handleReactionOverlay(index)} className='action-button'>
-                React
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => handleImageOpen(message.text)} className='action-button'>
-                Open
-              </button>
-              <button onClick={async () => handleImageDownload(message.text)} className='action-button'>
-                Download
-              </button>
-            </>
-          )}
-        </div>
-      )}
-      {reactionOverlay === index && (
-        <div className='reaction-overlay' onClick={(e) => e.stopPropagation()}>
-          {emojis.map((emoji) => (
-            <button key={emoji} onClick={() => handleReaction(index, emoji)} className='emoji-button'>
-              {emoji}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <div className='chat-feed' ref={feedRef}>
@@ -272,6 +300,7 @@ ChatFeed.propTypes = {
     PropTypes.shape({
       sender: PropTypes.string,
       text: PropTypes.string.isRequired,
+      timestamp: PropTypes.number, // Add this line to include timestamp in PropTypes
     })
   ).isRequired,
   isTyping: PropTypes.bool,
@@ -280,7 +309,7 @@ ChatFeed.propTypes = {
   bubblesCentered: PropTypes.bool,
   scrollToBottom: PropTypes.bool,
   bubbleStyles: PropTypes.shape({
-    text: PropTypes.object,
+    text: PropTypes.object, 
     chatbubble: PropTypes.object,
   }),
 };
