@@ -37,12 +37,7 @@ const mode = import.meta.env.MODE;
 export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmbedding) => {
   try {
     localStorage.setItem("idle", "false");
-    let allTokensInput = "";
-    let allTokensOutput = "";
     handleInitialization(prompt);
-
-    // fetch user prompt embedddings
-    // let userPromptEmbedding = await textEmbed(prompt);
 
     if (userPromptEmbedding === "") {
       localStorage.removeItem("thinking");
@@ -71,22 +66,16 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptName,
       scriptType
     );
+    const mainAgentModel = image ? "claude-3-5-sonnet" : "mistral-nemo";
 
     // print constructed prompt in green
     console.log("%c" + constructedPrompt, "color: green");
-    allTokensInput += constructedPrompt
-    let imageTokens = 0;
-    if (image) {
-      imageTokens = 765;
-    }
-    allTokensInput += imageTokens
     const response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
-      "gemini-1.5-pro",
+      mainAgentModel,
       image
     );
-    allTokensOutput += response
 
     let finalResponse = await processResponse(
       response,
@@ -96,8 +85,6 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptContents,
       scriptName,
       image,
-      allTokensInput,
-      allTokensOutput
     );
 
     localStorage.setItem("idle", "true");
@@ -149,8 +136,6 @@ const processResponse = async (
   scriptContents,
   scriptName,
   image,
-  allTokensInput,
-  allTokensOutput
 ) => {
   // print response in yellow
   console.log("%c" + response, "color: yellow");
@@ -175,8 +160,6 @@ const processResponse = async (
       prompt,
       userID,
       image,
-      allTokensInput,
-      allTokensOutput
     );
   } else if (response.includes("<HTML_SCRIPT>") && isValidResponse) {
     return await handleScriptGeneration(
@@ -192,8 +175,6 @@ const processResponse = async (
       prompt,
       userID,
       image,
-      allTokensInput,
-      allTokensOutput
     );
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     // handle image generation
@@ -219,11 +200,9 @@ const processResponse = async (
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
     // print the prompt in green
     console.log("%c" + googleSearchAgentTemplate, "color: green");
-    allTokensInput += googleSearchAgentTemplate
     const googleSearchAgentResponse = await promptLLM(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
     // print the response in yellow
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
-    allTokensOutput += googleSearchAgentResponse
     // check if <WEBSITE> is in the response
     let newresponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
     saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
@@ -282,19 +261,11 @@ const handleScriptGeneration = async (
   prompt,
   userID,
   image,
-  allTokensInput,
-  allTokensOutput
 ) => {
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents);
   // print constructed prompt in green
   console.log("%c" + constructedPrompt, "color: green");
-  allTokensInput = constructedPrompt
-  let imageTokens = 0;
-  if (image) {
-    imageTokens = 765;
-  }
-  allTokensInput += imageTokens
   const scriptResponse = await promptLLM(
     constructedPrompt,
     systemTemplateFunction(),
@@ -303,7 +274,6 @@ const handleScriptGeneration = async (
   );
   /// print the response in yellow
   console.log("%c" + scriptResponse, "color: yellow");
-  allTokensOutput = scriptResponse
   let errorMessage = "Response Error: please check your internet connection or token balance.";
   if (scriptResponse === errorMessage) {
     return errorMessage;
@@ -314,7 +284,6 @@ const handleScriptGeneration = async (
     let scriptToNameConstructedPrompt = scriptToNameTemplate(cleanedScript, query);
     // print the prompt in green
     console.log("%c" + scriptToNameConstructedPrompt, "color: green");
-    allTokensInput += scriptToNameConstructedPrompt
     const scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
@@ -322,7 +291,6 @@ const handleScriptGeneration = async (
     );
     // print the response in yellow
     console.log("%c" + scriptToNameResponse, "color: yellow");
-    allTokensOutput += scriptToNameResponse
     // strip any whitespace from the response or the Script Name: part
     scriptName = scriptToNameResponse.trim().replace("Script Name:", "").trim();
   }
