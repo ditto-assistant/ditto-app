@@ -294,7 +294,7 @@ const handleScriptGeneration = async (
   const scriptResponse = await promptLLM(
     constructedPrompt,
     systemTemplateFunction(),
-    "gemini-1.5-pro",
+    "claude-3-5-sonnet",
     image
   );
   /// print the response in yellow
