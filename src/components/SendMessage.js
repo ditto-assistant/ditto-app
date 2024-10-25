@@ -7,6 +7,8 @@ import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
 import sharedMic from '../sharedMic';
 import { firebaseConfig } from '../firebaseConfig';
 import { useDittoActivation } from '@/hooks/useDittoActivation';
+import { useIntentRecognition } from '@/hooks/useIntentRecognition';
+import { textEmbed } from '../api/LLM';
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
 export default function SendMessage() {
@@ -24,6 +26,7 @@ export default function SendMessage() {
     const wsRef = useRef(null);
     const inactivityTimeoutRef = useRef(null);
     const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
+    const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -199,7 +202,6 @@ export default function SendMessage() {
         const isThinking = thinkingObjectString !== null;
 
         if ((message !== '' || finalTranscriptRef.current) && !isThinking) {
-            // const userID = localStorage.getItem('userID');
             const userID = auth.currentUser.uid;
             const firstName = localStorage.getItem('firstName');
             let messageToSend = finalTranscriptRef.current || message;
@@ -215,7 +217,21 @@ export default function SendMessage() {
             if (isListening) {
                 stopRecording();
             }
-            await sendPrompt(userID, firstName, messageToSend, imageURI);
+            
+            // Fetch user prompt embeddings
+            let userPromptEmbedding = await textEmbed(messageToSend);
+            
+            // Use embeddings to get intent from useIntentRecognition
+            if (intentRecognitionLoaded && intentRecognitionModels) {
+                const intentResponse = await intentRecognitionModels.classify(userPromptEmbedding);
+                console.log('Intent Recognition Response:', intentResponse);
+            } else {
+                console.log('Intent Recognition models not loaded yet');
+            }
+            
+            await sendPrompt(userID, firstName, messageToSend, imageURI, userPromptEmbedding);
+            // alert the intent response for testing
+            // alert(intentResponse);
         }
     };
 

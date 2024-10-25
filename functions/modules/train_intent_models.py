@@ -82,7 +82,7 @@ class IntentModelTrainer:
             for example_type in self.example_store:
                 model_name = example_type['name']
                 self.models[model_name] = Sequential([
-                    Dense(128, activation='relu'),
+                    Dense(128, activation='relu', batch_input_shape=(None, 768)),
                     Dense(64, activation='relu'),
                     Dense(1, activation='sigmoid')
                 ])
@@ -131,7 +131,7 @@ class IntentModelTrainer:
                 os.makedirs('models')
 
             for model_name, model in self.models.items():
-                model.save(f'models/{model_name}.h5')
+                model.save(f'models/{model_name.replace(" ", "")}.h5')
                 self.logger.info(f"Model saved for {model_name}.")
         except Exception as e:
             self.logger.error(f"Error saving intent models: {e}")

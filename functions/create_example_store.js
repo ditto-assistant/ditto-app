@@ -1,32 +1,43 @@
 // import fs module
 const fs = require('fs');
 
-// iport dotenv 
+// import googleapis
+const { google } = require('googleapis'); // npm install googleapis
+
+// import dotenv 
 require('dotenv').config({ path: '.env', override: true });
 
 // OPENAI API Key
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
-// OPENAI Embedding Function
+// GCLOUD BEARER TOKEN
+const GCLOUD_BEARER_TOKEN = process.env.GCLOUD_BEARER_TOKEN || "";
+
+// initialize a new google auth client
+const auth = new google.auth.GoogleAuth({
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+});
+
 const getTextEmbeddings = async (text) => {
     try {
+        // get the auth client token
+        const authClient = await auth.getClient();
         console.log("Getting embeddings");
         let responseEmbeddings; 
-        const apiResponse = await fetch('https://api.openai.com/v1/embeddings', {
+        const apiResponse = await fetch('https://us-central1-aiplatform.googleapis.com/v1/projects/ditto-app-dev/locations/us-central1/publishers/google/models/text-embedding-004:predict', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                'Authorization': `Bearer ${GCLOUD_BEARER_TOKEN}`
             },
             body: JSON.stringify({
-                "input": text,
-                "model": "text-embedding-3-small",
-                "encoding_format": "float"
+                "instances": [
+                    { "content": text }
+                ]
             })
         });
-
         const data = await apiResponse.json();
-        responseEmbeddings = data.data[0].embedding;
+        responseEmbeddings = data.predictions[0].embeddings.values;
         return responseEmbeddings
     } catch (error) {
         console.error(error);
@@ -64,7 +75,6 @@ const createExampleStore = async () => {
             const promptEmbedding = await getTextEmbeddings(pair.prompt);
             const responseEmbedding = await getTextEmbeddings(pair.response);
             const promptAndResponseEmbedding = await getTextEmbeddings(`${pair.prompt} ${pair.response}`);
-
             return {
                 prompt: pair.prompt,
                 response: pair.response,

@@ -12,9 +12,9 @@ class IntentModelPredictor:
         self.example_store_path = example_store_path
         self.example_store = None
         self.models = {}
-        self.openai_api_key = os.getenv('OPENAI_API_KEY')
-        if not self.openai_api_key:
-            raise ValueError("OPENAI_API_KEY is not set.")
+        self.llm_api_key = os.getenv('GCLOUD_BEARER_TOKEN')
+        if not self.llm_api_key:
+            raise ValueError("GCLOUD_BEARER_TOKEN is not set.")
 
         # Set up logging
         logging.basicConfig(level=logging.DEBUG)
@@ -35,54 +35,23 @@ class IntentModelPredictor:
             self.logger.error(f"Error loading models: {e}")
 
     def embed_prompt(self, prompt):
-        '''
-        Load OPENAI_API_KEY from environment variables and use this JS code and convert to python:
-
-        const calculateEmbedding = async (text) => {
-    try {
-        console.log("Getting embeddings");
-        let responseEmbeddings; 
-        const apiResponse = await fetch('https://api.openai.com/v1/embeddings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                "input": text,
-                "model": "text-embedding-3-small",
-                "encoding_format": "float"
-            })
-        });
-        const data = await apiResponse.json();
-        responseEmbeddings = data.data[0].embedding;
-        return responseEmbeddings
-    } catch (error) {
-        console.error(error);
-        return { error: 'Error getting embeddings' };
-    }
-}
-
-        '''
         try:
             response = requests.post(
-                'https://api.openai.com/v1/embeddings',
+                'https://us-central1-aiplatform.googleapis.com/v1/projects/ditto-app-dev/locations/us-central1/publishers/google/models/text-embedding-004:predict',
                 headers={
                     'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {self.openai_api_key}'
+                    'Authorization': f'Bearer {self.llm_api_key}'
                 },
                 json={
-                    "input": prompt,
-                    "model": "text-embedding-3-small",
-                    "encoding_format": "float"
+                    "instances": [
+                        {"content": prompt}
+                    ]
                 }
             )
-            data = response.json()
-            embedding = data['data'][0]['embedding']
-            self.logger.info("Embedding calculated successfully.")
-            return embedding
+            embeddings = response.json()['predictions'][0]['embeddings']['values']
+            return embeddings
         except Exception as e:
-            self.logger.error(f"Error calculating embedding: {e}")
+            self.logger.error(f"Error embedding prompt: {e}")
 
 
     def predict(self, prompt):
