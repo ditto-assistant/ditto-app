@@ -102,7 +102,10 @@ export default function ChatFeed({
     if (actionOverlay === index) {
       setActionOverlay(null);
     } else {
-      setActionOverlay({ index, type });
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setActionOverlay({ index, type, x, y });
       setReactionOverlay(null);
     }
   };
@@ -233,7 +236,14 @@ export default function ChatFeed({
           <img src={profilePic} alt='User' className='avatar user-avatar' />
         )}
         {actionOverlay && actionOverlay.index === index && (
-          <div className='action-overlay' onClick={(e) => e.stopPropagation()}>
+          <div 
+            className='action-overlay' 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              left: `${actionOverlay.x}px`,
+              top: `${actionOverlay.y}px`,
+            }}
+          >
             {actionOverlay.type === 'text' ? (
               <>
                 <button onClick={() => handleCopy(message.text)} className='action-button'>

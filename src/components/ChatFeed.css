@@ -108,17 +108,15 @@
 
 .action-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background-color: #3941b8;
   border-radius: 10px;
   padding: 5px;
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
-  width: 12.0em;
+  width: 100px;
   z-index: 11;
-  margin-left: -30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .image-action-overlay {
