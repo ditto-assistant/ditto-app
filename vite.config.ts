@@ -45,7 +45,14 @@ export default defineConfig({
         outDir: 'build',
         sourcemap: false,
         rollupOptions: {
+            input: {
+                main: resolve(__dirname, 'index.html'),
+                worker: resolve(__dirname, 'src/worker.js')
+            },
             output: {
+                entryFileNames: (chunkInfo) => {
+                    return chunkInfo.name === 'worker' ? 'worker.js' : 'assets/[name]-[hash].js';
+                },
                 manualChunks: (id) => {
                     if (id.includes('node_modules')) {
                         if (id.includes('react') ||
