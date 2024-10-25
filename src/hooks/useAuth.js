@@ -1,6 +1,8 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { auth } from "../control/firebase";
 
+const AuthContext = createContext();
+
 /**
  * Access the authentication state.
  * 
@@ -8,57 +10,48 @@ import { auth } from "../control/firebase";
  * including whether the auth state is still loading and if the user
  * is authenticated. It also provides a signOut function.
  * 
- * The hook uses Firebase Authentication and local storage to persist
- * the auth state across page reloads, while ensuring proper behavior
- * during sign-in and sign-out.
- * 
- * @returns {{loading: boolean, isAuthenticated: boolean, signOut: () => Promise<void>, auth: import("@firebase/auth").Auth}}
+ * @returns {{
+ *   user?: import("@firebase/auth").User,
+ *   loading: boolean,
+ *   error?: Error,
+ *   signOut: () => Promise<void>
+ * }}
  */
-export const useAuth = () => useContext(AuthContext);
-
-const AUTH_EXPIRY_TIME = 60 * 60 * 1000; // 1 hour in milliseconds
-const AuthContext = createContext();
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
 
 export const AuthProvider = ({ children }) => {
-    const [authState, setAuthState] = useState(() => {
-        const cachedState = localStorage.getItem('authState');
-        if (cachedState) {
-            const { state, expiry } = JSON.parse(cachedState);
-            if (Date.now() < expiry) {
-                return { ...state, loading: false };
-            }
-        }
-        return { loading: true, isAuthenticated: false };
-    });
+    const [user, setUser] = useState(undefined);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(undefined);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            const newState = { loading: false, isAuthenticated: !!user };
-            setAuthState(newState);
-            if (user) {
-                localStorage.setItem('authState', JSON.stringify({
-                    state: newState,
-                    expiry: Date.now() + AUTH_EXPIRY_TIME
-                }));
-            } else {
-                localStorage.removeItem('authState');
+        const unsubscribe = auth.onAuthStateChanged(
+            (user) => {
+                setUser(user);
+                setLoading(false);
+            },
+            (error) => {
+                setError(error);
+                setLoading(false);
             }
-        });
+        );
 
         return () => unsubscribe();
     }, []);
 
-    const signOut = () => {
-        return auth.signOut().then(() => {
-            localStorage.removeItem('authState');
-            setAuthState({ loading: false, isAuthenticated: false });
-        });
-    };
+    const signOut = () => auth.signOut();
 
     const value = {
-        ...authState,
+        user,
+        loading,
+        error,
         signOut,
-        auth
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

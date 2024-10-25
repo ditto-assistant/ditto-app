@@ -1,18 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from 'react-router';
 import { useAuth } from "../hooks/useAuth";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import { saveUserToFirestore, getUserObjectFromFirestore, loadConversationHistoryFromFirestore } from "../control/firebase";
-
-export const withRouter = (Component) => {
-    const Wrapper = (props) => {
-        const history = useNavigate();
-        return <Component history={history} {...props} />;
-    };
-    return Wrapper;
-}
+import { auth } from "../control/firebase";
 
 const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePasswordVisibility }) => (
     <div style={styles.passwordInputContainer}>
@@ -32,7 +25,7 @@ const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePassw
 
 const Login = () => {
     const navigate = useNavigate();
-    const { isAuthenticated, auth } = useAuth();
+    const { user } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [retypePassword, setRetypePassword] = useState(""); // For re-type password
@@ -41,12 +34,9 @@ const Login = () => {
     const [isCreatingAccount, setIsCreatingAccount] = useState(false); // To toggle between sign-in and sign-up
     const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
     const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate("/");
-        }
-    }, [isAuthenticated, navigate]);
+    if (user) {
+        navigate("/");
+    }
 
     const handleSignIn = async () => {
         try {

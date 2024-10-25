@@ -89,42 +89,8 @@ registerRoute(
   })
 );
 
-// Handle API responses
-registerRoute(
-  ({ url }) => url.origin === BASE_URL,
-  async ({ event }) => {
-    if (event.request.url.includes('balance')) {
-      const cache = await caches.open('api-responses');
-      const cachedResponse = await cache.match(event.request);
-      if (cachedResponse) {
-        // For balance requests, return cached response immediately
-        // Then fetch new data in the background
-        event.waitUntil(
-          fetch(event.request)
-            .then(async (response) => {
-              if (response.ok) {
-                // Update cache with new response
-                await cache.put(event.request, response.clone());
-              }
-            })
-            .catch(() => {
-              console.error('Failed to fetch balance data');
-            })
-        );
-        return cachedResponse;
-      }
-    }
-
-    // For all other API requests, or if no cache exists, fetch from network
-    const response = await fetch(event.request);
-    return response;
-  }
-);
-
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
-
-// Any other custom service worker logic can go here.

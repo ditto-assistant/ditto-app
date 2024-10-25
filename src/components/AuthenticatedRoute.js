@@ -2,18 +2,15 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-const AuthenticatedRoute = ({ children }) => {
-    const { isAuthenticated, loading } = useAuth();
+export default function AuthenticatedRoute({ children }) {
+    const { user, loading } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!loading && !isAuthenticated) {
+        if (!loading && !user) {
             navigate("/login");
         }
-    }, [loading, isAuthenticated, navigate]);
+    }, [loading, user, navigate]);
 
-    if (loading) return null; // or a minimal loading indicator if preferred
-    return isAuthenticated ? children : null;
-};
-
-export default AuthenticatedRoute;
+    return children;
+}
