@@ -1,1 +1,1 @@
-export type Model = "gemini-1.5-pro" | "gemini-1.5-flash" | "claude-3-5-sonnet";
+export type Model = "gemini-1.5-pro" | "gemini-1.5-flash" | "claude-3-5-sonnet" | "mistral-nemo";
