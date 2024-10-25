@@ -34,6 +34,7 @@ export default function ChatFeed({
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(null);
+  const [reactions, setReactions] = useState({});
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -88,24 +89,30 @@ export default function ChatFeed({
   };
 
   const handleReaction = (index, emoji) => {
-    setSelectedReaction((prevReactions) => ({
+    setReactions((prevReactions) => ({
       ...prevReactions,
-      [index]: emoji,
+      [index]: [...(prevReactions[index] || []), emoji],
     }));
     setReactionOverlay(null);
     setActionOverlay(null);
   };
 
-  const handleLongPress = (e, index, type = 'text') => {
+  const handleLongPress = (e, index, type = 'text', x = null, y = null) => {
     e.preventDefault();
     e.stopPropagation();
     if (actionOverlay === index) {
       setActionOverlay(null);
     } else {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      setActionOverlay({ index, type, x, y });
+      let posX, posY;
+      if (x !== null && y !== null) {
+        posX = x;
+        posY = y;
+      } else {
+        const rect = e.currentTarget.getBoundingClientRect();
+        posX = e.clientX - rect.left;
+        posY = e.clientY - rect.top;
+      }
+      setActionOverlay({ index, type, x: posX, y: posY });
       setReactionOverlay(null);
     }
   };
@@ -204,7 +211,7 @@ export default function ChatFeed({
   };
 
   const renderMessageWithAvatar = (message, index) => {
-    const isSmallMessage = message.text.length <= 5; // Adjust this threshold as needed
+    const isSmallMessage = message.text.length <= 5;
 
     return (
       <div
@@ -227,10 +234,22 @@ export default function ChatFeed({
           </div>
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
-            <div className='message-options' onClick={(e) => handleLongPress(e, index)}>
+            <div className='message-options' onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              handleLongPress(e, index, 'text', x, y);
+            }}>
               <span>&#8942;</span>
             </div>
           </div>
+          {reactions[index] && reactions[index].length > 0 && (
+            <div className='message-reactions'>
+              {reactions[index].map((emoji, emojiIndex) => (
+                <span key={emojiIndex} className='reaction'>{emoji}</span>
+              ))}
+            </div>
+          )}
         </div>
         {message.sender === 'User' && (
           <img src={profilePic} alt='User' className='avatar user-avatar' />
