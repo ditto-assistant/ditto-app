@@ -9,7 +9,7 @@ import { getToken } from "./auth";
  * @function promptLLM
  * @param {string} userPrompt - The user's prompt.
  * @param {string} systemPrompt - The system's prompt.
- * @param {string} [model='gemini-1.5-flash'] - The model to use for the LLM.
+ * @param {import("../constants").Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
  * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
  * @param {function} textCallback - A callback function that handles the text as it comes in.
  * @returns {Promise<string>} A promise that resolves to the LLM's response.
