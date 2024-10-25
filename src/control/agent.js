@@ -83,7 +83,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     const response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
-      "gemini-1.5-flash",
+      "gemini-1.5-pro",
       image
     );
     allTokensOutput += response
