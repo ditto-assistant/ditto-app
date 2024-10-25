@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements, Outlet } from "react-router-dom";
-import LoadingSpinner from "./components/LoadingSpinner";
+import FullScreenSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 import { AuthProvider } from './hooks/useAuth';
 import { BalanceProvider } from './hooks/useBalance';
@@ -20,15 +20,13 @@ const router = createBrowserRouter(
         <Route path="/">
             <Route path="login" element={<Login />} />
             <Route element={
-                <Suspense fallback={<LoadingSpinner />}>
+                <Suspense fallback={<FullScreenSpinner />}>
                     <AuthenticatedRoute>
                         <Outlet />
                     </AuthenticatedRoute>
                 </Suspense>
             }>
-                <Route index element={
-                    <HomeScreen />
-                } />
+                <Route index element={<HomeScreen />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="paypal" element={<Paypal />} />
                 <Route path="scripts" element={<ScriptsScreen />} />

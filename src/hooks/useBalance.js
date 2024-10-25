@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { getBalance } from '../api/get-balance';
-
+import { useAuth } from './useAuth';
 /**
  * Access the user's balance context.
  * 
@@ -9,6 +9,8 @@ import { getBalance } from '../api/get-balance';
  *   usd: string,
  *   images: string,
  *   searches: string,
+ *   loading: boolean,
+ *   error: string,
  *   refetch: (() => void)
  * }} The balance object containing the user's balance and available images,
  *    and a function to refetch the balance.
@@ -47,12 +49,16 @@ export function BalanceProvider({ children }) {
  * @returns {{ok?: {balance: string, usd: string, images: string, searches: string}, error?: string, loading?: boolean, refetch: (() => void)}} An object containing the balance, any error that occurred, a loading state, and a function to refetch the balance.
  */
 function useBal() {
+    const { user } = useAuth();
     const [ok, setOk] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refetch, setRefetch] = useState(false);
 
     useEffect(() => {
+        if (!user) {
+            return;
+        }
         async function fetchBalance() {
             try {
                 const result = await getBalance();
@@ -69,7 +75,7 @@ function useBal() {
         }
 
         fetchBalance().then(() => setRefetch(false));
-    }, [refetch]);
+    }, [refetch, user]);
 
     return { ok, error, loading, refetch: () => setRefetch(true) };
 }

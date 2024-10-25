@@ -89,35 +89,8 @@ registerRoute(
   })
 );
 
-// Handle API responses
-registerRoute(
-  ({ url }) => url.origin === BASE_URL,
-  async ({ event }) => {
-    const cache = await caches.open('api-responses');
-    const cachedResponse = await cache.match(event.request);
-
-    if (cachedResponse && event.request.url.includes('balance')) {
-      // For balance requests, use cached response only once, then delete it
-      await cache.delete(event.request);
-      return cachedResponse;
-    }
-
-    // For all other API requests, or if no cache exists, fetch from network
-    const response = await fetch(event.request);
-
-    // Cache only successful responses
-    if (response.ok && event.request.url.includes('balance')) {
-      await cache.put(event.request, response.clone());
-    }
-
-    return response;
-  }
-);
-
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
-
-// Any other custom service worker logic can go here.

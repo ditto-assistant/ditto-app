@@ -5,6 +5,7 @@ import MemoryOverlay from "./MemoryOverlay";
 import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 function StatusBar() {
     const navigate = useNavigate();
@@ -108,9 +109,12 @@ function StatusBar() {
             />
 
             <div style={styles.status} onClick={toggleBalanceDisplay}>
-                {/* <p style={styles.statusText}>Balance:</p> */}
                 <p style={styles.statusIndicator}>
-                    {showUSD ? balance.usd : balance.balance}
+                    {balance.loading ? (
+                        <LoadingSpinner size={19} inline={true} />
+                    ) : (
+                        showUSD ? balance.usd : balance.balance
+                    )}
                 </p>
             </div>
 
@@ -145,6 +149,9 @@ const styles = {
     },
     statusIndicator: {
         color: "green",
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
     },
 };
 

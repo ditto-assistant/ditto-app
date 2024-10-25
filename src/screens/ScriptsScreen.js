@@ -9,7 +9,7 @@ import {
 } from "../control/firebase";
 import { downloadOpenscadScript } from "../control/agentTools";
 import { Button } from '@mui/material';
-import LoadingSpinner from "../components/LoadingSpinner";
+import FullScreenSpinner from "../components/LoadingSpinner";
 
 const darkModeColors = {
     background: '#2C2F33',
@@ -106,7 +106,7 @@ const ScriptsScreen = () => {
         }
     };
 
-    const handleRenameScript = async(category, id, newName) => {
+    const handleRenameScript = async (category, id, newName) => {
         setScripts((prevState) => ({
             ...prevState,
             [category]: prevState[category].map((script) =>
@@ -264,7 +264,7 @@ const ScriptsScreen = () => {
                                     <input
                                         type="text"
                                         defaultValue={currentScript.name}
-                                        onBlur={async(e) => await handleRenameScript(category, currentScript.id, e.target.value)}
+                                        onBlur={async (e) => await handleRenameScript(category, currentScript.id, e.target.value)}
                                         style={styles.renameInput}
                                         autoFocus
                                     />
@@ -302,7 +302,7 @@ const ScriptsScreen = () => {
                                 </div>
                             </div>
                             {editScript === currentScript.id && aceLoaded && (
-                                <Suspense fallback={<LoadingSpinner />}>
+                                <Suspense fallback={<FullScreenSpinner />}>
                                     <AceEditor
                                         mode="javascript"
                                         theme="monokai"

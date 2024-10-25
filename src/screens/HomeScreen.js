@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore, } from "../control/firebase";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
-import LoadingSpinner from "../components/LoadingSpinner";
+import FullScreenSpinner from "../components/LoadingSpinner";
 import { Divider } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
@@ -255,7 +255,7 @@ export default function HomeScreen() {
       </div>
 
       <footer className="App-footer">
-        <Suspense fallback={<LoadingSpinner />}>
+        <Suspense fallback={<FullScreenSpinner />}>
           <SendMessage />
         </Suspense>
       </footer>

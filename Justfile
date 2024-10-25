@@ -9,6 +9,8 @@ build:
 serve:
 	bun run serve
 
+bs: build serve
+
 # push a new tag to the remote repository
 tag-latest:
 	#!/bin/sh
