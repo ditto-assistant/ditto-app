@@ -35,6 +35,7 @@ export default function ChatFeed({
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(null);
   const [reactions, setReactions] = useState({});
+  const [imageOverlay, setImageOverlay] = useState(null);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -103,33 +104,40 @@ export default function ChatFeed({
     if (actionOverlay === index) {
       setActionOverlay(null);
     } else {
-      let posX, posY;
-      if (x !== null && y !== null) {
-        posX = x;
-        posY = y;
-      } else {
-        const rect = e.currentTarget.getBoundingClientRect();
-        posX = e.clientX - rect.left;
-        posY = e.clientY - rect.top;
-      }
-      setActionOverlay({ index, type, x: posX, y: posY });
+      const isUserMessage = messages[index].sender === 'User';
+      const isThreeDots = e.target.closest('.message-options') !== null;
+      console.log('Long press detected:', { index, type, x: e.clientX, y: e.clientY, isUserMessage, isThreeDots });
+      setActionOverlay({ 
+        index, 
+        type, 
+        clientX: e.clientX, 
+        clientY: e.clientY, 
+        isUserMessage, 
+        isThreeDots 
+      });
       setReactionOverlay(null);
     }
   };
 
   const handleReactionOverlay = (index) => {
-    setReactionOverlay(index);
+    setReactionOverlay({
+      index,
+      clientX: actionOverlay.clientX,
+      clientY: actionOverlay.clientY
+    });
     setActionOverlay(null);
   };
 
-  const handleImageOpen = (messageText) => {
-    window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
-    setActionOverlay(null);
+  const handleImageClick = (src) => {
+    setImageOverlay(src);
   };
 
-  const handleImageDownload = async (messageText) => {
-    window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
-    setActionOverlay(null);
+  const handleImageDownload = (src) => {
+    window.open(src, '_blank');
+  };
+
+  const closeImageOverlay = () => {
+    setImageOverlay(null);
   };
 
   const renderMessageText = (text, index) => {
@@ -146,7 +154,7 @@ export default function ChatFeed({
               src={src}
               alt={alt}
               className='chat-image'
-              onClick={(e) => handleLongPress(e, index, 'image')}
+              onClick={() => handleImageClick(src)}
             />
           ),
           code({ node, inline, className, children, ...props }) {
@@ -212,17 +220,18 @@ export default function ChatFeed({
 
   const renderMessageWithAvatar = (message, index) => {
     const isSmallMessage = message.text.length <= 5;
+    const isUserMessage = message.sender === 'User';
 
     return (
       <div
         key={index}
-        className={`message-container ${message.sender === 'User' ? 'User' : 'Ditto'}`}
+        className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
       >
         {message.sender === 'Ditto' && (
           <img src='../logo512.png' alt='Ditto' className='avatar ditto-avatar' />
         )}
         <div
-          className={`chat-bubble ${message.sender === 'User' ? 'User' : 'Ditto'} ${
+          className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${
             actionOverlay && actionOverlay.index === index ? 'blurred' : ''
           } ${isSmallMessage ? 'small-message' : ''}`}
           style={bubbleStyles.chatbubble}
@@ -235,7 +244,7 @@ export default function ChatFeed({
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
             <div className='message-options' onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
+              const rect = e.currentTarget.closest('.chat-bubble').getBoundingClientRect();
               const x = e.clientX - rect.left;
               const y = e.clientY - rect.top;
               handleLongPress(e, index, 'text', x, y);
@@ -259,10 +268,13 @@ export default function ChatFeed({
             className='action-overlay' 
             onClick={(e) => e.stopPropagation()}
             style={{
-              left: `${actionOverlay.x}px`,
-              top: `${actionOverlay.y}px`,
+              position: 'fixed', // Change to 'fixed' positioning
+              left: `${actionOverlay.clientX}px`, // Use clientX for absolute positioning
+              top: `${actionOverlay.clientY}px`, // Use clientY for absolute positioning
+              transform: 'translate(-50%, -50%)', // Center the overlay on the click position
             }}
           >
+            {console.log('Rendering action overlay:', actionOverlay)}
             {actionOverlay.type === 'text' ? (
               <>
                 <button onClick={() => handleCopy(message.text)} className='action-button'>
@@ -297,6 +309,33 @@ export default function ChatFeed({
     );
   };
 
+  const adjustOverlayPosition = (left, top) => {
+    const overlay = document.querySelector('.reaction-overlay');
+    if (!overlay) return { left, top };
+
+    const rect = overlay.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let adjustedLeft = left;
+    let adjustedTop = top;
+
+    if (left + rect.width > viewportWidth) {
+      adjustedLeft = viewportWidth - rect.width;
+    }
+    if (left < 0) {
+      adjustedLeft = 0;
+    }
+    if (top + rect.height > viewportHeight) {
+      adjustedTop = viewportHeight - rect.height;
+    }
+    if (top < 0) {
+      adjustedTop = 0;
+    }
+
+    return { left: adjustedLeft, top: adjustedTop };
+  };
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
@@ -310,6 +349,33 @@ export default function ChatFeed({
       {hasInputField && <input type='text' className='chat-input-field' />}
       {copied && <div className='copied-notification'>Copied!</div>}
       <div ref={bottomRef} />
+      {reactionOverlay && (
+        <div 
+          className='reaction-overlay' 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            ...adjustOverlayPosition(reactionOverlay.clientX, reactionOverlay.clientY),
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          {emojis.map((emoji) => (
+            <button key={emoji} onClick={() => handleReaction(reactionOverlay.index, emoji)} className='emoji-button'>
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+      {imageOverlay && (
+        <div className="image-overlay" onClick={closeImageOverlay}>
+          <div className="image-overlay-content" onClick={(e) => e.stopPropagation()}>
+            <img src={imageOverlay} alt="Full size" />
+            <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
+              Download
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

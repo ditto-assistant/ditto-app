@@ -27,6 +27,8 @@ export default function SendMessage() {
     const inactivityTimeoutRef = useRef(null);
     const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
     const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
+    const [isImageEnlarged, setIsImageEnlarged] = useState(false);
+    const [isImageFullscreen, setIsImageFullscreen] = useState(false);
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -281,6 +283,46 @@ export default function SendMessage() {
 
     useEffect(() => resizeTextArea(), [message, image]);
 
+    // Add this new function to handle pasted data
+    const handlePaste = (event) => {
+        const items = event.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                const reader = new FileReader();
+                reader.onload = () => {
+                    setImage(reader.result);
+                };
+                reader.readAsDataURL(blob);
+                event.preventDefault();
+                break;
+            }
+        }
+    };
+
+    const toggleImageEnlarge = (e) => {
+        e.stopPropagation();
+        setIsImageEnlarged(!isImageEnlarged);
+    };
+
+    const toggleImageFullscreen = (e) => {
+        e.stopPropagation();
+        setIsImageFullscreen(!isImageFullscreen);
+    };
+
+    const handleClickOutside = () => {
+        if (isImageFullscreen) {
+            setIsImageFullscreen(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [isImageFullscreen]);
+
     return (
         <div className='Contents'>
             <div className='Bar'>
@@ -290,6 +332,7 @@ export default function SendMessage() {
                             ref={textAreaRef}
                             onKeyDown={onEnterPress}
                             onInput={resizeTextArea}
+                            onPaste={handlePaste}
                             className='TextArea'
                             type='text'
                             value={message}
@@ -304,6 +347,7 @@ export default function SendMessage() {
                                 overflowY: 'hidden',
                                 marginRight: '-5px',
                             }}
+                            onFocus={() => setIsImageEnlarged(false)}
                         />
                         <FaMicrophone
                             className={`Mic ${isListening ? 'listening' : ''}`}
@@ -324,9 +368,12 @@ export default function SendMessage() {
                     <input className='Submit' type='submit' value='Send' />
 
                     {image && (
-                        <div className='ImagePreview'>
+                        <div className='ImagePreview' onClick={toggleImageFullscreen}>
                             <img src={image} alt='Preview' />
-                            <FaTimesCircle className='RemoveImage' onClick={handleClearImage} />
+                            <FaTimesCircle className='RemoveImage' onClick={(e) => {
+                                e.stopPropagation();
+                                handleClearImage();
+                            }} />
                         </div>
                     )}
                 </form>
@@ -342,6 +389,18 @@ export default function SendMessage() {
                     <button className='CameraClose' onClick={handleCameraClose}>
                         Close
                     </button>
+                </div>
+            )}
+
+            {isImageEnlarged && (
+                <div className='EnlargedImageOverlay' onClick={handleClickOutside}>
+                    <img src={image} alt='Enlarged Preview' onClick={(e) => e.stopPropagation()} />
+                </div>
+            )}
+
+            {isImageFullscreen && (
+                <div className='FullscreenImageOverlay' onClick={handleClickOutside}>
+                    <img src={image} alt='Fullscreen Preview' onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
 

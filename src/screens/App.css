@@ -16,12 +16,21 @@
 /* disable zoom on mobile */
 @viewport {
   zoom: 1.0;
+  width: device-width;
+}
+
+/* Add touch-action property to prevent zooming */
+html, body {
+  touch-action: pan-x pan-y;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .App {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden; /* Prevent scrolling on the main app container */
 }
 
 .App-header {
