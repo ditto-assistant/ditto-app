@@ -281,6 +281,23 @@ export default function SendMessage() {
 
     useEffect(() => resizeTextArea(), [message, image]);
 
+    // Add this new function to handle pasted data
+    const handlePaste = (event) => {
+        const items = event.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                const reader = new FileReader();
+                reader.onload = () => {
+                    setImage(reader.result);
+                };
+                reader.readAsDataURL(blob);
+                event.preventDefault();
+                break;
+            }
+        }
+    };
+
     return (
         <div className='Contents'>
             <div className='Bar'>
@@ -290,6 +307,7 @@ export default function SendMessage() {
                             ref={textAreaRef}
                             onKeyDown={onEnterPress}
                             onInput={resizeTextArea}
+                            onPaste={handlePaste}
                             className='TextArea'
                             type='text'
                             value={message}
