@@ -103,8 +103,8 @@ export default function ChatFeed({
     if (actionOverlay === index) {
       setActionOverlay(null);
     } else {
-      let posX, posY;
       const rect = e.currentTarget.getBoundingClientRect();
+      let posX, posY;
       if (x !== null && y !== null) {
         posX = x;
         posY = y;
@@ -113,7 +113,9 @@ export default function ChatFeed({
         posY = e.clientY - rect.top;
       }
       const isUserMessage = messages[index].sender === 'User';
-      setActionOverlay({ index, type, x: posX, y: posY, isUserMessage });
+      const isThreeDots = e.target.closest('.message-options') !== null;
+      console.log('Long press detected:', { index, type, x: posX, y: posY, isUserMessage, bubbleWidth: rect.width, isThreeDots });
+      setActionOverlay({ index, type, x: posX, y: posY, isUserMessage, bubbleWidth: rect.width, isThreeDots });
       setReactionOverlay(null);
     }
   };
@@ -261,11 +263,14 @@ export default function ChatFeed({
             className='action-overlay' 
             onClick={(e) => e.stopPropagation()}
             style={{
-              left: actionOverlay.isUserMessage ? 'auto' : `${actionOverlay.x}px`,
-              right: actionOverlay.isUserMessage ? `${actionOverlay.x}px` : 'auto',
+              left: actionOverlay.isUserMessage && !actionOverlay.isThreeDots ? 'auto' : `${actionOverlay.x}px`,
+              right: actionOverlay.isUserMessage ? 
+                (actionOverlay.isThreeDots ? '0px' : `${actionOverlay.bubbleWidth - actionOverlay.x}px`) : 
+                'auto',
               top: `${actionOverlay.y}px`,
             }}
           >
+            {console.log('Rendering action overlay:', actionOverlay)}
             {actionOverlay.type === 'text' ? (
               <>
                 <button onClick={() => handleCopy(message.text)} className='action-button'>

@@ -117,6 +117,7 @@
   width: 100px;
   z-index: 11;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%); /* Center the overlay on the click position */
 }
 
 .image-action-overlay {
