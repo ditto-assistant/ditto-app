@@ -119,7 +119,11 @@ export default function ChatFeed({
   };
 
   const handleReactionOverlay = (index) => {
-    setReactionOverlay(index);
+    setReactionOverlay({
+      index,
+      clientX: actionOverlay.clientX,
+      clientY: actionOverlay.clientY
+    });
     setActionOverlay(null);
   };
 
@@ -302,6 +306,33 @@ export default function ChatFeed({
     );
   };
 
+  const adjustOverlayPosition = (left, top) => {
+    const overlay = document.querySelector('.reaction-overlay');
+    if (!overlay) return { left, top };
+
+    const rect = overlay.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let adjustedLeft = left;
+    let adjustedTop = top;
+
+    if (left + rect.width > viewportWidth) {
+      adjustedLeft = viewportWidth - rect.width;
+    }
+    if (left < 0) {
+      adjustedLeft = 0;
+    }
+    if (top + rect.height > viewportHeight) {
+      adjustedTop = viewportHeight - rect.height;
+    }
+    if (top < 0) {
+      adjustedTop = 0;
+    }
+
+    return { left: adjustedLeft, top: adjustedTop };
+  };
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
@@ -315,6 +346,23 @@ export default function ChatFeed({
       {hasInputField && <input type='text' className='chat-input-field' />}
       {copied && <div className='copied-notification'>Copied!</div>}
       <div ref={bottomRef} />
+      {reactionOverlay && (
+        <div 
+          className='reaction-overlay' 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            ...adjustOverlayPosition(reactionOverlay.clientX, reactionOverlay.clientY),
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          {emojis.map((emoji) => (
+            <button key={emoji} onClick={() => handleReaction(reactionOverlay.index, emoji)} className='emoji-button'>
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
