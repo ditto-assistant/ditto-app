@@ -104,15 +104,16 @@ export default function ChatFeed({
       setActionOverlay(null);
     } else {
       let posX, posY;
+      const rect = e.currentTarget.getBoundingClientRect();
       if (x !== null && y !== null) {
         posX = x;
         posY = y;
       } else {
-        const rect = e.currentTarget.getBoundingClientRect();
         posX = e.clientX - rect.left;
         posY = e.clientY - rect.top;
       }
-      setActionOverlay({ index, type, x: posX, y: posY });
+      const isUserMessage = messages[index].sender === 'User';
+      setActionOverlay({ index, type, x: posX, y: posY, isUserMessage });
       setReactionOverlay(null);
     }
   };
@@ -212,17 +213,18 @@ export default function ChatFeed({
 
   const renderMessageWithAvatar = (message, index) => {
     const isSmallMessage = message.text.length <= 5;
+    const isUserMessage = message.sender === 'User';
 
     return (
       <div
         key={index}
-        className={`message-container ${message.sender === 'User' ? 'User' : 'Ditto'}`}
+        className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
       >
         {message.sender === 'Ditto' && (
           <img src='../logo512.png' alt='Ditto' className='avatar ditto-avatar' />
         )}
         <div
-          className={`chat-bubble ${message.sender === 'User' ? 'User' : 'Ditto'} ${
+          className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${
             actionOverlay && actionOverlay.index === index ? 'blurred' : ''
           } ${isSmallMessage ? 'small-message' : ''}`}
           style={bubbleStyles.chatbubble}
@@ -259,7 +261,8 @@ export default function ChatFeed({
             className='action-overlay' 
             onClick={(e) => e.stopPropagation()}
             style={{
-              left: `${actionOverlay.x}px`,
+              left: actionOverlay.isUserMessage ? 'auto' : `${actionOverlay.x}px`,
+              right: actionOverlay.isUserMessage ? `${actionOverlay.x}px` : 'auto',
               top: `${actionOverlay.y}px`,
             }}
           >
