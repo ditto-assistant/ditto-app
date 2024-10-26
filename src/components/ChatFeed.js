@@ -35,6 +35,7 @@ export default function ChatFeed({
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(null);
   const [reactions, setReactions] = useState({});
+  const [imageOverlay, setImageOverlay] = useState(null);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -127,14 +128,16 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
-  const handleImageOpen = (messageText) => {
-    window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
-    setActionOverlay(null);
+  const handleImageClick = (src) => {
+    setImageOverlay(src);
   };
 
-  const handleImageDownload = async (messageText) => {
-    window.open(messageText.match(/\(([^)]+)\)/)[1], '_blank');
-    setActionOverlay(null);
+  const handleImageDownload = (src) => {
+    window.open(src, '_blank');
+  };
+
+  const closeImageOverlay = () => {
+    setImageOverlay(null);
   };
 
   const renderMessageText = (text, index) => {
@@ -151,7 +154,7 @@ export default function ChatFeed({
               src={src}
               alt={alt}
               className='chat-image'
-              onClick={(e) => handleLongPress(e, index, 'image')}
+              onClick={() => handleImageClick(src)}
             />
           ),
           code({ node, inline, className, children, ...props }) {
@@ -361,6 +364,16 @@ export default function ChatFeed({
               {emoji}
             </button>
           ))}
+        </div>
+      )}
+      {imageOverlay && (
+        <div className="image-overlay" onClick={closeImageOverlay}>
+          <div className="image-overlay-content" onClick={(e) => e.stopPropagation()}>
+            <img src={imageOverlay} alt="Full size" />
+            <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
+              Download
+            </button>
+          </div>
         </div>
       )}
     </div>
