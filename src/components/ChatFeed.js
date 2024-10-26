@@ -263,11 +263,12 @@ export default function ChatFeed({
             className='action-overlay' 
             onClick={(e) => e.stopPropagation()}
             style={{
-              left: actionOverlay.isUserMessage && !actionOverlay.isThreeDots ? 'auto' : `${actionOverlay.x}px`,
-              right: actionOverlay.isUserMessage ? 
-                (actionOverlay.isThreeDots ? '0px' : `${actionOverlay.bubbleWidth - actionOverlay.x}px`) : 
-                'auto',
+              left: actionOverlay.isUserMessage ? 
+                (actionOverlay.isThreeDots ? 'auto' : `${actionOverlay.x}px`) : 
+                `${actionOverlay.x}px`,
+              right: actionOverlay.isUserMessage && actionOverlay.isThreeDots ? '0px' : 'auto',
               top: `${actionOverlay.y}px`,
+              transform: 'translate(-50%, -50%)', // Center the overlay on the click position
             }}
           >
             {console.log('Rendering action overlay:', actionOverlay)}
