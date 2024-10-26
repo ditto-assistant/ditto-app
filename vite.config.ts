@@ -11,13 +11,13 @@ export default defineConfig({
             filename: 'sw.js',
             registerType: 'autoUpdate',
             manifest: {
-                name: 'Ditto App',
+                name: 'Ditto',
                 short_name: 'Ditto',
                 description: 'Hey Ditto!',
                 theme_color: '#000000',
                 icons: [
                     {
-                        src: 'logo512.png',
+                        src: 'maskable_icon.png',
                         sizes: '512x512',
                         type: 'image/png'
                     }
