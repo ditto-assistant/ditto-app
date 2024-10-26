@@ -103,19 +103,17 @@ export default function ChatFeed({
     if (actionOverlay === index) {
       setActionOverlay(null);
     } else {
-      const rect = e.currentTarget.getBoundingClientRect();
-      let posX, posY;
-      if (x !== null && y !== null) {
-        posX = x;
-        posY = y;
-      } else {
-        posX = e.clientX - rect.left;
-        posY = e.clientY - rect.top;
-      }
       const isUserMessage = messages[index].sender === 'User';
       const isThreeDots = e.target.closest('.message-options') !== null;
-      console.log('Long press detected:', { index, type, x: posX, y: posY, isUserMessage, bubbleWidth: rect.width, isThreeDots });
-      setActionOverlay({ index, type, x: posX, y: posY, isUserMessage, bubbleWidth: rect.width, isThreeDots });
+      console.log('Long press detected:', { index, type, x: e.clientX, y: e.clientY, isUserMessage, isThreeDots });
+      setActionOverlay({ 
+        index, 
+        type, 
+        clientX: e.clientX, 
+        clientY: e.clientY, 
+        isUserMessage, 
+        isThreeDots 
+      });
       setReactionOverlay(null);
     }
   };
@@ -263,11 +261,9 @@ export default function ChatFeed({
             className='action-overlay' 
             onClick={(e) => e.stopPropagation()}
             style={{
-              left: actionOverlay.isUserMessage ? 
-                (actionOverlay.isThreeDots ? 'auto' : `${actionOverlay.x}px`) : 
-                `${actionOverlay.x}px`,
-              right: actionOverlay.isUserMessage && actionOverlay.isThreeDots ? '0px' : 'auto',
-              top: `${actionOverlay.y}px`,
+              position: 'fixed', // Change to 'fixed' positioning
+              left: `${actionOverlay.clientX}px`, // Use clientX for absolute positioning
+              top: `${actionOverlay.clientY}px`, // Use clientY for absolute positioning
               transform: 'translate(-50%, -50%)', // Center the overlay on the click position
             }}
           >
