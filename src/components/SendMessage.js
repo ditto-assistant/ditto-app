@@ -237,20 +237,28 @@ export default function SendMessage() {
         }
     };
 
-    const onEnterPress = async (e) => {
+    const handleKeyDown = (e) => {
         if (isMobile.current) {
-            if (e.keyCode === 13) {
+            // On mobile, Enter always creates a new line
+            if (e.key === 'Enter') {
                 e.preventDefault();
-                setMessage(message + '\n');
+                setMessage(prevMessage => prevMessage + '\n');
                 resizeTextArea();
             }
-            return;
-        }
-        if (e.keyCode === 13 && e.shiftKey === false) {
-            e.preventDefault();
-            handleSubmit(e);
         } else {
-            resizeTextArea();
+            // On web
+            if (e.key === 'Enter') {
+                if (e.ctrlKey || e.metaKey) {
+                    // Ctrl+Enter or Cmd+Enter adds a new line
+                    e.preventDefault();
+                    setMessage(prevMessage => prevMessage + '\n');
+                    resizeTextArea();
+                } else if (!e.shiftKey) {
+                    // Enter (without Shift) submits the form
+                    e.preventDefault();
+                    handleSubmit();
+                }
+            }
         }
     };
 
@@ -330,7 +338,7 @@ export default function SendMessage() {
                     <div className='InputWrapper'>
                         <textarea
                             ref={textAreaRef}
-                            onKeyDown={onEnterPress}
+                            onKeyDown={handleKeyDown}
                             onInput={resizeTextArea}
                             onPaste={handlePaste}
                             className='TextArea'
