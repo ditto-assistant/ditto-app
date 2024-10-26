@@ -390,15 +390,19 @@ const ScriptsScreen = () => {
                 </header>
                 <div style={styles.content}>
                     {selectedScript && (
-                        <div style={styles.selectedScript}>
-                            <p style={{ color: "white" }}>Currently Selected:</p>
-                            <p style={{ color: darkModeColors.primary }}>{selectedScript}</p>
-                            <Button variant="contained" style={styles.deselectButton} onClick={handleDeselectScript}>
-                                Deselect Script
-                            </Button>
-                            <Button variant="contained" style={styles.launchButton} onClick={handleLaunchScript}>
-                                Launch Script
-                            </Button>
+                        <div style={styles.selectedScriptContainer}>
+                            <div style={styles.selectedScript}>
+                                <p style={styles.selectedScriptLabel}>Currently Selected:</p>
+                                <p style={styles.selectedScriptName}>{selectedScript}</p>
+                                <div style={styles.selectedScriptButtons}>
+                                    <Button variant="contained" style={styles.deselectButton} onClick={handleDeselectScript}>
+                                        Deselect Script
+                                    </Button>
+                                    <Button variant="contained" style={styles.launchButton} onClick={handleLaunchScript}>
+                                        Launch Script
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -522,24 +526,49 @@ const styles = {
         alignItems: 'center',
         overflowY: 'auto',
         flexGrow: 1,
-        padding: '0 20px 20px 20px', // Add padding to the content area
+        padding: '20px', // Add padding to the top as well
+    },
+    selectedScriptContainer: {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        marginBottom: '20px',
     },
     selectedScript: {
         backgroundColor: 'rgba(54, 57, 63, 0.8)',
         border: `1px solid ${darkModeColors.border}`,
-        padding: '10px',
+        padding: '15px',
         borderRadius: '5px',
         textAlign: 'center',
-        marginBottom: '20px',
+        maxWidth: '400px', // Limit the width for better appearance
+        width: '100%',
+    },
+    selectedScriptLabel: {
+        color: darkModeColors.text,
+        marginBottom: '5px',
+    },
+    selectedScriptName: {
+        color: darkModeColors.primary,
+        fontWeight: 'bold',
+        fontSize: '1.1em',
+        marginBottom: '10px',
+    },
+    selectedScriptButtons: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '10px',
     },
     deselectButton: {
-        marginTop: '10px',
         backgroundColor: darkModeColors.danger,
+        '&:hover': {
+            backgroundColor: '#d04040',
+        },
     },
     launchButton: {
-        marginTop: '10px',
-        marginLeft: '10px',
         backgroundColor: darkModeColors.primary,
+        '&:hover': {
+            backgroundColor: '#5b6eae',
+        },
     },
     category: {
         marginBottom: '20px',
