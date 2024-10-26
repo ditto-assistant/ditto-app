@@ -235,7 +235,7 @@ export default function ChatFeed({
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
             <div className='message-options' onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
+              const rect = e.currentTarget.closest('.chat-bubble').getBoundingClientRect();
               const x = e.clientX - rect.left;
               const y = e.clientY - rect.top;
               handleLongPress(e, index, 'text', x, y);
