@@ -81,7 +81,6 @@ Current Time in User's Timezone: <!time>
 User's Prompt: <!users_prompt>
 Ditto:
 `
-    
     prompt = prompt.replace('<!time>', getTimezoneString() + ' ' + (new Date().getHours() >= 12 ? 'PM' : 'AM'))
     prompt = prompt.replace('<!long_term_memory>', longTermMemory)
     prompt = prompt.replace('<!short_term_memory>', shortTermMemory)

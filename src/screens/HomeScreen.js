@@ -137,7 +137,7 @@ export default function HomeScreen() {
       setConversation((prevState) => {
         const newMessages = [
           ...prevState.messages,
-          { sender: "User", text: usersPrompt },
+          { sender: "User", text: usersPrompt, timestamp: Date.now() },
         ];
         return {
           ...prevState,
