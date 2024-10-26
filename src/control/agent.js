@@ -66,7 +66,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptName,
       scriptType
     );
-    const mainAgentModel = image ? "claude-3-5-sonnet" : "gemini-1.5-flash";
+    const mainAgentModel = image ? "claude-3-5-sonnet" : "gemini-1.5-pro";
 
     // print constructed prompt in green
     console.log("%c" + constructedPrompt, "color: green");
