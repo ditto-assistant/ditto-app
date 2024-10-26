@@ -145,7 +145,7 @@ const styles = {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "4px 12px",
-        backgroundColor: "#2f3136", // Discord-like dark background
+        background: "rgba(32, 34, 37, 0.6)", // Updated to the specified semi-transparent color
         borderRadius: "12px",
         margin: "3px 8px",
     },
