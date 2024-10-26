@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusIcons from "./StatusIcons";
 import MemoryOverlay from "./MemoryOverlay";
-import { statusTemp } from "../control/status";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -23,6 +22,7 @@ function StatusBar() {
         }
         return savedMode === 't';
     });
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const [scripts, setScripts] = useState(() => {
         let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
@@ -31,6 +31,10 @@ function StatusBar() {
         openSCAD.sort((a, b) => a.name.localeCompare(b.name));
         return { webApps, openSCAD };
     });
+
+    const checkOnlineStatus = () => {
+        setIsOnline(navigator.onLine);
+    };
 
     const handleBookmarkClick = async () => {
         let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
@@ -98,8 +102,15 @@ function StatusBar() {
     return (
         <div style={styles.statusBar}>
             <div style={styles.status}>
-                {/* <p style={styles.statusText}>Status:</p> */}
-                <p style={styles.statusIndicator}>{statusTemp.status}</p>
+                <div style={{
+                    ...styles.statusIndicator,
+                    backgroundColor: isOnline ? 'green' : 'red',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    marginRight: '6px'
+                }}></div>
+                <p style={styles.statusText}>{isOnline ? 'Online' : 'Offline'}</p>
             </div>
 
             <StatusIcons
@@ -108,10 +119,10 @@ function StatusBar() {
                 selectedScript={workingScript}
             />
 
-            <div style={styles.status} onClick={toggleBalanceDisplay}>
-                <p style={styles.statusIndicator}>
+            <div style={styles.balanceContainer} onClick={toggleBalanceDisplay}>
+                <p style={styles.balanceIndicator}>
                     {balance.loading ? (
-                        <LoadingSpinner size={19} inline={true} />
+                        <LoadingSpinner size={14} inline={true} />
                     ) : (
                         showUSD ? balance.usd : balance.balance
                     )}
@@ -133,25 +144,38 @@ const styles = {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "5px",
+        padding: "4px 12px",
+        backgroundColor: "#2f3136", // Discord-like dark background
+        borderRadius: "12px",
+        margin: "3px 8px",
     },
     status: {
         display: "flex",
         alignItems: "center",
-        paddingLeft: "20px",
-        paddingRight: "20px",
-        fontSize: "1.0em",
+        fontSize: "0.9em",
         cursor: "pointer",
     },
     statusText: {
-        // paddingRight: "2px",
         color: "#FFFFFF",
+        margin: 0,
     },
     statusIndicator: {
-        color: "green",
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: '6px',
+    },
+    balanceContainer: {
+        display: "flex",
+        alignItems: "center",
+        cursor: "pointer",
+    },
+    balanceIndicator: {
+        backgroundColor: "#5865f2", // Discord-like blue
+        color: "#FFFFFF",
+        padding: "3px 8px",
+        borderRadius: "10px",
+        fontSize: "0.9em",
+        fontWeight: "bold",
     },
 };
 

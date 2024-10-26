@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const createConversation = (hist, reset, onload) => {
     try {
       let newConversation = {
-        messages: [{ sender: "Ditto", text: "Hi! I'm Ditto." }],
+        messages: [{ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() }],
         is_typing: false,
       };
       if (reset) {
