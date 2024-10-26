@@ -76,7 +76,7 @@ def update_user_conversations(user_id):
             # Check if the document has an "embedding" field
             if "embedding" in doc_data:
                 # Convert the "embedding" field to a Vector object
-                doc_data["embedding"] = Vector(doc_data["embedding"])
+                doc_data["embedding_vector"] = Vector(doc_data["embedding"])
                 
                 # Create a new document with the corrected Vector type
                 conversations_ref.document(doc.id).set(doc_data)
@@ -91,8 +91,8 @@ def update_user_conversations(user_id):
 
 if __name__ == "__main__":
     # Replace with actual user ID
-    # user_id = "FBRvXjguXdYv4nEtgMviZ1dOmRm1"
-    # get_user_conversations(user_id)
-    # update_user_conversations(user_id)
+    user_id = ""
+    get_user_conversations(user_id)
+    update_user_conversations(user_id)
 
-    print_all_user_name_and_email()
+    # print_all_user_name_and_email()
