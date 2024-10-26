@@ -27,6 +27,7 @@ export default function SendMessage() {
     const inactivityTimeoutRef = useRef(null);
     const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
     const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
+    const [isImageEnlarged, setIsImageEnlarged] = useState(false);
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -298,6 +299,24 @@ export default function SendMessage() {
         }
     };
 
+    const toggleImageEnlarge = (e) => {
+        e.stopPropagation();
+        setIsImageEnlarged(!isImageEnlarged);
+    };
+
+    const handleClickOutside = () => {
+        if (isImageEnlarged) {
+            setIsImageEnlarged(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [isImageEnlarged]);
+
     return (
         <div className='Contents'>
             <div className='Bar'>
@@ -322,6 +341,7 @@ export default function SendMessage() {
                                 overflowY: 'hidden',
                                 marginRight: '-5px',
                             }}
+                            onFocus={() => setIsImageEnlarged(false)}
                         />
                         <FaMicrophone
                             className={`Mic ${isListening ? 'listening' : ''}`}
@@ -342,9 +362,12 @@ export default function SendMessage() {
                     <input className='Submit' type='submit' value='Send' />
 
                     {image && (
-                        <div className='ImagePreview'>
+                        <div className={`ImagePreview ${isImageEnlarged ? 'enlarged' : ''}`} onClick={toggleImageEnlarge}>
                             <img src={image} alt='Preview' />
-                            <FaTimesCircle className='RemoveImage' onClick={handleClearImage} />
+                            <FaTimesCircle className='RemoveImage' onClick={(e) => {
+                                e.stopPropagation();
+                                handleClearImage();
+                            }} />
                         </div>
                     )}
                 </form>
@@ -360,6 +383,12 @@ export default function SendMessage() {
                     <button className='CameraClose' onClick={handleCameraClose}>
                         Close
                     </button>
+                </div>
+            )}
+
+            {isImageEnlarged && (
+                <div className='EnlargedImageOverlay' onClick={handleClickOutside}>
+                    <img src={image} alt='Enlarged Preview' onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
 

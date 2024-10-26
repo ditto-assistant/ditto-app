@@ -129,6 +129,8 @@
     box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
     max-width: 90%;
     z-index: 2;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .ImagePreview img {
@@ -136,6 +138,17 @@
     height: auto;
     border-radius: 5px;
     margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.ImagePreview.enlarged {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.ImagePreview.enlarged img {
+    width: 100px;
+    height: auto;
 }
 
 .RemoveImage {
@@ -199,4 +212,36 @@
 
 .FlipCameraIcon:hover {
     color: #7289da;
+}
+
+.EnlargedImageOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.EnlargedImageOverlay img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.8); }
+    to { transform: scale(1); }
 }
