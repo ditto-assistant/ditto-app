@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaArrowLeft } from "react-icons/fa"; // Add FaArrowLeft import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
@@ -378,8 +378,13 @@ const ScriptsScreen = () => {
         <div style={styles.overlay} onClick={handleOverlayClick}>
             <div style={styles.container}>
                 <header style={styles.header}>
-                    <Button variant="contained" style={styles.backButton} onClick={() => navigate(-1)}>
-                        Go Back
+                    <Button
+                        variant="text"
+                        onClick={() => navigate("/")}
+                        style={styles.backButton}
+                        startIcon={<FaArrowLeft />}
+                    >
+                        BACK
                     </Button>
                     <h2 style={styles.headerText}>Scripts</h2>
                 </header>
@@ -466,47 +471,58 @@ const styles = {
     overlay: {
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         minHeight: '100vh',
-        padding: '20px',
         backgroundColor: darkModeColors.background,
+        overflowY: 'auto',
+        padding: 0, // Remove padding
     },
     container: {
         backgroundColor: darkModeColors.foreground,
-        borderRadius: '8px',
         textAlign: 'center',
-        padding: '20px',
         width: '100%',
-        maxWidth: '1000px',
+        maxWidth: '100%', // Ensure it takes full width
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+        height: '100vh', // Full viewport height
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
     },
     header: {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         color: darkModeColors.text,
-        marginBottom: '20px',
-        position: 'relative',
+        padding: '15px',
+        position: 'sticky',
+        top: 0,
+        backgroundColor: '#2f3136',
+        zIndex: 1000,
+        borderRadius: '8px 8px 0 0',
     },
     headerText: {
-        flexGrow: 1,
         margin: 0,
-        fontSize: '24px',
-        textAlign: 'center',
+        fontSize: '1.2em',
+        fontWeight: 'bold',
     },
     backButton: {
         position: 'absolute',
-        left: '0px',
-        backgroundColor: darkModeColors.primary,
-        color: darkModeColors.text,
-        marginLeft: '5px',
-        padding: '5px 10px',
+        left: '15px',
+        color: '#7289da',
+        fontWeight: 'bold',
+        '&:hover': {
+            backgroundColor: 'transparent',
+            color: '#5b6eae',
+        },
     },
     content: {
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
+        overflowY: 'auto',
+        flexGrow: 1,
+        padding: '0 20px 20px 20px', // Add padding to the content area
     },
     selectedScript: {
         backgroundColor: 'rgba(54, 57, 63, 0.8)',
