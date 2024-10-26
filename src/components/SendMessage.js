@@ -28,6 +28,7 @@ export default function SendMessage() {
     const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
     const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
     const [isImageEnlarged, setIsImageEnlarged] = useState(false);
+    const [isImageFullscreen, setIsImageFullscreen] = useState(false);
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -304,9 +305,14 @@ export default function SendMessage() {
         setIsImageEnlarged(!isImageEnlarged);
     };
 
+    const toggleImageFullscreen = (e) => {
+        e.stopPropagation();
+        setIsImageFullscreen(!isImageFullscreen);
+    };
+
     const handleClickOutside = () => {
-        if (isImageEnlarged) {
-            setIsImageEnlarged(false);
+        if (isImageFullscreen) {
+            setIsImageFullscreen(false);
         }
     };
 
@@ -315,7 +321,7 @@ export default function SendMessage() {
         return () => {
             document.removeEventListener('click', handleClickOutside);
         };
-    }, [isImageEnlarged]);
+    }, [isImageFullscreen]);
 
     return (
         <div className='Contents'>
@@ -362,7 +368,7 @@ export default function SendMessage() {
                     <input className='Submit' type='submit' value='Send' />
 
                     {image && (
-                        <div className={`ImagePreview ${isImageEnlarged ? 'enlarged' : ''}`} onClick={toggleImageEnlarge}>
+                        <div className='ImagePreview' onClick={toggleImageFullscreen}>
                             <img src={image} alt='Preview' />
                             <FaTimesCircle className='RemoveImage' onClick={(e) => {
                                 e.stopPropagation();
@@ -389,6 +395,12 @@ export default function SendMessage() {
             {isImageEnlarged && (
                 <div className='EnlargedImageOverlay' onClick={handleClickOutside}>
                     <img src={image} alt='Enlarged Preview' onClick={(e) => e.stopPropagation()} />
+                </div>
+            )}
+
+            {isImageFullscreen && (
+                <div className='FullscreenImageOverlay' onClick={handleClickOutside}>
+                    <img src={image} alt='Fullscreen Preview' onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
 
