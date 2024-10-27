@@ -206,13 +206,26 @@ export default function HomeScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    // Add this new effect to adjust for mobile browsers
+    const adjustViewportHeight = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    adjustViewportHeight();
+    window.addEventListener('resize', adjustViewportHeight);
+
+    return () => window.removeEventListener('resize', adjustViewportHeight);
+  }, []);
+
   const toggleStatusBar = () => {
     setShowStatusBar((prev) => !prev);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="App" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
+      <header className="App-header" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
         {microphoneStatus === true ? (
           <FaEarListen
             style={{
@@ -258,7 +271,7 @@ export default function HomeScreen() {
           <Divider />
         </>
       )}
-      <div className="App-body" ref={appBodyRef}>
+      <div className="App-body" ref={appBodyRef} style={{ flexGrow: 1, overflowY: 'auto' }}>
         <div className="chat-container">
           <Suspense fallback={<div>Loading chat...</div>}>
             <ChatFeed
@@ -273,7 +286,7 @@ export default function HomeScreen() {
         </div>
       </div>
 
-      <footer className="App-footer">
+      <footer className="App-footer" style={{ position: 'sticky', bottom: 0, zIndex: 1000 }}>
         <Suspense fallback={<FullScreenSpinner />}>
           <SendMessage />
         </Suspense>
