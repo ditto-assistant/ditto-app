@@ -11,6 +11,7 @@
   --scrollbar-track-color: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
   --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
+  --vh: 1vh;  /* This will be updated via JavaScript */
 }
 
 body {
@@ -31,10 +32,14 @@ body:not(.login-page) {
 .App {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* Fallback */
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
   background-color: var(--background-color);
   overflow: hidden;
+  position: fixed; /* Add fixed positioning */
+  top: 0;
+  left: 0;
 }
 
 .App-header {
@@ -189,12 +194,48 @@ body:not(.login-page) {
   .chat-card {
     border-radius: 15px;
   }
+
+  .App {
+    /* Use dynamic viewport height */
+    min-height: -webkit-fill-available;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+
+  .App-body {
+    flex: 1;
+    height: auto; /* Allow content to determine height */
+    min-height: 0; /* Enable proper flex shrinking */
+  }
+
+  .App-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .App-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+  }
 }
 
 /* Additional fix for iOS devices */
 @supports (-webkit-touch-callout: none) {
   .App {
     height: -webkit-fill-available;
+  }
+  
+  .App-body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Add support for safe area insets */
+@supports (padding: env(safe-area-inset-top)) {
+  .App {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
