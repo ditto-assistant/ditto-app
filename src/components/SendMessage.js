@@ -13,7 +13,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
-export default function SendMessage({ onImageEnlarge, onCameraOpen, capturedImage, onClearCapturedImage }) {
+export default function SendMessage({ 
+  onImageEnlarge, 
+  onCameraOpen, 
+  capturedImage, 
+  onClearCapturedImage,
+  showMediaOptions,
+  onOpenMediaOptions,
+  onCloseMediaOptions
+}) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
     const [isListening, setIsListening] = useState(false);
@@ -31,7 +39,6 @@ export default function SendMessage({ onImageEnlarge, onCameraOpen, capturedImag
     const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
     const [isImageEnlarged, setIsImageEnlarged] = useState(false);
     const [isImageFullscreen, setIsImageFullscreen] = useState(false);
-    const [showMediaOptions, setShowMediaOptions] = useState(false);
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -343,27 +350,23 @@ export default function SendMessage({ onImageEnlarge, onCameraOpen, capturedImag
 
     const handlePlusClick = (e) => {
         e.stopPropagation();
-        setShowMediaOptions(true);
-    };
-
-    const handleCloseMediaOptions = () => {
-        setShowMediaOptions(false);
+        onOpenMediaOptions();
     };
 
     const handleGalleryClick = (e) => {
         e.stopPropagation();
         document.getElementById('image-upload').click();
-        setShowMediaOptions(false);
+        onCloseMediaOptions();
     };
 
     const handleCameraClick = (e) => {
         e.stopPropagation();
-        onCameraOpen(); // Call the prop function instead of setting state locally
-        setShowMediaOptions(false);
+        onCameraOpen();
+        onCloseMediaOptions();
     };
 
     return (
-        <div className='Contents'>
+        <div className='Contents' onClick={(e) => e.stopPropagation()}>
             <div className='Bar'>
                 <form className='Form' onSubmit={handleSubmit}>
                     <div className='InputWrapper'>
@@ -424,7 +427,7 @@ export default function SendMessage({ onImageEnlarge, onCameraOpen, capturedImag
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={handleCloseMediaOptions}
+                        onClick={onCloseMediaOptions}
                     >
                         <motion.div
                             className='MediaOptionsContent'
@@ -440,7 +443,7 @@ export default function SendMessage({ onImageEnlarge, onCameraOpen, capturedImag
                             <button className='MediaOption' onClick={handleCameraClick}>
                                 <FaCamera /> Camera
                             </button>
-                            <button className='CancelButton' onClick={handleCloseMediaOptions}>
+                            <button className='CancelButton' onClick={onCloseMediaOptions}>
                                 Cancel
                             </button>
                         </motion.div>

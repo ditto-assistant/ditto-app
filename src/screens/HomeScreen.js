@@ -37,6 +37,7 @@ export default function HomeScreen() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [showMediaOptions, setShowMediaOptions] = useState(false);
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -292,8 +293,16 @@ export default function HomeScreen() {
     startCamera(!isFrontCamera);
   };
 
+  const handleCloseMediaOptions = () => {
+    setShowMediaOptions(false);
+  };
+
+  const handleOpenMediaOptions = () => {
+    setShowMediaOptions(true);
+  };
+
   return (
-    <div className="App">
+    <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
         <motion.div
           className="microphone-button"
@@ -338,7 +347,7 @@ export default function HomeScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="App-body" ref={appBodyRef}>
+      <div className="App-body" ref={appBodyRef} onClick={handleCloseMediaOptions}>
         <div className="chat-card">
           <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
             <ChatFeed
@@ -359,6 +368,9 @@ export default function HomeScreen() {
             onCameraOpen={handleCameraOpen} 
             capturedImage={capturedImage}
             onClearCapturedImage={() => setCapturedImage(null)}
+            showMediaOptions={showMediaOptions}
+            onOpenMediaOptions={handleOpenMediaOptions}
+            onCloseMediaOptions={handleCloseMediaOptions}
           />
         </Suspense>
       </footer>
