@@ -7,10 +7,21 @@
   font-weight: 500;
   font-size: 1.6em;
   margin: 0;
-  position: absolute;
-  left: 50.5%;
-  transform: translateX(-50%);
   text-align: center;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.title-container svg {
+  margin-left: 5px;
+  font-size: 1.2em;
 }
 
 /* disable zoom on mobile */

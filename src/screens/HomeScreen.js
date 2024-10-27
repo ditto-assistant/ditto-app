@@ -12,6 +12,7 @@ import { useDittoActivation } from "@/hooks/useDittoActivation";
 const ChatFeed = lazy(() => import("@/components/ChatFeed"));
 const SendMessage = lazy(() => import("@/components/SendMessage"));
 const StatusBar = lazy(() => import("@/components/StatusBar"));
+import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function HomeScreen() {
     openSCAD: [],
   });
   const { model: DittoActivation, isLoaded: dittoActivationLoaded } = useDittoActivation();
+  const [showStatusBar, setShowStatusBar] = useState(true);
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -204,6 +206,10 @@ export default function HomeScreen() {
     };
   }, []);
 
+  const toggleStatusBar = () => {
+    setShowStatusBar((prev) => !prev);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -228,7 +234,10 @@ export default function HomeScreen() {
             onClick={handleMicPress}
           />
         )}
-        <h2 className="App-title">Ditto</h2>
+        <div className="title-container" onClick={toggleStatusBar}>
+          <h2 className="App-title">Ditto</h2>
+          {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
+        </div>
         <MdSettings
           style={{
             paddingRight: 20,
@@ -241,8 +250,14 @@ export default function HomeScreen() {
         />
       </header>
       <Divider />
-      <StatusBar />
-      <Divider />
+      {showStatusBar && (
+        <>
+          <Suspense fallback={<div>Loading status...</div>}>
+            <StatusBar />
+          </Suspense>
+          <Divider />
+        </>
+      )}
       <div className="App-body" ref={appBodyRef}>
         <div className="chat-container">
           <Suspense fallback={<div>Loading chat...</div>}>
