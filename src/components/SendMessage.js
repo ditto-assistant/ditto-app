@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
-export default function SendMessage({ onImageEnlarge }) {
+export default function SendMessage({ onImageEnlarge, onCameraOpen, capturedImage, onClearCapturedImage }) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
     const [isListening, setIsListening] = useState(false);
@@ -54,6 +54,12 @@ export default function SendMessage({ onImageEnlarge }) {
             clearInterval(interval);
         };
     }, [dittoActivationLoaded]);
+
+    useEffect(() => {
+        if (capturedImage) {
+            setImage(capturedImage);
+        }
+    }, [capturedImage]);
 
     const handleMicClick = async () => {
         if (isListening) {
@@ -149,6 +155,7 @@ export default function SendMessage({ onImageEnlarge }) {
     const handleCameraOpen = () => {
         setIsCameraOpen(true);
         startCamera(isFrontCamera);
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when camera is open
     };
 
     const startCamera = (useFrontCamera) => {
@@ -179,6 +186,7 @@ export default function SendMessage({ onImageEnlarge }) {
     const handleCameraClose = () => {
         setIsCameraOpen(false);
         stopCameraFeed();
+        document.body.style.overflow = ''; // Restore scrolling
     };
 
     const stopCameraFeed = () => {
@@ -192,6 +200,7 @@ export default function SendMessage({ onImageEnlarge }) {
 
     const handleClearImage = () => {
         setImage('');
+        onClearCapturedImage();
     };
 
     const toggleCamera = () => {
@@ -349,7 +358,7 @@ export default function SendMessage({ onImageEnlarge }) {
 
     const handleCameraClick = (e) => {
         e.stopPropagation();
-        handleCameraOpen();
+        onCameraOpen(); // Call the prop function instead of setting state locally
         setShowMediaOptions(false);
     };
 
@@ -438,19 +447,6 @@ export default function SendMessage({ onImageEnlarge }) {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {isCameraOpen && (
-                <div className='CameraOverlay'>
-                    <video ref={videoRef} autoPlay className='CameraFeed'></video>
-                    <MdFlipCameraIos className='FlipCameraIcon' onClick={toggleCamera} />
-                    <button className='CameraSnap' onClick={handleSnap}>
-                        Snap
-                    </button>
-                    <button className='CameraClose' onClick={handleCameraClose}>
-                        Close
-                    </button>
-                </div>
-            )}
 
             {isImageEnlarged && (
                 <div className='EnlargedImageOverlay' onClick={toggleImageEnlarge}>

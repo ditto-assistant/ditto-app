@@ -157,49 +157,79 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.8);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 3;
+    z-index: 3000;
+}
+
+.CameraContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90%;
+    max-height: 90%;
+    background-color: #2f3136;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .CameraFeed {
-    width: 90%;
-    max-height: 80%;
-    border-radius: 10px;
-    position: relative;
+    width: 100%;
+    height: auto;
+    max-height: calc(90vh - 100px); /* Adjust based on your needs */
+    object-fit: contain;
 }
 
-.CameraSnap, .CameraClose {
-    background-color: #7289da;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.CameraSnap:hover, .CameraClose:hover {
-    background-color: #5b6eae;
-}
-
-.CameraSnap:active, .CameraClose:active {
-    background-color: #4a5899;
+.CameraControls {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: 15px;
+    background-color: #40444b;
 }
 
 .FlipCameraIcon {
-    position: relative;
-    bottom: -4px; /* Adjust this value for desired spacing */
     color: white;
-    font-size: 40px;
+    font-size: 30px;
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
 .FlipCameraIcon:hover {
     color: #7289da;
+}
+
+.CameraSnap,
+.CameraClose {
+    background-color: #7289da;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.CameraSnap:hover,
+.CameraClose:hover {
+    background-color: #5b6eae;
+}
+
+.CameraSnap:active,
+.CameraClose:active {
+    background-color: #4a5899;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.8); }
+    to { transform: scale(1); }
 }
 
 .EnlargedImageOverlay {

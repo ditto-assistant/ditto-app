@@ -17,6 +17,7 @@ import dittoIcon from '/icons/ditto-icon-clear2.png';
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { MdFlipCameraIos } from "react-icons/md";
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -31,6 +32,11 @@ export default function HomeScreen() {
   const { model: DittoActivation, isLoaded: dittoActivationLoaded } = useDittoActivation();
   const [showStatusBar, setShowStatusBar] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isFrontCamera, setIsFrontCamera] = useState(true);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [capturedImage, setCapturedImage] = useState(null);
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -236,6 +242,56 @@ export default function HomeScreen() {
     setEnlargedImage(null);
   };
 
+  const handleCameraOpen = () => {
+    setIsCameraOpen(true);
+    startCamera(isFrontCamera);
+  };
+
+  const handleCameraClose = () => {
+    setIsCameraOpen(false);
+    stopCameraFeed();
+  };
+
+  const startCamera = (useFrontCamera) => {
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: useFrontCamera ? 'user' : 'environment' } })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch((err) => {
+        console.error('Error accessing the camera: ', err);
+      });
+  };
+
+  const stopCameraFeed = () => {
+    const stream = videoRef.current?.srcObject;
+    if (stream) {
+      const tracks = stream.getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const handleSnap = () => {
+    if (canvasRef.current && videoRef.current) {
+      const context = canvasRef.current.getContext('2d');
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+      context.drawImage(videoRef.current, 0, 0);
+      const imageDataURL = canvasRef.current.toDataURL('image/png');
+      setCapturedImage(imageDataURL);
+      handleCameraClose();
+    }
+  };
+
+  const toggleCamera = () => {
+    setIsFrontCamera(!isFrontCamera);
+    stopCameraFeed();
+    startCamera(!isFrontCamera);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -298,9 +354,48 @@ export default function HomeScreen() {
       </div>
       <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>
-          <SendMessage onImageEnlarge={handleImageEnlarge} />
+          <SendMessage 
+            onImageEnlarge={handleImageEnlarge} 
+            onCameraOpen={handleCameraOpen} 
+            capturedImage={capturedImage}
+            onClearCapturedImage={() => setCapturedImage(null)}
+          />
         </Suspense>
       </footer>
+      
+      <AnimatePresence>
+        {isCameraOpen && (
+          <motion.div
+            className="CameraOverlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCameraClose}
+          >
+            <motion.div
+              className="CameraContainer"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <video ref={videoRef} autoPlay className="CameraFeed"></video>
+              <div className="CameraControls">
+                <MdFlipCameraIos className="FlipCameraIcon" onClick={toggleCamera} />
+                <button className="CameraSnap" onClick={handleSnap}>
+                  Snap
+                </button>
+                <button className="CameraClose" onClick={handleCameraClose}>
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
       
       <AnimatePresence>
         {enlargedImage && (
