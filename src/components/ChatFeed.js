@@ -11,6 +11,13 @@ const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
 
+// Add this helper function at the top level
+const triggerHapticFeedback = () => {
+  if (navigator.vibrate) {
+    navigator.vibrate(50);
+  }
+};
+
 export default function ChatFeed({
   messages,
   histCount,
@@ -155,34 +162,28 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
-  const handleLongPress = (e, index, type = 'text', x = null, y = null) => {
+  const handleBubbleInteraction = (e, index, type = 'text') => {
     e.preventDefault();
     e.stopPropagation();
-    if (actionOverlay === index) {
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const isUserMessage = messages[index].sender === 'User';
+
+    // Trigger haptic feedback on mobile devices
+    triggerHapticFeedback();
+
+    if (actionOverlay && actionOverlay.index === index) {
       setActionOverlay(null);
     } else {
-      const isUserMessage = messages[index].sender === 'User';
-      const isThreeDots = e.target.closest('.message-options') !== null;
-      console.log('Long press detected:', { index, type, x: e.clientX, y: e.clientY, isUserMessage, isThreeDots });
       setActionOverlay({ 
         index, 
         type, 
-        clientX: e.clientX, 
-        clientY: e.clientY, 
-        isUserMessage, 
-        isThreeDots 
+        clientX: e.clientX || (rect.left + rect.width / 2),
+        clientY: e.clientY || (rect.top + rect.height / 2),
+        isUserMessage
       });
       setReactionOverlay(null);
     }
-  };
-
-  const handleReactionOverlay = (index) => {
-    setReactionOverlay({
-      index,
-      clientX: actionOverlay.clientX,
-      clientY: actionOverlay.clientY
-    });
-    setActionOverlay(null);
   };
 
   const handleImageClick = (src) => {
@@ -292,7 +293,8 @@ export default function ChatFeed({
             actionOverlay && actionOverlay.index === index ? 'blurred' : ''
           } ${isSmallMessage ? 'small-message' : ''}`}
           style={bubbleStyles.chatbubble}
-          onContextMenu={(e) => handleLongPress(e, index)}
+          onClick={(e) => handleBubbleInteraction(e, index)}
+          onContextMenu={(e) => handleBubbleInteraction(e, index)}
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
           <div className='message-text' style={bubbleStyles.text}>
@@ -300,14 +302,6 @@ export default function ChatFeed({
           </div>
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
-            <div className='message-options' onClick={(e) => {
-              const rect = e.currentTarget.closest('.chat-bubble').getBoundingClientRect();
-              const x = e.clientX - rect.left;
-              const y = e.clientY - rect.top;
-              handleLongPress(e, index, 'text', x, y);
-            }}>
-              <span>&#8942;</span>
-            </div>
           </div>
           {reactions[index] && reactions[index].length > 0 && (
             <div className='message-reactions'>
@@ -392,6 +386,27 @@ export default function ChatFeed({
 
     return { left: adjustedLeft, top: adjustedTop };
   };
+
+  // Add scroll handler to feedRef
+  useEffect(() => {
+    const handleScroll = () => {
+      if (actionOverlay || reactionOverlay) {
+        setActionOverlay(null);
+        setReactionOverlay(null);
+      }
+    };
+
+    const feedElement = feedRef.current;
+    if (feedElement) {
+      feedElement.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (feedElement) {
+        feedElement.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [actionOverlay, reactionOverlay]);
 
   return (
     <div className='chat-feed' ref={feedRef}>

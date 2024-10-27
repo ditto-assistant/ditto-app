@@ -43,6 +43,9 @@
   position: relative;
   transition: filter 0.2s;
   min-width: 80px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* Remove default mobile tap highlight */
+  touch-action: manipulation; /* Optimize for touch interactions */
 }
 
 .blurred {
@@ -466,5 +469,43 @@
 
   .chat-bubble {
     max-width: 85%;
+  }
+}
+
+/* Add transition for blur effect */
+.chat-bubble {
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.chat-bubble:active {
+  transform: scale(0.98);
+}
+
+.blurred {
+  filter: blur(2px);
+  transform: scale(0.98);
+}
+
+/* Remove the message-options styles since we're not using them anymore */
+.message-options {
+  display: none;
+}
+
+/* Update the message-footer to remove the space for the three dots */
+.message-footer {
+  justify-content: flex-end; /* Only show timestamp on the right */
+  padding: 5px 10px;
+}
+
+/* Add styles for better touch interaction */
+@media (pointer: coarse) {
+  .chat-bubble {
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  .chat-bubble:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
   }
 }
