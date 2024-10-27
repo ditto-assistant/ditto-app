@@ -11,12 +11,18 @@
   --scrollbar-track-color: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
   --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
+  --vh: 1vh;  /* This will be updated via JavaScript */
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
+  overscroll-behavior: none;  /* Prevent pull to refresh */
+  overflow: hidden;  /* Prevent bouncing on iOS */
+  position: fixed;  /* Additional fix for iOS bounce */
+  width: 100%;
+  touch-action: none;  /* Prevent default touch behaviors */
 }
 
 body:not(.login-page) {
@@ -31,10 +37,16 @@ body:not(.login-page) {
 .App {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* Fallback */
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
   background-color: var(--background-color);
   overflow: hidden;
+  position: fixed; /* Add fixed positioning */
+  top: 0;
+  left: 0;
+  overscroll-behavior: none;
+  touch-action: pan-y pinch-zoom;  /* Allow vertical scrolling and pinch zoom only */
 }
 
 .App-header {
@@ -47,6 +59,10 @@ body:not(.login-page) {
   background-color: rgba(32, 34, 37, 0.9);
   backdrop-filter: blur(10px);
   z-index: 10;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
 }
 
 .microphone-button,
@@ -108,6 +124,8 @@ body:not(.login-page) {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
+  overscroll-behavior: contain;  /* Prevent pull to refresh while allowing normal scroll */
+  -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
 }
 
 .App-footer {
@@ -189,12 +207,48 @@ body:not(.login-page) {
   .chat-card {
     border-radius: 15px;
   }
+
+  .App {
+    /* Use dynamic viewport height */
+    min-height: -webkit-fill-available;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+
+  .App-body {
+    flex: 1;
+    height: auto; /* Allow content to determine height */
+    min-height: 0; /* Enable proper flex shrinking */
+  }
+
+  .App-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .App-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+  }
 }
 
 /* Additional fix for iOS devices */
 @supports (-webkit-touch-callout: none) {
   .App {
     height: -webkit-fill-available;
+  }
+  
+  .App-body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Add support for safe area insets */
+@supports (padding: env(safe-area-inset-top)) {
+  .App {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 

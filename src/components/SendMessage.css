@@ -18,8 +18,10 @@
     display: flex;
     flex: 1;
     max-width: 100%;
+    margin-left: -10px;
+    margin-right: -10px;
     padding: 5px 10px;
-    background-color: #2f3136;
+    background-color: #40444b; /* Changed to the lighter grey color */
     border-radius: 10px;
     position: relative;
 }
@@ -102,6 +104,7 @@
     color: white;
     padding: 10px 20px;
     margin-left: 10px;
+    margin-right: -5px;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }

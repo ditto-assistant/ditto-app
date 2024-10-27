@@ -366,59 +366,55 @@ export default function SendMessage({
     };
 
     return (
-        <div className='Contents' onClick={(e) => e.stopPropagation()}>
-            <div className='Bar'>
-                <form className='Form' onSubmit={handleSubmit}>
-                    <div className='InputWrapper'>
-                        <textarea
-                            ref={textAreaRef}
-                            onKeyDown={handleKeyDown}
-                            onInput={resizeTextArea}
-                            onPaste={handlePaste}
-                            className='TextArea'
-                            type='text'
-                            value={message}
-                            onChange={(e) => {
-                                setMessage(e.target.value);
-                                if (e.target.value.trim() === '') {
-                                    finalTranscriptRef.current = '';
-                                }
-                            }}
-                            rows={1}
-                            style={{
-                                overflowY: 'hidden',
-                                marginRight: '-5px',
-                            }}
-                            onFocus={() => setIsImageEnlarged(false)}
-                        />
-                        <div className='IconsWrapper'>
-                            <FaMicrophone
-                                className={`Mic ${isListening ? 'listening' : ''}`}
-                                onClick={handleMicClick}
-                            />
-                            <FaPlus className='PlusButton' onClick={handlePlusClick} />
-                            <input
-                                id='image-upload'
-                                type='file'
-                                accept='image/*'
-                                style={{ display: 'none' }}
-                                onChange={handleImageUpload}
-                            />
-                        </div>
-                    </div>
-                    <input className='Submit' type='submit' value='Send' />
-
-                    {image && (
-                        <div className='ImagePreview' onClick={toggleImageEnlarge}>
-                            <img src={image} alt='Preview' />
-                            <FaTimes className='RemoveImage' onClick={(e) => {
-                                e.stopPropagation();
-                                handleClearImage();
-                            }} />
-                        </div>
-                    )}
-                </form>
+        <form className='Form' onSubmit={handleSubmit}>
+            <div className='InputWrapper'>
+                <textarea
+                    ref={textAreaRef}
+                    onKeyDown={handleKeyDown}
+                    onInput={resizeTextArea}
+                    onPaste={handlePaste}
+                    className='TextArea'
+                    type='text'
+                    value={message}
+                    onChange={(e) => {
+                        setMessage(e.target.value);
+                        if (e.target.value.trim() === '') {
+                            finalTranscriptRef.current = '';
+                        }
+                    }}
+                    rows={1}
+                    style={{
+                        overflowY: 'hidden',
+                        marginRight: '-5px',
+                    }}
+                    onFocus={() => setIsImageEnlarged(false)}
+                />
+                <div className='IconsWrapper'>
+                    <FaMicrophone
+                        className={`Mic ${isListening ? 'listening' : ''}`}
+                        onClick={handleMicClick}
+                    />
+                    <FaPlus className='PlusButton' onClick={handlePlusClick} />
+                    <input
+                        id='image-upload'
+                        type='file'
+                        accept='image/*'
+                        style={{ display: 'none' }}
+                        onChange={handleImageUpload}
+                    />
+                </div>
             </div>
+            <input className='Submit' type='submit' value='Send' />
+
+            {image && (
+                <div className='ImagePreview' onClick={toggleImageEnlarge}>
+                    <img src={image} alt='Preview' />
+                    <FaTimes className='RemoveImage' onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearImage();
+                    }} />
+                </div>
+            )}
 
             <AnimatePresence>
                 {showMediaOptions && (
@@ -466,6 +462,6 @@ export default function SendMessage({
             )}
 
             <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-        </div>
+        </form>
     );
 }

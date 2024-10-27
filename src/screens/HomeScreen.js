@@ -219,16 +219,36 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    // Add this new effect to adjust for mobile browsers
-    const adjustViewportHeight = () => {
+    // Update the existing useEffect that handles viewport height
+    const setVH = () => {
+      // First get the viewport height and multiply it by 1% to get a value for a vh unit
       const vh = window.innerHeight * 0.01;
+      // Then set the value in the --vh custom property to the root of the document
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
 
-    adjustViewportHeight();
-    window.addEventListener('resize', adjustViewportHeight);
+    // Initial set
+    setVH();
 
-    return () => window.removeEventListener('resize', adjustViewportHeight);
+    // Add event listeners
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    
+    // For Chrome mobile, handle toolbar show/hide
+    let lastHeight = window.innerHeight;
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight !== lastHeight) {
+        lastHeight = window.innerHeight;
+        setVH();
+      }
+    });
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+      window.removeEventListener('scroll', setVH);
+    };
   }, []);
 
   const toggleStatusBar = () => {
