@@ -98,7 +98,7 @@
   font-size: 14px;
   line-height: 1.4;
   color: #000000;
-  padding-bottom: 20px;
+  padding-bottom: 5px; /* Reduced from 20px */
   min-height: 20px;
 }
 
@@ -309,16 +309,17 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  padding: 4px 12px;
+  padding: 2px 12px; /* Reduced top/bottom padding from 4px to 2px */
   box-sizing: border-box;
   background: transparent;
   border-top: none;
 }
 
 .message-timestamp {
-  font-size: 0.7em;
+  font-size: 0.65em; /* Slightly smaller from 0.7em */
   color: rgba(0, 0, 0, 0.5);
   font-weight: 500;
+  line-height: 1; /* Ensure timestamp takes minimal vertical space */
 }
 
 .message-options {
@@ -335,7 +336,7 @@
 /* Adjust padding for both bubble types */
 .chat-bubble.User,
 .chat-bubble.Ditto {
-  padding-bottom: 30px; /* Increase bottom padding to accommodate the footer */
+  padding-bottom: 22px; /* Reduced from 30px */
 }
 
 /* Add styles for small messages */
@@ -603,3 +604,4 @@
 .ditto-avatar {
   background-color: transparent; /* Allow logo background to show */
 }
+
