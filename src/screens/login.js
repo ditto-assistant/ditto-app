@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router';
 import { useAuth } from "../hooks/useAuth";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -6,6 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import { saveUserToFirestore, getUserObjectFromFirestore, loadConversationHistoryFromFirestore } from "../control/firebase";
 import { auth } from "../control/firebase";
+import './Login.css';
 
 const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePasswordVisibility }) => (
     <div style={styles.passwordInputContainer}>
@@ -37,6 +38,13 @@ const Login = () => {
     if (user) {
         navigate("/");
     }
+
+    useEffect(() => {
+        document.body.classList.add('login-page');
+        return () => {
+            document.body.classList.remove('login-page');
+        };
+    }, []);
 
     const handleSignIn = async () => {
         try {
@@ -158,76 +166,74 @@ const Login = () => {
     }
 
     return (
-        <div style={styles.body}>
-            <div style={styles.app}>
-                <header style={styles.header}>
-                    <h1>{isCreatingAccount ? "Create Account" : "Sign In"}</h1>
-                    {isCreatingAccount && (
-                        <>
-                            <input
-                                type="text"
-                                placeholder="First Name"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                style={styles.input}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Last Name"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                style={styles.input}
-                            />
-                        </>
-                    )}
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        style={styles.input}
-                    />
+        <div className="login-container">
+            <div className="login-form">
+                <h1>{isCreatingAccount ? "Create Account" : "Sign In"}</h1>
+                {isCreatingAccount && (
+                    <>
+                        <input
+                            type="text"
+                            placeholder="First Name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            style={styles.input}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Last Name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            style={styles.input}
+                        />
+                    </>
+                )}
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={styles.input}
+                />
+                <PasswordInput
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    showPassword={showPassword}
+                    togglePasswordVisibility={togglePasswordVisibility}
+                />
+                {isCreatingAccount && (
                     <PasswordInput
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Re-type Password"
+                        value={retypePassword}
+                        onChange={(e) => setRetypePassword(e.target.value)}
                         showPassword={showPassword}
                         togglePasswordVisibility={togglePasswordVisibility}
                     />
-                    {isCreatingAccount && (
-                        <PasswordInput
-                            placeholder="Re-type Password"
-                            value={retypePassword}
-                            onChange={(e) => setRetypePassword(e.target.value)}
-                            showPassword={showPassword}
-                            togglePasswordVisibility={togglePasswordVisibility}
-                        />
-                    )}
-                    <button onClick={isCreatingAccount ? handleSignUp : handleSignIn} style={styles.button}>
-                        {isCreatingAccount ? "Sign Up" : "Sign In"}
+                )}
+                <button onClick={isCreatingAccount ? handleSignUp : handleSignIn} style={styles.button}>
+                    {isCreatingAccount ? "Sign Up" : "Sign In"}
+                </button>
+                {!isCreatingAccount && (
+                    <button onClick={handleGoogleSignIn} style={styles.googleButton}>
+                        <FcGoogle style={styles.googleIcon} /> Sign in with Google
                     </button>
-                    {!isCreatingAccount && (
-                        <button onClick={handleGoogleSignIn} style={styles.googleButton}>
-                            <FcGoogle style={styles.googleIcon} /> Sign in with Google
-                        </button>
-                    )}
-                    <p style={styles.text}>
-                        {isCreatingAccount ?
-                            "Already have an account?" :
-                            "Don't have an account?"
-                        }
-                        <span
-                            onClick={() => {
-                                setIsCreatingAccount(!isCreatingAccount);
-                                setVerificationMessage(""); // Clear any previous verification message
-                            }}
-                            style={styles.link}
-                        >
-                            {isCreatingAccount ? " Sign in here" : " Create one here"}
-                        </span>
-                    </p>
-                    {verificationMessage && <p style={styles.verificationText}>{verificationMessage}</p>}
-                </header>
+                )}
+                <p style={styles.text}>
+                    {isCreatingAccount ?
+                        "Already have an account?" :
+                        "Don't have an account?"
+                    }
+                    <span
+                        onClick={() => {
+                            setIsCreatingAccount(!isCreatingAccount);
+                            setVerificationMessage(""); // Clear any previous verification message
+                        }}
+                        style={styles.link}
+                    >
+                        {isCreatingAccount ? " Sign in here" : " Create one here"}
+                    </span>
+                </p>
+                {verificationMessage && <p style={styles.verificationText}>{verificationMessage}</p>}
             </div>
         </div>
     );
