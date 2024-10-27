@@ -53,7 +53,11 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+}
+
+body {
+  /* Prevent overscroll behavior */
+  overscroll-behavior-y: none;
 }
 
 /* Set the app container to use flexbox and take up full height */
@@ -61,15 +65,20 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Use dvh (dynamic viewport height) for better mobile support */
+  height: 100dvh;
   overflow: hidden;
+  /* Ensure content is pushed below the status bar on iOS */
+  padding-top: env(safe-area-inset-top);
+  /* Adjust for bottom bar on iOS */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Adjust for mobile browsers' address bar */
+/* Adjust for mobile browsers */
 @media screen and (max-width: 767px) {
-  html, body, #root, .App {
-    height: 100vh;
+  .App {
+    /* Fallback for browsers that don't support dvh */
     height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
   }
 }
 
@@ -78,16 +87,27 @@ html, body, #root {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Prevent content from being hidden under the address bar */
+  padding-top: 56px; /* Adjust this value based on your app's header height */
 }
 
 /* Adjust camera overlay for mobile */
 @media screen and (max-width: 767px) {
   .CameraOverlay {
-    height: 100vh;
+    height: 100dvh;
+    /* Fallback for browsers that don't support dvh */
     height: -webkit-fill-available;
   }
 
   .CameraFeed {
-    max-height: 70vh;
+    max-height: 70dvh;
+  }
+}
+
+/* Add padding for iOS devices to account for the notch */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .App {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
