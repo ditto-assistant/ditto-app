@@ -54,11 +54,17 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: fixed;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
   /* Prevent overscroll behavior */
-  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
+  overscroll-behavior-y: contain;
 }
 
 .App {
@@ -74,6 +80,9 @@ body {
   padding-top: env(safe-area-inset-top, 0px);
   /* Adjust for bottom bar on iOS */
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: fixed;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Adjust for mobile browsers */
@@ -90,6 +99,9 @@ body {
   -webkit-overflow-scrolling: touch;
   /* Remove fixed padding-top */
   padding-top: 0;
+  position: relative;
+  height: 100%;
+  width: 100%;
 }
 
 /* Adjust header for mobile */
@@ -98,6 +110,7 @@ body {
   top: 0;
   z-index: 1000;
   background-color: #1a1a1a; /* Adjust color as needed */
+  width: 100%;
 }
 
 /* Adjust camera overlay for mobile */
@@ -107,6 +120,10 @@ body {
     height: 100vh;
     /* Fallback for browsers that don't support dvh */
     height: -webkit-fill-available;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
   }
 
   .CameraFeed {
@@ -132,4 +149,12 @@ body {
 .App > .content-container {
   flex-shrink: 1;
   min-height: 0;
+}
+
+/* Force hardware acceleration */
+.App, .content-container {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
