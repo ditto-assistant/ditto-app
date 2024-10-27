@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
 import './ChatFeed.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 
@@ -366,16 +367,31 @@ export default function ChatFeed({
           ))}
         </div>
       )}
-      {imageOverlay && (
-        <div className="image-overlay" onClick={closeImageOverlay}>
-          <div className="image-overlay-content" onClick={(e) => e.stopPropagation()}>
-            <img src={imageOverlay} alt="Full size" />
-            <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
-              Download
-            </button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {imageOverlay && (
+          <motion.div 
+            className="image-overlay" 
+            onClick={closeImageOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="image-overlay-content" 
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <img src={imageOverlay} alt="Full size" />
+              <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
+                Download
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
