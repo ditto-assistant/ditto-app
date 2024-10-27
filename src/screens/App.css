@@ -8,11 +8,21 @@
   font-size: 1.6em;
   margin: 0;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.App-title img {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 8px;
 }
 
 .title-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   position: absolute;
   left: 50%;

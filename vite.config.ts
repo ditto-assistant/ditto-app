@@ -31,9 +31,11 @@ export default defineConfig({
             },
         })
     ],
+    assetsInclude: ['**/*.png', '**/*.jpg', '**/*.svg'],
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'src')
+            '@': resolve(__dirname, 'src'),
+            '@assets': resolve(__dirname, 'src/assets')
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx']
     },

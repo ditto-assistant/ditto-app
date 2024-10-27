@@ -13,6 +13,7 @@ const ChatFeed = lazy(() => import("@/components/ChatFeed"));
 const SendMessage = lazy(() => import("@/components/SendMessage"));
 const StatusBar = lazy(() => import("@/components/StatusBar"));
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
+import dittoIcon from '/icons/ditto-icon-clear2.png';
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -248,7 +249,20 @@ export default function HomeScreen() {
           />
         )}
         <div className="title-container" onClick={toggleStatusBar}>
-          <h2 className="App-title">Ditto</h2>
+          <h1 className="App-title" style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontWeight: 500,
+            fontSize: '1.8em',
+            color: '#f0f0f0', // Light gray color that's subtle but not white
+            textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
+            letterSpacing: '0.05em',
+            display: 'flex',
+            alignItems: 'center',
+            margin: 0
+          }}>
+            <img src={dittoIcon} alt="Ditto Icon" style={{ marginRight: '10px', width: '1.2em', height: '1.2em' }} />
+            Ditto
+          </h1>
           {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
         </div>
         <MdSettings
