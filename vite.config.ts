@@ -35,7 +35,7 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': resolve(__dirname, 'src'),
-            '@assets': resolve(__dirname, 'src/assets')
+            '@assets': resolve(__dirname, 'src/assets'),
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx']
     },
@@ -62,7 +62,8 @@ export default defineConfig({
                             id.includes('react-router-dom') ||
                             id.includes('@emotion') ||
                             id.includes('scheduler') ||
-                            id.includes('object-assign')) {
+                            id.includes('object-assign') ||
+                            id.includes('framer-motion')) {
                             return 'react-vendor';
                         }
                         if (id.includes('firebase')) return 'firebase';
@@ -104,7 +105,8 @@ export default defineConfig({
             'react-ace',
             'ace-builds/src-noconflict/mode-javascript',
             'ace-builds/src-noconflict/theme-monokai',
-            'ace-builds/src-noconflict/ext-language_tools'
+            'ace-builds/src-noconflict/ext-language_tools',
+            'framer-motion',
         ],
         esbuildOptions: {
             loader: {
