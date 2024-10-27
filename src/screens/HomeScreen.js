@@ -30,6 +30,7 @@ export default function HomeScreen() {
   });
   const { model: DittoActivation, isLoaded: dittoActivationLoaded } = useDittoActivation();
   const [showStatusBar, setShowStatusBar] = useState(true);
+  const [enlargedImage, setEnlargedImage] = useState(null);
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -227,6 +228,14 @@ export default function HomeScreen() {
     setShowStatusBar((prev) => !prev);
   };
 
+  const handleImageEnlarge = (imageUrl) => {
+    setEnlargedImage(imageUrl);
+  };
+
+  const closeEnlargedImage = () => {
+    setEnlargedImage(null);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -289,9 +298,31 @@ export default function HomeScreen() {
       </div>
       <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>
-          <SendMessage />
+          <SendMessage onImageEnlarge={handleImageEnlarge} />
         </Suspense>
       </footer>
+      
+      <AnimatePresence>
+        {enlargedImage && (
+          <motion.div
+            className="EnlargedImageOverlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeEnlargedImage}
+          >
+            <motion.div
+              className="EnlargedImageContainer"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src={enlargedImage} alt="Enlarged Preview" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

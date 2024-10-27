@@ -11,7 +11,7 @@ import { useIntentRecognition } from '@/hooks/useIntentRecognition';
 import { textEmbed } from '../api/LLM';
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
-export default function SendMessage() {
+export default function SendMessage({ onImageEnlarge }) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
     const [isListening, setIsListening] = useState(false);
@@ -310,7 +310,7 @@ export default function SendMessage() {
 
     const toggleImageEnlarge = (e) => {
         e.stopPropagation();
-        setIsImageEnlarged(!isImageEnlarged);
+        onImageEnlarge(image);
     };
 
     const toggleImageFullscreen = (e) => {
@@ -376,7 +376,7 @@ export default function SendMessage() {
                     <input className='Submit' type='submit' value='Send' />
 
                     {image && (
-                        <div className='ImagePreview' onClick={toggleImageFullscreen}>
+                        <div className='ImagePreview' onClick={toggleImageEnlarge}>
                             <img src={image} alt='Preview' />
                             <FaTimesCircle className='RemoveImage' onClick={(e) => {
                                 e.stopPropagation();
@@ -401,8 +401,10 @@ export default function SendMessage() {
             )}
 
             {isImageEnlarged && (
-                <div className='EnlargedImageOverlay' onClick={handleClickOutside}>
-                    <img src={image} alt='Enlarged Preview' onClick={(e) => e.stopPropagation()} />
+                <div className='EnlargedImageOverlay' onClick={toggleImageEnlarge}>
+                    <div className='EnlargedImageContainer' onClick={(e) => e.stopPropagation()}>
+                        <img src={image} alt='Enlarged Preview' />
+                    </div>
                 </div>
             )}
 

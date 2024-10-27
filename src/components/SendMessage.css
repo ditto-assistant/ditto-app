@@ -208,22 +208,32 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 5000;
+    z-index: 9999;
     animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.EnlargedImageContainer {
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: scaleIn 0.3s ease;
 }
 
 .EnlargedImageOverlay img {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     border-radius: 8px;
-    animation: scaleIn 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes fadeIn {
