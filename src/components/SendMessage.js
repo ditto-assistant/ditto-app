@@ -431,6 +431,9 @@ export default function SendMessage({ onImageEnlarge }) {
                             <button className='MediaOption' onClick={handleCameraClick}>
                                 <FaCamera /> Camera
                             </button>
+                            <button className='CancelButton' onClick={handleCloseMediaOptions}>
+                                Cancel
+                            </button>
                         </motion.div>
                     </motion.div>
                 )}

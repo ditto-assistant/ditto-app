@@ -316,8 +316,8 @@
     font-size: 16px;
 }
 
-.MediaOption:last-child {
-    margin-bottom: 0;
+.MediaOption:last-of-type {
+    margin-bottom: 20px; /* Add space between options and cancel button */
 }
 
 .MediaOption:hover {
@@ -326,4 +326,31 @@
 
 .MediaOption svg {
     margin-right: 10px;
+}
+
+/* Updated styles for the cancel button */
+.CancelButton {
+    background-color: transparent;
+    border: 2px solid #7289da;
+    border-radius: 10px;
+    color: #7289da;
+    padding: 12px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.CancelButton:hover {
+    background-color: rgba(114, 137, 218, 0.1);
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.CancelButton:active {
+    transform: scale(0.98);
 }
