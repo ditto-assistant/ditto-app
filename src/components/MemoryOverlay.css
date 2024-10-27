@@ -7,20 +7,33 @@
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
-    align-items: flex-end;
+    align-items: center;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.MemoryOverlay.visible {
+    opacity: 1;
 }
 
 .MemoryContent {
     background-color: #2f3136;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+    border-radius: 20px;
     padding: 20px;
-    width: 100%;
+    width: 50%;
     max-width: 500px;
     max-height: 80vh;
     overflow-y: auto;
     color: white;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.MemoryOverlay.visible .MemoryContent {
+    transform: scale(1);
+    opacity: 1;
 }
 
 .MemoryContent h2 {
