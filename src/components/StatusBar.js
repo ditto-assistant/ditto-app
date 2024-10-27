@@ -53,7 +53,11 @@ function StatusBar() {
     };
 
     const handleMemoryClick = () => {
-        setIsMemoryOverlayOpen(!isMemoryOverlayOpen);
+        setIsMemoryOverlayOpen(true);
+    };
+
+    const closeMemoryOverlay = () => {
+        setIsMemoryOverlayOpen(false);
     };
 
     const syncLocalScripts = async () => {
@@ -131,7 +135,7 @@ function StatusBar() {
 
             {isMemoryOverlayOpen && (
                 <MemoryOverlay
-                    closeOverlay={() => setIsMemoryOverlayOpen(false)}
+                    closeOverlay={closeMemoryOverlay}
                 />
             )}
         </div>

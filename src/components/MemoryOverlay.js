@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
+import "./MemoryOverlay.css";  // Make sure to import the CSS file
 
 import { resetConversation, deleteAllUserImagesFromFirebaseStorageBucket } from "../control/firebase";
 
@@ -10,23 +11,32 @@ const darkModeColors = {
 };
 
 function MemoryOverlay({ closeOverlay }) {
-    const overlayContentRef = useRef(null); 
+    const overlayContentRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     const [memoryStatus, setMemoryStatus] = useState({
         longTerm: JSON.parse(localStorage.getItem("deactivateLongTermMemory")) || false,
         shortTerm: JSON.parse(localStorage.getItem("deactivateShortTermMemory")) || false,
     });
 
-    useEffect(() => { // handle click outside of overlay to close
+    useEffect(() => {
+        // Trigger the animation after component mount
+        setTimeout(() => setIsVisible(true), 50);
+
         const handleClickOutside = (event) => {
             if (overlayContentRef.current && !overlayContentRef.current.contains(event.target)) {
-                closeOverlay();
+                handleClose();
             }
         };
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [overlayContentRef, closeOverlay]);
+    }, []);
+
+    const handleClose = () => {
+        setIsVisible(false);
+        setTimeout(closeOverlay, 300); // Wait for the animation to finish before closing
+    };
 
     const toggleMemoryActivation = (memoryType) => {
         setMemoryStatus((prev) => {
@@ -67,11 +77,11 @@ function MemoryOverlay({ closeOverlay }) {
     }
 
     return (
-        <div style={styles.overlay}>
-            <div ref={overlayContentRef} style={{ ...styles.overlayContent, width: '40%', margin: '0 auto' }}>
+        <div className={`MemoryOverlay ${isVisible ? 'visible' : ''}`}>
+            <div ref={overlayContentRef} className="MemoryContent">
                 <div style={styles.overlayHeader}>
                     <h3 style={{ ...styles.overlayHeaderText, margin: '0 auto' }}>Memory</h3>
-                    <MdClose style={styles.closeIcon} onClick={closeOverlay} />
+                    <MdClose style={styles.closeIcon} onClick={handleClose} />
                 </div>
                 <div style={{ ...styles.category, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <h4 style={{ ...styles.categoryTitle, marginBottom: '20px' }}>

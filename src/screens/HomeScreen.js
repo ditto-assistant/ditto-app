@@ -1,4 +1,4 @@
-import "./App.css";
+import "./HomeScreen.css";
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore, } from "../control/firebase";
