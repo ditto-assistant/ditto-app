@@ -59,7 +59,7 @@
 }
 
 .chat-bubble.User {
-  background-color: #7787d7; /* Lighter blue matching the send button */
+  background-color: #4752c4; /* Darker blue for user messages */
   color: #ffffff;
   text-align: left;
   margin-left: 10px;
@@ -73,17 +73,17 @@
 }
 
 .chat-bubble.Ditto {
-  background-color: #ebedef; /* Discord light mode message color */
-  color: #2e3338; /* Discord dark text color */
+  background-color: #40444b; /* Lighter gray than before */
+  color: #ffffff;
   text-align: left;
   margin-right: 10px;
   margin-left: 5px;
-  border-bottom-left-radius: 2px; /* Sharper corner near avatar */
+  border-bottom-left-radius: 2px;
   border-top-right-radius: 16px;
   border-top-left-radius: 16px;
   border-bottom-right-radius: 16px;
   border: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .sender-name {
@@ -559,13 +559,13 @@
   }
 
   .chat-bubble.User:hover {
-    background-color: #6676c6; /* Slightly darker version of the new blue */
-    box-shadow: 0 2px 8px rgba(119, 135, 215, 0.2);
+    background-color: #3f48b0; /* Slightly darker blue on hover */
+    box-shadow: 0 2px 8px rgba(71, 82, 196, 0.2);
   }
 
   .chat-bubble.Ditto:hover {
-    background-color: #e3e5e8; /* Slightly darker gray on hover */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: #4a4d54; /* Slightly lighter gray on hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -605,3 +605,32 @@
   background-color: transparent; /* Allow logo background to show */
 }
 
+/* Update hover state for Ditto bubbles */
+@media (hover: hover) {
+  .chat-bubble.Ditto:hover {
+    background-color: #36393f; /* Slightly lighter on hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Update timestamp color for Ditto messages */
+.chat-bubble.Ditto .message-timestamp {
+  color: rgba(255, 255, 255, 0.5); /* Light gray timestamp for dark bubbles */
+}
+
+/* Update message text color for Ditto messages */
+.chat-bubble.Ditto .message-text {
+  color: #ffffff; /* Ensure text is white */
+}
+
+/* Ensure text stays white in both bubbles */
+.chat-bubble.User .message-text,
+.chat-bubble.Ditto .message-text {
+  color: #ffffff;
+}
+
+/* Update timestamp colors for better visibility */
+.chat-bubble.User .message-timestamp,
+.chat-bubble.Ditto .message-timestamp {
+  color: rgba(255, 255, 255, 0.7);
+}
