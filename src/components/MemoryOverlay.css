@@ -1,0 +1,47 @@
+.MemoryOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 1000;
+}
+
+.MemoryContent {
+    background-color: #2f3136;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: white;
+}
+
+.MemoryContent h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.MemoryContent button {
+    background-color: #7289da;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: block;
+    width: 100%;
+}
+
+.MemoryContent button:hover {
+    background-color: #5b6eae;
+}
