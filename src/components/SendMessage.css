@@ -97,8 +97,9 @@
     }
 }
 
+/* Update the Submit button styles to match user bubble */
 .Submit {
-    background-color: #7289da;
+    background-color: #4752c4; /* Match user bubble color */
     border: none;
     border-radius: 10px;
     color: white;
@@ -106,15 +107,18 @@
     margin-left: 10px;
     margin-right: -5px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .Submit:hover {
-    background-color: #5b6eae;
+    background-color: #3f48b0; /* Match user bubble hover color */
+    transform: translateY(-1px);
 }
 
 .Submit:active {
-    background-color: #4a5899;
+    background-color: #363d99; /* Slightly darker on click */
+    transform: translateY(0);
 }
 
 .ImagePreview {
@@ -223,167 +227,4 @@
 .CameraSnap:active,
 .CameraClose:active {
     background-color: #4a5899;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-    from { transform: scale(0.8); }
-    to { transform: scale(1); }
-}
-
-.EnlargedImageOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    animation: fadeIn 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-.EnlargedImageContainer {
-    max-width: 90%;
-    max-height: 90%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: scaleIn 0.3s ease;
-}
-
-.EnlargedImageOverlay img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-    from { transform: scale(0.8); }
-    to { transform: scale(1); }
-}
-
-.FullscreenImageOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5000;
-    animation: fadeIn 0.3s ease;
-}
-
-.FullscreenImageOverlay img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    border-radius: 8px;
-    animation: scaleIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-    from { transform: scale(0.8); }
-    to { transform: scale(1); }
-}
-
-/* Updated styles for the media options overlay */
-.MediaOptionsOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    z-index: 1000;
-}
-
-.MediaOptionsContent {
-    background-color: #2f3136;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    padding: 20px;
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-}
-
-.MediaOption {
-    background-color: #40444b;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    padding: 15px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-
-.MediaOption:last-of-type {
-    margin-bottom: 20px; /* Add space between options and cancel button */
-}
-
-.MediaOption:hover {
-    background-color: #4a4d57;
-}
-
-.MediaOption svg {
-    margin-right: 10px;
-}
-
-/* Updated styles for the cancel button */
-.CancelButton {
-    background-color: transparent;
-    border: 2px solid #7289da;
-    border-radius: 10px;
-    color: #7289da;
-    padding: 12px;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.CancelButton:hover {
-    background-color: rgba(114, 137, 218, 0.1);
-    color: #ffffff;
-    border-color: #ffffff;
-}
-
-.CancelButton:active {
-    transform: scale(0.98);
 }
