@@ -273,7 +273,7 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
       <div className="App-body" ref={appBodyRef}>
-        <div className="chat-container">
+        <div className="chat-card">
           <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
             <ChatFeed
               messages={conversation.messages}

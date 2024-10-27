@@ -1,10 +1,13 @@
 .chat-feed {
-  background-color: #282c34;
-  padding: 10px;
+  background-color: transparent;
+  padding: 20px;
   overflow-y: auto;
   height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 .message-container {
@@ -12,6 +15,7 @@
   align-items: flex-end;
   margin-bottom: 10px;
   position: relative;
+  width: 100%;
 }
 
 .message-container.Ditto {
@@ -35,10 +39,10 @@
   padding: 10px;
   border-radius: 15px;
   word-wrap: break-word;
-  max-width: 60%;
+  max-width: 80%;
   position: relative;
   transition: filter 0.2s;
-  min-width: 80px; /* Add a minimum width for small messages */
+  min-width: 80px;
 }
 
 .blurred {
@@ -419,4 +423,22 @@
 .chat-image:hover {
   transform: scale(1.01);
   opacity: 0.9;
+}
+
+/* Add a new media query for larger screens */
+@media screen and (min-width: 1200px) {
+  .chat-bubble {
+    max-width: 70%;
+  }
+}
+
+/* Add a new media query for smaller screens */
+@media screen and (max-width: 768px) {
+  .chat-feed {
+    padding: 10px;
+  }
+
+  .chat-bubble {
+    max-width: 85%;
+  }
 }
