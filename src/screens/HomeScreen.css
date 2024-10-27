@@ -59,6 +59,10 @@ body:not(.login-page) {
   background-color: rgba(32, 34, 37, 0.9);
   backdrop-filter: blur(10px);
   z-index: 10;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
 }
 
 .microphone-button,

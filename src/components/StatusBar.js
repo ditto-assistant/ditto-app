@@ -152,6 +152,7 @@ const styles = {
         background: "rgba(32, 34, 37, 0.6)", // Updated to the specified semi-transparent color
         borderRadius: "12px",
         margin: "3px 8px",
+        
     },
     status: {
         display: "flex",
