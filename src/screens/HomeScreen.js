@@ -14,6 +14,9 @@ const SendMessage = lazy(() => import("@/components/SendMessage"));
 const StatusBar = lazy(() => import("@/components/StatusBar"));
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from '/icons/ditto-icon-clear2.png';
+import { IoSettingsOutline } from "react-icons/io5";
+import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -225,69 +228,53 @@ export default function HomeScreen() {
   };
 
   return (
-    <div className="App" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
-      <header className="App-header" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
-        {microphoneStatus === true ? (
-          <FaEarListen
-            style={{
-              paddingLeft: 20,
-              color: dittoActivationLoaded ? "green" : "gray",
-              width: buttonSize,
-              height: buttonSize,
-            }}
-            onClick={handleMicPress}
-          />
-        ) : (
-          <FaEarDeaf
-            style={{
-              paddingLeft: 20,
-              color: "red",
-              width: buttonSize,
-              height: buttonSize,
-            }}
-            onClick={handleMicPress}
-          />
-        )}
-        <div className="title-container" onClick={toggleStatusBar}>
-          <h1 className="App-title" style={{
-            fontFamily: "'Roboto', sans-serif",
-            fontWeight: 500,
-            fontSize: '1.8em',
-            color: '#f0f0f0', // Light gray color that's subtle but not white
-            textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-            letterSpacing: '0.05em',
-            display: 'flex',
-            alignItems: 'center',
-            margin: 0
-          }}>
-            <img src={dittoIcon} alt="Ditto Icon" style={{ marginRight: '10px', width: '1.2em', height: '1.2em' }} />
-            Ditto
-          </h1>
+    <div className="App">
+      <header className="App-header">
+        <motion.div
+          className="microphone-button"
+          whileTap={{ scale: 0.95 }}
+          onClick={handleMicPress}
+        >
+          {microphoneStatus ? (
+            <FaMicrophone className="icon active" />
+          ) : (
+            <FaMicrophoneSlash className="icon inactive" />
+          )}
+        </motion.div>
+        <motion.div
+          className="title-container"
+          onClick={toggleStatusBar}
+          whileHover={{ scale: 1.05 }}
+        >
+          <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
+          <h1 className="App-title">Ditto</h1>
           {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
-        </div>
-        <MdSettings
-          style={{
-            paddingRight: 20,
-            width: buttonSize + 6,
-            height: buttonSize + 6,
-            color: "white",
-            cursor: "pointer",
-          }}
-          onClick={() => { navigate("/settings"); }}
-        />
+        </motion.div>
+        <motion.div
+          className="settings-button"
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate("/settings")}
+        >
+          <IoSettingsOutline className="icon" />
+        </motion.div>
       </header>
-      <Divider />
-      {showStatusBar && (
-        <>
-          <Suspense fallback={<div>Loading status...</div>}>
-            <StatusBar />
-          </Suspense>
-          <Divider />
-        </>
-      )}
-      <div className="App-body" ref={appBodyRef} style={{ flexGrow: 1, overflowY: 'auto' }}>
+      <AnimatePresence>
+        {showStatusBar && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Suspense fallback={<div className="loading-placeholder">Loading status...</div>}>
+              <StatusBar />
+            </Suspense>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="App-body" ref={appBodyRef}>
         <div className="chat-container">
-          <Suspense fallback={<div>Loading chat...</div>}>
+          <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
             <ChatFeed
               messages={conversation.messages}
               showSenderName={false}
@@ -299,8 +286,7 @@ export default function HomeScreen() {
           </Suspense>
         </div>
       </div>
-
-      <footer className="App-footer" style={{ position: 'sticky', bottom: 0, zIndex: 1000 }}>
+      <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>
           <SendMessage />
         </Suspense>
