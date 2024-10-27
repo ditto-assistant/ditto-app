@@ -132,8 +132,8 @@ body:not(.login-page) {
   flex-shrink: 0;
   background-color: rgba(32, 34, 37, 0.9);
   backdrop-filter: blur(10px);
-  border-bottom-left-radius: var(--border-radius);
-  border-bottom-right-radius: var(--border-radius);
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
   padding: 10px 20px;
   z-index: 10;
 }
