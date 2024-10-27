@@ -385,9 +385,20 @@ export default function ChatFeed({
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
               <img src={imageOverlay} alt="Full size" />
-              <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
-                Download
-              </button>
+              <motion.div 
+                className="image-overlay-controls"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: 0.2 }}
+              >
+                <button className="back-button" onClick={closeImageOverlay}>
+                  Back
+                </button>
+                <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
+                  Download
+                </button>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}

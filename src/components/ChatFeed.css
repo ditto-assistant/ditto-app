@@ -393,9 +393,20 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-.download-button {
+.image-overlay-controls {
   position: absolute;
   bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.download-button {
   background-color: #3941b8;
   color: white;
   border: none;
@@ -403,11 +414,15 @@
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .download-button:hover {
   background-color: #2c3292;
+}
+
+.download-button:active {
+  transform: scale(0.95);
 }
 
 /* Update the chat-image class to show it's clickable */
