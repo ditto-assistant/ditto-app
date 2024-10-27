@@ -28,7 +28,7 @@
     position: relative;
     width: 100%;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
 }
 
 .TextArea {
@@ -44,12 +44,22 @@
     max-height: 200px;
     box-shadow: none;
     outline: none !important;
-    padding-right: 90px;
+    padding-right: 100px;
 }
 
 .TextArea:focus {
     border: 1px solid #7289da;
     box-shadow: 0 0 3px #7289da;
+}
+
+.IconsWrapper {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
 .Mic, 
@@ -58,7 +68,12 @@
     color: white;
     cursor: pointer;
     transition: color 0.2s ease;
-    margin-left: 10px;
+    margin-left: 15px;
+    font-size: 20px;
+}
+
+.Mic, .ImageUpload, .Camera {
+    position: static;
 }
 
 .Mic {
