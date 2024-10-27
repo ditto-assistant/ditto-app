@@ -41,7 +41,7 @@
   word-wrap: break-word;
   max-width: 80%;
   position: relative;
-  transition: filter 0.2s;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   min-width: 80px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent; /* Remove default mobile tap highlight */
@@ -50,6 +50,8 @@
 
 .blurred {
   filter: blur(2px);
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 .chat-bubble.User {
@@ -474,16 +476,46 @@
 
 /* Add transition for blur effect */
 .chat-bubble {
-  transition: filter 0.2s ease, transform 0.2s ease;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .chat-bubble:active {
-  transform: scale(0.98);
+  transform: scale(0.98) translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Update the chat bubble transition to include transform */
+.chat-bubble {
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Add hover effect for non-touch devices */
+@media (hover: hover) {
+  .chat-bubble:hover {
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .chat-bubble.User:hover {
+    box-shadow: 0 4px 15px rgba(114, 137, 218, 0.2); /* Discord blue shadow */
+  }
+
+  .chat-bubble.Ditto:hover {
+    box-shadow: 0 4px 15px rgba(153, 170, 181, 0.2); /* Ditto bubble color shadow */
+  }
+}
+
+/* Update active state to work with hover */
+.chat-bubble:active {
+  transform: scale(0.98) translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Update blurred state to work with hover */
 .blurred {
   filter: blur(2px);
   transform: scale(0.98);
+  box-shadow: none;
 }
 
 /* Remove the message-options styles since we're not using them anymore */

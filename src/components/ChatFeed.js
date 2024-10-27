@@ -175,11 +175,13 @@ export default function ChatFeed({
     if (actionOverlay && actionOverlay.index === index) {
       setActionOverlay(null);
     } else {
+      const clientX = e.clientX || (rect.left + rect.width / 2);
+      const clientY = e.clientY || (rect.top + rect.height / 2);
       setActionOverlay({ 
         index, 
         type, 
-        clientX: e.clientX || (rect.left + rect.width / 2),
-        clientY: e.clientY || (rect.top + rect.height / 2),
+        clientX,
+        clientY,
         isUserMessage
       });
       setReactionOverlay(null);
@@ -319,28 +321,34 @@ export default function ChatFeed({
             className='action-overlay' 
             onClick={(e) => e.stopPropagation()}
             style={{
-              position: 'fixed', // Change to 'fixed' positioning
-              left: `${actionOverlay.clientX}px`, // Use clientX for absolute positioning
-              top: `${actionOverlay.clientY}px`, // Use clientY for absolute positioning
-              transform: 'translate(-50%, -50%)', // Center the overlay on the click position
+              position: 'fixed',
+              left: `${actionOverlay.clientX}px`,
+              top: `${actionOverlay.clientY}px`,
+              transform: 'translate(-50%, -50%)',
             }}
           >
-            {console.log('Rendering action overlay:', actionOverlay)}
             {actionOverlay.type === 'text' ? (
               <>
-                <button onClick={() => handleCopy(message.text)} className='action-button'>
+                <button onClick={() => handleCopy(messages[actionOverlay.index].text)} className='action-button'>
                   Copy
                 </button>
-                <button onClick={() => handleReactionOverlay(index)} className='action-button'>
+                <button 
+                  onClick={() => handleReactionOverlay(
+                    actionOverlay.index, 
+                    actionOverlay.clientX, 
+                    actionOverlay.clientY
+                  )} 
+                  className='action-button'
+                >
                   React
                 </button>
               </>
             ) : (
               <>
-                <button onClick={() => handleImageOpen(message.text)} className='action-button'>
+                <button onClick={() => handleImageOpen(messages[actionOverlay.index].text)} className='action-button'>
                   Open
                 </button>
-                <button onClick={async () => handleImageDownload(message.text)} className='action-button'>
+                <button onClick={() => handleImageDownload(messages[actionOverlay.index].text)} className='action-button'>
                   Download
                 </button>
               </>
@@ -407,6 +415,15 @@ export default function ChatFeed({
       }
     };
   }, [actionOverlay, reactionOverlay]);
+
+  const handleReactionOverlay = (index, clientX, clientY) => {
+    setReactionOverlay({
+      index,
+      clientX,
+      clientY
+    });
+    setActionOverlay(null);
+  };
 
   return (
     <div className='chat-feed' ref={feedRef}>
