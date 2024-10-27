@@ -13,7 +13,7 @@
 .message-container {
   display: flex;
   align-items: flex-end;
-  margin-bottom: 10px;
+  margin-bottom: 12px; /* Slightly more spacing between messages */
   position: relative;
   width: 100%;
 }
@@ -27,25 +27,29 @@
 }
 
 .avatar {
-  width: 2.0em;
-  height: 2.0em;
-  border-radius: 50%;
-  margin: 0 2px;
+  width: 2.4em; /* Slightly larger avatars */
+  height: 2.4em;
+  border: none; /* Remove border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 8px; /* Increased margin */
 }
 
 .chat-bubble {
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  border-radius: 15px;
+  padding: 10px 14px; /* Slightly tighter padding */
+  border-radius: 20px;
   word-wrap: break-word;
   max-width: 80%;
   position: relative;
-  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.15s ease; /* Faster transition */
   min-width: 80px;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent; /* Remove default mobile tap highlight */
-  touch-action: manipulation; /* Optimize for touch interactions */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-top: 12px; /* Reduced top margin */
 }
 
 .blurred {
@@ -55,19 +59,31 @@
 }
 
 .chat-bubble.User {
-  background-color: #7289da;
-  color: #000000;
+  background-color: #7787d7; /* Lighter blue matching the send button */
+  color: #ffffff;
   text-align: left;
   margin-left: 10px;
   margin-right: 5px;
+  border-bottom-right-radius: 2px;
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .chat-bubble.Ditto {
-  background-color: #99aab5;
-  color: #000000;
+  background-color: #ebedef; /* Discord light mode message color */
+  color: #2e3338; /* Discord dark text color */
   text-align: left;
   margin-right: 10px;
   margin-left: 5px;
+  border-bottom-left-radius: 2px; /* Sharper corner near avatar */
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .sender-name {
@@ -80,9 +96,10 @@
 
 .message-text {
   font-size: 14px;
+  line-height: 1.4;
   color: #000000;
-  padding-bottom: 25px; /* Increase padding to ensure space for footer */
-  min-height: 20px; /* Ensure minimum height for small messages */
+  padding-bottom: 20px;
+  min-height: 20px;
 }
 
 .chat-image {
@@ -209,12 +226,10 @@
 }
 
 .code-block {
-  border-radius: 10px;
-  margin: 5px 0;
-  padding: 10px;
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 12px;
   background: #282c34;
-  overflow-x: auto;
-  position: relative;
 }
 
 .inline-code-container {
@@ -232,16 +247,12 @@
 }
 
 .copy-button {
-  margin-left: 5px;
-  background-color: #3c3f45;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  text-align: center;
-  transition: background-color 0.2s, transform 0.2s;
-  padding: 2px 8px;
-  font-size: 12px;
+  background-color: rgba(60, 63, 69, 0.9);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .copy-button:hover {
@@ -292,23 +303,22 @@
 
 .message-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   width: 100%;
   position: absolute;
   bottom: 0;
   left: 0;
-  padding: 5px 10px;
+  padding: 4px 12px;
   box-sizing: border-box;
-  border-top: 1px solid rgba(0, 0, 0, 0.2); /* Slightly darker border */
-  background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque background */
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  background: transparent;
+  border-top: none;
 }
 
 .message-timestamp {
-  font-size: 0.75em;
-  color: rgba(0, 0, 0, 0.7); /* Darker color for better visibility */
+  font-size: 0.7em;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 500;
 }
 
 .message-options {
@@ -349,16 +359,14 @@
 }
 
 .reaction {
-  background-color: rgba(47, 49, 54, 0.9);
-  border-radius: 50%;
-  width: 2.0em;
-  height: 2.0em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.9em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3), -1px -1px 2px rgba(255, 255, 255, 0.3);
+  background-color: rgba(47, 49, 54, 0.85);
+  border-radius: 12px;
+  padding: 2px 6px;
+  height: auto;
+  width: auto;
+  min-width: 24px;
+  font-size: 0.85em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Adjust the chat bubble to make room for reactions */
@@ -492,16 +500,17 @@
 /* Add hover effect for non-touch devices */
 @media (hover: hover) {
   .chat-bubble:hover {
-    transform: translateY(-2px) scale(1.005);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
   }
 
   .chat-bubble.User:hover {
-    box-shadow: 0 4px 15px rgba(114, 137, 218, 0.2); /* Discord blue shadow */
+    box-shadow: 0 3px 8px rgba(119, 135, 215, 0.15);
   }
 
   .chat-bubble.Ditto:hover {
-    box-shadow: 0 4px 15px rgba(153, 170, 181, 0.2); /* Ditto bubble color shadow */
+    box-shadow: 0 3px 8px rgba(242, 240, 235, 0.4);
+    background-color: #f5f3ee; /* Slightly lighter sepia on hover */
   }
 }
 
@@ -541,3 +550,43 @@
     transition: transform 0.1s ease;
   }
 }
+
+/* Update hover effects */
+@media (hover: hover) {
+  .chat-bubble:hover {
+    transform: translateY(-1px);
+  }
+
+  .chat-bubble.User:hover {
+    background-color: #6676c6; /* Slightly darker version of the new blue */
+    box-shadow: 0 2px 8px rgba(119, 135, 215, 0.2);
+  }
+
+  .chat-bubble.Ditto:hover {
+    background-color: #e3e5e8; /* Slightly darker gray on hover */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Update timestamp color for user messages */
+.chat-bubble.User .message-timestamp {
+  color: rgba(255, 255, 255, 0.7); /* Lighter timestamp for user messages */
+}
+
+/* Update chat bubble base styles */
+.chat-bubble {
+  padding: 10px 14px; /* Slightly tighter padding */
+  min-width: 80px;
+  transition: all 0.15s ease; /* Faster transition */
+  margin-top: 12px; /* Reduced top margin */
+}
+
+/* Update avatar styles */
+.avatar {
+  width: 2.4em; /* Slightly larger avatars */
+  height: 2.4em;
+  border: none; /* Remove border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 8px; /* Increased margin */
+}
+
