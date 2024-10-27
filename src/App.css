@@ -45,3 +45,49 @@
     font-size: 40px;
     padding: 10px;
 }
+
+/* Add these new styles at the end of the file */
+
+/* Ensure the app takes up the full viewport height */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Set the app container to use flexbox and take up full height */
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Adjust for mobile browsers' address bar */
+@media screen and (max-width: 767px) {
+  html, body, #root, .App {
+    height: 100vh;
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Ensure content doesn't overflow on small screens */
+.content-container {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Adjust camera overlay for mobile */
+@media screen and (max-width: 767px) {
+  .CameraOverlay {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+
+  .CameraFeed {
+    max-height: 70vh;
+  }
+}
