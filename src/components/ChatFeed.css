@@ -398,15 +398,14 @@
 
 /* Update the image-overlay-controls styles */
 .image-overlay-controls {
-  position: relative; /* Change from absolute to relative */
+  position: relative;
   bottom: 0;
   left: 0;
   right: 0;
   display: flex;
   justify-content: space-between;
-  padding: 15px 20px;
-  background-color: #2f3136;
-  border-top: 1px solid #202225; /* Add a subtle top border */
+  padding: 20px;
+  background-color: #ffffff00;
 }
 
 /* Update the button styles */
@@ -414,13 +413,13 @@
 .download-button {
   background-color: #40444b;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   color: white;
-  padding: 10px 15px;
+  padding: 12px 24px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -428,28 +427,28 @@
 .back-button:hover,
 .download-button:hover {
   background-color: #4a4d57;
+  transform: translateY(-2px);
 }
 
 .back-button:active,
 .download-button:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
 /* Update the download button color */
 .download-button {
-  background-color: #7289da; /* Discord blue color */
+  background-color: #7289da;
 }
 
 .download-button:hover {
-  background-color: #677bc4; /* Slightly darker on hover */
+  background-color: #5e77d4;
 }
 
-/* Update the button container */
+/* Remove the button container */
 .button-container {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  max-width: 500px;
 }
 
 /* Add a new media query for larger screens */
