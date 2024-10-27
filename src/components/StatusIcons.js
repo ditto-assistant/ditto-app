@@ -65,7 +65,6 @@ const styles = {
         position: 'absolute',
         justifyContent: 'center',
         left: '50%',
-        zIndex: 3000,
         transform: 'translateX(-50%)',
     },
     iconItem: {
