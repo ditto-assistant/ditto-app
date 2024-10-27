@@ -392,12 +392,14 @@ export default function ChatFeed({
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: 0.2 }}
               >
-                <button className="back-button" onClick={closeImageOverlay}>
-                  Back
-                </button>
-                <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
-                  Download
-                </button>
+                <div className="button-container">
+                  <button className="back-button" onClick={closeImageOverlay}>
+                    Back
+                  </button>
+                  <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
+                    Download
+                  </button>
+                </div>
               </motion.div>
             </motion.div>
           </motion.div>
