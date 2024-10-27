@@ -110,3 +110,58 @@ html, body {
   scrollbar-width: thin;
   scrollbar-color: #7289da rgba(32, 34, 37, 0.6);
 }
+
+/* Mobile-specific adjustments */
+@media screen and (max-width: 768px) {
+  body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .App {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .App-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #282c34; /* Adjust this to match your header color */
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .App-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .App-footer {
+    position: sticky;
+    bottom: 0;
+    background-color: #282c34; /* Adjust this to match your footer color */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Ensure the root element takes full height */
+#root {
+  height: 100%;
+}
+
+/* Additional fix for iOS devices */
+@supports (-webkit-touch-callout: none) {
+  .App {
+    height: -webkit-fill-available;
+  }
+}
