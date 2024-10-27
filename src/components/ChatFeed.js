@@ -8,6 +8,8 @@ import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
+const DITTO_AVATAR_KEY = 'dittoAvatar';
+const USER_AVATAR_KEY = 'userAvatar';
 
 export default function ChatFeed({
   messages,
@@ -34,7 +36,12 @@ export default function ChatFeed({
   const [reactionOverlay, setReactionOverlay] = useState(null);
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
-  const [profilePic, setProfilePic] = useState(null);
+  const [profilePic, setProfilePic] = useState(() => {
+    return localStorage.getItem(USER_AVATAR_KEY) || '../user_placeholder.png';
+  });
+  const [dittoAvatar, setDittoAvatar] = useState(() => {
+    return localStorage.getItem(DITTO_AVATAR_KEY) || '../logo512.png';
+  });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
 
@@ -62,12 +69,61 @@ export default function ChatFeed({
   }, [messages, scrollToBottom]);
 
   useEffect(() => {
+    // Cache Ditto avatar
+    fetch('../logo512.png')
+      .then(response => response.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result;
+          localStorage.setItem(DITTO_AVATAR_KEY, base64data);
+          setDittoAvatar(base64data);
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(error => console.error('Error caching Ditto avatar:', error));
+
+    // Cache user avatar
     if (auth.currentUser) {
       const photoURL = auth.currentUser.photoURL;
       if (photoURL) {
-        setProfilePic(photoURL);
+        fetch(photoURL)
+          .then(response => response.blob())
+          .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result;
+              localStorage.setItem(USER_AVATAR_KEY, base64data);
+              setProfilePic(base64data);
+            };
+            reader.readAsDataURL(blob);
+          })
+          .catch(() => {
+            const fallbackURL = '../user_placeholder.png';
+            fetch(fallbackURL)
+              .then(response => response.blob())
+              .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const base64data = reader.result;
+                  localStorage.setItem(USER_AVATAR_KEY, base64data);
+                  setProfilePic(base64data);
+                };
+                reader.readAsDataURL(blob);
+              });
+          });
       } else {
-        setProfilePic('../user_placeholder.png');
+        fetch('../user_placeholder.png')
+          .then(response => response.blob())
+          .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result;
+              localStorage.setItem(USER_AVATAR_KEY, base64data);
+              setProfilePic(base64data);
+            };
+            reader.readAsDataURL(blob);
+          });
       }
     }
   }, []);
@@ -229,7 +285,7 @@ export default function ChatFeed({
         className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
       >
         {message.sender === 'Ditto' && (
-          <img src='../logo512.png' alt='Ditto' className='avatar ditto-avatar' />
+          <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
         )}
         <div
           className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${
