@@ -7,6 +7,10 @@
   --header-height: 60px;
   --footer-height: 70px;
   --border-radius: 12px;
+  --scrollbar-width: 8px;
+  --scrollbar-track-color: rgba(0, 0, 0, 0.1);
+  --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
+  --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
 }
 
 body {
@@ -122,22 +126,54 @@ body {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Scrollbar styles */
+/* Global scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+  border-radius: var(--scrollbar-width);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-width);
+  border: 2px solid var(--background-color);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
+}
+
+/* App-specific scrollbar styles */
+.App-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
 .App-body::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-width);
 }
 
 .App-body::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track-color);
+  border-radius: var(--scrollbar-width);
 }
 
 .App-body::-webkit-scrollbar-thumb {
-  background-color: var(--primary-color);
-  border-radius: 3px;
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-width);
+  border: 2px solid var(--background-color);
 }
 
 .App-body::-webkit-scrollbar-thumb:hover {
-  background-color: #5b6eae;
+  background-color: var(--scrollbar-thumb-hover-color);
 }
 
 /* Mobile-specific adjustments */
@@ -167,4 +203,39 @@ body {
   .App {
     height: -webkit-fill-available;
   }
+}
+
+/* Additional styles for other scrollable elements */
+.chat-container,
+.message-list,
+.status-bar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+.chat-container::-webkit-scrollbar,
+.message-list::-webkit-scrollbar,
+.status-bar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+.chat-container::-webkit-scrollbar-track,
+.message-list::-webkit-scrollbar-track,
+.status-bar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+  border-radius: var(--scrollbar-width);
+}
+
+.chat-container::-webkit-scrollbar-thumb,
+.message-list::-webkit-scrollbar-thumb,
+.status-bar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-width);
+  border: 2px solid var(--background-color);
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover,
+.message-list::-webkit-scrollbar-thumb:hover,
+.status-bar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
 }
