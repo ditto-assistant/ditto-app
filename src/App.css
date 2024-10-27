@@ -54,53 +54,32 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: fixed;
-  width: 100%;
-  max-width: 100%;
 }
 
 body {
   /* Prevent overscroll behavior */
   overscroll-behavior: none;
-  position: fixed;
+  position: relative;
   width: 100%;
-  overscroll-behavior-y: contain;
 }
 
 .App {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* Use dvh (dynamic viewport height) for better mobile support */
+  /* Use dynamic viewport units for better mobile support */
   height: 100dvh;
-  /* Fallback for browsers that don't support dvh */
-  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
-  /* Ensure content is pushed below the status bar on iOS */
-  padding-top: env(safe-area-inset-top, 0px);
-  /* Adjust for bottom bar on iOS */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  position: fixed;
+  position: relative;
   width: 100%;
-  max-width: 100%;
-}
-
-/* Adjust for mobile browsers */
-@media screen and (max-width: 767px) {
-  .App {
-    /* Additional fallback for older Android browsers */
-    height: -webkit-fill-available;
-  }
 }
 
 .content-container {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Remove fixed padding-top */
-  padding-top: 0;
   position: relative;
-  height: 100%;
   width: 100%;
 }
 
@@ -113,30 +92,20 @@ body {
   width: 100%;
 }
 
-/* Adjust camera overlay for mobile */
+/* Adjust for mobile browsers */
 @media screen and (max-width: 767px) {
-  .CameraOverlay {
-    height: 100dvh;
-    height: 100vh;
-    /* Fallback for browsers that don't support dvh */
-    height: -webkit-fill-available;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-  }
-
-  .CameraFeed {
-    max-height: 70dvh;
-    max-height: 70vh;
+  .App {
+    min-height: -webkit-fill-available;
   }
 }
 
 /* Add padding for iOS devices to account for the notch */
-@supports (padding-top: env(safe-area-inset-top)) {
+@supports (padding: env(safe-area-inset-top)) {
   .App {
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
 
