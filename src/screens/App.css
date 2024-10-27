@@ -99,7 +99,7 @@ body:not(.login-page) {
 .App-body {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 10px 20px; /* Reduce top padding */
   scrollbar-width: thin;
   scrollbar-color: var(--primary-color) transparent;
   display: flex;

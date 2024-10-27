@@ -265,6 +265,7 @@ export default function HomeScreen() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
+            style={{ marginBottom: '-4px' }}
           >
             <Suspense fallback={<div className="loading-placeholder">Loading status...</div>}>
               <StatusBar />
