@@ -18,6 +18,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
+  overscroll-behavior: none;  /* Prevent pull to refresh */
+  overflow: hidden;  /* Prevent bouncing on iOS */
+  position: fixed;  /* Additional fix for iOS bounce */
+  width: 100%;
+  touch-action: none;  /* Prevent default touch behaviors */
 }
 
 body:not(.login-page) {
@@ -40,6 +45,8 @@ body:not(.login-page) {
   position: fixed; /* Add fixed positioning */
   top: 0;
   left: 0;
+  overscroll-behavior: none;
+  touch-action: pan-y pinch-zoom;  /* Allow vertical scrolling and pinch zoom only */
 }
 
 .App-header {
@@ -113,6 +120,8 @@ body:not(.login-page) {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
+  overscroll-behavior: contain;  /* Prevent pull to refresh while allowing normal scroll */
+  -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
 }
 
 .App-footer {
