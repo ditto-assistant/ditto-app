@@ -13,7 +13,7 @@
 .message-container {
   display: flex;
   align-items: flex-end;
-  margin-bottom: 10px;
+  margin-bottom: 12px; /* Slightly more spacing between messages */
   position: relative;
   width: 100%;
 }
@@ -27,42 +27,63 @@
 }
 
 .avatar {
-  width: 2.0em;
-  height: 2.0em;
-  border-radius: 50%;
-  margin: 0 2px;
+  width: 2.4em; /* Slightly larger avatars */
+  height: 2.4em;
+  border: none; /* Remove border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 8px; /* Increased margin */
 }
 
 .chat-bubble {
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  border-radius: 15px;
+  padding: 10px 14px; /* Slightly tighter padding */
+  border-radius: 20px;
   word-wrap: break-word;
   max-width: 80%;
   position: relative;
-  transition: filter 0.2s;
+  transition: all 0.15s ease; /* Faster transition */
   min-width: 80px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-top: 12px; /* Reduced top margin */
 }
 
 .blurred {
   filter: blur(2px);
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 .chat-bubble.User {
-  background-color: #7289da;
-  color: #000000;
+  background-color: #4752c4; /* Darker blue for user messages */
+  color: #ffffff;
   text-align: left;
   margin-left: 10px;
   margin-right: 5px;
+  border-bottom-right-radius: 2px;
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .chat-bubble.Ditto {
-  background-color: #99aab5;
-  color: #000000;
+  background-color: #40444b; /* Lighter gray than before */
+  color: #ffffff;
   text-align: left;
   margin-right: 10px;
   margin-left: 5px;
+  border-bottom-left-radius: 2px;
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .sender-name {
@@ -75,9 +96,10 @@
 
 .message-text {
   font-size: 14px;
+  line-height: 1.4;
   color: #000000;
-  padding-bottom: 25px; /* Increase padding to ensure space for footer */
-  min-height: 20px; /* Ensure minimum height for small messages */
+  padding-bottom: 5px; /* Reduced from 20px */
+  min-height: 20px;
 }
 
 .chat-image {
@@ -204,12 +226,10 @@
 }
 
 .code-block {
-  border-radius: 10px;
-  margin: 5px 0;
-  padding: 10px;
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 12px;
   background: #282c34;
-  overflow-x: auto;
-  position: relative;
 }
 
 .inline-code-container {
@@ -227,16 +247,12 @@
 }
 
 .copy-button {
-  margin-left: 5px;
-  background-color: #3c3f45;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  text-align: center;
-  transition: background-color 0.2s, transform 0.2s;
-  padding: 2px 8px;
-  font-size: 12px;
+  background-color: rgba(60, 63, 69, 0.9);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .copy-button:hover {
@@ -287,23 +303,23 @@
 
 .message-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   width: 100%;
   position: absolute;
   bottom: 0;
   left: 0;
-  padding: 5px 10px;
+  padding: 2px 12px; /* Reduced top/bottom padding from 4px to 2px */
   box-sizing: border-box;
-  border-top: 1px solid rgba(0, 0, 0, 0.2); /* Slightly darker border */
-  background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque background */
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  background: transparent;
+  border-top: none;
 }
 
 .message-timestamp {
-  font-size: 0.75em;
-  color: rgba(0, 0, 0, 0.7); /* Darker color for better visibility */
+  font-size: 0.65em; /* Slightly smaller from 0.7em */
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 500;
+  line-height: 1; /* Ensure timestamp takes minimal vertical space */
 }
 
 .message-options {
@@ -320,7 +336,7 @@
 /* Adjust padding for both bubble types */
 .chat-bubble.User,
 .chat-bubble.Ditto {
-  padding-bottom: 30px; /* Increase bottom padding to accommodate the footer */
+  padding-bottom: 22px; /* Reduced from 30px */
 }
 
 /* Add styles for small messages */
@@ -344,16 +360,14 @@
 }
 
 .reaction {
-  background-color: rgba(47, 49, 54, 0.9);
-  border-radius: 50%;
-  width: 2.0em;
-  height: 2.0em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.9em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3), -1px -1px 2px rgba(255, 255, 255, 0.3);
+  background-color: rgba(47, 49, 54, 0.85);
+  border-radius: 12px;
+  padding: 2px 6px;
+  height: auto;
+  width: auto;
+  min-width: 24px;
+  font-size: 0.85em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Adjust the chat bubble to make room for reactions */
@@ -467,4 +481,156 @@
   .chat-bubble {
     max-width: 85%;
   }
+}
+
+/* Add transition for blur effect */
+.chat-bubble {
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-bubble:active {
+  transform: scale(0.98) translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Update the chat bubble transition to include transform */
+.chat-bubble {
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Add hover effect for non-touch devices */
+@media (hover: hover) {
+  .chat-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .chat-bubble.User:hover {
+    box-shadow: 0 3px 8px rgba(119, 135, 215, 0.15);
+  }
+
+  .chat-bubble.Ditto:hover {
+    box-shadow: 0 3px 8px rgba(242, 240, 235, 0.4);
+    background-color: #f5f3ee; /* Slightly lighter sepia on hover */
+  }
+}
+
+/* Update active state to work with hover */
+.chat-bubble:active {
+  transform: scale(0.98) translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Update blurred state to work with hover */
+.blurred {
+  filter: blur(2px);
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+/* Remove the message-options styles since we're not using them anymore */
+.message-options {
+  display: none;
+}
+
+/* Update the message-footer to remove the space for the three dots */
+.message-footer {
+  justify-content: flex-end; /* Only show timestamp on the right */
+  padding: 5px 10px;
+}
+
+/* Add styles for better touch interaction */
+@media (pointer: coarse) {
+  .chat-bubble {
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  .chat-bubble:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Update hover effects */
+@media (hover: hover) {
+  .chat-bubble:hover {
+    transform: translateY(-1px);
+  }
+
+  .chat-bubble.User:hover {
+    background-color: #3f48b0; /* Slightly darker blue on hover */
+    box-shadow: 0 2px 8px rgba(71, 82, 196, 0.2);
+  }
+
+  .chat-bubble.Ditto:hover {
+    background-color: #4a4d54; /* Slightly lighter gray on hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Update timestamp color for user messages */
+.chat-bubble.User .message-timestamp {
+  color: rgba(255, 255, 255, 0.7); /* Lighter timestamp for user messages */
+}
+
+/* Update chat bubble base styles */
+.chat-bubble {
+  padding: 10px 14px; /* Slightly tighter padding */
+  min-width: 80px;
+  transition: all 0.15s ease; /* Faster transition */
+  margin-top: 12px; /* Reduced top margin */
+}
+
+/* Update avatar styles */
+.avatar {
+  width: 2.4em;
+  height: 2.4em;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 8px;
+  object-fit: cover; /* Ensures the image fills the circle properly */
+  overflow: hidden; /* Ensures no corners peek out */
+  flex-shrink: 0; /* Prevents avatar from being squished */
+}
+
+/* Add specific styles for user avatar to ensure consistent appearance */
+.user-avatar {
+  background-color: #ffffff; /* Fallback background color */
+}
+
+/* Add specific styles for Ditto avatar */
+.ditto-avatar {
+  background-color: transparent; /* Allow logo background to show */
+}
+
+/* Update hover state for Ditto bubbles */
+@media (hover: hover) {
+  .chat-bubble.Ditto:hover {
+    background-color: #36393f; /* Slightly lighter on hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Update timestamp color for Ditto messages */
+.chat-bubble.Ditto .message-timestamp {
+  color: rgba(255, 255, 255, 0.5); /* Light gray timestamp for dark bubbles */
+}
+
+/* Update message text color for Ditto messages */
+.chat-bubble.Ditto .message-text {
+  color: #ffffff; /* Ensure text is white */
+}
+
+/* Ensure text stays white in both bubbles */
+.chat-bubble.User .message-text,
+.chat-bubble.Ditto .message-text {
+  color: #ffffff;
+}
+
+/* Update timestamp colors for better visibility */
+.chat-bubble.User .message-timestamp,
+.chat-bubble.Ditto .message-timestamp {
+  color: rgba(255, 255, 255, 0.7);
 }

@@ -354,12 +354,14 @@ export default function SendMessage({
     };
 
     const handleGalleryClick = (e) => {
+        e.preventDefault(); // Add this line
         e.stopPropagation();
         document.getElementById('image-upload').click();
         onCloseMediaOptions();
     };
 
     const handleCameraClick = (e) => {
+        e.preventDefault(); // Add this line
         e.stopPropagation();
         onCameraOpen();
         onCloseMediaOptions();
@@ -433,13 +435,25 @@ export default function SendMessage({
                             transition={{ type: "spring", damping: 15, stiffness: 300 }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <button className='MediaOption' onClick={handleGalleryClick}>
+                            <button 
+                                type="button" // Add this
+                                className='MediaOption' 
+                                onClick={handleGalleryClick}
+                            >
                                 <FaImage /> Photo Gallery
                             </button>
-                            <button className='MediaOption' onClick={handleCameraClick}>
+                            <button 
+                                type="button" // Add this
+                                className='MediaOption' 
+                                onClick={handleCameraClick}
+                            >
                                 <FaCamera /> Camera
                             </button>
-                            <button className='CancelButton' onClick={onCloseMediaOptions}>
+                            <button 
+                                type="button" // Add this
+                                className='CancelButton' 
+                                onClick={onCloseMediaOptions}
+                            >
                                 Cancel
                             </button>
                         </motion.div>
