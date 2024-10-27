@@ -48,11 +48,12 @@
 
 /* Add these new styles at the end of the file */
 
-/* Ensure the app takes up the full viewport height */
+/* Updated and new styles */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 body {
@@ -60,54 +61,75 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Set the app container to use flexbox and take up full height */
 .App {
   display: flex;
   flex-direction: column;
   height: 100%;
   /* Use dvh (dynamic viewport height) for better mobile support */
   height: 100dvh;
+  /* Fallback for browsers that don't support dvh */
+  height: 100vh;
   overflow: hidden;
   /* Ensure content is pushed below the status bar on iOS */
-  padding-top: env(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top, 0px);
   /* Adjust for bottom bar on iOS */
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Adjust for mobile browsers */
 @media screen and (max-width: 767px) {
   .App {
-    /* Fallback for browsers that don't support dvh */
+    /* Additional fallback for older Android browsers */
     height: -webkit-fill-available;
   }
 }
 
-/* Ensure content doesn't overflow on small screens */
 .content-container {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Prevent content from being hidden under the address bar */
-  padding-top: 56px; /* Adjust this value based on your app's header height */
+  /* Remove fixed padding-top */
+  padding-top: 0;
+}
+
+/* Adjust header for mobile */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #1a1a1a; /* Adjust color as needed */
 }
 
 /* Adjust camera overlay for mobile */
 @media screen and (max-width: 767px) {
   .CameraOverlay {
     height: 100dvh;
+    height: 100vh;
     /* Fallback for browsers that don't support dvh */
     height: -webkit-fill-available;
   }
 
   .CameraFeed {
     max-height: 70dvh;
+    max-height: 70vh;
   }
 }
 
 /* Add padding for iOS devices to account for the notch */
 @supports (padding-top: env(safe-area-inset-top)) {
   .App {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
+}
+
+/* Ensure all direct children of .App take up full height */
+.App > * {
+  flex-shrink: 0;
+}
+
+/* Allow the main content area to shrink and scroll if needed */
+.App > .content-container {
+  flex-shrink: 1;
+  min-height: 0;
 }
