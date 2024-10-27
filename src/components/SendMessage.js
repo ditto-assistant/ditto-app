@@ -1,6 +1,6 @@
 import './SendMessage.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { FaMicrophone, FaImage, FaTimesCircle, FaCamera } from 'react-icons/fa';
+import { FaMicrophone, FaPlus, FaImage, FaCamera, FaTimes } from 'react-icons/fa';
 import { MdFlipCameraIos } from 'react-icons/md';
 import { sendPrompt } from '../control/agent';
 import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
@@ -9,6 +9,8 @@ import { firebaseConfig } from '../firebaseConfig';
 import { useDittoActivation } from '@/hooks/useDittoActivation';
 import { useIntentRecognition } from '@/hooks/useIntentRecognition';
 import { textEmbed } from '../api/LLM';
+import { motion, AnimatePresence } from 'framer-motion';
+
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
 export default function SendMessage({ onImageEnlarge }) {
@@ -29,6 +31,7 @@ export default function SendMessage({ onImageEnlarge }) {
     const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
     const [isImageEnlarged, setIsImageEnlarged] = useState(false);
     const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+    const [showMediaOptions, setShowMediaOptions] = useState(false);
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -329,6 +332,27 @@ export default function SendMessage({ onImageEnlarge }) {
         };
     }, [isImageFullscreen]);
 
+    const handlePlusClick = (e) => {
+        e.stopPropagation();
+        setShowMediaOptions(true);
+    };
+
+    const handleCloseMediaOptions = () => {
+        setShowMediaOptions(false);
+    };
+
+    const handleGalleryClick = (e) => {
+        e.stopPropagation();
+        document.getElementById('image-upload').click();
+        setShowMediaOptions(false);
+    };
+
+    const handleCameraClick = (e) => {
+        e.stopPropagation();
+        handleCameraOpen();
+        setShowMediaOptions(false);
+    };
+
     return (
         <div className='Contents'>
             <div className='Bar'>
@@ -345,7 +369,7 @@ export default function SendMessage({ onImageEnlarge }) {
                             onChange={(e) => {
                                 setMessage(e.target.value);
                                 if (e.target.value.trim() === '') {
-                                    finalTranscriptRef.current = ''; // Reset transcript if user clears the text area
+                                    finalTranscriptRef.current = '';
                                 }
                             }}
                             rows={1}
@@ -360,9 +384,7 @@ export default function SendMessage({ onImageEnlarge }) {
                                 className={`Mic ${isListening ? 'listening' : ''}`}
                                 onClick={handleMicClick}
                             />
-                            <label htmlFor='image-upload' className='ImageUpload'>
-                                <FaImage />
-                            </label>
+                            <FaPlus className='PlusButton' onClick={handlePlusClick} />
                             <input
                                 id='image-upload'
                                 type='file'
@@ -370,7 +392,6 @@ export default function SendMessage({ onImageEnlarge }) {
                                 style={{ display: 'none' }}
                                 onChange={handleImageUpload}
                             />
-                            <FaCamera className='Camera' onClick={handleCameraOpen} />
                         </div>
                     </div>
                     <input className='Submit' type='submit' value='Send' />
@@ -378,7 +399,7 @@ export default function SendMessage({ onImageEnlarge }) {
                     {image && (
                         <div className='ImagePreview' onClick={toggleImageEnlarge}>
                             <img src={image} alt='Preview' />
-                            <FaTimesCircle className='RemoveImage' onClick={(e) => {
+                            <FaTimes className='RemoveImage' onClick={(e) => {
                                 e.stopPropagation();
                                 handleClearImage();
                             }} />
@@ -386,6 +407,34 @@ export default function SendMessage({ onImageEnlarge }) {
                     )}
                 </form>
             </div>
+
+            <AnimatePresence>
+                {showMediaOptions && (
+                    <motion.div
+                        className='MediaOptionsOverlay'
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={handleCloseMediaOptions}
+                    >
+                        <motion.div
+                            className='MediaOptionsContent'
+                            initial={{ y: "100%", opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: "100%", opacity: 0 }}
+                            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button className='MediaOption' onClick={handleGalleryClick}>
+                                <FaImage /> Photo Gallery
+                            </button>
+                            <button className='MediaOption' onClick={handleCameraClick}>
+                                <FaCamera /> Camera
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {isCameraOpen && (
                 <div className='CameraOverlay'>
