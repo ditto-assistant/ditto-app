@@ -3,7 +3,6 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    margin-top: auto;
 }
 
 .Bar {
@@ -11,7 +10,7 @@
     flex-direction: row;
     width: 100%;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     position: relative;
 }
 
@@ -29,7 +28,7 @@
     position: relative;
     width: 100%;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
 }
 
 .TextArea {
@@ -40,10 +39,9 @@
     background-color: #40444b;
     color: white;
     padding: 10px 15px;
-    overflow: hidden;
     line-height: 1.5;
     font-size: 16px;
-    max-height: 300px;
+    max-height: 200px;
     box-shadow: none;
     outline: none !important;
     padding-right: 90px;
@@ -57,10 +55,10 @@
 .Mic, 
 .ImageUpload,
 .Camera {
-    position: absolute;
     color: white;
     cursor: pointer;
     transition: color 0.2s ease;
+    margin-left: 10px;
 }
 
 .Mic {
@@ -131,6 +129,9 @@
     z-index: 2;
     cursor: pointer;
     transition: all 0.3s ease;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 10px;
 }
 
 .ImagePreview img {

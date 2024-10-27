@@ -266,19 +266,17 @@ export default function SendMessage({ onImageEnlarge }) {
         const textArea = textAreaRef.current;
         if (textArea) {
             textArea.style.height = 'auto';
-            textArea.style.height = textArea.scrollHeight + 'px';
+            textArea.style.height = `${Math.min(textArea.scrollHeight, 200)}px`;
 
             if (textArea.scrollHeight >= 200) {
-                textArea.style.overflowY = 'scroll';
-                textArea.style.maxHeight = '200px'; // Ensure a max height
+                textArea.style.overflowY = 'auto';
             } else {
                 textArea.style.overflowY = 'hidden';
-                textArea.style.maxHeight = 'none';
             }
 
             const imagePreview = document.querySelector('.ImagePreview');
             if (imagePreview) {
-                imagePreview.style.top = `${textArea.offsetTop - imagePreview.offsetHeight - 10}px`;
+                imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
             }
         }
     };
@@ -357,21 +355,23 @@ export default function SendMessage({ onImageEnlarge }) {
                             }}
                             onFocus={() => setIsImageEnlarged(false)}
                         />
-                        <FaMicrophone
-                            className={`Mic ${isListening ? 'listening' : ''}`}
-                            onClick={handleMicClick}
-                        />
-                        <label htmlFor='image-upload' className='ImageUpload'>
-                            <FaImage />
-                        </label>
-                        <input
-                            id='image-upload'
-                            type='file'
-                            accept='image/*'
-                            style={{ display: 'none' }}
-                            onChange={handleImageUpload}
-                        />
-                        <FaCamera className='Camera' onClick={handleCameraOpen} />
+                        <div className='IconsWrapper'>
+                            <FaMicrophone
+                                className={`Mic ${isListening ? 'listening' : ''}`}
+                                onClick={handleMicClick}
+                            />
+                            <label htmlFor='image-upload' className='ImageUpload'>
+                                <FaImage />
+                            </label>
+                            <input
+                                id='image-upload'
+                                type='file'
+                                accept='image/*'
+                                style={{ display: 'none' }}
+                                onChange={handleImageUpload}
+                            />
+                            <FaCamera className='Camera' onClick={handleCameraOpen} />
+                        </div>
                     </div>
                     <input className='Submit' type='submit' value='Send' />
 
