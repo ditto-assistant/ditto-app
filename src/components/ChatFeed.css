@@ -583,10 +583,23 @@
 
 /* Update avatar styles */
 .avatar {
-  width: 2.4em; /* Slightly larger avatars */
+  width: 2.4em;
   height: 2.4em;
-  border: none; /* Remove border */
+  border-radius: 50%;
+  border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 0 8px; /* Increased margin */
+  margin: 0 8px;
+  object-fit: cover; /* Ensures the image fills the circle properly */
+  overflow: hidden; /* Ensures no corners peek out */
+  flex-shrink: 0; /* Prevents avatar from being squished */
 }
 
+/* Add specific styles for user avatar to ensure consistent appearance */
+.user-avatar {
+  background-color: #ffffff; /* Fallback background color */
+}
+
+/* Add specific styles for Ditto avatar */
+.ditto-avatar {
+  background-color: transparent; /* Allow logo background to show */
+}
