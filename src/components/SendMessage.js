@@ -1,6 +1,6 @@
 import './SendMessage.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { FaMicrophone, FaImage, FaTimesCircle, FaCamera } from 'react-icons/fa';
+import { FaMicrophone, FaPlus, FaImage, FaCamera, FaTimes } from 'react-icons/fa';
 import { MdFlipCameraIos } from 'react-icons/md';
 import { sendPrompt } from '../control/agent';
 import { auth, uploadImageToFirebaseStorageBucket } from '../control/firebase';
@@ -9,9 +9,19 @@ import { firebaseConfig } from '../firebaseConfig';
 import { useDittoActivation } from '@/hooks/useDittoActivation';
 import { useIntentRecognition } from '@/hooks/useIntentRecognition';
 import { textEmbed } from '../api/LLM';
+import { motion, AnimatePresence } from 'framer-motion';
+
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
-export default function SendMessage() {
+export default function SendMessage({ 
+  onImageEnlarge, 
+  onCameraOpen, 
+  capturedImage, 
+  onClearCapturedImage,
+  showMediaOptions,
+  onOpenMediaOptions,
+  onCloseMediaOptions
+}) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
     const [isListening, setIsListening] = useState(false);
@@ -51,6 +61,12 @@ export default function SendMessage() {
             clearInterval(interval);
         };
     }, [dittoActivationLoaded]);
+
+    useEffect(() => {
+        if (capturedImage) {
+            setImage(capturedImage);
+        }
+    }, [capturedImage]);
 
     const handleMicClick = async () => {
         if (isListening) {
@@ -146,6 +162,7 @@ export default function SendMessage() {
     const handleCameraOpen = () => {
         setIsCameraOpen(true);
         startCamera(isFrontCamera);
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when camera is open
     };
 
     const startCamera = (useFrontCamera) => {
@@ -176,6 +193,7 @@ export default function SendMessage() {
     const handleCameraClose = () => {
         setIsCameraOpen(false);
         stopCameraFeed();
+        document.body.style.overflow = ''; // Restore scrolling
     };
 
     const stopCameraFeed = () => {
@@ -189,6 +207,7 @@ export default function SendMessage() {
 
     const handleClearImage = () => {
         setImage('');
+        onClearCapturedImage();
     };
 
     const toggleCamera = () => {
@@ -266,19 +285,17 @@ export default function SendMessage() {
         const textArea = textAreaRef.current;
         if (textArea) {
             textArea.style.height = 'auto';
-            textArea.style.height = textArea.scrollHeight + 'px';
+            textArea.style.height = `${Math.min(textArea.scrollHeight, 200)}px`;
 
             if (textArea.scrollHeight >= 200) {
-                textArea.style.overflowY = 'scroll';
-                textArea.style.maxHeight = '200px'; // Ensure a max height
+                textArea.style.overflowY = 'auto';
             } else {
                 textArea.style.overflowY = 'hidden';
-                textArea.style.maxHeight = 'none';
             }
 
             const imagePreview = document.querySelector('.ImagePreview');
             if (imagePreview) {
-                imagePreview.style.top = `${textArea.offsetTop - imagePreview.offsetHeight - 10}px`;
+                imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
             }
         }
     };
@@ -310,7 +327,7 @@ export default function SendMessage() {
 
     const toggleImageEnlarge = (e) => {
         e.stopPropagation();
-        setIsImageEnlarged(!isImageEnlarged);
+        onImageEnlarge(image);
     };
 
     const toggleImageFullscreen = (e) => {
@@ -331,8 +348,25 @@ export default function SendMessage() {
         };
     }, [isImageFullscreen]);
 
+    const handlePlusClick = (e) => {
+        e.stopPropagation();
+        onOpenMediaOptions();
+    };
+
+    const handleGalleryClick = (e) => {
+        e.stopPropagation();
+        document.getElementById('image-upload').click();
+        onCloseMediaOptions();
+    };
+
+    const handleCameraClick = (e) => {
+        e.stopPropagation();
+        onCameraOpen();
+        onCloseMediaOptions();
+    };
+
     return (
-        <div className='Contents'>
+        <div className='Contents' onClick={(e) => e.stopPropagation()}>
             <div className='Bar'>
                 <form className='Form' onSubmit={handleSubmit}>
                     <div className='InputWrapper'>
@@ -347,7 +381,7 @@ export default function SendMessage() {
                             onChange={(e) => {
                                 setMessage(e.target.value);
                                 if (e.target.value.trim() === '') {
-                                    finalTranscriptRef.current = ''; // Reset transcript if user clears the text area
+                                    finalTranscriptRef.current = '';
                                 }
                             }}
                             rows={1}
@@ -357,28 +391,27 @@ export default function SendMessage() {
                             }}
                             onFocus={() => setIsImageEnlarged(false)}
                         />
-                        <FaMicrophone
-                            className={`Mic ${isListening ? 'listening' : ''}`}
-                            onClick={handleMicClick}
-                        />
-                        <label htmlFor='image-upload' className='ImageUpload'>
-                            <FaImage />
-                        </label>
-                        <input
-                            id='image-upload'
-                            type='file'
-                            accept='image/*'
-                            style={{ display: 'none' }}
-                            onChange={handleImageUpload}
-                        />
-                        <FaCamera className='Camera' onClick={handleCameraOpen} />
+                        <div className='IconsWrapper'>
+                            <FaMicrophone
+                                className={`Mic ${isListening ? 'listening' : ''}`}
+                                onClick={handleMicClick}
+                            />
+                            <FaPlus className='PlusButton' onClick={handlePlusClick} />
+                            <input
+                                id='image-upload'
+                                type='file'
+                                accept='image/*'
+                                style={{ display: 'none' }}
+                                onChange={handleImageUpload}
+                            />
+                        </div>
                     </div>
                     <input className='Submit' type='submit' value='Send' />
 
                     {image && (
-                        <div className='ImagePreview' onClick={toggleImageFullscreen}>
+                        <div className='ImagePreview' onClick={toggleImageEnlarge}>
                             <img src={image} alt='Preview' />
-                            <FaTimesCircle className='RemoveImage' onClick={(e) => {
+                            <FaTimes className='RemoveImage' onClick={(e) => {
                                 e.stopPropagation();
                                 handleClearImage();
                             }} />
@@ -387,22 +420,42 @@ export default function SendMessage() {
                 </form>
             </div>
 
-            {isCameraOpen && (
-                <div className='CameraOverlay'>
-                    <video ref={videoRef} autoPlay className='CameraFeed'></video>
-                    <MdFlipCameraIos className='FlipCameraIcon' onClick={toggleCamera} />
-                    <button className='CameraSnap' onClick={handleSnap}>
-                        Snap
-                    </button>
-                    <button className='CameraClose' onClick={handleCameraClose}>
-                        Close
-                    </button>
-                </div>
-            )}
+            <AnimatePresence>
+                {showMediaOptions && (
+                    <motion.div
+                        className='MediaOptionsOverlay'
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onCloseMediaOptions}
+                    >
+                        <motion.div
+                            className='MediaOptionsContent'
+                            initial={{ y: "100%", opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: "100%", opacity: 0 }}
+                            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button className='MediaOption' onClick={handleGalleryClick}>
+                                <FaImage /> Photo Gallery
+                            </button>
+                            <button className='MediaOption' onClick={handleCameraClick}>
+                                <FaCamera /> Camera
+                            </button>
+                            <button className='CancelButton' onClick={onCloseMediaOptions}>
+                                Cancel
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {isImageEnlarged && (
-                <div className='EnlargedImageOverlay' onClick={handleClickOutside}>
-                    <img src={image} alt='Enlarged Preview' onClick={(e) => e.stopPropagation()} />
+                <div className='EnlargedImageOverlay' onClick={toggleImageEnlarge}>
+                    <div className='EnlargedImageContainer' onClick={(e) => e.stopPropagation()}>
+                        <img src={image} alt='Enlarged Preview' />
+                    </div>
                 </div>
             )}
 

@@ -14,6 +14,10 @@ const SendMessage = lazy(() => import("@/components/SendMessage"));
 const StatusBar = lazy(() => import("@/components/StatusBar"));
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from '/icons/ditto-icon-clear2.png';
+import { IoSettingsOutline } from "react-icons/io5";
+import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { MdFlipCameraIos } from "react-icons/md";
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -27,6 +31,13 @@ export default function HomeScreen() {
   });
   const { model: DittoActivation, isLoaded: dittoActivationLoaded } = useDittoActivation();
   const [showStatusBar, setShowStatusBar] = useState(true);
+  const [enlargedImage, setEnlargedImage] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isFrontCamera, setIsFrontCamera] = useState(true);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [showMediaOptions, setShowMediaOptions] = useState(false);
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -224,70 +235,121 @@ export default function HomeScreen() {
     setShowStatusBar((prev) => !prev);
   };
 
+  const handleImageEnlarge = (imageUrl) => {
+    setEnlargedImage(imageUrl);
+  };
+
+  const closeEnlargedImage = () => {
+    setEnlargedImage(null);
+  };
+
+  const handleCameraOpen = () => {
+    setIsCameraOpen(true);
+    startCamera(isFrontCamera);
+  };
+
+  const handleCameraClose = () => {
+    setIsCameraOpen(false);
+    stopCameraFeed();
+  };
+
+  const startCamera = (useFrontCamera) => {
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: useFrontCamera ? 'user' : 'environment' } })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch((err) => {
+        console.error('Error accessing the camera: ', err);
+      });
+  };
+
+  const stopCameraFeed = () => {
+    const stream = videoRef.current?.srcObject;
+    if (stream) {
+      const tracks = stream.getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const handleSnap = () => {
+    if (canvasRef.current && videoRef.current) {
+      const context = canvasRef.current.getContext('2d');
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+      context.drawImage(videoRef.current, 0, 0);
+      const imageDataURL = canvasRef.current.toDataURL('image/png');
+      setCapturedImage(imageDataURL);
+      handleCameraClose();
+    }
+  };
+
+  const toggleCamera = () => {
+    setIsFrontCamera(!isFrontCamera);
+    stopCameraFeed();
+    startCamera(!isFrontCamera);
+  };
+
+  const handleCloseMediaOptions = () => {
+    setShowMediaOptions(false);
+  };
+
+  const handleOpenMediaOptions = () => {
+    setShowMediaOptions(true);
+  };
+
   return (
-    <div className="App" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
-      <header className="App-header" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
-        {microphoneStatus === true ? (
-          <FaEarListen
-            style={{
-              paddingLeft: 20,
-              color: dittoActivationLoaded ? "green" : "gray",
-              width: buttonSize,
-              height: buttonSize,
-            }}
-            onClick={handleMicPress}
-          />
-        ) : (
-          <FaEarDeaf
-            style={{
-              paddingLeft: 20,
-              color: "red",
-              width: buttonSize,
-              height: buttonSize,
-            }}
-            onClick={handleMicPress}
-          />
-        )}
-        <div className="title-container" onClick={toggleStatusBar}>
-          <h1 className="App-title" style={{
-            fontFamily: "'Roboto', sans-serif",
-            fontWeight: 500,
-            fontSize: '1.8em',
-            color: '#f0f0f0', // Light gray color that's subtle but not white
-            textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-            letterSpacing: '0.05em',
-            display: 'flex',
-            alignItems: 'center',
-            margin: 0
-          }}>
-            <img src={dittoIcon} alt="Ditto Icon" style={{ marginRight: '10px', width: '1.2em', height: '1.2em' }} />
-            Ditto
-          </h1>
+    <div className="App" onClick={handleCloseMediaOptions}>
+      <header className="App-header">
+        <motion.div
+          className="microphone-button"
+          whileTap={{ scale: 0.95 }}
+          onClick={handleMicPress}
+        >
+          {microphoneStatus ? (
+            <FaMicrophone className="icon active" />
+          ) : (
+            <FaMicrophoneSlash className="icon inactive" />
+          )}
+        </motion.div>
+        <motion.div
+          className="title-container"
+          onClick={toggleStatusBar}
+          whileHover={{ scale: 1.05 }}
+        >
+          <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
+          <h1 className="App-title">Ditto</h1>
           {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
-        </div>
-        <MdSettings
-          style={{
-            paddingRight: 20,
-            width: buttonSize + 6,
-            height: buttonSize + 6,
-            color: "white",
-            cursor: "pointer",
-          }}
-          onClick={() => { navigate("/settings"); }}
-        />
+        </motion.div>
+        <motion.div
+          className="settings-button"
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate("/settings")}
+        >
+          <IoSettingsOutline className="icon" />
+        </motion.div>
       </header>
-      <Divider />
-      {showStatusBar && (
-        <>
-          <Suspense fallback={<div>Loading status...</div>}>
-            <StatusBar />
-          </Suspense>
-          <Divider />
-        </>
-      )}
-      <div className="App-body" ref={appBodyRef} style={{ flexGrow: 1, overflowY: 'auto' }}>
-        <div className="chat-container">
-          <Suspense fallback={<div>Loading chat...</div>}>
+      <AnimatePresence>
+        {showStatusBar && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ marginBottom: '-4px' }}
+          >
+            <Suspense fallback={<div className="loading-placeholder">Loading status...</div>}>
+              <StatusBar />
+            </Suspense>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="App-body" ref={appBodyRef} onClick={handleCloseMediaOptions}>
+        <div className="chat-card">
+          <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
             <ChatFeed
               messages={conversation.messages}
               showSenderName={false}
@@ -299,12 +361,75 @@ export default function HomeScreen() {
           </Suspense>
         </div>
       </div>
-
-      <footer className="App-footer" style={{ position: 'sticky', bottom: 0, zIndex: 1000 }}>
+      <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>
-          <SendMessage />
+          <SendMessage 
+            onImageEnlarge={handleImageEnlarge} 
+            onCameraOpen={handleCameraOpen} 
+            capturedImage={capturedImage}
+            onClearCapturedImage={() => setCapturedImage(null)}
+            showMediaOptions={showMediaOptions}
+            onOpenMediaOptions={handleOpenMediaOptions}
+            onCloseMediaOptions={handleCloseMediaOptions}
+          />
         </Suspense>
       </footer>
+      
+      <AnimatePresence>
+        {isCameraOpen && (
+          <motion.div
+            className="CameraOverlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCameraClose}
+          >
+            <motion.div
+              className="CameraContainer"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <video ref={videoRef} autoPlay className="CameraFeed"></video>
+              <div className="CameraControls">
+                <MdFlipCameraIos className="FlipCameraIcon" onClick={toggleCamera} />
+                <button className="CameraSnap" onClick={handleSnap}>
+                  Snap
+                </button>
+                <button className="CameraClose" onClick={handleCameraClose}>
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+      
+      <AnimatePresence>
+        {enlargedImage && (
+          <motion.div
+            className="EnlargedImageOverlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeEnlargedImage}
+          >
+            <motion.div
+              className="EnlargedImageContainer"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src={enlargedImage} alt="Enlarged Preview" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
