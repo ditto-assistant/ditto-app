@@ -11,6 +11,7 @@ import { IoMdArrowBack } from 'react-icons/io';
 import { FaBrain, FaTrash } from 'react-icons/fa';
 import { findConversationDocId, getConversationEmbedding, deleteConversation } from '../control/memory';
 import { routes } from '../firebaseConfig';
+import { textEmbed } from '../api/LLM';  // Add this import
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -542,7 +543,6 @@ export default function ChatFeed({
 
   const handleShowMemories = async (index) => {
     try {
-      // Create new AbortController for this request
       const controller = new AbortController();
       setAbortController(controller);
       setLoadingMemories(true);
@@ -577,21 +577,15 @@ export default function ChatFeed({
         return;
       }
 
-      // If not in cache, proceed with fetching
-      const docId = await findConversationDocId(userID, promptToUse);
-      if (!docId) {
-        console.error('Could not find conversation document');
-        setLoadingMemories(false);
-        return;
-      }
-
-      const embedding = await getConversationEmbedding(userID, docId);
+      // Get embedding for the prompt
+      const embedding = await textEmbed(promptToUse);
       if (!embedding) {
-        console.error('Could not find conversation embedding');
+        console.error('Could not generate embedding for prompt');
         setLoadingMemories(false);
         return;
       }
 
+      // Use the embedding to search for memories
       const token = await auth.currentUser.getIdToken();
       const response = await fetch(routes.memories, {
         method: 'POST',
@@ -606,7 +600,7 @@ export default function ChatFeed({
           vector: embedding,
           k: 5
         }),
-        signal: controller.signal // Add abort signal to fetch
+        signal: controller.signal
       });
 
       if (!response.ok) {
