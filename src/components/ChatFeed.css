@@ -134,17 +134,18 @@
 }
 
 .action-overlay {
-  position: fixed; /* Change to fixed positioning */
+  position: fixed;
   background-color: #3941b8;
   border-radius: 10px;
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Add consistent spacing between buttons */
+  gap: 8px;
   width: auto;
-  min-width: 100px;
-  z-index: 1000; /* Ensure it's above other content */
+  min-width: 120px; /* Slightly wider for better touch targets */
+  z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  touch-action: none; /* Prevent default touch behaviors */
 }
 
 .image-action-overlay {
@@ -726,29 +727,41 @@
 
 /* Update action overlay styles */
 .action-overlay {
-  position: fixed; /* Change to fixed positioning */
+  position: fixed;
   background-color: #3941b8;
   border-radius: 10px;
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Add consistent spacing between buttons */
+  gap: 8px;
   width: auto;
-  min-width: 100px;
-  z-index: 1000; /* Ensure it's above other content */
+  min-width: 120px; /* Slightly wider for better touch targets */
+  z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  touch-action: none; /* Prevent default touch behaviors */
 }
 
 .action-button {
-  padding: 8px 12px;
+  padding: 12px 16px; /* Larger touch targets */
   width: 100%;
   text-align: center;
   border-radius: 6px;
   transition: background-color 0.2s ease;
+  font-size: 16px; /* Slightly larger text */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.action-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+/* Add specific mobile styles */
+@media (pointer: coarse) {
+  .action-button {
+    min-height: 44px; /* iOS minimum touch target size */
+  }
+
+  .action-overlay {
+    transform: translate(-50%, -50%) scale(1.1); /* Slightly larger on mobile */
+  }
 }
 
 /* Prevent text selection on buttons */
@@ -1094,3 +1107,4 @@
 .delete-confirmation-docid.not-found {
   color: #ed4245;
 }
+

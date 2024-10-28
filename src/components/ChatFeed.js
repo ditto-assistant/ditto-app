@@ -19,6 +19,7 @@ const USER_AVATAR_KEY = 'userAvatar';
 const MEMORY_CACHE_KEY = 'memoryCache';
 const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
+const INTERACTION_DELAY = 300; // 300ms delay to prevent accidental closures
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
@@ -99,10 +100,10 @@ export default function ChatFeed({
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(() => {
-    return localStorage.getItem(USER_AVATAR_KEY) || '../user_placeholder.png';
+    return localStorage.getItem(USER_AVATAR_KEY) || '/user_placeholder.png'; // Update path
   });
   const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || '../logo512.png';
+    return localStorage.getItem(DITTO_AVATAR_KEY) || '/logo512.png'; // Update path
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -139,7 +140,7 @@ export default function ChatFeed({
 
   useEffect(() => {
     // Cache Ditto avatar
-    fetch('../logo512.png')
+    fetch('/logo512.png')
       .then(response => response.blob())
       .then(blob => {
         const reader = new FileReader();
@@ -155,9 +156,28 @@ export default function ChatFeed({
     // Cache user avatar
     if (auth.currentUser) {
       const photoURL = auth.currentUser.photoURL;
+      console.log('User photo URL:', photoURL);
+
       if (photoURL) {
-        fetch(photoURL)
-          .then(response => response.blob())
+        // Remove credentials and modify fetch options for Google photos
+        fetch(photoURL, {
+          mode: 'cors',
+          credentials: 'omit',
+          headers: {
+            'Accept': 'image/*'
+          },
+          cache: 'force-cache'
+        })
+          .then(response => {
+            // Immediately throw if we get rate limited
+            if (response.status === 429) {
+              throw new Error('Rate limited');
+            }
+            if (!response.ok) {
+              throw new Error(`Failed to fetch photo: ${response.status}`);
+            }
+            return response.blob();
+          })
           .then(blob => {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -167,9 +187,10 @@ export default function ChatFeed({
             };
             reader.readAsDataURL(blob);
           })
-          .catch(() => {
-            const fallbackURL = '../user_placeholder.png';
-            fetch(fallbackURL)
+          .catch((error) => {
+            console.log('Using fallback photo due to error:', error.message);
+            // Immediately use fallback without trying additional fetches
+            fetch('/user_placeholder.png')
               .then(response => response.blob())
               .then(blob => {
                 const reader = new FileReader();
@@ -179,26 +200,30 @@ export default function ChatFeed({
                   setProfilePic(base64data);
                 };
                 reader.readAsDataURL(blob);
+              })
+              .catch(error => {
+                console.error('Error loading placeholder:', error);
+                setProfilePic('/user_placeholder.png');
               });
           });
       } else {
-        fetch('../user_placeholder.png')
-          .then(response => response.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = reader.result;
-              localStorage.setItem(USER_AVATAR_KEY, base64data);
-              setProfilePic(base64data);
-            };
-            reader.readAsDataURL(blob);
-          });
+        setProfilePic('/user_placeholder.png');
+        console.log('No user photo URL, using placeholder');
       }
+    } else {
+      setProfilePic('/user_placeholder.png');
+      console.log('No authenticated user, using placeholder');
     }
   }, []);
 
   useEffect(() => {
+    let interactionTimeout;
+    let isInteracting = false;
+
     const handleClickAway = (e) => {
+      // Don't handle if we're still in the interaction delay period
+      if (isInteracting) return;
+
       // Don't close if clicking inside action or reaction overlays
       if (e.target.closest('.action-overlay') || e.target.closest('.reaction-overlay')) {
         return;
@@ -216,8 +241,23 @@ export default function ChatFeed({
       setReactionOverlay(null);
     };
 
+    const handleTouchStart = () => {
+      isInteracting = true;
+      clearTimeout(interactionTimeout);
+      
+      interactionTimeout = setTimeout(() => {
+        isInteracting = false;
+      }, INTERACTION_DELAY);
+    };
+
     document.addEventListener('click', handleClickAway);
-    return () => document.removeEventListener('click', handleClickAway);
+    document.addEventListener('touchstart', handleTouchStart);
+
+    return () => {
+      document.removeEventListener('click', handleClickAway);
+      document.removeEventListener('touchstart', handleTouchStart);
+      clearTimeout(interactionTimeout);
+    };
   }, [actionOverlay]);
 
   useEffect(() => {
@@ -257,7 +297,14 @@ export default function ChatFeed({
 
     // Close the overlay if clicking the same bubble that opened it
     if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
+      // Add delay before closing on mobile
+      if ('ontouchstart' in window) {
+        setTimeout(() => {
+          setActionOverlay(null);
+        }, INTERACTION_DELAY);
+      } else {
+        setActionOverlay(null);
+      }
       return;
     }
 
@@ -266,15 +313,16 @@ export default function ChatFeed({
       setActionOverlay(null);
     }
 
-    const clientX = e.clientX || (rect.left + rect.width / 2);
-    const clientY = e.clientY || (rect.top + rect.height / 2);
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : rect.left + rect.width / 2);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : rect.top + rect.height / 2);
+    
     setActionOverlay({ 
       index, 
       type, 
       clientX,
       clientY,
       isUserMessage,
-      rect // Store the bubble's rect for positioning
+      rect
     });
     setReactionOverlay(null);
   };
