@@ -8,6 +8,9 @@ import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCopy, FiDownload } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
+import { FaBrain, FaTrash } from 'react-icons/fa';
+import { findConversationDocId, getConversationEmbedding, deleteConversation } from '../control/memory';
+import { routes } from '../firebaseConfig';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -54,6 +57,10 @@ export default function ChatFeed({
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
+  const [memoryOverlay, setMemoryOverlay] = useState(null);
+  const [relatedMemories, setRelatedMemories] = useState([]);
+  const [loadingMemories, setLoadingMemories] = useState(false);
+  const [deletingMemories, setDeletingMemories] = useState(new Set());
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -380,6 +387,14 @@ export default function ChatFeed({
                 >
                   React
                 </button>
+                <button 
+                  onClick={() => handleShowMemories(actionOverlay.index)} 
+                  className='action-button'
+                  disabled={loadingMemories}
+                >
+                  <FaBrain style={{ marginRight: '5px' }} />
+                  {loadingMemories ? 'Loading...' : 'Memories'}
+                </button>
               </>
             ) : (
               <>
@@ -463,6 +478,116 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
+  const handleShowMemories = async (index) => {
+    try {
+      setLoadingMemories(true);
+      const message = messages[index];
+      const userID = auth.currentUser.uid;
+      
+      let promptToUse;
+      if (message.sender === 'User') {
+        // If it's a user message, use it directly as the prompt
+        promptToUse = message.text;
+      } else {
+        // If it's a Ditto response, find the preceding user prompt
+        if (index > 0 && messages[index - 1].sender === 'User') {
+          promptToUse = messages[index - 1].text;
+        } else {
+          console.error('Could not find corresponding prompt for response');
+          setLoadingMemories(false);
+          return;
+        }
+      }
+
+      // Get the document ID using the prompt
+      const docId = await findConversationDocId(userID, promptToUse);
+
+      if (!docId) {
+        console.error('Could not find conversation document');
+        setLoadingMemories(false);
+        return;
+      }
+
+      // Get the embedding for this conversation
+      const embedding = await getConversationEmbedding(userID, docId);
+      if (!embedding) {
+        console.error('Could not find conversation embedding');
+        setLoadingMemories(false);
+        return;
+      }
+
+      // Get the auth token
+      const token = await auth.currentUser.getIdToken();
+
+      // Fetch related memories using the embedding
+      const response = await fetch(routes.memories, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Origin': window.location.origin
+        },
+        body: JSON.stringify({
+          userId: userID,
+          vector: embedding,
+          k: 5
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch memories');
+      }
+
+      const data = await response.json();
+      setRelatedMemories(data.memories || []);
+      setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
+      setActionOverlay(null);
+    } catch (error) {
+      console.error('Error fetching memories:', error);
+    } finally {
+      setLoadingMemories(false);
+    }
+  };
+
+  const handleDeleteMemory = async (memory, idx) => {
+    try {
+      const userID = auth.currentUser.uid;
+      
+      // Get the document ID for this memory
+      const docId = await findConversationDocId(userID, memory.prompt);
+      if (!docId) {
+        console.error('Could not find conversation to delete');
+        return;
+      }
+
+      // Add to deleting set for animation
+      setDeletingMemories(prev => new Set([...prev, idx]));
+
+      // Wait for animation
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Delete from Firestore
+      const success = await deleteConversation(userID, docId);
+      
+      if (success) {
+        // Remove from related memories
+        setRelatedMemories(prev => prev.filter((_, i) => i !== idx));
+      } else {
+        console.error('Failed to delete conversation');
+      }
+    } catch (error) {
+      console.error('Error deleting memory:', error);
+    } finally {
+      // Remove from deleting set
+      setDeletingMemories(prev => {
+        const next = new Set(prev);
+        next.delete(idx);
+        return next;
+      });
+    }
+  };
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
@@ -544,6 +669,54 @@ export default function ChatFeed({
             </motion.div>
           </motion.div>
         </AnimatePresence>
+      )}
+      {memoryOverlay && (
+        <div 
+          className='memory-overlay'
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className='memory-content'>
+            <div className='memory-header'>
+              <h3>Related Memories</h3>
+              <button 
+                className='close-button'
+                onClick={() => setMemoryOverlay(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className='memory-list'>
+              {relatedMemories.map((memory, idx) => (
+                <motion.div
+                  key={idx}
+                  className='memory-item'
+                  initial={{ opacity: 1, height: 'auto', scale: 1 }}
+                  animate={{
+                    opacity: deletingMemories.has(idx) ? 0 : 1,
+                    height: deletingMemories.has(idx) ? 0 : 'auto',
+                    scale: deletingMemories.has(idx) ? 0.8 : 1,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className='memory-prompt'>{memory.prompt}</div>
+                  <div className='memory-response'>{memory.response}</div>
+                  <div className='memory-footer'>
+                    <div className='memory-timestamp'>
+                      {formatTimestamp(new Date(memory.timestampString).getTime())}
+                    </div>
+                    <button
+                      className='delete-button'
+                      onClick={() => handleDeleteMemory(memory, idx)}
+                      disabled={deletingMemories.has(idx)}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -3,7 +3,9 @@ import {
   getDocs,
   query,
   orderBy,
-  limit
+  limit,
+  deleteDoc,
+  doc
 } from "firebase/firestore";
 
 import { db, grabConversationHistory } from "./firebase";
@@ -169,5 +171,84 @@ export const getLongTermMemory = async (userID, embedding, k) => {
     console.error('Error getting long term memory:', e);
     console.error('Stack trace:', e.stack);
     return "No history! :)";
+  }
+}
+
+/**
+ * Find the document ID for a conversation by matching prompt
+ * @param {string} userID - The user's ID
+ * @param {string|null} prompt - The prompt to search for
+ * @param {string|null} response - Not used anymore, kept for backward compatibility
+ * @returns {string|null} - Returns the document ID if found, null otherwise
+ */
+export const findConversationDocId = async (userID, prompt, response) => {
+  try {
+    // If no prompt (it's a Ditto response), return null early
+    if (!prompt) {
+      return null;
+    }
+
+    // Create a query that's sorted by timestamp and limited
+    const q = query(
+      collection(db, "memory", userID, "conversations"),
+      orderBy('timestamp', 'desc'),
+      limit(50) // Limit to recent conversations for faster search
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    // Find first document with matching prompt
+    for (const doc of querySnapshot.docs) {
+      const data = doc.data();
+      if (data.prompt === prompt) {
+        return doc.id;
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.error("Error finding conversation document ID:", e);
+    return null;
+  }
+}
+
+/**
+ * Get the embedding array for a specific conversation document
+ * @param {string} userID - The user's ID
+ * @param {string} docId - The document ID of the conversation
+ * @returns {number[]|null} - Returns the embedding array if found, null otherwise
+ */
+export const getConversationEmbedding = async (userID, docId) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "memory", userID, "conversations"));
+    
+    let embedding = null;
+    querySnapshot.forEach((doc) => {
+      if (doc.id === docId) {
+        embedding = doc.data().embedding;
+      }
+    });
+    
+    return embedding;
+  } catch (e) {
+    console.error("Error getting conversation embedding:", e);
+    return null;
+  }
+}
+
+/**
+ * Delete a conversation from Firestore by its document ID
+ * @param {string} userID - The user's ID
+ * @param {string} docId - The document ID of the conversation to delete
+ * @returns {boolean} - Returns true if deletion was successful
+ */
+export const deleteConversation = async (userID, docId) => {
+  try {
+    const docRef = doc(db, "memory", userID, "conversations", docId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (e) {
+    console.error("Error deleting conversation:", e);
+    return false;
   }
 }
