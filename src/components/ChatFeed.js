@@ -481,38 +481,40 @@ export default function ChatFeed({
         </div>
       )}
       {imageOverlay && (
-        <motion.div 
-          className="image-overlay" 
-          onClick={closeImageOverlay}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <AnimatePresence> {/* Add this wrapper */}
           <motion.div 
-            className="image-overlay-content" 
-            onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="image-overlay" 
+            onClick={closeImageOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <img src={imageOverlay} alt="Full size" />
             <motion.div 
-              className="image-overlay-controls"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: 0.2 }}
+              className="image-overlay-content" 
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
-              <button className="back-button" onClick={closeImageOverlay}>
-                Back
-              </button>
-              <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
-                Download
-              </button>
+              <img src={imageOverlay} alt="Full size" />
+              <motion.div 
+                className="image-overlay-controls"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: 0.2 }}
+              >
+                <button className="back-button" onClick={closeImageOverlay}>
+                  Back
+                </button>
+                <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
+                  Download
+                </button>
+              </motion.div>
             </motion.div>
           </motion.div>
-        </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );
