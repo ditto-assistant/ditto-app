@@ -15,11 +15,59 @@ import { routes } from '../firebaseConfig';
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
+const MEMORY_CACHE_KEY = 'memoryCache';
+const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
   if (navigator.vibrate) {
     navigator.vibrate(50);
+  }
+};
+
+// Add these helper functions for cache management
+const getMemoryCache = () => {
+  try {
+    const cache = localStorage.getItem(MEMORY_CACHE_KEY);
+    if (!cache) return {};
+    return JSON.parse(cache);
+  } catch (e) {
+    console.error('Error reading memory cache:', e);
+    return {};
+  }
+};
+
+const setMemoryCache = (promptId, memories) => {
+  try {
+    const cache = getMemoryCache();
+    cache[promptId] = {
+      memories,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+  } catch (e) {
+    console.error('Error setting memory cache:', e);
+  }
+};
+
+const getCachedMemories = (promptId) => {
+  try {
+    const cache = getMemoryCache();
+    const entry = cache[promptId];
+    if (!entry) return null;
+
+    // Check if cache is expired
+    if (Date.now() - entry.timestamp > MEMORY_CACHE_EXPIRY) {
+      // Remove expired entry
+      delete cache[promptId];
+      localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+      return null;
+    }
+
+    return entry.memories;
+  } catch (e) {
+    console.error('Error getting cached memories:', e);
+    return null;
   }
 };
 
@@ -486,10 +534,8 @@ export default function ChatFeed({
       
       let promptToUse;
       if (message.sender === 'User') {
-        // If it's a user message, use it directly as the prompt
         promptToUse = message.text;
       } else {
-        // If it's a Ditto response, find the preceding user prompt
         if (index > 0 && messages[index - 1].sender === 'User') {
           promptToUse = messages[index - 1].text;
         } else {
@@ -499,16 +545,28 @@ export default function ChatFeed({
         }
       }
 
-      // Get the document ID using the prompt
-      const docId = await findConversationDocId(userID, promptToUse);
+      // Create a unique ID for this prompt
+      const promptId = `${userID}-${promptToUse}`;
 
+      // Check cache first
+      const cachedMemories = getCachedMemories(promptId);
+      if (cachedMemories) {
+        console.log('Using cached memories');
+        setRelatedMemories(cachedMemories);
+        setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
+        setActionOverlay(null);
+        setLoadingMemories(false);
+        return;
+      }
+
+      // If not in cache, proceed with fetching
+      const docId = await findConversationDocId(userID, promptToUse);
       if (!docId) {
         console.error('Could not find conversation document');
         setLoadingMemories(false);
         return;
       }
 
-      // Get the embedding for this conversation
       const embedding = await getConversationEmbedding(userID, docId);
       if (!embedding) {
         console.error('Could not find conversation embedding');
@@ -516,10 +574,7 @@ export default function ChatFeed({
         return;
       }
 
-      // Get the auth token
       const token = await auth.currentUser.getIdToken();
-
-      // Fetch related memories using the embedding
       const response = await fetch(routes.memories, {
         method: 'POST',
         headers: {
@@ -540,7 +595,12 @@ export default function ChatFeed({
       }
 
       const data = await response.json();
-      setRelatedMemories(data.memories || []);
+      const memories = data.memories || [];
+      
+      // Cache the results
+      setMemoryCache(promptId, memories);
+      
+      setRelatedMemories(memories);
       setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
       setActionOverlay(null);
     } catch (error) {
@@ -553,33 +613,38 @@ export default function ChatFeed({
   const handleDeleteMemory = async (memory, idx) => {
     try {
       const userID = auth.currentUser.uid;
-      
-      // Get the document ID for this memory
       const docId = await findConversationDocId(userID, memory.prompt);
       if (!docId) {
         console.error('Could not find conversation to delete');
         return;
       }
 
-      // Add to deleting set for animation
       setDeletingMemories(prev => new Set([...prev, idx]));
-
-      // Wait for animation
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Delete from Firestore
       const success = await deleteConversation(userID, docId);
       
       if (success) {
-        // Remove from related memories
-        setRelatedMemories(prev => prev.filter((_, i) => i !== idx));
+        // Update related memories
+        const newMemories = relatedMemories.filter((_, i) => i !== idx);
+        setRelatedMemories(newMemories);
+        
+        // Remove the entire cache entry for this prompt
+        const promptId = `${userID}-${memory.prompt}`;
+        const cache = getMemoryCache();
+        delete cache[promptId]; // Remove the entire cache entry
+        localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+        
+        // Close memory overlay if this was the last memory
+        if (newMemories.length === 0) {
+          setMemoryOverlay(null);
+        }
       } else {
         console.error('Failed to delete conversation');
       }
     } catch (error) {
       console.error('Error deleting memory:', error);
     } finally {
-      // Remove from deleting set
       setDeletingMemories(prev => {
         const next = new Set(prev);
         next.delete(idx);
