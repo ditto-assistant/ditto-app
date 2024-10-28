@@ -12,9 +12,15 @@
   --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
   --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
   --vh: 1vh;  /* This will be updated via JavaScript */
+  --header-gradient: linear-gradient(45deg, #4a0080, #0066cc);
+  --input-bg: #2a0052;
+  --accent-orange: #ff6d00;
+  --accent-yellow: #ffd600;
+  --accent-green: #00c853;
+  --chat-bubble-bg: #333333;
+  --chat-text-color: #FFFFFF;
 }
 
-/* Add these background-related styles at the top, after :root */
 body, html { 
     background: linear-gradient(to bottom, 
         #4a0080 0%,
@@ -53,25 +59,33 @@ body, html {
     transition: opacity 0.3s ease;
 }
 
-/* Update the App class to include the gradient background */
+body:not(.login-page) {
+  background-color: #2f3136;
+  color: var(--text-color);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .App {
-    display: flex;
-    flex-direction: column;
-    height: 100vh; /* Fallback */
-    height: calc(var(--vh, 1vh) * 100);
-    width: 100vw;
-    background: linear-gradient(to bottom, 
-        #4a0080 0%,
-        #000066 40%,
-        #1a1a1a 80%,
-        #000000 100%
-    );
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    overscroll-behavior: none;
-    touch-action: pan-y pinch-zoom;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Fallback */
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100vw;
+  background: linear-gradient(to bottom, 
+    #4a0080 0%,
+    #000066 40%,
+    #1a1a1a 80%,
+    #000000 100%
+  );
+  overflow: hidden;
+  position: fixed; /* Add fixed positioning */
+  top: 0;
+  left: 0;
+  overscroll-behavior: none;
+  touch-action: pan-y pinch-zoom;  /* Allow vertical scrolling and pinch zoom only */
 }
 
 .App-header {
@@ -81,7 +95,7 @@ body, html {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background-color: rgba(32, 34, 37, 0.9);
+  background: var(--header-gradient);
   backdrop-filter: blur(10px);
   z-index: 10;
   border-top-left-radius: 0px;
@@ -151,11 +165,15 @@ body, html {
   box-sizing: border-box;
   overscroll-behavior: contain;  /* Prevent pull to refresh while allowing normal scroll */
   -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
+  position: relative;
+  z-index: 1;
 }
 
 .App-footer {
   flex-shrink: 0;
-  background-color: rgba(32, 34, 37, 0.9);
+  position: relative;
+  z-index: 1;
+  background: var(--input-bg);
   backdrop-filter: blur(10px);
   border-top-left-radius: var(--border-radius);
   border-top-right-radius: var(--border-radius);
@@ -398,3 +416,72 @@ body, html {
 }
 
 /* ... (add other camera-related styles as needed) */
+
+/* Update existing body and html styles */
+body, html { 
+    background: linear-gradient(to bottom, 
+        #4a0080 0%,
+        #000066 40%,
+        #1a1a1a 80%,
+        #000000 100%
+    ); 
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    touch-action: none;
+}
+
+/* Add background animation */
+.background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.1; 
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    background-color: #ffffff;
+    border-radius: 50%;
+    opacity: 0; 
+    transition: opacity 0.3s ease;
+}
+
+/* Update App-footer styles for the new gradient button */
+.App-footer button {
+    color: #fff;
+    border: none;
+    border-radius: 50%; 
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease; 
+    background: linear-gradient(45deg, #00c853, #ffd600, #2196f3, #4a0080, #0066cc, #9900cc);
+    background-size: 300% 300%;
+    animation: gradientFlow 6s linear infinite; 
+}
+
+.App-footer button:hover {
+    transform: scale(1.1); 
+}
+
+/* Add gradient animation keyframes */
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 300% 0%;
+    }
+}
+

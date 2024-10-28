@@ -323,9 +323,6 @@ export default function ChatFeed({
         key={index}
         className={`message ${isUserMessage ? 'sent' : 'received'}`}
       >
-        {!isUserMessage && (
-          <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
-        )}
         <div className="message-content">
           {renderMessageText(message.text, index)}
           {reactions[index] && reactions[index].length > 0 && (
@@ -336,9 +333,6 @@ export default function ChatFeed({
             </div>
           )}
         </div>
-        {isUserMessage && (
-          <img src={profilePic} alt='User' className='avatar user-avatar' />
-        )}
       </div>
     );
   };

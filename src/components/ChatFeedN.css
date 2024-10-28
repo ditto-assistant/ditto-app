@@ -23,21 +23,14 @@
     max-width: var(--max-content-width);
     margin: 0 auto;
     box-sizing: border-box;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 /* Message container */
 .message {
     margin-bottom: var(--message-spacing);
     display: flex;
-    align-items: flex-end;
     padding: 0 var(--message-spacing);
     box-sizing: border-box;
-    position: relative;
-    width: 100%;
-    animation: messageAppear 0.3s ease-out;
 }
 
 .message.received {
@@ -48,26 +41,12 @@
     justify-content: flex-end;
 }
 
-/* Avatar styles - preserved from original */
+/* Avatar styles */
 .avatar {
-    width: 2.4em;
-    height: 2.4em;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 0 8px;
     object-fit: cover;
-    flex-shrink: 0;
-}
-
-.user-avatar {
-    background-color: #ffffff;
-    order: 2; /* Places user avatar after message content */
-}
-
-.ditto-avatar {
-    background-color: transparent;
-    order: -1; /* Places Ditto avatar before message content */
 }
 
 /* Message content */
@@ -81,8 +60,6 @@
     max-width: 70%;
     min-width: 40px;
     word-wrap: break-word;
-    transition: all 0.15s ease;
-    order: 1; /* Places message content between avatars */
 }
 
 /* Content type specific styles */
@@ -109,7 +86,6 @@
 
 .message.received .message-content {
     border-bottom-left-radius: 5px;
-    background-color: #40444b;
 }
 
 .message.sent .message-content {
@@ -128,7 +104,7 @@
     border-radius: inherit;
     z-index: -1;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.3s ease;
 }
 
 .message.received .message-content::before {
@@ -141,6 +117,7 @@
        linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
     mask-composite: exclude;
+    animation: gradientFlow 6s linear infinite;
 }
 
 .message.sent .message-content::before {
@@ -153,15 +130,10 @@
        linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
     mask-composite: exclude;
+    animation: gradientFlow 6s linear infinite;
 }
 
-/* Hover animation */
-.message-content:hover::before {
-    opacity: 1;
-    animation: gradientFlow 4.5s linear infinite; /* Increased from 3s to 4.5s */
-}
-
-/* Animation keyframes */
+/* Keep existing animations and utility styles */
 @keyframes gradientFlow {
     0% {
         background-position: 0% 0%;
@@ -169,6 +141,10 @@
     100% {
         background-position: 300% 0%;
     }
+}
+
+.message-content:hover::before {
+    opacity: 1;
 }
 
 /* Typing indicator */
@@ -217,118 +193,14 @@
     font-size: 12px;
 }
 
-/* Code container styles */
-.code-container {
-    position: relative;
-}
-
-.copy-button {
-    background-color: rgba(71, 82, 196, 0.9);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-}
-
-.copy-button:hover {
-    background-color: rgba(71, 82, 196, 1);
-    transform: translateY(-1px);
-}
-
-.code-block-button {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-}
-
-.inline-code-button {
-    margin-left: 8px;
-}
-
-/* Image overlay styles */
+/* Utility styles for overlays */
+.reaction-overlay,
+.action-overlay,
 .image-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5000;
-    backdrop-filter: blur(5px);
-}
-
-.image-overlay-content {
-    max-width: 90%;
-    max-height: 90vh;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.image-overlay-controls {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
-    pointer-events: none;
-}
-
-.image-control-button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    transition: all 0.2s ease;
-    pointer-events: auto;
-}
-
-.image-control-button:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-    transform: scale(1.1);
-}
-
-/* Utility classes */
-.copied-notification {
-    position: fixed;
-    bottom: 6.0em;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 128, 0, 0.75);
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
     z-index: 1000;
 }
 
-/* Media queries */
+/* Media queries for responsive design */
 @media screen and (max-width: 768px) {
     :root {
         --message-spacing: 12px;
@@ -352,12 +224,5 @@
 
     .message-content {
         max-width: 90%;
-    }
-}
-
-/* Prevent text selection on mobile */
-@media (pointer: coarse) {
-    .message-content {
-        user-select: none;
     }
 }
