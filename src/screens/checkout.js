@@ -147,7 +147,7 @@ const Checkout = () => {
                         <div style={styles.checkoutButtonContainer}>
                             <CheckoutForm
                                 usd={amount}
-                                successURL={`${window.location.origin}/success`}
+                                successURL={`${window.location.href}/success`}
                                 cancelURL={window.location.href}
                             />
                         </div>
