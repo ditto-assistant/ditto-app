@@ -8,7 +8,7 @@ import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCopy, FiDownload } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
-import { FaBrain, FaTrash } from 'react-icons/fa';
+import { FaBrain, FaTrash, FaSpinner } from 'react-icons/fa';
 import { findConversationDocId, getConversationEmbedding, deleteConversation } from '../control/memory';
 import { routes } from '../firebaseConfig';
 import { textEmbed } from '../api/LLM';  // Add this import
@@ -856,6 +856,20 @@ export default function ChatFeed({
     const message = messages[index];
     const userID = auth.currentUser.uid;
     
+    // Show confirmation overlay immediately with loading state
+    setDeleteConfirmation({
+      memory: {
+        prompt: message.sender === 'Ditto' && index > 0 ? messages[index - 1].text : message.text,
+        response: message.sender === 'Ditto' ? message.text : null
+      },
+      idx: index,
+      isMessageDelete: true,
+      isLoading: true // Add loading state
+    });
+    
+    // Close the action overlay
+    setActionOverlay(null);
+    
     try {
       // If this is a response, use the previous message (prompt) for embedding
       const promptToUse = message.sender === 'Ditto' && index > 0 ? 
@@ -864,28 +878,26 @@ export default function ChatFeed({
       // Get embedding for the prompt
       const embedding = await textEmbed(promptToUse);
       if (!embedding) {
-        console.error('Could not generate embedding for prompt');
-        return;
+        throw new Error('Could not generate embedding for prompt');
       }
 
       const docId = await findConversationDocId(userID, embedding, message.sender === 'Ditto' ? message.text : null);
       
-      // Show confirmation overlay
-      setDeleteConfirmation({
-        memory: {
-          prompt: promptToUse,
-          response: message.sender === 'Ditto' ? message.text : null
-        },
-        idx: index,
+      // Update confirmation overlay with docId
+      setDeleteConfirmation(prev => ({
+        ...prev,
         docId,
-        isMessageDelete: true // Flag to identify this is from message overlay
-      });
+        isLoading: false
+      }));
     } catch (error) {
       console.error('Error preparing message deletion:', error);
+      // Update confirmation overlay with error state
+      setDeleteConfirmation(prev => ({
+        ...prev,
+        error: 'Failed to find message in database',
+        isLoading: false
+      }));
     }
-    
-    // Close the action overlay
-    setActionOverlay(null);
   };
 
   return (
@@ -1054,21 +1066,26 @@ export default function ChatFeed({
         </div>
       )}
       {deleteConfirmation && (
-        <div 
-          className="delete-confirmation-overlay"
-          onClick={() => setDeleteConfirmation(null)} // Close when clicking the overlay
-        >
-          <div 
-            className="delete-confirmation-content"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the content
-          >
-            <div className="delete-confirmation-title">Delete Memory?</div>
+        <div className="delete-confirmation-overlay">
+          <div className="delete-confirmation-content">
+            <div className="delete-confirmation-title">Delete Message?</div>
             <div className="delete-confirmation-message">
-              Are you sure you want to delete this conversation? This action cannot be undone.
+              Are you sure you want to delete this message? This action cannot be undone.
             </div>
-            <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
-              Document ID: {deleteConfirmation.docId || 'Not found'}
-            </div>
+            {deleteConfirmation.isLoading ? (
+              <div className="delete-confirmation-loading">
+                <FaSpinner className="spinner" />
+                <div>Finding message in database...</div>
+              </div>
+            ) : deleteConfirmation.error ? (
+              <div className="delete-confirmation-docid not-found">
+                {deleteConfirmation.error}
+              </div>
+            ) : (
+              <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
+                Document ID: {deleteConfirmation.docId || 'Not found'}
+              </div>
+            )}
             <div className="delete-confirmation-buttons">
               <button 
                 className="delete-confirmation-button cancel"
@@ -1079,7 +1096,7 @@ export default function ChatFeed({
               <button 
                 className="delete-confirmation-button confirm"
                 onClick={confirmDelete}
-                disabled={!deleteConfirmation.docId}
+                disabled={deleteConfirmation.isLoading || !deleteConfirmation.docId}
               >
                 Delete
               </button>

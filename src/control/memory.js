@@ -205,7 +205,7 @@ export const findConversationDocId = async (userID, embedding, response) => {
       body: JSON.stringify({
         userId: userID,
         vector: embedding,
-        k: 20 // Get more results to find all exact matches
+        k: 50 // Get more results to find all exact matches
       })
     });
 

@@ -1140,3 +1140,32 @@
   background-color: rgba(255, 68, 68, 0.2);
 }
 
+/* Add loading spinner styles */
+.delete-confirmation-loading {
+  font-family: monospace;
+  background-color: #2f3136;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  color: #a0a0a0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  font-size: 24px;
+  color: #3941b8;
+}
+
