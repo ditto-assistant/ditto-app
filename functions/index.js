@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
 const express = require('express');
 const bodyParser = require('body-parser');
-const { getFirestore } = require('firebase-admin/firestore');
 const admin = require('firebase-admin');
+const { Firestore } = require('@google-cloud/firestore');
 
 // Initialize Firebase Admin with service account
 const serviceAccount = require('./serviceAccount.json');
@@ -11,7 +11,11 @@ admin.initializeApp({
   databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
 });
 
-const db = getFirestore();
+// Initialize Firestore with vector search capabilities
+const db = new Firestore({
+  projectId: serviceAccount.project_id,
+  credentials: serviceAccount
+});
 
 // Initialize express app
 const app = express();
@@ -61,31 +65,46 @@ app.post('/get-memories', authenticateUser, async (req, res) => {
     try {
         const { userId, vector, k = 5 } = req.body;
         console.log(`Request parameters: userId=${userId}, k=${k}, vector length=${vector?.length}`);
-        
+        // Validate vector dimensions
+        if (vector.length > 2048) {
+            console.log("Vector dimension exceeds maximum allowed (2048)");
+            return res.status(400).json({ error: 'Vector dimension exceeds maximum allowed (2048)' });
+        }
+
+        // Validate k (number of neighbors)
+        if (k > 1000) {
+            console.log("Number of requested neighbors exceeds maximum allowed (1000)");
+            return res.status(400).json({ error: 'Number of requested neighbors exceeds maximum allowed (1000)' });
+        }
         if (!userId || !vector) {
             console.log("Missing parameters:", { userId: !!userId, vector: !!vector });
             return res.status(400).json({ error: 'Missing required parameters' });
         }
 
-        // First try to get the collection reference
-        console.log(`Accessing collection: memory/${userId}/conversations`);
+        // Get the conversations collection reference
         const memoriesRef = db.collection('memory').doc(userId).collection('conversations');
         
-        // Get documents normally first as a fallback
-        console.log("Fetching documents...");
-        const querySnapshot = await memoriesRef
-            .orderBy('timestamp', 'desc')
-            .limit(k)
-            .get();
+        // Create vector query using findNearest
+        const vectorQuery = memoriesRef.findNearest({
+            vectorField: 'embedding_vector',
+            queryVector: vector,
+            limit: k,
+            distanceMeasure: 'COSINE',
+            distanceResultField: 'vector_distance'
+        });
 
+        console.log("Executing vector similarity search...");
+        const querySnapshot = await vectorQuery.get();
+        
         console.log(`Retrieved ${querySnapshot.size} documents`);
         
         const memories = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            console.log(`Processing document ${doc.id}, has embedding: ${!!data.embedding}`);
-            const similarityScore = cosineSimilarity(vector, data.embedding || []);
-            console.log(`Calculated similarity score: ${similarityScore}`);
+            // Calculate similarity score (1 - distance for COSINE)
+            // COSINE distance ranges from 0 (identical) to 2 (opposite)
+            const similarityScore = 1 - (data.vector_distance || 0);
+            console.log(`Processing document ${doc.id}, similarity score: ${similarityScore}`);
             memories.push({
                 id: doc.id,
                 score: similarityScore,
@@ -93,11 +112,7 @@ app.post('/get-memories', authenticateUser, async (req, res) => {
             });
         });
 
-        console.log(`Sorting ${memories.length} memories by similarity score`);
-        memories.sort((a, b) => b.score - a.score);
-
         console.log("Successfully processed request");
-
         return res.status(200).json({ memories });
     } catch (error) {
         console.error("Error getting memories:", error);
@@ -109,22 +124,6 @@ app.post('/get-memories', authenticateUser, async (req, res) => {
         });
     }
 });
-
-// Add cosine similarity function
-function cosineSimilarity(a, b) {
-    try {
-        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
-            return 0;
-        }
-        const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
-        const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
-        const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
-        return dot / (magA * magB) || 0;
-    } catch (e) {
-        console.error('Error calculating similarity:', e);
-        return 0;
-    }
-}
 
 // Add this test endpoint
 app.get('/test', (req, res) => {
