@@ -16,39 +16,18 @@ const db = getFirestore();
 // Initialize express app
 const app = express();
 
-// Middleware setup
-let originList = [
-    'https://ditto-app-dev.web.app',
-    'https://ditto-app-dev.firebaseapp.com', 
-    'https://assistant.heyditto.ai',
-    'http://localhost:3000'
-];
+// Replace the simple CORS middleware with this updated version
+const cors = require('cors');
+app.use(cors({
+    origin: true, // Allows all origins
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
-// Replace the existing CORS setup with this more explicit configuration
-app.use((req, res, next) => {
-    const allowedOrigins = [
-        'https://ditto-app-dev.web.app',
-        'https://ditto-app-dev.firebaseapp.com', 
-        'https://assistant.heyditto.ai',
-        'http://localhost:3000'
-    ];
-
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    next();
-});
+// Apply middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Keep the logging middleware
 app.use((req, res, next) => {
@@ -57,10 +36,6 @@ app.use((req, res, next) => {
     console.log('Request headers:', req.headers);
     next();
 });
-
-// Apply CORS middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Add middleware to verify Firebase auth token
 const authenticateUser = async (req, res, next) => {
@@ -123,12 +98,6 @@ app.post('/get-memories', authenticateUser, async (req, res) => {
 
         console.log("Successfully processed request");
 
-        // Add these headers before sending the response
-        res.set('Access-Control-Allow-Origin', req.headers.origin);
-        res.set('Access-Control-Allow-Credentials', 'true');
-        res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-
         return res.status(200).json({ memories });
     } catch (error) {
         console.error("Error getting memories:", error);
@@ -156,6 +125,11 @@ function cosineSimilarity(a, b) {
         return 0;
     }
 }
+
+// Add this test endpoint
+app.get('/test', (req, res) => {
+  res.json({ message: 'CORS test successful' });
+});
 
 // Export the Express app as a Firebase Cloud Function
 exports.api = functions.https.onRequest(app);

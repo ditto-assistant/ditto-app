@@ -81,7 +81,6 @@ export const getLongTermMemory = async (userID, embedding, k) => {
       return "No history! :)";
     }
 
-    // Get the Firebase auth token
     const user = auth.currentUser;
     console.log("Current user exists:", !!user);
     
@@ -90,14 +89,18 @@ export const getLongTermMemory = async (userID, embedding, k) => {
     }
     
     const token = await user.getIdToken();
-
+    
+    // Modified fetch request
     const response = await fetch(routes.memories, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Origin': window.location.origin
       },
+      mode: 'cors',
+      credentials: 'same-origin',
       body: JSON.stringify({
         userId: userID,
         vector: embedding,
