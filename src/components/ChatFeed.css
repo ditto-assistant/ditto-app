@@ -70,7 +70,7 @@
     order: -1; /* Places Ditto avatar before message content */
 }
 
-/* Message content */
+/* Message content base styles */
 .message-content {
     padding: var(--content-padding);
     border-radius: 25px;
@@ -82,42 +82,12 @@
     min-width: 40px;
     word-wrap: break-word;
     transition: all 0.15s ease;
-    order: 1; /* Places message content between avatars */
+    order: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Content type specific styles */
-.message-content img {
-    max-width: 100%;
-    border-radius: 8px;
-    margin: 4px 0;
-}
-
-.code-block {
-    max-width: 100%;
-    overflow-x: auto;
-    margin: 4px 0;
-    border-radius: 4px;
-    background-color: #282c34;
-    padding: 12px;
-}
-
-.inline-code {
-    padding: 2px 6px;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-.message.received .message-content {
-    border-bottom-left-radius: 5px;
-    background-color: #40444b;
-}
-
-.message.sent .message-content {
-    border-bottom-right-radius: 5px;
-    background-color: #1a73e8;
-}
-
-/* Gradient border effect */
+/* Update gradient border effect */
 .message-content::before {
     content: '';
     position: absolute;
@@ -125,16 +95,36 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    border-radius: inherit;
     z-index: -1;
     opacity: 0;
     transition: opacity 0.15s ease;
+    border: 2px solid transparent;
 }
 
+/* Update specific message styles */
+.message.received .message-content {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 25px;
+    background-color: #40444b;
+}
+
+.message.sent .message-content {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 5px;
+    background-color: #1a73e8;
+}
+
+/* Update gradient borders */
 .message.received .message-content::before {
-    border: 2px solid transparent;
-    background: 
-        linear-gradient(90deg, #4a0080, #0066cc, #9900cc, #4a0080) border-box;
+    border-top-left-radius: 27px;    /* Slightly larger than content */
+    border-top-right-radius: 27px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 27px;
+    background: linear-gradient(90deg, #4a0080, #0066cc, #9900cc, #4a0080) border-box;
     background-size: 300% 100%;
     -webkit-mask: 
        linear-gradient(#fff 0 0) padding-box, 
@@ -144,9 +134,11 @@
 }
 
 .message.sent .message-content::before {
-    border: 2px solid transparent;
-    background: 
-        linear-gradient(90deg, #00c853, #ffd600, #2196f3, #00c853) border-box;
+    border-top-left-radius: 27px;    /* Slightly larger than content */
+    border-top-right-radius: 27px;
+    border-bottom-left-radius: 27px;
+    border-bottom-right-radius: 7px;
+    background: linear-gradient(90deg, #00c853, #ffd600, #2196f3, #00c853) border-box;
     background-size: 300% 100%;
     -webkit-mask: 
        linear-gradient(#fff 0 0) padding-box, 
@@ -155,10 +147,53 @@
     mask-composite: exclude;
 }
 
+/* Animation for new messages */
+.message:last-of-type .message-content::before {
+    opacity: 1;
+    animation: gradientFlow 4.5s linear forwards;
+}
+
 /* Hover animation */
 .message-content:hover::before {
     opacity: 1;
-    animation: gradientFlow 4.5s linear infinite; /* Increased from 3s to 4.5s */
+    animation: gradientFlow 4.5s linear infinite;
+}
+
+/* Update keyframes */
+@keyframes gradientFlow {
+    0% {
+        opacity: 1;
+        background-position: 0% 0%;
+    }
+    100% {
+        opacity: 0;
+        background-position: 300% 0%;
+    }
+}
+
+/* Add animation delay to ensure gradient shows */
+.message:last-of-type {
+    animation: messageAppear 0.3s ease-out;
+}
+
+.message:last-of-type .message-content::before {
+    animation-delay: 0.1s;
+}
+
+/* Add message appear animation */
+.message:last-child {
+    animation: messageAppear 0.3s ease-out;
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Animation keyframes */
@@ -171,34 +206,49 @@
     }
 }
 
+/* Show gradient on hover */
+.message-content:hover::before {
+    opacity: 1;
+    animation: gradientFlow 4.5s linear infinite;
+}
+
+/* Show gradient on new messages */
+.message:last-child .message-content::before {
+    opacity: 1;
+    animation: gradientFlow 4.5s linear forwards;
+}
+
 /* Typing indicator */
 .typing-indicator {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    justify-content: center;
     padding: 4px;
-    min-height: 20px;
+    min-height: 40px;
 }
 
-.typing-dot {
-    width: 8px;
-    height: 8px;
-    background: #ffffff;
+/* Update typing indicator styles */
+.typing-avatar {
+    width: 2.4em;
+    height: 2.4em;
     border-radius: 50%;
-    opacity: 0.6;
-    animation: bounce 0.5s infinite alternate;
+    object-fit: cover;
+    animation: typingAvatarSpin 1.2s linear infinite;
 }
 
-@keyframes bounce {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-4px); }
+/* Remove the container styles */
+.typing-avatar-container {
+    display: none;
 }
 
-.typing-dot:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dot:nth-child(3) {
-    animation-delay: 0.4s;
+/* Keep the spin animation */
+@keyframes typingAvatarSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Reactions */
@@ -361,3 +411,125 @@
         user-select: none;
     }
 }
+
+/* Add the spin animation keyframes */
+@keyframes dittoSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(1080deg);
+    }
+}
+
+/* Update the ditto-avatar class */
+.ditto-avatar {
+    background-color: transparent;
+    order: -1;
+}
+
+/* Add animation for new messages - target all Ditto avatars */
+.message.received {
+    animation: messageAppear 0.3s ease-out;
+}
+
+.message.received .ditto-avatar {
+    animation: dittoSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add animation for existing avatars when new message appears */
+.chat-feed:has(.message.received:last-child) .ditto-avatar {
+    animation: dittoSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Update the spin animation keyframes */
+@keyframes dittoSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(1080deg);
+    }
+}
+
+/* Update the animation trigger */
+.message.received:last-child:not(:only-child) ~ .message.received .ditto-avatar,
+.message.received:last-child .ditto-avatar {
+    animation: dittoSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Update message content styles for images */
+.message-content {
+    padding: var(--content-padding);
+    border-radius: 25px;
+    display: inline-block;
+    background-color: var(--chat-bubble-bg);
+    color: var(--chat-text-color);
+    position: relative;
+    max-width: 70%;
+    min-width: 40px;
+    word-wrap: break-word;
+    transition: all 0.15s ease;
+    order: 1;
+}
+
+/* Update image styles within chat bubbles */
+.chat-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px;
+    margin: 5px 0;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+/* Adjust message content when it contains only an image */
+.message-content:has(> .chat-image:only-child) {
+    padding: 8px;
+    background-color: transparent;
+}
+
+/* Media queries for responsive image sizing */
+@media screen and (max-width: 768px) {
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .chat-image {
+        max-height: 300px; /* Limit image height on mobile */
+        object-fit: contain;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .chat-image {
+        max-height: 400px; /* Larger max height on desktop */
+        object-fit: contain;
+    }
+}
+
+/* Update typing avatar animation */
+.typing-avatar {
+    animation: typingAvatarSpin 1.2s linear infinite;
+}
+
+@keyframes typingAvatarSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Remove any animation-fill-mode or animation-iteration-count that might stop the animation */
+.message.received .ditto-avatar.typing-avatar {
+    animation: typingAvatarSpin 1.2s linear infinite;
+}
+
+/* Make sure the typing indicator container doesn't interfere with the animation */
+.message.received:last-child .typing-avatar {
+    animation: typingAvatarSpin 1.2s linear infinite;
+}
+

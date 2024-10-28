@@ -24,6 +24,7 @@
     background-color: #40444b; /* Changed to the lighter grey color */
     border-radius: 10px;
     position: relative;
+    align-items: center; /* Add this */
 }
 
 .InputWrapper {
@@ -97,24 +98,47 @@
     }
 }
 
+/* Update the Submit button styles */
 .Submit {
-    background-color: #4752c4;
+    color: #fff;
     border: none;
-    border-radius: 10px;
-    color: white;
-    padding: 10px 20px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     margin-left: 10px;
-    margin-right: -5px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: transform 0.3s ease;
+    background: linear-gradient(45deg, #00c853, #ffd600, #2196f3, #4a0080, #0066cc, #9900cc);
+    background-size: 300% 300%;
+    animation: gradientFlow 12s linear infinite; /* Changed from 8s to 12s */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    align-self: center;
+}
+
+.Submit svg {
+    width: 20px;
+    height: 20px;
+    transform: rotate(35deg); /* Changed from 32deg to 35deg */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .Submit:hover {
-    background-color: #3c45a5;
+    transform: scale(1.1);
 }
 
-.Submit:active {
-    background-color: #3941b8;
+/* Add the gradient animation keyframes */
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 0%;
+    }
+      100% {
+        background-position: 300% 0%;
+    }
 }
 
 .ImagePreview {

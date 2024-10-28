@@ -12,6 +12,7 @@ import { IoMdArrowBack } from 'react-icons/io';
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
+const DEFAULT_DITTO_AVATAR = '/icons/fancy-ditto.png'; // Updated path
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
@@ -49,7 +50,7 @@ export default function ChatFeed({
     return localStorage.getItem(USER_AVATAR_KEY) || '../user_placeholder.png';
   });
   const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || '../logo512.png';
+    return localStorage.getItem(DITTO_AVATAR_KEY) || DEFAULT_DITTO_AVATAR;
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -60,7 +61,10 @@ export default function ChatFeed({
       if (quick) {
         bottomRef.current.scrollIntoView();
       } else {
-        bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        bottomRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'end'
+        });
       }
     }
   };
@@ -69,29 +73,29 @@ export default function ChatFeed({
     if (startAtBottom) {
       scrollToBottomOfFeed(true);
     } else {
-      if (scrollToBottom) {
+      if (scrollToBottom || messages.length > 0) {
         const timeoutId = setTimeout(() => {
           scrollToBottomOfFeed();
-        }, 500);
+        }, 100); // Reduced from 500ms to 100ms for quicker response
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom, isTyping]); // Added isTyping as dependency
 
   useEffect(() => {
     // Cache Ditto avatar
-    fetch('../logo512.png')
-      .then(response => response.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64data = reader.result;
-          localStorage.setItem(DITTO_AVATAR_KEY, base64data);
-          setDittoAvatar(base64data);
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch(error => console.error('Error caching Ditto avatar:', error));
+    fetch(DEFAULT_DITTO_AVATAR)  // Updated path
+        .then(response => response.blob())
+        .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64data = reader.result;
+                localStorage.setItem(DITTO_AVATAR_KEY, base64data);
+                setDittoAvatar(base64data);
+            };
+            reader.readAsDataURL(blob);
+        })
+        .catch(error => console.error('Error caching Ditto avatar:', error));
 
     // Cache user avatar
     if (auth.currentUser) {
@@ -400,18 +404,24 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
+  // Add this useEffect to handle new messages
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage) {
+      scrollToBottomOfFeed();
+    }
+  }, [messages.length]); // Only trigger on message count change
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
       {isTyping && (
         <div className="message received">
-          <div className="message-content">
-            <div className='typing-indicator'>
-              <div className='typing-dot' style={{ '--i': 0 }} />
-              <div className='typing-dot' style={{ '--i': 1 }} />
-              <div className='typing-dot' style={{ '--i': 2 }} />
-            </div>
-          </div>
+          <img 
+            src={dittoAvatar} 
+            alt='Ditto typing' 
+            className='avatar ditto-avatar typing-avatar'
+          />
         </div>
       )}
       {hasInputField && <input type='text' className='chat-input-field' />}

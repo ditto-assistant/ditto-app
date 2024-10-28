@@ -10,6 +10,7 @@ import { useDittoActivation } from '@/hooks/useDittoActivation';
 import { useIntentRecognition } from '@/hooks/useIntentRecognition';
 import { textEmbed } from '../api/LLM';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FiSend } from 'react-icons/fi';
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
@@ -406,7 +407,9 @@ export default function SendMessage({
                     />
                 </div>
             </div>
-            <input className='Submit' type='submit' value='Send' />
+            <button className='Submit' type='submit'>
+                <FiSend />
+            </button>
 
             {image && (
                 <div className='ImagePreview' onClick={toggleImageEnlarge}>

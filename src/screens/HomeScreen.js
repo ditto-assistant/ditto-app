@@ -368,18 +368,16 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
       <div className="App-body" ref={appBodyRef} onClick={handleCloseMediaOptions}>
-        <div className="chat-card">
-          <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
-            <ChatFeed
-              messages={conversation.messages}
-              showSenderName={false}
-              histCount={histCount}
-              isTyping={conversation.is_typing}
-              scrollToBottom={true}
-              startAtBottom={startAtBottom}
-            />
-          </Suspense>
-        </div>
+        <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
+          <ChatFeed
+            messages={conversation.messages}
+            showSenderName={false}
+            histCount={histCount}
+            isTyping={conversation.is_typing}
+            scrollToBottom={true}
+            startAtBottom={startAtBottom}
+          />
+        </Suspense>
       </div>
       <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>

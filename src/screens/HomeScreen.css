@@ -149,8 +149,9 @@ body, html {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  overscroll-behavior: contain;  /* Prevent pull to refresh while allowing normal scroll */
-  -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background-color: transparent;
 }
 
 .App-footer {
@@ -315,16 +316,6 @@ body, html {
 }
 
 /* Add these new styles */
-.chat-card {
-  flex: 1;
-  overflow-y: auto;
-  background-color: rgba(40, 44, 52, 0.6);
-  border-radius: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
 .EnlargedImageOverlay {
     position: fixed;
     top: 0;
@@ -398,3 +389,4 @@ body, html {
 }
 
 /* ... (add other camera-related styles as needed) */
+
