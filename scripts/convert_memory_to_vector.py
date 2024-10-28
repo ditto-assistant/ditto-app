@@ -91,7 +91,7 @@ def update_user_conversations(user_id):
 
 if __name__ == "__main__":
     # Replace with actual user ID
-    user_id = ""
+    user_id = "h8tb3unptmUkpqjbe9iDoEG1rOF3"
     get_user_conversations(user_id)
     update_user_conversations(user_id)
 

@@ -1,198 +1,169 @@
+const functions = require('firebase-functions');
 const express = require('express');
-const cors = require('cors');
 const bodyParser = require('body-parser');
+const { getFirestore } = require('firebase-admin/firestore');
+const admin = require('firebase-admin');
 
-// iport dotenv 
-require('dotenv').config({ path: '.env', override: true });
+// Initialize Firebase Admin with service account
+const serviceAccount = require('./serviceAccount.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
+});
 
-// import ExampleStore
-const ExampleStore = require('./modules/ExampleStore');
+const db = getFirestore();
 
 // Initialize express app
 const app = express();
 
 // Middleware setup
 let originList = [
-    'http://localhost:3000', 'https://ditto-app-dev.web.app',
-    'https://ditto-app-dev.firebaseapp.com', 'https://assistant.heyditto.ai'];
-if (process.env.NODE_ENV === 'production') {
-    // remove localhost from the list
-    originList = originList.slice(1);
-}
-app.use(cors({
-    origin: originList,
-    credentials: true
-}));
+    'https://ditto-app-dev.web.app',
+    'https://ditto-app-dev.firebaseapp.com', 
+    'https://assistant.heyditto.ai',
+    'http://localhost:3000'
+];
+
+// Replace the existing CORS setup with this more explicit configuration
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        'https://ditto-app-dev.web.app',
+        'https://ditto-app-dev.firebaseapp.com', 
+        'https://assistant.heyditto.ai',
+        'http://localhost:3000'
+    ];
+
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    next();
+});
+
+// Keep the logging middleware
+app.use((req, res, next) => {
+    console.log('Incoming request from origin:', req.headers.origin);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
+    next();
+});
+
+// Apply CORS middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// OPENAI API Key
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY || "";
-const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID || "";
+// Add middleware to verify Firebase auth token
+const authenticateUser = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
+    }
 
-// Initialize the ExampleStore
-const exampleStore = new ExampleStore(
-    key = OPENAI_API_KEY,
-);
+    const idToken = authHeader.split('Bearer ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Error verifying auth token:', error);
+    return res.status(401).json({ error: 'Unauthorized - Invalid token' });
+  }
+};
 
-// OPENAI Chat Endpoint
-app.post('/openai-chat', async (req, res) => {
-    console.log("Getting chat response");
+// Get Memories Endpoint
+app.post('/get-memories', authenticateUser, async (req, res) => {
+    console.log("Getting memories - Starting request processing");
     try {
-        const { userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "", usersOpenaiKey = "", balance = 0 } = req.body;
-        let responseMessage = "";
-
-        const keyToUse = usersOpenaiKey || (Number(balance) > 0 ? OPENAI_API_KEY : "");
-        if (!keyToUse) {
-            responseMessage = "You have no API key or your balance is too low.";
-            return res.status(400).json({ response: responseMessage });
+        const { userId, vector, k = 5 } = req.body;
+        console.log(`Request parameters: userId=${userId}, k=${k}, vector length=${vector?.length}`);
+        
+        if (!userId || !vector) {
+            console.log("Missing parameters:", { userId: !!userId, vector: !!vector });
+            return res.status(400).json({ error: 'Missing required parameters' });
         }
 
-        const withImage = imageURL !== "";
-        const content = withImage
-            ? [{ "type": "text", "text": userPrompt }, { "type": "image_url", "image_url": { "url": imageURL } }]
-            : userPrompt;
+        // First try to get the collection reference
+        console.log(`Accessing collection: memory/${userId}/conversations`);
+        const memoriesRef = db.collection('memory').doc(userId).collection('conversations');
+        
+        // Get documents normally first as a fallback
+        console.log("Fetching documents...");
+        const querySnapshot = await memoriesRef
+            .orderBy('timestamp', 'desc')
+            .limit(k)
+            .get();
 
-        const apiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${keyToUse}`
-            },
-            body: JSON.stringify({
-                "model": model,
-                "messages": [
-                    { "role": "system", "content": systemPrompt },
-                    { "role": "user", "content": content }
-                ]
-            })
+        console.log(`Retrieved ${querySnapshot.size} documents`);
+        
+        const memories = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            console.log(`Processing document ${doc.id}, has embedding: ${!!data.embedding}`);
+            const similarityScore = cosineSimilarity(vector, data.embedding || []);
+            console.log(`Calculated similarity score: ${similarityScore}`);
+            memories.push({
+                id: doc.id,
+                score: similarityScore,
+                ...data
+            });
         });
 
-        const data = await apiResponse.json();
-        responseMessage = data.choices[0].message.content;
+        console.log(`Sorting ${memories.length} memories by similarity score`);
+        memories.sort((a, b) => b.score - a.score);
 
-        return res.status(200).json({ response: responseMessage });
+        console.log("Successfully processed request");
+
+        // Add these headers before sending the response
+        res.set('Access-Control-Allow-Origin', req.headers.origin);
+        res.set('Access-Control-Allow-Credentials', 'true');
+        res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+
+        return res.status(200).json({ memories });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error("Error getting memories:", error);
+        console.error("Stack trace:", error.stack);
+        return res.status(500).json({ 
+            error: 'Internal Server Error',
+            details: error.message,
+            stack: error.stack
+        });
     }
 });
 
-// OPENAI Image Generation Endpoint
-app.post('/openai-image-generation', async (req, res) => {
+// Add cosine similarity function
+function cosineSimilarity(a, b) {
     try {
-        console.log("Generating image");
-        const { prompt, model = 'dall-e-3', usersOpenaiKey = "", balance = 0 } = req.body;
-        let responseMessage = "";
-
-        const keyToUse = usersOpenaiKey || (Number(balance) > 0 ? OPENAI_API_KEY : "");
-        if (!keyToUse) {
-            responseMessage = "You have no API key or your balance is too low.";
-            return res.status(400).json({ response: responseMessage });
+        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+            return 0;
         }
-
-        const apiResponse = await fetch('https://api.openai.com/v1/images/generations', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${keyToUse}`
-            },
-            body: JSON.stringify({
-                "model": model,
-                "prompt": prompt,
-                "n": 1,
-                "size": "1024x1024"
-            })
-        });
-
-        const data = await apiResponse.json();
-        responseMessage = data;
-
-        return res.status(200).json({ response: responseMessage });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
+        const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+        const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+        return dot / (magA * magB) || 0;
+    } catch (e) {
+        console.error('Error calculating similarity:', e);
+        return 0;
     }
-});
+}
 
-// OPENAI Embed Endpoint
-app.post('/openai-embed', async (req, res) => {
-    try {
-        console.log("Getting embeddings");
-        const { text, usersOpenaiKey = "", balance = 0 } = req.body;
-        let responseMessage = "";
+// Export the Express app as a Firebase Cloud Function
+exports.api = functions.https.onRequest(app);
 
-        const keyToUse = usersOpenaiKey || (Number(balance) > 0 ? OPENAI_API_KEY : "");
-        if (!keyToUse) {
-            responseMessage = "You have no API key or your balance is too low.";
-            return res.status(400).json({ response: responseMessage });
-        }
-
-        const apiResponse = await fetch('https://api.openai.com/v1/embeddings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${keyToUse}`
-            },
-            body: JSON.stringify({
-                "input": text,
-                "model": "text-embedding-3-small",
-                "encoding_format": "float"
-            })
-        });
-
-        const data = await apiResponse.json();
-        responseMessage = data.data[0].embedding;
-
-        return res.status(200).json({ embedding: responseMessage });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
-// Google Search Endpoint
-app.post('/google-search', async (req, res) => {
-    const { query, numResults } = req.body;
-    try {
-        const response = await fetch(`https://www.googleapis.com/customsearch/v1?key=${GOOGLE_SEARCH_API_KEY}&cx=${GOOGLE_SEARCH_ENGINE_ID}&q=${query}&num=${numResults}`);
-        const data = await response.json();
-        const dataItems = data.items;
-        let searchResults = "\n\n";
-        dataItems.forEach((item, index) => {
-            searchResults += `${index + 1}. [${item.title}](${item.link})
-        - ${item.snippet}
-
-    `;
-        });
-        return res.status(200).json({ searchResults });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
-// get Examples Endpoint
-app.post('/get-examples', async (req, res) => {
-    console.log("Getting examples");
-    // load the examples
-    await exampleStore.loadStore('./modules/exampleStore.json');
-    try {
-        const { embedding, k } = req.body;
-        const examples = await exampleStore.getTopKSimilarExamples(embedding, k);
-        return res.status(200).json({ examples });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
-// Start the server
-let port = 5001;
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+// Add local development server
+if (process.env.NODE_ENV === 'development') {
+    const PORT = 5001;
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
