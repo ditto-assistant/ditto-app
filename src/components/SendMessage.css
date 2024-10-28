@@ -42,14 +42,18 @@
     resize: none;
     background: var(--dark-gray-2);
     color: var(--text-color);
-    padding: 8px 12px;
-    line-height: 1.5;
+    padding: 10px 12px;
+    line-height: 20px;
     font-size: 15px;
     max-height: 200px;
     box-shadow: none;
     outline: none !important;
     padding-right: 100px;
     border: 1px solid var(--header-footer-border);
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
 }
 
 .TextArea:focus {
@@ -418,4 +422,47 @@
     font-size: 10px;   /* Reduced from 12px to 10px */
     width: 10px;       /* Reduced from 12px to 10px */
     height: 10px;      /* Reduced from 12px to 10px */
+}
+
+/* Add the shimmering placeholder styles */
+@keyframes shimmer {
+    0% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 0.3;
+    }
+}
+
+.TextArea::placeholder {
+    line-height: 20px;
+    padding-top: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.4) 25%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.4) 75%,
+        rgba(255, 255, 255, 0.2) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmerGradient 3s linear infinite;
+}
+
+@keyframes shimmerGradient {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }

@@ -379,6 +379,7 @@ export default function SendMessage({
                     className='TextArea'
                     type='text'
                     value={message}
+                    placeholder="Start chatting"
                     onChange={(e) => {
                         setMessage(e.target.value);
                         if (e.target.value.trim() === '') {
