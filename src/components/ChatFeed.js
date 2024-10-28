@@ -549,6 +549,13 @@ export default function ChatFeed({
                   <FaBrain style={{ marginRight: '5px' }} />
                   {loadingMemories ? 'Loading...' : 'Memories'}
                 </button>
+                <button 
+                  onClick={() => handleMessageDelete(actionOverlay.index)} 
+                  className='action-button delete-action'
+                >
+                  <FaTrash style={{ marginRight: '5px' }} />
+                  Delete
+                </button>
               </>
             ) : (
               <>
@@ -734,64 +741,68 @@ export default function ChatFeed({
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
     
-    const { memory, idx, docId } = deleteConfirmation;
+    const { memory, idx, docId, isMessageDelete } = deleteConfirmation;
     const userID = auth.currentUser.uid;
     
     try {
-      setDeletingMemories(prev => new Set([...prev, idx]));
+      if (isMessageDelete) {
+        setDeletingMemories(prev => new Set([...prev, idx]));
+      }
       await new Promise(resolve => setTimeout(resolve, 300));
 
       const success = await deleteConversation(userID, docId);
       
       if (success) {
-        // Update related memories in the UI
-        const newMemories = relatedMemories.filter((_, i) => i !== idx);
-        setRelatedMemories(newMemories);
-        
-        // Remove from localStorage cache
-        const promptId = `${userID}-${memory.prompt}`;
-        const cache = getMemoryCache();
-        delete cache[promptId];
-        localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+        if (isMessageDelete) {
+          // Remove from localStorage conversation history
+          const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+          const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+          const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
 
-        // Remove from localStorage conversation history
-        const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-        const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-        const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-
-        // Find the index of the conversation in the arrays
-        const conversationIndex = prompts.findIndex(p => p === memory.prompt);
-        
-        if (conversationIndex !== -1) {
-          // Remove the conversation from all arrays
-          prompts.splice(conversationIndex, 1);
-          responses.splice(conversationIndex, 1);
-          timestamps.splice(conversationIndex, 1);
-
-          // Update localStorage
-          localStorage.setItem('prompts', JSON.stringify(prompts));
-          localStorage.setItem('responses', JSON.stringify(responses));
-          localStorage.setItem('timestamps', JSON.stringify(timestamps));
+          // Find the index of the conversation in the arrays
+          const conversationIndex = prompts.findIndex(p => p === memory.prompt);
           
-          // Update histCount to match the new conversation length
-          const newHistCount = prompts.length;
-          localStorage.setItem('histCount', newHistCount.toString());
+          if (conversationIndex !== -1) {
+            // Remove the conversation from all arrays
+            prompts.splice(conversationIndex, 1);
+            responses.splice(conversationIndex, 1);
+            timestamps.splice(conversationIndex, 1);
 
-          // Dispatch custom event to trigger re-render with updated count
-          window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
-            detail: { 
-              conversationIndex,
-              newHistCount 
-            }
-          }));
-        }
-        
-        if (newMemories.length === 0) {
-          setMemoryOverlay(null);
+            // Update localStorage
+            localStorage.setItem('prompts', JSON.stringify(prompts));
+            localStorage.setItem('responses', JSON.stringify(responses));
+            localStorage.setItem('timestamps', JSON.stringify(timestamps));
+            
+            // Update histCount to match the new conversation length
+            const newHistCount = prompts.length;
+            localStorage.setItem('histCount', newHistCount.toString());
+
+            // Dispatch custom event to trigger re-render with updated count
+            window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
+              detail: { 
+                conversationIndex,
+                newHistCount 
+              }
+            }));
+          }
+        } else {
+          // Handle memory overlay deletion (existing code)
+          const newMemories = relatedMemories.filter((_, i) => i !== idx);
+          setRelatedMemories(newMemories);
+          
+          // Remove from localStorage cache
+          const promptId = `${userID}-${memory.prompt}`;
+          const cache = getMemoryCache();
+          delete cache[promptId];
+          localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+          
+          if (newMemories.length === 0) {
+            setMemoryOverlay(null);
+          }
         }
       }
     } catch (error) {
-      console.error('Error deleting memory:', error);
+      console.error('Error deleting:', error);
     } finally {
       setDeletingMemories(prev => {
         const next = new Set(prev);
@@ -839,6 +850,43 @@ export default function ChatFeed({
       window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
     };
   }, [messages]);
+
+  // Add this function near your other handlers
+  const handleMessageDelete = async (index) => {
+    const message = messages[index];
+    const userID = auth.currentUser.uid;
+    
+    try {
+      // If this is a response, use the previous message (prompt) for embedding
+      const promptToUse = message.sender === 'Ditto' && index > 0 ? 
+        messages[index - 1].text : message.text;
+
+      // Get embedding for the prompt
+      const embedding = await textEmbed(promptToUse);
+      if (!embedding) {
+        console.error('Could not generate embedding for prompt');
+        return;
+      }
+
+      const docId = await findConversationDocId(userID, embedding, message.sender === 'Ditto' ? message.text : null);
+      
+      // Show confirmation overlay
+      setDeleteConfirmation({
+        memory: {
+          prompt: promptToUse,
+          response: message.sender === 'Ditto' ? message.text : null
+        },
+        idx: index,
+        docId,
+        isMessageDelete: true // Flag to identify this is from message overlay
+      });
+    } catch (error) {
+      console.error('Error preparing message deletion:', error);
+    }
+    
+    // Close the action overlay
+    setActionOverlay(null);
+  };
 
   return (
     <div className='chat-feed' ref={feedRef}>

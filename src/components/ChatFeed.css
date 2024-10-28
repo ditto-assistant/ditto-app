@@ -1124,3 +1124,19 @@
   color: #ed4245;
 }
 
+/* Add these styles for the delete action button */
+.action-button.delete-action {
+  color: #ff4444;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+.action-button.delete-action:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
+.action-button.delete-action:active {
+  background-color: rgba(255, 68, 68, 0.2);
+}
+

@@ -185,37 +185,43 @@ export const findConversationDocId = async (userID, embedding, response) => {
   try {
     // If no embedding provided, return null early
     if (!embedding) {
-      return null; 
+      return null;
     }
 
-    // Create a query that's sorted by timestamp and limited
-    const q = query(
-      collection(db, "memory", userID, "conversations"),
-      orderBy('timestamp', 'desc'),
-      limit(50) // Limit to recent conversations for faster search
-    );
-    
-    const querySnapshot = await getDocs(q);
-    
-    // Find documents with 100% similarity and matching response
-    let matchingDocId = null;
-    for (const doc of querySnapshot.docs) {
-      const data = doc.data();
-      
-      // Check if document has embedding
-      if (!data.embedding) continue;
+    // Get auth token
+    const token = await auth.currentUser.getIdToken();
 
-      // Calculate cosine similarity
-      const similarity = cosineSimilarity(embedding, data.embedding);
-      
-      // If 100% similar and responses match
-      if (similarity === 1 && data.response === response) {
-        matchingDocId = doc.id;
-        break;
-      }
+    // Use vector search API
+    const searchResponse = await fetch(routes.memories, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Origin': window.location.origin
+      },
+      mode: 'cors',
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        userId: userID,
+        vector: embedding,
+        k: 20 // Get more results to find all exact matches
+      })
+    });
+
+    if (!searchResponse.ok) {
+      throw new Error('Failed to search memories');
     }
-    
-    return matchingDocId;
+
+    const { memories } = await searchResponse.json();
+
+    // Find all docs with 100% similarity (score = 1)
+    const exactMatches = memories.filter(mem => Math.abs(mem.score - 1) < 0.0001);
+
+    // Return first match with matching response, or first exact match if no response match
+    const matchWithResponse = exactMatches.find(mem => mem.response === response);
+    return matchWithResponse?.id || exactMatches[0]?.id || null;
+
   } catch (e) {
     console.error("Error finding conversation document ID:", e);
     return null;
