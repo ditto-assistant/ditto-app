@@ -185,22 +185,28 @@ export default function ChatFeed({
     // Trigger haptic feedback on mobile devices
     triggerHapticFeedback();
 
-    // If clicking the same bubble, don't close immediately
+    // Close the overlay if clicking the same bubble that opened it
+    if (actionOverlay && actionOverlay.index === index) {
+      setActionOverlay(null);
+      return;
+    }
+
+    // If clicking a different bubble, close current overlay and open new one
     if (actionOverlay && actionOverlay.index !== index) {
       setActionOverlay(null);
-    } else if (!actionOverlay) {
-      const clientX = e.clientX || (rect.left + rect.width / 2);
-      const clientY = e.clientY || (rect.top + rect.height / 2);
-      setActionOverlay({ 
-        index, 
-        type, 
-        clientX,
-        clientY,
-        isUserMessage,
-        rect // Store the bubble's rect for positioning
-      });
-      setReactionOverlay(null);
     }
+
+    const clientX = e.clientX || (rect.left + rect.width / 2);
+    const clientY = e.clientY || (rect.top + rect.height / 2);
+    setActionOverlay({ 
+      index, 
+      type, 
+      clientX,
+      clientY,
+      isUserMessage,
+      rect // Store the bubble's rect for positioning
+    });
+    setReactionOverlay(null);
   };
 
   const handleImageClick = (src) => {
