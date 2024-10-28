@@ -138,14 +138,26 @@ export default function ChatFeed({
 
   useEffect(() => {
     const handleClickAway = (e) => {
-      if (!e.target.closest('.action-overlay') && !e.target.closest('.reaction-overlay')) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
+      // Don't close if clicking inside action or reaction overlays
+      if (e.target.closest('.action-overlay') || e.target.closest('.reaction-overlay')) {
+        return;
       }
+      
+      // Don't close if clicking the originating chat bubble
+      if (actionOverlay && e.target.closest('.chat-bubble')) {
+        const bubbleIndex = parseInt(e.target.closest('.chat-bubble').dataset.index);
+        if (bubbleIndex === actionOverlay.index) {
+          return;
+        }
+      }
+      
+      setActionOverlay(null);
+      setReactionOverlay(null);
     };
+
     document.addEventListener('click', handleClickAway);
     return () => document.removeEventListener('click', handleClickAway);
-  }, []);
+  }, [actionOverlay]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -173,9 +185,10 @@ export default function ChatFeed({
     // Trigger haptic feedback on mobile devices
     triggerHapticFeedback();
 
-    if (actionOverlay && actionOverlay.index === index) {
+    // If clicking the same bubble, don't close immediately
+    if (actionOverlay && actionOverlay.index !== index) {
       setActionOverlay(null);
-    } else {
+    } else if (!actionOverlay) {
       const clientX = e.clientX || (rect.left + rect.width / 2);
       const clientY = e.clientY || (rect.top + rect.height / 2);
       setActionOverlay({ 
@@ -183,7 +196,8 @@ export default function ChatFeed({
         type, 
         clientX,
         clientY,
-        isUserMessage
+        isUserMessage,
+        rect // Store the bubble's rect for positioning
       });
       setReactionOverlay(null);
     }
@@ -304,6 +318,7 @@ export default function ChatFeed({
           style={bubbleStyles.chatbubble}
           onClick={(e) => handleBubbleInteraction(e, index)}
           onContextMenu={(e) => handleBubbleInteraction(e, index)}
+          data-index={index}
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
           <div className='message-text' style={bubbleStyles.text}>
