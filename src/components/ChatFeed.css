@@ -654,3 +654,20 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Update copy button styles for different bubble types */
+.chat-bubble.User .copy-button {
+  background-color: #40444b; /* Match Ditto bubble color */
+}
+
+.chat-bubble.Ditto .copy-button {
+  background-color: rgba(71, 82, 196, 0.9); /* Keep original blue for Ditto messages */
+}
+
+/* Update hover states */
+.chat-bubble.User .copy-button:hover {
+  background-color: #4a4d54; /* Slightly lighter gray on hover */
+}
+
+.chat-bubble.Ditto .copy-button:hover {
+  background-color: rgba(71, 82, 196, 1); /* Original blue hover */
+}
