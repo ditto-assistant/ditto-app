@@ -721,17 +721,16 @@ export default function ChatFeed({
 
   const handleDeleteMemory = async (memory, idx) => {
     const userID = auth.currentUser.uid;
-    const docId = await findConversationDocId(userID, memory.prompt);
     
-    // Show confirmation overlay with docId for debugging
+    // Show confirmation overlay with docId that came from get-memories
     setDeleteConfirmation({
       memory,
       idx,
-      docId
+      docId: memory.id // Use the id that came from get-memories
     });
   };
 
-  // Update the confirmDelete function
+  // Update the confirmDelete function - simplified since we already have the docId
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
     

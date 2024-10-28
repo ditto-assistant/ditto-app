@@ -181,11 +181,11 @@ export const getLongTermMemory = async (userID, embedding, k) => {
  * @param {string|null} response - Not used anymore, kept for backward compatibility
  * @returns {string|null} - Returns the document ID if found, null otherwise
  */
-export const findConversationDocId = async (userID, prompt, response) => {
+export const findConversationDocId = async (userID, embedding, response) => {
   try {
-    // If no prompt (it's a Ditto response), return null early
-    if (!prompt) {
-      return null;
+    // If no embedding provided, return null early
+    if (!embedding) {
+      return null; 
     }
 
     // Create a query that's sorted by timestamp and limited
@@ -197,15 +197,25 @@ export const findConversationDocId = async (userID, prompt, response) => {
     
     const querySnapshot = await getDocs(q);
     
-    // Find first document with matching prompt
+    // Find documents with 100% similarity and matching response
+    let matchingDocId = null;
     for (const doc of querySnapshot.docs) {
       const data = doc.data();
-      if (data.prompt === prompt) {
-        return doc.id;
+      
+      // Check if document has embedding
+      if (!data.embedding) continue;
+
+      // Calculate cosine similarity
+      const similarity = cosineSimilarity(embedding, data.embedding);
+      
+      // If 100% similar and responses match
+      if (similarity === 1 && data.response === response) {
+        matchingDocId = doc.id;
+        break;
       }
     }
     
-    return null;
+    return matchingDocId;
   } catch (e) {
     console.error("Error finding conversation document ID:", e);
     return null;
