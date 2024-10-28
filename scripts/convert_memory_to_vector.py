@@ -104,10 +104,20 @@ def update_user_conversations(user_id):
     except Exception as e:
         print(f"Error updating conversations: {e}")
 
+
+def get_all_user_ids():
+    users = firebase_admin.auth.list_users()
+    return [user.uid for user in users.users]
+
 if __name__ == "__main__":
+    user_ids = get_all_user_ids()
+    for user_id in user_ids:
+        print(f"Updating conversations for user {user_id}")
+        update_user_conversations(user_id)
+
     # Replace with actual user ID
-    user_id = "zKvN3U5t0MSrWrmFG6ngiUQq2gP2"
-    get_user_conversations(user_id)
-    update_user_conversations(user_id)
+    # user_id = "zKvN3U5t0MSrWrmFG6ngiUQq2gP2"
+    # get_user_conversations(user_id)
+    # update_user_conversations(user_id)
 
     # print_all_user_name_and_email()
