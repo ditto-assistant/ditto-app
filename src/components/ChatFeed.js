@@ -219,42 +219,55 @@ export default function ChatFeed({
   useEffect(() => {
     let touchStartX = 0;
     let touchStartY = 0;
-    const TOUCH_THRESHOLD = 10; // pixels of movement allowed before considering it a scroll
+    let touchStartTime = 0;
+    const TOUCH_THRESHOLD = 10;
+    const TIME_THRESHOLD = 300;
+    let isClosing = false;
 
     const handleTouchStart = (e) => {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      isClosing = false;
     };
 
     const handleTouchEnd = (e) => {
-      // If no overlay is open, don't do anything
-      if (!actionOverlay) return;
+      if (!actionOverlay || isClosing) return;
 
-      // Get the touch end coordinates
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime;
 
       // Calculate movement
       const deltaX = Math.abs(touchEndX - touchStartX);
       const deltaY = Math.abs(touchEndY - touchStartY);
 
-      // If movement is too large, consider it a scroll and don't close
-      if (deltaX > TOUCH_THRESHOLD || deltaY > TOUCH_THRESHOLD) return;
+      // If movement is too large or touch duration is too short, don't close
+      if (deltaX > TOUCH_THRESHOLD || deltaY > TOUCH_THRESHOLD || touchDuration < TIME_THRESHOLD) {
+        return;
+      }
 
       const target = document.elementFromPoint(touchEndX, touchEndY);
       if (!target) return;
 
       // Don't close if touching inside overlays
-      const isOverlayTouch = target.closest('.action-overlay') || target.closest('.reaction-overlay');
+      const isOverlayTouch = target.closest('.action-overlay') || 
+                            target.closest('.reaction-overlay') ||
+                            target.closest('.action-button');
+                          
       if (isOverlayTouch) return;
 
-      // Get the touched bubble if any
+      // Get the touched bubble
       const touchedBubble = target.closest('.chat-bubble');
       
       // If touching outside both overlays and bubbles, close overlay
       if (!isOverlayTouch && !touchedBubble) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
+        isClosing = true;
+        setTimeout(() => {
+          setActionOverlay(null);
+          setReactionOverlay(null);
+        }, 50);
         return;
       }
 
@@ -262,29 +275,35 @@ export default function ChatFeed({
       if (touchedBubble) {
         const bubbleIndex = parseInt(touchedBubble.dataset.index);
         if (bubbleIndex !== actionOverlay.index) {
-          setActionOverlay(null);
-          setReactionOverlay(null);
+          isClosing = true;
+          setTimeout(() => {
+            setActionOverlay(null);
+            setReactionOverlay(null);
+          }, 50);
         }
       }
     };
 
     const handleMouseDown = (e) => {
-      // Handle mouse clicks (for desktop)
-      if (e.touches) return; // Skip if this is actually a touch event
-      if (!actionOverlay) return;
+      if (e.touches || !actionOverlay || isClosing) return;
 
-      const isOverlayClick = e.target.closest('.action-overlay') || e.target.closest('.reaction-overlay');
+      const isOverlayClick = e.target.closest('.action-overlay') || 
+                            e.target.closest('.reaction-overlay') ||
+                            e.target.closest('.action-button');
+                          
       if (isOverlayClick) return;
 
       const clickedBubble = e.target.closest('.chat-bubble');
       
       if (!isOverlayClick && !clickedBubble) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
+        isClosing = true;
+        setTimeout(() => {
+          setActionOverlay(null);
+          setReactionOverlay(null);
+        }, 50);
       }
     };
 
-    // Add event listeners with capture phase
     document.addEventListener('touchstart', handleTouchStart, true);
     document.addEventListener('touchend', handleTouchEnd, true);
     document.addEventListener('mousedown', handleMouseDown, true);
@@ -325,32 +344,32 @@ export default function ChatFeed({
     e.preventDefault();
     e.stopPropagation();
     
+    // Get coordinates before any state updates
     const rect = e.currentTarget.getBoundingClientRect();
     const isUserMessage = messages[index].sender === 'User';
-
-    // Trigger haptic feedback
-    triggerHapticFeedback();
-
-    // If the overlay is already open for this bubble, close it
-    if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
-      return;
-    }
-
-    // Get coordinates from touch or mouse event
     const clientX = e.touches?.[0]?.clientX || e.clientX || rect.left + rect.width / 2;
     const clientY = e.touches?.[0]?.clientY || e.clientY || rect.top + rect.height / 2;
 
-    // Set the new overlay
-    setActionOverlay({ 
-      index, 
-      type, 
-      clientX,
-      clientY,
-      isUserMessage,
-      rect
-    });
-    setReactionOverlay(null);
+    // Add a small delay to prevent immediate closure
+    setTimeout(() => {
+      setActionOverlay(prev => {
+        if (prev && prev.index === index) {
+          return null;
+        }
+        return { 
+          index, 
+          type, 
+          clientX,
+          clientY,
+          isUserMessage,
+          rect
+        };
+      });
+      setReactionOverlay(null);
+    }, 50);
+
+    // Trigger haptic feedback
+    triggerHapticFeedback();
   };
 
   const handleImageClick = (src) => {
