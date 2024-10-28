@@ -3,6 +3,7 @@ import { Button, TextField, Slider } from '@mui/material';
 import { useBalance } from '../hooks/useBalance';
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { CheckoutForm } from '../api/checkoutSession';
+import { useNavigate } from 'react-router-dom';
 
 // Update the PricingTiers array
 const PricingTiers = [
@@ -24,6 +25,7 @@ const getTokenAmount = (usd) => {
 };
 
 const Checkout = () => {
+    const navigate = useNavigate();
     const balance = useBalance();
     const [amount, setAmount] = useState(10);
 
@@ -151,7 +153,7 @@ const Checkout = () => {
                         </div>
                     </div>
 
-                    <Button variant="contained" onClick={() => window.history.back()} style={styles.navButton}>
+                    <Button variant="contained" onClick={() => navigate("/settings")} style={styles.navButton}>
                         GO BACK
                     </Button>
                 </div>
