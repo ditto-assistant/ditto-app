@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiCopy, FiDownload } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
 import { FaBrain, FaTrash, FaSpinner } from 'react-icons/fa';
-import { findConversationDocId, getConversationEmbedding, deleteConversation } from '../control/memory';
+import { deleteConversation } from '../control/memory';
 import { routes } from '../firebaseConfig';
 import { textEmbed } from '../api/LLM';  // Add this import
 

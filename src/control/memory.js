@@ -175,60 +175,6 @@ export const getLongTermMemory = async (userID, embedding, k) => {
 }
 
 /**
- * Find the document ID for a conversation by matching prompt
- * @param {string} userID - The user's ID
- * @param {string|null} prompt - The prompt to search for
- * @param {string|null} response - Not used anymore, kept for backward compatibility
- * @returns {string|null} - Returns the document ID if found, null otherwise
- */
-export const findConversationDocId = async (userID, embedding, response) => {
-  try {
-    // If no embedding provided, return null early
-    if (!embedding) {
-      return null;
-    }
-
-    // Get auth token
-    const token = await auth.currentUser.getIdToken();
-
-    // Use vector search API
-    const searchResponse = await fetch(routes.memories, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Origin': window.location.origin
-      },
-      mode: 'cors',
-      credentials: 'same-origin',
-      body: JSON.stringify({
-        userId: userID,
-        vector: embedding,
-        k: 50 // Get more results to find all exact matches
-      })
-    });
-
-    if (!searchResponse.ok) {
-      throw new Error('Failed to search memories');
-    }
-
-    const { memories } = await searchResponse.json();
-
-    // Find all docs with 100% similarity (score = 1)
-    const exactMatches = memories.filter(mem => Math.abs(mem.score - 1) < 0.0001);
-
-    // Return first match with matching response, or first exact match if no response match
-    const matchWithResponse = exactMatches.find(mem => mem.response === response);
-    return matchWithResponse?.id || exactMatches[0]?.id || null;
-
-  } catch (e) {
-    console.error("Error finding conversation document ID:", e);
-    return null;
-  }
-}
-
-/**
  * Get the embedding array for a specific conversation document
  * @param {string} userID - The user's ID
  * @param {string} docId - The document ID of the conversation
