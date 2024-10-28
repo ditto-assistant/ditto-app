@@ -167,10 +167,18 @@ const styles = {
     overlay: {
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         minHeight: '100vh',
         backgroundColor: '#2f3136',
         padding: '20px',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
     },
     container: {
         backgroundColor: '#36393f',
@@ -178,6 +186,9 @@ const styles = {
         width: '100%',
         maxWidth: '480px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+        margin: '0 auto', // Center container
+        marginTop: '20px', // Add some space at the top
+        marginBottom: '20px', // Add some space at the bottom
     },
     header: {
         backgroundColor: '#2f3136',
@@ -193,6 +204,7 @@ const styles = {
     },
     content: {
         padding: '0 0 24px',
+        overflowX: 'hidden', // Prevent horizontal scroll
     },
     infoContainer: {
         color: 'white',
@@ -241,18 +253,20 @@ const styles = {
         gap: '8px',
         maxWidth: '400px',
         margin: '0 auto',
+        padding: '0 10px', // Add some padding for smaller screens
     },
     tier: {
         display: 'grid',
         gridTemplateColumns: '80px 1fr 80px',
         alignItems: 'center',
-        padding: '16px 24px',
+        padding: '16px 12px', // Reduce padding for smaller screens
         borderRadius: '8px',
         cursor: 'pointer',
         backgroundColor: '#2f3136',
         transition: 'all 0.2s ease',
-        '&:hover': {
-            backgroundColor: '#40444b',
+        '@media (max-width: 360px)': { // Add responsive styling for very small screens
+            padding: '12px 8px',
+            gridTemplateColumns: '60px 1fr 60px',
         },
     },
     selectedTier: {
@@ -322,6 +336,7 @@ const styles = {
         width: '100%',
         maxWidth: '400px',
         padding: '0 20px',
+        boxSizing: 'border-box', // Ensure padding is included in width calculation
     },
     sliderLabel: {
         color: '#dcddde',
@@ -332,6 +347,7 @@ const styles = {
     customAmountInput: {
         width: '100%',
         marginTop: '20px',
+        boxSizing: 'border-box',
     },
 };
 
