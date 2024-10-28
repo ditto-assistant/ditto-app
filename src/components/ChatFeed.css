@@ -142,10 +142,11 @@
   flex-direction: column;
   gap: 8px;
   width: auto;
-  min-width: 120px; /* Slightly wider for better touch targets */
+  min-width: 120px;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  touch-action: none; /* Prevent default touch behaviors */
+  touch-action: none;
+  pointer-events: auto; /* Ensure overlay can receive touch events */
 }
 
 .image-action-overlay {
@@ -735,32 +736,40 @@
   flex-direction: column;
   gap: 8px;
   width: auto;
-  min-width: 120px; /* Slightly wider for better touch targets */
+  min-width: 120px;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  touch-action: none; /* Prevent default touch behaviors */
+  touch-action: none;
+  pointer-events: auto; /* Ensure overlay can receive touch events */
 }
 
 .action-button {
-  padding: 12px 16px; /* Larger touch targets */
+  padding: 12px 16px;
   width: 100%;
   text-align: center;
   border-radius: 6px;
   transition: background-color 0.2s ease;
-  font-size: 16px; /* Slightly larger text */
+  font-size: 16px;
   touch-action: manipulation;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  pointer-events: auto; /* Ensure buttons can receive touch events */
 }
 
 /* Add specific mobile styles */
 @media (pointer: coarse) {
   .action-button {
-    min-height: 44px; /* iOS minimum touch target size */
+    min-height: 44px;
   }
 
   .action-overlay {
-    transform: translate(-50%, -50%) scale(1.1); /* Slightly larger on mobile */
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  /* Add touch-specific styles */
+  .chat-bubble {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
