@@ -18,13 +18,14 @@
     display: flex;
     flex: 1;
     max-width: 100%;
-    margin-left: -10px;
-    margin-right: -10px;
-    padding: 5px 10px;
-    background-color: #40444b; /* Changed to the lighter grey color */
-    border-radius: 10px;
+    margin: 0;
+    padding: 8px;
+    background: var(--header-footer-gradient);
+    border-radius: var(--border-radius);
     position: relative;
-    align-items: center; /* Add this */
+    align-items: center;
+    border: 1px solid var(--header-footer-border);
+    box-shadow: var(--header-footer-shadow);
 }
 
 .InputWrapper {
@@ -37,46 +38,56 @@
 .TextArea {
     flex: 1;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
     resize: none;
-    background-color: #40444b;
-    color: white;
-    padding: 10px 15px;
+    background: var(--dark-gray-2);
+    color: var(--text-color);
+    padding: 8px 12px;
     line-height: 1.5;
-    font-size: 16px;
+    font-size: 15px;
     max-height: 200px;
     box-shadow: none;
     outline: none !important;
     padding-right: 100px;
+    border: 1px solid var(--header-footer-border);
 }
 
 .TextArea:focus {
-    border: 1px solid #7289da;
-    box-shadow: 0 0 3px #7289da;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 3px var(--primary-color);
 }
 
 .IconsWrapper {
     position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 12px;
     display: flex;
     align-items: center;
-    height: 100%;
+    gap: 12px;
+    padding: 4px;
+    border-radius: 20px;
+    background: var(--dark-gray-1);
+    border: 1px solid var(--header-footer-border);
 }
 
 .Mic, 
 .PlusButton {
-    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--text-color);
     cursor: pointer;
-    transition: color 0.2s ease;
-    margin-left: 15px;
-    font-size: 20px;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    background: var(--dark-gray-2);
+    border: 1px solid var(--header-footer-border);
 }
 
 .Mic:hover, 
 .PlusButton:hover {
-    color: #7289da;
+    background: var(--dark-gray-3);
+    transform: translateY(-1px);
 }
 
 .Mic.listening {
@@ -84,36 +95,28 @@
     color: #ff5050;
 }
 
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.1);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
 /* Update the Submit button styles */
 .Submit {
-    color: #fff;
-    border: none;
-    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
     margin-left: 10px;
     cursor: pointer;
     transition: transform 0.3s ease;
-    background: linear-gradient(45deg, #00c853, #ffd600, #2196f3, #4a0080, #0066cc, #9900cc);
+    background: linear-gradient(45deg, 
+        #00c853,
+        #ffd600, 
+        #2196f3, 
+        #4a0080, 
+        #0066cc, 
+        #9900cc
+    );
     background-size: 300% 300%;
-    animation: gradientFlow 12s linear infinite; /* Changed from 8s to 12s */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    animation: gradientFlow 24s linear infinite;
+    border-radius: 50%;
+    border: none;
     padding: 0;
     align-self: center;
 }
@@ -121,22 +124,19 @@
 .Submit svg {
     width: 20px;
     height: 20px;
-    transform: rotate(35deg); /* Changed from 32deg to 35deg */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transform: rotate(0deg);
+    color: white;
 }
 
 .Submit:hover {
     transform: scale(1.1);
 }
 
-/* Add the gradient animation keyframes */
 @keyframes gradientFlow {
     0% {
         background-position: 0% 0%;
     }
-      100% {
+    100% {
         background-position: 300% 0%;
     }
 }
@@ -410,4 +410,12 @@
 
 .CancelButton:active {
     transform: scale(0.98);
+}
+
+/* Update the icon sizes in the input area */
+.Mic svg, 
+.PlusButton svg {
+    font-size: 10px;   /* Reduced from 12px to 10px */
+    width: 10px;       /* Reduced from 12px to 10px */
+    height: 10px;      /* Reduced from 12px to 10px */
 }

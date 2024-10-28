@@ -341,7 +341,9 @@ export default function HomeScreen() {
           whileHover={{ scale: 1.05 }}
         >
           <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
-          <h1 className="App-title">Ditto</h1>
+          <h1 className="App-title">
+            {showStatusBar ? 'Ditto Dashboard' : 'Hey, Ditto'}
+          </h1>
           {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
         </motion.div>
         <motion.div

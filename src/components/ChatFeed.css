@@ -26,14 +26,96 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    
+    /* Hide scrollbar by default */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+}
+
+/* Show scrollbar on hover/scroll */
+.chat-feed:hover,
+.chat-feed:active {
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+/* For Webkit browsers */
+.chat-feed::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+}
+
+.chat-feed::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chat-feed::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background: linear-gradient(45deg, #4a0080, #0066cc);
+}
+
+/* Only show scrollbar when hovering over the scrollbar area */
+.chat-feed::-webkit-scrollbar:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chat-feed::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-color);
+    border: 2px solid var(--background-color);
+}
+
+/* When actively scrolling */
+.chat-feed::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-thumb-hover-color);
+}
+
+/* For Firefox */
+.chat-feed {
+    scrollbar-color: transparent transparent;
+}
+
+.chat-feed:hover::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover-color);
+}
+
+/* When scrolling */
+.chat-feed:active::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+    border: 2px solid var(--background-color);
+}
+
+/* Optional: Add a subtle transition when the chat feed loads */
+.chat-feed {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
 }
 
 /* Message container */
 .message {
-    margin-bottom: var(--message-spacing);
+    margin-bottom: 2px; /* Reduced from var(--message-spacing) */
     display: flex;
     align-items: flex-end;
-    padding: 0 var(--message-spacing);
+    padding: 0 12px; /* Reduced padding */
     box-sizing: border-box;
     position: relative;
     width: 100%;
@@ -55,9 +137,10 @@
     border-radius: 50%;
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 0 8px;
+    margin: 0 4px; /* Reduced margin */
     object-fit: cover;
     flex-shrink: 0;
+    min-width: 2.4em;
 }
 
 .user-avatar {
@@ -72,7 +155,7 @@
 
 /* Message content base styles */
 .message-content {
-    padding: var(--content-padding);
+    padding: 8px 12px; /* Slightly tighter padding */
     border-radius: 25px;
     display: inline-block;
     background-color: var(--chat-bubble-bg);
@@ -85,6 +168,7 @@
     order: 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    margin: 1px 0;
 }
 
 /* Update gradient border effect */
@@ -533,3 +617,54 @@
     animation: typingAvatarSpin 1.2s linear infinite;
 }
 
+/* Group messages from same sender */
+.message.received + .message.received,
+.message.sent + .message.sent {
+    margin-top: -1px;
+}
+
+/* Adjust avatar display for grouped messages */
+.message.received + .message.received .ditto-avatar,
+.message.sent + .message.sent .user-avatar {
+    visibility: hidden;
+}
+
+/* Keep avatar space for alignment */
+.avatar {
+    min-width: 2.4em;
+    margin: 0 4px; /* Reduced margin */
+}
+
+/* Adjust message content spacing */
+.message-content {
+    margin: 1px 0;
+    padding: 8px 12px; /* Slightly tighter padding */
+}
+
+/* Add timestamp spacing */
+.message:not(:last-child) {
+    margin-bottom: 8px;
+}
+
+/* Add slight spacing between message groups */
+.message.received + .message.sent,
+.message.sent + .message.received {
+    margin-top: 16px;
+}
+
+/* Only show scrollbar when hovering over scrollbar area or actively scrolling */
+.chat-feed::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    background-image: linear-gradient(45deg, #4a0080, #0066cc);
+    visibility: hidden;
+}
+
+.chat-feed::-webkit-scrollbar:hover,
+.chat-feed::-webkit-scrollbar:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chat-feed::-webkit-scrollbar-thumb:hover,
+.chat-feed::-webkit-scrollbar:active {
+    visibility: visible;
+}

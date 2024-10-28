@@ -32,77 +32,67 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
     };
 
     return (
-        <div style={styles.icons}>
-            <div style={styles.iconItem} onClick={handleBookmarkClick}>
-                <HiMiniDocument style={styles.icon} />
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            gap: '24px',
+            flexDirection: 'row'
+        }}>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                width: '40px',
+                height: '40px',
+                background: 'var(--dark-gray-2)',
+                borderRadius: '50%',
+                border: '1px solid var(--header-footer-border)'
+            }} onClick={handleBookmarkClick}>
+                <HiMiniDocument style={{ fontSize: '24px', color: darkModeColors.primary }} />
             </div>
 
-            <div style={styles.iconItem} onClick={handleMemoryClick}>
-                <FaBrain style={styles.icon} />
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                width: '40px',
+                height: '40px',
+                background: 'var(--dark-gray-2)',
+                borderRadius: '50%',
+                border: '1px solid var(--header-footer-border)'
+            }} onClick={handleMemoryClick}>
+                <FaBrain style={{ fontSize: '24px', color: darkModeColors.primary }} />
             </div>
 
             {selectedScript && (
-                <div style={styles.iconItem} onClick={handlePlayScript}>
-                    <FaPlay style={styles.playIcon} />
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    width: '40px',
+                    height: '40px',
+                    background: 'var(--dark-gray-2)',
+                    borderRadius: '50%',
+                    border: '1px solid var(--header-footer-border)'
+                }} onClick={handlePlayScript}>
+                    <FaPlay style={{ fontSize: '22px', color: darkModeColors.primary }} />
                 </div>
             )}
 
             {selectedScript && (
-                <div style={styles.selectedScriptIndicator}>
-                    <p style={{ color: darkModeColors.primary, fontSize: '0.9em' }}>Focus: </p>
-                    <p style={styles.selectedScriptText}>{selectedScript}</p>
+                <div className="selected-script-indicator">
+                    <p className="focus-text">Focus: </p>
+                    <p className="selected-script-text">{selectedScript}</p>
                 </div>
             )}
-
         </div>
     );
 }
-
-const styles = {
-    icons: {
-        display: 'flex',
-        alignItems: 'center',
-        position: 'absolute',
-        justifyContent: 'center',
-        left: '50%',
-        zIndex: 3000,
-        transform: 'translateX(-50%)',
-    },
-    iconItem: {
-        margin: '0px 3px',
-        cursor: 'pointer',
-        position: 'relative',
-    },
-    icon: {
-        fontSize: '24px',
-        color: darkModeColors.primary,
-    },
-    playIcon: {
-        fontSize: '22px',
-        color: darkModeColors.primary,
-    },
-    selectedScriptIndicator: {
-        color: darkModeColors.text,
-        fontWeight: 'bold',
-        position: 'absolute',
-        zIndex: 3000,
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        top: '74px',
-        backgroundColor: '#36393f',
-        padding: '0px 10px',
-        borderRadius: '5px',
-        whiteSpace: 'nowrap',
-        flexDirection: 'row',
-    },
-    selectedScriptText: {
-        fontSize: '0.9em',
-        margin: 0,
-        paddingTop: '1.0em',
-    },
-};
 
 export default StatusIcons;

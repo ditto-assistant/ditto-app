@@ -103,8 +103,48 @@ function StatusBar() {
         localStorage.setItem("status_bar_fiat_balance", newShowUSD ? 't' : 'f');
     };
 
+    const styles = {
+        status: {
+            display: "flex",
+            alignItems: "center",
+            fontSize: "0.9em",
+            cursor: "pointer",
+        },
+        statusText: {
+            color: "#f0f0f0",
+            margin: 0,
+        },
+        statusIndicator: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+        },
+        balanceContainer: {
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+        },
+        balanceIndicator: {
+            backgroundColor: "#5865f2",
+            color: "#FFFFFF",
+            padding: "3px 8px",
+            borderRadius: "10px",
+            fontSize: "0.9em",
+            fontWeight: "bold",
+        },
+    };
+
     return (
-        <div style={styles.statusBar}>
+        <div style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "4px 12px",
+            background: "var(--header-footer-gradient)",
+            borderRadius: "12px",
+            margin: "3px 8px"
+        }}>
             <div style={styles.status}>
                 <div style={{
                     ...styles.statusIndicator,
@@ -141,47 +181,5 @@ function StatusBar() {
         </div>
     );
 }
-
-const styles = {
-    statusBar: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "4px 12px",
-        background: "rgba(32, 34, 37, 0.6)", // Updated to the specified semi-transparent color
-        borderRadius: "12px",
-        margin: "3px 8px",
-        
-    },
-    status: {
-        display: "flex",
-        alignItems: "center",
-        fontSize: "0.9em",
-        cursor: "pointer",
-    },
-    statusText: {
-        color: "#f0f0f0",
-        margin: 0,
-    },
-    statusIndicator: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-    },
-    balanceContainer: {
-        display: "flex",
-        alignItems: "center",
-        cursor: "pointer",
-    },
-    balanceIndicator: {
-        backgroundColor: "#5865f2", // Discord-like blue
-        color: "#FFFFFF",
-        padding: "3px 8px",
-        borderRadius: "10px",
-        fontSize: "0.9em",
-        fontWeight: "bold",
-    },
-};
 
 export default StatusBar;

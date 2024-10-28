@@ -10,7 +10,7 @@ import { useDittoActivation } from '@/hooks/useDittoActivation';
 import { useIntentRecognition } from '@/hooks/useIntentRecognition';
 import { textEmbed } from '../api/LLM';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSend } from 'react-icons/fi';
+import { IoSendSharp } from 'react-icons/io5';
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
@@ -408,7 +408,7 @@ export default function SendMessage({
                 </div>
             </div>
             <button className='Submit' type='submit'>
-                <FiSend />
+                <IoSendSharp />
             </button>
 
             {image && (
