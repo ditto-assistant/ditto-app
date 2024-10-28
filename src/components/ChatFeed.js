@@ -1043,8 +1043,14 @@ export default function ChatFeed({
         </div>
       )}
       {deleteConfirmation && (
-        <div className="delete-confirmation-overlay">
-          <div className="delete-confirmation-content">
+        <div 
+          className="delete-confirmation-overlay"
+          onClick={() => setDeleteConfirmation(null)}
+        >
+          <div 
+            className="delete-confirmation-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="delete-confirmation-title">Delete Message?</div>
             <div className="delete-confirmation-message">
               Are you sure you want to delete this message? This action cannot be undone.
