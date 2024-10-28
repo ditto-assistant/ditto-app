@@ -8,6 +8,7 @@ import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCopy, FiDownload } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
+import { FaCopy, FaSmile } from 'react-icons/fa';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -339,6 +340,14 @@ export default function ChatFeed({
               ))}
             </div>
           )}
+          <div className="message-actions">
+            <button className="action-button" onClick={() => handleCopy(message.text)}>
+              <FaCopy />
+            </button>
+            <button className="action-button" onClick={() => handleReact(message.id)}>
+              <FaSmile />
+            </button>
+          </div>
         </div>
         {isUserMessage && (
           <img src={profilePic} alt='User' className='avatar user-avatar' />

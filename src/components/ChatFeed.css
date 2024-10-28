@@ -155,7 +155,7 @@
 
 /* Message content base styles */
 .message-content {
-    padding: 8px 12px; /* Slightly tighter padding */
+    padding: var(--content-padding);
     border-radius: 25px;
     display: inline-block;
     background-color: var(--chat-bubble-bg);
@@ -192,6 +192,7 @@
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 25px;
     background-color: #40444b;
+    margin-right: 40px;
 }
 
 .message.sent .message-content {
@@ -200,6 +201,7 @@
     border-bottom-left-radius: 25px;
     border-bottom-right-radius: 5px;
     background-color: #1a73e8;
+    margin-left: 40px;
 }
 
 /* Update gradient borders */
@@ -667,4 +669,65 @@
 .chat-feed::-webkit-scrollbar-thumb:hover,
 .chat-feed::-webkit-scrollbar:active {
     visibility: visible;
+}
+
+/* Message Actions - Update to show on both sent and received messages */
+.message-actions {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+}
+
+/* Position for received messages (Ditto) */
+.message.received .message-actions {
+    right: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Position for sent messages (User) */
+.message.sent .message-actions {
+    left: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Show actions on hover for both message types */
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+/* Action buttons styling */
+.action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--dark-gray-2);
+    border: 1px solid var(--header-footer-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-color);
+    box-shadow: var(--header-footer-shadow);
+}
+
+.action-button:hover {
+    background: var(--dark-gray-3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-button svg {
+    width: 14px;
+    height: 14px;
+    color: var(--primary-color);
 }
