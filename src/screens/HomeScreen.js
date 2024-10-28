@@ -19,6 +19,8 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
 
+const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
+
 export default function HomeScreen() {
   const navigate = useNavigate();
   const balance = useBalance();
@@ -320,6 +322,48 @@ export default function HomeScreen() {
   const handleOpenMediaOptions = () => {
     setShowMediaOptions(true);
   };
+
+  // Update the useEffect that listens for memory deletion events
+  useEffect(() => {
+    const handleMemoryDeleted = (event) => {
+      // Update histCount state with the new count
+      const { newHistCount } = event.detail;
+      setCount(newHistCount);
+
+      // Force re-render by updating messages
+      const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+      const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+      const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+      
+      const newMessages = [];
+      newMessages.push({ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() });
+      
+      for (let i = 0; i < prompts.length; i++) {
+        newMessages.push({ 
+          sender: "User", 
+          text: prompts[i], 
+          timestamp: timestamps[i] 
+        });
+        newMessages.push({ 
+          sender: "Ditto", 
+          text: responses[i], 
+          timestamp: timestamps[i] 
+        });
+      }
+      
+      // Update the conversation state
+      setConversation(prev => ({
+        ...prev,
+        messages: newMessages
+      }));
+    };
+
+    window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
+    
+    return () => {
+      window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
+    };
+  }, []);
 
   return (
     <div className="App" onClick={handleCloseMediaOptions}>

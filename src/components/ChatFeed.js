@@ -18,6 +18,7 @@ const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
 const MEMORY_CACHE_KEY = 'memoryCache';
 const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
@@ -71,9 +72,6 @@ const getCachedMemories = (promptId) => {
     return null;
   }
 };
-
-// Add this new event name constant at the top level
-const MEMORY_DELETED_EVENT = 'memoryDeleted';
 
 export default function ChatFeed({
   messages,
@@ -682,11 +680,17 @@ export default function ChatFeed({
           localStorage.setItem('prompts', JSON.stringify(prompts));
           localStorage.setItem('responses', JSON.stringify(responses));
           localStorage.setItem('timestamps', JSON.stringify(timestamps));
-          localStorage.setItem('histCount', (prompts.length).toString());
+          
+          // Update histCount to match the new conversation length
+          const newHistCount = prompts.length;
+          localStorage.setItem('histCount', newHistCount.toString());
 
-          // Dispatch custom event to trigger re-render
+          // Dispatch custom event to trigger re-render with updated count
           window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
-            detail: { conversationIndex }
+            detail: { 
+              conversationIndex,
+              newHistCount 
+            }
           }));
         }
         
