@@ -1,198 +1,142 @@
+const functions = require('firebase-functions');
 const express = require('express');
-const cors = require('cors');
 const bodyParser = require('body-parser');
+const admin = require('firebase-admin');
+const { Firestore } = require('@google-cloud/firestore');
 
-// iport dotenv 
-require('dotenv').config({ path: '.env', override: true });
+// Initialize Firebase Admin with service account
+const serviceAccount = require('./serviceAccount.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
+});
 
-// import ExampleStore
-const ExampleStore = require('./modules/ExampleStore');
+// Initialize Firestore with vector search capabilities
+const db = new Firestore({
+  projectId: serviceAccount.project_id,
+  credentials: serviceAccount
+});
 
 // Initialize express app
 const app = express();
 
-// Middleware setup
-let originList = [
-    'http://localhost:3000', 'https://ditto-app-dev.web.app',
-    'https://ditto-app-dev.firebaseapp.com', 'https://assistant.heyditto.ai'];
-if (process.env.NODE_ENV === 'production') {
-    // remove localhost from the list
-    originList = originList.slice(1);
-}
+// Replace the simple CORS middleware with this updated version
+const cors = require('cors');
 app.use(cors({
-    origin: originList,
+    origin: true, // Allows all origins
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
+
+// Apply middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// OPENAI API Key
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY || "";
-const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID || "";
+// Keep the logging middleware
+app.use((req, res, next) => {
+    console.log('Incoming request from origin:', req.headers.origin);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
+    next();
+});
 
-// Initialize the ExampleStore
-const exampleStore = new ExampleStore(
-    key = OPENAI_API_KEY,
-);
+// Add middleware to verify Firebase auth token
+const authenticateUser = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
+    }
 
-// OPENAI Chat Endpoint
-app.post('/openai-chat', async (req, res) => {
-    console.log("Getting chat response");
+    const idToken = authHeader.split('Bearer ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Error verifying auth token:', error);
+    return res.status(401).json({ error: 'Unauthorized - Invalid token' });
+  }
+};
+
+// Get Memories Endpoint
+app.post('/get-memories', authenticateUser, async (req, res) => {
+    console.log("Getting memories - Starting request processing");
     try {
-        const { userPrompt, systemPrompt, model = 'gpt-4o-2024-08-06', imageURL = "", usersOpenaiKey = "", balance = 0 } = req.body;
-        let responseMessage = "";
-
-        const keyToUse = usersOpenaiKey || (Number(balance) > 0 ? OPENAI_API_KEY : "");
-        if (!keyToUse) {
-            responseMessage = "You have no API key or your balance is too low.";
-            return res.status(400).json({ response: responseMessage });
+        const { userId, vector, k = 5 } = req.body;
+        console.log(`Request parameters: userId=${userId}, k=${k}, vector length=${vector?.length}`);
+        // Validate vector dimensions
+        if (vector.length > 2048) {
+            console.log("Vector dimension exceeds maximum allowed (2048)");
+            return res.status(400).json({ error: 'Vector dimension exceeds maximum allowed (2048)' });
         }
 
-        const withImage = imageURL !== "";
-        const content = withImage
-            ? [{ "type": "text", "text": userPrompt }, { "type": "image_url", "image_url": { "url": imageURL } }]
-            : userPrompt;
-
-        const apiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${keyToUse}`
-            },
-            body: JSON.stringify({
-                "model": model,
-                "messages": [
-                    { "role": "system", "content": systemPrompt },
-                    { "role": "user", "content": content }
-                ]
-            })
-        });
-
-        const data = await apiResponse.json();
-        responseMessage = data.choices[0].message.content;
-
-        return res.status(200).json({ response: responseMessage });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// OPENAI Image Generation Endpoint
-app.post('/openai-image-generation', async (req, res) => {
-    try {
-        console.log("Generating image");
-        const { prompt, model = 'dall-e-3', usersOpenaiKey = "", balance = 0 } = req.body;
-        let responseMessage = "";
-
-        const keyToUse = usersOpenaiKey || (Number(balance) > 0 ? OPENAI_API_KEY : "");
-        if (!keyToUse) {
-            responseMessage = "You have no API key or your balance is too low.";
-            return res.status(400).json({ response: responseMessage });
+        // Validate k (number of neighbors)
+        if (k > 1000) {
+            console.log("Number of requested neighbors exceeds maximum allowed (1000)");
+            return res.status(400).json({ error: 'Number of requested neighbors exceeds maximum allowed (1000)' });
+        }
+        if (!userId || !vector) {
+            console.log("Missing parameters:", { userId: !!userId, vector: !!vector });
+            return res.status(400).json({ error: 'Missing required parameters' });
         }
 
-        const apiResponse = await fetch('https://api.openai.com/v1/images/generations', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${keyToUse}`
-            },
-            body: JSON.stringify({
-                "model": model,
-                "prompt": prompt,
-                "n": 1,
-                "size": "1024x1024"
-            })
+        // Get the conversations collection reference
+        const memoriesRef = db.collection('memory').doc(userId).collection('conversations');
+        
+        // Create vector query using findNearest
+        const vectorQuery = memoriesRef.findNearest({
+            vectorField: 'embedding_vector',
+            queryVector: vector,
+            limit: k,
+            distanceMeasure: 'COSINE',
+            distanceResultField: 'vector_distance'
         });
 
-        const data = await apiResponse.json();
-        responseMessage = data;
-
-        return res.status(200).json({ response: responseMessage });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// OPENAI Embed Endpoint
-app.post('/openai-embed', async (req, res) => {
-    try {
-        console.log("Getting embeddings");
-        const { text, usersOpenaiKey = "", balance = 0 } = req.body;
-        let responseMessage = "";
-
-        const keyToUse = usersOpenaiKey || (Number(balance) > 0 ? OPENAI_API_KEY : "");
-        if (!keyToUse) {
-            responseMessage = "You have no API key or your balance is too low.";
-            return res.status(400).json({ response: responseMessage });
-        }
-
-        const apiResponse = await fetch('https://api.openai.com/v1/embeddings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${keyToUse}`
-            },
-            body: JSON.stringify({
-                "input": text,
-                "model": "text-embedding-3-small",
-                "encoding_format": "float"
-            })
+        console.log("Executing vector similarity search...");
+        const querySnapshot = await vectorQuery.get();
+        
+        console.log(`Retrieved ${querySnapshot.size} documents`);
+        
+        const memories = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            // Calculate similarity score (1 - distance for COSINE)
+            // COSINE distance ranges from 0 (identical) to 2 (opposite)
+            const similarityScore = 1 - (data.vector_distance || 0);
+            console.log(`Processing document ${doc.id}, similarity score: ${similarityScore}`);
+            memories.push({
+                id: doc.id,
+                score: similarityScore,
+                ...data
+            });
         });
 
-        const data = await apiResponse.json();
-        responseMessage = data.data[0].embedding;
-
-        return res.status(200).json({ embedding: responseMessage });
+        console.log("Successfully processed request");
+        return res.status(200).json({ memories });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
-// Google Search Endpoint
-app.post('/google-search', async (req, res) => {
-    const { query, numResults } = req.body;
-    try {
-        const response = await fetch(`https://www.googleapis.com/customsearch/v1?key=${GOOGLE_SEARCH_API_KEY}&cx=${GOOGLE_SEARCH_ENGINE_ID}&q=${query}&num=${numResults}`);
-        const data = await response.json();
-        const dataItems = data.items;
-        let searchResults = "\n\n";
-        dataItems.forEach((item, index) => {
-            searchResults += `${index + 1}. [${item.title}](${item.link})
-        - ${item.snippet}
-
-    `;
+        console.error("Error getting memories:", error);
+        console.error("Stack trace:", error.stack);
+        return res.status(500).json({ 
+            error: 'Internal Server Error',
+            details: error.message,
+            stack: error.stack
         });
-        return res.status(200).json({ searchResults });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-
-// get Examples Endpoint
-app.post('/get-examples', async (req, res) => {
-    console.log("Getting examples");
-    // load the examples
-    await exampleStore.loadStore('./modules/exampleStore.json');
-    try {
-        const { embedding, k } = req.body;
-        const examples = await exampleStore.getTopKSimilarExamples(embedding, k);
-        return res.status(200).json({ examples });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
+// Add this test endpoint
+app.get('/test', (req, res) => {
+  res.json({ message: 'CORS test successful' });
 });
 
+// Export the Express app as a Firebase Cloud Function
+exports.api = functions.https.onRequest(app);
 
-// Start the server
-let port = 5001;
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+// Add local development server
+if (process.env.NODE_ENV === 'development') {
+    const PORT = 5001;
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}

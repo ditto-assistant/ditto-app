@@ -73,14 +73,29 @@ def update_user_conversations(user_id):
         for doc in docs:
             doc_data = doc.to_dict()
             
+            # Skip if embedding_vector already exists
+            if "embedding_vector" in doc_data:
+                print(f"Skipping document {doc.id} - embedding_vector already exists")
+                continue
+                
             # Check if the document has an "embedding" field
             if "embedding" in doc_data:
-                # Convert the "embedding" field to a Vector object
-                doc_data["embedding_vector"] = Vector(doc_data["embedding"])
-                
-                # Create a new document with the corrected Vector type
-                conversations_ref.document(doc.id).set(doc_data)
-                print(f"Updated document {doc.id} for user {user_id}")
+                try:
+                    # Skip if embedding is empty/zero length
+                    if not doc_data["embedding"]:
+                        print(f"Skipping document {doc.id} - Empty embedding")
+                        continue
+                        
+                    # Convert the "embedding" field to a Vector object
+                    doc_data["embedding_vector"] = Vector(doc_data["embedding"])
+                    
+                    # Create a new document with the corrected Vector type
+                    conversations_ref.document(doc.id).set(doc_data)
+                    print(f"Updated document {doc.id} for user {user_id}")
+                except (ValueError, TypeError) as e:
+                    # Skip documents that can't be converted to Vector
+                    print(f"Skipping document {doc.id} - Error converting to Vector: {e}")
+                    continue
             else:
                 print(f"No embedding found for document {doc.id} for user {user_id}")
         
@@ -89,10 +104,20 @@ def update_user_conversations(user_id):
     except Exception as e:
         print(f"Error updating conversations: {e}")
 
+
+def get_all_user_ids():
+    users = firebase_admin.auth.list_users()
+    return [user.uid for user in users.users]
+
 if __name__ == "__main__":
+    user_ids = get_all_user_ids()
+    for user_id in user_ids:
+        print(f"Updating conversations for user {user_id}")
+        update_user_conversations(user_id)
+
     # Replace with actual user ID
-    user_id = ""
-    get_user_conversations(user_id)
-    update_user_conversations(user_id)
+    # user_id = "zKvN3U5t0MSrWrmFG6ngiUQq2gP2"
+    # get_user_conversations(user_id)
+    # update_user_conversations(user_id)
 
     # print_all_user_name_and_email()

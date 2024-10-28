@@ -3,10 +3,14 @@ import {
   getDocs,
   query,
   orderBy,
-  limit
+  limit,
+  deleteDoc,
+  doc
 } from "firebase/firestore";
 
 import { db, grabConversationHistory } from "./firebase";
+import { routes } from '../firebaseConfig';
+import { auth } from "./firebase";
 
 /**
  * Grab 5 most recent prompts and responses from the database.
@@ -69,80 +73,182 @@ export const getShortTermMemory = async (userID, k) => {
   }
 }
 
-export const cosineSimilarity = (a, b) => {
-  const dot = (a, b) => a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
-  const mag = (vec) => Math.sqrt(dot(vec, vec));
-  return dot(a, b) / (mag(a) * mag(b));
-}
-
 export const getLongTermMemory = async (userID, embedding, k) => {
   try {
-    console.log("Getting long term memory...");
-    const history = await grabConversationHistory(userID);
+    console.log("getLongTermMemory - Starting function");
     let isDeactivated = localStorage.getItem("deactivateLongTermMemory") || "false";
-    if (history.length === 0 || isDeactivated == "true") {
-      // if (history.length === 0) {
+    console.log("Long term memory deactivated:", isDeactivated);
+    
+    if (isDeactivated === "true") {
       return "No history! :)";
     }
-    const scores = [];
-    history.forEach(pair => {
-      const pairEmbedding = pair.embedding;
-      // if pairEmbedding is empty, skip and make similarityScore = 0
-      if (pairEmbedding.length === 0) {
-        const similarityScore = 0;
-        scores.push({ pair: pair, score: similarityScore });
-      } else {
-        // if pair.response == 'You have no API key or your balance is too low.' then skip and make similarityScore = 0
-        if (pairEmbedding.response == 'You have no API key or your balance is too low.') {
-          const similarityScore = 0;
-          scores.push({ pair: pair, score: similarityScore });
-        } else {
-          const similarityScore = cosineSimilarity(embedding, pairEmbedding);
-          scores.push({ pair: pair, score: similarityScore });
-        }
-      }
-    });
-    scores.sort((a, b) => b.score - a.score);
-    const relevantPairs = scores.slice(0, k);
-    // make prompt/response pairs into a string for the prompt template
-    // user (timestamp): "prompt here"
-    // ditto: "response here"
-    const longTermMemory = relevantPairs.map(pair => {
 
-      // check if "Script Generated and Downloaded.]\nTask:" is in the response
-      // split by that substring and check if [0] has webApps or openSCAD
-      // if webApps, change the response to <HTML_SCRIPT> [-1] of the split response
-      // if openSCAD, change the response to <OPENSCAD> [-1] od the split response
-      // console.log(pair.pair.response);
-      if (pair.pair.response.includes("Script Generated and Downloaded.**")) {
-        const splitResponse = pair.pair.response.split("- Task:");
+    const user = auth.currentUser;
+    console.log("Current user exists:", !!user);
+    
+    if (!user) {
+      throw new Error('No authenticated user found');
+    }
+    
+    const token = await user.getIdToken();
+    
+    // Modified fetch request
+    const response = await fetch(routes.memories, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Origin': window.location.origin
+      },
+      mode: 'cors',
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        userId: userID,
+        vector: embedding,
+        k: k
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("API Error response:", errorData);
+      throw new Error(errorData.details || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.memories || data.memories.length === 0) {
+      return "No history! :)";
+    }
+
+    console.log("Processing memories for formatting");
+    const longTermMemory = data.memories.map(pair => {
+      if (!pair || !pair.response) {
+        console.log("Skipping invalid memory entry");
+        return '';
+      }
+
+      // Log the type of response we're processing
+      console.log("Processing response type:", 
+        pair.response.includes("Script Generated") ? "Script" :
+        pair.response.includes("Image Task") ? "Image" :
+        pair.response.includes("Google Search") ? "Search" :
+        pair.response.includes("Home Assistant") ? "Home" :
+        "Normal"
+      );
+
+      // Rest of the formatting logic remains the same
+      if (pair.response.includes("Script Generated and Downloaded.**")) {
+        const splitResponse = pair.response.split("- Task:");
         if (splitResponse[0].includes("HTML")) {
-          return `User (${pair.pair.timestampString}): ${pair.pair.prompt}\nDitto: <HTML_SCRIPT>${splitResponse[1]}\n`;
+          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <HTML_SCRIPT>${splitResponse[1]}\n`;
         }
         else if (splitResponse[0].includes("OpenSCAD")) {
-          return `User (${pair.pair.timestampString}): ${pair.pair.prompt}\nDitto: <OPENSCAD>${splitResponse[1]}\n`;
+          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <OPENSCAD>${splitResponse[1]}\n`;
         }
       }
-      else if (pair.pair.response.includes("Image Task:")) {
-        const splitResponse = pair.pair.response.split("Image Task:");
-        return `User (${pair.pair.timestampString}): ${pair.pair.prompt}\nDitto: <IMAGE_GENERATION>${splitResponse[1]}\n`;
-
+      else if (pair.response.includes("Image Task:")) {
+        const splitResponse = pair.response.split("Image Task:");
+        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <IMAGE_GENERATION>${splitResponse[1]}\n`;
       }
-      else if (pair.pair.response.includes("Google Search Query:")) {
-        const splitResponse = pair.pair.response.split("Google Search Query:");
-        return `User (${pair.pair.timestampString}): ${pair.pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
-      } else if (pair.pair.response.includes("Home Assistant Task:")) {
-        const splitResponse = pair.pair.response.split("Home Assistant Task:");
-        return `User (${pair.pair.timestampString}): ${pair.pair.prompt}\nDitto: <GOOGLE_HOME>${splitResponse[1]}\n`;
+      else if (pair.response.includes("Google Search Query:")) {
+        const splitResponse = pair.response.split("Google Search Query:");
+        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
+      } 
+      else if (pair.response.includes("Home Assistant Task:")) {
+        const splitResponse = pair.response.split("Home Assistant Task:");
+        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME>${splitResponse[1]}\n`;
       }
       else {
-        return `User (${pair.pair.timestampString}): ${pair.pair.prompt}\nDitto: ${pair.pair.response}\n`;
+        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
       }
-    });
-    return longTermMemory.join('').slice(0, -1);
+    }).filter(Boolean);
+
+    return longTermMemory.join('').slice(0, -1) || "No history! :)";
   }
   catch (e) {
-    console.error(e);
+    console.error('Error getting long term memory:', e);
+    console.error('Stack trace:', e.stack);
     return "No history! :)";
+  }
+}
+
+/**
+ * Find the document ID for a conversation by matching prompt
+ * @param {string} userID - The user's ID
+ * @param {string|null} prompt - The prompt to search for
+ * @param {string|null} response - Not used anymore, kept for backward compatibility
+ * @returns {string|null} - Returns the document ID if found, null otherwise
+ */
+export const findConversationDocId = async (userID, prompt, response) => {
+  try {
+    // If no prompt (it's a Ditto response), return null early
+    if (!prompt) {
+      return null;
+    }
+
+    // Create a query that's sorted by timestamp and limited
+    const q = query(
+      collection(db, "memory", userID, "conversations"),
+      orderBy('timestamp', 'desc'),
+      limit(50) // Limit to recent conversations for faster search
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    // Find first document with matching prompt
+    for (const doc of querySnapshot.docs) {
+      const data = doc.data();
+      if (data.prompt === prompt) {
+        return doc.id;
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.error("Error finding conversation document ID:", e);
+    return null;
+  }
+}
+
+/**
+ * Get the embedding array for a specific conversation document
+ * @param {string} userID - The user's ID
+ * @param {string} docId - The document ID of the conversation
+ * @returns {number[]|null} - Returns the embedding array if found, null otherwise
+ */
+export const getConversationEmbedding = async (userID, docId) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "memory", userID, "conversations"));
+    
+    let embedding = null;
+    querySnapshot.forEach((doc) => {
+      if (doc.id === docId) {
+        embedding = doc.data().embedding;
+      }
+    });
+    
+    return embedding;
+  } catch (e) {
+    console.error("Error getting conversation embedding:", e);
+    return null;
+  }
+}
+
+/**
+ * Delete a conversation from Firestore by its document ID
+ * @param {string} userID - The user's ID
+ * @param {string} docId - The document ID of the conversation to delete
+ * @returns {boolean} - Returns true if deletion was successful
+ */
+export const deleteConversation = async (userID, docId) => {
+  try {
+    const docRef = doc(db, "memory", userID, "conversations", docId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (e) {
+    console.error("Error deleting conversation:", e);
+    return false;
   }
 }
