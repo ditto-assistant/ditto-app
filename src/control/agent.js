@@ -1,4 +1,4 @@
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, vector } from "firebase/firestore";
 import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../api/LLM";
 import { googleSearch } from "../api/searchEngine";
 import { handleHomeAssistantTask } from "./agentTools";
@@ -352,6 +352,7 @@ export const saveToMemory = async (
     const docRef = await addDoc(memoryRef, {
       prompt: prompt,
       response: response,
+      embedding_vector: vector(embedding),
       embedding: embedding,
       timestamp: new Date(),
       timestampString: new Date().toISOString(),

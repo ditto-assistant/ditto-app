@@ -17,6 +17,16 @@ function getBaseURL(dittoEnv) {
 
 export const BASE_URL = getBaseURL(MODE);
 
+function getMemoriesURL(dittoEnv) {
+  switch (dittoEnv) {
+    case "development":
+      return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
+    default:
+      return "https://us-central1-ditto-app-dev.cloudfunctions.net/api/get-memories";
+      // return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
+  }
+}
+
 export const routes = {
   prompt: BASE_URL + "/v1/prompt",
   embed: BASE_URL + "/v1/embed",
@@ -30,6 +40,7 @@ export const routes = {
    * @returns {string} The complete URL for the balance endpoint.
    */
   balance: (userID) => `${BASE_URL}/v1/balance?userID=${userID}`,
+  memories: getMemoriesURL(MODE),
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
