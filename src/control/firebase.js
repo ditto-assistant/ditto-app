@@ -189,6 +189,7 @@ export const grabConversationHistory = async (userID) => {
     }
     querySnapshot.forEach((doc) => {
       let docData = doc.data();
+      docData.id = doc.id;
       history.push(docData);
     });
     // sort the history by timestamp
@@ -299,15 +300,16 @@ export const loadConversationHistoryFromFirestore = async (userID) => {
   try {
     const history = await grabConversationHistory(userID);
     if (history.length === 0) {
-      return { prompts: [], responses: [], timestamps: [] };
+      return { prompts: [], responses: [], timestamps: [], pairIDs: [] };
     }
     const prompts = history.map(pair => pair.prompt);
     const responses = history.map(pair => pair.response);
     const timestamps = history.map(pair => pair.timestamp.toDate().getTime());
-    return { prompts, responses, timestamps };
+    const pairIDs = history.map(pair => pair.id);
+    return { prompts, responses, timestamps, pairIDs };
   } catch (e) {
     console.error(e);
-    return { prompts: [], responses: [], timestamps: [] };
+    return { prompts: [], responses: [], timestamps: [], pairIDs: [] };
   }
 }
 

@@ -8,8 +8,8 @@ import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCopy, FiDownload } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
-import { FaBrain, FaTrash } from 'react-icons/fa';
-import { findConversationDocId, getConversationEmbedding, deleteConversation } from '../control/memory';
+import { FaBrain, FaTrash, FaSpinner } from 'react-icons/fa';
+import { deleteConversation } from '../control/memory';
 import { routes } from '../firebaseConfig';
 import { textEmbed } from '../api/LLM';  // Add this import
 
@@ -19,6 +19,7 @@ const USER_AVATAR_KEY = 'userAvatar';
 const MEMORY_CACHE_KEY = 'memoryCache';
 const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
+const INTERACTION_DELAY = 300; // 300ms delay to prevent accidental closures
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
@@ -99,10 +100,10 @@ export default function ChatFeed({
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(() => {
-    return localStorage.getItem(USER_AVATAR_KEY) || '../user_placeholder.png';
+    return localStorage.getItem(USER_AVATAR_KEY) || '/user_placeholder.png'; // Update path
   });
   const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || '../logo512.png';
+    return localStorage.getItem(DITTO_AVATAR_KEY) || '/logo512.png'; // Update path
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -139,7 +140,7 @@ export default function ChatFeed({
 
   useEffect(() => {
     // Cache Ditto avatar
-    fetch('../logo512.png')
+    fetch('/logo512.png')
       .then(response => response.blob())
       .then(blob => {
         const reader = new FileReader();
@@ -155,9 +156,28 @@ export default function ChatFeed({
     // Cache user avatar
     if (auth.currentUser) {
       const photoURL = auth.currentUser.photoURL;
+      console.log('User photo URL:', photoURL);
+
       if (photoURL) {
-        fetch(photoURL)
-          .then(response => response.blob())
+        // Remove credentials and modify fetch options for Google photos
+        fetch(photoURL, {
+          mode: 'cors',
+          credentials: 'omit',
+          headers: {
+            'Accept': 'image/*'
+          },
+          cache: 'force-cache'
+        })
+          .then(response => {
+            // Immediately throw if we get rate limited
+            if (response.status === 429) {
+              throw new Error('Rate limited');
+            }
+            if (!response.ok) {
+              throw new Error(`Failed to fetch photo: ${response.status}`);
+            }
+            return response.blob();
+          })
           .then(blob => {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -167,9 +187,10 @@ export default function ChatFeed({
             };
             reader.readAsDataURL(blob);
           })
-          .catch(() => {
-            const fallbackURL = '../user_placeholder.png';
-            fetch(fallbackURL)
+          .catch((error) => {
+            console.log('Using fallback photo due to error:', error.message);
+            // Immediately use fallback without trying additional fetches
+            fetch('/user_placeholder.png')
               .then(response => response.blob())
               .then(blob => {
                 const reader = new FileReader();
@@ -179,45 +200,119 @@ export default function ChatFeed({
                   setProfilePic(base64data);
                 };
                 reader.readAsDataURL(blob);
+              })
+              .catch(error => {
+                console.error('Error loading placeholder:', error);
+                setProfilePic('/user_placeholder.png');
               });
           });
       } else {
-        fetch('../user_placeholder.png')
-          .then(response => response.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = reader.result;
-              localStorage.setItem(USER_AVATAR_KEY, base64data);
-              setProfilePic(base64data);
-            };
-            reader.readAsDataURL(blob);
-          });
+        setProfilePic('/user_placeholder.png');
+        console.log('No user photo URL, using placeholder');
       }
+    } else {
+      setProfilePic('/user_placeholder.png');
+      console.log('No authenticated user, using placeholder');
     }
   }, []);
 
   useEffect(() => {
-    const handleClickAway = (e) => {
-      // Don't close if clicking inside action or reaction overlays
-      if (e.target.closest('.action-overlay') || e.target.closest('.reaction-overlay')) {
-        return;
-      }
-      
-      // Don't close if clicking the originating chat bubble
-      if (actionOverlay && e.target.closest('.chat-bubble')) {
-        const bubbleIndex = parseInt(e.target.closest('.chat-bubble').dataset.index);
-        if (bubbleIndex === actionOverlay.index) {
-          return;
-        }
-      }
-      
-      setActionOverlay(null);
-      setReactionOverlay(null);
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    const TOUCH_THRESHOLD = 10;
+    const TIME_THRESHOLD = 300;
+    let isClosing = false;
+
+    const handleTouchStart = (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      isClosing = false;
     };
 
-    document.addEventListener('click', handleClickAway);
-    return () => document.removeEventListener('click', handleClickAway);
+    const handleTouchEnd = (e) => {
+      if (!actionOverlay || isClosing) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime;
+
+      // Calculate movement
+      const deltaX = Math.abs(touchEndX - touchStartX);
+      const deltaY = Math.abs(touchEndY - touchStartY);
+
+      // If movement is too large or touch duration is too short, don't close
+      if (deltaX > TOUCH_THRESHOLD || deltaY > TOUCH_THRESHOLD || touchDuration < TIME_THRESHOLD) {
+        return;
+      }
+
+      const target = document.elementFromPoint(touchEndX, touchEndY);
+      if (!target) return;
+
+      // Don't close if touching inside overlays
+      const isOverlayTouch = target.closest('.action-overlay') || 
+                            target.closest('.reaction-overlay') ||
+                            target.closest('.action-button');
+                          
+      if (isOverlayTouch) return;
+
+      // Get the touched bubble
+      const touchedBubble = target.closest('.chat-bubble');
+      
+      // If touching outside both overlays and bubbles, close overlay
+      if (!isOverlayTouch && !touchedBubble) {
+        isClosing = true;
+        setTimeout(() => {
+          setActionOverlay(null);
+          setReactionOverlay(null);
+        }, 50);
+        return;
+      }
+
+      // If touching a different bubble, close overlay
+      if (touchedBubble) {
+        const bubbleIndex = parseInt(touchedBubble.dataset.index);
+        if (bubbleIndex !== actionOverlay.index) {
+          isClosing = true;
+          setTimeout(() => {
+            setActionOverlay(null);
+            setReactionOverlay(null);
+          }, 50);
+        }
+      }
+    };
+
+    const handleMouseDown = (e) => {
+      if (e.touches || !actionOverlay || isClosing) return;
+
+      const isOverlayClick = e.target.closest('.action-overlay') || 
+                            e.target.closest('.reaction-overlay') ||
+                            e.target.closest('.action-button');
+                          
+      if (isOverlayClick) return;
+
+      const clickedBubble = e.target.closest('.chat-bubble');
+      
+      if (!isOverlayClick && !clickedBubble) {
+        isClosing = true;
+        setTimeout(() => {
+          setActionOverlay(null);
+          setReactionOverlay(null);
+        }, 50);
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, true);
+    document.addEventListener('touchend', handleTouchEnd, true);
+    document.addEventListener('mousedown', handleMouseDown, true);
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart, true);
+      document.removeEventListener('touchend', handleTouchEnd, true);
+      document.removeEventListener('mousedown', handleMouseDown, true);
+    };
   }, [actionOverlay]);
 
   useEffect(() => {
@@ -249,34 +344,32 @@ export default function ChatFeed({
     e.preventDefault();
     e.stopPropagation();
     
+    // Get coordinates before any state updates
     const rect = e.currentTarget.getBoundingClientRect();
     const isUserMessage = messages[index].sender === 'User';
+    const clientX = e.touches?.[0]?.clientX || e.clientX || rect.left + rect.width / 2;
+    const clientY = e.touches?.[0]?.clientY || e.clientY || rect.top + rect.height / 2;
 
-    // Trigger haptic feedback on mobile devices
+    // Add a small delay to prevent immediate closure
+    setTimeout(() => {
+      setActionOverlay(prev => {
+        if (prev && prev.index === index) {
+          return null;
+        }
+        return { 
+          index, 
+          type, 
+          clientX,
+          clientY,
+          isUserMessage,
+          rect
+        };
+      });
+      setReactionOverlay(null);
+    }, 50);
+
+    // Trigger haptic feedback
     triggerHapticFeedback();
-
-    // Close the overlay if clicking the same bubble that opened it
-    if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
-      return;
-    }
-
-    // If clicking a different bubble, close current overlay and open new one
-    if (actionOverlay && actionOverlay.index !== index) {
-      setActionOverlay(null);
-    }
-
-    const clientX = e.clientX || (rect.left + rect.width / 2);
-    const clientY = e.clientY || (rect.top + rect.height / 2);
-    setActionOverlay({ 
-      index, 
-      type, 
-      clientX,
-      clientY,
-      isUserMessage,
-      rect // Store the bubble's rect for positioning
-    });
-    setReactionOverlay(null);
   };
 
   const handleImageClick = (src) => {
@@ -456,6 +549,13 @@ export default function ChatFeed({
                   <FaBrain style={{ marginRight: '5px' }} />
                   {loadingMemories ? 'Loading...' : 'Memories'}
                 </button>
+                <button 
+                  onClick={() => handleMessageDelete(actionOverlay.index)} 
+                  className='action-button delete-action'
+                >
+                  <FaTrash style={{ marginRight: '5px' }} />
+                  Delete
+                </button>
               </>
             ) : (
               <>
@@ -628,78 +728,107 @@ export default function ChatFeed({
 
   const handleDeleteMemory = async (memory, idx) => {
     const userID = auth.currentUser.uid;
-    const docId = await findConversationDocId(userID, memory.prompt);
     
-    // Show confirmation overlay with docId for debugging
+    // Show confirmation overlay with docId that came from get-memories
     setDeleteConfirmation({
       memory,
       idx,
-      docId
+      docId: memory.id // Use the id that came from get-memories
     });
   };
 
-  // Update the confirmDelete function
+  // Update handleMessageDelete to use pairID directly
+  const handleMessageDelete = async (index) => {
+    const message = messages[index];
+    const userID = auth.currentUser.uid;
+    
+    // Get the pairID from the message
+    const pairID = message.pairID;
+    
+    // Show confirmation overlay
+    setDeleteConfirmation({
+      memory: {
+        prompt: message.sender === 'Ditto' && index > 0 ? messages[index - 1].text : message.text,
+        response: message.sender === 'Ditto' ? message.text : null
+      },
+      idx: index,
+      docId: pairID, // Use pairID directly
+      isMessageDelete: true
+    });
+    
+    // Close the action overlay
+    setActionOverlay(null);
+  };
+
+  // Update confirmDelete to handle both cases
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
     
-    const { memory, idx, docId } = deleteConfirmation;
+    const { memory, idx, docId, isMessageDelete } = deleteConfirmation;
     const userID = auth.currentUser.uid;
     
     try {
-      setDeletingMemories(prev => new Set([...prev, idx]));
+      if (isMessageDelete) {
+        setDeletingMemories(prev => new Set([...prev, idx]));
+      }
       await new Promise(resolve => setTimeout(resolve, 300));
 
       const success = await deleteConversation(userID, docId);
       
       if (success) {
-        // Update related memories in the UI
-        const newMemories = relatedMemories.filter((_, i) => i !== idx);
-        setRelatedMemories(newMemories);
-        
-        // Remove from localStorage cache
-        const promptId = `${userID}-${memory.prompt}`;
-        const cache = getMemoryCache();
-        delete cache[promptId];
-        localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+        if (isMessageDelete) {
+          // Remove from localStorage conversation history
+          const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+          const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+          const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+          const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
 
-        // Remove from localStorage conversation history
-        const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-        const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-        const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-
-        // Find the index of the conversation in the arrays
-        const conversationIndex = prompts.findIndex(p => p === memory.prompt);
-        
-        if (conversationIndex !== -1) {
-          // Remove the conversation from all arrays
-          prompts.splice(conversationIndex, 1);
-          responses.splice(conversationIndex, 1);
-          timestamps.splice(conversationIndex, 1);
-
-          // Update localStorage
-          localStorage.setItem('prompts', JSON.stringify(prompts));
-          localStorage.setItem('responses', JSON.stringify(responses));
-          localStorage.setItem('timestamps', JSON.stringify(timestamps));
+          // Find the index of the conversation in the arrays
+          const conversationIndex = pairIDs.findIndex(id => id === docId);
           
-          // Update histCount to match the new conversation length
-          const newHistCount = prompts.length;
-          localStorage.setItem('histCount', newHistCount.toString());
+          if (conversationIndex !== -1) {
+            // Remove the conversation from all arrays
+            prompts.splice(conversationIndex, 1);
+            responses.splice(conversationIndex, 1);
+            timestamps.splice(conversationIndex, 1);
+            pairIDs.splice(conversationIndex, 1);
 
-          // Dispatch custom event to trigger re-render with updated count
-          window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
-            detail: { 
-              conversationIndex,
-              newHistCount 
-            }
-          }));
-        }
-        
-        if (newMemories.length === 0) {
-          setMemoryOverlay(null);
+            // Update localStorage
+            localStorage.setItem('prompts', JSON.stringify(prompts));
+            localStorage.setItem('responses', JSON.stringify(responses));
+            localStorage.setItem('timestamps', JSON.stringify(timestamps));
+            localStorage.setItem('pairIDs', JSON.stringify(pairIDs));
+            
+            // Update histCount to match the new conversation length
+            const newHistCount = prompts.length;
+            localStorage.setItem('histCount', newHistCount.toString());
+
+            // Dispatch custom event to trigger re-render with updated count
+            window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
+              detail: { 
+                conversationIndex,
+                newHistCount 
+              }
+            }));
+          }
+        } else {
+          // Handle memory overlay deletion
+          const newMemories = relatedMemories.filter((_, i) => i !== idx);
+          setRelatedMemories(newMemories);
+          
+          // Remove from localStorage cache
+          const promptId = `${userID}-${memory.prompt}`;
+          const cache = getMemoryCache();
+          delete cache[promptId];
+          localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+          
+          if (newMemories.length === 0) {
+            setMemoryOverlay(null);
+          }
         }
       }
     } catch (error) {
-      console.error('Error deleting memory:', error);
+      console.error('Error deleting:', error);
     } finally {
       setDeletingMemories(prev => {
         const next = new Set(prev);
@@ -916,19 +1045,30 @@ export default function ChatFeed({
       {deleteConfirmation && (
         <div 
           className="delete-confirmation-overlay"
-          onClick={() => setDeleteConfirmation(null)} // Close when clicking the overlay
+          onClick={() => setDeleteConfirmation(null)}
         >
           <div 
             className="delete-confirmation-content"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the content
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="delete-confirmation-title">Delete Memory?</div>
+            <div className="delete-confirmation-title">Delete Message?</div>
             <div className="delete-confirmation-message">
-              Are you sure you want to delete this conversation? This action cannot be undone.
+              Are you sure you want to delete this message? This action cannot be undone.
             </div>
-            <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
-              Document ID: {deleteConfirmation.docId || 'Not found'}
-            </div>
+            {deleteConfirmation.isLoading ? (
+              <div className="delete-confirmation-loading">
+                <FaSpinner className="spinner" />
+                <div>Finding message in database...</div>
+              </div>
+            ) : deleteConfirmation.error ? (
+              <div className="delete-confirmation-docid not-found">
+                {deleteConfirmation.error}
+              </div>
+            ) : (
+              <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
+                Document ID: {deleteConfirmation.docId || 'Not found'}
+              </div>
+            )}
             <div className="delete-confirmation-buttons">
               <button 
                 className="delete-confirmation-button cancel"
@@ -939,7 +1079,7 @@ export default function ChatFeed({
               <button 
                 className="delete-confirmation-button confirm"
                 onClick={confirmDelete}
-                disabled={!deleteConfirmation.docId}
+                disabled={deleteConfirmation.isLoading || !deleteConfirmation.docId}
               >
                 Delete
               </button>
