@@ -771,7 +771,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 4000;
   backdrop-filter: blur(5px);
 }
 
@@ -783,6 +783,8 @@
   max-height: 80vh;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative; /* Ensure it's above the overlay */
+  z-index: 4001; /* One higher than the overlay */
 }
 
 .memory-header {

@@ -673,9 +673,12 @@ export default function ChatFeed({
       {memoryOverlay && (
         <div 
           className='memory-overlay'
-          onClick={(e) => e.stopPropagation()}
+          onClick={() => setMemoryOverlay(null)} // Close when clicking overlay
         >
-          <div className='memory-content'>
+          <div 
+            className='memory-content'
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+          >
             <div className='memory-header'>
               <h3>Related Memories</h3>
               <button 
