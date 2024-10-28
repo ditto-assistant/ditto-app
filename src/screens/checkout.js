@@ -43,17 +43,9 @@ const Checkout = () => {
                         <h3 style={styles.balanceHeader}>Current Balance</h3>
                         <div style={styles.balanceGrid}>
                             {!balance.loading ? (
-                                <>
-                                    <p style={styles.balanceItem}>
-                                        USD: <span style={styles.highlightText}>{balance.usd}</span> (<span style={styles.highlightText}>{balance.balance}</span> tokens)
-                                    </p>
-                                    <p style={styles.balanceItem}>
-                                        Images: <span style={styles.highlightText}>{balance.images}</span>
-                                    </p>
-                                    <p style={styles.balanceItem}>
-                                        Searches: <span style={styles.highlightText}>{balance.searches}</span>
-                                    </p>
-                                </>
+                                <p style={styles.balanceItem}>
+                                    USD: <span style={styles.highlightText}>{balance.usd}</span> (<span style={styles.highlightText}>{balance.balance}</span> tokens)
+                                </p>
                             ) : (
                                 <div style={styles.spinnerContainer}>
                                     <LoadingSpinner size={45} inline={true} />
@@ -64,7 +56,7 @@ const Checkout = () => {
                     <div style={styles.divider}></div>
 
                     <div style={styles.pricingInfo}>
-                        <h3 style={styles.pricingTitle}>Token Packages</h3>
+                        {/* <h3 style={styles.pricingTitle}>Token Packages</h3> */}
                         <div style={styles.pricingTable}>
                             {PricingTiers.map(({ price, tokens, bonus }) => {
                                 const isSelected = price === amount;
@@ -204,19 +196,18 @@ const styles = {
         color: 'white',
         textAlign: 'center',
         backgroundColor: '#2f3136',
-        padding: '20px',
+        padding: '12px',
     },
     balanceHeader: {
-        margin: '0 0 16px 0',
-        fontSize: '1.2em',
+        margin: '0 0 8px 0',
+        fontSize: '1.1em',
         fontWeight: '500',
         color: '#b9bbbe',
     },
     balanceGrid: {
         display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '24px',
     },
     balanceItem: {
         margin: 0,
