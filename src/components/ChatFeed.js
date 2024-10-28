@@ -255,18 +255,16 @@ export default function ChatFeed({
               return (
                 <div className='inline-code-container'>
                   <code className='inline-code' {...props}>{children}</code>
-                  {inlineText.split(' ').length > 1 && (
-                    <button
-                      className='copy-button inline-code-button'
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopy(inlineText);
-                      }}
-                    >
-                      <FiCopy style={{ marginRight: '6px' }} />
-                      Copy
-                    </button>
-                  )}
+                  <button
+                    className='copy-button inline-code-button'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(inlineText);
+                    }}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
                 </div>
               );
             }

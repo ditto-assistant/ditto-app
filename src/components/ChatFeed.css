@@ -236,14 +236,15 @@
   display: inline-flex;
   align-items: center;
   position: relative;
+  background: #282c34;
+  border-radius: 6px;
+  padding-left: 8px;
 }
 
 .inline-code {
-  background: #282c34;
   color: #ffffff;
-  padding: 2px 5px;
-  border-radius: 5px;
   font-family: 'Courier New', Courier, monospace;
+  margin-right: 4px;
 }
 
 .copy-button {
@@ -288,8 +289,9 @@
 .inline-code-button {
   position: static;
   margin-left: 8px;
-  width: auto;
-  padding: 6px 12px;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
 }
 
 .inline-code-button svg {
@@ -671,3 +673,4 @@
 .chat-bubble.Ditto .copy-button:hover {
   background-color: rgba(71, 82, 196, 1); /* Original blue hover */
 }
+
