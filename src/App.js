@@ -1,3 +1,4 @@
+import './GlobalStyles.css';
 import { Suspense, lazy } from "react";
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements, Outlet } from "react-router-dom";
 import FullScreenSpinner from "./components/LoadingSpinner";
@@ -7,6 +8,7 @@ import { BalanceProvider } from './hooks/useBalance';
 import { DittoActivationProvider } from './hooks/useDittoActivation';
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import Login from './screens/login';
+import './GlobalStyles.css';
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));

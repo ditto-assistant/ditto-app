@@ -1,0 +1,20 @@
+/* Copy the complete base styles you provided */
+:root {
+    /* Colors */
+    --primary-color: #7289da;
+    --background-color: #36393f;
+    /* ... all other variables ... */
+}
+
+/* Base Styles */
+body, html {
+    background: linear-gradient(to bottom, 
+        #4a0080 0%,
+        #000066 40%,
+        #1a1a1a 80%,
+        #000000 100%
+    );
+    /* ... rest of base styles ... */
+}
+
+/* ... rest of global styles ... */ 
