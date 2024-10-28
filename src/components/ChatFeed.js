@@ -698,8 +698,40 @@ export default function ChatFeed({
                   }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className='memory-prompt'>{memory.prompt}</div>
-                  <div className='memory-response'>{memory.response}</div>
+                  <div className='memory-prompt'>
+                    <ReactMarkdown
+                      children={memory.prompt}
+                      components={{
+                        img: ({ src, alt }) => (
+                          <div className="memory-image-container">
+                            <img
+                              src={src}
+                              alt={alt}
+                              className="memory-image"
+                              onClick={() => handleImageClick(src)}
+                            />
+                          </div>
+                        ),
+                      }}
+                    />
+                  </div>
+                  <div className='memory-response'>
+                    <ReactMarkdown
+                      children={memory.response}
+                      components={{
+                        img: ({ src, alt }) => (
+                          <div className="memory-image-container">
+                            <img
+                              src={src}
+                              alt={alt}
+                              className="memory-image"
+                              onClick={() => handleImageClick(src)}
+                            />
+                          </div>
+                        ),
+                      }}
+                    />
+                  </div>
                   <div className='memory-footer'>
                     <div className='memory-timestamp'>
                       {formatTimestamp(new Date(memory.timestampString).getTime())}

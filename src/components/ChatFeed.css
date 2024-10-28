@@ -837,6 +837,9 @@
   color: #ffffff;
   font-weight: 500;
   margin-bottom: 8px;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .memory-response {
@@ -931,3 +934,67 @@
 .memory-item.deleting {
   animation: slideOut 0.3s ease forwards;
 }
+
+/* Update memory item styles */
+.memory-item {
+  background-color: #40444b;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: transform 0.2s, opacity 0.3s, height 0.3s;
+  overflow: hidden;
+}
+
+/* Add styles for the image container */
+.memory-image-container {
+  margin: 4px 0;
+  max-height: 120px; /* Slightly smaller than before */
+  overflow: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: top;
+}
+
+.memory-image-container:hover {
+  opacity: 0.9;
+}
+
+/* Style the images themselves */
+.memory-image {
+  max-height: 120px; /* Match container */
+  width: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.2s;
+}
+
+.memory-image:hover {
+  transform: scale(1.02);
+}
+
+/* Update memory response to handle text with images better */
+.memory-response {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95em;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Add styles for multiple images in a row */
+.memory-response p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* Make sure text nodes in the response wrap properly */
+.memory-response p > :not(.memory-image-container) {
+  flex: 1 1 100%;
+}
+
