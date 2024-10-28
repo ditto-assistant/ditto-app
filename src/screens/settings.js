@@ -99,7 +99,7 @@ const Settings = () => {
             )}
           </div>
           <div style={styles.settingsOptions}>
-            <Button variant="contained" onClick={() => navigate("/paypal")} style={styles.button}>
+            <Button variant="contained" onClick={() => navigate("/checkout")} style={styles.button}>
               ADD TOKENS
             </Button>
             <Button variant="contained" onClick={handleManageKeys} style={styles.button}>
