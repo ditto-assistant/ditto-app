@@ -1073,11 +1073,24 @@
   color: white;
 }
 
-.delete-confirmation-button:hover {
+/* Add styles for disabled state */
+.delete-confirmation-button.confirm:disabled {
+  background-color: #72494a;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delete-confirmation-button:not(:disabled):hover {
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
 
-.delete-confirmation-button:active {
+.delete-confirmation-button:not(:disabled):active {
   transform: translateY(0);
+}
+
+/* Update docId style when not found */
+.delete-confirmation-docid.not-found {
+  color: #ed4245;
 }

@@ -916,13 +916,19 @@ export default function ChatFeed({
         </div>
       )}
       {deleteConfirmation && (
-        <div className="delete-confirmation-overlay">
-          <div className="delete-confirmation-content">
+        <div 
+          className="delete-confirmation-overlay"
+          onClick={() => setDeleteConfirmation(null)} // Close when clicking the overlay
+        >
+          <div 
+            className="delete-confirmation-content"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the content
+          >
             <div className="delete-confirmation-title">Delete Memory?</div>
             <div className="delete-confirmation-message">
               Are you sure you want to delete this conversation? This action cannot be undone.
             </div>
-            <div className="delete-confirmation-docid">
+            <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
               Document ID: {deleteConfirmation.docId || 'Not found'}
             </div>
             <div className="delete-confirmation-buttons">
@@ -935,6 +941,7 @@ export default function ChatFeed({
               <button 
                 className="delete-confirmation-button confirm"
                 onClick={confirmDelete}
+                disabled={!deleteConfirmation.docId}
               >
                 Delete
               </button>
