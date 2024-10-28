@@ -71,6 +71,9 @@ const getCachedMemories = (promptId) => {
   }
 };
 
+// Add this new event name constant at the top level
+const MEMORY_DELETED_EVENT = 'memoryDeleted';
+
 export default function ChatFeed({
   messages,
   histCount,
@@ -110,6 +113,7 @@ export default function ChatFeed({
   const [loadingMemories, setLoadingMemories] = useState(false);
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -631,36 +635,70 @@ export default function ChatFeed({
   };
 
   const handleDeleteMemory = async (memory, idx) => {
-    try {
-      const userID = auth.currentUser.uid;
-      const docId = await findConversationDocId(userID, memory.prompt);
-      if (!docId) {
-        console.error('Could not find conversation to delete');
-        return;
-      }
+    const userID = auth.currentUser.uid;
+    const docId = await findConversationDocId(userID, memory.prompt);
+    
+    // Show confirmation overlay with docId for debugging
+    setDeleteConfirmation({
+      memory,
+      idx,
+      docId
+    });
+  };
 
+  // Update the confirmDelete function
+  const confirmDelete = async () => {
+    if (!deleteConfirmation) return;
+    
+    const { memory, idx, docId } = deleteConfirmation;
+    const userID = auth.currentUser.uid;
+    
+    try {
       setDeletingMemories(prev => new Set([...prev, idx]));
       await new Promise(resolve => setTimeout(resolve, 300));
 
       const success = await deleteConversation(userID, docId);
       
       if (success) {
-        // Update related memories
+        // Update related memories in the UI
         const newMemories = relatedMemories.filter((_, i) => i !== idx);
         setRelatedMemories(newMemories);
         
-        // Remove the entire cache entry for this prompt
+        // Remove from localStorage cache
         const promptId = `${userID}-${memory.prompt}`;
         const cache = getMemoryCache();
-        delete cache[promptId]; // Remove the entire cache entry
+        delete cache[promptId];
         localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+
+        // Remove from localStorage conversation history
+        const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+        const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+        const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+
+        // Find the index of the conversation in the arrays
+        const conversationIndex = prompts.findIndex(p => p === memory.prompt);
         
-        // Close memory overlay if this was the last memory
+        if (conversationIndex !== -1) {
+          // Remove the conversation from all arrays
+          prompts.splice(conversationIndex, 1);
+          responses.splice(conversationIndex, 1);
+          timestamps.splice(conversationIndex, 1);
+
+          // Update localStorage
+          localStorage.setItem('prompts', JSON.stringify(prompts));
+          localStorage.setItem('responses', JSON.stringify(responses));
+          localStorage.setItem('timestamps', JSON.stringify(timestamps));
+          localStorage.setItem('histCount', (prompts.length).toString());
+
+          // Dispatch custom event to trigger re-render
+          window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
+            detail: { conversationIndex }
+          }));
+        }
+        
         if (newMemories.length === 0) {
           setMemoryOverlay(null);
         }
-      } else {
-        console.error('Failed to delete conversation');
       }
     } catch (error) {
       console.error('Error deleting memory:', error);
@@ -670,8 +708,47 @@ export default function ChatFeed({
         next.delete(idx);
         return next;
       });
+      setDeleteConfirmation(null);
     }
   };
+
+  // Add this useEffect to listen for memory deletion events
+  useEffect(() => {
+    const handleMemoryDeleted = () => {
+      // Force re-render by updating messages
+      const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+      const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+      const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+      
+      const newMessages = [];
+      newMessages.push({ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() });
+      
+      for (let i = 0; i < prompts.length; i++) {
+        newMessages.push({ 
+          sender: "User", 
+          text: prompts[i], 
+          timestamp: timestamps[i] 
+        });
+        newMessages.push({ 
+          sender: "Ditto", 
+          text: responses[i], 
+          timestamp: timestamps[i] 
+        });
+      }
+      
+      // Update the messages prop through parent component
+      if (typeof messages !== 'undefined') {
+        messages.length = 0;
+        messages.push(...newMessages);
+      }
+    };
+
+    window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
+    
+    return () => {
+      window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
+    };
+  }, [messages]);
 
   return (
     <div className='chat-feed' ref={feedRef}>
@@ -834,6 +911,33 @@ export default function ChatFeed({
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteConfirmation && (
+        <div className="delete-confirmation-overlay">
+          <div className="delete-confirmation-content">
+            <div className="delete-confirmation-title">Delete Memory?</div>
+            <div className="delete-confirmation-message">
+              Are you sure you want to delete this conversation? This action cannot be undone.
+            </div>
+            <div className="delete-confirmation-docid">
+              Document ID: {deleteConfirmation.docId || 'Not found'}
+            </div>
+            <div className="delete-confirmation-buttons">
+              <button 
+                className="delete-confirmation-button cancel"
+                onClick={() => setDeleteConfirmation(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="delete-confirmation-button confirm"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

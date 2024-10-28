@@ -1000,3 +1000,84 @@
   flex: 1 1 100%;
 }
 
+/* Add these styles for the delete confirmation overlay */
+.delete-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  backdrop-filter: blur(5px);
+}
+
+.delete-confirmation-content {
+  background-color: #36393f;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.delete-confirmation-title {
+  font-size: 1.2em;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.delete-confirmation-message {
+  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.delete-confirmation-docid {
+  font-family: monospace;
+  background-color: #2f3136;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  word-break: break-all;
+  font-size: 0.9em;
+  color: #a0a0a0;
+}
+
+.delete-confirmation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.delete-confirmation-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-confirmation-button.cancel {
+  background-color: #4f545c;
+  color: white;
+}
+
+.delete-confirmation-button.confirm {
+  background-color: #ed4245;
+  color: white;
+}
+
+.delete-confirmation-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.delete-confirmation-button:active {
+  transform: translateY(0);
+}
