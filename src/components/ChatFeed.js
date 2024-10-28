@@ -8,15 +8,66 @@ import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCopy, FiDownload } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
+import { FaBrain, FaTrash } from 'react-icons/fa';
+import { findConversationDocId, getConversationEmbedding, deleteConversation } from '../control/memory';
+import { routes } from '../firebaseConfig';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
+const MEMORY_CACHE_KEY = 'memoryCache';
+const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
   if (navigator.vibrate) {
     navigator.vibrate(50);
+  }
+};
+
+// Add these helper functions for cache management
+const getMemoryCache = () => {
+  try {
+    const cache = localStorage.getItem(MEMORY_CACHE_KEY);
+    if (!cache) return {};
+    return JSON.parse(cache);
+  } catch (e) {
+    console.error('Error reading memory cache:', e);
+    return {};
+  }
+};
+
+const setMemoryCache = (promptId, memories) => {
+  try {
+    const cache = getMemoryCache();
+    cache[promptId] = {
+      memories,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+  } catch (e) {
+    console.error('Error setting memory cache:', e);
+  }
+};
+
+const getCachedMemories = (promptId) => {
+  try {
+    const cache = getMemoryCache();
+    const entry = cache[promptId];
+    if (!entry) return null;
+
+    // Check if cache is expired
+    if (Date.now() - entry.timestamp > MEMORY_CACHE_EXPIRY) {
+      // Remove expired entry
+      delete cache[promptId];
+      localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+      return null;
+    }
+
+    return entry.memories;
+  } catch (e) {
+    console.error('Error getting cached memories:', e);
+    return null;
   }
 };
 
@@ -54,6 +105,11 @@ export default function ChatFeed({
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
+  const [memoryOverlay, setMemoryOverlay] = useState(null);
+  const [relatedMemories, setRelatedMemories] = useState([]);
+  const [loadingMemories, setLoadingMemories] = useState(false);
+  const [deletingMemories, setDeletingMemories] = useState(new Set());
+  const [abortController, setAbortController] = useState(null);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -159,6 +215,15 @@ export default function ChatFeed({
 
     document.addEventListener('click', handleClickAway);
     return () => document.removeEventListener('click', handleClickAway);
+  }, [actionOverlay]);
+
+  useEffect(() => {
+    if (!actionOverlay && abortController) {
+      // Cancel any pending memory fetch when action overlay closes
+      abortController.abort();
+      setAbortController(null);
+      setLoadingMemories(false);
+    }
   }, [actionOverlay]);
 
   const handleCopy = (text) => {
@@ -380,6 +445,14 @@ export default function ChatFeed({
                 >
                   React
                 </button>
+                <button 
+                  onClick={() => handleShowMemories(actionOverlay.index)} 
+                  className='action-button'
+                  disabled={loadingMemories}
+                >
+                  <FaBrain style={{ marginRight: '5px' }} />
+                  {loadingMemories ? 'Loading...' : 'Memories'}
+                </button>
               </>
             ) : (
               <>
@@ -463,6 +536,143 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
+  const handleShowMemories = async (index) => {
+    try {
+      // Create new AbortController for this request
+      const controller = new AbortController();
+      setAbortController(controller);
+      setLoadingMemories(true);
+
+      const message = messages[index];
+      const userID = auth.currentUser.uid;
+      
+      let promptToUse;
+      if (message.sender === 'User') {
+        promptToUse = message.text;
+      } else {
+        if (index > 0 && messages[index - 1].sender === 'User') {
+          promptToUse = messages[index - 1].text;
+        } else {
+          console.error('Could not find corresponding prompt for response');
+          setLoadingMemories(false);
+          return;
+        }
+      }
+
+      // Create a unique ID for this prompt
+      const promptId = `${userID}-${promptToUse}`;
+
+      // Check cache first
+      const cachedMemories = getCachedMemories(promptId);
+      if (cachedMemories) {
+        console.log('Using cached memories');
+        setRelatedMemories(cachedMemories);
+        setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
+        setActionOverlay(null);
+        setLoadingMemories(false);
+        return;
+      }
+
+      // If not in cache, proceed with fetching
+      const docId = await findConversationDocId(userID, promptToUse);
+      if (!docId) {
+        console.error('Could not find conversation document');
+        setLoadingMemories(false);
+        return;
+      }
+
+      const embedding = await getConversationEmbedding(userID, docId);
+      if (!embedding) {
+        console.error('Could not find conversation embedding');
+        setLoadingMemories(false);
+        return;
+      }
+
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(routes.memories, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Origin': window.location.origin
+        },
+        body: JSON.stringify({
+          userId: userID,
+          vector: embedding,
+          k: 5
+        }),
+        signal: controller.signal // Add abort signal to fetch
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch memories');
+      }
+
+      const data = await response.json();
+      const memories = data.memories || [];
+      
+      // Cache the results
+      setMemoryCache(promptId, memories);
+      
+      setRelatedMemories(memories);
+      setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
+      setActionOverlay(null);
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Memory fetch cancelled');
+      } else {
+        console.error('Error fetching memories:', error);
+      }
+    } finally {
+      setLoadingMemories(false);
+      setAbortController(null);
+    }
+  };
+
+  const handleDeleteMemory = async (memory, idx) => {
+    try {
+      const userID = auth.currentUser.uid;
+      const docId = await findConversationDocId(userID, memory.prompt);
+      if (!docId) {
+        console.error('Could not find conversation to delete');
+        return;
+      }
+
+      setDeletingMemories(prev => new Set([...prev, idx]));
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const success = await deleteConversation(userID, docId);
+      
+      if (success) {
+        // Update related memories
+        const newMemories = relatedMemories.filter((_, i) => i !== idx);
+        setRelatedMemories(newMemories);
+        
+        // Remove the entire cache entry for this prompt
+        const promptId = `${userID}-${memory.prompt}`;
+        const cache = getMemoryCache();
+        delete cache[promptId]; // Remove the entire cache entry
+        localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+        
+        // Close memory overlay if this was the last memory
+        if (newMemories.length === 0) {
+          setMemoryOverlay(null);
+        }
+      } else {
+        console.error('Failed to delete conversation');
+      }
+    } catch (error) {
+      console.error('Error deleting memory:', error);
+    } finally {
+      setDeletingMemories(prev => {
+        const next = new Set(prev);
+        next.delete(idx);
+        return next;
+      });
+    }
+  };
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
@@ -544,6 +754,89 @@ export default function ChatFeed({
             </motion.div>
           </motion.div>
         </AnimatePresence>
+      )}
+      {memoryOverlay && (
+        <div 
+          className='memory-overlay'
+          onClick={() => setMemoryOverlay(null)} // Close when clicking overlay
+        >
+          <div 
+            className='memory-content'
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+          >
+            <div className='memory-header'>
+              <h3>Related Memories</h3>
+              <button 
+                className='close-button'
+                onClick={() => setMemoryOverlay(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className='memory-list'>
+              {relatedMemories.map((memory, idx) => (
+                <motion.div
+                  key={idx}
+                  className='memory-item'
+                  initial={{ opacity: 1, height: 'auto', scale: 1 }}
+                  animate={{
+                    opacity: deletingMemories.has(idx) ? 0 : 1,
+                    height: deletingMemories.has(idx) ? 0 : 'auto',
+                    scale: deletingMemories.has(idx) ? 0.8 : 1,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className='memory-prompt'>
+                    <ReactMarkdown
+                      children={memory.prompt}
+                      components={{
+                        img: ({ src, alt }) => (
+                          <div className="memory-image-container">
+                            <img
+                              src={src}
+                              alt={alt}
+                              className="memory-image"
+                              onClick={() => handleImageClick(src)}
+                            />
+                          </div>
+                        ),
+                      }}
+                    />
+                  </div>
+                  <div className='memory-response'>
+                    <ReactMarkdown
+                      children={memory.response}
+                      components={{
+                        img: ({ src, alt }) => (
+                          <div className="memory-image-container">
+                            <img
+                              src={src}
+                              alt={alt}
+                              className="memory-image"
+                              onClick={() => handleImageClick(src)}
+                            />
+                          </div>
+                        ),
+                      }}
+                    />
+                  </div>
+                  <div className='memory-footer'>
+                    <div className='memory-timestamp'>
+                      {formatTimestamp(new Date(memory.timestampString).getTime())}
+                    </div>
+                    <button
+                      className='delete-button'
+                      onClick={() => handleDeleteMemory(memory, idx)}
+                      disabled={deletingMemories.has(idx)}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

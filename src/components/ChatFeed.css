@@ -759,3 +759,244 @@
   -ms-user-select: none;
 }
 
+/* Add these styles at the end of the file */
+
+.memory-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4000;
+  backdrop-filter: blur(5px);
+}
+
+.memory-content {
+  background-color: #36393f;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative; /* Ensure it's above the overlay */
+  z-index: 4001; /* One higher than the overlay */
+}
+
+.memory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #2f3136;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.memory-header h3 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: opacity 0.2s;
+}
+
+.close-button:hover {
+  opacity: 0.8;
+}
+
+.memory-list {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(80vh - 70px);
+}
+
+.memory-item {
+  background-color: #40444b;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: transform 0.2s, opacity 0.3s, height 0.3s;
+  overflow: hidden;
+}
+
+.memory-item:hover {
+  transform: translateY(-2px);
+}
+
+.memory-prompt {
+  color: #ffffff;
+  font-weight: 500;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.memory-response {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95em;
+  margin-bottom: 8px;
+}
+
+.memory-timestamp {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8em;
+  text-align: right;
+}
+
+/* Update action button styles to accommodate icon */
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-button svg {
+  font-size: 1.1em;
+}
+
+.action-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.memory-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: #ff4444;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.memory-item:hover .delete-button {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.delete-button:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+  transform: scale(1.1);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
+}
+
+.delete-button svg {
+  font-size: 1em;
+}
+
+.delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Update memory timestamp for the new layout */
+.memory-timestamp {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8em;
+}
+
+/* Add animation classes */
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.memory-item.deleting {
+  animation: slideOut 0.3s ease forwards;
+}
+
+/* Update memory item styles */
+.memory-item {
+  background-color: #40444b;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: transform 0.2s, opacity 0.3s, height 0.3s;
+  overflow: hidden;
+}
+
+/* Add styles for the image container */
+.memory-image-container {
+  margin: 4px 0;
+  max-height: 120px; /* Slightly smaller than before */
+  overflow: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: top;
+}
+
+.memory-image-container:hover {
+  opacity: 0.9;
+}
+
+/* Style the images themselves */
+.memory-image {
+  max-height: 120px; /* Match container */
+  width: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.2s;
+}
+
+.memory-image:hover {
+  transform: scale(1.02);
+}
+
+/* Update memory response to handle text with images better */
+.memory-response {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95em;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Add styles for multiple images in a row */
+.memory-response p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* Make sure text nodes in the response wrap properly */
+.memory-response p > :not(.memory-image-container) {
+  flex: 1 1 100%;
+}
+
