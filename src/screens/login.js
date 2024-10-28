@@ -150,6 +150,8 @@ const Login = () => {
                 localStorage.setItem('prompts', JSON.stringify(conversationHistory.prompts));
                 localStorage.setItem('responses', JSON.stringify(conversationHistory.responses));
                 localStorage.setItem('timestamps', JSON.stringify(conversationHistory.timestamps));
+                localStorage.setItem('pairIDs', JSON.stringify(conversationHistory.pairIDs));
+                localStorage.setItem('memoryIDs', JSON.stringify(conversationHistory.memoryIDs));
                 localStorage.setItem('histCount', conversationHistory.prompts.length);
             }
 

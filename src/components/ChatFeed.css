@@ -739,7 +739,7 @@
   gap: 8px;
   width: auto;
   min-width: 120px;
-  z-index: 1000;
+  z-index: 4001;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   touch-action: none;
   pointer-events: auto;

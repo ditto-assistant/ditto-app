@@ -737,7 +737,30 @@ export default function ChatFeed({
     });
   };
 
-  // Update the confirmDelete function - simplified since we already have the docId
+  // Update handleMessageDelete to use pairID directly
+  const handleMessageDelete = async (index) => {
+    const message = messages[index];
+    const userID = auth.currentUser.uid;
+    
+    // Get the pairID from the message
+    const pairID = message.pairID;
+    
+    // Show confirmation overlay
+    setDeleteConfirmation({
+      memory: {
+        prompt: message.sender === 'Ditto' && index > 0 ? messages[index - 1].text : message.text,
+        response: message.sender === 'Ditto' ? message.text : null
+      },
+      idx: index,
+      docId: pairID, // Use pairID directly
+      isMessageDelete: true
+    });
+    
+    // Close the action overlay
+    setActionOverlay(null);
+  };
+
+  // Update confirmDelete to handle both cases
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
     
@@ -758,20 +781,23 @@ export default function ChatFeed({
           const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
           const responses = JSON.parse(localStorage.getItem('responses') || '[]');
           const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+          const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
 
           // Find the index of the conversation in the arrays
-          const conversationIndex = prompts.findIndex(p => p === memory.prompt);
+          const conversationIndex = pairIDs.findIndex(id => id === docId);
           
           if (conversationIndex !== -1) {
             // Remove the conversation from all arrays
             prompts.splice(conversationIndex, 1);
             responses.splice(conversationIndex, 1);
             timestamps.splice(conversationIndex, 1);
+            pairIDs.splice(conversationIndex, 1);
 
             // Update localStorage
             localStorage.setItem('prompts', JSON.stringify(prompts));
             localStorage.setItem('responses', JSON.stringify(responses));
             localStorage.setItem('timestamps', JSON.stringify(timestamps));
+            localStorage.setItem('pairIDs', JSON.stringify(pairIDs));
             
             // Update histCount to match the new conversation length
             const newHistCount = prompts.length;
@@ -786,7 +812,7 @@ export default function ChatFeed({
             }));
           }
         } else {
-          // Handle memory overlay deletion (existing code)
+          // Handle memory overlay deletion
           const newMemories = relatedMemories.filter((_, i) => i !== idx);
           setRelatedMemories(newMemories);
           
@@ -850,55 +876,6 @@ export default function ChatFeed({
       window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
     };
   }, [messages]);
-
-  // Add this function near your other handlers
-  const handleMessageDelete = async (index) => {
-    const message = messages[index];
-    const userID = auth.currentUser.uid;
-    
-    // Show confirmation overlay immediately with loading state
-    setDeleteConfirmation({
-      memory: {
-        prompt: message.sender === 'Ditto' && index > 0 ? messages[index - 1].text : message.text,
-        response: message.sender === 'Ditto' ? message.text : null
-      },
-      idx: index,
-      isMessageDelete: true,
-      isLoading: true // Add loading state
-    });
-    
-    // Close the action overlay
-    setActionOverlay(null);
-    
-    try {
-      // If this is a response, use the previous message (prompt) for embedding
-      const promptToUse = message.sender === 'Ditto' && index > 0 ? 
-        messages[index - 1].text : message.text;
-
-      // Get embedding for the prompt
-      const embedding = await textEmbed(promptToUse);
-      if (!embedding) {
-        throw new Error('Could not generate embedding for prompt');
-      }
-
-      const docId = await findConversationDocId(userID, embedding, message.sender === 'Ditto' ? message.text : null);
-      
-      // Update confirmation overlay with docId
-      setDeleteConfirmation(prev => ({
-        ...prev,
-        docId,
-        isLoading: false
-      }));
-    } catch (error) {
-      console.error('Error preparing message deletion:', error);
-      // Update confirmation overlay with error state
-      setDeleteConfirmation(prev => ({
-        ...prev,
-        error: 'Failed to find message in database',
-        isLoading: false
-      }));
-    }
-  };
 
   return (
     <div className='chat-feed' ref={feedRef}>

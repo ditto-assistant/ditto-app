@@ -8,6 +8,7 @@ import FullScreenSpinner from "../components/LoadingSpinner";
 import { Divider } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
+import { loadConversationHistoryFromFirestore } from "../control/firebase";
 // Lazy load components
 const ChatFeed = lazy(() => import("@/components/ChatFeed"));
 const SendMessage = lazy(() => import("@/components/SendMessage"));
@@ -66,12 +67,26 @@ export default function HomeScreen() {
       let prompts = hist.prompts || [];
       let responses = hist.responses || [];
       let timestamps = hist.timestamps || [];
+      let pairIDs = hist.pairIDs || [];
+
       for (let i = 0; i < prompts.length; i++) {
         let prompt = prompts[i];
         let response = responses[i];
         let timestamp = timestamps[i];
-        newConversation.messages.push({ sender: "User", text: prompt, timestamp: timestamp });
-        newConversation.messages.push({ sender: "Ditto", text: response, timestamp: timestamp });
+        let pairID = pairIDs[i];
+
+        newConversation.messages.push({ 
+          sender: "User", 
+          text: prompt, 
+          timestamp: timestamp,
+          pairID: pairID
+        });
+        newConversation.messages.push({ 
+          sender: "Ditto", 
+          text: response, 
+          timestamp: timestamp,
+          pairID: pairID
+        });
       }
       if (onload) {
         return newConversation;
@@ -89,7 +104,8 @@ export default function HomeScreen() {
     let prompts = JSON.parse(localStorage.getItem("prompts"));
     let responses = JSON.parse(localStorage.getItem("responses"));
     let timestamps = JSON.parse(localStorage.getItem("timestamps"));
-    return { prompts, responses, timestamps };
+    let pairIDs = JSON.parse(localStorage.getItem("pairIDs"));
+    return { prompts, responses, timestamps, pairIDs };
   };
 
   let convo = getSavedConversation();
@@ -120,7 +136,7 @@ export default function HomeScreen() {
     if (localStorage.getItem("resetMemory") === "true") {
       localStorage.setItem("resetMemory", "false");
       setCount(0);
-      createConversation({ prompts: [], responses: [], timestamps: [] }, true);
+      createConversation({ prompts: [], responses: [], timestamps: [], pairIDs: [] }, true);
     }
   }, [localStorage.getItem("resetMemory")]);
 
@@ -174,10 +190,56 @@ export default function HomeScreen() {
     }
   };
 
+  // Add this function after getSavedConversation
+  const checkAndResyncPairIDs = () => {
+    const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+    const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+    const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+    const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
 
+    // Check if arrays exist and have matching lengths
+    if (prompts.length !== responses.length || 
+        prompts.length !== timestamps.length || 
+        prompts.length !== pairIDs.length) {
+      console.log('Detected mismatch in localStorage arrays:');
+      console.log(`prompts: ${prompts.length}`);
+      console.log(`responses: ${responses.length}`);
+      console.log(`timestamps: ${timestamps.length}`);
+      console.log(`pairIDs: ${pairIDs.length}`);
+
+      // Load conversation history from Firestore to resync
+      const userID = localStorage.getItem('userID');
+      if (userID) {
+        console.log('Resyncing conversation history from Firestore...');
+        loadConversationHistoryFromFirestore(userID)
+          .then(conversationHistory => {
+            if (conversationHistory) {
+              localStorage.setItem('prompts', JSON.stringify(conversationHistory.prompts));
+              localStorage.setItem('responses', JSON.stringify(conversationHistory.responses));
+              localStorage.setItem('timestamps', JSON.stringify(conversationHistory.timestamps));
+              localStorage.setItem('pairIDs', JSON.stringify(conversationHistory.pairIDs));
+              localStorage.setItem('histCount', conversationHistory.prompts.length);
+              console.log('Successfully resynced conversation history');
+              console.log(`New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`);
+              
+              // Update the conversation state
+              const newConversation = createConversation(conversationHistory, false, true);
+              setConversation(newConversation);
+            }
+          })
+          .catch(error => {
+            console.error('Error resyncing conversation history:', error);
+          });
+      }
+    }
+  };
+
+  // Add this to your existing useEffect that runs on mount
   useEffect(() => {
     syncScripts();
     balance.refetch();
+    checkAndResyncPairIDs(); // Add this line
+    
     const handleStatus = async () => {
       var statusDb = await grabStatus();
       if (bootStatus !== statusDb.status) {
@@ -330,32 +392,36 @@ export default function HomeScreen() {
       const { newHistCount } = event.detail;
       setCount(newHistCount);
 
-      // Force re-render by updating messages
+      // Get the latest data from localStorage
       const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
       const responses = JSON.parse(localStorage.getItem('responses') || '[]');
       const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+      const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
       
-      const newMessages = [];
-      newMessages.push({ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() });
+      // Create new conversation object
+      const newConversation = {
+        messages: [{ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() }],
+        is_typing: false
+      };
       
+      // Rebuild messages array with latest data including pairIDs
       for (let i = 0; i < prompts.length; i++) {
-        newMessages.push({ 
+        newConversation.messages.push({ 
           sender: "User", 
           text: prompts[i], 
-          timestamp: timestamps[i] 
+          timestamp: timestamps[i],
+          pairID: pairIDs[i]
         });
-        newMessages.push({ 
+        newConversation.messages.push({ 
           sender: "Ditto", 
           text: responses[i], 
-          timestamp: timestamps[i] 
+          timestamp: timestamps[i],
+          pairID: pairIDs[i]
         });
       }
       
-      // Update the conversation state
-      setConversation(prev => ({
-        ...prev,
-        messages: newMessages
-      }));
+      // Update the conversation state with new data
+      setConversation(newConversation);
     };
 
     window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
