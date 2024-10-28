@@ -134,15 +134,16 @@
 }
 
 .action-overlay {
-  position: absolute;
+  position: fixed; /* Change to fixed positioning */
   background-color: #3941b8;
   border-radius: 10px;
-  padding: 5px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  width: 100px;
-  z-index: 11;
+  gap: 8px; /* Add consistent spacing between buttons */
+  width: auto;
+  min-width: 100px;
+  z-index: 1000; /* Ensure it's above other content */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -236,14 +237,15 @@
   display: inline-flex;
   align-items: center;
   position: relative;
+  background: #282c34;
+  border-radius: 6px;
+  padding-left: 8px;
 }
 
 .inline-code {
-  background: #282c34;
   color: #ffffff;
-  padding: 2px 5px;
-  border-radius: 5px;
   font-family: 'Courier New', Courier, monospace;
+  margin-right: 4px;
 }
 
 .copy-button {
@@ -288,8 +290,9 @@
 .inline-code-button {
   position: static;
   margin-left: 8px;
-  width: auto;
-  padding: 6px 12px;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
 }
 
 .inline-code-button svg {
@@ -431,20 +434,68 @@
 
 /* Update the image-overlay-controls styles */
 .image-overlay-controls {
-  position: relative;
-  bottom: 0;
+  position: absolute;
+  top: 0;
   left: 0;
   right: 0;
+  padding: 16px;
   display: flex;
   justify-content: space-between;
-  padding: 20px;
-  background-color: #ffffff00;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none; /* This allows clicks to pass through to the image */
+}
+
+/* Add styles for the new control buttons */
+.image-control-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  pointer-events: auto; /* This makes the buttons clickable */
+}
+
+.image-control-button:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.image-control-button:active {
+  transform: scale(0.95);
+}
+
+/* Update the image-overlay-content styles */
+.image-overlay-content {
+  max-width: 90%;
+  max-height: 90vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-overlay-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  cursor: pointer;
 }
 
 /* Update the button styles */
 .back-button,
 .download-button {
-  background-color: #40444b;
+  background-color: #3941b8; /* Match the action overlay color */
   border: none;
   border-radius: 8px;
   color: white;
@@ -455,11 +506,12 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  min-width: 120px;
 }
 
 .back-button:hover,
 .download-button:hover {
-  background-color: #4a4d57;
+  background-color: #4752c4; /* Slightly lighter on hover */
   transform: translateY(-2px);
 }
 
@@ -468,13 +520,13 @@
   transform: translateY(0);
 }
 
-/* Update the download button color */
+/* Remove the different color for download button */
 .download-button {
-  background-color: #7289da;
+  background-color: #3941b8; /* Same as back button */
 }
 
 .download-button:hover {
-  background-color: #5e77d4;
+  background-color: #4752c4; /* Same hover as back button */
 }
 
 /* Remove the button container */
@@ -652,5 +704,58 @@
 .chat-bubble.User .message-timestamp,
 .chat-bubble.Ditto .message-timestamp {
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* Update copy button styles for different bubble types */
+.chat-bubble.User .copy-button {
+  background-color: #40444b; /* Match Ditto bubble color */
+}
+
+.chat-bubble.Ditto .copy-button {
+  background-color: rgba(71, 82, 196, 0.9); /* Keep original blue for Ditto messages */
+}
+
+/* Update hover states */
+.chat-bubble.User .copy-button:hover {
+  background-color: #4a4d54; /* Slightly lighter gray on hover */
+}
+
+.chat-bubble.Ditto .copy-button:hover {
+  background-color: rgba(71, 82, 196, 1); /* Original blue hover */
+}
+
+/* Update action overlay styles */
+.action-overlay {
+  position: fixed; /* Change to fixed positioning */
+  background-color: #3941b8;
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Add consistent spacing between buttons */
+  width: auto;
+  min-width: 100px;
+  z-index: 1000; /* Ensure it's above other content */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.action-button {
+  padding: 8px 12px;
+  width: 100%;
+  text-align: center;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.action-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Prevent text selection on buttons */
+.action-button, .emoji-button {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 

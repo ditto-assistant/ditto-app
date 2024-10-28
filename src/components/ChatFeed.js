@@ -6,7 +6,8 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
 import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCopy } from 'react-icons/fi';
+import { FiCopy, FiDownload } from 'react-icons/fi';
+import { IoMdArrowBack } from 'react-icons/io';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -52,6 +53,7 @@ export default function ChatFeed({
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
+  const [imageControlsVisible, setImageControlsVisible] = useState(true);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -138,14 +140,26 @@ export default function ChatFeed({
 
   useEffect(() => {
     const handleClickAway = (e) => {
-      if (!e.target.closest('.action-overlay') && !e.target.closest('.reaction-overlay')) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
+      // Don't close if clicking inside action or reaction overlays
+      if (e.target.closest('.action-overlay') || e.target.closest('.reaction-overlay')) {
+        return;
       }
+      
+      // Don't close if clicking the originating chat bubble
+      if (actionOverlay && e.target.closest('.chat-bubble')) {
+        const bubbleIndex = parseInt(e.target.closest('.chat-bubble').dataset.index);
+        if (bubbleIndex === actionOverlay.index) {
+          return;
+        }
+      }
+      
+      setActionOverlay(null);
+      setReactionOverlay(null);
     };
+
     document.addEventListener('click', handleClickAway);
     return () => document.removeEventListener('click', handleClickAway);
-  }, []);
+  }, [actionOverlay]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -173,20 +187,28 @@ export default function ChatFeed({
     // Trigger haptic feedback on mobile devices
     triggerHapticFeedback();
 
+    // Close the overlay if clicking the same bubble that opened it
     if (actionOverlay && actionOverlay.index === index) {
       setActionOverlay(null);
-    } else {
-      const clientX = e.clientX || (rect.left + rect.width / 2);
-      const clientY = e.clientY || (rect.top + rect.height / 2);
-      setActionOverlay({ 
-        index, 
-        type, 
-        clientX,
-        clientY,
-        isUserMessage
-      });
-      setReactionOverlay(null);
+      return;
     }
+
+    // If clicking a different bubble, close current overlay and open new one
+    if (actionOverlay && actionOverlay.index !== index) {
+      setActionOverlay(null);
+    }
+
+    const clientX = e.clientX || (rect.left + rect.width / 2);
+    const clientY = e.clientY || (rect.top + rect.height / 2);
+    setActionOverlay({ 
+      index, 
+      type, 
+      clientX,
+      clientY,
+      isUserMessage,
+      rect // Store the bubble's rect for positioning
+    });
+    setReactionOverlay(null);
   };
 
   const handleImageClick = (src) => {
@@ -199,6 +221,11 @@ export default function ChatFeed({
 
   const closeImageOverlay = () => {
     setImageOverlay(null);
+  };
+
+  const toggleImageControls = (e) => {
+    e.stopPropagation();
+    setImageControlsVisible(!imageControlsVisible);
   };
 
   const renderMessageText = (text, index) => {
@@ -215,7 +242,10 @@ export default function ChatFeed({
               src={src}
               alt={alt}
               className='chat-image'
-              onClick={() => handleImageClick(src)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent bubble interaction
+                handleImageClick(src);
+              }}
             />
           ),
           code({ node, inline, className, children, ...props }) {
@@ -255,18 +285,16 @@ export default function ChatFeed({
               return (
                 <div className='inline-code-container'>
                   <code className='inline-code' {...props}>{children}</code>
-                  {inlineText.split(' ').length > 1 && (
-                    <button
-                      className='copy-button inline-code-button'
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopy(inlineText);
-                      }}
-                    >
-                      <FiCopy style={{ marginRight: '6px' }} />
-                      Copy
-                    </button>
-                  )}
+                  <button
+                    className='copy-button inline-code-button'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(inlineText);
+                    }}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
                 </div>
               );
             }
@@ -306,6 +334,7 @@ export default function ChatFeed({
           style={bubbleStyles.chatbubble}
           onClick={(e) => handleBubbleInteraction(e, index)}
           onContextMenu={(e) => handleBubbleInteraction(e, index)}
+          data-index={index}
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
           <div className='message-text' style={bubbleStyles.text}>
@@ -465,38 +494,56 @@ export default function ChatFeed({
         </div>
       )}
       {imageOverlay && (
-        <motion.div 
-          className="image-overlay" 
-          onClick={closeImageOverlay}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <AnimatePresence>
           <motion.div 
-            className="image-overlay-content" 
-            onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="image-overlay" 
+            onClick={closeImageOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <img src={imageOverlay} alt="Full size" />
             <motion.div 
-              className="image-overlay-controls"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: 0.2 }}
+              className="image-overlay-content" 
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
-              <button className="back-button" onClick={closeImageOverlay}>
-                Back
-              </button>
-              <button className="download-button" onClick={() => handleImageDownload(imageOverlay)}>
-                Download
-              </button>
+              <img 
+                src={imageOverlay} 
+                alt="Full size" 
+                onClick={toggleImageControls}
+              />
+              <AnimatePresence>
+                {imageControlsVisible && (
+                  <motion.div 
+                    className="image-overlay-controls"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <button 
+                      className="image-control-button back"
+                      onClick={closeImageOverlay}
+                      title="Back"
+                    >
+                      <IoMdArrowBack />
+                    </button>
+                    <button 
+                      className="image-control-button download"
+                      onClick={() => handleImageDownload(imageOverlay)}
+                      title="Download"
+                    >
+                      <FiDownload />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </motion.div>
-        </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );
