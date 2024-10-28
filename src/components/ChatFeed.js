@@ -109,6 +109,7 @@ export default function ChatFeed({
   const [relatedMemories, setRelatedMemories] = useState([]);
   const [loadingMemories, setLoadingMemories] = useState(false);
   const [deletingMemories, setDeletingMemories] = useState(new Set());
+  const [abortController, setAbortController] = useState(null);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -214,6 +215,15 @@ export default function ChatFeed({
 
     document.addEventListener('click', handleClickAway);
     return () => document.removeEventListener('click', handleClickAway);
+  }, [actionOverlay]);
+
+  useEffect(() => {
+    if (!actionOverlay && abortController) {
+      // Cancel any pending memory fetch when action overlay closes
+      abortController.abort();
+      setAbortController(null);
+      setLoadingMemories(false);
+    }
   }, [actionOverlay]);
 
   const handleCopy = (text) => {
@@ -528,7 +538,11 @@ export default function ChatFeed({
 
   const handleShowMemories = async (index) => {
     try {
+      // Create new AbortController for this request
+      const controller = new AbortController();
+      setAbortController(controller);
       setLoadingMemories(true);
+
       const message = messages[index];
       const userID = auth.currentUser.uid;
       
@@ -587,7 +601,8 @@ export default function ChatFeed({
           userId: userID,
           vector: embedding,
           k: 5
-        })
+        }),
+        signal: controller.signal // Add abort signal to fetch
       });
 
       if (!response.ok) {
@@ -604,9 +619,14 @@ export default function ChatFeed({
       setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
       setActionOverlay(null);
     } catch (error) {
-      console.error('Error fetching memories:', error);
+      if (error.name === 'AbortError') {
+        console.log('Memory fetch cancelled');
+      } else {
+        console.error('Error fetching memories:', error);
+      }
     } finally {
       setLoadingMemories(false);
+      setAbortController(null);
     }
   };
 
