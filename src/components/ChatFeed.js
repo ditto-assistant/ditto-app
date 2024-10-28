@@ -6,6 +6,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
 import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FiCopy } from 'react-icons/fi';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -239,9 +240,13 @@ export default function ChatFeed({
                   />
                   <button
                     className='copy-button code-block-button'
-                    onClick={() => handleCopy(String(children).replace(/\n$/, ''))}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(String(children).replace(/\n$/, ''));
+                    }}
+                    title="Copy code"
                   >
-                    Copy
+                    <FiCopy />
                   </button>
                 </div>
               );
@@ -253,8 +258,12 @@ export default function ChatFeed({
                   {inlineText.split(' ').length > 1 && (
                     <button
                       className='copy-button inline-code-button'
-                      onClick={() => handleCopy(inlineText)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopy(inlineText);
+                      }}
                     >
+                      <FiCopy style={{ marginRight: '6px' }} />
                       Copy
                     </button>
                   )}
