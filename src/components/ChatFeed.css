@@ -441,13 +441,14 @@
   display: flex;
   justify-content: space-between;
   padding: 20px;
-  background-color: #ffffff00;
+  gap: 16px; /* Add space between buttons */
+  background-color: rgba(57, 65, 184, 0.1); /* Slight tint to match theme */
 }
 
 /* Update the button styles */
 .back-button,
 .download-button {
-  background-color: #40444b;
+  background-color: #3941b8; /* Match the action overlay color */
   border: none;
   border-radius: 8px;
   color: white;
@@ -458,11 +459,12 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  min-width: 120px;
 }
 
 .back-button:hover,
 .download-button:hover {
-  background-color: #4a4d57;
+  background-color: #4752c4; /* Slightly lighter on hover */
   transform: translateY(-2px);
 }
 
@@ -471,13 +473,13 @@
   transform: translateY(0);
 }
 
-/* Update the download button color */
+/* Remove the different color for download button */
 .download-button {
-  background-color: #7289da;
+  background-color: #3941b8; /* Same as back button */
 }
 
 .download-button:hover {
-  background-color: #5e77d4;
+  background-color: #4752c4; /* Same hover as back button */
 }
 
 /* Remove the button container */
@@ -709,3 +711,4 @@
   -moz-user-select: none;
   -ms-user-select: none;
 }
+

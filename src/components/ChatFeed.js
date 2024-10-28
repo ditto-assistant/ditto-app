@@ -229,7 +229,10 @@ export default function ChatFeed({
               src={src}
               alt={alt}
               className='chat-image'
-              onClick={() => handleImageClick(src)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent bubble interaction
+                handleImageClick(src);
+              }}
             />
           ),
           code({ node, inline, className, children, ...props }) {
