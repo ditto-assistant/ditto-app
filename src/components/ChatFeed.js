@@ -74,6 +74,21 @@ const getCachedMemories = (promptId) => {
   }
 };
 
+// Add this helper function near the top of the file
+const validateImageUrl = async (url) => {
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Error validating image URL:', error);
+    return false;
+  }
+};
+
 export default function ChatFeed({
   messages,
   histCount,
@@ -389,26 +404,64 @@ export default function ChatFeed({
     setImageControlsVisible(!imageControlsVisible);
   };
 
-  const renderMessageText = (text, index) => {
+  // Update the renderMessageText function to change the message text
+  const renderMessageText = async (text, index) => {
+    // First replace code block markers
     text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     text = text.replace(/```\./g, '```\n');
+
+    // Process image markdown before rendering
+    const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const imgPromises = [];
+    let match;
+
+    // Collect all image validation promises
+    while ((match = imgRegex.exec(text)) !== null) {
+      const [fullMatch, alt, url] = match;
+      imgPromises.push(
+        validateImageUrl(url).then(isValid => ({
+          fullMatch,
+          isValid,
+          url
+        }))
+      );
+    }
+
+    // Wait for all image validations
+    const validationResults = await Promise.all(imgPromises);
+
+    // Replace invalid image markdown with "Invalid URI" instead of "URI Expired"
+    validationResults.forEach(({ fullMatch, isValid }) => {
+      if (!isValid) {
+        text = text.replace(fullMatch, '**Invalid URI**');
+      }
+    });
+
     return (
       <ReactMarkdown
         children={text}
         components={{
           a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
-          img: ({ src, alt, ...props }) => (
-            <img
-              {...props}
-              src={src}
-              alt={alt}
-              className='chat-image'
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent bubble interaction
-                handleImageClick(src);
-              }}
-            />
-          ),
+          img: ({ src, alt, ...props }) => {
+            // Additional runtime check before rendering image
+            return (
+              <img
+                {...props}
+                src={src}
+                alt={alt}
+                className='chat-image'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleImageClick(src);
+                }}
+                onError={(e) => {
+                  // Replace broken images with "Invalid URI" instead of "URI Expired"
+                  const textNode = document.createTextNode('**Invalid URI**');
+                  e.target.parentNode.replaceChild(textNode, e.target);
+                }}
+              />
+            );
+          },
           code({ node, inline, className, children, ...props }) {
             let match = /language-(\w+)/.exec(className || '');
             let hasCodeBlock;
@@ -476,7 +529,14 @@ export default function ChatFeed({
     }).format(date);
   };
 
+  // Update the renderMessageWithAvatar function to handle async renderMessageText
   const renderMessageWithAvatar = (message, index) => {
+    const [renderedMessage, setRenderedMessage] = useState(null);
+    
+    useEffect(() => {
+      renderMessageText(message.text, index).then(setRenderedMessage);
+    }, [message.text, index]);
+
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
 
@@ -499,7 +559,7 @@ export default function ChatFeed({
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
           <div className='message-text' style={bubbleStyles.text}>
-            {renderMessageText(message.text, index)}
+            {renderedMessage}
           </div>
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
