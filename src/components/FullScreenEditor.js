@@ -32,6 +32,108 @@ const useSplitPane = (isMobile, initialPosition = 50) => {
     };
 };
 
+const SearchOverlay = ({ 
+    visible, 
+    searchTerm, 
+    setSearchTerm, 
+    onSearch, 
+    onClose, 
+    searchResults,
+    isMobile 
+}) => {
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            onSearch(searchTerm, e.shiftKey ? 'backward' : 'forward');
+        }
+        if (e.key === 'Escape') {
+            onClose();
+        }
+    };
+
+    return (
+        <AnimatePresence>
+            {visible && (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={styles.searchOverlayBackdrop}
+                        onClick={onClose}
+                    />
+                    <motion.div
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        style={styles.searchOverlayContainer}
+                    >
+                        <motion.div
+                            style={styles.searchOverlay}
+                            layoutId="searchOverlay"
+                        >
+                            <div style={styles.searchInputWrapper}>
+                                <div style={styles.searchIconWrapper}>
+                                    <FaSearch size={14} style={styles.searchIcon} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search in editor..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    style={styles.searchInput}
+                                    autoFocus
+                                />
+                                {searchResults.total > 0 && (
+                                    <div style={styles.searchCountWrapper}>
+                                        <span style={styles.searchCount}>
+                                            {searchResults.current} of {searchResults.total}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <div style={styles.searchActions}>
+                                <Tooltip title="Previous (Shift + Enter)">
+                                    <span>
+                                        <IconButton
+                                            onClick={() => onSearch(searchTerm, 'backward')}
+                                            disabled={!searchTerm || searchResults.total === 0}
+                                            sx={styles.searchButton}
+                                        >
+                                            ↑
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                                <Tooltip title="Next (Enter)">
+                                    <span>
+                                        <IconButton
+                                            onClick={() => onSearch(searchTerm, 'forward')}
+                                            disabled={!searchTerm || searchResults.total === 0}
+                                            sx={styles.searchButton}
+                                        >
+                                            ↓
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                                <div style={styles.searchDivider} />
+                                <Tooltip title="Close (Esc)">
+                                    <IconButton
+                                        onClick={onClose}
+                                        sx={styles.searchButton}
+                                    >
+                                        ✕
+                                    </IconButton>
+                                </Tooltip>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+};
+
 const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [code, setCode] = useState(script.content);
     const [previewKey, setPreviewKey] = useState(0);
@@ -40,6 +142,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const editorRef = useRef(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [showToast, setShowToast] = useState(false);
+    const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
 
     const {
         splitPosition,
@@ -47,6 +150,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setIsMaximized,
         containerRef,
     } = useSplitPane(isMobile);
+
+    // Add state to track editor initialization
+    const [isEditorReady, setIsEditorReady] = useState(false);
 
     const handleRunPreview = () => {
         setPreviewKey(prev => prev + 1);
@@ -65,24 +171,110 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setIsMaximized(current => current === pane ? null : pane);
     };
 
-    const handleSearch = (searchTerm) => {
-        if (!editorRef.current) return;
+    const handleSearch = useCallback((term, direction = 'forward') => {
+        if (!editorRef.current || !term) return;
         
         const editor = editorRef.current.editor;
-        editor.find(searchTerm, {
-            backwards: false,
+        const searchOptions = {
+            backwards: direction === 'backward',
             wrap: true,
             caseSensitive: false,
             wholeWord: false,
             regExp: false
+        };
+
+        // Find all matches to get total count
+        let matches = 0;
+        const pos = editor.selection.getCursor();
+        editor.session.getDocument().getAllLines().forEach((line, row) => {
+            let index = -1;
+            while ((index = line.toLowerCase().indexOf(term.toLowerCase(), index + 1)) !== -1) {
+                matches++;
+            }
         });
+        
+        // Perform the search
+        editor.find(term, searchOptions);
+        
+        // Get current match number
+        let current = 1;
+        const currentPos = editor.selection.getCursor();
+        editor.session.getDocument().getAllLines().slice(0, currentPos.row).forEach((line, row) => {
+            let index = -1;
+            while ((index = line.toLowerCase().indexOf(term.toLowerCase(), index + 1)) !== -1) {
+                if (row < currentPos.row || (row === currentPos.row && index < currentPos.column)) {
+                    current++;
+                }
+            }
+        });
+
+        setSearchResults({ total: matches, current: matches > 0 ? current : 0 });
+    }, []);
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearch(searchTerm, e.shiftKey ? 'backward' : 'forward');
+        }
+        if (e.key === 'Escape') {
+            setSearchVisible(false);
+            setSearchTerm('');
+        }
     };
 
     useEffect(() => {
         if (searchTerm) {
             handleSearch(searchTerm);
+        } else {
+            setSearchResults({ total: 0, current: 0 });
         }
-    }, [searchTerm]);
+    }, [searchTerm, handleSearch]);
+
+    // Update useEffect for keyboard shortcuts
+    useEffect(() => {
+        const handleKeyboardShortcuts = (e) => {
+            // Check for Ctrl/Cmd + F
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault(); // Prevent default browser find
+                setSearchVisible(prev => !prev);
+                if (!searchVisible) {
+                    setSearchTerm('');
+                }
+            }
+        };
+
+        // Add event listener to the editor instance only when it's ready
+        if (editorRef.current?.editor && isEditorReady) {
+            const editor = editorRef.current.editor;
+            editor.commands.addCommand({
+                name: 'toggleSearch',
+                bindKey: { win: 'Ctrl-F', mac: 'Command-F' },
+                exec: () => {
+                    setSearchVisible(prev => !prev);
+                    if (!searchVisible) {
+                        setSearchTerm('');
+                    }
+                }
+            });
+        }
+
+        // Add event listener to document for when editor is not focused
+        document.addEventListener('keydown', handleKeyboardShortcuts);
+
+        // Cleanup
+        return () => {
+            document.removeEventListener('keydown', handleKeyboardShortcuts);
+            if (editorRef.current?.editor && isEditorReady) {
+                const editor = editorRef.current.editor;
+                editor.commands.removeCommand('toggleSearch');
+            }
+        };
+    }, [searchVisible, isEditorReady]);
+
+    // Add editor onLoad handler
+    const handleEditorLoad = (editor) => {
+        setIsEditorReady(true);
+    };
 
     return (
         <div style={styles.container}>
@@ -108,25 +300,18 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 </div>
                 <div style={styles.actions}>
                     <div style={styles.searchContainer}>
-                        <AnimatePresence>
-                            {searchVisible && (
-                                <motion.div
-                                    initial={{ width: 0, opacity: 0 }}
-                                    animate={{ width: isMobile ? 150 : 200, opacity: 1 }}
-                                    exit={{ width: 0, opacity: 0 }}
-                                    style={styles.searchInputContainer}
-                                >
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        style={styles.searchInput}
-                                        autoFocus
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <SearchOverlay 
+                            visible={searchVisible}
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
+                            onSearch={handleSearch}
+                            onClose={() => {
+                                setSearchVisible(false);
+                                setSearchTerm('');
+                            }}
+                            searchResults={searchResults}
+                            isMobile={isMobile}
+                        />
                         <Tooltip title={searchVisible ? "Close Search" : "Search"}>
                             <IconButton
                                 onClick={() => setSearchVisible(!searchVisible)}
@@ -203,6 +388,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         showPrintMargin={false}
                         showGutter={true}
                         highlightActiveLine={true}
+                        onLoad={handleEditorLoad}
                         setOptions={{
                             enableBasicAutocompletion: true,
                             enableLiveAutocompletion: true,
@@ -439,6 +625,111 @@ const styles = {
         '@media (max-width: 768px)': {
             height: '20px',
         },
+    },
+    searchOverlayBackdrop: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        zIndex: 1200,
+    },
+    searchOverlayContainer: {
+        position: 'fixed',
+        top: 16,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        zIndex: 1201,
+        padding: '0 16px',
+    },
+    searchOverlay: {
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '12px',
+        padding: '12px',
+        display: 'flex',
+        gap: '12px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
+        border: `1px solid ${darkModeColors.border}`,
+        maxWidth: '600px',
+        width: '100%',
+        '@media (max-width: 768px)': {
+            flexDirection: 'column',
+            gap: '8px',
+        },
+    },
+    searchInputWrapper: {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        flex: 1,
+        minWidth: 0,
+    },
+    searchIconWrapper: {
+        position: 'absolute',
+        left: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: darkModeColors.textSecondary,
+    },
+    searchInput: {
+        backgroundColor: darkModeColors.inputBackground,
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '8px',
+        padding: '8px 12px 8px 36px',
+        color: darkModeColors.text,
+        fontSize: '14px',
+        width: '100%',
+        outline: 'none',
+        transition: 'all 0.2s ease',
+        '&:focus': {
+            borderColor: darkModeColors.primary,
+            boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
+        },
+    },
+    searchCountWrapper: {
+        position: 'absolute',
+        right: '12px',
+        backgroundColor: `${darkModeColors.primary}20`,
+        padding: '2px 8px',
+        borderRadius: '12px',
+    },
+    searchCount: {
+        color: darkModeColors.primary,
+        fontSize: '12px',
+        fontWeight: '500',
+        userSelect: 'none',
+    },
+    searchActions: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        '@media (max-width: 768px)': {
+            justifyContent: 'flex-end',
+        },
+    },
+    searchButton: {
+        color: darkModeColors.text,
+        padding: '8px',
+        borderRadius: '8px',
+        minWidth: '36px',
+        height: '36px',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.hover}80`,
+        },
+        '&.Mui-disabled': {
+            color: `${darkModeColors.textSecondary}80`,
+        },
+    },
+    searchDivider: {
+        width: '1px',
+        height: '24px',
+        backgroundColor: darkModeColors.border,
+        margin: '0 4px',
     },
 };
 
