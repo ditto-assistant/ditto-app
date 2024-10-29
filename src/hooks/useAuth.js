@@ -25,6 +25,27 @@ export const useAuth = () => {
     return context;
 };
 
+/**
+ * Access the authentication token.
+ * 
+ * This hook provides the current authentication token of the user,
+ * including whether the token is still loading and if there is an error.
+ * 
+ * @returns {{
+ *   token: string | undefined,
+ *   error: Error | undefined
+ * }}
+ */
+export const useAuthToken = () => {
+    const auth = useAuth();
+    const [token, setToken] = useState(undefined);
+    const [error, setError] = useState(undefined);
+    useEffect(() => {
+        auth.user?.getIdToken().then(setToken, setError);
+    }, [auth.user]);
+    return { token, error };
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(undefined);
     const [loading, setLoading] = useState(true);
