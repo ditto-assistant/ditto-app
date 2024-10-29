@@ -16,6 +16,7 @@ import VersionOverlay from '../components/VersionOverlay';
 import { motion } from 'framer-motion';
 import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
 import SearchBar from '../components/SearchBar';
+import AddScriptOverlay from '../components/AddScriptOverlay';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -720,28 +721,12 @@ const ScriptsScreen = () => {
                             <div style={styles.addScript}>
                                 <MdAdd style={styles.addScriptIcon} onClick={() => handleAddScriptClick("webApps")} />
                             </div>
-                            {showAddForm.webApps && (
-                                <div style={styles.addScriptForm}>
-                                    <input id="webApps-name-input" type="text" placeholder="Script Name" style={styles.input} />
-                                    <textarea id="webApps-content-input" placeholder="Script Content" style={styles.input} />
-                                    <div style={styles.formActions}>
-                                        <Button
-                                            variant="contained"
-                                            style={styles.saveScriptButton}
-                                            onClick={() => handleSaveScript("webApps")}
-                                        >
-                                            Save Script
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            style={styles.cancelScriptButton}
-                                            onClick={() => handleCancelAddScript("webApps")}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
+                            <AddScriptOverlay 
+                                isOpen={showAddForm.webApps}
+                                onClose={() => handleCancelAddScript("webApps")}
+                                onSave={() => handleSaveScript("webApps")}
+                                category="webApps"
+                            />
                             {renderScripts("webApps")}
                         </div>
                     )}
@@ -751,28 +736,12 @@ const ScriptsScreen = () => {
                             <div style={styles.addScript}>
                                 <MdAdd style={styles.addScriptIcon} onClick={() => handleAddScriptClick("openSCAD")} />
                             </div>
-                            {showAddForm.openSCAD && (
-                                <div style={styles.addScriptForm}>
-                                    <input id="openSCAD-name-input" type="text" placeholder="Script Name" style={styles.input} />
-                                    <textarea id="openSCAD-content-input" placeholder="Script Content" style={styles.input} />
-                                    <div style={styles.formActions}>
-                                        <Button
-                                            variant="contained"
-                                            style={styles.saveScriptButton}
-                                            onClick={() => handleSaveScript("openSCAD")}
-                                        >
-                                            Save Script
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            style={styles.cancelScriptButton}
-                                            onClick={() => handleCancelAddScript("openSCAD")}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
+                            <AddScriptOverlay 
+                                isOpen={showAddForm.openSCAD}
+                                onClose={() => handleCancelAddScript("openSCAD")}
+                                onSave={() => handleSaveScript("openSCAD")}
+                                category="openSCAD"
+                            />
                             {renderScripts("openSCAD")}
                         </div>
                     )}
@@ -925,10 +894,22 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         marginBottom: '20px',
+        maxHeight: '60vh', // Limit maximum height
+        overflowY: 'auto', // Enable vertical scrolling
+        backgroundColor: darkModeColors.cardBackground,
+        padding: '16px',
+        borderRadius: '8px',
+        border: `1px solid ${darkModeColors.border}`,
     },
     formActions: {
         display: 'flex',
         justifyContent: 'space-between',
+        gap: '10px',
+        position: 'sticky', // Keep buttons visible while scrolling
+        bottom: 0,
+        backgroundColor: darkModeColors.cardBackground,
+        padding: '8px 0',
+        marginTop: '8px',
     },
     saveScriptButton: {
         marginTop: '10px',
@@ -948,6 +929,8 @@ const styles = {
         outline: 'none',
         width: '100%',
         fontSize: '14px',
+        minHeight: '40px', // Minimum height for inputs
+        boxSizing: 'border-box',
         '&:focus': {
             borderColor: darkModeColors.primary,
         },
