@@ -314,27 +314,18 @@ const ScriptsScreen = () => {
             width: cardRect.width,
         };
 
+        const handleDeleteVersion = (index) => {
+            const scriptToDelete = scriptsList[index];
+            setDeleteConfirmation({ 
+                show: true, 
+                script: scriptToDelete, 
+                category: scriptToDelete.scriptType 
+            });
+        };
+
         return (
-            <VersionOverlay style={style}>
-                {scriptsList.map((script, index) => (
-                    <motion.div
-                        key={script.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ 
-                            duration: 0.2,
-                            delay: index * 0.05, // Stagger effect
-                        }}
-                        whileHover={{ 
-                            scale: 1.02,
-                            transition: { duration: 0.1 }
-                        }}
-                        style={styles.versionItem}
-                        onClick={() => handleSelectVersion(script)}
-                    >
-                        {script.name}
-                    </motion.div>
-                ))}
+            <VersionOverlay style={style} onDelete={handleDeleteVersion}>
+                {scriptsList.map((script) => script.name)}
             </VersionOverlay>
         );
     };
@@ -431,26 +422,6 @@ const ScriptsScreen = () => {
                                                }}>
                                                 Edit
                                             </p>
-                                            <p style={{
-                                                ...styles.cardMenuItem,
-                                                color: darkModeColors.danger,
-                                                '&:hover': {
-                                                    backgroundColor: `${darkModeColors.danger}15`,
-                                                },
-                                            }} 
-                                            onClick={(e) => { 
-                                                e.stopPropagation();
-                                                setDeleteConfirmation({ 
-                                                    show: true, 
-                                                    script: currentScript, 
-                                                    category: category 
-                                                });
-                                                setActiveCard(null); 
-                                                setMenuPosition(null);
-                                            }}>
-                                                <FaTrash style={{ marginRight: '8px' }} />
-                                                Delete
-                                            </p>
                                             <p style={styles.cardMenuItem} 
                                                onClick={(e) => { 
                                                    e.stopPropagation();
@@ -471,6 +442,27 @@ const ScriptsScreen = () => {
                                                     Version
                                                 </p>
                                             )}
+                                            <div style={styles.menuDivider} />
+                                            <p style={{
+                                                ...styles.cardMenuItem,
+                                                color: darkModeColors.danger,
+                                                '&:hover': {
+                                                    backgroundColor: `${darkModeColors.danger}15`,
+                                                },
+                                            }} 
+                                            onClick={(e) => { 
+                                                e.stopPropagation();
+                                                setDeleteConfirmation({ 
+                                                    show: true, 
+                                                    script: currentScript, 
+                                                    category: category 
+                                                });
+                                                setActiveCard(null); 
+                                                setMenuPosition(null);
+                                            }}>
+                                                <FaTrash style={{ marginRight: '8px' }} />
+                                                Delete
+                                            </p>
                                         </CardMenu>
                                     )}
                                 </div>
@@ -1017,6 +1009,11 @@ const styles = {
         '@media (min-width: 1200px)': {
             gridTemplateColumns: 'repeat(4, 1fr)', // Maximum 4 columns
         },
+    },
+    menuDivider: {
+        height: '1px',
+        backgroundColor: darkModeColors.border,
+        margin: '4px 0',
     },
 };
 
