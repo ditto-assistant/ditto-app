@@ -978,6 +978,37 @@ export default function ChatFeed({
     };
   }, [messages]);
 
+  // Update the memory-list rendering in the return statement
+  const renderMemoryContent = (content) => {
+    return (
+      <ReactMarkdown
+        children={content}
+        components={{
+          img: ({ src, alt }) => {
+            if (failedImages.has(src)) {
+              return <span className="invalid-image">Invalid URI</span>;
+            }
+
+            return (
+              <div className="memory-image-container">
+                <img
+                  src={src}
+                  alt={alt}
+                  className="memory-image"
+                  onClick={() => handleImageClick(src)}
+                  onError={(e) => {
+                    console.error('Memory image failed to load:', src);
+                    setFailedImages(prev => new Set([...prev, src]));
+                  }}
+                />
+              </div>
+            );
+          },
+        }}
+      />
+    );
+  };
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
@@ -1063,11 +1094,11 @@ export default function ChatFeed({
       {memoryOverlay && (
         <div 
           className='memory-overlay'
-          onClick={() => setMemoryOverlay(null)} // Close when clicking overlay
+          onClick={() => setMemoryOverlay(null)}
         >
           <div 
             className='memory-content'
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+            onClick={(e) => e.stopPropagation()}
           >
             <div className='memory-header'>
               <h3>Related Memories</h3>
@@ -1092,38 +1123,10 @@ export default function ChatFeed({
                   transition={{ duration: 0.3 }}
                 >
                   <div className='memory-prompt'>
-                    <ReactMarkdown
-                      children={memory.prompt}
-                      components={{
-                        img: ({ src, alt }) => (
-                          <div className="memory-image-container">
-                            <img
-                              src={src}
-                              alt={alt}
-                              className="memory-image"
-                              onClick={() => handleImageClick(src)}
-                            />
-                          </div>
-                        ),
-                      }}
-                    />
+                    {renderMemoryContent(memory.prompt)}
                   </div>
                   <div className='memory-response'>
-                    <ReactMarkdown
-                      children={memory.response}
-                      components={{
-                        img: ({ src, alt }) => (
-                          <div className="memory-image-container">
-                            <img
-                              src={src}
-                              alt={alt}
-                              className="memory-image"
-                              onClick={() => handleImageClick(src)}
-                            />
-                          </div>
-                        ),
-                      }}
-                    />
+                    {renderMemoryContent(memory.response)}
                   </div>
                   <div className='memory-footer'>
                     <div className='memory-timestamp'>
