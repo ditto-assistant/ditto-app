@@ -24,3 +24,6 @@ tag-latest-dry:
 	VERSION=$(cat package.json | jq -r .version)
 	echo "git tag -a v$VERSION -m \"Release $VERSION\""
 	echo "git push origin --tags"
+
+install-stripe:
+	brew install stripe/stripe-cli/stripe

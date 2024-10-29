@@ -3,9 +3,7 @@ import { auth } from "../control/firebase";
 /**
  * Retrieves the authentication token for the current user.
  * 
- * @returns {Promise<{ok?: {token: string, userID: string}, err?: Error}>} A promise that resolves to an object:
- *   - If successful, returns {ok: {token: token, userID: userID}} where token is a string.
- *   - If unsuccessful, returns {err: error} where error is an Error object.
+ * @returns {Promise<{ok?: {token: string, userID: string, email: string | null}, err?: Error}>} A promise that resolves to an object:
  */
 export async function getToken() {
     if (!auth.currentUser) {
@@ -13,7 +11,7 @@ export async function getToken() {
     }
     try {
         const token = await auth.currentUser.getIdToken();
-        return { ok: { token: token, userID: auth.currentUser.uid } };
+        return { ok: { token: token, userID: auth.currentUser.uid, email: auth.currentUser.email } };
     } catch (error) {
         console.error("Error getting token:", error);
         return { err: error };
