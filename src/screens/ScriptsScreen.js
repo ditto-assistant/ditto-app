@@ -311,7 +311,7 @@ const ScriptsScreen = () => {
             }));
         }
         
-        setFullScreenEdit(null);
+        return Promise.resolve();
     };
 
     const getFontSize = (name) => {

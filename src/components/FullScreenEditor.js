@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
+import Toast from './Toast';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -11,8 +12,10 @@ const darkModeColors = {
     secondary: '#4752C4',
     text: '#FFFFFF',
     textSecondary: '#B5BAC1',
-    border: '#2B2D31',
+    border: '#1E1F22',
     hover: '#32353B',
+    headerBackground: '#2B2D31',
+    inputBackground: '#1E1F22',
 };
 
 const useSplitPane = (isMobile, initialPosition = 50) => {
@@ -32,7 +35,11 @@ const useSplitPane = (isMobile, initialPosition = 50) => {
 const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [code, setCode] = useState(script.content);
     const [previewKey, setPreviewKey] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchVisible, setSearchVisible] = useState(false);
+    const editorRef = useRef(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
+    const [showToast, setShowToast] = useState(false);
 
     const {
         splitPosition,
@@ -45,13 +52,37 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setPreviewKey(prev => prev + 1);
     };
 
-    const handleSave = () => {
-        onSave(code);
+    const handleSave = async () => {
+        try {
+            await onSave(code);
+            setShowToast(true);
+        } catch (error) {
+            console.error('Error saving:', error);
+        }
     };
 
     const toggleMaximize = (pane) => {
         setIsMaximized(current => current === pane ? null : pane);
     };
+
+    const handleSearch = (searchTerm) => {
+        if (!editorRef.current) return;
+        
+        const editor = editorRef.current.editor;
+        editor.find(searchTerm, {
+            backwards: false,
+            wrap: true,
+            caseSensitive: false,
+            wholeWord: false,
+            regExp: false
+        });
+    };
+
+    useEffect(() => {
+        if (searchTerm) {
+            handleSearch(searchTerm);
+        }
+    }, [searchTerm]);
 
     return (
         <div style={styles.container}>
@@ -70,21 +101,58 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             <FaArrowLeft />
                         </IconButton>
                     </Tooltip>
-                    <h3 style={styles.title}>{script.name}</h3>
+                    <div style={styles.titleContainer}>
+                        <h3 style={styles.title}>{script.name}</h3>
+                        <span style={styles.scriptType}>{script.scriptType === 'webApps' ? 'Web App' : 'OpenSCAD'}</span>
+                    </div>
                 </div>
                 <div style={styles.actions}>
+                    <div style={styles.searchContainer}>
+                        <AnimatePresence>
+                            {searchVisible && (
+                                <motion.div
+                                    initial={{ width: 0, opacity: 0 }}
+                                    animate={{ width: isMobile ? 150 : 200, opacity: 1 }}
+                                    exit={{ width: 0, opacity: 0 }}
+                                    style={styles.searchInputContainer}
+                                >
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        style={styles.searchInput}
+                                        autoFocus
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        <Tooltip title={searchVisible ? "Close Search" : "Search"}>
+                            <IconButton
+                                onClick={() => setSearchVisible(!searchVisible)}
+                                sx={{
+                                    ...styles.iconButton,
+                                    color: searchVisible ? darkModeColors.primary : darkModeColors.text,
+                                }}
+                            >
+                                <FaSearch size={16} />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
+                    <div style={styles.divider} />
                     <Tooltip title="Run">
                         <IconButton
                             onClick={handleRunPreview}
                             sx={styles.iconButton}
                         >
-                            <FaPlay />
+                            <FaPlay size={16} />
                         </IconButton>
                     </Tooltip>
                     <Button
                         onClick={handleSave}
                         variant="contained"
                         sx={styles.saveButton}
+                        size={isMobile ? "small" : "medium"}
                     >
                         Save
                     </Button>
@@ -123,6 +191,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         </Tooltip>
                     </div>
                     <AceEditor
+                        ref={editorRef}
                         mode="javascript"
                         theme="monokai"
                         onChange={setCode}
@@ -179,6 +248,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     />
                 </motion.div>
             </div>
+            <Toast 
+                message="Changes saved successfully!"
+                isVisible={showToast}
+                onHide={() => setShowToast(false)}
+            />
         </div>
     );
 };
@@ -196,43 +270,84 @@ const styles = {
         flexDirection: 'column',
     },
     header: {
-        backgroundColor: darkModeColors.foreground,
-        padding: '8px 16px',
+        backgroundColor: darkModeColors.headerBackground,
+        padding: '0 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottom: `1px solid ${darkModeColors.border}`,
-        height: '56px',
+        height: '64px',
+        '@media (max-width: 768px)': {
+            padding: '0 8px',
+            height: '56px',
+        },
     },
     headerLeft: {
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: '16px',
+        flex: 1,
+        minWidth: 0, // Allows flex items to shrink below content size
+        '@media (max-width: 768px)': {
+            gap: '8px',
+        },
+    },
+    titleContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0, // Allows container to shrink
+        flex: 1,
     },
     title: {
         color: darkModeColors.text,
         margin: 0,
         fontSize: '16px',
-        fontWeight: '500',
+        fontWeight: '600',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        '@media (max-width: 768px)': {
+            fontSize: '14px',
+        },
+    },
+    scriptType: {
+        color: darkModeColors.textSecondary,
+        fontSize: '12px',
+        '@media (max-width: 768px)': {
+            fontSize: '11px',
+        },
     },
     actions: {
         display: 'flex',
         gap: '8px',
         alignItems: 'center',
+        '@media (max-width: 768px)': {
+            gap: '4px',
+        },
     },
     iconButton: {
         color: darkModeColors.text,
         padding: '8px',
+        borderRadius: '8px',
         '&:hover': {
-            backgroundColor: darkModeColors.hover,
+            backgroundColor: `${darkModeColors.hover}80`,
+        },
+        '@media (max-width: 768px)': {
+            padding: '6px',
         },
     },
     saveButton: {
         backgroundColor: darkModeColors.primary,
         textTransform: 'none',
         fontWeight: 500,
+        borderRadius: '8px',
+        padding: '6px 16px',
         '&:hover': {
             backgroundColor: darkModeColors.secondary,
+        },
+        '@media (max-width: 768px)': {
+            padding: '4px 12px',
+            minWidth: 'unset',
         },
     },
     content: {
@@ -286,6 +401,44 @@ const styles = {
     },
     dragHandleActive: {
         backgroundColor: darkModeColors.primary,
+    },
+    searchContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    searchInputContainer: {
+        position: 'relative',
+        overflow: 'hidden',
+        marginRight: '4px',
+    },
+    searchInput: {
+        backgroundColor: darkModeColors.inputBackground,
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '6px',
+        padding: '6px 12px',
+        color: darkModeColors.text,
+        fontSize: '14px',
+        width: '100%',
+        outline: 'none',
+        transition: 'all 0.2s ease',
+        '&:focus': {
+            borderColor: darkModeColors.primary,
+            boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
+        },
+        '@media (max-width: 768px)': {
+            padding: '4px 8px',
+            fontSize: '13px',
+        },
+    },
+    divider: {
+        width: '1px',
+        height: '24px',
+        backgroundColor: darkModeColors.border,
+        margin: '0 4px',
+        '@media (max-width: 768px)': {
+            height: '20px',
+        },
     },
 };
 
