@@ -448,11 +448,20 @@ export default function HomeScreen() {
         <motion.div
           className="title-container"
           onClick={toggleStatusBar}
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ 
+            scale: 1.02,
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          }}
+          whileTap={{ scale: 0.98 }}
         >
           <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
           <h1 className="App-title">Ditto</h1>
-          {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
+          </motion.div>
         </motion.div>
         <motion.div
           className="settings-button"

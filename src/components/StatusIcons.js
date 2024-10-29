@@ -1,9 +1,10 @@
 import { FaBrain } from "react-icons/fa";
-import { HiMiniDocument } from "react-icons/hi2";
+import { RiMagicLine } from "react-icons/ri";
 import { FaPlay } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
 import zIndex from "@mui/material/styles/zIndex";
+import { motion } from "framer-motion";
 
 const darkModeColors = {
     primary: '#7289DA',
@@ -33,18 +34,42 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
 
     return (
         <div style={styles.icons}>
-            <div style={styles.iconItem} onClick={handleBookmarkClick}>
-                <HiMiniDocument style={styles.icon} />
-            </div>
+            <motion.div 
+                style={styles.iconItem} 
+                onClick={handleBookmarkClick}
+                whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                }}
+                whileTap={{ scale: 0.95 }}
+            >
+                <RiMagicLine style={styles.icon} />
+            </motion.div>
 
-            <div style={styles.iconItem} onClick={handleMemoryClick}>
+            <motion.div 
+                style={styles.iconItem} 
+                onClick={handleMemoryClick}
+                whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                }}
+                whileTap={{ scale: 0.95 }}
+            >
                 <FaBrain style={styles.icon} />
-            </div>
+            </motion.div>
 
             {selectedScript && (
-                <div style={styles.iconItem} onClick={handlePlayScript}>
+                <motion.div 
+                    style={styles.iconItem} 
+                    onClick={handlePlayScript}
+                    whileHover={{ 
+                        scale: 1.1,
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                >
                     <FaPlay style={styles.playIcon} />
-                </div>
+                </motion.div>
             )}
 
             {selectedScript && (
@@ -72,9 +97,16 @@ const styles = {
         margin: '0px 3px',
         cursor: 'pointer',
         position: 'relative',
+        width: '40px',
+        height: '40px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        transition: 'background-color 0.3s ease',
     },
     icon: {
-        fontSize: '24px',
+        fontSize: '22px',
         color: darkModeColors.primary,
     },
     playIcon: {
