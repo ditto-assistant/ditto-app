@@ -699,7 +699,7 @@ const styles = {
     backButton: {
         position: 'absolute',
         left: '15px',
-        color: darkModeColors.textSecondary,
+        color: darkModeColors.primary,
         fontWeight: 'bold',
         '&:hover': {
             backgroundColor: 'transparent',
@@ -773,7 +773,7 @@ const styles = {
         fontSize: '16px',
         fontWeight: '500',
         marginBottom: '16px',
-        color: darkModeColors.textSecondary,
+        color: darkModeColors.primary,
         textAlign: 'left',
         textTransform: 'uppercase',
         letterSpacing: '0.02em',

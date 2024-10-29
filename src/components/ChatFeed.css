@@ -54,6 +54,8 @@
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
+  width: fit-content;
+  gap: 4px; /* Add gap between image and text content */
 }
 
 .blurred {
@@ -112,9 +114,10 @@
 
 .chat-image {
   max-width: 100%;
+  max-height: 400px;
+  width: auto;
   height: auto;
-  width: 95%;
-  height: 95%;
+  object-fit: contain;
   margin-top: 10px;
   border-radius: 10px;
   padding-left: 0.2em;
@@ -566,7 +569,26 @@
 /* Add a new media query for larger screens */
 @media screen and (min-width: 1200px) {
   .chat-bubble {
-    max-width: 70%;
+    max-width: 60%;
+    max-height: 80vh;
+  }
+
+  .chat-bubble:has(.chat-image) {
+    max-width: 800px;
+  }
+
+  .chat-image {
+    max-height: 500px;
+  }
+}
+
+@media screen and (min-width: 1800px) {
+  .chat-bubble {
+    max-width: 50%;
+  }
+
+  .chat-bubble:has(.chat-image) {
+    max-width: 1000px;
   }
 }
 
@@ -578,6 +600,10 @@
 
   .chat-bubble {
     max-width: 85%;
+  }
+
+  .chat-image {
+    max-height: 300px;
   }
 }
 
@@ -1533,5 +1559,131 @@ input:checked + .toggle-slider:before {
   .memory-header {
     padding: 16px;
   }
+}
+
+/* Add styles for image bubbles */
+.chat-bubble {
+  /* ... existing styles ... */
+  gap: 4px; /* Add gap between image and text content */
+}
+
+/* Create container for images */
+.chat-image-container {
+  position: relative;
+  margin: -10px -14px 8px -14px; /* Negative margins to break out of bubble padding */
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Update image styles */
+.chat-image {
+  display: block;
+  max-width: 100%;
+  max-height: 400px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Add connecting element between image and text */
+.chat-image-container::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* Position connector differently for User vs Ditto bubbles */
+.chat-bubble.User .chat-image-container::after {
+  right: 24px;
+  background-color: #4752c4;
+}
+
+.chat-bubble.Ditto .chat-image-container::after {
+  left: 24px;
+  background-color: #40444b;
+}
+
+/* Update hover effects */
+.chat-image:hover {
+  transform: scale(1.02);
+}
+
+/* Update media queries for different screen sizes */
+@media screen and (min-width: 1200px) {
+  .chat-bubble:has(.chat-image-container) {
+    max-width: 800px;
+  }
+
+  .chat-image {
+    max-height: 500px;
+  }
+}
+
+@media screen and (min-width: 1800px) {
+  .chat-bubble:has(.chat-image-container) {
+    max-width: 1000px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .chat-image {
+    max-height: 300px;
+  }
+}
+
+/* Add loading state styles */
+.chat-image-container.loading {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.chat-image-container.loading::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Add multiple image support */
+.chat-image-grid {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  width: 100%;
+}
+
+.chat-image-grid .chat-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Update bubble styles when containing images */
+.chat-bubble:has(.chat-image-container) {
+  padding-top: 0;
+  overflow: hidden;
 }
 
