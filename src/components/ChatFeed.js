@@ -74,6 +74,21 @@ const getCachedMemories = (promptId) => {
   }
 };
 
+// Add this helper function near the top of the file
+const validateImageUrl = async (url) => {
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Error validating image URL:', error);
+    return false;
+  }
+};
+
 export default function ChatFeed({
   messages,
   histCount,
@@ -114,6 +129,8 @@ export default function ChatFeed({
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [failedImages, setFailedImages] = useState(new Set());
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -344,6 +361,11 @@ export default function ChatFeed({
     e.preventDefault();
     e.stopPropagation();
     
+    // Don't show overlay if text is being selected
+    if (window.getSelection().toString() || isSelecting) {
+      return;
+    }
+    
     // Get coordinates before any state updates
     const rect = e.currentTarget.getBoundingClientRect();
     const isUserMessage = messages[index].sender === 'User';
@@ -389,26 +411,59 @@ export default function ChatFeed({
     setImageControlsVisible(!imageControlsVisible);
   };
 
+  // Update the renderMessageText function to handle clickable links
   const renderMessageText = (text, index) => {
+    // First replace code block markers
     text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     text = text.replace(/```\./g, '```\n');
+
     return (
       <ReactMarkdown
         children={text}
         components={{
-          a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
-          img: ({ src, alt, ...props }) => (
-            <img
+          a: ({ node, href, children, ...props }) => (
+            <a 
               {...props}
-              src={src}
-              alt={alt}
-              className='chat-image'
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={(e) => {
                 e.stopPropagation(); // Prevent bubble interaction
-                handleImageClick(src);
+                // Let the default link behavior handle the navigation
               }}
-            />
+              style={{ 
+                color: '#3941b8', 
+                textDecoration: 'none', 
+                textShadow: '0 0 1px #7787d7',
+                cursor: 'pointer',
+                pointerEvents: 'auto'
+              }} 
+            >
+              {children}
+            </a>
           ),
+          img: ({ src, alt, ...props }) => {
+            if (failedImages.has(src)) {
+              return <span className="invalid-image">Invalid URI</span>;
+            }
+
+            return (
+              <img
+                {...props}
+                src={src}
+                alt={alt}
+                className='chat-image'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleImageClick(src);
+                }}
+                onError={(e) => {
+                  console.error('Image failed to load:', src);
+                  setFailedImages(prev => new Set([...prev, src]));
+                }}
+              />
+            );
+          },
           code({ node, inline, className, children, ...props }) {
             let match = /language-(\w+)/.exec(className || '');
             let hasCodeBlock;
@@ -476,6 +531,7 @@ export default function ChatFeed({
     }).format(date);
   };
 
+  // Update the renderMessageWithAvatar function to remove async handling
   const renderMessageWithAvatar = (message, index) => {
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
@@ -495,6 +551,16 @@ export default function ChatFeed({
           style={bubbleStyles.chatbubble}
           onClick={(e) => handleBubbleInteraction(e, index)}
           onContextMenu={(e) => handleBubbleInteraction(e, index)}
+          onMouseDown={() => setIsSelecting(false)}
+          onMouseMove={(e) => {
+            if (e.buttons === 1) { // Left mouse button is being held
+              setIsSelecting(true);
+            }
+          }}
+          onMouseUp={() => {
+            // Delay resetting isSelecting to allow click handler to check it
+            setTimeout(() => setIsSelecting(false), 100);
+          }}
           data-index={index}
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}

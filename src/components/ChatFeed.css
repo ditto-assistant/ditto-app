@@ -50,6 +50,10 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   margin-top: 12px; /* Reduced top margin */
+  user-select: text; /* Default to allowing text selection */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .blurred {
@@ -100,6 +104,10 @@
   color: #000000;
   padding-bottom: 5px; /* Reduced from 20px */
   min-height: 20px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .chat-image {
@@ -235,6 +243,10 @@
   margin: 8px 0;
   padding: 12px;
   background: #282c34;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .inline-code-container {
@@ -244,12 +256,20 @@
   background: #282c34;
   border-radius: 6px;
   padding-left: 8px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .inline-code {
   color: #ffffff;
   font-family: 'Courier New', Courier, monospace;
   margin-right: 4px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .copy-button {
@@ -324,6 +344,9 @@
 @media (pointer: coarse) {
   .chat-bubble {
     user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
   }
 }
 
@@ -1167,5 +1190,68 @@
   animation: spin 1s linear infinite;
   font-size: 24px;
   color: #3941b8;
+}
+
+.invalid-image {
+  display: inline-block;
+  color: #ff4444;
+  font-style: italic;
+  padding: 4px 8px;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+/* Ensure code blocks are selectable everywhere */
+.code-block, 
+.inline-code {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Make sure message text is selectable */
+.message-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Add styles for hyperlinks */
+.message-text a {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.message-text a:hover {
+  opacity: 0.8;
+}
+
+/* Ensure links are visible in both bubble types */
+.chat-bubble.User .message-text a {
+  color: #e6e6e6 !important; /* Light grey for user bubbles */
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  text-decoration: underline !important;
+}
+
+.chat-bubble.Ditto .message-text a {
+  color: #7b83e6 !important; /* Lighter blue for Ditto bubbles */
+  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3) !important;
+  text-decoration: underline !important;
+}
+
+/* Add hover states for better interaction feedback */
+.chat-bubble.User .message-text a:hover {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+.chat-bubble.Ditto .message-text a:hover {
+  color: #8e95f5 !important;
+  opacity: 0.9;
 }
 
