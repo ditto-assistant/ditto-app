@@ -1032,18 +1032,22 @@
   padding: 12px 24px;
   background-color: #232428;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: nowrap; /* Prevent wrapping */
 }
 
 .memory-controls-left {
   display: flex;
-  gap: 12px;
+  gap: 8px; /* Reduced gap */
   align-items: center;
+  flex-shrink: 1; /* Allow shrinking */
+  min-width: 0; /* Allow container to shrink below content size */
 }
 
 .memory-controls-right {
   display: flex;
-  gap: 8px;
   align-items: center;
+  flex-shrink: 0; /* Prevent shrinking */
+  margin-left: 12px; /* Add space between controls */
 }
 
 /* Style the sort and filter buttons */
@@ -1051,7 +1055,7 @@
   background-color: #4752c4;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.9em;
   cursor: pointer;
@@ -1059,6 +1063,8 @@
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .memory-control-button:hover {
@@ -1377,5 +1383,105 @@ input:checked + .toggle-slider:before {
 .chat-bubble.Ditto .message-text a:hover {
   color: #8e95f5 !important;
   opacity: 0.9;
+}
+
+/* Add responsive styles for memory overlay */
+@media screen and (max-width: 768px) {
+  .memory-content {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .memory-controls {
+    flex-direction: row; /* Keep row direction */
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .memory-controls-left {
+    width: auto; /* Remove full width */
+    gap: 6px; /* Reduce gap further on mobile */
+  }
+
+  .memory-controls-right {
+    width: auto; /* Remove full width */
+    justify-content: flex-end;
+  }
+
+  .memory-control-button {
+    padding: 6px 8px; /* Slightly smaller padding */
+    font-size: 0.8em; /* Smaller font */
+  }
+
+  /* Adjust the score toggle to be more compact */
+  .score-toggle {
+    width: auto;
+    white-space: nowrap;
+    font-size: 0.8em;
+  }
+
+  .toggle-switch {
+    margin-left: 4px;
+  }
+
+  /* Adjust timestamp and score display */
+  .memory-timestamp,
+  .memory-score {
+    font-size: 0.8em;
+  }
+
+  /* Ensure images don't overflow on small screens */
+  .memory-image-container {
+    max-width: 100%;
+    margin-right: 0;
+  }
+
+  .memory-image {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Add styles for even smaller screens */
+@media screen and (max-width: 480px) {
+  .memory-control-button {
+    padding: 6px 6px;
+  }
+
+  .memory-control-button svg {
+    margin-right: 2px;
+  }
+
+  /* Hide the word "Scores" and just show "Show" */
+  .score-toggle span {
+    font-size: 0.8em;
+  }
+}
+
+/* Add landscape orientation styles */
+@media screen and (max-height: 600px) and (orientation: landscape) {
+  .memory-content {
+    max-height: 100vh;
+  }
+
+  .memory-list {
+    max-height: calc(100vh - 140px);
+  }
+
+  .memory-controls {
+    padding: 8px 16px;
+  }
+
+  .memory-controls-left,
+  .memory-controls-right {
+    width: auto;
+  }
+
+  .memory-item {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
 }
 
