@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Divider, Button, TextField, IconButton, InputAdornment, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
@@ -18,6 +18,11 @@ const Settings = () => {
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   const [showHaApiKey, setShowHaApiKey] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -79,7 +84,12 @@ const Settings = () => {
 
   return (
     <div style={styles.overlay}>
-      <div style={styles.settingsContainer}>
+      <div style={{
+        ...styles.settingsContainer,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+      }}>
         <header style={styles.header}>
           <Button
             variant="text"
