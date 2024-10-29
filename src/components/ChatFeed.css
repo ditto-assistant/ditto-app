@@ -50,6 +50,10 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   margin-top: 12px; /* Reduced top margin */
+  user-select: text; /* Default to allowing text selection */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .blurred {
@@ -100,6 +104,10 @@
   color: #000000;
   padding-bottom: 5px; /* Reduced from 20px */
   min-height: 20px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .chat-image {
@@ -134,17 +142,21 @@
 }
 
 .action-overlay {
-  position: fixed; /* Change to fixed positioning */
+  position: fixed;
   background-color: #3941b8;
   border-radius: 10px;
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Add consistent spacing between buttons */
+  gap: 8px;
   width: auto;
-  min-width: 100px;
-  z-index: 1000; /* Ensure it's above other content */
+  min-width: 120px;
+  z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  touch-action: none;
+  pointer-events: auto;
+  will-change: transform;
+  transform: translate(-50%, -50%);
 }
 
 .image-action-overlay {
@@ -231,6 +243,10 @@
   margin: 8px 0;
   padding: 12px;
   background: #282c34;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .inline-code-container {
@@ -240,12 +256,20 @@
   background: #282c34;
   border-radius: 6px;
   padding-left: 8px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .inline-code {
   color: #ffffff;
   font-family: 'Courier New', Courier, monospace;
   margin-right: 4px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .copy-button {
@@ -320,6 +344,9 @@
 @media (pointer: coarse) {
   .chat-bubble {
     user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
   }
 }
 
@@ -726,37 +753,62 @@
 
 /* Update action overlay styles */
 .action-overlay {
-  position: fixed; /* Change to fixed positioning */
+  position: fixed;
   background-color: #3941b8;
   border-radius: 10px;
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Add consistent spacing between buttons */
+  gap: 8px;
   width: auto;
-  min-width: 100px;
-  z-index: 1000; /* Ensure it's above other content */
+  min-width: 120px;
+  z-index: 4001;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  touch-action: none;
+  pointer-events: auto;
+  will-change: transform;
+  transform: translate(-50%, -50%);
 }
 
 .action-button {
-  padding: 8px 12px;
+  padding: 12px 16px;
   width: 100%;
   text-align: center;
   border-radius: 6px;
   transition: background-color 0.2s ease;
+  font-size: 16px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-.action-button:hover {
+.action-button:active {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Prevent text selection on buttons */
-.action-button, .emoji-button {
+/* Prevent any text selection */
+.chat-bubble, .action-overlay, .action-button {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+/* Ensure proper touch handling on mobile */
+@media (pointer: coarse) {
+  .action-button {
+    min-height: 44px;
+    padding: 14px 16px;
+  }
+  
+  .action-overlay {
+    padding: 10px;
+  }
 }
 
 /* Add these styles at the end of the file */
@@ -776,24 +828,24 @@
 }
 
 .memory-content {
-  background-color: #36393f;
-  border-radius: 12px;
+  background-color: #2b2d31;
+  border-radius: 16px;
   width: 90%;
   max-width: 600px;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  position: relative; /* Ensure it's above the overlay */
-  z-index: 4001; /* One higher than the overlay */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  position: relative;
+  margin: 20px;
 }
 
 .memory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background-color: #2f3136;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 24px;
+  background-color: #1e1f22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .memory-header h3 {
@@ -823,16 +875,17 @@
 }
 
 .memory-item {
-  background-color: #40444b;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: transform 0.2s, opacity 0.3s, height 0.3s;
-  overflow: hidden;
+  background-color: #313338;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .memory-item:hover {
   transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .memory-prompt {
@@ -852,8 +905,8 @@
 
 .memory-timestamp {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8em;
-  text-align: right;
+  font-size: 0.85em;
+  font-family: monospace;
 }
 
 /* Update action button styles to accommodate icon */
@@ -918,7 +971,8 @@
 /* Update memory timestamp for the new layout */
 .memory-timestamp {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8em;
+  font-size: 0.85em;
+  font-family: monospace;
 }
 
 /* Add animation classes */
@@ -939,12 +993,142 @@
 
 /* Update memory item styles */
 .memory-item {
-  background-color: #40444b;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: transform 0.2s, opacity 0.3s, height 0.3s;
-  overflow: hidden;
+  background-color: #313338;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.memory-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Add score display */
+.memory-score {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85em;
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+/* Add sort direction indicator */
+.sort-direction {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.sort-direction.asc {
+  transform: rotate(180deg);
+}
+
+/* Add controls container */
+.memory-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: #232428;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: nowrap; /* Prevent wrapping */
+}
+
+.memory-controls-left {
+  display: flex;
+  gap: 8px; /* Reduced gap */
+  align-items: center;
+  flex-shrink: 1; /* Allow shrinking */
+  min-width: 0; /* Allow container to shrink below content size */
+}
+
+.memory-controls-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0; /* Prevent shrinking */
+  margin-left: 12px; /* Add space between controls */
+}
+
+/* Style the sort and filter buttons */
+.memory-control-button {
+  background-color: #4752c4;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.memory-control-button:hover {
+  background-color: #3941b8;
+}
+
+.memory-control-button.active {
+  background-color: #3941b8;
+  box-shadow: 0 0 0 2px rgba(71, 82, 196, 0.3);
+}
+
+/* Style the toggle switch */
+.score-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9em;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #4f545c;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #4752c4;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
 }
 
 /* Add styles for the image container */
@@ -1094,3 +1278,260 @@
 .delete-confirmation-docid.not-found {
   color: #ed4245;
 }
+
+/* Add these styles for the delete action button */
+.action-button.delete-action {
+  color: #ff4444;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+.action-button.delete-action:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
+.action-button.delete-action:active {
+  background-color: rgba(255, 68, 68, 0.2);
+}
+
+/* Add loading spinner styles */
+.delete-confirmation-loading {
+  font-family: monospace;
+  background-color: #2f3136;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  color: #a0a0a0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  font-size: 24px;
+  color: #3941b8;
+}
+
+.invalid-image {
+  display: inline-block;
+  color: #ff4444;
+  font-style: italic;
+  padding: 4px 8px;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+/* Ensure code blocks are selectable everywhere */
+.code-block, 
+.inline-code {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Make sure message text is selectable */
+.message-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Add styles for hyperlinks */
+.message-text a {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.message-text a:hover {
+  opacity: 0.8;
+}
+
+/* Ensure links are visible in both bubble types */
+.chat-bubble.User .message-text a {
+  color: #e6e6e6 !important; /* Light grey for user bubbles */
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  text-decoration: underline !important;
+}
+
+.chat-bubble.Ditto .message-text a {
+  color: #7b83e6 !important; /* Lighter blue for Ditto bubbles */
+  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3) !important;
+  text-decoration: underline !important;
+}
+
+/* Add hover states for better interaction feedback */
+.chat-bubble.User .message-text a:hover {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+.chat-bubble.Ditto .message-text a:hover {
+  color: #8e95f5 !important;
+  opacity: 0.9;
+}
+
+/* Add responsive styles for memory overlay */
+@media screen and (max-width: 768px) {
+  .memory-content {
+    width: 90%; /* Keep consistent with desktop */
+    height: auto; /* Remove full height */
+    max-height: 85vh; /* Keep consistent with desktop */
+    border-radius: 16px; /* Keep rounded corners */
+    margin: 20px;
+  }
+
+  .memory-list {
+    max-height: calc(85vh - 140px); /* Adjust for header and controls */
+  }
+}
+
+/* Add styles for even smaller screens */
+@media screen and (max-width: 480px) {
+  .memory-content {
+    width: calc(100% - 32px); /* Full width minus margins */
+    margin: 16px;
+  }
+
+  .memory-control-button {
+    padding: 6px 6px;
+  }
+
+  .memory-control-button svg {
+    margin-right: 2px;
+  }
+
+  /* Hide the word "Scores" and just show "Show" */
+  .score-toggle span {
+    font-size: 0.8em;
+  }
+}
+
+/* Add landscape orientation styles */
+@media screen and (max-height: 600px) and (orientation: landscape) {
+  .memory-content {
+    max-height: 90vh; /* Slightly taller for landscape */
+    width: 90%;
+    border-radius: 16px;
+    margin: 20px;
+  }
+
+  .memory-list {
+    max-height: calc(90vh - 140px);
+  }
+
+  .memory-controls {
+    padding: 8px 16px;
+  }
+
+  .memory-controls-left,
+  .memory-controls-right {
+    width: auto;
+  }
+
+  .memory-item {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+}
+
+/* Update memory controls for very small screens */
+@media screen and (max-width: 480px) {
+  .memory-control-button {
+    padding: 6px 8px;
+    font-size: 0.8em;
+    gap: 4px; /* Reduce space between icon and text */
+  }
+
+  .memory-control-button svg {
+    font-size: 0.9em; /* Make icons slightly smaller */
+  }
+
+  .sort-direction {
+    margin-left: 2px; /* Reduce space before arrow */
+  }
+
+  /* Make the buttons more compact */
+  .memory-controls-left {
+    gap: 6px; /* Reduce gap between buttons */
+  }
+
+  /* Adjust the toggle switch area */
+  .score-toggle {
+    font-size: 0.8em;
+    gap: 4px;
+  }
+
+  /* Make the toggle switch slightly smaller */
+  .toggle-switch {
+    width: 36px;
+    height: 18px;
+  }
+
+  .toggle-slider:before {
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+  }
+
+  input:checked + .toggle-slider:before {
+    transform: translateX(18px);
+  }
+
+  /* Adjust the controls container padding */
+  .memory-controls {
+    padding: 8px 12px;
+  }
+
+  /* Make the content use more of the available space */
+  .memory-content {
+    width: calc(100% - 24px); /* Slightly less margin */
+    margin: 12px;
+  }
+}
+
+/* Add specific styles for iPhone SE and similarly sized devices */
+@media screen and (max-width: 380px) {
+  .memory-control-button {
+    padding: 6px 6px;
+    font-size: 0.75em;
+    gap: 3px;
+  }
+
+  .memory-controls-left {
+    gap: 4px; /* Even tighter gap for very small screens */
+  }
+
+  .score-toggle span {
+    font-size: 0.75em;
+  }
+
+  /* Further reduce margins */
+  .memory-content {
+    width: calc(100% - 16px);
+    margin: 8px;
+  }
+
+  /* Adjust header padding */
+  .memory-header {
+    padding: 16px;
+  }
+}
+

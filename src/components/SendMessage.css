@@ -24,6 +24,7 @@
     background-color: #40444b; /* Changed to the lighter grey color */
     border-radius: 10px;
     position: relative;
+    gap: 8px; /* Add gap between textarea and button */
 }
 
 .InputWrapper {
@@ -102,11 +103,13 @@
     border: none;
     border-radius: 10px;
     color: white;
-    padding: 10px 20px;
-    margin-left: 10px;
-    margin-right: -5px;
+    padding: 8px 15px; /* Reduce padding */
+    margin-left: 0; /* Remove left margin */
+    margin-right: -2px; /* Remove right margin */
     cursor: pointer;
     transition: background-color 0.2s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+    min-width: fit-content; /* Ensure button takes minimum required width */
 }
 
 .Submit:hover {
@@ -386,4 +389,20 @@
 
 .CancelButton:active {
     transform: scale(0.98);
+}
+
+/* Add media query for small screens */
+@media screen and (max-width: 380px) {
+    .Form {
+        padding: 5px 8px; /* Reduce padding on small screens */
+    }
+    
+    .Submit {
+        padding: 8px 12px; /* Further reduce padding on small screens */
+        font-size: 14px; /* Slightly smaller font size */
+    }
+    
+    .TextArea {
+        padding-right: 80px; /* Reduce padding to prevent overlap with icons */
+    }
 }
