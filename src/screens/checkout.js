@@ -302,9 +302,6 @@ const styles = {
         fontWeight: '500',
         color: '#4fff9f',
     },
-    selectedTier: {
-        backgroundColor: '#7289da',
-    },
     checkout: {
         display: 'flex',
         flexDirection: 'column',

@@ -14,6 +14,7 @@ const ScriptsScreen = lazy(() => import("./screens/ScriptsScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import('./screens/settings'));
 const Checkout = lazy(() => import("./screens/checkout"));
+const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -32,8 +33,7 @@ const router = createBrowserRouter(
                 <Route path="canvas" element={<DittoCanvas />} />
                 <Route path="checkout">
                     <Route index element={<Checkout />} />
-                    <Route path="success" element={<div>Success</div>} />
-                    {/* <Route path="cancel" element={<div>Cancel</div>} /> */}
+                    <Route path="success" element={<CheckoutSuccess />} />
                 </Route>
             </Route >
         </Route >
