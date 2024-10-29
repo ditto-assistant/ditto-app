@@ -881,33 +881,28 @@ export default function ChatFeed({
       
       if (success) {
         if (isMessageDelete) {
-          // Remove from localStorage conversation history
+          // Handle chat message deletion (existing code)
           const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
           const responses = JSON.parse(localStorage.getItem('responses') || '[]');
           const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
           const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
 
-          // Find the index of the conversation in the arrays
           const conversationIndex = pairIDs.findIndex(id => id === docId);
           
           if (conversationIndex !== -1) {
-            // Remove the conversation from all arrays
             prompts.splice(conversationIndex, 1);
             responses.splice(conversationIndex, 1);
             timestamps.splice(conversationIndex, 1);
             pairIDs.splice(conversationIndex, 1);
 
-            // Update localStorage
             localStorage.setItem('prompts', JSON.stringify(prompts));
             localStorage.setItem('responses', JSON.stringify(responses));
             localStorage.setItem('timestamps', JSON.stringify(timestamps));
             localStorage.setItem('pairIDs', JSON.stringify(pairIDs));
             
-            // Update histCount to match the new conversation length
             const newHistCount = prompts.length;
             localStorage.setItem('histCount', newHistCount.toString());
 
-            // Dispatch custom event to trigger re-render with updated count
             window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
               detail: { 
                 conversationIndex,
@@ -916,14 +911,20 @@ export default function ChatFeed({
             }));
           }
         } else {
-          // Handle memory overlay deletion
+          // Handle memory overlay item deletion
           const newMemories = relatedMemories.filter((_, i) => i !== idx);
           setRelatedMemories(newMemories);
           
-          // Remove from localStorage cache
-          const promptId = `${userID}-${memory.prompt}`;
+          // Clear ALL memory caches that contain this memory
           const cache = getMemoryCache();
-          delete cache[promptId];
+          for (const promptId in cache) {
+            const memories = cache[promptId].memories;
+            // Check if this memory exists in the cached memories
+            const memoryExists = memories.some(m => m.id === memory.id);
+            if (memoryExists) {
+              delete cache[promptId];
+            }
+          }
           localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
           
           if (newMemories.length === 0) {
@@ -1036,17 +1037,24 @@ export default function ChatFeed({
   };
 
   const getSortedMemories = () => {
-    if (!relatedMemories) return [];
+    if (!relatedMemories || !memoryOverlay) return [];
     
-    return [...relatedMemories].sort((a, b) => {
-      if (sortBy === 'relevance') {
-        const comparison = b.score - a.score;
-        return sortDirection === 'asc' ? -comparison : comparison;
-      } else {
-        const comparison = new Date(b.timestampString) - new Date(a.timestampString);
-        return sortDirection === 'asc' ? -comparison : comparison;
-      }
-    });
+    // Get the current message
+    const currentMessage = messages[memoryOverlay.index];
+    const currentPairID = currentMessage?.pairID;
+    
+    // Filter out the current conversation and then sort
+    return [...relatedMemories]
+      .filter(memory => memory.id !== currentPairID) // Remove current conversation
+      .sort((a, b) => {
+        if (sortBy === 'relevance') {
+          const comparison = b.score - a.score;
+          return sortDirection === 'asc' ? -comparison : comparison;
+        } else {
+          const comparison = new Date(b.timestampString) - new Date(a.timestampString);
+          return sortDirection === 'asc' ? -comparison : comparison;
+        }
+      });
   };
 
   return (
