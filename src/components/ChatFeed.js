@@ -1146,7 +1146,7 @@ export default function ChatFeed({
                 >
                   <FiBarChart2 />
                   Relevance
-                  <span className={`sort-direction ${sortDirection === 'asc' ? 'asc' : ''}`}>
+                  <span className={`sort-direction ${sortBy === 'relevance' && sortDirection === 'asc' ? 'asc' : ''}`}>
                     <FiChevronDown />
                   </span>
                 </button>
@@ -1156,7 +1156,7 @@ export default function ChatFeed({
                 >
                   <FiClock />
                   Time
-                  <span className={`sort-direction ${sortDirection === 'asc' ? 'asc' : ''}`}>
+                  <span className={`sort-direction ${sortBy === 'timestamp' && sortDirection === 'asc' ? 'asc' : ''}`}>
                     <FiChevronDown />
                   </span>
                 </button>
