@@ -12,12 +12,17 @@ import { Button } from '@mui/material';
 import FullScreenSpinner from "../components/LoadingSpinner";
 
 const darkModeColors = {
-    background: '#2C2F33',
-    foreground: '#36393F',
-    primary: '#7289DA',
+    background: '#1E1F22',
+    foreground: '#2B2D31',
+    primary: '#5865F2',
+    secondary: '#4752C4',
     text: '#FFFFFF',
-    border: '#4F545C',
-    danger: '#F04747',
+    textSecondary: '#B5BAC1',
+    border: '#1E1F22',
+    danger: '#DA373C',
+    cardBackground: '#313338',
+    headerBackground: '#2B2D31',
+    inputBackground: '#1E1F22',
 };
 
 const AceEditor = lazy(() => import("react-ace"));
@@ -479,15 +484,14 @@ const styles = {
         minHeight: '100vh',
         backgroundColor: darkModeColors.background,
         overflowY: 'auto',
-        padding: 0, // Remove padding
+        padding: 0,
     },
     container: {
         backgroundColor: darkModeColors.foreground,
         textAlign: 'center',
         width: '100%',
-        maxWidth: '100%', // Ensure it takes full width
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
-        height: '100vh', // Full viewport height
+        maxWidth: '100%',
+        height: '100vh',
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -500,9 +504,9 @@ const styles = {
         padding: '15px',
         position: 'sticky',
         top: 0,
-        backgroundColor: '#2f3136',
+        backgroundColor: darkModeColors.headerBackground,
         zIndex: 1000,
-        borderRadius: '8px 8px 0 0',
+        borderBottom: `1px solid ${darkModeColors.border}`,
     },
     headerText: {
         margin: 0,
@@ -512,11 +516,11 @@ const styles = {
     backButton: {
         position: 'absolute',
         left: '15px',
-        color: '#7289da',
+        color: darkModeColors.textSecondary,
         fontWeight: 'bold',
         '&:hover': {
             backgroundColor: 'transparent',
-            color: '#5b6eae',
+            color: darkModeColors.text,
         },
     },
     content: {
@@ -535,13 +539,14 @@ const styles = {
         marginBottom: '20px',
     },
     selectedScript: {
-        backgroundColor: 'rgba(54, 57, 63, 0.8)',
+        backgroundColor: darkModeColors.cardBackground,
         border: `1px solid ${darkModeColors.border}`,
-        padding: '15px',
-        borderRadius: '5px',
+        padding: '20px',
+        borderRadius: '8px',
         textAlign: 'center',
-        maxWidth: '400px', // Limit the width for better appearance
+        maxWidth: '600px',
         width: '100%',
+        marginBottom: '24px',
     },
     selectedScriptLabel: {
         color: darkModeColors.text,
@@ -575,9 +580,13 @@ const styles = {
         width: '100%',
     },
     categoryTitle: {
-        fontSize: '20px',
-        marginBottom: '10px',
-        color: darkModeColors.text,
+        fontSize: '16px',
+        fontWeight: '500',
+        marginBottom: '16px',
+        color: darkModeColors.textSecondary,
+        textAlign: 'left',
+        textTransform: 'uppercase',
+        letterSpacing: '0.02em',
     },
     addScript: {
         display: 'flex',
@@ -587,7 +596,11 @@ const styles = {
     addScriptIcon: {
         fontSize: '24px',
         cursor: 'pointer',
-        color: darkModeColors.primary,
+        color: darkModeColors.textSecondary,
+        transition: 'color 0.2s ease',
+        '&:hover': {
+            color: darkModeColors.primary,
+        },
     },
     addScriptForm: {
         display: 'flex',
@@ -607,25 +620,32 @@ const styles = {
         backgroundColor: darkModeColors.danger,
     },
     input: {
-        marginBottom: '10px',
-        padding: '10px',
-        borderRadius: '5px',
-        border: '1px solid #444',
-        backgroundColor: darkModeColors.foreground,
+        marginBottom: '12px',
+        padding: '12px',
+        borderRadius: '4px',
+        border: `1px solid ${darkModeColors.border}`,
+        backgroundColor: darkModeColors.inputBackground,
         color: darkModeColors.text,
         outline: 'none',
         width: '100%',
+        fontSize: '14px',
+        '&:focus': {
+            borderColor: darkModeColors.primary,
+        },
     },
     scriptCard: {
-        backgroundColor: darkModeColors.foreground,
+        backgroundColor: darkModeColors.cardBackground,
         border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '5px',
-        padding: '10px',
-        marginBottom: '10px',
+        borderRadius: '8px',
+        padding: '16px',
+        marginBottom: '12px',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+        transition: 'background-color 0.2s ease',
+        '&:hover': {
+            backgroundColor: darkModeColors.foreground,
+        },
     },
     scriptCardHeader: {
         display: 'flex',
@@ -635,7 +655,7 @@ const styles = {
     scriptName: {
         color: darkModeColors.text,
         fontSize: '16px',
-        marginBottom: '16px',
+        marginBottom: '0',
         fontWeight: '500',
     },
     actions: {
@@ -645,13 +665,19 @@ const styles = {
         position: 'relative',
     },
     selectButton: {
-        padding: '5px 10px',
-        marginLeft: '10px',
+        padding: '6px 12px',
+        marginLeft: '12px',
         backgroundColor: darkModeColors.primary,
         color: darkModeColors.text,
-        borderRadius: '5px',
+        borderRadius: '4px',
         cursor: 'pointer',
         border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        transition: 'background-color 0.2s ease',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+        },
     },
     playIcon: {
         fontSize: '20px',
@@ -666,27 +692,28 @@ const styles = {
         position: 'relative',
     },
     cardMenu: {
-        backgroundColor: darkModeColors.foreground,
-        border: `1px solid ${darkModeColors.primary}`,
-        borderRadius: '5px',
-        padding: '10px',
+        backgroundColor: darkModeColors.cardBackground,
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '4px',
+        padding: '8px 0',
         display: 'flex',
         flexDirection: 'column',
         position: 'absolute',
         top: 'calc(100% + 5px)',
         right: '0',
         zIndex: 1001,
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.25)',
+        minWidth: '150px',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
     },
     cardMenuItem: {
-        color: darkModeColors.text,
-        marginBottom: '8px',
+        color: darkModeColors.textSecondary,
+        padding: '8px 16px',
         cursor: 'pointer',
-        ':last-child': {
-            marginBottom: '0',
-        },
-        ':hover': {
-            color: darkModeColors.primary,
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+            backgroundColor: darkModeColors.primary,
+            color: darkModeColors.text,
         },
     },
     renameInput: {
