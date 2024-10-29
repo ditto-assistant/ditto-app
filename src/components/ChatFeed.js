@@ -358,11 +358,23 @@ export default function ChatFeed({
   };
 
   const handleBubbleInteraction = (e, index, type = 'text') => {
+    // Check if there's text selected
+    const selectedText = window.getSelection().toString();
+    
+    if (selectedText) {
+      // If text is selected, allow the default context menu
+      if (e.type === 'contextmenu') {
+        return; // Let the native context menu appear
+      }
+      return; // Don't show overlay when text is selected
+    }
+    
+    // If no text is selected, prevent default behavior and show our overlay
     e.preventDefault();
     e.stopPropagation();
     
-    // Don't show overlay if text is being selected
-    if (window.getSelection().toString() || isSelecting) {
+    // Don't show overlay if still selecting
+    if (isSelecting) {
       return;
     }
     
@@ -531,10 +543,31 @@ export default function ChatFeed({
     }).format(date);
   };
 
-  // Update the renderMessageWithAvatar function to remove async handling
+  // Update the renderMessageWithAvatar function to handle long press on mobile
   const renderMessageWithAvatar = (message, index) => {
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
+    const [longPressTimer, setLongPressTimer] = useState(null);
+
+    const handleTouchStart = (e) => {
+      // Check if text is selected
+      if (window.getSelection().toString()) {
+        return; // Allow native context menu if text is selected
+      }
+
+      const timer = setTimeout(() => {
+        handleBubbleInteraction(e, index);
+      }, 500); // 500ms long press
+      
+      setLongPressTimer(timer);
+    };
+
+    const handleTouchEnd = () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        setLongPressTimer(null);
+      }
+    };
 
     return (
       <div
@@ -551,6 +584,9 @@ export default function ChatFeed({
           style={bubbleStyles.chatbubble}
           onClick={(e) => handleBubbleInteraction(e, index)}
           onContextMenu={(e) => handleBubbleInteraction(e, index)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchEnd}
           onMouseDown={() => setIsSelecting(false)}
           onMouseMove={(e) => {
             if (e.buttons === 1) { // Left mouse button is being held
@@ -558,7 +594,6 @@ export default function ChatFeed({
             }
           }}
           onMouseUp={() => {
-            // Delay resetting isSelecting to allow click handler to check it
             setTimeout(() => setIsSelecting(false), 100);
           }}
           data-index={index}
