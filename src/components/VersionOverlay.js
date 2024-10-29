@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { FaTrash } from 'react-icons/fa';
 
-const VersionOverlay = ({ children, style }) => {
+const VersionOverlay = ({ children, style, onDelete }) => {
     return ReactDOM.createPortal(
         <motion.div 
             className="version-overlay"
@@ -13,16 +14,54 @@ const VersionOverlay = ({ children, style }) => {
             style={{
                 ...style,
                 position: 'fixed',
-                zIndex: 100000
+                zIndex: 100000,
+                maxHeight: '200px',
+                overflowY: 'auto',
             }}
             onClick={(e) => {
                 e.stopPropagation();
             }}
         >
-            {children}
+            {children.map((child, index) => (
+                <div key={index} style={styles.versionItem}>
+                    <span style={styles.versionName}>{child}</span>
+                    <FaTrash 
+                        style={styles.deleteIcon} 
+                        onClick={() => onDelete(index)} 
+                    />
+                </div>
+            ))}
         </motion.div>,
         document.body
     );
+};
+
+const styles = {
+    versionItem: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '12px 16px',
+        cursor: 'pointer',
+        backgroundColor: 'transparent',
+        color: '#FFFFFF',
+        transition: 'all 0.2s ease',
+        borderBottom: '1px solid #2B2D31',
+        '&:hover': {
+            backgroundColor: '#5865F215',
+        },
+    },
+    versionName: {
+        flex: 1,
+    },
+    deleteIcon: {
+        color: '#DA373C',
+        cursor: 'pointer',
+        marginLeft: '8px',
+        '&:hover': {
+            color: '#A12828',
+        },
+    },
 };
 
 export default VersionOverlay; 
