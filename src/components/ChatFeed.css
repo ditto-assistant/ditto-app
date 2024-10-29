@@ -1169,3 +1169,13 @@
   color: #3941b8;
 }
 
+.invalid-image {
+  display: inline-block;
+  color: #ff4444;
+  font-style: italic;
+  padding: 4px 8px;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+

@@ -129,6 +129,7 @@ export default function ChatFeed({
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [failedImages, setFailedImages] = useState(new Set());
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -404,38 +405,11 @@ export default function ChatFeed({
     setImageControlsVisible(!imageControlsVisible);
   };
 
-  // Update the renderMessageText function to change the message text
-  const renderMessageText = async (text, index) => {
+  // Update the renderMessageText function to handle images better
+  const renderMessageText = (text, index) => {
     // First replace code block markers
     text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     text = text.replace(/```\./g, '```\n');
-
-    // Process image markdown before rendering
-    const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-    const imgPromises = [];
-    let match;
-
-    // Collect all image validation promises
-    while ((match = imgRegex.exec(text)) !== null) {
-      const [fullMatch, alt, url] = match;
-      imgPromises.push(
-        validateImageUrl(url).then(isValid => ({
-          fullMatch,
-          isValid,
-          url
-        }))
-      );
-    }
-
-    // Wait for all image validations
-    const validationResults = await Promise.all(imgPromises);
-
-    // Replace invalid image markdown with "Invalid URI" instead of "URI Expired"
-    validationResults.forEach(({ fullMatch, isValid }) => {
-      if (!isValid) {
-        text = text.replace(fullMatch, '**Invalid URI**');
-      }
-    });
 
     return (
       <ReactMarkdown
@@ -443,7 +417,10 @@ export default function ChatFeed({
         components={{
           a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
           img: ({ src, alt, ...props }) => {
-            // Additional runtime check before rendering image
+            if (failedImages.has(src)) {
+              return <span className="invalid-image">Invalid URI</span>;
+            }
+
             return (
               <img
                 {...props}
@@ -455,9 +432,8 @@ export default function ChatFeed({
                   handleImageClick(src);
                 }}
                 onError={(e) => {
-                  // Replace broken images with "Invalid URI" instead of "URI Expired"
-                  const textNode = document.createTextNode('**Invalid URI**');
-                  e.target.parentNode.replaceChild(textNode, e.target);
+                  console.error('Image failed to load:', src);
+                  setFailedImages(prev => new Set([...prev, src]));
                 }}
               />
             );
@@ -529,14 +505,8 @@ export default function ChatFeed({
     }).format(date);
   };
 
-  // Update the renderMessageWithAvatar function to handle async renderMessageText
+  // Update the renderMessageWithAvatar function to remove async handling
   const renderMessageWithAvatar = (message, index) => {
-    const [renderedMessage, setRenderedMessage] = useState(null);
-    
-    useEffect(() => {
-      renderMessageText(message.text, index).then(setRenderedMessage);
-    }, [message.text, index]);
-
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
 
@@ -559,7 +529,7 @@ export default function ChatFeed({
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
           <div className='message-text' style={bubbleStyles.text}>
-            {renderedMessage}
+            {renderMessageText(message.text, index)}
           </div>
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
