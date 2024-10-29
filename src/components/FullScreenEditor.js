@@ -21,66 +21,11 @@ const useSplitPane = (isMobile, initialPosition = 50) => {
     const isDragging = useRef(false);
     const containerRef = useRef(null);
 
-    const handleDragStart = useCallback((e) => {
-        if (isMaximized) return;
-        e.preventDefault();
-        isDragging.current = true;
-        document.body.style.cursor = isMobile ? 'row-resize' : 'col-resize';
-        document.body.style.userSelect = 'none';
-    }, [isMobile, isMaximized]);
-
-    const handleDrag = useCallback((clientX, clientY) => {
-        if (!isDragging.current || !containerRef.current) return;
-
-        const container = containerRef.current.getBoundingClientRect();
-        
-        if (isMobile) {
-            const offsetY = clientY - container.top;
-            const percentage = (offsetY / container.height) * 100;
-            setSplitPosition(Math.min(Math.max(percentage, 30), 70));
-        } else {
-            const offsetX = clientX - container.left;
-            const percentage = (offsetX / container.width) * 100;
-            setSplitPosition(Math.min(Math.max(percentage, 30), 70));
-        }
-    }, [isMobile]);
-
-    const handleDragEnd = useCallback(() => {
-        isDragging.current = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-    }, []);
-
-    useEffect(() => {
-        const handleMouseMove = (e) => handleDrag(e.clientX, e.clientY);
-        const handleTouchMove = (e) => {
-            if (e.touches.length === 1) {
-                handleDrag(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        };
-
-        if (isDragging.current) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleDragEnd);
-            document.addEventListener('touchmove', handleTouchMove);
-            document.addEventListener('touchend', handleDragEnd);
-        }
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleDragEnd);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleDragEnd);
-        };
-    }, [handleDrag, handleDragEnd]);
-
     return {
         splitPosition,
         isMaximized,
         setIsMaximized,
-        isDragging,
         containerRef,
-        handleDragStart
     };
 };
 
@@ -93,9 +38,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         splitPosition,
         isMaximized,
         setIsMaximized,
-        isDragging,
         containerRef,
-        handleDragStart
     } = useSplitPane(isMobile);
 
     const handleRunPreview = () => {
@@ -201,18 +144,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         }}
                     />
                 </motion.div>
-
-                {!isMaximized && (
-                    <div 
-                        style={{
-                            ...styles.dragHandle,
-                            cursor: isMobile ? 'row-resize' : 'col-resize',
-                            ...(isDragging.current && styles.dragHandleActive)
-                        }}
-                        onMouseDown={handleDragStart}
-                        onTouchStart={handleDragStart}
-                    />
-                )}
 
                 <motion.div
                     style={styles.previewPane}
