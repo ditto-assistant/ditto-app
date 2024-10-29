@@ -6,7 +6,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
 import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCopy, FiDownload } from 'react-icons/fi';
+import { FiCopy, FiDownload, FiClock, FiBarChart2, FiChevronDown } from 'react-icons/fi';
 import { IoMdArrowBack } from 'react-icons/io';
 import { FaBrain, FaTrash, FaSpinner } from 'react-icons/fa';
 import { deleteConversation } from '../control/memory';
@@ -132,6 +132,9 @@ export default function ChatFeed({
   const [failedImages, setFailedImages] = useState(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState(null);
+  const [showScores, setShowScores] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance'); // 'relevance' or 'timestamp'
+  const [sortDirection, setSortDirection] = useState('desc');
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -1009,6 +1012,43 @@ export default function ChatFeed({
     );
   };
 
+  const formatFullTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return new Intl.DateTimeFormat('default', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    }).format(date);
+  };
+
+  const handleSort = (type) => {
+    if (sortBy === type) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(type);
+      setSortDirection('desc');
+    }
+  };
+
+  const getSortedMemories = () => {
+    if (!relatedMemories) return [];
+    
+    return [...relatedMemories].sort((a, b) => {
+      if (sortBy === 'relevance') {
+        const comparison = b.score - a.score;
+        return sortDirection === 'asc' ? -comparison : comparison;
+      } else {
+        const comparison = new Date(b.timestampString) - new Date(a.timestampString);
+        return sortDirection === 'asc' ? -comparison : comparison;
+      }
+    });
+  };
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
@@ -1092,28 +1132,54 @@ export default function ChatFeed({
         </AnimatePresence>
       )}
       {memoryOverlay && (
-        <div 
-          className='memory-overlay'
-          onClick={() => setMemoryOverlay(null)}
-        >
-          <div 
-            className='memory-content'
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className='memory-header'>
+        <div className="memory-overlay" onClick={() => setMemoryOverlay(null)}>
+          <div className="memory-content" onClick={(e) => e.stopPropagation()}>
+            <div className="memory-header">
               <h3>Related Memories</h3>
-              <button 
-                className='close-button'
-                onClick={() => setMemoryOverlay(null)}
-              >
-                ×
-              </button>
+              <button className="close-button" onClick={() => setMemoryOverlay(null)}>×</button>
             </div>
-            <div className='memory-list'>
-              {relatedMemories.map((memory, idx) => (
+            <div className="memory-controls">
+              <div className="memory-controls-left">
+                <button 
+                  className={`memory-control-button ${sortBy === 'relevance' ? 'active' : ''}`}
+                  onClick={() => handleSort('relevance')}
+                >
+                  <FiBarChart2 />
+                  Relevance
+                  <span className={`sort-direction ${sortDirection === 'asc' ? 'asc' : ''}`}>
+                    <FiChevronDown />
+                  </span>
+                </button>
+                <button 
+                  className={`memory-control-button ${sortBy === 'timestamp' ? 'active' : ''}`}
+                  onClick={() => handleSort('timestamp')}
+                >
+                  <FiClock />
+                  Time
+                  <span className={`sort-direction ${sortDirection === 'asc' ? 'asc' : ''}`}>
+                    <FiChevronDown />
+                  </span>
+                </button>
+              </div>
+              <div className="memory-controls-right">
+                <div className="score-toggle">
+                  <span>Show Scores</span>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={showScores}
+                      onChange={(e) => setShowScores(e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="memory-list">
+              {getSortedMemories().map((memory, idx) => (
                 <motion.div
                   key={idx}
-                  className='memory-item'
+                  className="memory-item"
                   initial={{ opacity: 1, height: 'auto', scale: 1 }}
                   animate={{
                     opacity: deletingMemories.has(idx) ? 0 : 1,
@@ -1122,18 +1188,23 @@ export default function ChatFeed({
                   }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className='memory-prompt'>
+                  {showScores && (
+                    <div className="memory-score">
+                      Relevance: {(memory.score * 100).toFixed(2)}%
+                    </div>
+                  )}
+                  <div className="memory-prompt">
                     {renderMemoryContent(memory.prompt)}
                   </div>
-                  <div className='memory-response'>
+                  <div className="memory-response">
                     {renderMemoryContent(memory.response)}
                   </div>
-                  <div className='memory-footer'>
-                    <div className='memory-timestamp'>
-                      {formatTimestamp(new Date(memory.timestampString).getTime())}
+                  <div className="memory-footer">
+                    <div className="memory-timestamp">
+                      {formatFullTimestamp(new Date(memory.timestampString).getTime())}
                     </div>
                     <button
-                      className='delete-button'
+                      className="delete-button"
                       onClick={() => handleDeleteMemory(memory, idx)}
                       disabled={deletingMemories.has(idx)}
                     >

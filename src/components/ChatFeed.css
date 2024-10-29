@@ -828,24 +828,22 @@
 }
 
 .memory-content {
-  background-color: #36393f;
-  border-radius: 12px;
+  background-color: #2b2d31;
+  border-radius: 16px;
   width: 90%;
   max-width: 600px;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  position: relative; /* Ensure it's above the overlay */
-  z-index: 4001; /* One higher than the overlay */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .memory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background-color: #2f3136;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 24px;
+  background-color: #1e1f22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .memory-header h3 {
@@ -875,16 +873,17 @@
 }
 
 .memory-item {
-  background-color: #40444b;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: transform 0.2s, opacity 0.3s, height 0.3s;
-  overflow: hidden;
+  background-color: #313338;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .memory-item:hover {
   transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .memory-prompt {
@@ -904,8 +903,8 @@
 
 .memory-timestamp {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8em;
-  text-align: right;
+  font-size: 0.85em;
+  font-family: monospace;
 }
 
 /* Update action button styles to accommodate icon */
@@ -970,7 +969,8 @@
 /* Update memory timestamp for the new layout */
 .memory-timestamp {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8em;
+  font-size: 0.85em;
+  font-family: monospace;
 }
 
 /* Add animation classes */
@@ -991,12 +991,136 @@
 
 /* Update memory item styles */
 .memory-item {
-  background-color: #40444b;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: transform 0.2s, opacity 0.3s, height 0.3s;
-  overflow: hidden;
+  background-color: #313338;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.memory-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Add score display */
+.memory-score {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85em;
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+/* Add sort direction indicator */
+.sort-direction {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.sort-direction.asc {
+  transform: rotate(180deg);
+}
+
+/* Add controls container */
+.memory-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: #232428;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.memory-controls-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.memory-controls-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Style the sort and filter buttons */
+.memory-control-button {
+  background-color: #4752c4;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.memory-control-button:hover {
+  background-color: #3941b8;
+}
+
+.memory-control-button.active {
+  background-color: #3941b8;
+  box-shadow: 0 0 0 2px rgba(71, 82, 196, 0.3);
+}
+
+/* Style the toggle switch */
+.score-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9em;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #4f545c;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #4752c4;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
 }
 
 /* Add styles for the image container */
