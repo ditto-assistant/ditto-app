@@ -22,7 +22,7 @@ const CardMenu = ({ children, style }) => {
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                     border: '1px solid #1E1F22',
                     overflow: 'hidden',
-                    minWidth: '160px',
+                    minWidth: '140px',
                     transformOrigin: transformOrigin || 'top',
                     padding: '4px',
                 }}
@@ -30,29 +30,50 @@ const CardMenu = ({ children, style }) => {
                     e.stopPropagation();
                 }}
             >
-                {React.Children.map(children, (child, index) => (
-                    <motion.div
-                        whileHover={{ 
-                            backgroundColor: 'rgba(88, 101, 242, 0.1)',
-                            paddingLeft: '16px',
-                        }}
-                        transition={{ duration: 0.2 }}
-                        style={{ 
-                            width: '100%',
-                            padding: '4px 8px',
-                            cursor: 'pointer',
-                            boxSizing: 'border-box',
-                            fontSize: '13px',
-                            color: '#B5BAC1',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            borderRadius: '4px',
-                        }}
-                    >
-                        {child}
-                    </motion.div>
-                ))}
+                {React.Children.map(children, (child, index) => {
+                    if (!child) return null;
+                    
+                    // Check if this is the divider
+                    if (React.isValidElement(child) && 
+                        child.type === 'div' && 
+                        child.props?.style?.height === '1px') {
+                        return <div style={{ 
+                            height: '1px', 
+                            backgroundColor: '#1E1F22', 
+                            margin: '2px 0' 
+                        }} />;
+                    }
+                    
+                    return (
+                        <motion.div
+                            whileHover={{ 
+                                backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                                paddingLeft: '12px',
+                            }}
+                            transition={{ duration: 0.2 }}
+                            style={{ 
+                                width: '100%',
+                                padding: '5px 8px',
+                                cursor: 'pointer',
+                                boxSizing: 'border-box',
+                                fontSize: '12px',
+                                color: '#B5BAC1',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                borderRadius: '3px',
+                                height: '28px',
+                                marginBottom: '2px',
+                                ...(index === React.Children.count(children) - 1 && {
+                                    marginTop: '0',
+                                    marginBottom: '0',
+                                }),
+                            }}
+                        >
+                            {child}
+                        </motion.div>
+                    );
+                })}
             </motion.div>
         </AnimatePresence>,
         document.body

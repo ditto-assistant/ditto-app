@@ -172,12 +172,15 @@ const ScriptsScreen = () => {
     };
 
     const handleEditScript = (script) => {
-        if (script.scriptType === 'webApps') {
-            setFullScreenEdit(script);
-        } else {
-            setEditScript(script);
-            setTemporaryEditContent(script.content);
-        }
+        // Add a small delay to ensure menu is closed before opening editor
+        setTimeout(() => {
+            if (script.scriptType === 'webApps') {
+                setFullScreenEdit(script);
+            } else {
+                setEditScript(script);
+                setTemporaryEditContent(script.content);
+            }
+        }, 50);
     };
 
     const handleSaveEdit = (category, id) => {
@@ -306,12 +309,21 @@ const ScriptsScreen = () => {
     const renderVersionOverlay = (baseName, scriptsList, cardRect) => {
         if (versionOverlay !== baseName) return null;
 
+        const windowHeight = window.innerHeight;
+        const overlayHeight = Math.min(scriptsList.length * 40 + 16, 200); // Approximate height calculation
+        const spaceBelow = windowHeight - cardRect.bottom;
+        const spaceAbove = cardRect.top;
+        
+        // Determine if overlay should open upward
+        const openUpward = spaceBelow < overlayHeight && spaceAbove > overlayHeight;
+
         const style = {
             ...styles.versionOverlay,
             position: 'fixed',
-            top: cardRect.bottom + 5,
+            top: openUpward ? cardRect.top - overlayHeight - 5 : cardRect.bottom + 5,
             left: cardRect.left,
             width: cardRect.width,
+            transformOrigin: openUpward ? 'bottom' : 'top',
         };
 
         const handleDeleteVersion = (index) => {
@@ -333,6 +345,7 @@ const ScriptsScreen = () => {
                         handleSelectVersion(selectedVersion);
                     }
                 }}
+                openUpward={openUpward}
             >
                 {scriptsList.map((script) => script.name)}
             </VersionOverlay>
@@ -468,6 +481,7 @@ const ScriptsScreen = () => {
                                 }}>
                                     <p style={styles.cardMenuItem} 
                                        onClick={(e) => { 
+                                           e.preventDefault();
                                            e.stopPropagation();
                                            setRenameScriptId(currentScript.id); 
                                            setActiveCard(null); 
@@ -477,6 +491,7 @@ const ScriptsScreen = () => {
                                     </p>
                                     <p style={styles.cardMenuItem} 
                                        onClick={(e) => { 
+                                           e.preventDefault();
                                            e.stopPropagation();
                                            handleEditScript(currentScript); 
                                            setActiveCard(null); 

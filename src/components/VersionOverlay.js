@@ -3,13 +3,13 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrash } from 'react-icons/fa';
 
-const VersionOverlay = ({ children, style, onDelete, onSelect }) => {
+const VersionOverlay = ({ children, style, onDelete, onSelect, openUpward }) => {
     return ReactDOM.createPortal(
         <motion.div 
             className="version-overlay"
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: openUpward ? 10 : -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: openUpward ? 10 : -10 }}
             transition={{ duration: 0.2 }}
             style={{
                 ...style,
@@ -17,6 +17,10 @@ const VersionOverlay = ({ children, style, onDelete, onSelect }) => {
                 zIndex: 100000,
                 maxHeight: '200px',
                 overflowY: 'auto',
+                backgroundColor: '#2B2D31',
+                borderRadius: '6px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                border: '1px solid #1E1F22',
             }}
             onClick={(e) => {
                 e.stopPropagation();
@@ -68,12 +72,14 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '12px 16px',
+        padding: '8px 12px',
         cursor: 'pointer',
         backgroundColor: 'transparent',
         color: '#FFFFFF',
         transition: 'all 0.2s ease',
         borderBottom: '1px solid #2B2D31',
+        fontSize: '12px',
+        height: '28px',
     },
     versionName: {
         flex: 1,
@@ -84,9 +90,7 @@ const styles = {
         cursor: 'pointer',
         marginLeft: '8px',
         transition: 'color 0.2s ease',
-        '&:hover': {
-            color: '#A12828',
-        },
+        fontSize: '14px',
     },
 };
 
