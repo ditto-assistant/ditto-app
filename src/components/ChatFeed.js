@@ -131,6 +131,7 @@ export default function ChatFeed({
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [failedImages, setFailedImages] = useState(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState(null);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -547,7 +548,6 @@ export default function ChatFeed({
   const renderMessageWithAvatar = (message, index) => {
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
-    const [longPressTimer, setLongPressTimer] = useState(null);
 
     const handleTouchStart = (e) => {
       // Check if text is selected
