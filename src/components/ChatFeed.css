@@ -835,6 +835,8 @@
   max-height: 85vh;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  position: relative;
+  margin: 20px;
 }
 
 .memory-header {
@@ -1032,18 +1034,22 @@
   padding: 12px 24px;
   background-color: #232428;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: nowrap; /* Prevent wrapping */
 }
 
 .memory-controls-left {
   display: flex;
-  gap: 12px;
+  gap: 8px; /* Reduced gap */
   align-items: center;
+  flex-shrink: 1; /* Allow shrinking */
+  min-width: 0; /* Allow container to shrink below content size */
 }
 
 .memory-controls-right {
   display: flex;
-  gap: 8px;
   align-items: center;
+  flex-shrink: 0; /* Prevent shrinking */
+  margin-left: 12px; /* Add space between controls */
 }
 
 /* Style the sort and filter buttons */
@@ -1051,7 +1057,7 @@
   background-color: #4752c4;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.9em;
   cursor: pointer;
@@ -1059,6 +1065,8 @@
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .memory-control-button:hover {
@@ -1377,5 +1385,153 @@ input:checked + .toggle-slider:before {
 .chat-bubble.Ditto .message-text a:hover {
   color: #8e95f5 !important;
   opacity: 0.9;
+}
+
+/* Add responsive styles for memory overlay */
+@media screen and (max-width: 768px) {
+  .memory-content {
+    width: 90%; /* Keep consistent with desktop */
+    height: auto; /* Remove full height */
+    max-height: 85vh; /* Keep consistent with desktop */
+    border-radius: 16px; /* Keep rounded corners */
+    margin: 20px;
+  }
+
+  .memory-list {
+    max-height: calc(85vh - 140px); /* Adjust for header and controls */
+  }
+}
+
+/* Add styles for even smaller screens */
+@media screen and (max-width: 480px) {
+  .memory-content {
+    width: calc(100% - 32px); /* Full width minus margins */
+    margin: 16px;
+  }
+
+  .memory-control-button {
+    padding: 6px 6px;
+  }
+
+  .memory-control-button svg {
+    margin-right: 2px;
+  }
+
+  /* Hide the word "Scores" and just show "Show" */
+  .score-toggle span {
+    font-size: 0.8em;
+  }
+}
+
+/* Add landscape orientation styles */
+@media screen and (max-height: 600px) and (orientation: landscape) {
+  .memory-content {
+    max-height: 90vh; /* Slightly taller for landscape */
+    width: 90%;
+    border-radius: 16px;
+    margin: 20px;
+  }
+
+  .memory-list {
+    max-height: calc(90vh - 140px);
+  }
+
+  .memory-controls {
+    padding: 8px 16px;
+  }
+
+  .memory-controls-left,
+  .memory-controls-right {
+    width: auto;
+  }
+
+  .memory-item {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+}
+
+/* Update memory controls for very small screens */
+@media screen and (max-width: 480px) {
+  .memory-control-button {
+    padding: 6px 8px;
+    font-size: 0.8em;
+    gap: 4px; /* Reduce space between icon and text */
+  }
+
+  .memory-control-button svg {
+    font-size: 0.9em; /* Make icons slightly smaller */
+  }
+
+  .sort-direction {
+    margin-left: 2px; /* Reduce space before arrow */
+  }
+
+  /* Make the buttons more compact */
+  .memory-controls-left {
+    gap: 6px; /* Reduce gap between buttons */
+  }
+
+  /* Adjust the toggle switch area */
+  .score-toggle {
+    font-size: 0.8em;
+    gap: 4px;
+  }
+
+  /* Make the toggle switch slightly smaller */
+  .toggle-switch {
+    width: 36px;
+    height: 18px;
+  }
+
+  .toggle-slider:before {
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+  }
+
+  input:checked + .toggle-slider:before {
+    transform: translateX(18px);
+  }
+
+  /* Adjust the controls container padding */
+  .memory-controls {
+    padding: 8px 12px;
+  }
+
+  /* Make the content use more of the available space */
+  .memory-content {
+    width: calc(100% - 24px); /* Slightly less margin */
+    margin: 12px;
+  }
+}
+
+/* Add specific styles for iPhone SE and similarly sized devices */
+@media screen and (max-width: 380px) {
+  .memory-control-button {
+    padding: 6px 6px;
+    font-size: 0.75em;
+    gap: 3px;
+  }
+
+  .memory-controls-left {
+    gap: 4px; /* Even tighter gap for very small screens */
+  }
+
+  .score-toggle span {
+    font-size: 0.75em;
+  }
+
+  /* Further reduce margins */
+  .memory-content {
+    width: calc(100% - 16px);
+    margin: 8px;
+  }
+
+  /* Adjust header padding */
+  .memory-header {
+    padding: 16px;
+  }
 }
 
