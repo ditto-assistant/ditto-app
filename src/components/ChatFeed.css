@@ -1219,3 +1219,39 @@
   -ms-user-select: text;
 }
 
+/* Add styles for hyperlinks */
+.message-text a {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.message-text a:hover {
+  opacity: 0.8;
+}
+
+/* Ensure links are visible in both bubble types */
+.chat-bubble.User .message-text a {
+  color: #e6e6e6 !important; /* Light grey for user bubbles */
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  text-decoration: underline !important;
+}
+
+.chat-bubble.Ditto .message-text a {
+  color: #7b83e6 !important; /* Lighter blue for Ditto bubbles */
+  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3) !important;
+  text-decoration: underline !important;
+}
+
+/* Add hover states for better interaction feedback */
+.chat-bubble.User .message-text a:hover {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+.chat-bubble.Ditto .message-text a:hover {
+  color: #8e95f5 !important;
+  opacity: 0.9;
+}
+

@@ -411,7 +411,7 @@ export default function ChatFeed({
     setImageControlsVisible(!imageControlsVisible);
   };
 
-  // Update the renderMessageText function to handle images better
+  // Update the renderMessageText function to handle clickable links
   const renderMessageText = (text, index) => {
     // First replace code block markers
     text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
@@ -421,7 +421,27 @@ export default function ChatFeed({
       <ReactMarkdown
         children={text}
         components={{
-          a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
+          a: ({ node, href, children, ...props }) => (
+            <a 
+              {...props}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent bubble interaction
+                // Let the default link behavior handle the navigation
+              }}
+              style={{ 
+                color: '#3941b8', 
+                textDecoration: 'none', 
+                textShadow: '0 0 1px #7787d7',
+                cursor: 'pointer',
+                pointerEvents: 'auto'
+              }} 
+            >
+              {children}
+            </a>
+          ),
           img: ({ src, alt, ...props }) => {
             if (failedImages.has(src)) {
               return <span className="invalid-image">Invalid URI</span>;
