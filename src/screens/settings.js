@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Divider, Button, TextField, IconButton, InputAdornment } from '@mui/material';
+import { Divider, Button, TextField, IconButton, InputAdornment, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { deleteUser } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
@@ -17,6 +17,7 @@ const Settings = () => {
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   const [showHaApiKey, setShowHaApiKey] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -26,24 +27,22 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = () => {
-    const user = auth.currentUser;
+    const user = auth?.currentUser;
     if (user) {
-      if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-        deleteUser(user).then(() => {
-          console.log("Account deleted");
-          removeUserFromFirestore(user.uid);
-          deleteAllUserScriptsFromFirestore(user.uid);
-          localStorage.clear();
-          navigate("/login");
-        }).catch((error) => {
-          console.error("Error deleting account: ", error);
-          if (error.code === 'auth/requires-recent-login') {
-            alert("You need to log in again before deleting your account. Please log out and log back in.");
-          } else {
-            alert("An error occurred while deleting your account. Please try again.");
-          }
-        });
-      }
+      deleteUser(user).then(() => {
+        console.log("Account deleted");
+        removeUserFromFirestore(user.uid);
+        deleteAllUserScriptsFromFirestore(user.uid);
+        localStorage.clear();
+        navigate("/login");
+      }).catch((error) => {
+        console.error("Error deleting account: ", error);
+        if (error.code === 'auth/requires-recent-login') {
+          alert("You need to log in again before deleting your account. Please log out and log back in.");
+        } else {
+          alert("An error occurred while deleting your account. Please try again.");
+        }
+      });
     } else {
       console.error("No user currently signed in");
     }
@@ -64,6 +63,14 @@ const Settings = () => {
     setKeyInputVisible(false);
     setHaApiKey(localStorage.getItem("ha_api_key") || '');
     setHaRemoteUrl(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
+  };
+
+  const openDeleteDialog = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
   };
 
   // Remove the balance calculation from localStorage
@@ -109,7 +116,7 @@ const Settings = () => {
               <Button variant="contained" onClick={handleLogout} style={styles.halfButton}>
                 LOG OUT
               </Button>
-              <Button variant="contained" onClick={handleDeleteAccount} style={styles.deleteButton}>
+              <Button variant="contained" onClick={openDeleteDialog} style={styles.deleteButton}>
                 DELETE ACCOUNT
               </Button>
             </div>
@@ -169,6 +176,35 @@ const Settings = () => {
           </div>
         </footer>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={closeDeleteDialog}
+        aria-labelledby="delete-account-dialog-title"
+        aria-describedby="delete-account-dialog-description"
+        PaperProps={{
+          style: {
+            backgroundColor: '#36393f',
+            color: 'white',
+          },
+        }}
+      >
+        <DialogTitle id="delete-account-dialog-title">{"Confirm Account Deletion"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-account-dialog-description" style={{ color: '#8e9297' }}>
+            Are you sure you want to delete your account? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} style={{ color: '#7289da' }}>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteAccount} style={{ color: '#f04747' }} autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
