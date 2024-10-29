@@ -15,6 +15,7 @@ import CardMenu from '../components/CardMenu';
 import VersionOverlay from '../components/VersionOverlay';
 import { motion } from 'framer-motion';
 import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
+import SearchBar from '../components/SearchBar';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -61,6 +62,20 @@ const ScriptsScreen = () => {
     const cardRefs = useRef({});
 
     const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null, category: null });
+
+    const [activeTab, setActiveTab] = useState('webApps');
+
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filterScripts = (scripts, searchTerm) => {
+        if (!searchTerm) return scripts;
+        
+        const normalizedSearch = searchTerm.toLowerCase();
+        return scripts.filter(script => {
+            const baseName = getBaseName(script.name.replace(/ /g, "")).toLowerCase();
+            return baseName.includes(normalizedSearch);
+        });
+    };
 
     useEffect(() => {
         const loadAce = async () => {
@@ -353,7 +368,17 @@ const ScriptsScreen = () => {
     };
 
     const renderScripts = (category) => {
-        const groupedScripts = getScriptsByBaseName(scripts[category]);
+        const filteredScripts = filterScripts(scripts[category], searchTerm);
+        const groupedScripts = getScriptsByBaseName(filteredScripts);
+        
+        if (Object.keys(groupedScripts).length === 0) {
+            return (
+                <div style={styles.noResults}>
+                    No scripts found matching "{searchTerm}"
+                </div>
+            );
+        }
+
         return (
             <div style={styles.scriptsGrid}>
                 {Object.keys(groupedScripts).map((baseName) => {
@@ -645,83 +670,112 @@ const ScriptsScreen = () => {
                     </Button>
                     <h2 style={styles.headerText}>Scripts</h2>
                 </header>
-                <div style={styles.content}>
-                    {selectedScript && (
-                        <div style={styles.selectedScriptContainer}>
-                            <div style={styles.selectedScript}>
-                                <p style={styles.selectedScriptLabel}>Currently Selected:</p>
-                                <p style={styles.selectedScriptName}>{selectedScript}</p>
-                                <div style={styles.selectedScriptButtons}>
-                                    <Button variant="contained" style={styles.deselectButton} onClick={handleDeselectScript}>
-                                        Deselect Script
-                                    </Button>
-                                    <Button variant="contained" style={styles.launchButton} onClick={handleLaunchScript}>
-                                        Launch Script
-                                    </Button>
-                                </div>
+
+                {selectedScript && (
+                    <div style={styles.selectedScriptContainer}>
+                        <div style={styles.selectedScript}>
+                            <p style={styles.selectedScriptLabel}>Currently Selected:</p>
+                            <p style={styles.selectedScriptName}>{selectedScript}</p>
+                            <div style={styles.selectedScriptButtons}>
+                                <Button variant="contained" style={styles.deselectButton} onClick={handleDeselectScript}>
+                                    Deselect Script
+                                </Button>
+                                <Button variant="contained" style={styles.launchButton} onClick={handleLaunchScript}>
+                                    Launch Script
+                                </Button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                <div style={styles.tabContainer}>
+                    <div 
+                        style={{
+                            ...styles.tab,
+                            ...(activeTab === 'webApps' ? styles.activeTab : {})
+                        }}
+                        onClick={() => setActiveTab('webApps')}
+                    >
+                        Web Apps
+                    </div>
+                    <div 
+                        style={{
+                            ...styles.tab,
+                            ...(activeTab === 'openSCAD' ? styles.activeTab : {})
+                        }}
+                        onClick={() => setActiveTab('openSCAD')}
+                    >
+                        OpenSCAD
+                    </div>
+                </div>
+
+                <SearchBar 
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                />
+
+                <div style={styles.content}>
+                    {activeTab === 'webApps' && (
+                        <div style={styles.category}>
+                            <div style={styles.addScript}>
+                                <MdAdd style={styles.addScriptIcon} onClick={() => handleAddScriptClick("webApps")} />
+                            </div>
+                            {showAddForm.webApps && (
+                                <div style={styles.addScriptForm}>
+                                    <input id="webApps-name-input" type="text" placeholder="Script Name" style={styles.input} />
+                                    <textarea id="webApps-content-input" placeholder="Script Content" style={styles.input} />
+                                    <div style={styles.formActions}>
+                                        <Button
+                                            variant="contained"
+                                            style={styles.saveScriptButton}
+                                            onClick={() => handleSaveScript("webApps")}
+                                        >
+                                            Save Script
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            style={styles.cancelScriptButton}
+                                            onClick={() => handleCancelAddScript("webApps")}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                            {renderScripts("webApps")}
                         </div>
                     )}
 
-                    <div style={styles.category}>
-                        <h4 style={styles.categoryTitle}>Web Apps</h4>
-                        <div style={styles.addScript}>
-                            <MdAdd style={styles.addScriptIcon} onClick={() => handleAddScriptClick("webApps")} />
-                        </div>
-                        {showAddForm.webApps && (
-                            <div style={styles.addScriptForm}>
-                                <input id="webApps-name-input" type="text" placeholder="Script Name" style={styles.input} />
-                                <textarea id="webApps-content-input" placeholder="Script Content" style={styles.input} />
-                                <div style={styles.formActions}>
-                                    <Button
-                                        variant="contained"
-                                        style={styles.saveScriptButton}
-                                        onClick={() => handleSaveScript("webApps")}
-                                    >
-                                        Save Script
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        style={styles.cancelScriptButton}
-                                        onClick={() => handleCancelAddScript("webApps")}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
+                    {activeTab === 'openSCAD' && (
+                        <div style={styles.category}>
+                            <div style={styles.addScript}>
+                                <MdAdd style={styles.addScriptIcon} onClick={() => handleAddScriptClick("openSCAD")} />
                             </div>
-                        )}
-                        {renderScripts("webApps")}
-                    </div>
-
-                    <div style={styles.category}>
-                        <h4 style={styles.categoryTitle}>OpenSCAD</h4>
-                        <div style={styles.addScript}>
-                            <MdAdd style={styles.addScriptIcon} onClick={() => handleAddScriptClick("openSCAD")} />
-                        </div>
-                        {showAddForm.openSCAD && (
-                            <div style={styles.addScriptForm}>
-                                <input id="openSCAD-name-input" type="text" placeholder="Script Name" style={styles.input} />
-                                <textarea id="openSCAD-content-input" placeholder="Script Content" style={styles.input} />
-                                <div style={styles.formActions}>
-                                    <Button
-                                        variant="contained"
-                                        style={styles.saveScriptButton}
-                                        onClick={() => handleSaveScript("openSCAD")}
-                                    >
-                                        Save Script
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        style={styles.cancelScriptButton}
-                                        onClick={() => handleCancelAddScript("openSCAD")}
-                                    >
-                                        Cancel
-                                    </Button>
+                            {showAddForm.openSCAD && (
+                                <div style={styles.addScriptForm}>
+                                    <input id="openSCAD-name-input" type="text" placeholder="Script Name" style={styles.input} />
+                                    <textarea id="openSCAD-content-input" placeholder="Script Content" style={styles.input} />
+                                    <div style={styles.formActions}>
+                                        <Button
+                                            variant="contained"
+                                            style={styles.saveScriptButton}
+                                            onClick={() => handleSaveScript("openSCAD")}
+                                        >
+                                            Save Script
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            style={styles.cancelScriptButton}
+                                            onClick={() => handleCancelAddScript("openSCAD")}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        {renderScripts("openSCAD")}
-                    </div>
+                            )}
+                            {renderScripts("openSCAD")}
+                        </div>
+                    )}
                 </div>
             </div>
             <DeleteConfirmationOverlay
@@ -785,7 +839,7 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        overflow: 'hidden',
+        overflow: 'auto',
         flexGrow: 1,
         width: '100%',
         padding: '20px',
@@ -1078,6 +1132,48 @@ const styles = {
         height: '1px',
         backgroundColor: darkModeColors.border,
         margin: '4px 0',
+    },
+    tabContainer: {
+        display: 'flex',
+        padding: '0 20px',
+        borderBottom: `1px solid ${darkModeColors.border}`,
+        backgroundColor: darkModeColors.headerBackground,
+        position: 'sticky',
+        top: '64px',
+        zIndex: 1000,
+        justifyContent: 'center',
+    },
+    tab: {
+        padding: '16px 32px',
+        color: darkModeColors.textSecondary,
+        cursor: 'pointer',
+        fontSize: '16px',
+        fontWeight: '500',
+        transition: 'all 0.2s ease',
+        position: 'relative',
+        userSelect: 'none',
+        '&:hover': {
+            color: darkModeColors.text,
+        },
+    },
+    activeTab: {
+        color: darkModeColors.primary,
+        '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: '-1px',
+            left: 0,
+            width: '100%',
+            height: '2px',
+            backgroundColor: darkModeColors.primary,
+        },
+    },
+    noResults: {
+        color: darkModeColors.textSecondary,
+        textAlign: 'center',
+        padding: '32px',
+        fontSize: '16px',
+        width: '100%',
     },
 };
 
