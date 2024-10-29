@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
-import { FaPlay, FaArrowLeft } from "react-icons/fa"; // Add FaArrowLeft import
+import { FaPlay, FaArrowLeft, FaTrash } from "react-icons/fa"; // Add FaTrash import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
@@ -10,14 +10,24 @@ import {
 import { downloadOpenscadScript } from "../control/agentTools";
 import { Button } from '@mui/material';
 import FullScreenSpinner from "../components/LoadingSpinner";
+import FullScreenEditor from '../components/FullScreenEditor';
+import CardMenu from '../components/CardMenu';
+import VersionOverlay from '../components/VersionOverlay';
+import { motion } from 'framer-motion';
+import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
 
 const darkModeColors = {
-    background: '#2C2F33',
-    foreground: '#36393F',
-    primary: '#7289DA',
+    background: '#1E1F22',
+    foreground: '#2B2D31',
+    primary: '#5865F2',
+    secondary: '#4752C4',
     text: '#FFFFFF',
-    border: '#4F545C',
-    danger: '#F04747',
+    textSecondary: '#B5BAC1',
+    border: '#1E1F22',
+    danger: '#DA373C',
+    cardBackground: '#313338',
+    headerBackground: '#2B2D31',
+    inputBackground: '#1E1F22',
 };
 
 const AceEditor = lazy(() => import("react-ace"));
@@ -42,6 +52,15 @@ const ScriptsScreen = () => {
     const [versionOverlay, setVersionOverlay] = useState(null);
     const [currentVersion, setCurrentVersion] = useState({});
     const versionOverlayRef = useRef(null);
+
+    const [fullScreenEdit, setFullScreenEdit] = useState(null);
+
+    const [menuPosition, setMenuPosition] = useState(null);
+
+    // Move cardRef outside of the render function
+    const cardRefs = useRef({});
+
+    const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null, category: null });
 
     useEffect(() => {
         const loadAce = async () => {
@@ -125,6 +144,9 @@ const ScriptsScreen = () => {
     };
 
     const handleDeleteScript = async (category, currentScript) => {
+        setDeleteConfirmation({ show: false, script: null, category: null });
+        
+        // Proceed with deletion
         setScripts((prevState) => ({
             ...prevState,
             [category]: prevState[category].filter((script) => script.id !== currentScript.id),
@@ -150,8 +172,12 @@ const ScriptsScreen = () => {
     };
 
     const handleEditScript = (script) => {
-        setTemporaryEditContent(script.content);
-        setEditScript(script.id);
+        if (script.scriptType === 'webApps') {
+            setFullScreenEdit(script);
+        } else {
+            setEditScript(script);
+            setTemporaryEditContent(script.content);
+        }
     };
 
     const handleSaveEdit = (category, id) => {
@@ -242,21 +268,102 @@ const ScriptsScreen = () => {
         a.click();
     };
 
+    const handleSaveFullScreenEdit = async (newContent) => {
+        const category = fullScreenEdit.scriptType;
+        const userID = localStorage.getItem("userID");
+        
+        // Update local state
+        setScripts((prevState) => ({
+            ...prevState,
+            [category]: prevState[category].map((s) =>
+                s.id === fullScreenEdit.id ? { ...s, content: newContent } : s
+            ),
+        }));
+        
+        // Save to Firestore
+        await saveScriptToFirestore(userID, newContent, category, fullScreenEdit.name, true);
+        
+        // Update working script if this is the selected one
+        if (selectedScript === fullScreenEdit.name) {
+            localStorage.setItem("workingOnScript", JSON.stringify({
+                script: fullScreenEdit.name,
+                contents: newContent,
+                scriptType: category
+            }));
+        }
+        
+        setFullScreenEdit(null);
+    };
+
+    const getFontSize = (name) => {
+        if (name.length > 50) return '10px';
+        if (name.length > 40) return '11px';
+        if (name.length > 30) return '12px';
+        if (name.length > 20) return '14px';
+        return '16px';
+    };
+
+    const renderVersionOverlay = (baseName, scriptsList, cardRect) => {
+        if (versionOverlay !== baseName) return null;
+
+        const style = {
+            ...styles.versionOverlay,
+            position: 'fixed',
+            top: cardRect.bottom + 5,
+            left: cardRect.left,
+            width: cardRect.width,
+        };
+
+        return (
+            <VersionOverlay style={style}>
+                {scriptsList.map((script, index) => (
+                    <motion.div
+                        key={script.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ 
+                            duration: 0.2,
+                            delay: index * 0.05, // Stagger effect
+                        }}
+                        whileHover={{ 
+                            scale: 1.02,
+                            transition: { duration: 0.1 }
+                        }}
+                        style={styles.versionItem}
+                        onClick={() => handleSelectVersion(script)}
+                    >
+                        {script.name}
+                    </motion.div>
+                ))}
+            </VersionOverlay>
+        );
+    };
+
     const renderScripts = (category) => {
         const groupedScripts = getScriptsByBaseName(scripts[category]);
         return (
-            <>
+            <div style={styles.scriptsGrid}>
                 {Object.keys(groupedScripts).map((baseName) => {
                     const scriptsList = groupedScripts[baseName];
-                    const currentScript = currentVersion[category] && scriptsList.find(s => s.name === currentVersion[category].name) || scriptsList[0];
+                    const currentScript = currentVersion[category] && 
+                        scriptsList.find(s => s.name === currentVersion[category].name) || 
+                        scriptsList[0];
                     const hasMultipleVersions = scriptsList.length > 1;
+                    
+                    // Initialize ref for this card if it doesn't exist
+                    if (!cardRefs.current[currentScript.id]) {
+                        cardRefs.current[currentScript.id] = React.createRef();
+                    }
 
                     return (
                         <div
+                            ref={cardRefs.current[currentScript.id]}
                             key={currentScript.id}
                             style={{
                                 ...styles.scriptCard,
-                                borderColor: selectedScript === currentScript.name ? darkModeColors.primary : darkModeColors.border,
+                                borderColor: selectedScript === currentScript.name ? 
+                                    darkModeColors.primary : 
+                                    darkModeColors.border,
                             }}
                         >
                             <div style={styles.scriptCardHeader}>
@@ -264,115 +371,198 @@ const ScriptsScreen = () => {
                                     <input
                                         type="text"
                                         defaultValue={currentScript.name}
-                                        onBlur={async (e) => await handleRenameScript(category, currentScript.id, e.target.value)}
+                                        onBlur={async (e) => 
+                                            await handleRenameScript(category, currentScript.id, e.target.value)
+                                        }
                                         style={styles.renameInput}
                                         autoFocus
                                     />
                                 ) : (
-                                    <p style={styles.scriptName}>{currentScript.name}</p>
+                                    <p style={{ ...styles.scriptName, fontSize: getFontSize(currentScript.name) }}>
+                                        {currentScript.name}
+                                    </p>
                                 )}
                                 <div style={styles.actions}>
-                                    <FaPlay className="play-icon" style={styles.playIcon} onClick={() => handlePlayScript(currentScript)} />
-                                    <button style={styles.selectButton} onClick={() => handleSelectScript(currentScript)}>
+                                    <FaPlay 
+                                        className="play-icon" 
+                                        style={styles.playIcon} 
+                                        onClick={() => handlePlayScript(currentScript)} 
+                                    />
+                                    <button 
+                                        style={styles.selectButton} 
+                                        onClick={() => handleSelectScript(currentScript)}
+                                    >
                                         Select
                                     </button>
                                     <MdMoreVert
                                         className="more-icon"
                                         style={styles.moreIcon}
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const rect = e.target.getBoundingClientRect();
+                                            setMenuPosition({
+                                                top: rect.bottom + 8,
+                                                left: rect.right - 200,
+                                            });
                                             setActiveCard(currentScript.id);
                                         }}
                                     />
                                     {activeCard === currentScript.id && (
-                                        <div
-                                            className="card-menu"
-                                            style={styles.cardMenu}
-                                        >
-                                            <p style={styles.cardMenuItem} onClick={() => { setRenameScriptId(currentScript.id); setActiveCard(null); }}>Rename</p>
-                                            <p style={styles.cardMenuItem} onClick={() => { handleEditScript(currentScript); setActiveCard(null); }}>Edit</p>
-                                            <p style={styles.cardMenuItem} onClick={() => { handleDeleteScript(category, currentScript); setActiveCard(null); }}>
+                                        <CardMenu style={{
+                                            ...styles.cardMenu,
+                                            top: menuPosition?.top,
+                                            left: menuPosition?.left,
+                                        }}>
+                                            <p style={styles.cardMenuItem} 
+                                               onClick={(e) => { 
+                                                   e.stopPropagation();
+                                                   setRenameScriptId(currentScript.id); 
+                                                   setActiveCard(null); 
+                                                   setMenuPosition(null);
+                                               }}>
+                                                Rename
+                                            </p>
+                                            <p style={styles.cardMenuItem} 
+                                               onClick={(e) => { 
+                                                   e.stopPropagation();
+                                                   handleEditScript(currentScript); 
+                                                   setActiveCard(null); 
+                                                   setMenuPosition(null);
+                                               }}>
+                                                Edit
+                                            </p>
+                                            <p style={{
+                                                ...styles.cardMenuItem,
+                                                color: darkModeColors.danger,
+                                                '&:hover': {
+                                                    backgroundColor: `${darkModeColors.danger}15`,
+                                                },
+                                            }} 
+                                            onClick={(e) => { 
+                                                e.stopPropagation();
+                                                setDeleteConfirmation({ 
+                                                    show: true, 
+                                                    script: currentScript, 
+                                                    category: category 
+                                                });
+                                                setActiveCard(null); 
+                                                setMenuPosition(null);
+                                            }}>
+                                                <FaTrash style={{ marginRight: '8px' }} />
                                                 Delete
                                             </p>
-                                            <p style={styles.cardMenuItem} onClick={() => { handleDownloadScript(currentScript); setActiveCard(null); }}>Download</p>
+                                            <p style={styles.cardMenuItem} 
+                                               onClick={(e) => { 
+                                                   e.stopPropagation();
+                                                   handleDownloadScript(currentScript); 
+                                                   setActiveCard(null); 
+                                                   setMenuPosition(null);
+                                               }}>
+                                                Download
+                                            </p>
                                             {hasMultipleVersions && (
-                                                <p style={styles.cardMenuItem} onClick={() => { handleVersionButtonClick(baseName); setActiveCard(null); }}>Version</p>
+                                                <p style={styles.cardMenuItem} 
+                                                   onClick={(e) => { 
+                                                       e.stopPropagation();
+                                                       handleVersionButtonClick(baseName); 
+                                                       setActiveCard(null); 
+                                                       setMenuPosition(null);
+                                                   }}>
+                                                    Version
+                                                </p>
                                             )}
-                                        </div>
+                                        </CardMenu>
                                     )}
                                 </div>
                             </div>
-                            {editScript === currentScript.id && aceLoaded && (
-                                <Suspense fallback={<FullScreenSpinner />}>
-                                    <AceEditor
-                                        mode="javascript"
-                                        theme="monokai"
-                                        name={`editor-${currentScript.id}`}
-                                        width="100%"
-                                        height="300px"
-                                        value={temporaryEditContent}
-                                        onChange={setTemporaryEditContent}
-                                        fontSize={14}
-                                        showPrintMargin={false}
-                                        showGutter={true}
-                                        highlightActiveLine={true}
-                                        setOptions={{
-                                            enableBasicAutocompletion: true,
-                                            enableLiveAutocompletion: true,
-                                            enableSnippets: true,
-                                            showLineNumbers: true,
-                                            tabSize: 2,
-                                            useWorker: false,
-                                            wrap: true,
-                                        }}
-                                        editorProps={{ $blockScrolling: true }}
-                                        style={styles.editContent}
-                                    />
-                                    <div style={styles.editActions}>
-                                        <Button
-                                            variant="contained"
-                                            style={styles.saveEditButton}
-                                            onClick={() => handleSaveEdit(category, currentScript.id)}
-                                        >
-                                            Save
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            style={styles.cancelEditButton}
-                                            onClick={handleCancelEditScript}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                </Suspense>
-                            )}
-                            {versionOverlay === baseName && (
-                                <div style={styles.versionOverlay} ref={versionOverlayRef}>
-                                    {scriptsList.map((version) => (
-                                        <p key={version.id} style={styles.versionItem} onClick={() => handleSelectVersion(version)}>
-                                            {version.name}
-                                        </p>
-                                    ))}
-                                </div>
-                            )}
+                            {versionOverlay === baseName && 
+                                renderVersionOverlay(
+                                    baseName, 
+                                    scriptsList, 
+                                    cardRefs.current[currentScript.id].current.getBoundingClientRect()
+                                )}
                         </div>
-                    )
+                    );
                 })}
-            </>
+            </div>
         );
     };
 
     const handleClickOutside = (e) => {
         if (!e.target.closest('.card-menu') && !e.target.closest('.more-icon')) {
             setActiveCard(null);
+            setMenuPosition(null);
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Close version overlay if clicking outside
+            if (versionOverlay && 
+                !event.target.closest('.version-overlay') && 
+                !event.target.closest('.card-menu')) {
+                setVersionOverlay(null);
+            }
+
+            // Existing click outside handler for card menu
+            if (!event.target.closest('.card-menu') && 
+                !event.target.closest('.more-icon')) {
+                setActiveCard(null);
+                setMenuPosition(null);
+            }
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [versionOverlay]); // Add versionOverlay to dependencies
+
+    const scrollbarStyles = `
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: ${darkModeColors.primary} rgba(255, 255, 255, 0.05);
+        }
+        
+        *::-webkit-scrollbar {
+            width: 8px;
+            background: transparent;
+        }
+        
+        *::-webkit-scrollbar-thumb {
+            background: ${darkModeColors.primary};
+            border-radius: 4px;
+        }
+        
+        *::-webkit-scrollbar-thumb:hover {
+            background: ${darkModeColors.secondary};
+        }
+        
+        *::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+    `;
+
+    useEffect(() => {
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = scrollbarStyles;
+        document.head.appendChild(styleSheet);
+
+        return () => {
+            document.head.removeChild(styleSheet);
+        };
+    }, [scrollbarStyles]);
+
+    if (fullScreenEdit) {
+        return (
+            <FullScreenEditor
+                script={fullScreenEdit}
+                onClose={() => setFullScreenEdit(null)}
+                onSave={handleSaveFullScreenEdit}
+            />
+        );
+    }
 
     return (
         <div style={styles.overlay} onClick={handleOverlayClick}>
@@ -467,6 +657,12 @@ const ScriptsScreen = () => {
                     </div>
                 </div>
             </div>
+            <DeleteConfirmationOverlay
+                isOpen={deleteConfirmation.show}
+                onClose={() => setDeleteConfirmation({ show: false, script: null, category: null })}
+                onConfirm={() => handleDeleteScript(deleteConfirmation.category, deleteConfirmation.script)}
+                scriptName={deleteConfirmation.script?.name}
+            />
         </div>
     );
 }
@@ -477,20 +673,18 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'flex-start',
         minHeight: '100vh',
+        width: '100vw',
         backgroundColor: darkModeColors.background,
-        overflowY: 'auto',
-        padding: 0, // Remove padding
+        overflow: 'hidden',
+        padding: 0,
     },
     container: {
         backgroundColor: darkModeColors.foreground,
-        textAlign: 'center',
         width: '100%',
-        maxWidth: '100%', // Ensure it takes full width
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
-        height: '100vh', // Full viewport height
-        overflowY: 'auto',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden',
     },
     header: {
         display: 'flex',
@@ -500,9 +694,10 @@ const styles = {
         padding: '15px',
         position: 'sticky',
         top: 0,
-        backgroundColor: '#2f3136',
+        backgroundColor: darkModeColors.headerBackground,
         zIndex: 1000,
-        borderRadius: '8px 8px 0 0',
+        borderBottom: `1px solid ${darkModeColors.border}`,
+        flexShrink: 0,
     },
     headerText: {
         margin: 0,
@@ -512,36 +707,39 @@ const styles = {
     backButton: {
         position: 'absolute',
         left: '15px',
-        color: '#7289da',
+        color: darkModeColors.textSecondary,
         fontWeight: 'bold',
         '&:hover': {
             backgroundColor: 'transparent',
-            color: '#5b6eae',
+            color: darkModeColors.text,
         },
     },
     content: {
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-start',
         alignItems: 'center',
-        overflowY: 'auto',
+        overflow: 'hidden',
         flexGrow: 1,
-        padding: '20px', // Add padding to the top as well
+        width: '100%',
+        padding: '20px',
+        boxSizing: 'border-box',
     },
     selectedScriptContainer: {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
         marginBottom: '20px',
+        flexShrink: 0,
     },
     selectedScript: {
-        backgroundColor: 'rgba(54, 57, 63, 0.8)',
+        backgroundColor: darkModeColors.cardBackground,
         border: `1px solid ${darkModeColors.border}`,
-        padding: '15px',
-        borderRadius: '5px',
+        padding: '20px',
+        borderRadius: '8px',
         textAlign: 'center',
-        maxWidth: '400px', // Limit the width for better appearance
+        maxWidth: '600px',
         width: '100%',
+        marginBottom: '24px',
     },
     selectedScriptLabel: {
         color: darkModeColors.text,
@@ -571,13 +769,22 @@ const styles = {
         },
     },
     category: {
-        marginBottom: '20px',
         width: '100%',
+        margin: '0',
+        overflow: 'hidden',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
     },
     categoryTitle: {
-        fontSize: '20px',
-        marginBottom: '10px',
-        color: darkModeColors.text,
+        fontSize: '16px',
+        fontWeight: '500',
+        marginBottom: '16px',
+        color: darkModeColors.textSecondary,
+        textAlign: 'left',
+        textTransform: 'uppercase',
+        letterSpacing: '0.02em',
     },
     addScript: {
         display: 'flex',
@@ -587,7 +794,11 @@ const styles = {
     addScriptIcon: {
         fontSize: '24px',
         cursor: 'pointer',
-        color: darkModeColors.primary,
+        color: darkModeColors.textSecondary,
+        transition: 'color 0.2s ease',
+        '&:hover': {
+            color: darkModeColors.primary,
+        },
     },
     addScriptForm: {
         display: 'flex',
@@ -607,85 +818,136 @@ const styles = {
         backgroundColor: darkModeColors.danger,
     },
     input: {
-        marginBottom: '10px',
-        padding: '10px',
-        borderRadius: '5px',
-        border: '1px solid #444',
-        backgroundColor: darkModeColors.foreground,
+        marginBottom: '12px',
+        padding: '12px',
+        borderRadius: '4px',
+        border: `1px solid ${darkModeColors.border}`,
+        backgroundColor: darkModeColors.inputBackground,
         color: darkModeColors.text,
         outline: 'none',
         width: '100%',
+        fontSize: '14px',
+        '&:focus': {
+            borderColor: darkModeColors.primary,
+        },
     },
     scriptCard: {
-        backgroundColor: darkModeColors.foreground,
+        backgroundColor: darkModeColors.cardBackground,
         border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '5px',
-        padding: '10px',
-        marginBottom: '10px',
+        borderRadius: '16px',
+        padding: '20px',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.2s ease',
+        height: 'auto',
+        minHeight: '140px',
+        maxHeight: '180px',
+        cursor: 'pointer',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 8px 12px rgba(0, 0, 0, 0.15)',
+            borderColor: darkModeColors.primary,
+        },
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
     },
     scriptCardHeader: {
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
+        marginBottom: '12px',
+        width: '100%',
     },
     scriptName: {
         color: darkModeColors.text,
-        fontSize: '16px',
-        marginBottom: '16px',
-        fontWeight: '500',
+        fontWeight: '600',
+        margin: '0',
+        width: '100%',
+        paddingRight: '16px',
+        boxSizing: 'border-box',
+        transition: 'font-size 0.2s ease',
+        wordWrap: 'break-word',
+        whiteSpace: 'normal',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        lineHeight: '1.2',
     },
     actions: {
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        position: 'relative',
+        gap: '8px',
+        position: 'absolute',
+        bottom: '12px',
+        right: '12px',
     },
     selectButton: {
-        padding: '5px 10px',
-        marginLeft: '10px',
+        padding: '8px 16px',
         backgroundColor: darkModeColors.primary,
         color: darkModeColors.text,
-        borderRadius: '5px',
+        borderRadius: '8px',
         cursor: 'pointer',
         border: 'none',
+        fontSize: '14px',
+        fontWeight: '600',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+            transform: 'scale(1.05)',
+        },
     },
     playIcon: {
-        fontSize: '20px',
+        fontSize: '22px',
         cursor: 'pointer',
         color: darkModeColors.primary,
-        marginRight: '10px',
+        transition: 'transform 0.2s ease',
+        '&:hover': {
+            transform: 'scale(1.1)',
+        },
     },
     moreIcon: {
         fontSize: '24px',
         cursor: 'pointer',
-        color: darkModeColors.primary,
-        position: 'relative',
+        color: darkModeColors.textSecondary,
+        transition: 'color 0.2s ease',
+        '&:hover': {
+            color: darkModeColors.primary,
+        },
     },
     cardMenu: {
-        backgroundColor: darkModeColors.foreground,
-        border: `1px solid ${darkModeColors.primary}`,
-        borderRadius: '5px',
-        padding: '10px',
+        backgroundColor: darkModeColors.cardBackground,
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '12px',
+        padding: '8px 0',
         display: 'flex',
         flexDirection: 'column',
         position: 'absolute',
-        top: 'calc(100% + 5px)',
+        top: 'calc(100% + 8px)',
         right: '0',
-        zIndex: 1001,
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.25)',
+        zIndex: 9999,
+        minWidth: '150px',
+        maxWidth: '200px',
+        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(10px)',
     },
     cardMenuItem: {
-        color: darkModeColors.text,
-        marginBottom: '8px',
+        color: darkModeColors.textSecondary,
+        padding: '10px 16px',
         cursor: 'pointer',
-        ':last-child': {
-            marginBottom: '0',
-        },
-        ':hover': {
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        userSelect: 'none',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}20`,
             color: darkModeColors.primary,
         },
     },
@@ -716,25 +978,44 @@ const styles = {
         color: darkModeColors.text,
     },
     versionOverlay: {
-        position: 'absolute',
-        top: 'calc(100% + 5px)',
-        left: '0',
-        width: '100%',
         backgroundColor: darkModeColors.foreground,
         border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '5px',
-        zIndex: 1002,
-        boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+        borderRadius: '8px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
         overflow: 'hidden',
+        backdropFilter: 'blur(10px)',
     },
     versionItem: {
-        padding: '10px',
+        padding: '12px 16px',
         cursor: 'pointer',
-        backgroundColor: darkModeColors.foreground,
-        borderBottom: `1px solid ${darkModeColors.border}`,
+        backgroundColor: 'transparent',
         color: darkModeColors.text,
-        ':hover': {
-            backgroundColor: darkModeColors.primary,
+        transition: 'all 0.2s ease',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        borderBottom: `1px solid ${darkModeColors.border}`,
+        '&:last-child': {
+            borderBottom: 'none',
+        },
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}15`,
+            paddingLeft: '20px',
+        },
+    },
+    scriptsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '16px',
+        width: '100%',
+        padding: '16px',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        flex: 1,
+        boxSizing: 'border-box',
+        '@media (min-width: 1200px)': {
+            gridTemplateColumns: 'repeat(4, 1fr)', // Maximum 4 columns
         },
     },
 };
