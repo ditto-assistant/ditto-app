@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
-import { FaPlay, FaArrowLeft } from "react-icons/fa"; // Add FaArrowLeft import
+import { FaPlay, FaArrowLeft, FaTrash } from "react-icons/fa"; // Add FaTrash import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
@@ -12,6 +12,9 @@ import { Button } from '@mui/material';
 import FullScreenSpinner from "../components/LoadingSpinner";
 import FullScreenEditor from '../components/FullScreenEditor';
 import CardMenu from '../components/CardMenu';
+import VersionOverlay from '../components/VersionOverlay';
+import { motion } from 'framer-motion';
+import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -53,6 +56,11 @@ const ScriptsScreen = () => {
     const [fullScreenEdit, setFullScreenEdit] = useState(null);
 
     const [menuPosition, setMenuPosition] = useState(null);
+
+    // Move cardRef outside of the render function
+    const cardRefs = useRef({});
+
+    const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null, category: null });
 
     useEffect(() => {
         const loadAce = async () => {
@@ -136,6 +144,9 @@ const ScriptsScreen = () => {
     };
 
     const handleDeleteScript = async (category, currentScript) => {
+        setDeleteConfirmation({ show: false, script: null, category: null });
+        
+        // Proceed with deletion
         setScripts((prevState) => ({
             ...prevState,
             [category]: prevState[category].filter((script) => script.id !== currentScript.id),
@@ -284,6 +295,48 @@ const ScriptsScreen = () => {
         setFullScreenEdit(null);
     };
 
+    const getFontSize = (name) => {
+        if (name.length > 20) return '14px';
+        if (name.length > 30) return '12px';
+        return '16px';
+    };
+
+    const renderVersionOverlay = (baseName, scriptsList, cardRect) => {
+        if (versionOverlay !== baseName) return null;
+
+        const style = {
+            ...styles.versionOverlay,
+            position: 'fixed',
+            top: cardRect.bottom + 5,
+            left: cardRect.left,
+            width: cardRect.width,
+        };
+
+        return (
+            <VersionOverlay style={style}>
+                {scriptsList.map((script, index) => (
+                    <motion.div
+                        key={script.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ 
+                            duration: 0.2,
+                            delay: index * 0.05, // Stagger effect
+                        }}
+                        whileHover={{ 
+                            scale: 1.02,
+                            transition: { duration: 0.1 }
+                        }}
+                        style={styles.versionItem}
+                        onClick={() => handleSelectVersion(script)}
+                    >
+                        {script.name}
+                    </motion.div>
+                ))}
+            </VersionOverlay>
+        );
+    };
+
     const renderScripts = (category) => {
         const groupedScripts = getScriptsByBaseName(scripts[category]);
         return (
@@ -294,9 +347,15 @@ const ScriptsScreen = () => {
                         scriptsList.find(s => s.name === currentVersion[category].name) || 
                         scriptsList[0];
                     const hasMultipleVersions = scriptsList.length > 1;
+                    
+                    // Initialize ref for this card if it doesn't exist
+                    if (!cardRefs.current[currentScript.id]) {
+                        cardRefs.current[currentScript.id] = React.createRef();
+                    }
 
                     return (
                         <div
+                            ref={cardRefs.current[currentScript.id]}
                             key={currentScript.id}
                             style={{
                                 ...styles.scriptCard,
@@ -317,7 +376,9 @@ const ScriptsScreen = () => {
                                         autoFocus
                                     />
                                 ) : (
-                                    <p style={styles.scriptName}>{currentScript.name}</p>
+                                    <p style={{ ...styles.scriptName, fontSize: getFontSize(currentScript.name) }}>
+                                        {currentScript.name}
+                                    </p>
                                 )}
                                 <div style={styles.actions}>
                                     <FaPlay 
@@ -368,13 +429,24 @@ const ScriptsScreen = () => {
                                                }}>
                                                 Edit
                                             </p>
-                                            <p style={styles.cardMenuItem} 
-                                               onClick={(e) => { 
-                                                   e.stopPropagation();
-                                                   handleDeleteScript(category, currentScript); 
-                                                   setActiveCard(null); 
-                                                   setMenuPosition(null);
-                                               }}>
+                                            <p style={{
+                                                ...styles.cardMenuItem,
+                                                color: darkModeColors.danger,
+                                                '&:hover': {
+                                                    backgroundColor: `${darkModeColors.danger}15`,
+                                                },
+                                            }} 
+                                            onClick={(e) => { 
+                                                e.stopPropagation();
+                                                setDeleteConfirmation({ 
+                                                    show: true, 
+                                                    script: currentScript, 
+                                                    category: category 
+                                                });
+                                                setActiveCard(null); 
+                                                setMenuPosition(null);
+                                            }}>
+                                                <FaTrash style={{ marginRight: '8px' }} />
                                                 Delete
                                             </p>
                                             <p style={styles.cardMenuItem} 
@@ -401,6 +473,12 @@ const ScriptsScreen = () => {
                                     )}
                                 </div>
                             </div>
+                            {versionOverlay === baseName && 
+                                renderVersionOverlay(
+                                    baseName, 
+                                    scriptsList, 
+                                    cardRefs.current[currentScript.id].current.getBoundingClientRect()
+                                )}
                         </div>
                     );
                 })}
@@ -415,12 +493,28 @@ const ScriptsScreen = () => {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Close version overlay if clicking outside
+            if (versionOverlay && 
+                !event.target.closest('.version-overlay') && 
+                !event.target.closest('.card-menu')) {
+                setVersionOverlay(null);
+            }
+
+            // Existing click outside handler for card menu
+            if (!event.target.closest('.card-menu') && 
+                !event.target.closest('.more-icon')) {
+                setActiveCard(null);
+                setMenuPosition(null);
+            }
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [versionOverlay]); // Add versionOverlay to dependencies
 
     const scrollbarStyles = `
         * {
@@ -561,6 +655,12 @@ const ScriptsScreen = () => {
                     </div>
                 </div>
             </div>
+            <DeleteConfirmationOverlay
+                isOpen={deleteConfirmation.show}
+                onClose={() => setDeleteConfirmation({ show: false, script: null, category: null })}
+                onConfirm={() => handleDeleteScript(deleteConfirmation.category, deleteConfirmation.script)}
+                scriptName={deleteConfirmation.script?.name}
+            />
         </div>
     );
 }
@@ -766,6 +866,7 @@ const styles = {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+        transition: 'font-size 0.2s ease',
     },
     actions: {
         display: 'flex',
@@ -867,25 +968,30 @@ const styles = {
         color: darkModeColors.text,
     },
     versionOverlay: {
-        position: 'absolute',
-        top: 'calc(100% + 5px)',
-        left: '0',
-        width: '100%',
         backgroundColor: darkModeColors.foreground,
         border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '5px',
-        zIndex: 1002,
-        boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+        borderRadius: '8px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
         overflow: 'hidden',
+        backdropFilter: 'blur(10px)',
     },
     versionItem: {
-        padding: '10px',
+        padding: '12px 16px',
         cursor: 'pointer',
-        backgroundColor: darkModeColors.foreground,
-        borderBottom: `1px solid ${darkModeColors.border}`,
+        backgroundColor: 'transparent',
         color: darkModeColors.text,
-        ':hover': {
-            backgroundColor: darkModeColors.primary,
+        transition: 'all 0.2s ease',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        borderBottom: `1px solid ${darkModeColors.border}`,
+        '&:last-child': {
+            borderBottom: 'none',
+        },
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}15`,
+            paddingLeft: '20px',
         },
     },
     scriptsGrid: {
