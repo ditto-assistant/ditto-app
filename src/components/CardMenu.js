@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMediaQuery } from '@mui/material';
 
 const CardMenu = ({ children, style }) => {
     const { transformOrigin, ...restStyle } = style;
+    const isMobile = useMediaQuery('(max-width: 768px)');
     
     return ReactDOM.createPortal(
         <AnimatePresence>
@@ -18,13 +20,13 @@ const CardMenu = ({ children, style }) => {
                     position: 'fixed',
                     zIndex: 99999,
                     backgroundColor: '#2B2D31',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                     border: '1px solid #1E1F22',
                     overflow: 'hidden',
-                    minWidth: '140px',
+                    minWidth: isMobile ? '160px' : '140px',
                     transformOrigin: transformOrigin || 'top',
-                    padding: '4px',
+                    padding: isMobile ? '6px' : '4px',
                 }}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -40,7 +42,7 @@ const CardMenu = ({ children, style }) => {
                         return <div style={{ 
                             height: '1px', 
                             backgroundColor: '#1E1F22', 
-                            margin: '2px 0' 
+                            margin: isMobile ? '4px 0' : '2px 0'
                         }} />;
                     }
                     
@@ -48,22 +50,22 @@ const CardMenu = ({ children, style }) => {
                         <motion.div
                             whileHover={{ 
                                 backgroundColor: 'rgba(88, 101, 242, 0.1)',
-                                paddingLeft: '12px',
+                                paddingLeft: isMobile ? '14px' : '12px',
                             }}
                             transition={{ duration: 0.2 }}
                             style={{ 
                                 width: '100%',
-                                padding: '5px 8px',
+                                padding: isMobile ? '8px 12px' : '5px 8px',
                                 cursor: 'pointer',
                                 boxSizing: 'border-box',
-                                fontSize: '12px',
+                                fontSize: isMobile ? '14px' : '12px',
                                 color: '#B5BAC1',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                borderRadius: '3px',
-                                height: '28px',
-                                marginBottom: '2px',
+                                gap: isMobile ? '8px' : '4px',
+                                borderRadius: '4px',
+                                height: isMobile ? '40px' : '28px',
+                                marginBottom: isMobile ? '3px' : '2px',
                                 ...(index === React.Children.count(children) - 1 && {
                                     marginTop: '0',
                                     marginBottom: '0',
