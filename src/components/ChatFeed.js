@@ -130,6 +130,7 @@ export default function ChatFeed({
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [failedImages, setFailedImages] = useState(new Set());
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -360,6 +361,11 @@ export default function ChatFeed({
     e.preventDefault();
     e.stopPropagation();
     
+    // Don't show overlay if text is being selected
+    if (window.getSelection().toString() || isSelecting) {
+      return;
+    }
+    
     // Get coordinates before any state updates
     const rect = e.currentTarget.getBoundingClientRect();
     const isUserMessage = messages[index].sender === 'User';
@@ -525,6 +531,16 @@ export default function ChatFeed({
           style={bubbleStyles.chatbubble}
           onClick={(e) => handleBubbleInteraction(e, index)}
           onContextMenu={(e) => handleBubbleInteraction(e, index)}
+          onMouseDown={() => setIsSelecting(false)}
+          onMouseMove={(e) => {
+            if (e.buttons === 1) { // Left mouse button is being held
+              setIsSelecting(true);
+            }
+          }}
+          onMouseUp={() => {
+            // Delay resetting isSelecting to allow click handler to check it
+            setTimeout(() => setIsSelecting(false), 100);
+          }}
           data-index={index}
         >
           {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}

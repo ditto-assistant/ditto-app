@@ -50,6 +50,10 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   margin-top: 12px; /* Reduced top margin */
+  user-select: text; /* Default to allowing text selection */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .blurred {
@@ -100,6 +104,10 @@
   color: #000000;
   padding-bottom: 5px; /* Reduced from 20px */
   min-height: 20px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .chat-image {
@@ -235,6 +243,10 @@
   margin: 8px 0;
   padding: 12px;
   background: #282c34;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .inline-code-container {
@@ -244,12 +256,20 @@
   background: #282c34;
   border-radius: 6px;
   padding-left: 8px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .inline-code {
   color: #ffffff;
   font-family: 'Courier New', Courier, monospace;
   margin-right: 4px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .copy-button {
@@ -324,6 +344,9 @@
 @media (pointer: coarse) {
   .chat-bubble {
     user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
   }
 }
 
@@ -1177,5 +1200,22 @@
   background-color: rgba(255, 68, 68, 0.1);
   border-radius: 4px;
   margin: 4px 0;
+}
+
+/* Ensure code blocks are selectable everywhere */
+.code-block, 
+.inline-code {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Make sure message text is selectable */
+.message-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
