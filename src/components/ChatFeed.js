@@ -753,11 +753,14 @@ export default function ChatFeed({
       const userID = auth.currentUser.uid;
       
       let promptToUse;
+      let currentPairID;
       if (message.sender === 'User') {
         promptToUse = message.text;
+        currentPairID = message.pairID;
       } else {
         if (index > 0 && messages[index - 1].sender === 'User') {
           promptToUse = messages[index - 1].text;
+          currentPairID = messages[index - 1].pairID;
         } else {
           console.error('Could not find corresponding prompt for response');
           setLoadingMemories(false);
@@ -772,7 +775,9 @@ export default function ChatFeed({
       const cachedMemories = getCachedMemories(promptId);
       if (cachedMemories) {
         console.log('Using cached memories');
-        setRelatedMemories(cachedMemories);
+        // Filter out the current conversation from cached memories
+        const filteredMemories = cachedMemories.filter(memory => memory.id !== currentPairID);
+        setRelatedMemories(filteredMemories);
         setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
         setActionOverlay(null);
         setLoadingMemories(false);
@@ -787,7 +792,7 @@ export default function ChatFeed({
         return;
       }
 
-      // Use the embedding to search for memories
+      // Use the embedding to search for memories, requesting one extra (k=6)
       const token = await auth.currentUser.getIdToken();
       const response = await fetch(routes.memories, {
         method: 'POST',
@@ -800,7 +805,7 @@ export default function ChatFeed({
         body: JSON.stringify({
           userId: userID,
           vector: embedding,
-          k: 5
+          k: 6 // Request one extra memory
         }),
         signal: controller.signal
       });
@@ -810,9 +815,15 @@ export default function ChatFeed({
       }
 
       const data = await response.json();
-      const memories = data.memories || [];
+      let memories = data.memories || [];
       
-      // Cache the results
+      // Filter out the current conversation
+      memories = memories.filter(memory => memory.id !== currentPairID);
+      
+      // Only keep the first 5 memories after filtering
+      memories = memories.slice(0, 5);
+      
+      // Cache the filtered results
       setMemoryCache(promptId, memories);
       
       setRelatedMemories(memories);
@@ -1037,24 +1048,17 @@ export default function ChatFeed({
   };
 
   const getSortedMemories = () => {
-    if (!relatedMemories || !memoryOverlay) return [];
+    if (!relatedMemories) return [];
     
-    // Get the current message
-    const currentMessage = messages[memoryOverlay.index];
-    const currentPairID = currentMessage?.pairID;
-    
-    // Filter out the current conversation and then sort
-    return [...relatedMemories]
-      .filter(memory => memory.id !== currentPairID) // Remove current conversation
-      .sort((a, b) => {
-        if (sortBy === 'relevance') {
-          const comparison = b.score - a.score;
-          return sortDirection === 'asc' ? -comparison : comparison;
-        } else {
-          const comparison = new Date(b.timestampString) - new Date(a.timestampString);
-          return sortDirection === 'asc' ? -comparison : comparison;
-        }
-      });
+    return [...relatedMemories].sort((a, b) => {
+      if (sortBy === 'relevance') {
+        const comparison = b.score - a.score;
+        return sortDirection === 'asc' ? -comparison : comparison;
+      } else {
+        const comparison = new Date(b.timestampString) - new Date(a.timestampString);
+        return sortDirection === 'asc' ? -comparison : comparison;
+      }
+    });
   };
 
   return (
