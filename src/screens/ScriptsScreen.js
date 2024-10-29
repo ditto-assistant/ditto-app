@@ -296,8 +296,10 @@ const ScriptsScreen = () => {
     };
 
     const getFontSize = (name) => {
-        if (name.length > 20) return '14px';
+        if (name.length > 50) return '10px';
+        if (name.length > 40) return '11px';
         if (name.length > 30) return '12px';
+        if (name.length > 20) return '14px';
         return '16px';
     };
 
@@ -838,7 +840,9 @@ const styles = {
         flexDirection: 'column',
         position: 'relative',
         transition: 'all 0.2s ease',
-        height: '140px',
+        height: 'auto',
+        minHeight: '140px',
+        maxHeight: '180px',
         cursor: 'pointer',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
@@ -856,17 +860,23 @@ const styles = {
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: '12px',
+        width: '100%',
     },
     scriptName: {
         color: darkModeColors.text,
-        fontSize: '16px',
         fontWeight: '600',
         margin: '0',
-        maxWidth: '60%',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
+        width: '100%',
+        paddingRight: '16px',
+        boxSizing: 'border-box',
         transition: 'font-size 0.2s ease',
+        wordWrap: 'break-word',
+        whiteSpace: 'normal',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        lineHeight: '1.2',
     },
     actions: {
         display: 'flex',
@@ -874,8 +884,8 @@ const styles = {
         alignItems: 'center',
         gap: '8px',
         position: 'absolute',
-        bottom: '16px',
-        right: '16px',
+        bottom: '12px',
+        right: '12px',
     },
     selectButton: {
         padding: '8px 16px',
@@ -1004,6 +1014,9 @@ const styles = {
         overflowX: 'hidden',
         flex: 1,
         boxSizing: 'border-box',
+        '@media (min-width: 1200px)': {
+            gridTemplateColumns: 'repeat(4, 1fr)', // Maximum 4 columns
+        },
     },
 };
 
