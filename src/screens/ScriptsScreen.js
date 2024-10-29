@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert } from "react-icons/md";
-import { FaPlay, FaArrowLeft, FaTrash } from "react-icons/fa"; // Add FaTrash import
+import { FaPlay, FaArrowLeft, FaTrash, FaDownload } from "react-icons/fa"; // Add FaTrash and FaDownload import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
@@ -324,7 +324,16 @@ const ScriptsScreen = () => {
         };
 
         return (
-            <VersionOverlay style={style} onDelete={handleDeleteVersion}>
+            <VersionOverlay 
+                style={style} 
+                onDelete={handleDeleteVersion}
+                onSelect={(versionName) => {
+                    const selectedVersion = scriptsList.find(script => script.name === versionName);
+                    if (selectedVersion) {
+                        handleSelectVersion(selectedVersion);
+                    }
+                }}
+            >
                 {scriptsList.map((script) => script.name)}
             </VersionOverlay>
         );
@@ -341,15 +350,27 @@ const ScriptsScreen = () => {
                         scriptsList[0];
                     const hasMultipleVersions = scriptsList.length > 1;
                     
-                    // Initialize ref for this card if it doesn't exist
                     if (!cardRefs.current[currentScript.id]) {
                         cardRefs.current[currentScript.id] = React.createRef();
                     }
 
                     return (
-                        <div
+                        <motion.div
                             ref={cardRefs.current[currentScript.id]}
                             key={currentScript.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ 
+                                y: -4,
+                                boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+                                borderColor: darkModeColors.primary,
+                                transition: { duration: 0.2 }
+                            }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => category === 'webApps' ? 
+                                handlePlayScript(currentScript) : 
+                                handleDownloadScript(currentScript)
+                            }
                             style={{
                                 ...styles.scriptCard,
                                 borderColor: selectedScript === currentScript.name ? 
@@ -367,113 +388,152 @@ const ScriptsScreen = () => {
                                         }
                                         style={styles.renameInput}
                                         autoFocus
+                                        onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : (
                                     <p style={{ ...styles.scriptName, fontSize: getFontSize(currentScript.name) }}>
                                         {currentScript.name}
                                     </p>
                                 )}
-                                <div style={styles.actions}>
-                                    <FaPlay 
-                                        className="play-icon" 
-                                        style={styles.playIcon} 
-                                        onClick={() => handlePlayScript(currentScript)} 
-                                    />
-                                    <button 
-                                        style={styles.selectButton} 
-                                        onClick={() => handleSelectScript(currentScript)}
+                                <div style={styles.actions} onClick={(e) => e.stopPropagation()}>
+                                    <motion.div
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.95 }}
                                     >
-                                        Select
-                                    </button>
-                                    <MdMoreVert
-                                        className="more-icon"
-                                        style={styles.moreIcon}
+                                        {category === 'webApps' ? (
+                                            <FaPlay 
+                                                className="play-icon" 
+                                                style={styles.playIcon} 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handlePlayScript(currentScript);
+                                                }} 
+                                            />
+                                        ) : (
+                                            <FaDownload 
+                                                className="download-icon" 
+                                                style={styles.playIcon}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDownloadScript(currentScript);
+                                                }} 
+                                            />
+                                        )}
+                                    </motion.div>
+                                    <motion.button 
+                                        whileHover={{ scale: 1.05, backgroundColor: darkModeColors.secondary }}
+                                        whileTap={{ scale: 0.95 }}
+                                        style={styles.selectButton} 
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            const rect = e.target.getBoundingClientRect();
-                                            setMenuPosition({
-                                                top: rect.bottom + 8,
-                                                left: rect.right - 200,
-                                            });
-                                            setActiveCard(currentScript.id);
+                                            handleSelectScript(currentScript);
                                         }}
-                                    />
-                                    {activeCard === currentScript.id && (
-                                        <CardMenu style={{
-                                            ...styles.cardMenu,
-                                            top: menuPosition?.top,
-                                            left: menuPosition?.left,
-                                        }}>
-                                            <p style={styles.cardMenuItem} 
-                                               onClick={(e) => { 
-                                                   e.stopPropagation();
-                                                   setRenameScriptId(currentScript.id); 
-                                                   setActiveCard(null); 
-                                                   setMenuPosition(null);
-                                               }}>
-                                                Rename
-                                            </p>
-                                            <p style={styles.cardMenuItem} 
-                                               onClick={(e) => { 
-                                                   e.stopPropagation();
-                                                   handleEditScript(currentScript); 
-                                                   setActiveCard(null); 
-                                                   setMenuPosition(null);
-                                               }}>
-                                                Edit
-                                            </p>
-                                            <p style={styles.cardMenuItem} 
-                                               onClick={(e) => { 
-                                                   e.stopPropagation();
-                                                   handleDownloadScript(currentScript); 
-                                                   setActiveCard(null); 
-                                                   setMenuPosition(null);
-                                               }}>
-                                                Download
-                                            </p>
-                                            {hasMultipleVersions && (
-                                                <p style={styles.cardMenuItem} 
-                                                   onClick={(e) => { 
-                                                       e.stopPropagation();
-                                                       handleVersionButtonClick(baseName); 
-                                                       setActiveCard(null); 
-                                                       setMenuPosition(null);
-                                                   }}>
-                                                    Version
-                                                </p>
-                                            )}
-                                            <div style={styles.menuDivider} />
-                                            <p style={{
-                                                ...styles.cardMenuItem,
-                                                color: darkModeColors.danger,
-                                                '&:hover': {
-                                                    backgroundColor: `${darkModeColors.danger}15`,
-                                                },
-                                            }} 
-                                            onClick={(e) => { 
+                                    >
+                                        Select
+                                    </motion.button>
+                                    <motion.div
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <MdMoreVert
+                                            className="more-icon"
+                                            style={styles.moreIcon}
+                                            onClick={(e) => {
                                                 e.stopPropagation();
-                                                setDeleteConfirmation({ 
-                                                    show: true, 
-                                                    script: currentScript, 
-                                                    category: category 
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const menuHeight = 200; // Approximate height of menu
+                                                const windowHeight = window.innerHeight;
+                                                const spaceBelow = windowHeight - rect.bottom;
+                                                const spaceAbove = rect.top;
+                                                
+                                                // Determine if menu should open upward or downward
+                                                const openUpward = spaceBelow < menuHeight && spaceAbove > menuHeight;
+                                                
+                                                setMenuPosition({
+                                                    top: openUpward ? rect.top - menuHeight - 8 : rect.bottom + 8,
+                                                    left: Math.min(rect.left, window.innerWidth - 160), // Use 160px (menu width) instead of 200
+                                                    openUpward,
                                                 });
-                                                setActiveCard(null); 
-                                                setMenuPosition(null);
-                                            }}>
-                                                <FaTrash style={{ marginRight: '8px' }} />
-                                                Delete
-                                            </p>
-                                        </CardMenu>
-                                    )}
+                                                setActiveCard(currentScript.id);
+                                            }}
+                                        />
+                                    </motion.div>
                                 </div>
                             </div>
+                            {activeCard === currentScript.id && menuPosition && (
+                                <CardMenu style={{
+                                    top: menuPosition.top,
+                                    left: menuPosition.left,
+                                    transformOrigin: menuPosition.openUpward ? 'bottom' : 'top',
+                                }}>
+                                    <p style={styles.cardMenuItem} 
+                                       onClick={(e) => { 
+                                           e.stopPropagation();
+                                           setRenameScriptId(currentScript.id); 
+                                           setActiveCard(null); 
+                                           setMenuPosition(null);
+                                       }}>
+                                        Rename
+                                    </p>
+                                    <p style={styles.cardMenuItem} 
+                                       onClick={(e) => { 
+                                           e.stopPropagation();
+                                           handleEditScript(currentScript); 
+                                           setActiveCard(null); 
+                                           setMenuPosition(null);
+                                       }}>
+                                        Edit
+                                    </p>
+                                    <p style={styles.cardMenuItem} 
+                                       onClick={(e) => { 
+                                           e.stopPropagation();
+                                           handleDownloadScript(currentScript); 
+                                           setActiveCard(null); 
+                                           setMenuPosition(null);
+                                       }}>
+                                        Download
+                                    </p>
+                                    {hasMultipleVersions && (
+                                        <p style={styles.cardMenuItem} 
+                                           onClick={(e) => { 
+                                               e.stopPropagation();
+                                               handleVersionButtonClick(baseName); 
+                                               setActiveCard(null); 
+                                               setMenuPosition(null);
+                                           }}>
+                                            Version
+                                        </p>
+                                    )}
+                                    <div style={styles.menuDivider} />
+                                    <p style={{
+                                        ...styles.cardMenuItem,
+                                        color: darkModeColors.danger,
+                                        '&:hover': {
+                                            backgroundColor: `${darkModeColors.danger}15`,
+                                        },
+                                    }} 
+                                    onClick={(e) => { 
+                                        e.stopPropagation();
+                                        setDeleteConfirmation({ 
+                                            show: true, 
+                                            script: currentScript, 
+                                            category: category 
+                                        });
+                                        setActiveCard(null); 
+                                        setMenuPosition(null);
+                                    }}>
+                                        <FaTrash style={{ marginRight: '8px' }} />
+                                        Delete
+                                    </p>
+                                </CardMenu>
+                            )}
                             {versionOverlay === baseName && 
                                 renderVersionOverlay(
                                     baseName, 
                                     scriptsList, 
                                     cardRefs.current[currentScript.id].current.getBoundingClientRect()
                                 )}
-                        </div>
+                        </motion.div>
                     );
                 })}
             </div>
@@ -773,10 +833,10 @@ const styles = {
         fontSize: '16px',
         fontWeight: '500',
         marginBottom: '16px',
-        color: darkModeColors.primary,
+        color: '#7289DA',
         textAlign: 'left',
         textTransform: 'uppercase',
-        letterSpacing: '0.02em',
+        letterSpacing: '0.05em',
     },
     addScript: {
         display: 'flex',
@@ -831,18 +891,11 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        transition: 'all 0.2s ease',
         height: 'auto',
         minHeight: '140px',
         maxHeight: '180px',
         cursor: 'pointer',
         backdropFilter: 'blur(10px)',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0 8px 12px rgba(0, 0, 0, 0.15)',
-            borderColor: darkModeColors.primary,
-        },
         width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
@@ -889,10 +942,6 @@ const styles = {
         fontSize: '14px',
         fontWeight: '600',
         transition: 'all 0.2s ease',
-        '&:hover': {
-            backgroundColor: darkModeColors.secondary,
-            transform: 'scale(1.05)',
-        },
     },
     playIcon: {
         fontSize: '22px',
