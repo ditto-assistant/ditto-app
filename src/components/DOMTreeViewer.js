@@ -96,11 +96,15 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
             const doc = parser.parseFromString(html, 'text/html');
 
             const traverse = (node, parentId) => {
+                if (node.nodeType !== 1) return;
+
                 const currentId = nodeId++;
                 
                 // Get tag name and class names
                 const tagName = node.nodeName.toLowerCase();
-                const className = node.className ? `.${node.className.trim().replace(/\s+/g, '.')}` : '';
+                const className = node.className && typeof node.className === 'string'
+                    ? `.${node.className.trim().replace(/\s+/g, '.')}`
+                    : '';
                 
                 // Create label with tag name and class names
                 const label = `${tagName}${className}`;
