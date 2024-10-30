@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
@@ -161,6 +161,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     // Add state for edit history
     const [editHistory, setEditHistory] = useState([{ content: script.content }]);
     const [historyIndex, setHistoryIndex] = useState(0);
+
+    // Add wrapEnabled state
+    const [wrapEnabled, setWrapEnabled] = useState(false);
 
     // Add undo/redo handlers
     const handleUndo = () => {
@@ -484,6 +487,18 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 <FaProjectDiagram size={16} />
                             </IconButton>
                         </Tooltip>
+                        <Tooltip title="Toggle Word Wrap">
+                            <IconButton
+                                onClick={() => setWrapEnabled(prev => !prev)}
+                                sx={{
+                                    ...styles.iconButton,
+                                    backgroundColor: wrapEnabled ? `${darkModeColors.primary}20` : 'transparent',
+                                    color: wrapEnabled ? darkModeColors.primary : darkModeColors.text,
+                                }}
+                            >
+                                <FaAlignLeft size={16} />
+                            </IconButton>
+                        </Tooltip>
                     </div>
                     <div style={{ height: 'calc(100% - 40px)' }}>
                         {viewMode === 'code' ? (
@@ -501,6 +516,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 showGutter={true}
                                 highlightActiveLine={true}
                                 onLoad={handleEditorLoad}
+                                wrapEnabled={wrapEnabled}
                                 setOptions={{
                                     enableBasicAutocompletion: true,
                                     enableLiveAutocompletion: true,
@@ -508,6 +524,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     showLineNumbers: true,
                                     tabSize: 2,
                                     useWorker: false,
+                                    wrap: wrapEnabled,
                                 }}
                             />
                         ) : (

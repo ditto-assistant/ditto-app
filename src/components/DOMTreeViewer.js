@@ -4,7 +4,7 @@ import { DataSet } from 'vis-data';
 import AceEditor from 'react-ace';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconButton } from '@mui/material';
-import { FaTimes, FaCheck, FaComments, FaUndo, FaRedo, FaHistory } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaComments, FaUndo, FaRedo, FaHistory, FaAlignLeft } from 'react-icons/fa';
 import { LoadingSpinner } from './LoadingSpinner';
 import { promptLLM } from '../api/LLM';
 import { getModelPreferencesFromFirestore } from '../control/firebase';
@@ -62,6 +62,7 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
     const messagesEndRef = useRef(null);
     const [isTyping, setIsTyping] = useState(false);
     const [codeBase, setCodeBase] = useState(htmlContent);
+    const [wrapEnabled, setWrapEnabled] = useState(false);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -135,6 +136,13 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                 <div style={styles.nodeEditorActions}>
                     <IconButton 
                         size="small"
+                        onClick={() => setWrapEnabled(prev => !prev)}
+                        style={styles.nodeEditorButton}
+                    >
+                        <FaAlignLeft size={16} color={wrapEnabled ? darkModeColors.primary : darkModeColors.textSecondary} />
+                    </IconButton>
+                    <IconButton 
+                        size="small"
                         onClick={() => setShowChat(prev => !prev)}
                         style={styles.nodeEditorButton}
                     >
@@ -171,12 +179,14 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                     showPrintMargin={false}
                     showGutter={true}
                     highlightActiveLine={true}
+                    wrapEnabled={wrapEnabled}
                     setOptions={{
                         enableBasicAutocompletion: true,
                         enableLiveAutocompletion: true,
                         enableSnippets: true,
                         showLineNumbers: true,
                         tabSize: 2,
+                        wrap: wrapEnabled,
                     }}
                 />
             </div>
