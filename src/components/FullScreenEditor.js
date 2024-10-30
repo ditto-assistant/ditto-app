@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
+import DOMTreeViewer from './DOMTreeViewer';
+import { parseHTML, stringifyHTML } from '../utils/htmlParser';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -143,6 +145,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [showToast, setShowToast] = useState(false);
     const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
+    const [viewMode, setViewMode] = useState('tree'); // Changed from 'code' to 'tree'
+    const [selectedNode, setSelectedNode] = useState(null);
 
     const {
         splitPosition,
@@ -276,6 +280,47 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setIsEditorReady(true);
     };
 
+    const onNodeClick = useCallback((node) => {
+        setSelectedNode(node);
+    }, []);
+
+    const handleNodeUpdate = useCallback((node, newCode) => {
+        try {
+            // Parse the new code
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(newCode, 'text/html');
+            const newNode = doc.body.firstChild;
+
+            // Create a temporary container with the current code
+            const tempDoc = parser.parseFromString(code, 'text/html');
+            
+            // Find and replace the corresponding node in the full document
+            const oldNode = findCorrespondingNode(tempDoc, node);
+            if (oldNode && newNode) {
+                oldNode.replaceWith(newNode);
+                
+                // Update the full code
+                setCode(tempDoc.documentElement.outerHTML);
+            }
+        } catch (error) {
+            console.error('Error updating node:', error);
+        }
+    }, [code]);
+
+    const findCorrespondingNode = (doc, targetNode) => {
+        const walk = (node) => {
+            if (node.isEqualNode(targetNode)) {
+                return node;
+            }
+            for (let child of node.childNodes) {
+                const result = walk(child);
+                if (result) return result;
+            }
+            return null;
+        };
+        return walk(doc.documentElement);
+    };
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -375,29 +420,65 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             </IconButton>
                         </Tooltip>
                     </div>
-                    <AceEditor
-                        ref={editorRef}
-                        mode="javascript"
-                        theme="monokai"
-                        onChange={setCode}
-                        value={code}
-                        name="full-screen-editor"
-                        width="100%"
-                        height="calc(100% - 40px)"
-                        fontSize={14}
-                        showPrintMargin={false}
-                        showGutter={true}
-                        highlightActiveLine={true}
-                        onLoad={handleEditorLoad}
-                        setOptions={{
-                            enableBasicAutocompletion: true,
-                            enableLiveAutocompletion: true,
-                            enableSnippets: true,
-                            showLineNumbers: true,
-                            tabSize: 2,
-                            useWorker: false,
-                        }}
-                    />
+                    <div style={styles.viewToggle}>
+                        <Tooltip title="Code View">
+                            <IconButton
+                                onClick={() => setViewMode('code')}
+                                sx={{
+                                    ...styles.iconButton,
+                                    backgroundColor: viewMode === 'code' ? `${darkModeColors.primary}20` : 'transparent',
+                                    color: viewMode === 'code' ? darkModeColors.primary : darkModeColors.text,
+                                }}
+                            >
+                                <FaCode size={16} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="DOM Tree View">
+                            <IconButton
+                                onClick={() => setViewMode('tree')}
+                                sx={{
+                                    ...styles.iconButton,
+                                    backgroundColor: viewMode === 'tree' ? `${darkModeColors.primary}20` : 'transparent',
+                                    color: viewMode === 'tree' ? darkModeColors.primary : darkModeColors.text,
+                                }}
+                            >
+                                <FaProjectDiagram size={16} />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
+                    <div style={{ height: 'calc(100% - 40px)' }}>
+                        {viewMode === 'code' ? (
+                            <AceEditor
+                                ref={editorRef}
+                                mode="javascript"
+                                theme="monokai"
+                                onChange={setCode}
+                                value={code}
+                                name="full-screen-editor"
+                                width="100%"
+                                height="100%"
+                                fontSize={14}
+                                showPrintMargin={false}
+                                showGutter={true}
+                                highlightActiveLine={true}
+                                onLoad={handleEditorLoad}
+                                setOptions={{
+                                    enableBasicAutocompletion: true,
+                                    enableLiveAutocompletion: true,
+                                    enableSnippets: true,
+                                    showLineNumbers: true,
+                                    tabSize: 2,
+                                    useWorker: false,
+                                }}
+                            />
+                        ) : (
+                            <DOMTreeViewer 
+                                htmlContent={code}
+                                onNodeClick={onNodeClick}
+                                onNodeUpdate={handleNodeUpdate}
+                            />
+                        )}
+                    </div>
                 </motion.div>
 
                 <motion.div
@@ -730,6 +811,18 @@ const styles = {
         height: '24px',
         backgroundColor: darkModeColors.border,
         margin: '0 4px',
+    },
+    viewToggle: {
+        position: 'absolute',
+        right: '12px',
+        top: '48px',
+        display: 'flex',
+        gap: '8px',
+        padding: '8px',
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        zIndex: 10,
     },
 };
 
