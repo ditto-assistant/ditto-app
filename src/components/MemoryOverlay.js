@@ -12,7 +12,7 @@ const darkModeColors = {
     foreground: '#23272A',
     cardBg: '#2F3136',
     dangerRed: '#ED4245',
-    dangerGradient: 'linear-gradient(180deg, #ED4245 0%, #AB2123 100%)',
+    dangerGradient: 'linear-gradient(180deg, #ED4245 0%, #A12D2F 100%)',
     success: '#3BA55D',
     hover: '#4752C4',
 };
