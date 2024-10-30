@@ -71,6 +71,8 @@ const ScriptsScreen = () => {
 
     const [openScadViewer, setOpenScadViewer] = useState(null);
 
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
     const filterScripts = (scripts, searchTerm) => {
         if (!searchTerm) return scripts;
         
@@ -293,28 +295,48 @@ const ScriptsScreen = () => {
     const handleSaveFullScreenEdit = async (newContent) => {
         const category = fullScreenEdit.scriptType;
         const userID = localStorage.getItem("userID");
-        
-        // Update local state
-        setScripts((prevState) => ({
-            ...prevState,
-            [category]: prevState[category].map((s) =>
-                s.id === fullScreenEdit.id ? { ...s, content: newContent } : s
-            ),
-        }));
-        
-        // Save to Firestore
-        await saveScriptToFirestore(userID, newContent, category, fullScreenEdit.name, true);
-        
-        // Update working script if this is the selected one
-        if (selectedScript === fullScreenEdit.name) {
-            localStorage.setItem("workingOnScript", JSON.stringify({
-                script: fullScreenEdit.name,
-                contents: newContent,
-                scriptType: category
+
+        try {
+            // Determine the next version number
+            const currentScripts = scripts[category];
+            const baseName = fullScreenEdit.name.split('-v')[0];
+            const versionNumbers = currentScripts
+                .filter(script => script.name.startsWith(baseName))
+                .map(script => {
+                    const match = script.name.match(/-v(\d+)$/);
+                    return match ? parseInt(match[1], 10) : 0;
+                });
+
+            const nextVersion = Math.max(...versionNumbers) + 1;
+            const newName = `${baseName}-v${nextVersion}`;
+
+            // Save to Firestore with the new version name
+            await saveScriptToFirestore(userID, newContent, category, newName);
+
+            // Update local scripts state directly
+            setScripts(prevScripts => ({
+                ...prevScripts,
+                [category]: [
+                    ...prevScripts[category],
+                    { ...fullScreenEdit, name: newName, content: newContent }
+                ]
             }));
+
+            // Update localStorage
+            const updatedScripts = {
+                ...scripts,
+                [category]: [
+                    ...scripts[category],
+                    { ...fullScreenEdit, name: newName, content: newContent }
+                ]
+            };
+            localStorage.setItem(category, JSON.stringify(updatedScripts[category]));
+
+            return Promise.resolve();
+        } catch (error) {
+            console.error('Error saving:', error);
+            return Promise.reject(error);
         }
-        
-        return Promise.resolve();
     };
 
     const getFontSize = (name) => {
@@ -676,11 +698,54 @@ const ScriptsScreen = () => {
         };
     }, [scrollbarStyles]);
 
+    useEffect(() => {
+        const loadScripts = async () => {
+            const userID = localStorage.getItem("userID");
+            if (userID) {
+                await syncLocalScriptsWithFirestore(userID, "webApps");
+                await syncLocalScriptsWithFirestore(userID, "openSCAD");
+                
+                // Update local state with fresh data from localStorage
+                const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
+                const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+                setScripts({
+                    webApps: localWebApps,
+                    openSCAD: localOpenSCAD,
+                });
+            }
+        };
+
+        loadScripts();
+    }, [refreshTrigger]); // Add refreshTrigger as dependency
+
+    const handleEditorClose = () => {
+        setFullScreenEdit(null);
+    };
+
+    // Update the scripts update effect
+    useEffect(() => {
+        const handleScriptsUpdate = async (event) => {
+            // Force update the scripts state with the latest data
+            setScripts({
+                webApps: JSON.parse(localStorage.getItem("webApps")) || [],
+                openSCAD: JSON.parse(localStorage.getItem("openSCAD")) || []
+            });
+            
+            // Increment refresh trigger to force re-render
+            setRefreshTrigger(prev => prev + 1);
+        };
+
+        window.addEventListener('scriptsUpdated', handleScriptsUpdate);
+        return () => {
+            window.removeEventListener('scriptsUpdated', handleScriptsUpdate);
+        };
+    }, []);
+
     if (fullScreenEdit) {
         return (
             <FullScreenEditor
                 script={fullScreenEdit}
-                onClose={() => setFullScreenEdit(null)}
+                onClose={handleEditorClose}
                 onSave={handleSaveFullScreenEdit}
             />
         );

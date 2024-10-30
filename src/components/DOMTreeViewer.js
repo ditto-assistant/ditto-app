@@ -116,10 +116,9 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
 
     const handleSave = () => {
         if (code !== node.outerHTML) {
-            onSave(code);
-        } else {
-            onClose();
+            onSave(node, code);
         }
+        onClose();
     };
 
     useEffect(() => {
@@ -521,10 +520,53 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
     }, [htmlContent]);
 
     const handleNodeUpdate = (node, newCode) => {
-        if (onNodeUpdate) {
-            onNodeUpdate(node, newCode);
+        try {
+            // Create a temporary container to parse the new code
+            const parser = new DOMParser();
+            const tempDoc = parser.parseFromString(htmlContent, 'text/html');
+            
+            // Find the corresponding node in the current document
+            const nodeToUpdate = findCorrespondingNode(tempDoc, node);
+            
+            if (nodeToUpdate) {
+                // Create a temporary element to hold the new code
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = newCode;
+                
+                // Replace the old node with the new content
+                nodeToUpdate.parentNode.replaceChild(tempContainer.firstChild, nodeToUpdate);
+                
+                // Get the updated HTML content
+                const updatedHTML = tempDoc.documentElement.outerHTML;
+                
+                // Call the onNodeUpdate callback with the updated HTML
+                if (onNodeUpdate) {
+                    onNodeUpdate(node, updatedHTML);
+                }
+            }
+        } catch (error) {
+            console.error('Error updating node:', error);
         }
         setSelectedNode(null);
+    };
+
+    const findCorrespondingNode = (doc, targetNode) => {
+        const findNode = (node) => {
+            if (node.nodeName === targetNode.nodeName) {
+                // Compare innerHTML or other attributes to ensure it's the right node
+                if (node.innerHTML === targetNode.innerHTML) {
+                    return node;
+                }
+            }
+            
+            for (let child of node.childNodes) {
+                const result = findNode(child);
+                if (result) return result;
+            }
+            return null;
+        };
+        
+        return findNode(doc.documentElement);
     };
 
     return (

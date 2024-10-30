@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
 import DOMTreeViewer from './DOMTreeViewer';
 import { parseHTML, stringifyHTML } from '../utils/htmlParser';
+import { saveScriptToFirestore, syncLocalScriptsWithFirestore } from '../control/firebase'; // Changed from '../control/agent'
+import { useNavigate } from 'react-router-dom';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -137,6 +139,7 @@ const SearchOverlay = ({
 };
 
 const FullScreenEditor = ({ script, onClose, onSave }) => {
+    const navigate = useNavigate();
     const [code, setCode] = useState(script.content);
     const [previewKey, setPreviewKey] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
@@ -147,6 +150,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
     const [viewMode, setViewMode] = useState('tree'); // Changed from 'code' to 'tree'
     const [selectedNode, setSelectedNode] = useState(null);
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastType, setToastType] = useState('success'); // 'success' or 'warning'
 
     const {
         splitPosition,
@@ -188,10 +193,25 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     const handleSave = async () => {
         try {
+            // Check if content has changed
+            if (code === script.content) {
+                setToastMessage('No Changes to Save!');
+                setToastType('warning');
+                setShowToast(true);
+                return;
+            }
+
+            // Let the parent handle the save
             await onSave(code);
+
+            setToastMessage('Changes saved successfully!');
+            setToastType('success');
             setShowToast(true);
         } catch (error) {
             console.error('Error saving:', error);
+            setToastMessage('Error saving changes');
+            setToastType('error');
+            setShowToast(true);
         }
     };
 
@@ -308,27 +328,19 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setSelectedNode(node);
     }, []);
 
-    const handleNodeUpdate = useCallback((node, newCode) => {
-        try {
-            // Create a new document with the current code
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(code, 'text/html');
-            
-            // Update the code state directly with the new code
-            setCode(newCode);
-            
-            // Add to edit history
-            const newHistory = editHistory.slice(0, historyIndex + 1);
-            newHistory.push({ content: newCode });
-            setEditHistory(newHistory);
-            setHistoryIndex(newHistory.length - 1);
-            
-            // Force preview refresh
-            setPreviewKey(prev => prev + 1);
-        } catch (error) {
-            console.error('Error updating node:', error);
-        }
-    }, [code, editHistory, historyIndex]);
+    const handleNodeUpdate = (node, updatedHTML) => {
+        // Update the code state with the new HTML
+        setCode(updatedHTML);
+        
+        // Add to edit history
+        const newHistory = editHistory.slice(0, historyIndex + 1);
+        newHistory.push({ content: updatedHTML });
+        setEditHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+        
+        // Force preview refresh
+        setPreviewKey(prev => prev + 1);
+    };
 
     const findCorrespondingNode = (doc, targetNode) => {
         const walk = (node) => {
@@ -344,6 +356,29 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         return walk(doc.documentElement);
     };
 
+    const handleClose = async () => {
+        const userID = localStorage.getItem("userID");
+        
+        // Sync scripts before closing
+        await syncLocalScriptsWithFirestore(userID, "webApps");
+        await syncLocalScriptsWithFirestore(userID, "openSCAD");
+        
+        // Update localStorage with latest data
+        const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
+        const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+        
+        // Dispatch event to force scripts screen refresh
+        window.dispatchEvent(new CustomEvent('scriptsUpdated', { 
+            detail: { 
+                webApps: localWebApps,
+                openSCAD: localOpenSCAD
+            }
+        }));
+        
+        // Call the original onClose to return to scripts screen
+        onClose();
+    };
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -355,7 +390,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 <div style={styles.headerLeft}>
                     <Tooltip title="Back">
                         <IconButton
-                            onClick={onClose}
+                            onClick={handleClose}
                             sx={styles.iconButton}
                         >
                             <FaArrowLeft />
@@ -572,9 +607,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 </motion.div>
             </div>
             <Toast 
-                message="Changes saved successfully!"
+                message={toastMessage}
                 isVisible={showToast}
                 onHide={() => setShowToast(false)}
+                type={toastType}
             />
         </div>
     );
