@@ -347,40 +347,41 @@ export const saveScriptToFirestore = async (userID, script, scriptType, filename
 
 
 export const backupOldScriptMakeVersion = async (userID, scriptType, filename) => {
-  // backup the old script by adding -v1, -v2, -v3, etc. to the filename, keep track of which number version it is
-  // this function will be called before updateScriptInFirestore to keep all previous versions of the script
-  // simply check which version number is the highest and increment it by 1
-  // create a new script document with the new filename and version number
   try {
     if (mode === 'development') {
       console.log("Backing up old script to Firestore collection with filename: ", filename);
     }
-    const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
-    if (querySnapshot.empty) {
-      return;
-    }
-    let newVersionNumber = 1;
-    // use the getVersionsOfScriptFromFirestore function to get all versions of the script
-    let versions = await getVersionsOfScriptFromFirestore(userID, scriptType, filename);
-    // check if versions is empty
-    if (versions.length === 1) {
-      newVersionNumber = 1;
-    }
-    else {
-      // get the last version number
-      let lastVersion = versions[versions.length - 1];
-      newVersionNumber = String(Number(lastVersion.versionNumber) + 1);
-    }
-    let newFilename = `${filename}-v${newVersionNumber}`;
 
-    const docRef = await addDoc(collection(db, "scripts", userID, scriptType), {
-      script: versions[0].script,
-      filename: newFilename,
-      timestamp: new Date(),
-      timestampString: new Date().toISOString()
+    // Get all versions of the script
+    let versions = await getVersionsOfScriptFromFirestore(userID, scriptType, filename);
+    
+    // Find the highest version number
+    let highestVersion = 0;
+    versions.forEach(version => {
+      // Convert version number to integer for comparison
+      const versionNum = parseInt(version.versionNumber);
+      if (!isNaN(versionNum) && versionNum > highestVersion) {
+        highestVersion = versionNum;
+      }
     });
-    if (mode === 'development') {
-      console.log("Old script backed up to Firestore collection with ID: ", docRef.id);
+
+    // New version will be highest + 1
+    const newVersionNumber = highestVersion + 1;
+    const newFilename = `${filename}-v${newVersionNumber}`;
+
+    // Only proceed if we have the original version to backup
+    if (versions.length > 0) {
+      const docRef = await addDoc(collection(db, "scripts", userID, scriptType), {
+        script: versions[0].script,
+        filename: newFilename,
+        timestamp: new Date(),
+        timestampString: new Date().toISOString()
+      });
+
+      if (mode === 'development') {
+        console.log("Old script backed up to Firestore collection with ID: ", docRef.id);
+        console.log(`Created backup version: ${newFilename}`);
+      }
     }
   } catch (e) {
     console.error("Error backing up old script to Firestore scripts collection: ", e);
@@ -553,21 +554,30 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     if (mode === 'development') {
       console.log("Syncing local storage with Firestore for scripts of type: ", scriptType);
     }
+
+    // Fetch timestamps first
+    await getScriptTimestamps(userID, scriptType);
+
     const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
     if (querySnapshot.empty) {
       return [];
     }
-    // [{ id: Date.now(), name: filename, content: cleanedScript }, ] is what scriptType in localstorage looks like
+
     let scripts = [];
     querySnapshot.forEach((doc) => {
-      let scriptObj = { id: doc.data().timestampString, name: doc.data().filename, content: doc.data().script, scriptType: scriptType, timestamp: doc.data().timestamp };
+      let scriptObj = { 
+        id: doc.data().timestampString, 
+        name: doc.data().filename, 
+        content: doc.data().script, 
+        scriptType: scriptType, 
+        timestamp: doc.data().timestamp,
+        timestampString: doc.data().timestampString
+      };
       scripts.push(scriptObj);
     });
+
     localStorage.setItem(scriptType, JSON.stringify(scripts));
-    // let localScripts = JSON.parse(localStorage.getItem(scriptType));
-    // if (mode === 'development') {
-    //   console.log("Local scripts after syncing with Firestore: ", localScripts);
-    // }
+
   } catch (e) {
     console.error("Error getting documents from scripts collection: ", e);
     return [];
@@ -645,3 +655,45 @@ export const getModelPreferencesFromFirestore = async (userID) => {
     };
   }
 }
+
+export const getScriptTimestamps = async (userID, scriptType) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
+    if (querySnapshot.empty) {
+      return {};
+    }
+
+    const timestamps = {};
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      // Store both the timestamp and timestampString for each script
+      timestamps[data.filename] = {
+        timestamp: data.timestamp,
+        timestampString: data.timestampString
+      };
+    });
+
+    // Save to localStorage
+    localStorage.setItem(`${scriptType}Timestamps`, JSON.stringify(timestamps));
+    
+    if (mode === 'development') {
+      console.log(`Timestamps fetched and stored for ${scriptType}:`, timestamps);
+    }
+
+    return timestamps;
+  } catch (e) {
+    console.error("Error fetching script timestamps:", e);
+    return {};
+  }
+};
+
+// Add a utility function to get timestamps from localStorage
+export const getLocalScriptTimestamps = (scriptType) => {
+  try {
+    const timestamps = localStorage.getItem(`${scriptType}Timestamps`);
+    return timestamps ? JSON.parse(timestamps) : {};
+  } catch (e) {
+    console.error("Error getting script timestamps from localStorage:", e);
+    return {};
+  }
+};

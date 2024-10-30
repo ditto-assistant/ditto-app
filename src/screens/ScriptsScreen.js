@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdAdd, MdMoreVert } from "react-icons/md";
+import { MdAdd, MdMoreVert, MdSort } from "react-icons/md";
 import { FaPlay, FaArrowLeft, FaTrash, FaDownload } from "react-icons/fa"; // Add FaTrash and FaDownload import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
     renameScriptInFirestore,
+    getLocalScriptTimestamps,
+    getScriptTimestamps,
 } from "../control/firebase";
 import { downloadOpenscadScript } from "../control/agentTools";
 import { Button } from '@mui/material';
@@ -73,15 +75,53 @@ const ScriptsScreen = () => {
 
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    const filterScripts = (scripts, searchTerm) => {
-        if (!searchTerm) return scripts;
-        
-        const normalizedSearch = searchTerm.toLowerCase();
-        return scripts.filter(script => {
-            const baseName = getBaseName(script.name.replace(/ /g, "")).toLowerCase();
-            return baseName.includes(normalizedSearch);
-        });
+    const [sortOrder, setSortOrder] = useState('recent');
+
+    const sortScripts = (scripts) => {
+        if (sortOrder === 'alphabetical') {
+            return [...scripts].sort((a, b) => a.name.localeCompare(b.name));
+        } else {
+            // Sort by most recent first using the timestamp
+            return [...scripts].sort((a, b) => {
+                const timestampsA = getLocalScriptTimestamps(a.scriptType)[a.name];
+                const timestampsB = getLocalScriptTimestamps(b.scriptType)[b.name];
+                
+                if (!timestampsA || !timestampsB) return 0;
+                
+                // Convert Firestore timestamps to milliseconds for comparison
+                const timeA = timestampsA.timestamp.seconds * 1000;
+                const timeB = timestampsB.timestamp.seconds * 1000;
+                
+                return timeB - timeA;
+            });
+        }
     };
+
+    const filterScripts = (scripts, searchTerm) => {
+        let filteredScripts = scripts;
+        if (searchTerm) {
+            const normalizedSearch = searchTerm.toLowerCase();
+            filteredScripts = scripts.filter(script => {
+                const baseName = getBaseName(script.name.replace(/ /g, "")).toLowerCase();
+                return baseName.includes(normalizedSearch);
+            });
+        }
+        return sortScripts(filteredScripts);
+    };
+
+    const SortButton = () => (
+        <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={styles.sortButton}
+            onClick={() => setSortOrder(prev => prev === 'recent' ? 'alphabetical' : 'recent')}
+        >
+            <MdSort style={styles.sortIcon} />
+            <span style={styles.sortText}>
+                {sortOrder === 'recent' ? 'Most Recent' : 'Alphabetical'}
+            </span>
+        </motion.div>
+    );
 
     useEffect(() => {
         const loadAce = async () => {
@@ -413,6 +453,50 @@ const ScriptsScreen = () => {
         );
     };
 
+    const formatTimestamp = (timestamp, script, category) => {
+        if (!timestamp) return '';
+        
+        // Get all versions of this script
+        const allTimestamps = getLocalScriptTimestamps(category);
+        const baseScriptName = getBaseName(script.name.replace(/ /g, ""));
+        
+        // Find the most recent timestamp among all versions
+        let mostRecentTimestamp = timestamp;
+        Object.entries(allTimestamps).forEach(([name, ts]) => {
+            if (name.startsWith(baseScriptName) && name !== script.name) {
+                // Compare timestamps and keep the most recent
+                const currentTime = ts.timestamp.seconds;
+                const mostRecentTime = mostRecentTimestamp.seconds;
+                if (currentTime > mostRecentTime) {
+                    mostRecentTimestamp = ts.timestamp;
+                }
+            }
+        });
+        
+        const date = new Date(mostRecentTimestamp.seconds * 1000);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        const diffInDays = Math.floor(diffInHours / 24);
+
+        if (diffInSeconds < 60) {
+            return 'just now';
+        } else if (diffInMinutes < 60) {
+            return `${diffInMinutes}m ago`;
+        } else if (diffInHours < 24) {
+            return `${diffInHours}h ago`;
+        } else if (diffInDays < 7) {
+            return `${diffInDays}d ago`;
+        } else {
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+            });
+        }
+    };
+
     const renderScripts = (category) => {
         const filteredScripts = filterScripts(scripts[category], searchTerm);
         const groupedScripts = getScriptsByBaseName(filteredScripts);
@@ -580,6 +664,17 @@ const ScriptsScreen = () => {
                                     </motion.div>
                                 </div>
                             </div>
+                            
+                            <div style={styles.timestampContainer}>
+                                <span style={styles.timestamp}>
+                                    {formatTimestamp(
+                                        getLocalScriptTimestamps(category)[currentScript.name]?.timestamp,
+                                        currentScript,
+                                        category
+                                    )}
+                                </span>
+                            </div>
+
                             {activeCard === currentScript.id && menuPosition && (
                                 <CardMenu style={{
                                     top: menuPosition.top,
@@ -761,6 +856,15 @@ const ScriptsScreen = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const userID = localStorage.getItem('userID');
+        if (userID) {
+            // Fetch timestamps for both script types
+            getScriptTimestamps(userID, 'webApps');
+            getScriptTimestamps(userID, 'openSCAD');
+        }
+    }, []);
+
     if (fullScreenEdit) {
         return (
             <FullScreenEditor
@@ -838,10 +942,13 @@ const ScriptsScreen = () => {
                     </div>
                 </div>
 
-                <SearchBar 
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                />
+                <div style={styles.searchSortContainer}>
+                    <SearchBar 
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                    />
+                    <SortButton />
+                </div>
 
                 <div style={styles.content}>
                     {activeTab === 'webApps' && (
@@ -1092,6 +1199,7 @@ const styles = {
         width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
+        paddingBottom: '40px', // Add some padding at the bottom for the timestamp
     },
     scriptCardHeader: {
         display: 'flex',
@@ -1320,6 +1428,51 @@ const styles = {
         fontWeight: '600',
         transition: 'all 0.2s ease',
         marginRight: '8px',
+    },
+    searchSortContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        padding: '0 20px',
+        marginTop: '16px',
+    },
+    sortButton: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '8px 16px',
+        backgroundColor: darkModeColors.cardBackground,
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '8px',
+        cursor: 'pointer',
+        color: darkModeColors.textSecondary,
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}15`,
+            borderColor: darkModeColors.primary,
+            color: darkModeColors.primary,
+        },
+    },
+    sortIcon: {
+        fontSize: '20px',
+    },
+    sortText: {
+        fontWeight: '500',
+    },
+    timestampContainer: {
+        position: 'absolute',
+        bottom: '12px',
+        left: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+    },
+    timestamp: {
+        fontSize: '12px',
+        color: darkModeColors.textSecondary,
+        opacity: 0.8,
+        fontWeight: '500',
     },
 };
 

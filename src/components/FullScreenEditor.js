@@ -8,6 +8,7 @@ import DOMTreeViewer from './DOMTreeViewer';
 import { parseHTML, stringifyHTML } from '../utils/htmlParser';
 import { saveScriptToFirestore, syncLocalScriptsWithFirestore } from '../control/firebase'; // Changed from '../control/agent'
 import { useNavigate } from 'react-router-dom';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -152,6 +153,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [selectedNode, setSelectedNode] = useState(null);
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('success'); // 'success' or 'warning'
+    const [isSaving, setIsSaving] = useState(false);
 
     const {
         splitPosition,
@@ -201,14 +203,18 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 return;
             }
 
+            setIsSaving(true); // Show loading overlay
+
             // Let the parent handle the save
             await onSave(code);
 
+            setIsSaving(false); // Hide loading overlay
             setToastMessage('Changes saved successfully!');
             setToastType('success');
             setShowToast(true);
         } catch (error) {
             console.error('Error saving:', error);
+            setIsSaving(false); // Hide loading overlay
             setToastMessage('Error saving changes');
             setToastType('error');
             setShowToast(true);
@@ -378,6 +384,17 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         // Call the original onClose to return to scripts screen
         onClose();
     };
+
+    useEffect(() => {
+        if (isSaving) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, [isSaving]);
 
     return (
         <div style={styles.container}>
@@ -606,6 +623,34 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     />
                 </motion.div>
             </div>
+            <AnimatePresence>
+                {isSaving && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={styles.savingOverlay}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            style={styles.savingContent}
+                        >
+                            <LoadingSpinner size={50} inline={true} />
+                            <motion.p
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                style={styles.savingText}
+                            >
+                                Saving changes...
+                            </motion.p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <Toast 
                 message={toastMessage}
                 isVisible={showToast}
@@ -912,6 +957,37 @@ const styles = {
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         zIndex: 10,
+    },
+    savingOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(30, 31, 34, 0.5)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000,
+    },
+    savingContent: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '16px',
+        backgroundColor: darkModeColors.foreground,
+        padding: '24px 32px',
+        borderRadius: '12px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
+        border: `1px solid ${darkModeColors.border}`,
+    },
+    savingText: {
+        color: darkModeColors.text,
+        fontSize: '16px',
+        fontWeight: 500,
+        margin: 0,
     },
 };
 
