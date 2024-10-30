@@ -1019,6 +1019,57 @@ export default function ChatFeed({
               </div>
             );
           },
+          code: ({ node, inline, className, children, ...props }) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const codeContent = String(children).replace(/\n$/, '');
+            
+            // Check if this is a code block
+            const isCodeBlock = !inline && (match || (content.includes('```') && content.split('```').length > 1));
+            
+            const handleCodeCopy = (e, text) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(text);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            };
+            
+            if (isCodeBlock) {
+              const language = match ? match[1] : 'text';
+              return (
+                <div className='code-container memory-code-container' data-language={language}>
+                  <SyntaxHighlighter
+                    children={codeContent}
+                    style={vscDarkPlus}
+                    language={language}
+                    PreTag='div'
+                    {...props}
+                    className='code-block'
+                  />
+                  <button
+                    className='copy-button code-block-button'
+                    onClick={(e) => handleCodeCopy(e, codeContent)}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
+                </div>
+              );
+            }
+
+            // Inline code
+            return (
+              <div className='inline-code-container memory-inline-code'>
+                <code className='inline-code' {...props}>{codeContent}</code>
+                <button
+                  className='copy-button inline-code-button'
+                  onClick={(e) => handleCodeCopy(e, codeContent)}
+                  title="Copy code"
+                >
+                  <FiCopy />
+                </button>
+              </div>
+            );
+          }
         }}
       />
     );
