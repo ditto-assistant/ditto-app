@@ -596,3 +596,51 @@ export const uploadGeneratedImageToFirebaseStorage = async (imageURL, userID) =>
   // // return URI of the image
   // return await getDownloadURL(snapshot.ref);
 }
+
+export const saveModelPreferencesToFirestore = async (userID, mainModel, programmerModel) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "users", userID, "preferences"));
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((doc) => {
+        updateDoc(doc.ref, {
+          mainModel,
+          programmerModel,
+          timestamp: new Date(),
+          timestampString: new Date().toISOString()
+        });
+      });
+    } else {
+      await addDoc(collection(db, "users", userID, "preferences"), {
+        mainModel,
+        programmerModel,
+        timestamp: new Date(),
+        timestampString: new Date().toISOString()
+      });
+    }
+  } catch (e) {
+    console.error("Error saving model preferences to Firestore: ", e);
+  }
+}
+
+export const getModelPreferencesFromFirestore = async (userID) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "users", userID, "preferences"));
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      return {
+        mainModel: doc.data().mainModel || "gemini-1.5-pro",
+        programmerModel: doc.data().programmerModel || "claude-3-5-sonnet"
+      };
+    }
+    return {
+      mainModel: "gemini-1.5-pro",
+      programmerModel: "claude-3-5-sonnet"
+    };
+  } catch (e) {
+    console.error("Error getting model preferences from Firestore: ", e);
+    return {
+      mainModel: "gemini-1.5-pro",
+      programmerModel: "claude-3-5-sonnet"
+    };
+  }
+}

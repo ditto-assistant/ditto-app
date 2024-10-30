@@ -27,7 +27,7 @@ import {
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import { db, saveScriptToFirestore, grabConversationHistoryCount } from "./firebase";
+import { db, saveScriptToFirestore, grabConversationHistoryCount, getModelPreferencesFromFirestore } from "./firebase";
 
 const mode = import.meta.env.MODE;
 
@@ -44,6 +44,9 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       localStorage.setItem("idle", "true");
       return "An error occurred while processing your request. Please try again.";
     }
+
+    // Get model preferences
+    const modelPreferences = await getModelPreferencesFromFirestore(userID);
 
     // do the above three with a promise.all
     const allResponses = await Promise.all([
@@ -66,7 +69,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptName,
       scriptType
     );
-    const mainAgentModel = image ? "claude-3-5-sonnet" : "gemini-1.5-pro";
+    const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
 
     // print constructed prompt in green
     console.log("%c" + constructedPrompt, "color: green");
@@ -251,6 +254,8 @@ const handleScriptGeneration = async (
   userID,
   image,
 ) => {
+  const modelPreferences = await getModelPreferencesFromFirestore(userID);
+  
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents);
   // print constructed prompt in green
@@ -258,7 +263,7 @@ const handleScriptGeneration = async (
   const scriptResponse = await promptLLM(
     constructedPrompt,
     systemTemplateFunction(),
-    "claude-3-5-sonnet",
+    modelPreferences.programmerModel,
     image
   );
   /// print the response in yellow
