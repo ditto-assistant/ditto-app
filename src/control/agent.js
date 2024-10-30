@@ -283,6 +283,22 @@ const handleScriptGeneration = async (
       scriptToNameSystemTemplate(),
       "gemini-1.5-flash"
     );
+    
+    // Check for API error and retry once
+    if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+      console.log("API error detected, retrying script name generation...");
+      scriptToNameResponse = await promptLLM(
+        scriptToNameConstructedPrompt,
+        scriptToNameSystemTemplate(),
+        "gemini-1.5-flash"
+      );
+      if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+        console.log("Second attempt failed, defaulting to 'App Name Here'");
+        scriptToNameResponse = "App Name Here";
+      }
+    }
+
+    // Check user balance
     if (scriptToNameResponse.includes("user balance is:")) {
       alert("Please add more Tokens in Settings to continue using this app.");
       scriptToNameResponse = "App Name Here";
