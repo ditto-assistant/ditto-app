@@ -97,17 +97,43 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
 
             const traverse = (node, parentId) => {
                 const currentId = nodeId++;
+                
+                // Get tag name and class names
+                const tagName = node.nodeName.toLowerCase();
+                const className = node.className ? `.${node.className.trim().replace(/\s+/g, '.')}` : '';
+                
+                // Create label with tag name and class names
+                const label = `${tagName}${className}`;
+
+                // Assign color based on tag name
+                const tagColors = {
+                    div: '#F39C12', // Orange
+                    span: '#9B59B6', // Purple
+                    p: '#2ECC71',    // Green
+                    img: '#E74C3C',  // Red
+                    a: '#3498DB',    // Blue
+                    ul: '#1ABC9C',   // Teal
+                    li: '#16A085',   // Dark Teal
+                    // Add more tag colors as needed
+                    default: darkModeColors.primary, // Fallback color
+                };
+                const nodeColor = tagColors[tagName] || tagColors.default;
+
                 nodes.add({ 
                     id: currentId, 
-                    label: node.nodeName.toLowerCase(),
+                    label: label,
                     refNode: node,
                     color: {
-                        background: darkModeColors.primary,
+                        background: nodeColor,
                         border: darkModeColors.secondary,
                         highlight: {
                             background: darkModeColors.secondary,
                             border: darkModeColors.primary
                         }
+                    },
+                    font: {
+                        color: darkModeColors.text,
+                        face: 'Inter, system-ui, sans-serif',
                     }
                 });
                 
