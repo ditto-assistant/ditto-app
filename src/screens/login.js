@@ -7,6 +7,7 @@ import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 
 import { saveUserToFirestore, getUserObjectFromFirestore, loadConversationHistoryFromFirestore } from "../control/firebase";
 import { auth } from "../control/firebase";
 import './Login.css';
+import TermsOfService from '../components/TermsOfService';
 
 const PasswordInput = ({ value, onChange, placeholder, showPassword, togglePasswordVisibility }) => (
     <div style={styles.passwordInputContainer}>
@@ -35,6 +36,7 @@ const Login = () => {
     const [isCreatingAccount, setIsCreatingAccount] = useState(false); // To toggle between sign-in and sign-up
     const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
     const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
+    const [showTOS, setShowTOS] = useState(false);
     if (user) {
         navigate("/");
     }
@@ -167,6 +169,10 @@ const Login = () => {
         setShowPassword(!showPassword);
     }
 
+    const handleSignUpClick = () => {
+        setShowTOS(true);
+    };
+
     return (
         <div className="login-container">
             <div className="login-form">
@@ -212,7 +218,7 @@ const Login = () => {
                         togglePasswordVisibility={togglePasswordVisibility}
                     />
                 )}
-                <button onClick={isCreatingAccount ? handleSignUp : handleSignIn} style={styles.button}>
+                <button onClick={isCreatingAccount ? handleSignUpClick : handleSignIn} style={styles.button}>
                     {isCreatingAccount ? "Sign Up" : "Sign In"}
                 </button>
                 {!isCreatingAccount && (
@@ -236,7 +242,14 @@ const Login = () => {
                     </span>
                 </p>
                 {verificationMessage && <p style={styles.verificationText}>{verificationMessage}</p>}
+                <p style={styles.tosText}>
+                    By signing up, you agree to our{' '}
+                    <span style={styles.link} onClick={() => setShowTOS(true)}>
+                        Terms of Service
+                    </span>
+                </p>
             </div>
+            {showTOS && <TermsOfService onClose={() => setShowTOS(false)} />}
         </div>
     );
 }
@@ -345,6 +358,12 @@ const styles = {
         marginTop: '20px',
         fontSize: '14px',
         color: '#e53e3e',
+        textAlign: 'center',
+    },
+    tosText: {
+        marginTop: '20px',
+        fontSize: '14px',
+        color: '#333',
         textAlign: 'center',
     },
 };

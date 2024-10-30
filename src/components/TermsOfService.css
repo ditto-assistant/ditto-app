@@ -1,0 +1,104 @@
+.tos-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.tos-container {
+    background-color: #36393f;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    color: #dcddde;
+}
+
+.tos-header {
+    padding: 20px;
+    border-bottom: 1px solid #202225;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tos-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.tos-close-button {
+    background: none;
+    border: none;
+    color: #dcddde;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
+.tos-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    line-height: 1.6;
+}
+
+.tos-content h3 {
+    color: #7289da;
+    margin-top: 0;
+}
+
+.tos-content h4 {
+    color: #fff;
+    margin: 20px 0 10px;
+}
+
+.tos-content p {
+    margin: 10px 0;
+    color: #dcddde;
+}
+
+.tos-footer {
+    padding: 20px;
+    border-top: 1px solid #202225;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tos-accept-button {
+    background-color: #7289da;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.tos-accept-button:hover {
+    background-color: #677bc4;
+}
+
+@media (max-width: 768px) {
+    .tos-container {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .tos-content {
+        padding: 15px;
+    }
+} 
