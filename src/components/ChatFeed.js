@@ -1221,137 +1221,163 @@ export default function ChatFeed({
           </motion.div>
         </AnimatePresence>
       )}
-      {memoryOverlay && (
-        <div className="memory-overlay" onClick={() => setMemoryOverlay(null)}>
-          <div className="memory-content" onClick={(e) => e.stopPropagation()}>
-            <div className="memory-header">
-              <h3>Related Memories</h3>
-              <button className="close-button" onClick={() => setMemoryOverlay(null)}>×</button>
-            </div>
-            <div className="memory-controls">
-              <div className="memory-controls-left">
-                <button 
-                  className={`memory-control-button ${sortBy === 'relevance' ? 'active' : ''}`}
-                  onClick={() => handleSort('relevance')}
-                >
-                  <FiBarChart2 />
-                  Relevance
-                  <span className={`sort-direction ${sortBy === 'relevance' && sortDirection === 'asc' ? 'asc' : ''}`}>
-                    <FiChevronDown />
-                  </span>
-                </button>
-                <button 
-                  className={`memory-control-button ${sortBy === 'timestamp' ? 'active' : ''}`}
-                  onClick={() => handleSort('timestamp')}
-                >
-                  <FiClock />
-                  Time
-                  <span className={`sort-direction ${sortBy === 'timestamp' && sortDirection === 'asc' ? 'asc' : ''}`}>
-                    <FiChevronDown />
-                  </span>
-                </button>
+      <AnimatePresence>
+        {memoryOverlay && (
+          <motion.div
+            className="memory-overlay"
+            onClick={() => setMemoryOverlay(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="memory-content"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              <div className="memory-header">
+                <h3>Related Memories</h3>
+                <button className="close-button" onClick={() => setMemoryOverlay(null)}>×</button>
               </div>
-              <div className="memory-controls-right">
-                <div className="score-toggle">
-                  <span>Show Scores</span>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={showScores}
-                      onChange={(e) => setShowScores(e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
+              <div className="memory-controls">
+                <div className="memory-controls-left">
+                  <button 
+                    className={`memory-control-button ${sortBy === 'relevance' ? 'active' : ''}`}
+                    onClick={() => handleSort('relevance')}
+                  >
+                    <FiBarChart2 />
+                    Relevance
+                    <span className={`sort-direction ${sortBy === 'relevance' && sortDirection === 'asc' ? 'asc' : ''}`}>
+                      <FiChevronDown />
+                    </span>
+                  </button>
+                  <button 
+                    className={`memory-control-button ${sortBy === 'timestamp' ? 'active' : ''}`}
+                    onClick={() => handleSort('timestamp')}
+                  >
+                    <FiClock />
+                    Time
+                    <span className={`sort-direction ${sortBy === 'timestamp' && sortDirection === 'asc' ? 'asc' : ''}`}>
+                      <FiChevronDown />
+                    </span>
+                  </button>
+                </div>
+                <div className="memory-controls-right">
+                  <div className="score-toggle">
+                    <span>Show Scores</span>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={showScores}
+                        onChange={(e) => setShowScores(e.target.checked)}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="memory-list">
-              {getSortedMemories().map((memory, idx) => (
-                <motion.div
-                  key={idx}
-                  className="memory-item"
-                  initial={{ opacity: 1, height: 'auto', scale: 1 }}
-                  animate={{
-                    opacity: deletingMemories.has(idx) ? 0 : 1,
-                    height: deletingMemories.has(idx) ? 0 : 'auto',
-                    scale: deletingMemories.has(idx) ? 0.8 : 1,
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {showScores && (
-                    <div className="memory-score">
-                      Relevance: {(memory.score * 100).toFixed(2)}%
+              <div className="memory-list">
+                {getSortedMemories().map((memory, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="memory-item"
+                    initial={{ opacity: 1, height: 'auto', scale: 1 }}
+                    animate={{
+                      opacity: deletingMemories.has(idx) ? 0 : 1,
+                      height: deletingMemories.has(idx) ? 0 : 'auto',
+                      scale: deletingMemories.has(idx) ? 0.8 : 1,
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {showScores && (
+                      <div className="memory-score">
+                        Relevance: {(memory.score * 100).toFixed(2)}%
+                      </div>
+                    )}
+                    <div className="memory-prompt">
+                      {renderMemoryContent(memory.prompt)}
                     </div>
-                  )}
-                  <div className="memory-prompt">
-                    {renderMemoryContent(memory.prompt)}
-                  </div>
-                  <div className="memory-response">
-                    {renderMemoryContent(memory.response)}
-                  </div>
-                  <div className="memory-footer">
-                    <div className="memory-timestamp">
-                      {formatFullTimestamp(new Date(memory.timestampString).getTime())}
+                    <div className="memory-response">
+                      {renderMemoryContent(memory.response)}
                     </div>
-                    <button
-                      className="delete-button"
-                      onClick={() => handleDeleteMemory(memory, idx)}
-                      disabled={deletingMemories.has(idx)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      {deleteConfirmation && (
-        <div 
-          className="delete-confirmation-overlay"
-          onClick={() => setDeleteConfirmation(null)}
-        >
-          <div 
-            className="delete-confirmation-content"
-            onClick={(e) => e.stopPropagation()}
+                    <div className="memory-footer">
+                      <div className="memory-timestamp">
+                        {formatFullTimestamp(new Date(memory.timestampString).getTime())}
+                      </div>
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDeleteMemory(memory, idx)}
+                        disabled={deletingMemories.has(idx)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {deleteConfirmation && (
+          <motion.div 
+            className="delete-confirmation-overlay"
+            onClick={() => setDeleteConfirmation(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="delete-confirmation-title">Delete Message?</div>
-            <div className="delete-confirmation-message">
-              Are you sure you want to delete this message? This action cannot be undone.
-            </div>
-            {deleteConfirmation.isLoading ? (
-              <div className="delete-confirmation-loading">
-                <FaSpinner className="spinner" />
-                <div>Finding message in database...</div>
+            <motion.div 
+              className="delete-confirmation-content"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              <div className="delete-confirmation-title">Delete Message?</div>
+              <div className="delete-confirmation-message">
+                Are you sure you want to delete this message? This action cannot be undone.
               </div>
-            ) : deleteConfirmation.error ? (
-              <div className="delete-confirmation-docid not-found">
-                {deleteConfirmation.error}
+              {deleteConfirmation.isLoading ? (
+                <div className="delete-confirmation-loading">
+                  <FaSpinner className="spinner" />
+                  <div>Finding message in database...</div>
+                </div>
+              ) : deleteConfirmation.error ? (
+                <div className="delete-confirmation-docid not-found">
+                  {deleteConfirmation.error}
+                </div>
+              ) : (
+                <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
+                  Document ID: {deleteConfirmation.docId || 'Not found'}
+                </div>
+              )}
+              <div className="delete-confirmation-buttons">
+                <button 
+                  className="delete-confirmation-button cancel"
+                  onClick={() => setDeleteConfirmation(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="delete-confirmation-button confirm"
+                  onClick={confirmDelete}
+                  disabled={deleteConfirmation.isLoading || !deleteConfirmation.docId}
+                >
+                  Delete
+                </button>
               </div>
-            ) : (
-              <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
-                Document ID: {deleteConfirmation.docId || 'Not found'}
-              </div>
-            )}
-            <div className="delete-confirmation-buttons">
-              <button 
-                className="delete-confirmation-button cancel"
-                onClick={() => setDeleteConfirmation(null)}
-              >
-                Cancel
-              </button>
-              <button 
-                className="delete-confirmation-button confirm"
-                onClick={confirmDelete}
-                disabled={deleteConfirmation.isLoading || !deleteConfirmation.docId}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

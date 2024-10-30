@@ -1817,3 +1817,15 @@ input:checked + .toggle-slider:before {
   }
 }
 
+/* Update z-index to ensure overlay is above other content */
+.delete-confirmation-overlay {
+  /* ... existing styles */
+  z-index: 5000; /* Adjust if necessary */
+}
+
+/* Add transition styles if needed */
+.delete-confirmation-content {
+  /* ... existing styles */
+  will-change: transform, opacity;
+}
+
