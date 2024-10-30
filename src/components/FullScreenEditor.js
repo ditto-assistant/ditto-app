@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
 import DOMTreeViewer from './DOMTreeViewer';
 import { parseHTML, stringifyHTML } from '../utils/htmlParser';
-import { saveScriptToFirestore, syncLocalScriptsWithFirestore } from '../control/firebase'; // Changed from '../control/agent'
+import { saveScriptToFirestore, syncLocalScriptsWithFirestore, getModelPreferencesFromFirestore } from '../control/firebase'; // Changed from '../control/agent'
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './LoadingSpinner';
+import { promptLLM } from '../api/LLM';
+import { htmlTemplate, htmlSystemTemplate } from '../ditto/templates/htmlTemplate';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -154,6 +159,71 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('success'); // 'success' or 'warning'
     const [isSaving, setIsSaving] = useState(false);
+    const [showScriptChat, setShowScriptChat] = useState(false);
+    const [scriptChatMessages, setScriptChatMessages] = useState([]);
+    const [scriptChatInput, setScriptChatInput] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const scriptChatMessagesEndRef = useRef(null);
+    const [modelPreferences, setModelPreferences] = useState({ programmerModel: 'claude-3-5-sonnet' });
+    const userID = localStorage.getItem('userID');
+    const isMobileRef = useRef(false);
+    const [scriptChatSize, setScriptChatSize] = useState({ width: 400, height: 500 });
+    const [messageBoxHeight, setMessageBoxHeight] = useState(40);
+    const resizingRef = useRef(null);
+
+    useEffect(() => {
+        // Fetch user's preferred programmer model
+        getModelPreferencesFromFirestore(userID).then(prefs => {
+            setModelPreferences(prefs);
+        });
+    }, [userID]);
+
+    useEffect(() => {
+        isMobileRef.current = checkIfMobile();
+    }, []);
+
+    const checkIfMobile = () => {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        return /android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    };
+
+    const handleScriptChatSend = async () => {
+        if (!scriptChatInput.trim()) return;
+        const userMessage = scriptChatInput.trim();
+        setScriptChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setScriptChatInput('');
+        setIsTyping(true);
+
+        try {
+            const constructedPrompt = htmlTemplate(userMessage, code);
+            const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
+            
+            setScriptChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
+
+            // Extract code between ```html and ```
+            const codeBlockRegex = /```html\n([\s\S]*?)```/;
+            const match = response.match(codeBlockRegex);
+            if (match) {
+                const updatedCode = match[1].trim();
+                setCode(updatedCode);
+                setPreviewKey(prev => prev + 1);
+            }
+        } catch (error) {
+            console.error('Error in chat:', error);
+            setScriptChatMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: 'Sorry, there was an error processing your request.' 
+            }]);
+        }
+
+        setIsTyping(false);
+    };
+
+    useEffect(() => {
+        if (scriptChatMessagesEndRef.current) {
+            scriptChatMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [scriptChatMessages]);
 
     const {
         splitPosition,
@@ -396,6 +466,105 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         };
     }, [isSaving]);
 
+    // Add typing indicator CSS
+    useEffect(() => {
+        const typingIndicatorCSS = `
+            .typing-indicator {
+                display: flex;
+                align-items: center;
+                padding: 8px;
+                height: 20px;
+                margin-top: 8px;
+            }
+
+            .typing-dot {
+                width: 6px;
+                height: 6px;
+                margin: 0 2px;
+                background-color: ${darkModeColors.textSecondary};
+                border-radius: 50%;
+                animation: bounce 0.6s infinite alternate;
+                animation-delay: calc(var(--i) * 0.2s);
+            }
+
+            @keyframes bounce {
+                0%, 100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-10px);
+                }
+            }
+        `;
+
+        // Inject the CSS
+        const style = document.createElement('style');
+        style.textContent = typingIndicatorCSS;
+        document.head.appendChild(style);
+
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
+
+    const handleResizeMouseDown = (e, direction) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const startX = e.pageX;
+        const startY = e.pageY;
+        const startWidth = scriptChatSize.width;
+        const startHeight = scriptChatSize.height;
+        const startMessageHeight = messageBoxHeight;
+        
+        resizingRef.current = direction;
+
+        const handleMouseMove = (e) => {
+            if (!resizingRef.current) return;
+
+            if (resizingRef.current === 'scriptChat') {
+                // Calculate width from right edge (fixed) to mouse position
+                const containerRect = containerRef.current.getBoundingClientRect();
+                const rightEdge = containerRect.right - 12; // Account for padding
+                const newWidth = Math.max(300, rightEdge - e.clientX);
+                const newHeight = Math.max(300, Math.min(window.innerHeight - 100, startHeight + (e.pageY - startY)));
+                
+                setScriptChatSize({ 
+                    width: newWidth, 
+                    height: newHeight 
+                });
+            } else if (resizingRef.current === 'messageBox') {
+                const newHeight = Math.max(40, Math.min(200, startMessageHeight + e.pageY - startY));
+                setMessageBoxHeight(newHeight);
+            }
+        };
+
+        const handleMouseUp = () => {
+            resizingRef.current = null;
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const adjustTextareaHeight = (textarea) => {
+        if (!textarea) return;
+        
+        // Reset height to auto to get the correct scrollHeight
+        textarea.style.height = 'auto';
+        
+        // Calculate line height (assuming 14px font size and 1.5 line height)
+        const lineHeight = 21; // 14px * 1.5
+        const padding = 16; // 8px top + 8px bottom
+        const maxHeight = lineHeight * 5 + padding; // 5 rows max
+        
+        // Set new height
+        const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+        textarea.style.height = `${newHeight}px`;
+    };
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -539,6 +708,18 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 <FaProjectDiagram size={16} />
                             </IconButton>
                         </Tooltip>
+                        <Tooltip title="Chat">
+                            <IconButton
+                                onClick={() => setShowScriptChat(prev => !prev)}
+                                sx={{
+                                    ...styles.iconButton,
+                                    backgroundColor: showScriptChat ? `${darkModeColors.primary}20` : 'transparent',
+                                    color: showScriptChat ? darkModeColors.primary : darkModeColors.text,
+                                }}
+                            >
+                                <FaComments size={16} />
+                            </IconButton>
+                        </Tooltip>
                         <Tooltip title="Toggle Word Wrap">
                             <IconButton
                                 onClick={() => setWrapEnabled(prev => !prev)}
@@ -657,6 +838,123 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 onHide={() => setShowToast(false)}
                 type={toastType}
             />
+
+            <AnimatePresence>
+                {showScriptChat && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        style={{
+                            ...styles.scriptChatContainer,
+                            width: scriptChatSize.width,
+                            height: scriptChatSize.height,
+                        }}
+                    >
+                        <div style={styles.scriptChatHeader}>
+                            <span style={styles.scriptChatTitle}>Script Chat</span>
+                            <IconButton
+                                onClick={() => setShowScriptChat(false)}
+                                sx={styles.iconButton}
+                            >
+                                <FaTimes size={16} />
+                            </IconButton>
+                        </div>
+                        <div style={styles.scriptChatMessages}>
+                            {scriptChatMessages.map((msg, index) => (
+                                <div key={index} style={msg.role === 'user' ? styles.userMessage : styles.assistantMessage}>
+                                    <ReactMarkdown
+                                        children={msg.content}
+                                        components={{
+                                            code({node, inline, className, children, ...props}) {
+                                                const match = /language-(\w+)/.exec(className || '');
+                                                return !inline && match ? (
+                                                    <SyntaxHighlighter
+                                                        style={vscDarkPlus}
+                                                        language={match[1]}
+                                                        PreTag="div"
+                                                        {...props}
+                                                    >
+                                                        {String(children).replace(/\n$/, '')}
+                                                    </SyntaxHighlighter>
+                                                ) : (
+                                                    <code className={className} {...props}>
+                                                        {children}
+                                                    </code>
+                                                );
+                                            },
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                            {isTyping && (
+                                <div className="typing-indicator">
+                                    <div className="typing-dot" style={{ '--i': 0 }} />
+                                    <div className="typing-dot" style={{ '--i': 1 }} />
+                                    <div className="typing-dot" style={{ '--i': 2 }} />
+                                </div>
+                            )}
+                            <div ref={scriptChatMessagesEndRef} />
+                        </div>
+                        <div style={styles.scriptChatInputContainer}>
+                            <div style={styles.textareaWrapper}>
+                                <div
+                                    style={styles.resizeHandle}
+                                    onMouseDown={(e) => handleResizeMouseDown(e, 'messageBox')}
+                                />
+                                <textarea
+                                    value={scriptChatInput}
+                                    onChange={(e) => {
+                                        setScriptChatInput(e.target.value);
+                                        adjustTextareaHeight(e.target);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (isMobileRef.current) {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const newValue = scriptChatInput + '\n';
+                                                setScriptChatInput(newValue);
+                                                // Use setTimeout to ensure the new value is set
+                                                setTimeout(() => adjustTextareaHeight(e.target), 0);
+                                            }
+                                        } else {
+                                            if (e.key === 'Enter') {
+                                                if (e.shiftKey) {
+                                                    e.preventDefault();
+                                                    const newValue = scriptChatInput + '\n';
+                                                    setScriptChatInput(newValue);
+                                                    // Use setTimeout to ensure the new value is set
+                                                    setTimeout(() => adjustTextareaHeight(e.target), 0);
+                                                } else {
+                                                    e.preventDefault();
+                                                    handleScriptChatSend();
+                                                }
+                                            }
+                                        }
+                                    }}
+                                    placeholder="Send a command..."
+                                    style={{
+                                        ...styles.scriptChatInput,
+                                        minHeight: '40px', // Single line height
+                                        height: 'auto', // Let the content determine the height
+                                    }}
+                                    rows={1}
+                                />
+                            </div>
+                            <button 
+                                onClick={handleScriptChatSend}
+                                style={styles.scriptChatSendButton}
+                            >
+                                Send
+                            </button>
+                        </div>
+                        <div 
+                            style={styles.scriptChatResizeHandle}
+                            onMouseDown={(e) => handleResizeMouseDown(e, 'scriptChat')}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -988,6 +1286,144 @@ const styles = {
         fontSize: '16px',
         fontWeight: 500,
         margin: 0,
+    },
+    scriptChatContainer: {
+        position: 'absolute',
+        top: '90px',
+        right: '12px',
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '12px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
+        border: `1px solid ${darkModeColors.border}`,
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 100,
+        overflow: 'hidden',
+        minWidth: '300px',
+        minHeight: '300px',
+        '@media (max-width: 768px)': {
+            width: 'calc(100% - 24px)',
+            height: '400px',
+        },
+    },
+    scriptChatHeader: {
+        padding: '12px 16px',
+        borderBottom: `1px solid ${darkModeColors.border}`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    scriptChatTitle: {
+        color: darkModeColors.text,
+        fontSize: '14px',
+        fontWeight: 600,
+    },
+    scriptChatMessages: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+    },
+    scriptChatInputContainer: {
+        padding: '12px',
+        borderTop: `1px solid ${darkModeColors.border}`,
+        display: 'flex',
+        gap: '8px',
+    },
+    scriptChatInput: {
+        flex: 1,
+        backgroundColor: darkModeColors.background,
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '6px',
+        padding: '8px 12px',
+        color: darkModeColors.text,
+        fontSize: '14px',
+        lineHeight: '1.5',
+        outline: 'none',
+        resize: 'none',
+        overflowY: 'auto',
+        transition: 'height 0.2s ease',
+        '&:focus': {
+            borderColor: darkModeColors.primary,
+        },
+    },
+    scriptChatSendButton: {
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '6px',
+        padding: '8px 16px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+        },
+    },
+    userMessage: {
+        alignSelf: 'flex-end',
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        padding: '8px 12px',
+        borderRadius: '12px 12px 0 12px',
+        maxWidth: '80%',
+        wordBreak: 'break-word',
+    },
+    assistantMessage: {
+        alignSelf: 'flex-start',
+        backgroundColor: darkModeColors.secondary,
+        color: darkModeColors.text,
+        padding: '8px 12px',
+        borderRadius: '12px 12px 12px 0',
+        maxWidth: '80%',
+        wordBreak: 'break-word',
+    },
+    scriptChatResizeHandle: {
+        position: 'absolute',
+        left: 0,
+        bottom: 0,
+        width: '16px',
+        height: '16px',
+        cursor: 'nw-resize',
+        backgroundColor: 'transparent',
+        borderLeft: `3px solid ${darkModeColors.border}`,
+        borderBottom: `3px solid ${darkModeColors.border}`,
+        borderBottomLeftRadius: '8px',
+        transition: 'border-color 0.2s',
+        zIndex: 1,
+        '&:hover': {
+            borderColor: darkModeColors.primary,
+            borderLeftWidth: '4px',
+            borderBottomWidth: '4px',
+        },
+        '&:active': {
+            borderColor: darkModeColors.primary,
+            borderLeftWidth: '4px',
+            borderBottomWidth: '4px',
+        },
+    },
+    textareaWrapper: {
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    resizeHandle: {
+        position: 'absolute',
+        top: -3,
+        left: 0,
+        right: 0,
+        height: '6px',
+        cursor: 'ns-resize',
+        backgroundColor: 'transparent',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}20`,
+        },
+        '&:active': {
+            backgroundColor: `${darkModeColors.primary}40`,
+        },
     },
 };
 
