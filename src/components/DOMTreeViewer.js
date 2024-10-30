@@ -5,6 +5,7 @@ import AceEditor from 'react-ace';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconButton } from '@mui/material';
 import { FaTimes, FaCheck } from 'react-icons/fa';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -21,9 +22,9 @@ const NodeEditor = ({ node, onClose, onSave }) => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
             style={styles.nodeEditor}
         >
             <div style={styles.nodeEditorHeader}>
@@ -34,37 +35,39 @@ const NodeEditor = ({ node, onClose, onSave }) => {
                         onClick={() => onSave(code)}
                         style={styles.nodeEditorButton}
                     >
-                        <FaCheck size={14} color={darkModeColors.primary} />
+                        <FaCheck size={16} color={darkModeColors.primary} />
                     </IconButton>
                     <IconButton 
                         size="small" 
                         onClick={onClose}
                         style={styles.nodeEditorButton}
                     >
-                        <FaTimes size={14} color={darkModeColors.textSecondary} />
+                        <FaTimes size={16} color={darkModeColors.textSecondary} />
                     </IconButton>
                 </div>
             </div>
-            <AceEditor
-                mode="html"
-                theme="monokai"
-                onChange={setCode}
-                value={code}
-                name="node-editor"
-                width="100%"
-                height="200px"
-                fontSize={14}
-                showPrintMargin={false}
-                showGutter={true}
-                highlightActiveLine={true}
-                setOptions={{
-                    enableBasicAutocompletion: true,
-                    enableLiveAutocompletion: true,
-                    enableSnippets: true,
-                    showLineNumbers: true,
-                    tabSize: 2,
-                }}
-            />
+            <div style={styles.editorContainer}>
+                <AceEditor
+                    mode="html"
+                    theme="monokai"
+                    onChange={setCode}
+                    value={code}
+                    name="node-editor"
+                    width="100%"
+                    height="400px"
+                    fontSize={14}
+                    showPrintMargin={false}
+                    showGutter={true}
+                    highlightActiveLine={true}
+                    setOptions={{
+                        enableBasicAutocompletion: true,
+                        enableLiveAutocompletion: true,
+                        enableSnippets: true,
+                        showLineNumbers: true,
+                        tabSize: 2,
+                    }}
+                />
+            </div>
         </motion.div>
     );
 };
@@ -74,9 +77,13 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
     const networkRef = useRef(null);
     const [selectedNode, setSelectedNode] = useState(null);
     const [editorPosition, setEditorPosition] = useState({ x: 0, y: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+    const stabilizationTimeout = useRef(null);
 
     useEffect(() => {
         if (!containerRef.current) return;
+        
+        setIsLoading(true);
 
         const nodes = new DataSet();
         const edges = new DataSet();
@@ -197,17 +204,8 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
         networkRef.current.on('click', (params) => {
             if (params.nodes.length > 0) {
                 const clickedNode = nodes.get(params.nodes[0]);
-                const position = networkRef.current.getPositions([params.nodes[0]])[params.nodes[0]];
-                const canvasPosition = networkRef.current.canvasToDOM(position);
-                
-                setEditorPosition({
-                    x: canvasPosition.x,
-                    y: canvasPosition.y
-                });
                 setSelectedNode(clickedNode.refNode);
                 onNodeClick(clickedNode.refNode);
-            } else {
-                setSelectedNode(null);
             }
         });
 
@@ -279,14 +277,34 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
 
         document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
 
+        networkRef.current.on("stabilizationProgress", function(params) {
+            setIsLoading(true);
+            if (stabilizationTimeout.current) {
+                clearTimeout(stabilizationTimeout.current);
+            }
+        });
+
+        networkRef.current.on("stabilizationIterationsDone", function() {
+            stabilizationTimeout.current = setTimeout(() => {
+                setIsLoading(false);
+            }, 500);
+        });
+
+        stabilizationTimeout.current = setTimeout(() => {
+            setIsLoading(false);
+        }, 3000);
+
         return () => {
             if (networkRef.current) {
                 networkRef.current.destroy();
             }
+            if (stabilizationTimeout.current) {
+                clearTimeout(stabilizationTimeout.current);
+            }
             document.removeEventListener('touchmove', preventDefaultTouch);
             hammer.destroy();
         };
-    }, [htmlContent, onNodeClick]);
+    }, [htmlContent]);
 
     const handleSaveNodeEdit = (newCode) => {
         if (selectedNode && onNodeUpdate) {
@@ -302,19 +320,43 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
                 style={styles.graph}
                 className="vis-network"
             />
+            {isLoading && (
+                <div style={styles.loadingOverlay}>
+                    <LoadingSpinner size={50} inline={true} />
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        style={styles.loadingText}
+                    >
+                        Building DOM Tree...
+                    </motion.p>
+                </div>
+            )}
             <AnimatePresence>
                 {selectedNode && (
-                    <div style={{
-                        ...styles.editorWrapper,
-                        left: editorPosition.x,
-                        top: editorPosition.y
-                    }}>
-                        <NodeEditor
-                            node={selectedNode}
-                            onClose={() => setSelectedNode(null)}
-                            onSave={handleSaveNodeEdit}
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            style={styles.editorOverlay}
+                            onClick={() => setSelectedNode(null)}
                         />
-                    </div>
+                        <motion.div 
+                            style={styles.editorWrapper}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: "spring", damping: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <NodeEditor
+                                node={selectedNode}
+                                onClose={() => setSelectedNode(null)}
+                                onSave={handleSaveNodeEdit}
+                            />
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </div>
@@ -326,48 +368,120 @@ const styles = {
         position: 'relative',
         width: '100%',
         height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
     },
     graph: {
         width: '100%',
         height: '100%',
         background: darkModeColors.background,
         border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '4px'
+        borderRadius: '4px',
+        position: 'relative',
+    },
+    editorOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        zIndex: 999,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     editorWrapper: {
-        position: 'absolute',
+        position: 'fixed',
+        left: '50%',
+        top: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 1000,
+        width: '90%',
+        maxWidth: '600px',
+        maxHeight: '80%',
+        display: 'flex',
+        flexDirection: 'column',
+        '@media (max-width: 768px)': {
+            width: '95%',
+            maxWidth: 'none',
+            margin: '0',
+        },
+        '@media (max-height: 600px)': {
+            maxHeight: '90%',
+        },
     },
     nodeEditor: {
         backgroundColor: darkModeColors.foreground,
-        borderRadius: '8px',
+        borderRadius: '12px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
         border: `1px solid ${darkModeColors.border}`,
-        width: '400px',
+        width: '100%',
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: '100%',
     },
     nodeEditorHeader: {
-        padding: '12px',
+        padding: '16px',
         borderBottom: `1px solid ${darkModeColors.border}`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        backgroundColor: darkModeColors.foreground,
+        borderTopLeftRadius: '12px',
+        borderTopRightRadius: '12px',
     },
     nodeEditorTitle: {
         color: darkModeColors.text,
-        fontSize: '14px',
-        fontWeight: 500,
+        fontSize: '16px',
+        fontWeight: 600,
     },
     nodeEditorActions: {
         display: 'flex',
         gap: '8px',
     },
     nodeEditorButton: {
-        padding: '4px',
+        padding: '8px',
+        borderRadius: '8px',
+        transition: 'all 0.2s ease',
         '&:hover': {
             backgroundColor: `${darkModeColors.hover}80`,
+            transform: 'scale(1.05)',
         },
+        '&:active': {
+            transform: 'scale(0.95)',
+        },
+    },
+    editorContainer: {
+        flex: 1,
+        minHeight: 0,
+        maxHeight: 'calc(100% - 60px)',
+        overflow: 'auto',
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(30, 31, 34, 0.8)',
+        zIndex: 100,
+        backdropFilter: 'blur(4px)',
+        borderRadius: '4px',
+    },
+    loadingText: {
+        color: darkModeColors.text,
+        marginTop: '16px',
+        fontSize: '14px',
+        fontWeight: 500,
     },
 };
 

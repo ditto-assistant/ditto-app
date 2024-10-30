@@ -280,7 +280,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setIsEditorReady(true);
     };
 
-    const handleNodeUpdate = (node, newCode) => {
+    const onNodeClick = useCallback((node) => {
+        setSelectedNode(node);
+    }, []);
+
+    const handleNodeUpdate = useCallback((node, newCode) => {
         try {
             // Parse the new code
             const parser = new DOMParser();
@@ -301,7 +305,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         } catch (error) {
             console.error('Error updating node:', error);
         }
-    };
+    }, [code]);
 
     const findCorrespondingNode = (doc, targetNode) => {
         const walk = (node) => {
@@ -470,9 +474,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         ) : (
                             <DOMTreeViewer 
                                 htmlContent={code}
-                                onNodeClick={(node) => {
-                                    setSelectedNode(node);
-                                }}
+                                onNodeClick={onNodeClick}
                                 onNodeUpdate={handleNodeUpdate}
                             />
                         )}
