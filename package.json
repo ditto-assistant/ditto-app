@@ -22,6 +22,8 @@
     "react-router-dom": "^6.27.0",
     "react-syntax-highlighter": "^15.6.1",
     "resize-observer-polyfill": "^1.5.1",
+    "vis-data": "^7.1.9",
+    "vis-network": "^9.1.9",
     "vite-plugin-pwa": "^0.20.5",
     "web-vitals": "^2.1.4",
     "workbox-expiration": "^6.6.1",
