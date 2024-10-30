@@ -205,6 +205,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             const match = response.match(codeBlockRegex);
             if (match) {
                 const updatedCode = match[1].trim();
+                
+                // Add current state to history before updating
+                const newHistory = editHistory.slice(0, historyIndex + 1);
+                newHistory.push({ content: updatedCode });
+                setEditHistory(newHistory);
+                setHistoryIndex(newHistory.length - 1);
+                
+                // Update the code
                 setCode(updatedCode);
                 setPreviewKey(prev => prev + 1);
             }
