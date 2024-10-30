@@ -9,12 +9,13 @@ import { DittoActivationProvider } from './hooks/useDittoActivation';
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import Login from './screens/login';
 import './GlobalStyles.css';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const ScriptsScreen = lazy(() => import("./screens/ScriptsScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
-const Settings = lazy(() => import('./screens/settings'));
+const Settings = lazy(() => import('./screens/Settings'));
 const Paypal = lazy(() => import("./screens/paypal"));
 
 const router = createBrowserRouter(
@@ -44,7 +45,9 @@ export default function App() {
             <IntentRecognitionProvider>
                 <DittoActivationProvider>
                     <BalanceProvider>
-                        <RouterProvider router={router} />
+                        <ThemeProvider>
+                            <RouterProvider router={router} />
+                        </ThemeProvider>
                     </BalanceProvider>
                 </DittoActivationProvider>
             </IntentRecognitionProvider>

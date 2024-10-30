@@ -3,18 +3,32 @@
     /* Colors */
     --primary-color: #7289da;
     --background-color: #36393f;
+    --text-color: #dcddde;
+    --theme-background: linear-gradient(to bottom, 
+        var(--theme-color-1, #4a0080) 0%,
+        var(--theme-color-2, #000066) 40%,
+        var(--theme-color-3, #1a1a1a) 80%,
+        var(--theme-color-4, #000000) 100%
+    );
     /* ... all other variables ... */
 }
 
 /* Base Styles */
 body, html {
-    background: linear-gradient(to bottom, 
-        #4a0080 0%,
-        #000066 40%,
-        #1a1a1a 80%,
-        #000000 100%
-    );
-    /* ... rest of base styles ... */
+    background: var(--theme-background);
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    touch-action: none;
+}
+
+.App {
+    background: var(--theme-background);
+    /* ... other styles ... */
 }
 
 /* ... rest of global styles ... */ 

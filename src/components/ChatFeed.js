@@ -85,7 +85,7 @@ export default function ChatFeed({
 
   useEffect(() => {
     // Cache Ditto avatar
-    fetch(DEFAULT_DITTO_AVATAR)  // Updated path
+    fetch(DEFAULT_DITTO_AVATAR)
         .then(response => response.blob())
         .then(blob => {
             const reader = new FileReader();
@@ -98,50 +98,29 @@ export default function ChatFeed({
         })
         .catch(error => console.error('Error caching Ditto avatar:', error));
 
-    // Cache user avatar
-    if (auth.currentUser) {
-      const photoURL = auth.currentUser.photoURL;
-      if (photoURL) {
-        fetch(photoURL)
-          .then(response => response.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = reader.result;
-              localStorage.setItem(USER_AVATAR_KEY, base64data);
-              setProfilePic(base64data);
-            };
-            reader.readAsDataURL(blob);
-          })
-          .catch(() => {
-            const fallbackURL = '../user_placeholder.png';
-            fetch(fallbackURL)
-              .then(response => response.blob())
-              .then(blob => {
+    // Get user's Google profile picture
+    if (auth.currentUser?.photoURL) {
+        fetch(auth.currentUser.photoURL)
+            .then(response => response.blob())
+            .then(blob => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  const base64data = reader.result;
-                  localStorage.setItem(USER_AVATAR_KEY, base64data);
-                  setProfilePic(base64data);
+                    const base64data = reader.result;
+                    localStorage.setItem(USER_AVATAR_KEY, base64data);
+                    setProfilePic(base64data);
                 };
                 reader.readAsDataURL(blob);
-              });
-          });
-      } else {
-        fetch('../user_placeholder.png')
-          .then(response => response.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = reader.result;
-              localStorage.setItem(USER_AVATAR_KEY, base64data);
-              setProfilePic(base64data);
-            };
-            reader.readAsDataURL(blob);
-          });
-      }
+            })
+            .catch(error => {
+                console.error('Error caching user avatar:', error);
+                // Fallback to placeholder if Google photo fails
+                setProfilePic('../user_placeholder.png');
+            });
+    } else {
+        // Use placeholder if no Google photo available
+        setProfilePic('../user_placeholder.png');
     }
-  }, []);
+}, []);
 
   useEffect(() => {
     const handleClickAway = (e) => {

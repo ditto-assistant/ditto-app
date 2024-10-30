@@ -11,6 +11,7 @@
     --message-spacing: 16px;
     --content-padding: 12px 18px;
     --max-content-width: 800px;
+    --chat-bubble-sent-color: #1a73e8;
 }
 
 .chat-feed {
@@ -200,7 +201,7 @@
     border-top-right-radius: 25px;
     border-bottom-left-radius: 25px;
     border-bottom-right-radius: 5px;
-    background-color: #1a73e8;
+    background-color: var(--chat-bubble-sent-color);
     margin-left: 40px;
 }
 
