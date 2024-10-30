@@ -27,8 +27,9 @@ const typingIndicatorCSS = `
 .typing-indicator {
     display: flex;
     align-items: center;
-    padding: 0 8px;
+    padding: 8px;
     height: 20px;
+    margin-top: 8px;
 }
 
 .typing-dot {
