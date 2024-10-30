@@ -4,8 +4,14 @@ import { DataSet } from 'vis-data';
 import AceEditor from 'react-ace';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconButton } from '@mui/material';
-import { FaTimes, FaCheck } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaComments, FaUndo, FaRedo, FaHistory } from 'react-icons/fa';
 import { LoadingSpinner } from './LoadingSpinner';
+import { promptLLM } from '../api/LLM';
+import { getModelPreferencesFromFirestore } from '../control/firebase';
+import { htmlTemplate, htmlSystemTemplate } from '../ditto/templates/htmlTemplate';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -17,19 +23,129 @@ const darkModeColors = {
     border: '#1E1F22',
 };
 
-const NodeEditor = ({ node, onClose, onSave }) => {
+const typingIndicatorCSS = `
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    height: 20px;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    margin: 0 2px;
+    background-color: ${darkModeColors.textSecondary};
+    border-radius: 50%;
+    animation: bounce 0.6s infinite alternate;
+    animation-delay: calc(var(--i) * 0.2s);
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+`;
+
+const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) => {
     const [code, setCode] = useState(node.outerHTML);
+    const [chatMessages, setChatMessages] = useState([]);
+    const [chatInput, setChatInput] = useState('');
+    const [modelPreferences, setModelPreferences] = useState({ programmerModel: 'claude-3-5-sonnet' });
+    const userID = localStorage.getItem('userID');
+    const [showChat, setShowChat] = useState(false);
+    const messagesEndRef = useRef(null);
+    const [isTyping, setIsTyping] = useState(false);
+    const [codeBase, setCodeBase] = useState(htmlContent);
+
+    useEffect(() => {
+        // Fetch user's preferred programmer model
+        getModelPreferencesFromFirestore(userID).then(prefs => {
+            setModelPreferences(prefs);
+        });
+    }, [userID]);
+
+    useEffect(() => {
+        // Inject the CSS
+        const style = document.createElement('style');
+        style.textContent = typingIndicatorCSS;
+        document.head.appendChild(style);
+
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
+
+    const findCorrespondingNode = (rootNode, targetNode) => {
+        const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ELEMENT);
+        let currentNode = walker.currentNode;
+
+        while (currentNode) {
+            if (currentNode.isEqualNode(targetNode)) {
+                return currentNode;
+            }
+            currentNode = walker.nextNode();
+        }
+        return null;
+    };
+
+    const handleSendMessage = async () => {
+        if (!chatInput.trim()) return;
+        const userMessage = chatInput.trim();
+        setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setChatInput('');
+        setIsTyping(true);
+
+        // Construct the prompt using htmlTemplate
+        const snippet = "```html\n" + node.outerHTML + "\n```";
+        const taskDescription = userMessage;
+        const fullTaskDescription = "The user has selected this section of the code to focus on:\n" + snippet + ". The user has also provided the following instructions:\n" + taskDescription;
+        
+        const constructedPrompt = htmlTemplate(fullTaskDescription, htmlContent);
+        // Log the prompt in green
+        console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
+        const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
+        // Log the response in yellow
+        console.log('\x1b[33m%s\x1b[0m', response);
+        setIsTyping(false);
+
+        // Extract code between ```html and ```
+        const codeBlockRegex = /```html\n([\s\S]*?)```/;
+        const match = response.match(codeBlockRegex);
+        let updatedCode = match ? match[1].trim() : response.trim();
+
+        // Update the parent's code state directly with the full HTML
+        if (updateHtmlContent) {
+            updateHtmlContent(node, updatedCode);
+        }
+
+        // Close the editor
+        onClose();
+    };
+
+    useEffect(() => {
+        // Scroll to bottom when new message is added
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [chatMessages]);
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            style={styles.nodeEditor}
-        >
+        <motion.div style={styles.nodeEditor}>
             <div style={styles.nodeEditorHeader}>
                 <span style={styles.nodeEditorTitle}>{node.nodeName.toLowerCase()}</span>
                 <div style={styles.nodeEditorActions}>
+                    <IconButton 
+                        size="small"
+                        onClick={() => setShowChat(prev => !prev)}
+                        style={styles.nodeEditorButton}
+                    >
+                        <FaComments size={16} color={showChat ? darkModeColors.primary : darkModeColors.textSecondary} />
+                    </IconButton>
                     <IconButton 
                         size="small" 
                         onClick={() => onSave(code)}
@@ -50,11 +166,13 @@ const NodeEditor = ({ node, onClose, onSave }) => {
                 <AceEditor
                     mode="html"
                     theme="monokai"
-                    onChange={setCode}
+                    onChange={(newCode) => {
+                        setCode(newCode);
+                    }}
                     value={code}
                     name="node-editor"
                     width="100%"
-                    height="400px"
+                    height={showChat ? '200px' : '400px'}
                     fontSize={14}
                     showPrintMargin={false}
                     showGutter={true}
@@ -68,6 +186,69 @@ const NodeEditor = ({ node, onClose, onSave }) => {
                     }}
                 />
             </div>
+            <AnimatePresence>
+                {showChat && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        style={styles.chatContainer}
+                    >
+                        <div style={styles.chatMessages}>
+                            {chatMessages.map((msg, index) => (
+                                <div key={index} style={msg.role === 'user' ? styles.userMessage : styles.assistantMessage}>
+                                    <ReactMarkdown
+                                        children={msg.content}
+                                        components={{
+                                            code({node, inline, className, children, ...props}) {
+                                                const match = /language-(\w+)/.exec(className || '');
+                                                return !inline && match ? (
+                                                    <SyntaxHighlighter
+                                                        style={vscDarkPlus}
+                                                        language={match[1]}
+                                                        PreTag="div"
+                                                        {...props}
+                                                    >
+                                                        {String(children).replace(/\n$/, '')}
+                                                    </SyntaxHighlighter>
+                                                ) : (
+                                                    <code className={className} {...props}>
+                                                        {children}
+                                                    </code>
+                                                );
+                                            },
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                            {isTyping && (
+                                <div className="typing-indicator">
+                                    <div className="typing-dot" style={{ '--i': 0 }} />
+                                    <div className="typing-dot" style={{ '--i': 1 }} />
+                                    <div className="typing-dot" style={{ '--i': 2 }} />
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+                        <div style={styles.chatInputContainer}>
+                            <input
+                                type="text"
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                placeholder="Type your message..."
+                                style={styles.chatInput}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage();
+                                    }
+                                }}
+                            />
+                            <button onClick={handleSendMessage} style={styles.sendButton}>Send</button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
@@ -76,7 +257,6 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
     const containerRef = useRef(null);
     const networkRef = useRef(null);
     const [selectedNode, setSelectedNode] = useState(null);
-    const [editorPosition, setEditorPosition] = useState({ x: 0, y: 0 });
     const [isLoading, setIsLoading] = useState(true);
     const stabilizationTimeout = useRef(null);
 
@@ -336,9 +516,9 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
         };
     }, [htmlContent]);
 
-    const handleSaveNodeEdit = (newCode) => {
-        if (selectedNode && onNodeUpdate) {
-            onNodeUpdate(selectedNode, newCode);
+    const handleNodeUpdate = (node, newCode) => {
+        if (onNodeUpdate) {
+            onNodeUpdate(node, newCode);
         }
         setSelectedNode(null);
     };
@@ -364,30 +544,30 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
             )}
             <AnimatePresence>
                 {selectedNode && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            style={styles.editorOverlay}
-                            onClick={() => setSelectedNode(null)}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={styles.editorOverlay}
+                        onClick={() => setSelectedNode(null)}
+                    >
+                        <motion.div 
+                            style={styles.editorWrapper}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: "spring", damping: 20 }}
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <motion.div 
-                                style={styles.editorWrapper}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ type: "spring", damping: 20 }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <NodeEditor
-                                    node={selectedNode}
-                                    onClose={() => setSelectedNode(null)}
-                                    onSave={handleSaveNodeEdit}
-                                />
-                            </motion.div>
+                            <NodeEditor
+                                node={selectedNode}
+                                onClose={() => setSelectedNode(null)}
+                                onSave={handleNodeUpdate}
+                                htmlContent={htmlContent}
+                                updateHtmlContent={onNodeUpdate}
+                            />
                         </motion.div>
-                    </>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
@@ -469,6 +649,7 @@ const styles = {
     },
     nodeEditorActions: {
         display: 'flex',
+        alignItems: 'center',
         gap: '8px',
     },
     nodeEditorButton: {
@@ -509,6 +690,80 @@ const styles = {
         marginTop: '16px',
         fontSize: '14px',
         fontWeight: 500,
+    },
+    chatContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: darkModeColors.foreground,
+        borderTop: `1px solid ${darkModeColors.border}`,
+        height: '200px',
+        overflow: 'hidden',
+    },
+    chatMessages: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '8px',
+    },
+    userMessage: {
+        alignSelf: 'flex-end',
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        padding: '8px',
+        borderRadius: '12px',
+        marginBottom: '4px',
+        maxWidth: '80%',
+    },
+    assistantMessage: {
+        alignSelf: 'flex-start',
+        backgroundColor: darkModeColors.secondary,
+        color: darkModeColors.text,
+        padding: '8px',
+        borderRadius: '12px',
+        marginBottom: '4px',
+        maxWidth: '80%',
+    },
+    chatInputContainer: {
+        display: 'flex',
+        borderTop: `1px solid ${darkModeColors.border}`,
+        padding: '8px',
+        backgroundColor: darkModeColors.background,
+    },
+    chatInput: {
+        flex: 1,
+        padding: '8px 12px',
+        border: `1px solid ${darkModeColors.border}`,
+        borderRadius: '6px',
+        outline: 'none',
+        backgroundColor: '#1A1B1E', // Slightly darker than background
+        color: darkModeColors.text,
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        marginRight: '8px',
+        '&:hover': {
+            borderColor: `${darkModeColors.primary}50`,
+        },
+        '&:focus': {
+            borderColor: darkModeColors.primary,
+            boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
+        },
+    },
+    sendButton: {
+        padding: '8px 16px',
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        fontWeight: '500',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+            transform: 'translateY(-1px)',
+        },
+        '&:active': {
+            transform: 'translateY(0)',
+        },
     },
 };
 

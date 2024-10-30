@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
@@ -158,6 +158,27 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     // Add state to track editor initialization
     const [isEditorReady, setIsEditorReady] = useState(false);
 
+    // Add state for edit history
+    const [editHistory, setEditHistory] = useState([{ content: script.content }]);
+    const [historyIndex, setHistoryIndex] = useState(0);
+
+    // Add undo/redo handlers
+    const handleUndo = () => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            setCode(editHistory[newIndex].content);
+        }
+    };
+
+    const handleRedo = () => {
+        if (historyIndex < editHistory.length - 1) {
+            const newIndex = historyIndex + 1;
+            setHistoryIndex(newIndex);
+            setCode(editHistory[newIndex].content);
+        }
+    };
+
     const handleRunPreview = () => {
         setPreviewKey(prev => prev + 1);
     };
@@ -286,26 +307,25 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     const handleNodeUpdate = useCallback((node, newCode) => {
         try {
-            // Parse the new code
+            // Create a new document with the current code
             const parser = new DOMParser();
-            const doc = parser.parseFromString(newCode, 'text/html');
-            const newNode = doc.body.firstChild;
-
-            // Create a temporary container with the current code
-            const tempDoc = parser.parseFromString(code, 'text/html');
+            const doc = parser.parseFromString(code, 'text/html');
             
-            // Find and replace the corresponding node in the full document
-            const oldNode = findCorrespondingNode(tempDoc, node);
-            if (oldNode && newNode) {
-                oldNode.replaceWith(newNode);
-                
-                // Update the full code
-                setCode(tempDoc.documentElement.outerHTML);
-            }
+            // Update the code state directly with the new code
+            setCode(newCode);
+            
+            // Add to edit history
+            const newHistory = editHistory.slice(0, historyIndex + 1);
+            newHistory.push({ content: newCode });
+            setEditHistory(newHistory);
+            setHistoryIndex(newHistory.length - 1);
+            
+            // Force preview refresh
+            setPreviewKey(prev => prev + 1);
         } catch (error) {
             console.error('Error updating node:', error);
         }
-    }, [code]);
+    }, [code, editHistory, historyIndex]);
 
     const findCorrespondingNode = (doc, targetNode) => {
         const walk = (node) => {
@@ -369,6 +389,25 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             </IconButton>
                         </Tooltip>
                     </div>
+                    <div style={styles.divider} />
+                    <Tooltip title="Undo">
+                        <IconButton
+                            onClick={handleUndo}
+                            disabled={historyIndex === 0}
+                            sx={styles.iconButton}
+                        >
+                            <FaUndo size={16} color={historyIndex === 0 ? darkModeColors.textSecondary : darkModeColors.text} />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Redo">
+                        <IconButton
+                            onClick={handleRedo}
+                            disabled={historyIndex === editHistory.length - 1}
+                            sx={styles.iconButton}
+                        >
+                            <FaRedo size={16} color={historyIndex === editHistory.length - 1 ? darkModeColors.textSecondary : darkModeColors.text} />
+                        </IconButton>
+                    </Tooltip>
                     <div style={styles.divider} />
                     <Tooltip title="Run">
                         <IconButton
@@ -702,10 +741,7 @@ const styles = {
         width: '1px',
         height: '24px',
         backgroundColor: darkModeColors.border,
-        margin: '0 4px',
-        '@media (max-width: 768px)': {
-            height: '20px',
-        },
+        margin: '0 8px',
     },
     searchOverlayBackdrop: {
         position: 'fixed',
