@@ -9,56 +9,87 @@ const styles = {
     container: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
         minHeight: '100vh',
+        height: 'calc(var(--vh, 1vh) * 100)',
         backgroundColor: '#2f3136',
         color: 'white',
-        overflow: 'hidden', // Prevent scrolling
-        width: '100vw', // Full width of the viewport
+        width: '100%',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        overflow: 'hidden',
     },
     appBar: {
-        backgroundColor: '#202225',
-        borderRadius: '12px',
-        margin: '6px', // Reduced margin for compactness
-        boxShadow: 'none', // Removed shadow for cleaner look
-        width: 'calc(100% - 12px)', // Adjusted width based on margin
+        backgroundColor: 'rgba(32, 34, 37, 0.9)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: 'none',
+        width: '100%',
     },
     toolbar: {
-        minHeight: '48px', // Reduced height for compactness
-        justifyContent: 'space-between',
-    },
-    iframeContainer: {
-        width: '100%',
-        height: 'calc(100vh - 60px)', // Account for AppBar height
-        border: 'none',
-        borderRadius: '12px', // Added rounded corners
-        overflow: 'hidden', // Ensure content respects border radius
-        marginTop: '-0px', // Aligns edges with AppBar
+        minHeight: '60px',
+        padding: '0 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
     },
     backButton: {
-        margin: '0 10px',
-        backgroundColor: '#7289da',
-        color: 'white',
-        borderRadius: '8px', // Square with rounded corners
-        width: '36px', // Slightly smaller size for compactness
-        height: '36px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        color: '#dcddde',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.3s ease',
+        padding: '8px',
+        borderRadius: '50%',
         '&:hover': {
-            backgroundColor: '#5b6eae',
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            transform: 'scale(1.1)',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
         },
+    },
+    title: {
+        fontSize: '1.1rem',
+        fontWeight: '600',
+        color: '#dcddde',
+        flexGrow: 1,
+        fontFamily: 'Inter, sans-serif',
+    },
+    fullscreenButton: {
+        color: '#dcddde',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.3s ease',
+        padding: '8px',
+        borderRadius: '50%',
+        '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            transform: 'scale(1.1)',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+        },
+    },
+    iframeContainer: {
+        flex: 1,
+        width: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    iframe: {
+        width: '100%',
+        height: '100%',
+        border: 'none',
+        position: 'absolute',
+        top: 0,
+        left: 0,
     },
     fullscreenMobileNav: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#36393f',
-        padding: '10px',
-        position: 'absolute',
+        backgroundColor: 'rgba(32, 34, 37, 0.9)',
+        backdropFilter: 'blur(10px)',
+        padding: '8px 20px',
+        position: 'fixed',
         bottom: 0,
         width: '100%',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        height: '60px',
     },
 };
 
@@ -80,6 +111,22 @@ const DittoCanvas = () => {
 
         return () => {
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        const setVH = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', setVH);
+
+        return () => {
+            window.removeEventListener('resize', setVH);
+            window.removeEventListener('orientationchange', setVH);
         };
     }, []);
 
@@ -109,10 +156,14 @@ const DittoCanvas = () => {
                         >
                             <ArrowBackIcon />
                         </IconButton>
-                        <Typography variant="h6" component="div" style={{ fontWeight: 500 }}>
+                        <Typography variant="h6" style={styles.title}>
                             {scriptName}
                         </Typography>
-                        <IconButton color="inherit" onClick={toggleFullscreen}>
+                        <IconButton 
+                            style={styles.fullscreenButton}
+                            onClick={toggleFullscreen}
+                            aria-label="fullscreen"
+                        >
                             <FullscreenIcon />
                         </IconButton>
                     </Toolbar>
@@ -122,7 +173,9 @@ const DittoCanvas = () => {
                 <iframe
                     title={scriptName}
                     srcDoc={script}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    style={styles.iframe}
+                    scrolling="auto"
+                    sandbox="allow-scripts allow-same-origin"
                 />
             </div>
             {isFullscreen && isMobile && (
@@ -133,10 +186,13 @@ const DittoCanvas = () => {
                     >
                         <ArrowBackIcon />
                     </IconButton>
-                    <Typography variant="h6" component="div" style={{ flexGrow: 1, textAlign: 'center' }}>
+                    <Typography variant="h6" style={styles.title}>
                         {scriptName}
                     </Typography>
-                    <IconButton color="inherit" onClick={toggleFullscreen}>
+                    <IconButton 
+                        style={styles.fullscreenButton}
+                        onClick={toggleFullscreen}
+                    >
                         <FullscreenExitIcon />
                     </IconButton>
                 </div>
