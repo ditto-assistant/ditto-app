@@ -182,7 +182,7 @@ export const grabConversationHistory = async (userID) => {
     let history = [];
     // const querySnapshot = await getDocs(collection(db, "memory", userID, "conversations"));
     // re-write using the "where" clause to get the most recent 30 documents
-    const q = query(collection(db, "memory", userID, "conversations"), orderBy('timestamp', 'desc'), limit(30));
+    const q = query(collection(db, "memory", userID, "conversations"), orderBy('timestamp', 'desc'), limit(20));
     const querySnapshot = await getDocs(q);
     // check if the user has any history
     if (querySnapshot.empty) {

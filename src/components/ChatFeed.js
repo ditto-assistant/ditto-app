@@ -138,24 +138,24 @@ export default function ChatFeed({
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
-      if (quick) {
-        bottomRef.current.scrollIntoView();
-      } else {
-        bottomRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
+      const scrollOptions = quick ? {} : { behavior: 'smooth' };
+      bottomRef.current.scrollIntoView(scrollOptions);
     }
   };
 
   useEffect(() => {
     if (startAtBottom) {
-      scrollToBottomOfFeed(true);
-    } else {
-      if (scrollToBottom) {
-        const timeoutId = setTimeout(() => {
-          scrollToBottomOfFeed();
-        }, 500);
-        return () => clearTimeout(timeoutId);
-      }
+      // Wait for StatusBar animation to complete before scrolling
+      const timeoutId = setTimeout(() => {
+        scrollToBottomOfFeed(false); // Use smooth scroll for better UX
+      }, 400); // Delay scroll until after StatusBar animation (300ms + 100ms buffer)
+      
+      return () => clearTimeout(timeoutId);
+    } else if (scrollToBottom) {
+      const timeoutId = setTimeout(() => {
+        scrollToBottomOfFeed(false);
+      }, 500);
+      return () => clearTimeout(timeoutId);
     }
   }, [messages, scrollToBottom]);
 
@@ -1110,6 +1110,33 @@ export default function ChatFeed({
         return sortDirection === 'asc' ? -comparison : comparison;
       }
     });
+  };
+
+  // Add a new useEffect to handle window resize events
+  useEffect(() => {
+    const handleResize = () => {
+      if (messages.length > 0) {
+        // Use immediate scroll for resize events
+        scrollToBottomOfFeed(true);
+      }
+    };
+
+    const debouncedResize = debounce(handleResize, 100);
+    window.addEventListener('resize', debouncedResize);
+    return () => window.removeEventListener('resize', debouncedResize);
+  }, [messages]);
+
+  // Add debounce utility function
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   };
 
   return (

@@ -8,6 +8,17 @@
   width: 100%;
   max-width: none;
   box-sizing: border-box;
+  transition: padding-top 0.3s ease-out;
+}
+
+/* Add smooth scrolling behavior to the container */
+.chat-feed {
+  scroll-behavior: smooth;
+}
+
+/* Ensure smooth animation for the bottom ref */
+.chat-feed > div:last-child {
+  transition: margin-top 0.3s ease-out;
 }
 
 .message-container {

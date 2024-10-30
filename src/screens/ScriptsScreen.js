@@ -694,9 +694,23 @@ const ScriptsScreen = () => {
                         variant="text"
                         onClick={() => navigate("/")}
                         style={styles.backButton}
-                        startIcon={<FaArrowLeft />}
+                        startIcon={
+                            <motion.div
+                                whileHover={{ x: -3 }}
+                                whileTap={{ scale: 0.97 }}
+                                style={{ color: darkModeColors.primary, display: 'flex', alignItems: 'center' }}
+                            >
+                                <FaArrowLeft />
+                            </motion.div>
+                        }
                     >
-                        BACK
+                        <motion.span
+                            initial={{ opacity: 0.9 }}
+                            whileHover={{ opacity: 1 }}
+                            style={{ marginLeft: '4px' }}
+                        >
+                            BACK
+                        </motion.span>
                     </Button>
                     <h2 style={styles.headerText}>Scripts</h2>
                 </header>
@@ -832,11 +846,18 @@ const styles = {
     backButton: {
         position: 'absolute',
         left: '15px',
-        color: darkModeColors.primary,
-        fontWeight: 'bold',
+        color: darkModeColors.text,
+        fontWeight: '600',
+        fontSize: '14px',
+        padding: '8px 16px',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        transition: 'all 0.2s ease',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
         '&:hover': {
-            backgroundColor: 'transparent',
-            color: darkModeColors.text,
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
         },
     },
     content: {
