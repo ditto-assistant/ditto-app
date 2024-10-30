@@ -62,7 +62,7 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
     const messagesEndRef = useRef(null);
     const [isTyping, setIsTyping] = useState(false);
     const [codeBase, setCodeBase] = useState(htmlContent);
-    const [wrapEnabled, setWrapEnabled] = useState(false);
+    const [wrapEnabled, setWrapEnabled] = useState(true);
 
     useEffect(() => {
         // Fetch user's preferred programmer model

@@ -943,12 +943,10 @@ const ScriptsScreen = () => {
                 </div>
 
                 <div style={styles.searchSortContainer}>
-                    <div style={{ width: '100%', maxWidth: '600px' }}>
-                        <SearchBar 
-                            searchTerm={searchTerm}
-                            onSearchChange={setSearchTerm}
-                        />
-                    </div>
+                    <SearchBar 
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                    />
                     <SortButton />
                 </div>
 
@@ -1433,19 +1431,14 @@ const styles = {
     },
     searchSortContainer: {
         display: 'flex',
-        flexWrap: 'wrap', // Allow items to wrap
         alignItems: 'center',
-        justifyContent: 'center', // Center items
         gap: '16px',
         padding: '0 20px',
         marginTop: '16px',
-        width: '100%',
-        boxSizing: 'border-box',
     },
     sortButton: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
         gap: '8px',
         padding: '8px 16px',
         backgroundColor: darkModeColors.cardBackground,
@@ -1455,8 +1448,6 @@ const styles = {
         color: darkModeColors.textSecondary,
         fontSize: '14px',
         transition: 'all 0.2s ease',
-        minWidth: '140px', // Ensure consistent width
-        maxWidth: '200px',
         '&:hover': {
             backgroundColor: `${darkModeColors.primary}15`,
             borderColor: darkModeColors.primary,

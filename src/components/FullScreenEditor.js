@@ -170,7 +170,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [historyIndex, setHistoryIndex] = useState(0);
 
     // Add wrapEnabled state
-    const [wrapEnabled, setWrapEnabled] = useState(false);
+    const [wrapEnabled, setWrapEnabled] = useState(true);
 
     // Add undo/redo handlers
     const handleUndo = () => {
