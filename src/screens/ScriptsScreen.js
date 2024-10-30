@@ -17,6 +17,7 @@ import { motion } from 'framer-motion';
 import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
 import SearchBar from '../components/SearchBar';
 import AddScriptOverlay from '../components/AddScriptOverlay';
+import OpenSCADViewer from '../components/OpenSCADViewer';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -67,6 +68,8 @@ const ScriptsScreen = () => {
     const [activeTab, setActiveTab] = useState('webApps');
 
     const [searchTerm, setSearchTerm] = useState('');
+
+    const [openScadViewer, setOpenScadViewer] = useState(null);
 
     const filterScripts = (scripts, searchTerm) => {
         if (!searchTerm) return scripts;
@@ -470,6 +473,31 @@ const ScriptsScreen = () => {
                                             />
                                         )}
                                     </motion.div>
+                                    {category === 'webApps' ? (
+                                        <motion.button 
+                                            whileHover={{ scale: 1.05, backgroundColor: darkModeColors.secondary }}
+                                            whileTap={{ scale: 0.95 }}
+                                            style={styles.editButton} 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditScript(currentScript);
+                                            }}
+                                        >
+                                            Edit
+                                        </motion.button>
+                                    ) : (
+                                        <motion.button 
+                                            whileHover={{ scale: 1.05, backgroundColor: darkModeColors.secondary }}
+                                            whileTap={{ scale: 0.95 }}
+                                            style={styles.editButton} 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenScadViewer(currentScript);
+                                            }}
+                                        >
+                                            Edit
+                                        </motion.button>
+                                    )}
                                     <motion.button 
                                         whileHover={{ scale: 1.05, backgroundColor: darkModeColors.secondary }}
                                         whileTap={{ scale: 0.95 }}
@@ -525,16 +553,6 @@ const ScriptsScreen = () => {
                                            setMenuPosition(null);
                                        }}>
                                         Rename
-                                    </p>
-                                    <p style={styles.cardMenuItem} 
-                                       onClick={(e) => { 
-                                           e.preventDefault();
-                                           e.stopPropagation();
-                                           handleEditScript(currentScript); 
-                                           setActiveCard(null); 
-                                           setMenuPosition(null);
-                                       }}>
-                                        Edit
                                     </p>
                                     <p style={styles.cardMenuItem} 
                                        onClick={(e) => { 
@@ -764,6 +782,12 @@ const ScriptsScreen = () => {
                 onConfirm={() => handleDeleteScript(deleteConfirmation.category, deleteConfirmation.script)}
                 scriptName={deleteConfirmation.script?.name}
             />
+            {openScadViewer && (
+                <OpenSCADViewer
+                    script={openScadViewer}
+                    onClose={() => setOpenScadViewer(null)}
+                />
+            )}
         </div>
     );
 }
@@ -1178,6 +1202,18 @@ const styles = {
         margin: '0 auto',
         lineHeight: '1.5',
         wordWrap: 'break-word',
+    },
+    editButton: {
+        padding: '8px 16px',
+        backgroundColor: '#4F545C', // A muted slate color that complements the theme
+        color: darkModeColors.text,
+        borderRadius: '8px',
+        cursor: 'pointer',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '600',
+        transition: 'all 0.2s ease',
+        marginRight: '8px',
     },
 };
 
