@@ -154,7 +154,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [showToast, setShowToast] = useState(false);
     const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
-    const [viewMode, setViewMode] = useState('tree'); // Changed from 'code' to 'tree'
+    const [viewMode, setViewMode] = useState('code'); // Changed from 'tree' to 'code'
     const [selectedNode, setSelectedNode] = useState(null);
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('success'); // 'success' or 'warning'
