@@ -204,20 +204,24 @@ const ScriptsScreen = () => {
         }, 50);
     };
 
-    const handleSaveEdit = (category, id) => {
-        setScripts((prevState) => ({
-            ...prevState,
-            [category]: prevState[category].map((s) =>
-                s.id === id ? { ...s, content: temporaryEditContent } : s
-            ),
-        }));
-        setEditScript(null);
-        const userID = localStorage.getItem("userID");
-        saveScriptToFirestore(userID, temporaryEditContent, category, scripts[category].find((s) => s.id === id).name, true);
-        // update working on script 
+    const handleSaveEdit = async (category, id) => {
+        if (code !== node.outerHTML) {
+            await onSave(node, code); // Ensure the save is awaited
+        }
+        onClose();
+
+        // Define newName correctly by retrieving the updated script's name
+        const updatedScript = scripts[category].find(s => s.id === id);
+        const newName = updatedScript.name;
+
+        // Update workingOnScript in localStorage with the new script details
         const workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
-        if (workingOnScript && workingOnScript.script === scripts[category].find((s) => s.id === id).name) {
-            localStorage.setItem("workingOnScript", JSON.stringify({ script: workingOnScript.script, contents: temporaryEditContent, scriptType: category }));
+        if (workingOnScript && workingOnScript.script === newName) {
+            localStorage.setItem("workingOnScript", JSON.stringify({ 
+                script: newName, 
+                contents: code, 
+                scriptType: category 
+            }));
         }
     };
 
@@ -297,40 +301,56 @@ const ScriptsScreen = () => {
         const userID = localStorage.getItem("userID");
 
         try {
-            // Determine the next version number
-            const currentScripts = scripts[category];
             const baseName = fullScreenEdit.name.split('-v')[0];
-            const versionNumbers = currentScripts
-                .filter(script => script.name.startsWith(baseName))
-                .map(script => {
-                    const match = script.name.match(/-v(\d+)$/);
-                    return match ? parseInt(match[1], 10) : 0;
-                });
+            
+            // Only create a backup if we're not already editing the base version
+            if (fullScreenEdit.name !== baseName) {
+                // Determine the next version number for the old script
+                const currentScripts = scripts[category];
+                const versionNumbers = currentScripts
+                    .filter(script => script.name.startsWith(baseName))
+                    .map(script => {
+                        const match = script.name.match(/-v(\d+)$/);
+                        return match ? parseInt(match[1], 10) : 0;
+                    });
 
-            const nextVersion = Math.max(...versionNumbers) + 1;
-            const newName = `${baseName}-v${nextVersion}`;
+                const nextVersion = Math.max(...versionNumbers) + 1;
+                const oldVersionName = `${baseName}-v${nextVersion}`;
 
-            // Save to Firestore with the new version name
-            await saveScriptToFirestore(userID, newContent, category, newName);
+                // Save the old script with the incremented version number
+                await saveScriptToFirestore(userID, fullScreenEdit.content, category, oldVersionName);
+            }
+
+            // Save the new content as the base name (latest version)
+            await saveScriptToFirestore(userID, newContent, category, baseName);
 
             // Update local scripts state directly
             setScripts(prevScripts => ({
                 ...prevScripts,
-                [category]: [
-                    ...prevScripts[category],
-                    { ...fullScreenEdit, name: newName, content: newContent }
-                ]
+                [category]: prevScripts[category].map(script =>
+                    script.name === fullScreenEdit.name
+                        ? { ...script, name: baseName, content: newContent }
+                        : script
+                )
             }));
 
             // Update localStorage
             const updatedScripts = {
                 ...scripts,
-                [category]: [
-                    ...scripts[category],
-                    { ...fullScreenEdit, name: newName, content: newContent }
-                ]
+                [category]: scripts[category].map(script =>
+                    script.name === fullScreenEdit.name
+                        ? { ...script, name: baseName, content: newContent }
+                        : script
+                )
             };
             localStorage.setItem(category, JSON.stringify(updatedScripts[category]));
+
+            // Update workingOnScript in localStorage
+            localStorage.setItem("workingOnScript", JSON.stringify({
+                script: baseName,
+                contents: newContent,
+                scriptType: category
+            }));
 
             return Promise.resolve();
         } catch (error) {
