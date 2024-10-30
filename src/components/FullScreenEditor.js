@@ -170,6 +170,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [scriptChatSize, setScriptChatSize] = useState({ width: 400, height: 500 });
     const [messageBoxHeight, setMessageBoxHeight] = useState(40);
     const resizingRef = useRef(null);
+    const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null);
+    const [scriptChatCopied, setScriptChatCopied] = useState(false);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -573,6 +575,34 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         textarea.style.height = `${newHeight}px`;
     };
 
+    const handleScriptChatBubbleClick = (e, index, role) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clientX = e.touches?.[0]?.clientX || e.clientX || rect.left + rect.width / 2;
+        const clientY = e.touches?.[0]?.clientY || e.clientY || rect.top + rect.height / 2;
+
+        setScriptChatActionOverlay({
+            index,
+            role,
+            clientX,
+            clientY,
+        });
+    };
+
+    const handleScriptChatCopy = (text) => {
+        navigator.clipboard.writeText(text);
+        setScriptChatCopied(true);
+        setScriptChatActionOverlay(null);
+        setTimeout(() => setScriptChatCopied(false), 2000);
+    };
+
+    const handleScriptChatDelete = (index) => {
+        setScriptChatMessages(prev => prev.filter((_, i) => i !== index));
+        setScriptChatActionOverlay(null);
+    };
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -870,7 +900,17 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         </div>
                         <div style={styles.scriptChatMessages}>
                             {scriptChatMessages.map((msg, index) => (
-                                <div key={index} style={msg.role === 'user' ? styles.userMessage : styles.assistantMessage}>
+                                <div 
+                                    key={index} 
+                                    style={{
+                                        ...msg.role === 'user' ? styles.userMessage : styles.assistantMessage,
+                                        position: 'relative',
+                                        cursor: 'pointer',
+                                        filter: scriptChatActionOverlay?.index === index ? 'blur(2px)' : 'none',
+                                        transition: 'filter 0.2s ease'
+                                    }}
+                                    onClick={(e) => handleScriptChatBubbleClick(e, index, msg.role)}
+                                >
                                     <ReactMarkdown
                                         children={msg.content}
                                         components={{
@@ -895,6 +935,41 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     />
                                 </div>
                             ))}
+                            {scriptChatActionOverlay && (
+                                <div 
+                                    style={{
+                                        ...styles.scriptChatActionOverlay,
+                                        position: 'fixed',
+                                        left: scriptChatActionOverlay.clientX,
+                                        top: scriptChatActionOverlay.clientY,
+                                        transform: 'translate(-50%, -50%)',
+                                        zIndex: 1000,
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <button 
+                                        onClick={() => handleScriptChatCopy(scriptChatMessages[scriptChatActionOverlay.index].content)}
+                                        style={styles.scriptChatActionButton}
+                                    >
+                                        Copy
+                                    </button>
+                                    <button 
+                                        onClick={() => handleScriptChatDelete(scriptChatActionOverlay.index)}
+                                        style={{
+                                            ...styles.scriptChatActionButton,
+                                            color: '#ff4444',
+                                            borderTop: `1px solid ${darkModeColors.border}`
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            )}
+                            {scriptChatCopied && (
+                                <div style={styles.copiedNotification}>
+                                    Copied!
+                                </div>
+                            )}
                             {isTyping && (
                                 <div className="typing-indicator">
                                     <div className="typing-dot" style={{ '--i': 0 }} />
@@ -1432,6 +1507,42 @@ const styles = {
         '&:active': {
             backgroundColor: `${darkModeColors.primary}40`,
         },
+    },
+    scriptChatActionOverlay: {
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '10px',
+        padding: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: 'auto',
+        minWidth: '120px',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+        border: `1px solid ${darkModeColors.border}`,
+    },
+    scriptChatActionButton: {
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: darkModeColors.text,
+        padding: '8px 16px',
+        cursor: 'pointer',
+        borderRadius: '6px',
+        transition: 'background-color 0.2s ease',
+        fontSize: '14px',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.hover}80`,
+        },
+    },
+    copiedNotification: {
+        position: 'fixed',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'rgba(0, 128, 0, 0.75)',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '5px',
+        zIndex: 1000,
     },
 };
 
