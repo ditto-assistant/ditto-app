@@ -341,20 +341,21 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
                             exit={{ opacity: 0 }}
                             style={styles.editorOverlay}
                             onClick={() => setSelectedNode(null)}
-                        />
-                        <motion.div 
-                            style={styles.editorWrapper}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ type: "spring", damping: 20 }}
-                            onClick={(e) => e.stopPropagation()}
                         >
-                            <NodeEditor
-                                node={selectedNode}
-                                onClose={() => setSelectedNode(null)}
-                                onSave={handleSaveNodeEdit}
-                            />
+                            <motion.div 
+                                style={styles.editorWrapper}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ type: "spring", damping: 20 }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <NodeEditor
+                                    node={selectedNode}
+                                    onClose={() => setSelectedNode(null)}
+                                    onSave={handleSaveNodeEdit}
+                                />
+                            </motion.div>
                         </motion.div>
                     </>
                 )}
@@ -384,8 +385,8 @@ const styles = {
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
+        width: '100vw',
+        height: '100vh',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         backdropFilter: 'blur(4px)',
         WebkitBackdropFilter: 'blur(4px)',
@@ -395,10 +396,6 @@ const styles = {
         alignItems: 'center',
     },
     editorWrapper: {
-        position: 'fixed',
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
         zIndex: 1000,
         width: '90%',
         maxWidth: '600px',
