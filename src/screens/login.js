@@ -107,6 +107,7 @@ const Login = () => {
             localStorage.setItem('email', email);
             localStorage.setItem('firstName', firstName);
             localStorage.setItem('lastName', lastName);
+            localStorage.removeItem('hasSeenTOS');
 
             // Wipe local storage of conversation history 
             localStorage.removeItem('prompts');
@@ -132,6 +133,14 @@ const Login = () => {
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
+
+            // Check if this is the first time signing in with Google
+            const userDoc = await getUserObjectFromFirestore(user.uid);
+            const isNewUser = !userDoc;
+
+            if (isNewUser) {
+                localStorage.removeItem('hasSeenTOS');
+            }
 
             // Save user information to Firestore if necessary
             const userID = user.uid;

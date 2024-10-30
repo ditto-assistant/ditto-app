@@ -373,11 +373,22 @@ const ScriptsScreen = () => {
         const groupedScripts = getScriptsByBaseName(filteredScripts);
         
         if (Object.keys(groupedScripts).length === 0) {
-            return (
-                <div style={styles.noResults}>
-                    No scripts found matching "{searchTerm}"
-                </div>
-            );
+            if (searchTerm) {
+                return (
+                    <div style={styles.noResults}>
+                        No scripts found matching "{searchTerm}"
+                    </div>
+                );
+            } else {
+                return (
+                    <div style={styles.noResults}>
+                        <div style={styles.noResultsText}>
+                            No scripts found.<br/>
+                            Click + to add one or ask Ditto to make you an app.
+                        </div>
+                    </div>
+                );
+            }
         }
 
         return (
@@ -1154,9 +1165,19 @@ const styles = {
     noResults: {
         color: darkModeColors.textSecondary,
         textAlign: 'center',
-        padding: '32px',
-        fontSize: '16px',
+        padding: '32px 16px',
         width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '200px',
+    },
+    noResultsText: {
+        fontSize: '16px',
+        maxWidth: '300px',
+        margin: '0 auto',
+        lineHeight: '1.5',
+        wordWrap: 'break-word',
     },
 };
 

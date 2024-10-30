@@ -9,6 +9,7 @@ import { Divider } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
+import TermsOfService from '../components/TermsOfService';
 // Lazy load components
 const ChatFeed = lazy(() => import("@/components/ChatFeed"));
 const SendMessage = lazy(() => import("@/components/SendMessage"));
@@ -41,6 +42,10 @@ export default function HomeScreen() {
   const canvasRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [showMediaOptions, setShowMediaOptions] = useState(false);
+  const [showTOS, setShowTOS] = useState(() => {
+    const hasSeenTOS = localStorage.getItem('hasSeenTOS');
+    return !hasSeenTOS;
+  });
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -431,6 +436,11 @@ export default function HomeScreen() {
     };
   }, []);
 
+  const handleTOSClose = () => {
+    localStorage.setItem('hasSeenTOS', 'true');
+    setShowTOS(false);
+  };
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
@@ -569,6 +579,8 @@ export default function HomeScreen() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showTOS && <TermsOfService onClose={handleTOSClose} />}
     </div>
   );
 }

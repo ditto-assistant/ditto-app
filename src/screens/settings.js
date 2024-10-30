@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Divider, Button, TextField, IconButton, InputAdornment, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
-import { deleteUser } from "firebase/auth";
+import { deleteUser, getAuth } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
 import { useBalance } from '../hooks/useBalance';
@@ -12,13 +12,15 @@ import { LoadingSpinner } from "../components/LoadingSpinner";
 const Settings = () => {
   const navigate = useNavigate();
   const balance = useBalance();
-  const { signOut, auth } = useAuth();
+  const { signOut, user } = useAuth();
+  const auth = getAuth();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   const [showHaApiKey, setShowHaApiKey] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [reAuthDialogOpen, setReAuthDialogOpen] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -26,30 +28,54 @@ const Settings = () => {
 
   const handleLogout = () => {
     console.log("logging out");
+    const hasSeenTOS = localStorage.getItem('hasSeenTOS');
     localStorage.clear();
+    if (hasSeenTOS) {
+      localStorage.setItem('hasSeenTOS', hasSeenTOS);
+    }
     signOut();
     navigate("/login");
   };
 
-  const handleDeleteAccount = () => {
-    const user = auth?.currentUser;
-    if (user) {
-      deleteUser(user).then(() => {
-        console.log("Account deleted");
-        removeUserFromFirestore(user.uid);
-        deleteAllUserScriptsFromFirestore(user.uid);
-        localStorage.clear();
-        navigate("/login");
-      }).catch((error) => {
-        console.error("Error deleting account: ", error);
-        if (error.code === 'auth/requires-recent-login') {
-          alert("You need to log in again before deleting your account. Please log out and log back in.");
-        } else {
-          alert("An error occurred while deleting your account. Please try again.");
-        }
-      });
-    } else {
+  const handleDeleteAccount = async () => {
+    if (!user) {
       console.error("No user currently signed in");
+      alert("You are not currently signed in. Please sign in and try again.");
+      handleLogout();
+      return;
+    }
+
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("Firebase auth user not found");
+      }
+
+      const metadata = currentUser.metadata;
+      const lastSignInTime = new Date(metadata.lastSignInTime).getTime();
+      const now = new Date().getTime();
+      const fiveMinutes = 5 * 60 * 1000;
+      
+      if (now - lastSignInTime > fiveMinutes) {
+        setDeleteDialogOpen(false);
+        setReAuthDialogOpen(true);
+        return;
+      }
+
+      await deleteUser(currentUser);
+      console.log("Account deleted");
+      await removeUserFromFirestore(currentUser.uid);
+      await deleteAllUserScriptsFromFirestore(currentUser.uid);
+      localStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error deleting account: ", error);
+      if (error.code === 'auth/requires-recent-login') {
+        setDeleteDialogOpen(false);
+        setReAuthDialogOpen(true);
+      } else {
+        alert(`Error deleting account: ${error.message}`);
+      }
     }
   };
 
@@ -187,7 +213,52 @@ const Settings = () => {
         </footer>
       </div>
 
-      {/* Delete Account Confirmation Dialog */}
+      {/* Re-authentication Dialog */}
+      <Dialog
+        open={reAuthDialogOpen}
+        onClose={() => setReAuthDialogOpen(false)}
+        PaperProps={{
+          style: {
+            backgroundColor: '#36393f',
+            color: 'white',
+            maxWidth: '400px',
+            width: '90%'
+          },
+        }}
+      >
+        <DialogTitle style={{ color: 'white' }}>Re-authentication Required</DialogTitle>
+        <DialogContent>
+          <DialogContentText style={{ color: '#8e9297' }}>
+            For security reasons, you need to sign in again before deleting your account. 
+            Would you like to sign out now?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions style={{ padding: '16px' }}>
+          <Button 
+            onClick={() => setReAuthDialogOpen(false)} 
+            style={{ color: '#7289da' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              setReAuthDialogOpen(false);
+              handleLogout();
+            }} 
+            style={{
+              backgroundColor: '#7289da',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#5b6eae',
+              },
+            }}
+          >
+            Sign Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Existing Delete Account Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={closeDeleteDialog}

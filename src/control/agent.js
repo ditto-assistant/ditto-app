@@ -273,11 +273,16 @@ const handleScriptGeneration = async (
     let scriptToNameConstructedPrompt = scriptToNameTemplate(cleanedScript, query);
     // print the prompt in green
     console.log("%c" + scriptToNameConstructedPrompt, "color: green");
-    const scriptToNameResponse = await promptLLM(
+    let scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
       "gemini-1.5-flash"
     );
+    if (scriptToNameResponse.includes("user balance is:")) {
+      alert("Please add more Tokens in Settings to continue using this app.");
+      scriptToNameResponse = "App Name Here";
+    }
+    
     // print the response in yellow
     console.log("%c" + scriptToNameResponse, "color: yellow");
     // strip any whitespace from the response or the Script Name: part
