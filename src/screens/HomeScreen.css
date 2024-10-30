@@ -109,11 +109,14 @@ body, html {
   border: 1px solid var(--header-footer-border);
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .microphone-button:hover,
 .settings-button:hover {
   background: var(--dark-gray-3);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .icon {
@@ -132,9 +135,9 @@ body, html {
 .title-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  cursor: pointer;
   padding: 8px 16px;
-  border-radius: 12px;
+  border-radius: 20px;
   transition: all 0.2s ease;
   background: var(--dark-gray-2);
   border: 1px solid var(--header-footer-border);
@@ -144,8 +147,8 @@ body, html {
 
 .title-container:hover {
   background: var(--dark-gray-3);
-  transform: translateY(1px);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .ditto-icon {
@@ -577,4 +580,21 @@ body, html {
 .App-body {
     scrollbar-width: thin;
     scrollbar-color: #4a0080 rgba(255, 255, 255, 0.1);
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }

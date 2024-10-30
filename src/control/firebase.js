@@ -189,6 +189,7 @@ export const grabConversationHistory = async (userID) => {
     }
     querySnapshot.forEach((doc) => {
       let docData = doc.data();
+      docData.id = doc.id;
       history.push(docData);
     });
     // sort the history by timestamp
@@ -299,15 +300,16 @@ export const loadConversationHistoryFromFirestore = async (userID) => {
   try {
     const history = await grabConversationHistory(userID);
     if (history.length === 0) {
-      return { prompts: [], responses: [], timestamps: [] };
+      return { prompts: [], responses: [], timestamps: [], pairIDs: [] };
     }
     const prompts = history.map(pair => pair.prompt);
     const responses = history.map(pair => pair.response);
     const timestamps = history.map(pair => pair.timestamp.toDate().getTime());
-    return { prompts, responses, timestamps };
+    const pairIDs = history.map(pair => pair.id);
+    return { prompts, responses, timestamps, pairIDs };
   } catch (e) {
     console.error(e);
-    return { prompts: [], responses: [], timestamps: [] };
+    return { prompts: [], responses: [], timestamps: [], pairIDs: [] };
   }
 }
 
@@ -593,4 +595,52 @@ export const uploadGeneratedImageToFirebaseStorage = async (imageURL, userID) =>
   // console.log('Uploaded a blob or file!');
   // // return URI of the image
   // return await getDownloadURL(snapshot.ref);
+}
+
+export const saveModelPreferencesToFirestore = async (userID, mainModel, programmerModel) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "users", userID, "preferences"));
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((doc) => {
+        updateDoc(doc.ref, {
+          mainModel,
+          programmerModel,
+          timestamp: new Date(),
+          timestampString: new Date().toISOString()
+        });
+      });
+    } else {
+      await addDoc(collection(db, "users", userID, "preferences"), {
+        mainModel,
+        programmerModel,
+        timestamp: new Date(),
+        timestampString: new Date().toISOString()
+      });
+    }
+  } catch (e) {
+    console.error("Error saving model preferences to Firestore: ", e);
+  }
+}
+
+export const getModelPreferencesFromFirestore = async (userID) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "users", userID, "preferences"));
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      return {
+        mainModel: doc.data().mainModel || "gemini-1.5-pro",
+        programmerModel: doc.data().programmerModel || "claude-3-5-sonnet"
+      };
+    }
+    return {
+      mainModel: "gemini-1.5-pro",
+      programmerModel: "claude-3-5-sonnet"
+    };
+  } catch (e) {
+    console.error("Error getting model preferences from Firestore: ", e);
+    return {
+      mainModel: "gemini-1.5-pro",
+      programmerModel: "claude-3-5-sonnet"
+    };
+  }
 }

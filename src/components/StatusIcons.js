@@ -1,5 +1,5 @@
 import { FaBrain } from "react-icons/fa";
-import { HiMiniDocument } from "react-icons/hi2";
+import { RiMagicLine } from "react-icons/ri";
 import { FaPlay } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
@@ -33,71 +33,42 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
     };
 
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            gap: '24px',
-            flexDirection: 'row'
-        }}>
-            <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    width: '40px',
-                    height: '40px',
-                    background: 'var(--dark-gray-2)',
-                    borderRadius: '50%',
-                    border: '1px solid var(--header-footer-border)'
-                }}
+        <div style={styles.icons}>
+            <motion.div 
+                style={styles.iconItem} 
                 onClick={handleBookmarkClick}
+                whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                }}
+                whileTap={{ scale: 0.95 }}
             >
-                <HiMiniDocument style={{ fontSize: '24px', color: darkModeColors.primary }} />
+                <RiMagicLine style={styles.icon} />
             </motion.div>
 
-            <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    width: '40px',
-                    height: '40px',
-                    background: 'var(--dark-gray-2)',
-                    borderRadius: '50%',
-                    border: '1px solid var(--header-footer-border)'
-                }}
+            <motion.div 
+                style={styles.iconItem} 
                 onClick={handleMemoryClick}
+                whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                }}
+                whileTap={{ scale: 0.95 }}
             >
-                <FaBrain style={{ fontSize: '24px', color: darkModeColors.primary }} />
+                <FaBrain style={styles.icon} />
             </motion.div>
 
             {selectedScript && (
-                <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        width: '40px',
-                        height: '40px',
-                        background: 'var(--dark-gray-2)',
-                        borderRadius: '50%',
-                        border: '1px solid var(--header-footer-border)'
-                    }}
+                <motion.div 
+                    style={styles.iconItem} 
                     onClick={handlePlayScript}
+                    whileHover={{ 
+                        scale: 1.1,
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    }}
+                    whileTap={{ scale: 0.95 }}
                 >
-                    <FaPlay style={{ fontSize: '22px', color: darkModeColors.primary }} />
+                    <FaPlay style={styles.playIcon} />
                 </motion.div>
             )}
 
@@ -110,5 +81,59 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
         </div>
     );
 }
+
+const styles = {
+    icons: {
+        display: 'flex',
+        alignItems: 'center',
+        position: 'absolute',
+        justifyContent: 'center',
+        left: '50%',
+        zIndex: 3000,
+        transform: 'translateX(-50%)',
+    },
+    iconItem: {
+        margin: '0px 3px',
+        cursor: 'pointer',
+        position: 'relative',
+        width: '40px',
+        height: '40px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        transition: 'background-color 0.3s ease',
+    },
+    icon: {
+        fontSize: '22px',
+        color: darkModeColors.primary,
+    },
+    playIcon: {
+        fontSize: '22px',
+        color: darkModeColors.primary,
+    },
+    selectedScriptIndicator: {
+        color: darkModeColors.text,
+        fontWeight: 'bold',
+        position: 'absolute',
+        zIndex: 3000,
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'center',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        top: '74px',
+        backgroundColor: '#36393f',
+        padding: '0px 10px',
+        borderRadius: '5px',
+        whiteSpace: 'nowrap',
+        flexDirection: 'row',
+    },
+    selectedScriptText: {
+        fontSize: '0.9em',
+        margin: 0,
+        paddingTop: '1.0em',
+    },
+};
 
 export default StatusIcons;

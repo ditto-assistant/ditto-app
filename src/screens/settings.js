@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Divider, Button, TextField, IconButton, InputAdornment } from '@mui/material';
+import { Divider, Button, TextField, IconButton, InputAdornment, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
-import { deleteUser } from "firebase/auth";
+import { deleteUser, getAuth } from "firebase/auth";
 import { removeUserFromFirestore, deleteAllUserScriptsFromFirestore } from "../control/firebase";
 import packageJson from '../../package.json';
 import { useBalance } from '../hooks/useBalance';
@@ -13,11 +13,15 @@ import { ChromePicker } from 'react-color';
 const Settings = () => {
   const navigate = useNavigate();
   const balance = useBalance();
-  const { signOut, auth } = useAuth();
+  const { signOut, user } = useAuth();
+  const auth = getAuth();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(localStorage.getItem("ha_api_key") || '');
   const [haRemoteUrl, setHaRemoteUrl] = useState(localStorage.getItem("home_assistant_url") || 'http://localhost:8123');
   const [showHaApiKey, setShowHaApiKey] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [reAuthDialogOpen, setReAuthDialogOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [themeColors, setThemeColors] = useState({
     color1: localStorage.getItem("theme-color-1") || "#4a0080",
@@ -43,65 +47,59 @@ const Settings = () => {
   );
 
   useEffect(() => {
-    // Apply theme colors from localStorage
-    const applyTheme = () => {
-        const themeColor1 = localStorage.getItem("theme-color-1") || "#4a0080";
-        const themeColor2 = localStorage.getItem("theme-color-2") || "#000066";
-        const themeColor3 = localStorage.getItem("theme-color-3") || "#1a1a1a";
-        const themeColor4 = localStorage.getItem("theme-color-4") || "#000000";
-
-        const gradient = `linear-gradient(to bottom, 
-            ${themeColor1} 0%,
-            ${themeColor2} 40%,
-            ${themeColor3} 80%,
-            ${themeColor4} 100%
-        )`;
-
-        document.documentElement.style.setProperty('--theme-background', gradient);
-    };
-
-    // Apply theme initially
-    applyTheme();
-
-    // Listen for storage changes
-    const handleStorageChange = (e) => {
-        if (e.key && e.key.startsWith('theme-color-')) {
-            applyTheme();
-        }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    setIsVisible(true);
   }, []);
 
   const handleLogout = () => {
     console.log("logging out");
+    const hasSeenTOS = localStorage.getItem('hasSeenTOS');
     localStorage.clear();
+    if (hasSeenTOS) {
+      localStorage.setItem('hasSeenTOS', hasSeenTOS);
+    }
     signOut();
     navigate("/login");
   };
 
-  const handleDeleteAccount = () => {
-    const user = auth.currentUser;
-    if (user) {
-      if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-        deleteUser(user).then(() => {
-          console.log("Account deleted");
-          removeUserFromFirestore(user.uid);
-          deleteAllUserScriptsFromFirestore(user.uid);
-          localStorage.clear();
-          navigate("/login");
-        }).catch((error) => {
-          console.error("Error deleting account: ", error);
-          if (error.code === 'auth/requires-recent-login') {
-            alert("You need to log in again before deleting your account. Please log out and log back in.");
-          } else {
-            alert("An error occurred while deleting your account. Please try again.");
-          }
-        });
-      }
-    } else {
+  const handleDeleteAccount = async () => {
+    if (!user) {
       console.error("No user currently signed in");
+      alert("You are not currently signed in. Please sign in and try again.");
+      handleLogout();
+      return;
+    }
+
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("Firebase auth user not found");
+      }
+
+      const metadata = currentUser.metadata;
+      const lastSignInTime = new Date(metadata.lastSignInTime).getTime();
+      const now = new Date().getTime();
+      const fiveMinutes = 5 * 60 * 1000;
+      
+      if (now - lastSignInTime > fiveMinutes) {
+        setDeleteDialogOpen(false);
+        setReAuthDialogOpen(true);
+        return;
+      }
+
+      await deleteUser(currentUser);
+      console.log("Account deleted");
+      await removeUserFromFirestore(currentUser.uid);
+      await deleteAllUserScriptsFromFirestore(currentUser.uid);
+      localStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error deleting account: ", error);
+      if (error.code === 'auth/requires-recent-login') {
+        setDeleteDialogOpen(false);
+        setReAuthDialogOpen(true);
+      } else {
+        alert(`Error deleting account: ${error.message}`);
+      }
     }
   };
 
@@ -282,9 +280,22 @@ const Settings = () => {
     localStorage.setItem("theme-names", JSON.stringify(themeNames));
   };
 
+  const openDeleteDialog = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+  };
+
   return (
     <div style={styles.overlay}>
-      <div style={styles.settingsContainer}>
+      <div style={{
+        ...styles.settingsContainer,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+      }}>
         <header style={styles.header}>
           <Button
             variant="text"
@@ -311,7 +322,7 @@ const Settings = () => {
             )}
           </div>
           <div style={styles.settingsOptions}>
-            <Button variant="contained" onClick={() => navigate("/paypal")} style={styles.button}>
+            <Button variant="contained" onClick={() => navigate("/checkout")} style={styles.button}>
               ADD TOKENS
             </Button>
             <Button variant="contained" onClick={handleManageKeys} style={styles.button}>
@@ -430,7 +441,7 @@ const Settings = () => {
               <Button variant="contained" onClick={handleLogout} style={styles.halfButton}>
                 LOG OUT
               </Button>
-              <Button variant="contained" onClick={handleDeleteAccount} style={styles.deleteButton}>
+              <Button variant="contained" onClick={openDeleteDialog} style={styles.deleteButton}>
                 DELETE ACCOUNT
               </Button>
             </div>
@@ -490,6 +501,80 @@ const Settings = () => {
           </div>
         </footer>
       </div>
+
+      {/* Re-authentication Dialog */}
+      <Dialog
+        open={reAuthDialogOpen}
+        onClose={() => setReAuthDialogOpen(false)}
+        PaperProps={{
+          style: {
+            backgroundColor: '#36393f',
+            color: 'white',
+            maxWidth: '400px',
+            width: '90%'
+          },
+        }}
+      >
+        <DialogTitle style={{ color: 'white' }}>Re-authentication Required</DialogTitle>
+        <DialogContent>
+          <DialogContentText style={{ color: '#8e9297' }}>
+            For security reasons, you need to sign in again before deleting your account. 
+            Would you like to sign out now?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions style={{ padding: '16px' }}>
+          <Button 
+            onClick={() => setReAuthDialogOpen(false)} 
+            style={{ color: '#7289da' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              setReAuthDialogOpen(false);
+              handleLogout();
+            }} 
+            style={{
+              backgroundColor: '#7289da',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#5b6eae',
+              },
+            }}
+          >
+            Sign Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Existing Delete Account Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={closeDeleteDialog}
+        aria-labelledby="delete-account-dialog-title"
+        aria-describedby="delete-account-dialog-description"
+        PaperProps={{
+          style: {
+            backgroundColor: '#36393f',
+            color: 'white',
+          },
+        }}
+      >
+        <DialogTitle id="delete-account-dialog-title">{"Confirm Account Deletion"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-account-dialog-description" style={{ color: '#8e9297' }}>
+            Are you sure you want to delete your account? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} style={{ color: '#7289da' }}>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteAccount} style={{ color: '#f04747' }} autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

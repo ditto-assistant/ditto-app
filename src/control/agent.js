@@ -27,7 +27,7 @@ import {
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import { db, saveScriptToFirestore, grabConversationHistoryCount } from "./firebase";
+import { db, saveScriptToFirestore, grabConversationHistoryCount, getModelPreferencesFromFirestore } from "./firebase";
 
 const mode = import.meta.env.MODE;
 
@@ -44,6 +44,9 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       localStorage.setItem("idle", "true");
       return "An error occurred while processing your request. Please try again.";
     }
+
+    // Get model preferences
+    const modelPreferences = await getModelPreferencesFromFirestore(userID);
 
     // do the above three with a promise.all
     const allResponses = await Promise.all([
@@ -66,7 +69,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptName,
       scriptType
     );
-    const mainAgentModel = image ? "claude-3-5-sonnet" : "gemini-1.5-pro";
+    const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
 
     // print constructed prompt in green
     console.log("%c" + constructedPrompt, "color: green");
@@ -137,15 +140,14 @@ const processResponse = async (
   scriptName,
   image,
 ) => {
-  // print response in yellow
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
-  // check if response is blank ""
   let errorMessage = "Response Error: please check your internet connection or token balance.";
   if (response === errorMessage) {
     isValidResponse = false;
     response = errorMessage;
   }
+
   if (response.includes("<OPENSCAD>") && isValidResponse) {
     return await handleScriptGeneration(
       response,
@@ -177,76 +179,66 @@ const processResponse = async (
       image,
     );
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
-    // handle image generation
     const query = response.split("<IMAGE_GENERATION>")[1];
     const imageURL = await openaiImageGeneration(query);
-    // const newImageURL = await uploadGeneratedImageToFirebaseStorage(imageURL, userID);
-    // console.log("Image Response: ", imageResponse);
     let newresponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
-    saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
-      console.error("Error saving to memory: ", e);
-    });
+    
+    // Save to memory and get the docId
+    const docId = await saveToMemory(userID, prompt, newresponse, embedding);
+    
     const timestamp = Date.now();
-    saveToLocalStorage(prompt, newresponse, timestamp).catch((e) => {
-      console.error("Error saving to local storage: ", e);
-    });
+    // Save to localStorage with the docId
+    await saveToLocalStorage(prompt, newresponse, timestamp, docId);
+    
     localStorage.removeItem("thinking");
     return newresponse;
   } else if (response.includes("<GOOGLE_SEARCH>") && isValidResponse) {
-    // handle google search
     const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
     const googleSearchResponse = await googleSearch(query);
     let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
-    // print the prompt in green
     console.log("%c" + googleSearchAgentTemplate, "color: green");
     const googleSearchAgentResponse = await promptLLM(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
-    // print the response in yellow
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
-    // check if <WEBSITE> is in the response
     let newresponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
-    saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
-      console.error("Error saving to memory: ", e);
-    });
+    
+    // Save to memory and get the docId
+    const docId = await saveToMemory(userID, prompt, newresponse, embedding);
+    
     const timestamp = Date.now();
-    saveToLocalStorage(prompt, newresponse, timestamp).catch((e) => {
-      console.error("Error saving to local storage: ", e);
-    });
+    // Save to localStorage with the docId
+    await saveToLocalStorage(prompt, newresponse, timestamp, docId);
+    
     localStorage.removeItem("thinking");
     return newresponse;
   } else if (response.includes("<GOOGLE_HOME>") && isValidResponse) {
-    // handle Home Assistant task
     const query = response.split("<GOOGLE_HOME>")[1];
     let success = await handleHomeAssistantTask(query);
-    let newresponse;
-    if (success) {
-      newresponse = `Home Assistant Task: ${query}\n\nTask completed successfully.`;
-    } else {
-      newresponse = `Home Assistant Task: ${query}\n\nTask failed.`;
-    }
-    saveToMemory(userID, prompt, newresponse, embedding).catch((e) => {
-      console.error("Error saving to memory: ", e);
-    });
+    let newresponse = success ? 
+      `Home Assistant Task: ${query}\n\nTask completed successfully.` :
+      `Home Assistant Task: ${query}\n\nTask failed.`;
+    
+    // Save to memory and get the docId
+    const docId = await saveToMemory(userID, prompt, newresponse, embedding);
+    
     const timestamp = Date.now();
-    saveToLocalStorage(prompt, newresponse, timestamp).catch((e) => {
-      console.error("Error saving to local storage: ", e);
-    });
+    // Save to localStorage with the docId
+    await saveToLocalStorage(prompt, newresponse, timestamp, docId);
+    
     localStorage.removeItem("thinking");
     return newresponse;
-  }
-  else {
-    saveToMemory(userID, prompt, response, embedding).catch((e) => {
-      console.error("Error saving to memory: ", e);
-    });
+  } else {
+    // Save to memory and get the docId
+    const docId = await saveToMemory(userID, prompt, response, embedding);
+    
     const timestamp = Date.now();
-    saveToLocalStorage(prompt, response, timestamp).catch((e) => {
-      console.error("Error saving to local storage: ", e);
-    });
+    // Save to localStorage with the docId
+    await saveToLocalStorage(prompt, response, timestamp, docId);
+    
     localStorage.removeItem("thinking");
     return response;
   }
 };
-
 
 const handleScriptGeneration = async (
   response,
@@ -262,6 +254,8 @@ const handleScriptGeneration = async (
   userID,
   image,
 ) => {
+  const modelPreferences = await getModelPreferencesFromFirestore(userID);
+  
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents);
   // print constructed prompt in green
@@ -269,7 +263,7 @@ const handleScriptGeneration = async (
   const scriptResponse = await promptLLM(
     constructedPrompt,
     systemTemplateFunction(),
-    "claude-3-5-sonnet",
+    modelPreferences.programmerModel,
     image
   );
   /// print the response in yellow
@@ -284,11 +278,32 @@ const handleScriptGeneration = async (
     let scriptToNameConstructedPrompt = scriptToNameTemplate(cleanedScript, query);
     // print the prompt in green
     console.log("%c" + scriptToNameConstructedPrompt, "color: green");
-    const scriptToNameResponse = await promptLLM(
+    let scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
       "gemini-1.5-flash"
     );
+    
+    // Check for API error and retry once
+    if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+      console.log("API error detected, retrying script name generation...");
+      scriptToNameResponse = await promptLLM(
+        scriptToNameConstructedPrompt,
+        scriptToNameSystemTemplate(),
+        "gemini-1.5-flash"
+      );
+      if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+        console.log("Second attempt failed, defaulting to 'App Name Here'");
+        scriptToNameResponse = "App Name Here";
+      }
+    }
+
+    // Check user balance
+    if (scriptToNameResponse.includes("user balance is:")) {
+      alert("Please add more Tokens in Settings to continue using this app.");
+      scriptToNameResponse = "App Name Here";
+    }
+    
     // print the response in yellow
     console.log("%c" + scriptToNameResponse, "color: yellow");
     // strip any whitespace from the response or the Script Name: part
@@ -309,13 +324,14 @@ const handleScriptGeneration = async (
     console.error("Error saving to firestore: ", e);
   });
   handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-  saveToMemory(userID, prompt, newResponse, embedding).catch((e) => {
-    console.error("Error saving to memory: ", e);
-  });
+  
+  // Save to memory and get the docId
+  const docId = await saveToMemory(userID, prompt, newResponse, embedding);
+  
   const timestamp = Date.now();
-  saveToLocalStorage(prompt, newResponse, timestamp).catch((e) => {
-    console.error("Error saving to local storage: ", e);
-  });
+  // Save to localStorage with the docId
+  await saveToLocalStorage(prompt, newResponse, timestamp, docId);
+  
   localStorage.removeItem("thinking");
   return newResponse;
 };
@@ -363,18 +379,21 @@ export const saveToMemory = async (
         docRef.id
       );
     }
+    return docRef.id;
   } catch (e) {
     console.error(
       "Error adding document to Firestore memory collection: ",
       e
     );
+    return null;
   }
 };
 
-const saveToLocalStorage = async (prompt, response, timestamp) => {
+const saveToLocalStorage = async (prompt, response, timestamp, pairID) => {
   const prompts = loadFromLocalStorage("prompts", []);
   const responses = loadFromLocalStorage("responses", []);
   const timestamps = loadFromLocalStorage("timestamps", []);
+  const pairIDs = loadFromLocalStorage("pairIDs", []);
   let userID = localStorage.getItem("userID");
   let histCount = await grabConversationHistoryCount(userID);
   if (mode === "development") {
@@ -383,9 +402,11 @@ const saveToLocalStorage = async (prompt, response, timestamp) => {
   prompts.push(prompt);
   responses.push(response);
   timestamps.push(timestamp);
+  pairIDs.push(pairID);
   localStorage.setItem("prompts", JSON.stringify(prompts));
   localStorage.setItem("responses", JSON.stringify(responses));
   localStorage.setItem("timestamps", JSON.stringify(timestamps));
+  localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
 
   // histCount++;
   localStorage.setItem("histCount", histCount);

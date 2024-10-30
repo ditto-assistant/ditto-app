@@ -130,6 +130,13 @@
     height: 20px;
     transform: rotate(0deg);
     color: white;
+    padding: 8px 15px; /* Reduce padding */
+    margin-left: 0; /* Remove left margin */
+    margin-right: -2px; /* Remove right margin */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+    min-width: fit-content; /* Ensure button takes minimum required width */
 }
 
 .Submit:hover {
@@ -464,5 +471,21 @@
     }
     100% {
         background-position: -200% 0;
+    }
+}
+
+/* Add media query for small screens */
+@media screen and (max-width: 380px) {
+    .Form {
+        padding: 5px 8px; /* Reduce padding on small screens */
+    }
+    
+    .Submit {
+        padding: 8px 12px; /* Further reduce padding on small screens */
+        font-size: 14px; /* Slightly smaller font size */
+    }
+    
+    .TextArea {
+        padding-right: 80px; /* Reduce padding to prevent overlap with icons */
     }
 }

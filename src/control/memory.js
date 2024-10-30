@@ -3,7 +3,9 @@ import {
   getDocs,
   query,
   orderBy,
-  limit
+  limit,
+  deleteDoc,
+  doc
 } from "firebase/firestore";
 
 import { db, grabConversationHistory } from "./firebase";
@@ -169,5 +171,46 @@ export const getLongTermMemory = async (userID, embedding, k) => {
     console.error('Error getting long term memory:', e);
     console.error('Stack trace:', e.stack);
     return "No history! :)";
+  }
+}
+
+/**
+ * Get the embedding array for a specific conversation document
+ * @param {string} userID - The user's ID
+ * @param {string} docId - The document ID of the conversation
+ * @returns {number[]|null} - Returns the embedding array if found, null otherwise
+ */
+export const getConversationEmbedding = async (userID, docId) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "memory", userID, "conversations"));
+    
+    let embedding = null;
+    querySnapshot.forEach((doc) => {
+      if (doc.id === docId) {
+        embedding = doc.data().embedding;
+      }
+    });
+    
+    return embedding;
+  } catch (e) {
+    console.error("Error getting conversation embedding:", e);
+    return null;
+  }
+}
+
+/**
+ * Delete a conversation from Firestore by its document ID
+ * @param {string} userID - The user's ID
+ * @param {string} docId - The document ID of the conversation to delete
+ * @returns {boolean} - Returns true if deletion was successful
+ */
+export const deleteConversation = async (userID, docId) => {
+  try {
+    const docRef = doc(db, "memory", userID, "conversations", docId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (e) {
+    console.error("Error deleting conversation:", e);
+    return false;
   }
 }

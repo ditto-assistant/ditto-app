@@ -6,503 +6,534 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
 import './ChatFeed.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCopy, FiDownload } from 'react-icons/fi';
-import { IoMdArrowBack } from 'react-icons/io';
-import { FaCopy, FaSmile } from 'react-icons/fa';
+import { FaCopy, FaSmile, FaTrash, FaBrain, FaDownload, FaExpand } from 'react-icons/fa';
+import { FiCopy } from 'react-icons/fi';
 
-const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
-const DEFAULT_DITTO_AVATAR = '/icons/fancy-ditto.png'; // Updated path
+const DEFAULT_DITTO_AVATAR = '/icons/fancy-ditto.png';
 
-// Add this helper function at the top level
-const triggerHapticFeedback = () => {
-  if (navigator.vibrate) {
-    navigator.vibrate(50);
-  }
-};
+const emojis = ['👍', '❤️', '😊', '🎉', '🤔', '👀', '🚀', '✨'];
 
-export default function ChatFeed({
-  messages,
-  histCount,
-  isTyping = false,
-  hasInputField = false,
-  showSenderName = false,
-  bubblesCentered = false,
-  scrollToBottom = false,
-  startAtBottom = false,
-  bubbleStyles = {
-    text: {
-      fontSize: 14,
-    },
-    chatbubble: {
-      borderRadius: 20,
-      padding: 10,
-    },
-  },
+function ChatFeed({
+    messages,
+    histCount,
+    isTyping = false,
+    hasInputField = false,
+    showSenderName = false,
+    bubblesCentered = false,
+    scrollToBottom = false,
+    startAtBottom = false,
+    onDeleteMessage,
+    onSaveToMemory,
+    onReact,
+    onImageOpen,
+    onImageDownload,
 }) {
-  const [copied, setCopied] = useState(false);
-  const [selectedReaction, setSelectedReaction] = useState({});
-  const [actionOverlay, setActionOverlay] = useState(null);
-  const [reactionOverlay, setReactionOverlay] = useState(null);
-  const feedRef = useRef(null);
-  const bottomRef = useRef(null);
-  const [profilePic, setProfilePic] = useState(() => {
-    return localStorage.getItem(USER_AVATAR_KEY) || '../user_placeholder.png';
-  });
-  const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || DEFAULT_DITTO_AVATAR;
-  });
-  const [reactions, setReactions] = useState({});
-  const [imageOverlay, setImageOverlay] = useState(null);
-  const [imageControlsVisible, setImageControlsVisible] = useState(true);
+    const [copied, setCopied] = useState(false);
+    const [selectedReaction, setSelectedReaction] = useState({});
+    const [actionOverlay, setActionOverlay] = useState(null);
+    const [reactionOverlay, setReactionOverlay] = useState(null);
+    const feedRef = useRef(null);
+    const bottomRef = useRef(null);
+    const [profilePic, setProfilePic] = useState(() => {
+        return localStorage.getItem(USER_AVATAR_KEY) || '/user_placeholder.png';
+    });
+    const [dittoAvatar, setDittoAvatar] = useState(() => {
+        return localStorage.getItem(DITTO_AVATAR_KEY) || DEFAULT_DITTO_AVATAR;
+    });
+    const [reactions, setReactions] = useState({});
+    const [imageOverlay, setImageOverlay] = useState(null);
+    const [imageControlsVisible, setImageControlsVisible] = useState(true);
+    const [isSelecting, setIsSelecting] = useState(false);
+    const [longPressTimer, setLongPressTimer] = useState(null);
+    const [showReactionPicker, setShowReactionPicker] = useState(null);
+    const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [activeReactionPicker, setActiveReactionPicker] = useState(null);
+    const [loadingMemories, setLoadingMemories] = useState(false);
 
-  const scrollToBottomOfFeed = (quick = false) => {
-    if (bottomRef.current) {
-      if (quick) {
-        bottomRef.current.scrollIntoView();
-      } else {
-        bottomRef.current.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'end'
-        });
-      }
-    }
-  };
+    const scrollToBottomOfFeed = (quick = false) => {
+        if (bottomRef.current) {
+            if (quick) {
+                bottomRef.current.scrollIntoView();
+            } else {
+                bottomRef.current.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'end'
+                });
+            }
+        }
+    };
 
-  useEffect(() => {
-    if (startAtBottom) {
-      scrollToBottomOfFeed(true);
-    } else {
-      if (scrollToBottom || messages.length > 0) {
-        const timeoutId = setTimeout(() => {
-          scrollToBottomOfFeed();
-        }, 100); // Reduced from 500ms to 100ms for quicker response
-        return () => clearTimeout(timeoutId);
-      }
-    }
-  }, [messages, scrollToBottom, isTyping]); // Added isTyping as dependency
+    useEffect(() => {
+        if (startAtBottom) {
+            scrollToBottomOfFeed(true);
+        } else {
+            if (scrollToBottom || messages.length > 0) {
+                const timeoutId = setTimeout(() => {
+                    scrollToBottomOfFeed();
+                }, 100);
+                return () => clearTimeout(timeoutId);
+            }
+        }
+    }, [messages, scrollToBottom, isTyping]);
 
-  useEffect(() => {
-    // Cache Ditto avatar
-    fetch(DEFAULT_DITTO_AVATAR)
-        .then(response => response.blob())
-        .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                localStorage.setItem(DITTO_AVATAR_KEY, base64data);
-                setDittoAvatar(base64data);
-            };
-            reader.readAsDataURL(blob);
-        })
-        .catch(error => console.error('Error caching Ditto avatar:', error));
-
-    // Get user's Google profile picture
-    if (auth.currentUser?.photoURL) {
-        fetch(auth.currentUser.photoURL)
+    useEffect(() => {
+        // Cache Ditto avatar
+        fetch(DEFAULT_DITTO_AVATAR)
             .then(response => response.blob())
             .then(blob => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     const base64data = reader.result;
-                    localStorage.setItem(USER_AVATAR_KEY, base64data);
-                    setProfilePic(base64data);
+                    localStorage.setItem(DITTO_AVATAR_KEY, base64data);
+                    setDittoAvatar(base64data);
                 };
                 reader.readAsDataURL(blob);
             })
-            .catch(error => {
-                console.error('Error caching user avatar:', error);
-                // Fallback to placeholder if Google photo fails
-                setProfilePic('../user_placeholder.png');
-            });
-    } else {
-        // Use placeholder if no Google photo available
-        setProfilePic('../user_placeholder.png');
-    }
-}, []);
+            .catch(error => console.error('Error caching Ditto avatar:', error));
 
-  useEffect(() => {
-    const handleClickAway = (e) => {
-      // Don't close if clicking inside action or reaction overlays
-      if (e.target.closest('.action-overlay') || e.target.closest('.reaction-overlay')) {
-        return;
-      }
-      
-      // Don't close if clicking the originating chat bubble
-      if (actionOverlay && e.target.closest('.chat-bubble')) {
-        const bubbleIndex = parseInt(e.target.closest('.chat-bubble').dataset.index);
-        if (bubbleIndex === actionOverlay.index) {
-          return;
+        // Get user's Google profile picture
+        if (auth.currentUser?.photoURL) {
+            fetch(auth.currentUser.photoURL)
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64data = reader.result;
+                        localStorage.setItem(USER_AVATAR_KEY, base64data);
+                        setProfilePic(base64data);
+                    };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(error => {
+                    console.error('Error caching user avatar:', error);
+                    setProfilePic('/user_placeholder.png');
+                });
+        } else {
+            setProfilePic('/user_placeholder.png');
         }
-      }
-      
-      setActionOverlay(null);
-      setReactionOverlay(null);
-    };
+    }, []);
 
-    document.addEventListener('click', handleClickAway);
-    return () => document.removeEventListener('click', handleClickAway);
-  }, [actionOverlay]);
-
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setActionOverlay(null);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleReaction = (index, emoji) => {
-    setReactions((prevReactions) => ({
-      ...prevReactions,
-      [index]: [...(prevReactions[index] || []), emoji],
-    }));
-    setReactionOverlay(null);
-    setActionOverlay(null);
-  };
-
-  const handleBubbleInteraction = (e, index, type = 'text') => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const isUserMessage = messages[index].sender === 'User';
-
-    // Trigger haptic feedback on mobile devices
-    triggerHapticFeedback();
-
-    // Close the overlay if clicking the same bubble that opened it
-    if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
-      return;
-    }
-
-    // If clicking a different bubble, close current overlay and open new one
-    if (actionOverlay && actionOverlay.index !== index) {
-      setActionOverlay(null);
-    }
-
-    const clientX = e.clientX || (rect.left + rect.width / 2);
-    const clientY = e.clientY || (rect.top + rect.height / 2);
-    setActionOverlay({ 
-      index, 
-      type, 
-      clientX,
-      clientY,
-      isUserMessage,
-      rect // Store the bubble's rect for positioning
-    });
-    setReactionOverlay(null);
-  };
-
-  const handleImageClick = (src) => {
-    setImageOverlay(src);
-  };
-
-  const handleImageDownload = (src) => {
-    window.open(src, '_blank');
-  };
-
-  const closeImageOverlay = () => {
-    setImageOverlay(null);
-  };
-
-  const toggleImageControls = (e) => {
-    e.stopPropagation();
-    setImageControlsVisible(!imageControlsVisible);
-  };
-
-  const renderMessageText = (text, index) => {
-    text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
-    text = text.replace(/```\./g, '```\n');
-    return (
-      <ReactMarkdown
-        children={text}
-        components={{
-          a: ({ node, ...props }) => <a {...props} style={{ color: '#3941b8', textDecoration: 'none', textShadow: '0 0 1px #7787d7' }} />,
-          img: ({ src, alt, ...props }) => (
-            <img
-              {...props}
-              src={src}
-              alt={alt}
-              className='chat-image'
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent bubble interaction
-                handleImageClick(src);
-              }}
-            />
-          ),
-          code({ node, inline, className, children, ...props }) {
-            let match = /language-(\w+)/.exec(className || '');
-            let hasCodeBlock;
-            if (text.match(/```/g)) {
-              hasCodeBlock = text.match(/```/g).length % 2 === 0;
-            }
-            if (match === null && hasCodeBlock) {
-              match = ['language-txt', 'txt'];
-            }
-            if (!inline && match) {
-              return (
-                <div className='code-container'>
-                  <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, '')}
-                    style={vscDarkPlus}
-                    language={match[1]}
-                    PreTag='div'
-                    {...props}
-                    className='code-block'
-                  />
-                  <button
-                    className='copy-button code-block-button'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(String(children).replace(/\n$/, ''));
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            } else {
-              const inlineText = String(children).replace(/\n$/, '');
-              return (
-                <div className='inline-code-container'>
-                  <code className='inline-code' {...props}>{children}</code>
-                  <button
-                    className='copy-button inline-code-button'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(inlineText);
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            }
-          },
-        }}
-      />
-    );
-  };
-
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return new Intl.DateTimeFormat('default', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: browserTimezone
-    }).format(date);
-  };
-
-  const renderMessageWithAvatar = (message, index) => {
-    const isUserMessage = message.sender === 'User';
-
-    return (
-      <div
-        key={index}
-        className={`message ${isUserMessage ? 'sent' : 'received'}`}
-      >
-        {!isUserMessage && (
-          <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
-        )}
-        <div className="message-content">
-          {renderMessageText(message.text, index)}
-          {reactions[index] && reactions[index].length > 0 && (
-            <div className='message-reactions'>
-              {reactions[index].map((emoji, emojiIndex) => (
-                <span key={emojiIndex} className='reaction'>{emoji}</span>
-              ))}
-            </div>
-          )}
-          <div className="message-actions">
-            <button className="action-button" onClick={() => handleCopy(message.text)}>
-              <FaCopy />
-            </button>
-            <button className="action-button" onClick={() => handleReact(message.id)}>
-              <FaSmile />
-            </button>
-          </div>
-        </div>
-        {isUserMessage && (
-          <img src={profilePic} alt='User' className='avatar user-avatar' />
-        )}
-      </div>
-    );
-  };
-
-  const adjustOverlayPosition = (left, top) => {
-    const overlay = document.querySelector('.reaction-overlay');
-    if (!overlay) return { left, top };
-
-    const rect = overlay.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let adjustedLeft = left;
-    let adjustedTop = top;
-
-    if (left + rect.width > viewportWidth) {
-      adjustedLeft = viewportWidth - rect.width;
-    }
-    if (left < 0) {
-      adjustedLeft = 0;
-    }
-    if (top + rect.height > viewportHeight) {
-      adjustedTop = viewportHeight - rect.height;
-    }
-    if (top < 0) {
-      adjustedTop = 0;
-    }
-
-    return { left: adjustedLeft, top: adjustedTop };
-  };
-
-  // Add scroll handler to feedRef
-  useEffect(() => {
-    const handleScroll = () => {
-      if (actionOverlay || reactionOverlay) {
+    const handleCopy = (text) => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
         setActionOverlay(null);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleReaction = (index, emoji) => {
+        setReactions((prevReactions) => ({
+            ...prevReactions,
+            [index]: [...(prevReactions[index] || []), emoji],
+        }));
         setReactionOverlay(null);
-      }
+        setActionOverlay(null);
     };
 
-    const feedElement = feedRef.current;
-    if (feedElement) {
-      feedElement.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (feedElement) {
-        feedElement.removeEventListener('scroll', handleScroll);
-      }
+    const renderMessageText = (text, index) => {
+        return (
+            <ReactMarkdown
+                children={text}
+                components={{
+                    code({ node, inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline && match ? (
+                            <div className='code-container'>
+                                <SyntaxHighlighter
+                                    children={String(children).replace(/\n$/, '')}
+                                    style={vscDarkPlus}
+                                    language={match[1]}
+                                    PreTag='div'
+                                    {...props}
+                                />
+                                <button
+                                    className='copy-button'
+                                    onClick={() => handleCopy(String(children))}
+                                >
+                                    <FiCopy />
+                                </button>
+                            </div>
+                        ) : (
+                            <code className='inline-code' {...props}>
+                                {children}
+                            </code>
+                        );
+                    },
+                }}
+            />
+        );
     };
-  }, [actionOverlay, reactionOverlay]);
 
-  const handleReactionOverlay = (index, clientX, clientY) => {
-    setReactionOverlay({
-      index,
-      clientX,
-      clientY
-    });
-    setActionOverlay(null);
-  };
+    const formatTimestamp = (timestamp) => {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
 
-  // Add this useEffect to handle new messages
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage) {
-      scrollToBottomOfFeed();
-    }
-  }, [messages.length]); // Only trigger on message count change
+    const handleReact = (messageId) => {
+        setActiveReactionPicker(activeReactionPicker === messageId ? null : messageId);
+    };
 
-  return (
-    <div className='chat-feed' ref={feedRef}>
-      {messages.map(renderMessageWithAvatar)}
-      {isTyping && (
-        <div className="message received">
-          <img 
-            src={dittoAvatar} 
-            alt='Ditto typing' 
-            className='avatar ditto-avatar typing-avatar'
-          />
-        </div>
-      )}
-      {hasInputField && <input type='text' className='chat-input-field' />}
-      {copied && <div className='copied-notification'>Copied!</div>}
-      <div ref={bottomRef} />
-      {reactionOverlay && (
-        <div 
-          className='reaction-overlay' 
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            position: 'fixed',
-            ...adjustOverlayPosition(reactionOverlay.clientX, reactionOverlay.clientY),
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          {emojis.map((emoji) => (
-            <button key={emoji} onClick={() => handleReaction(reactionOverlay.index, emoji)} className='emoji-button'>
-              {emoji}
-            </button>
-          ))}
-        </div>
-      )}
-      {imageOverlay && (
-        <AnimatePresence>
-          <motion.div 
-            className="image-overlay" 
-            onClick={closeImageOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="image-overlay-content" 
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+    const handleReactionSelect = (messageId, emoji) => {
+        try {
+            if (onReact) {
+                onReact(messageId, emoji);
+            }
+            
+            // Update local state
+            setReactions(prevReactions => {
+                const currentReactions = prevReactions[messageId] || [];
+                if (currentReactions.includes(emoji)) {
+                    return {
+                        ...prevReactions,
+                        [messageId]: currentReactions.filter(r => r !== emoji)
+                    };
+                }
+                return {
+                    ...prevReactions,
+                    [messageId]: [...currentReactions, emoji]
+                };
+            });
+        } catch (error) {
+            console.error('Error handling reaction:', error);
+        }
+        setActiveReactionPicker(null);
+    };
+
+    const handleReactionClick = (messageId, emoji) => {
+        try {
+            if (onReact) {
+                onReact(messageId, emoji, true); // true indicates removal
+            }
+            
+            // Update local state
+            setReactions(prevReactions => {
+                const currentReactions = prevReactions[messageId] || [];
+                const newReactions = currentReactions.filter(r => r !== emoji);
+                if (newReactions.length === 0) {
+                    const { [messageId]: _, ...rest } = prevReactions;
+                    return rest;
+                }
+                return {
+                    ...prevReactions,
+                    [messageId]: newReactions
+                };
+            });
+        } catch (error) {
+            console.error('Error removing reaction:', error);
+        }
+    };
+
+    const handleMemoryClick = (message) => {
+        setSelectedMessage(message);
+        setShowMemoryOverlay(true);
+        if (onSaveToMemory) {
+            onSaveToMemory(message);
+        }
+    };
+
+    const handleDelete = (messageId) => {
+        try {
+            if (onDeleteMessage) {
+                onDeleteMessage(messageId);
+            }
+        } catch (error) {
+            console.error('Error deleting message:', error);
+        }
+        setActionOverlay(null);
+    };
+
+    const handleSaveToMemory = (message) => {
+        if (onSaveToMemory) {
+            onSaveToMemory(message);
+        }
+    };
+
+    const handleBubbleInteraction = (e, index) => {
+        if (isSelecting) return; // Don't show options if user is selecting text
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const message = messages[index];
+        const isImage = message.text.startsWith('http') && 
+                       (message.text.endsWith('.png') || message.text.endsWith('.jpg') || 
+                        message.text.endsWith('.jpeg') || message.text.endsWith('.gif'));
+        
+        setActionOverlay({
+            index,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            type: isImage ? 'image' : 'text'
+        });
+    };
+
+    const handleTouchStart = (e, index) => {
+        // Check if text is selected
+        if (window.getSelection().toString()) {
+            return; // Allow native context menu if text is selected
+        }
+
+        const timer = setTimeout(() => {
+            handleBubbleInteraction(e, index);
+        }, 500); // 500ms long press
+        
+        setLongPressTimer(timer);
+    };
+
+    const handleTouchEnd = () => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            setLongPressTimer(null);
+        }
+    };
+
+    const handleImageOpen = (imageUrl) => {
+        if (onImageOpen) {
+            onImageOpen(imageUrl);
+        } else {
+            // Fallback behavior if no handler provided
+            window.open(imageUrl, '_blank');
+        }
+    };
+
+    const handleImageDownload = async (imageUrl) => {
+        try {
+            if (onImageDownload) {
+                onImageDownload(imageUrl);
+            } else {
+                // Fallback behavior if no handler provided
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = imageUrl.split('/').pop() || 'image';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+        } catch (error) {
+            console.error('Error downloading image:', error);
+        }
+    };
+
+    const handleShowMemories = async (messageId) => {
+        setLoadingMemories(true);
+        try {
+            const message = messages[messageId];
+            if (onSaveToMemory) {
+                await onSaveToMemory(message);
+            }
+        } catch (error) {
+            console.error('Error saving to memory:', error);
+        } finally {
+            setLoadingMemories(false);
+        }
+    };
+
+    const handleMessageDelete = (messageId) => {
+        try {
+            if (onDeleteMessage) {
+                onDeleteMessage(messageId);
+            }
+        } catch (error) {
+            console.error('Error deleting message:', error);
+        }
+        setActionOverlay(null);
+    };
+
+    const renderMessageWithAvatar = (message, index) => {
+        const isUserMessage = message.sender === 'User';
+        const isImage = message.text.startsWith('http') && 
+                       (message.text.endsWith('.png') || message.text.endsWith('.jpg') || 
+                        message.text.endsWith('.jpeg') || message.text.endsWith('.gif'));
+
+        return (
+            <div
+                key={index}
+                className={`message ${isUserMessage ? 'sent' : 'received'}`}
+                onTouchStart={(e) => handleTouchStart(e, index)}
+                onTouchEnd={handleTouchEnd}
+                onTouchMove={handleTouchEnd}
+                onMouseDown={() => setIsSelecting(false)}
+                onMouseMove={(e) => {
+                    if (e.buttons === 1) {
+                        setIsSelecting(true);
+                    }
+                }}
+                onMouseUp={() => {
+                    setTimeout(() => setIsSelecting(false), 100);
+                }}
             >
-              <img 
-                src={imageOverlay} 
-                alt="Full size" 
-                onClick={toggleImageControls}
-              />
-              <AnimatePresence>
-                {imageControlsVisible && (
-                  <motion.div 
-                    className="image-overlay-controls"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button 
-                      className="image-control-button back"
-                      onClick={closeImageOverlay}
-                      title="Back"
-                    >
-                      <IoMdArrowBack />
-                    </button>
-                    <button 
-                      className="image-control-button download"
-                      onClick={() => handleImageDownload(imageOverlay)}
-                      title="Download"
-                    >
-                      <FiDownload />
-                    </button>
-                  </motion.div>
+                {!isUserMessage && (
+                    <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
                 )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
-      )}
-    </div>
-  );
+                <div className="message-wrapper">
+                    <div className="message-content">
+                        {renderMessageText(message.text, index)}
+                    </div>
+                </div>
+                {reactions[index] && reactions[index].length > 0 && (
+                    <div className='message-reactions'>
+                        {reactions[index].map((emoji, emojiIndex) => (
+                            <span 
+                                key={emojiIndex} 
+                                className='reaction'
+                                onClick={() => handleReactionClick(index, emoji)}
+                            >
+                                {emoji}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                <div className={`message-options ${isUserMessage ? 'options-left' : 'options-right'}`}>
+                    {isImage ? (
+                        <>
+                            <motion.button 
+                                className="action-button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleImageOpen(message.text)}
+                                title="Open image"
+                            >
+                                <FaExpand />
+                            </motion.button>
+                            <motion.button 
+                                className="action-button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleImageDownload(message.text)}
+                                title="Download image"
+                            >
+                                <FaDownload />
+                            </motion.button>
+                        </>
+                    ) : (
+                        <motion.button 
+                            className="action-button"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleCopy(message.text)}
+                            title="Copy message"
+                        >
+                            <FaCopy />
+                        </motion.button>
+                    )}
+                    <motion.div style={{ position: 'relative' }}>
+                        <motion.button 
+                            className="action-button"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleReact(index)}
+                            title="React to message"
+                        >
+                            <FaSmile />
+                        </motion.button>
+                        {activeReactionPicker === index && (
+                            <div className={`reaction-picker-menu ${isUserMessage ? 'left' : 'right'}`}>
+                                {emojis.map((emoji) => (
+                                    <button
+                                        key={emoji}
+                                        className="reaction-picker-button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleReactionSelect(index, emoji);
+                                            setActiveReactionPicker(null);
+                                        }}
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+                    <motion.button 
+                        className="action-button"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleShowMemories(index)}
+                        title="Save to memory"
+                        disabled={loadingMemories}
+                    >
+                        <FaBrain />
+                    </motion.button>
+                    <motion.button 
+                        className="action-button delete-button"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleMessageDelete(index)}
+                        title="Delete message"
+                    >
+                        <FaTrash />
+                    </motion.button>
+                </div>
+                {isUserMessage && (
+                    <img src={profilePic} alt='User' className='avatar user-avatar' />
+                )}
+            </div>
+        );
+    };
+
+    useEffect(() => {
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage) {
+            scrollToBottomOfFeed();
+        }
+    }, [messages.length]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (activeReactionPicker !== null) {
+                const picker = document.querySelector('.reaction-picker-menu');
+                const button = document.querySelector('.action-button');
+                if (picker && !picker.contains(event.target) && !button?.contains(event.target)) {
+                    setActiveReactionPicker(null);
+                }
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [activeReactionPicker]);
+
+    return (
+        <div className='chat-feed' ref={feedRef}>
+            {messages.map(renderMessageWithAvatar)}
+            {isTyping && (
+                <div className="message received">
+                    <img 
+                        src={dittoAvatar} 
+                        alt='Ditto typing' 
+                        className='avatar ditto-avatar typing-avatar'
+                    />
+                </div>
+            )}
+            {hasInputField && <input type='text' className='chat-input-field' />}
+            {copied && <div className='copied-notification'>Copied!</div>}
+            <div ref={bottomRef} />
+        </div>
+    );
 }
 
 ChatFeed.propTypes = {
-  messages: PropTypes.arrayOf(
-    PropTypes.shape({
-      sender: PropTypes.string,
-      text: PropTypes.string.isRequired,
-      timestamp: PropTypes.number, // Add this line to include timestamp in PropTypes
-    })
-  ).isRequired,
-  isTyping: PropTypes.bool,
-  hasInputField: PropTypes.bool,
-  showSenderName: PropTypes.bool,
-  bubblesCentered: PropTypes.bool,
-  scrollToBottom: PropTypes.bool,
-  bubbleStyles: PropTypes.shape({
-    text: PropTypes.object, 
-    chatbubble: PropTypes.object,
-  }),
+    messages: PropTypes.array.isRequired,
+    histCount: PropTypes.number,
+    isTyping: PropTypes.bool,
+    hasInputField: PropTypes.bool,
+    showSenderName: PropTypes.bool,
+    bubblesCentered: PropTypes.bool,
+    scrollToBottom: PropTypes.bool,
+    startAtBottom: PropTypes.bool,
+    onDeleteMessage: PropTypes.func,
+    onSaveToMemory: PropTypes.func,
+    onReact: PropTypes.func,
+    onImageOpen: PropTypes.func,
+    onImageDownload: PropTypes.func,
 };
+
+export default ChatFeed;

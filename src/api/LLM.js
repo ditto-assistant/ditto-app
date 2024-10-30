@@ -16,6 +16,7 @@ import { getToken } from "./auth";
  * @throws {Error} If there's an error during the LLM call.
  */
 export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "", textCallback = null) {
+  console.log('Sending prompt to LLM: ', model);
   let responseMessage = "";
   let retries = 0;
   const maxRetries = 3;

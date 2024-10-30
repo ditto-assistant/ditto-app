@@ -40,6 +40,7 @@ HTML Script:
 
 ## Addional Instructions:
 - Do not include any surrounding text in the response. Only include the full HTML script under \`\`\`html and end with \`\`\`.
+- ALWAYS respond with the FULL HTML script. DO NOT just respond with snippets of the HTML script.
 
 <!working_on_script_module>
 

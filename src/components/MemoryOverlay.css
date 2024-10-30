@@ -4,13 +4,14 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 4000;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
+    backdrop-filter: blur(4px);
 }
 
 .MemoryOverlay.visible {
@@ -18,17 +19,18 @@
 }
 
 .MemoryContent {
-    background-color: #2f3136;
-    border-radius: 20px;
-    padding: 20px;
-    width: 50%;
-    max-width: 500px;
-    max-height: 80vh;
+    background-color: #36393F;
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 85vh;
     overflow-y: auto;
     color: white;
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0;
     transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .MemoryOverlay.visible .MemoryContent {
@@ -36,25 +38,127 @@
     opacity: 1;
 }
 
-.MemoryContent h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
+/* Custom scrollbar */
+.MemoryContent::-webkit-scrollbar {
+    width: 8px;
 }
 
-.MemoryContent button {
-    background-color: #7289da;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    padding: 10px 20px;
-    margin-top: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    display: block;
+.MemoryContent::-webkit-scrollbar-track {
+    background: #2F3136;
+    border-radius: 4px;
+}
+
+.MemoryContent::-webkit-scrollbar-thumb {
+    background: #202225;
+    border-radius: 4px;
+}
+
+.MemoryContent::-webkit-scrollbar-thumb:hover {
+    background: #18191C;
+}
+
+/* Smooth hover transitions for all interactive elements */
+button, select {
+    transition: all 0.2s ease-in-out !important;
+}
+
+button:hover, select:hover {
+    transform: translateY(-1px);
+}
+
+button:active, select:active {
+    transform: translateY(0px);
+}
+
+/* Add to existing CSS */
+.confirmation-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    backdrop-filter: blur(4px);
 }
 
-.MemoryContent button:hover {
-    background-color: #5b6eae;
+.confirmation-dialog.visible {
+    opacity: 1;
+}
+
+.confirmation-content {
+    background-color: #36393F;
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.confirmation-dialog.visible .confirmation-content {
+    transform: scale(1);
+}
+
+.confirmation-content h3 {
+    margin: 0 0 16px 0;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.confirmation-content p {
+    margin: 0 0 24px 0;
+    color: #DCDDDE;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.confirmation-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.confirmation-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.confirmation-buttons button:hover {
+    transform: translateY(-1px);
+}
+
+.confirmation-buttons button:active {
+    transform: translateY(0px);
+}
+
+.cancel-button {
+    background-color: #4F545C;
+    color: #FFFFFF;
+}
+
+.cancel-button:hover {
+    background-color: #5D6269;
+}
+
+.confirm-button {
+    background: linear-gradient(135deg, #ED4245 0%, #AB2123 100%);
+    color: #FFFFFF;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.confirm-button:hover {
+    filter: brightness(1.1);
 }
