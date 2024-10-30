@@ -338,7 +338,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 5000;
   opacity: 1;
   transition: opacity 1s ease-in-out;
 }
@@ -1685,5 +1685,124 @@ input:checked + .toggle-slider:before {
 .chat-bubble:has(.chat-image-container) {
   padding-top: 0;
   overflow: hidden;
+}
+
+/* Add these styles at the end of the file */
+
+/* Memory code block styles */
+.memory-code-container {
+  margin: 12px 0;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.memory-code-container .code-block {
+  margin: 0;
+  padding: 12px;
+  background: #1e1f22 !important;
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+
+.memory-code-container pre {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Memory inline code styles */
+.memory-inline-code {
+  background: #1e1f22;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+  margin: 0 2px;
+}
+
+.memory-inline-code .inline-code {
+  color: #ffffff;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Update copy button styles for memory code blocks */
+.memory-code-container .copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #4752c4;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2; /* Added to ensure button stays above language indicator */
+}
+
+.memory-code-container:hover .copy-button {
+  opacity: 1;
+}
+
+/* Update inline code copy button for memories */
+.memory-inline-code .copy-button {
+  padding: 2px 4px;
+  margin-left: 4px;
+  background-color: #4752c4;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+}
+
+.memory-inline-code .copy-button svg {
+  font-size: 0.9em;
+}
+
+/* Ensure code is selectable in memories */
+.memory-code-container code,
+.memory-inline-code code {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Add styles for code block language indicator */
+.memory-code-container::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-bottom-right-radius: 4px;
+  border-top-left-radius: 8px;
+  z-index: 1;
+}
+
+/* Adjust memory item padding when containing code */
+.memory-item:has(.memory-code-container) {
+  padding: 16px;
+}
+
+/* Make sure code blocks don't overflow */
+.memory-code-container pre {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Add responsive styles for code blocks */
+@media screen and (max-width: 480px) {
+  .memory-code-container .code-block {
+    font-size: 0.8em;
+    padding: 8px;
+  }
+  
+  .memory-inline-code {
+    font-size: 0.8em;
+  }
+  
+  .memory-code-container .copy-button {
+    opacity: 1; /* Always show copy button on mobile */
+    transform: scale(0.9);
+  }
 }
 
