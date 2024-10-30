@@ -80,19 +80,6 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
         };
     }, []);
 
-    const findCorrespondingNode = (rootNode, targetNode) => {
-        const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ELEMENT);
-        let currentNode = walker.currentNode;
-
-        while (currentNode) {
-            if (currentNode.isEqualNode(targetNode)) {
-                return currentNode;
-            }
-            currentNode = walker.nextNode();
-        }
-        return null;
-    };
-
     const handleSendMessage = async () => {
         if (!chatInput.trim()) return;
         const userMessage = chatInput.trim();
@@ -106,10 +93,8 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
         const fullTaskDescription = "The user has selected this section of the code to focus on:\n" + snippet + ". The user has also provided the following instructions:\n" + taskDescription;
         
         const constructedPrompt = htmlTemplate(fullTaskDescription, htmlContent);
-        // Log the prompt in green
         console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
         const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
-        // Log the response in yellow
         console.log('\x1b[33m%s\x1b[0m', response);
         setIsTyping(false);
 
@@ -125,6 +110,14 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
 
         // Close the editor
         onClose();
+    };
+
+    const handleSave = () => {
+        if (code !== node.outerHTML) {
+            onSave(code);
+        } else {
+            onClose();
+        }
     };
 
     useEffect(() => {
@@ -148,7 +141,7 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                     </IconButton>
                     <IconButton 
                         size="small" 
-                        onClick={() => onSave(code)}
+                        onClick={handleSave}
                         style={styles.nodeEditorButton}
                     >
                         <FaCheck size={16} color={darkModeColors.primary} />
