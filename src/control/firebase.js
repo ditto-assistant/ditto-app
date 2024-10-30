@@ -6,7 +6,8 @@ import { initializeApp } from "firebase/app";
 import {
   getFirestore, connectFirestoreEmulator, query,
   collection, addDoc, orderBy, updateDoc,
-  limit, getDocs, writeBatch, deleteDoc, where
+  limit, getDocs, writeBatch, deleteDoc, where,
+  getCountFromServer
 } from "firebase/firestore";
 
 import { getStorage, ref, uploadBytes, deleteObject, getDownloadURL, listAll } from "firebase/storage";
@@ -216,11 +217,11 @@ export const grabConversationHistory = async (userID) => {
   * */
 export const grabConversationHistoryCount = async (userID) => {
   try {
-    const querySnapshot = await getDocs(collection(db, "memory", userID, "conversations"));
-    const count = querySnapshot.size;
-    return count;
+    const conversationsRef = collection(db, "memory", userID, "conversations");
+    const snapshot = await getCountFromServer(conversationsRef);
+    return snapshot.data().count;
   } catch (e) {
-    console.error("Error getting documents: ", e);
+    console.error("Error getting conversation count: ", e);
     return 0;
   }
 }
