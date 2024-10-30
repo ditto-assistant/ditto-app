@@ -141,7 +141,8 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
                     enabled: true,
                     color: 'rgba(0,0,0,0.2)',
                     size: 5
-                }
+                },
+                mass: 1
             },
             edges: {
                 arrows: {
@@ -169,14 +170,25 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
                 stabilization: {
                     enabled: true,
                     iterations: 1000,
-                    updateInterval: 100
-                }
+                    updateInterval: 100,
+                    fit: true
+                },
+                timestep: 0.5,
+                maxVelocity: 50,
+                minVelocity: 0.1
             },
             interaction: {
                 hover: true,
                 zoomView: true,
                 dragView: true,
-                dragNodes: true
+                dragNodes: true,
+                multiselect: false,
+                selectConnectedEdges: false,
+                keyboard: {
+                    enabled: false
+                },
+                navigationButtons: false,
+                tooltipDelay: 0,
             }
         };
 
@@ -199,22 +211,80 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
             }
         });
 
-        // Add physics animation on node release
-        networkRef.current.on('dragEnd', (params) => {
+        let isDragging = false;
+        let draggedNode = null;
+
+        networkRef.current.on('dragStart', (params) => {
             if (params.nodes.length > 0) {
-                const node = params.nodes[0];
-                const position = networkRef.current.getPositions([node])[node];
-                networkRef.current.physics.velocities[node] = {
-                    x: (Math.random() - 0.5) * 50,
-                    y: (Math.random() - 0.5) * 50
-                };
+                isDragging = true;
+                draggedNode = params.nodes[0];
             }
         });
+
+        networkRef.current.on('dragEnd', (params) => {
+            if (isDragging && draggedNode) {
+                const position = networkRef.current.getPositions([draggedNode])[draggedNode];
+                
+                const velocity = {
+                    x: (Math.random() - 0.5) * 30,
+                    y: (Math.random() - 0.5) * 30
+                };
+
+                networkRef.current.body.data.nodes.update([{
+                    id: draggedNode,
+                    x: position.x,
+                    y: position.y,
+                    vx: velocity.x,
+                    vy: velocity.y
+                }]);
+
+                isDragging = false;
+                draggedNode = null;
+            }
+        });
+
+        const hammer = new window.Hammer(containerRef.current);
+        hammer.get('pinch').set({ enable: true });
+
+        let lastScale = 1;
+        hammer.on('pinch', (ev) => {
+            const delta = ev.scale / lastScale;
+            lastScale = ev.scale;
+            
+            const rect = containerRef.current.getBoundingClientRect();
+            const pinchCenter = {
+                x: ev.center.x - rect.left,
+                y: ev.center.y - rect.top
+            };
+
+            const networkPosition = networkRef.current.DOMtoCanvas(pinchCenter);
+            
+            networkRef.current.zoom(delta, {
+                position: networkPosition,
+                scale: networkRef.current.getScale() * delta
+            });
+        });
+
+        hammer.on('pinchend', () => {
+            lastScale = 1;
+        });
+
+        const preventDefaultTouch = (e) => {
+            if (e.target.closest('.vis-network')) {
+                e.stopPropagation();
+            } else {
+                e.preventDefault();
+            }
+        };
+
+        document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
 
         return () => {
             if (networkRef.current) {
                 networkRef.current.destroy();
             }
+            document.removeEventListener('touchmove', preventDefaultTouch);
+            hammer.destroy();
         };
     }, [htmlContent, onNodeClick]);
 
@@ -230,6 +300,7 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
             <div 
                 ref={containerRef} 
                 style={styles.graph}
+                className="vis-network"
             />
             <AnimatePresence>
                 {selectedNode && (
