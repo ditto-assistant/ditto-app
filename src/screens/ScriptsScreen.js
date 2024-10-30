@@ -1435,10 +1435,16 @@ const styles = {
         gap: '16px',
         padding: '0 20px',
         marginTop: '16px',
+        '@media (max-width: 400px)': {
+            flexDirection: 'column',
+            width: '100%',
+            gap: '8px',
+        },
     },
     sortButton: {
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: '8px',
         padding: '8px 16px',
         backgroundColor: darkModeColors.cardBackground,
@@ -1448,10 +1454,15 @@ const styles = {
         color: darkModeColors.textSecondary,
         fontSize: '14px',
         transition: 'all 0.2s ease',
+        width: '140px',
+        flexShrink: 0,
         '&:hover': {
             backgroundColor: `${darkModeColors.primary}15`,
             borderColor: darkModeColors.primary,
             color: darkModeColors.primary,
+        },
+        '@media (max-width: 400px)': {
+            width: '100%',
         },
     },
     sortIcon: {

@@ -30,17 +30,11 @@ const SearchBar = ({ searchTerm, onSearchChange }) => {
 
 const styles = {
     searchWrapper: {
-        width: '100%',
-        padding: '16px',
-        boxSizing: 'border-box',
-        position: 'sticky',
-        top: '104px', // Height of header (64px) + tabs (40px)
-        zIndex: 999,
-        backgroundColor: darkModeColors.foreground,
+        flex: 1,
         display: 'flex',
-        justifyContent: 'center',
-        '@media (max-width: 600px)': {
-            padding: '12px 8px',
+        position: 'relative',
+        '@media (max-width: 400px)': {
+            width: '100%',
         },
     },
     searchContainer: {
@@ -50,16 +44,9 @@ const styles = {
         borderRadius: '8px',
         padding: '8px 16px',
         width: '100%',
-        maxWidth: '800px', // Increased from 600px
-        minWidth: '280px', // Added minimum width
         border: `1px solid ${darkModeColors.border}`,
         transition: 'all 0.2s ease',
         boxSizing: 'border-box',
-        margin: '0 auto',
-        '@media (max-width: 600px)': {
-            padding: '8px 12px',
-            margin: '0 4px',
-        },
         '&:focus-within': {
             borderColor: darkModeColors.primary,
             boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
