@@ -31,7 +31,8 @@ const styles = {
         padding: '0 20px',
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
+        position: 'relative',
+        justifyContent: 'space-between',
     },
     backButton: {
         color: '#dcddde',
@@ -39,6 +40,7 @@ const styles = {
         transition: 'all 0.3s ease',
         padding: '8px',
         borderRadius: '50%',
+        zIndex: 1,
         '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
             transform: 'scale(1.1)',
@@ -49,8 +51,13 @@ const styles = {
         fontSize: '1.1rem',
         fontWeight: '600',
         color: '#dcddde',
-        flexGrow: 1,
         fontFamily: 'Inter, sans-serif',
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        textAlign: 'center',
+        width: 'auto',
+        pointerEvents: 'none',
     },
     fullscreenButton: {
         color: '#dcddde',
@@ -58,6 +65,8 @@ const styles = {
         transition: 'all 0.3s ease',
         padding: '8px',
         borderRadius: '50%',
+        zIndex: 1,
+        marginLeft: 'auto',
         '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
             transform: 'scale(1.1)',
