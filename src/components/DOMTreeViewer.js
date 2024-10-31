@@ -56,6 +56,7 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
     const [code, setCode] = useState(node.outerHTML);
     const [chatMessages, setChatMessages] = useState([]);
     const [chatInput, setChatInput] = useState('');
+    const chatInputRef = useRef(null);
     const [modelPreferences, setModelPreferences] = useState({ programmerModel: 'claude-3-5-sonnet' });
     const userID = localStorage.getItem('userID');
     const [showChat, setShowChat] = useState(false);
@@ -127,6 +128,22 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [chatMessages]);
+
+    const adjustTextareaHeight = (textarea) => {
+        if (!textarea) return;
+        
+        // Reset height to auto to get the correct scrollHeight
+        textarea.style.height = 'auto';
+        
+        // Calculate line height (assuming 14px font size and 1.5 line height)
+        const lineHeight = 21; // 14px * 1.5
+        const padding = 16; // 8px top + 8px bottom
+        const maxHeight = lineHeight * 6 + padding; // 6 rows max
+        
+        // Set new height
+        const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+        textarea.style.height = `${newHeight}px`;
+    };
 
     return (
         <motion.div style={styles.nodeEditor}>
@@ -234,18 +251,21 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                             <div ref={messagesEndRef} />
                         </div>
                         <div style={styles.chatInputContainer}>
-                            <input
-                                type="text"
+                            <textarea
+                                ref={chatInputRef}
                                 value={chatInput}
-                                onChange={(e) => setChatInput(e.target.value)}
-                                placeholder="Type your message..."
-                                style={styles.chatInput}
+                                onChange={(e) => {
+                                    setChatInput(e.target.value);
+                                    adjustTextareaHeight(e.target);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
                                         handleSendMessage();
                                     }
                                 }}
+                                placeholder="Type your message..."
+                                style={styles.chatInput}
                             />
                             <button onClick={handleSendMessage} style={styles.sendButton}>Send</button>
                         </div>
@@ -769,46 +789,41 @@ const styles = {
         maxWidth: '80%',
     },
     chatInputContainer: {
-        display: 'flex',
+        padding: '12px',
         borderTop: `1px solid ${darkModeColors.border}`,
-        padding: '8px',
-        backgroundColor: darkModeColors.background,
+        display: 'flex',
+        gap: '8px',
     },
     chatInput: {
         flex: 1,
-        padding: '8px 12px',
+        backgroundColor: darkModeColors.background,
         border: `1px solid ${darkModeColors.border}`,
         borderRadius: '6px',
-        outline: 'none',
-        backgroundColor: '#1A1B1E', // Slightly darker than background
+        padding: '8px 12px',
         color: darkModeColors.text,
         fontSize: '14px',
-        transition: 'all 0.2s ease',
-        marginRight: '8px',
-        '&:hover': {
-            borderColor: `${darkModeColors.primary}50`,
-        },
+        lineHeight: '1.5',
+        outline: 'none',
+        resize: 'none',
+        minHeight: '40px',
+        maxHeight: '147px', // 6 rows * 21px + 16px padding
+        overflowY: 'auto',
+        transition: 'height 0.2s ease',
         '&:focus': {
             borderColor: darkModeColors.primary,
-            boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
         },
     },
     sendButton: {
-        padding: '8px 16px',
         backgroundColor: darkModeColors.primary,
         color: darkModeColors.text,
         border: 'none',
         borderRadius: '6px',
-        cursor: 'pointer',
+        padding: '8px 16px',
         fontSize: '14px',
-        fontWeight: '500',
-        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
         '&:hover': {
             backgroundColor: darkModeColors.secondary,
-            transform: 'translateY(-1px)',
-        },
-        '&:active': {
-            transform: 'translateY(0)',
         },
     },
 };

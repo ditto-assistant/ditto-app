@@ -1,6 +1,6 @@
 {
   "name": "ditto-pwa",
-  "version": "0.8.82",
+  "version": "0.8.84",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",

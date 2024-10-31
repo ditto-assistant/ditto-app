@@ -167,13 +167,22 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const [modelPreferences, setModelPreferences] = useState({ programmerModel: 'claude-3-5-sonnet' });
     const userID = localStorage.getItem('userID');
     const isMobileRef = useRef(false);
-    const [scriptChatSize, setScriptChatSize] = useState({ width: 400, height: 500 });
+    const [scriptChatSize, setScriptChatSize] = useState({
+        width: isMobile ? window.innerWidth * 0.9 : 400,
+        height: isMobile ? window.innerHeight * 0.6 : 500
+    });
     const [messageBoxHeight, setMessageBoxHeight] = useState(40);
     const resizingRef = useRef(null);
     const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null);
     const [scriptChatCopied, setScriptChatCopied] = useState(false);
-    const [scriptChatPosition, setScriptChatPosition] = useState({ x: null, y: null });
+    const [scriptChatPosition, setScriptChatPosition] = useState({
+        x: isMobile ? (window.innerWidth - (window.innerWidth * 0.9)) / 2 : null,
+        y: isMobile ? (window.innerHeight - (window.innerHeight * 0.6)) / 2 : null
+    });
     const dragRef = useRef(null);
+
+    // Add this state to track if we're currently resizing
+    const [isResizing, setIsResizing] = useState(false);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -202,14 +211,12 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             const constructedPrompt = htmlTemplate(userMessage, code);
             const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
             
-            setScriptChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
-
             // Extract code between ```html and ```
             const codeBlockRegex = /```html\n([\s\S]*?)```/;
             const match = response.match(codeBlockRegex);
-            if (match) {
-                const updatedCode = match[1].trim();
-                
+            let updatedCode = match ? match[1].trim() : null;
+
+            if (updatedCode) {
                 // Add current state to history before updating
                 const newHistory = editHistory.slice(0, historyIndex + 1);
                 newHistory.push({ content: updatedCode });
@@ -219,6 +226,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 // Update the code
                 setCode(updatedCode);
                 setPreviewKey(prev => prev + 1);
+
+                // Add a message indicating task completion
+                setScriptChatMessages(prev => [...prev, { role: 'assistant', content: 'Task completed', fullScript: updatedCode }]);
+            } else {
+                setScriptChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
             }
         } catch (error) {
             console.error('Error in chat:', error);
@@ -519,7 +531,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         };
     }, []);
 
-    const handleResizeMouseDown = (e, direction) => {
+    const handleResizeMouseDown = (e) => {
         e.preventDefault();
         e.stopPropagation();
         
@@ -527,38 +539,26 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         const startY = e.pageY;
         const startWidth = scriptChatSize.width;
         const startHeight = scriptChatSize.height;
-        const startMessageHeight = messageBoxHeight;
-        
-        resizingRef.current = direction;
 
-        const handleMouseMove = (e) => {
-            if (!resizingRef.current) return;
-
-            if (resizingRef.current === 'scriptChat') {
-                // Calculate width from right edge (fixed) to mouse position
-                const containerRect = containerRef.current.getBoundingClientRect();
-                const rightEdge = containerRect.right - 12; // Account for padding
-                const newWidth = Math.max(300, rightEdge - e.clientX);
-                const newHeight = Math.max(300, Math.min(window.innerHeight - 100, startHeight + (e.pageY - startY)));
+        const handleResize = (e) => {
+            requestAnimationFrame(() => {
+                const newWidth = Math.max(300, startWidth + (e.pageX - startX));
+                const newHeight = Math.max(300, startHeight + (e.pageY - startY));
                 
-                setScriptChatSize({ 
-                    width: newWidth, 
-                    height: newHeight 
+                setScriptChatSize({
+                    width: newWidth,
+                    height: newHeight
                 });
-            } else if (resizingRef.current === 'messageBox') {
-                const newHeight = Math.max(40, Math.min(200, startMessageHeight + e.pageY - startY));
-                setMessageBoxHeight(newHeight);
-            }
+            });
         };
 
-        const handleMouseUp = () => {
-            resizingRef.current = null;
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
+        const handleResizeEnd = () => {
+            document.removeEventListener('mousemove', handleResize);
+            document.removeEventListener('mouseup', handleResizeEnd);
         };
 
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('mouseup', handleResizeEnd);
     };
 
     const adjustTextareaHeight = (textarea) => {
@@ -606,7 +606,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     };
 
     const handleDragStart = (e) => {
-        if (e.target.tagName === 'TEXTAREA' || e.target.closest('button')) return;
+        if (e.target.tagName === 'TEXTAREA' || 
+            e.target.closest('button') || 
+            isResizing || 
+            e.target === dragRef.current) return;
         
         const container = dragRef.current;
         if (!container) return;
@@ -614,29 +617,24 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         const rect = container.getBoundingClientRect();
         const offsetX = e.clientX - rect.left;
         const offsetY = e.clientY - rect.top;
-        const startWidth = rect.width;  // Store initial width
-        const startHeight = rect.height;  // Store initial height
 
         const handleDrag = (e) => {
-            const x = e.clientX - offsetX;
-            const y = e.clientY - offsetY;
-            
-            // Keep window within viewport bounds
-            const maxX = window.innerWidth - startWidth;  // Use stored width
-            const maxY = window.innerHeight - startHeight;  // Use stored height
-            
-            setScriptChatPosition({
-                x: Math.max(0, Math.min(x, maxX)),
-                y: Math.max(0, Math.min(y, maxY))
+            requestAnimationFrame(() => {
+                const x = e.clientX - offsetX;
+                const y = e.clientY - offsetY;
+                
+                // Keep window within viewport bounds
+                const maxX = window.innerWidth - rect.width;
+                const maxY = window.innerHeight - rect.height;
+                
+                setScriptChatPosition({
+                    x: Math.max(0, Math.min(x, maxX)),
+                    y: Math.max(0, Math.min(y, maxY))
+                });
             });
         };
 
         const handleDragEnd = () => {
-            // Store final dimensions in state
-            setScriptChatSize({
-                width: container.offsetWidth,
-                height: container.offsetHeight
-            });
             document.removeEventListener('mousemove', handleDrag);
             document.removeEventListener('mouseup', handleDragEnd);
         };
@@ -668,48 +666,15 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     </div>
                 </div>
                 <div style={styles.actions}>
-                    <div style={styles.searchContainer}>
-                        <SearchOverlay 
-                            visible={searchVisible}
-                            searchTerm={searchTerm}
-                            setSearchTerm={setSearchTerm}
-                            onSearch={handleSearch}
-                            onClose={() => {
-                                setSearchVisible(false);
-                                setSearchTerm('');
+                    <Tooltip title="Chat">
+                        <IconButton
+                            onClick={() => setShowScriptChat(prev => !prev)}
+                            sx={{
+                                ...styles.iconButton,
+                                color: showScriptChat ? darkModeColors.primary : darkModeColors.text,
                             }}
-                            searchResults={searchResults}
-                            isMobile={isMobile}
-                        />
-                        <Tooltip title={searchVisible ? "Close Search" : "Search"}>
-                            <IconButton
-                                onClick={() => setSearchVisible(!searchVisible)}
-                                sx={{
-                                    ...styles.iconButton,
-                                    color: searchVisible ? darkModeColors.primary : darkModeColors.text,
-                                }}
-                            >
-                                <FaSearch size={16} />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
-                    <div style={styles.divider} />
-                    <Tooltip title="Undo">
-                        <IconButton
-                            onClick={handleUndo}
-                            disabled={historyIndex === 0}
-                            sx={styles.iconButton}
                         >
-                            <FaUndo size={16} color={historyIndex === 0 ? darkModeColors.textSecondary : darkModeColors.text} />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Redo">
-                        <IconButton
-                            onClick={handleRedo}
-                            disabled={historyIndex === editHistory.length - 1}
-                            sx={styles.iconButton}
-                        >
-                            <FaRedo size={16} color={historyIndex === editHistory.length - 1 ? darkModeColors.textSecondary : darkModeColors.text} />
+                            <FaComments size={16} />
                         </IconButton>
                     </Tooltip>
                     <div style={styles.divider} />
@@ -754,14 +719,72 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 >
                     <div style={styles.paneHeader}>
                         <span style={styles.paneTitle}>Editor</span>
-                        <Tooltip title={isMaximized === 'editor' ? 'Restore' : 'Maximize'}>
-                            <IconButton
-                                onClick={() => toggleMaximize('editor')}
-                                sx={styles.iconButton}
-                            >
-                                {isMaximized === 'editor' ? <FaCompress size={12} /> : <FaExpand size={12} />}
-                            </IconButton>
-                        </Tooltip>
+                        <div style={styles.paneActions}>
+                            <Tooltip title="Undo">
+                                <IconButton
+                                    onClick={handleUndo}
+                                    disabled={historyIndex === 0}
+                                    sx={styles.iconButton}
+                                >
+                                    <FaUndo size={12} color={historyIndex === 0 ? darkModeColors.textSecondary : darkModeColors.text} />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Redo">
+                                <IconButton
+                                    onClick={handleRedo}
+                                    disabled={historyIndex === editHistory.length - 1}
+                                    sx={styles.iconButton}
+                                >
+                                    <FaRedo size={12} color={historyIndex === editHistory.length - 1 ? darkModeColors.textSecondary : darkModeColors.text} />
+                                </IconButton>
+                            </Tooltip>
+                            <div style={styles.divider} />
+                            <div style={styles.searchContainer}>
+                                <SearchOverlay 
+                                    visible={searchVisible}
+                                    searchTerm={searchTerm}
+                                    setSearchTerm={setSearchTerm}
+                                    onSearch={handleSearch}
+                                    onClose={() => {
+                                        setSearchVisible(false);
+                                        setSearchTerm('');
+                                    }}
+                                    searchResults={searchResults}
+                                    isMobile={isMobile}
+                                />
+                                <Tooltip title={searchVisible ? "Close Search" : "Search"}>
+                                    <IconButton
+                                        onClick={() => setSearchVisible(!searchVisible)}
+                                        sx={{
+                                            ...styles.iconButton,
+                                            color: searchVisible ? darkModeColors.primary : darkModeColors.text,
+                                        }}
+                                    >
+                                        <FaSearch size={12} />
+                                    </IconButton>
+                                </Tooltip>
+                            </div>
+                            <Tooltip title="Toggle Word Wrap">
+                                <IconButton
+                                    onClick={() => setWrapEnabled(prev => !prev)}
+                                    sx={{
+                                        ...styles.iconButton,
+                                        color: wrapEnabled ? darkModeColors.primary : darkModeColors.text,
+                                    }}
+                                >
+                                    <FaAlignLeft size={12} />
+                                </IconButton>
+                            </Tooltip>
+                            <div style={styles.divider} />
+                            <Tooltip title={isMaximized === 'editor' ? 'Restore' : 'Maximize'}>
+                                <IconButton
+                                    onClick={() => toggleMaximize('editor')}
+                                    sx={styles.iconButton}
+                                >
+                                    {isMaximized === 'editor' ? <FaCompress size={12} /> : <FaExpand size={12} />}
+                                </IconButton>
+                            </Tooltip>
+                        </div>
                     </div>
                     <div style={styles.viewToggle}>
                         <Tooltip title="Code View">
@@ -786,30 +809,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 }}
                             >
                                 <FaProjectDiagram size={16} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Chat">
-                            <IconButton
-                                onClick={() => setShowScriptChat(prev => !prev)}
-                                sx={{
-                                    ...styles.iconButton,
-                                    backgroundColor: showScriptChat ? `${darkModeColors.primary}20` : 'transparent',
-                                    color: showScriptChat ? darkModeColors.primary : darkModeColors.text,
-                                }}
-                            >
-                                <FaComments size={16} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Toggle Word Wrap">
-                            <IconButton
-                                onClick={() => setWrapEnabled(prev => !prev)}
-                                sx={{
-                                    ...styles.iconButton,
-                                    backgroundColor: wrapEnabled ? `${darkModeColors.primary}20` : 'transparent',
-                                    color: wrapEnabled ? darkModeColors.primary : darkModeColors.text,
-                                }}
-                            >
-                                <FaAlignLeft size={16} />
                             </IconButton>
                         </Tooltip>
                     </div>
@@ -928,27 +927,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         exit={{ opacity: 0, y: -20 }}
                         style={{
                             ...styles.scriptChatContainer,
-                            width: `${scriptChatSize.width}px`,  // Use explicit pixels
-                            height: `${scriptChatSize.height}px`,  // Use explicit pixels
+                            width: `${scriptChatSize.width}px`,
+                            height: `${scriptChatSize.height}px`,
                             left: scriptChatPosition.x !== null ? `${scriptChatPosition.x}px` : 'auto',
                             top: scriptChatPosition.y !== null ? `${scriptChatPosition.y}px` : '90px',
-                            cursor: 'move',
-                            resize: 'both',
+                            cursor: isResizing ? 'nw-resize' : isMobile ? 'default' : 'move',
                         }}
-                        onMouseDown={handleDragStart}
-                        onResize={(e) => {
-                            // Update size state when resized
-                            const container = dragRef.current;
-                            if (container) {
-                                setScriptChatSize({
-                                    width: container.offsetWidth,
-                                    height: container.offsetHeight
-                                });
-                            }
-                        }}
+                        onMouseDown={!isMobile ? handleDragStart : undefined}
                     >
                         <div style={styles.scriptChatHeader}>
-                            <span style={styles.scriptChatTitle}>Script Chat</span>
+                            <span style={styles.scriptChatTitle}>Programmer Agent</span>
                             <IconButton
                                 onClick={() => setShowScriptChat(false)}
                                 sx={styles.iconButton}
@@ -969,28 +957,45 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     }}
                                     onClick={(e) => handleScriptChatBubbleClick(e, index, msg.role)}
                                 >
-                                    <ReactMarkdown
-                                        children={msg.content}
-                                        components={{
-                                            code({node, inline, className, children, ...props}) {
-                                                const match = /language-(\w+)/.exec(className || '');
-                                                return !inline && match ? (
-                                                    <SyntaxHighlighter
-                                                        style={vscDarkPlus}
-                                                        language={match[1]}
-                                                        PreTag="div"
-                                                        {...props}
-                                                    >
-                                                        {String(children).replace(/\n$/, '')}
-                                                    </SyntaxHighlighter>
-                                                ) : (
-                                                    <code className={className} {...props}>
-                                                        {children}
-                                                    </code>
-                                                );
-                                            },
-                                        }}
-                                    />
+                                    {msg.role === 'assistant' && msg.fullScript ? (
+                                        <>
+                                            <div>Task completed</div>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigator.clipboard.writeText(msg.fullScript);
+                                                    setScriptChatCopied(true);
+                                                    setTimeout(() => setScriptChatCopied(false), 2000);
+                                                }}
+                                                style={styles.copyFullScriptButton}
+                                            >
+                                                Copy Full Script
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <ReactMarkdown
+                                            children={msg.content}
+                                            components={{
+                                                code({node, inline, className, children, ...props}) {
+                                                    const match = /language-(\w+)/.exec(className || '');
+                                                    return !inline && match ? (
+                                                        <SyntaxHighlighter
+                                                            style={vscDarkPlus}
+                                                            language={match[1]}
+                                                            PreTag="div"
+                                                            {...props}
+                                                        >
+                                                            {String(children).replace(/\n$/, '')}
+                                                        </SyntaxHighlighter>
+                                                    ) : (
+                                                        <code className={className} {...props}>
+                                                            {children}
+                                                        </code>
+                                                    );
+                                                },
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             ))}
                             {scriptChatActionOverlay && (
@@ -1423,11 +1428,13 @@ const styles = {
         overflow: 'hidden',
         minWidth: '300px',
         minHeight: '300px',
-        right: '12px',
         resize: 'both',
         '@media (max-width: 768px)': {
             width: 'calc(100% - 24px)',
-            height: '400px',
+            height: '50%',
+            right: '12px',
+            bottom: '12px',
+            resize: 'none',
         },
     },
     scriptChatHeader: {
@@ -1506,76 +1513,6 @@ const styles = {
         maxWidth: '80%',
         wordBreak: 'break-word',
     },
-    scriptChatResizeHandle: {
-        position: 'absolute',
-        left: 0,
-        bottom: 0,
-        width: '16px',
-        height: '16px',
-        cursor: 'nw-resize',
-        backgroundColor: 'transparent',
-        borderLeft: `3px solid ${darkModeColors.border}`,
-        borderBottom: `3px solid ${darkModeColors.border}`,
-        borderBottomLeftRadius: '8px',
-        transition: 'border-color 0.2s',
-        zIndex: 1,
-        '&:hover': {
-            borderColor: darkModeColors.primary,
-            borderLeftWidth: '4px',
-            borderBottomWidth: '4px',
-        },
-        '&:active': {
-            borderColor: darkModeColors.primary,
-            borderLeftWidth: '4px',
-            borderBottomWidth: '4px',
-        },
-    },
-    textareaWrapper: {
-        position: 'relative',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    resizeHandle: {
-        position: 'absolute',
-        top: -3,
-        left: 0,
-        right: 0,
-        height: '6px',
-        cursor: 'ns-resize',
-        backgroundColor: 'transparent',
-        '&:hover': {
-            backgroundColor: `${darkModeColors.primary}20`,
-        },
-        '&:active': {
-            backgroundColor: `${darkModeColors.primary}40`,
-        },
-    },
-    scriptChatActionOverlay: {
-        backgroundColor: darkModeColors.foreground,
-        borderRadius: '10px',
-        padding: '8px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        width: 'auto',
-        minWidth: '120px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-        border: `1px solid ${darkModeColors.border}`,
-    },
-    scriptChatActionButton: {
-        backgroundColor: 'transparent',
-        border: 'none',
-        color: darkModeColors.text,
-        padding: '8px 16px',
-        cursor: 'pointer',
-        borderRadius: '6px',
-        transition: 'background-color 0.2s ease',
-        fontSize: '14px',
-        '&:hover': {
-            backgroundColor: `${darkModeColors.hover}80`,
-        },
-    },
     copiedNotification: {
         position: 'fixed',
         bottom: '20px',
@@ -1586,6 +1523,29 @@ const styles = {
         padding: '10px 20px',
         borderRadius: '5px',
         zIndex: 1000,
+    },
+    paneActions: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+    },
+    copyFullScriptButton: {
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '8px',
+        padding: '10px 20px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s, transform 0.2s',
+        marginTop: '8px',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+            transform: 'translateY(-2px)',
+        },
+        '&:active': {
+            transform: 'translateY(0)',
+        },
     },
 };
 
