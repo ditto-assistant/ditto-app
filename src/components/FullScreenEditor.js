@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes, FaChevronDown } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes, FaChevronDown, FaCopy } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
@@ -186,6 +186,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     // Add new state for selected code
     const [selectedCodeAttachment, setSelectedCodeAttachment] = useState(null);
+
+    // Add new state for code viewer overlay
+    const [codeViewerOverlay, setCodeViewerOverlay] = useState(null);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -697,6 +700,20 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         };
     }, [scriptChatSize]);
 
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (scriptChatActionOverlay && !e.target.closest('.scriptChatActionOverlay')) {
+                setScriptChatActionOverlay(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [scriptChatActionOverlay]);
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -1017,49 +1034,114 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     }}
                                     onClick={(e) => handleScriptChatBubbleClick(e, index, msg.role)}
                                 >
-                                    {msg.role === 'assistant' && msg.fullScript ? (
+                                    {msg.role === 'user' ? (
                                         <>
-                                            <div>Task completed</div>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigator.clipboard.writeText(msg.fullScript);
-                                                    setScriptChatCopied(true);
-                                                    setTimeout(() => setScriptChatCopied(false), 2000);
-                                                }}
-                                                style={styles.copyFullScriptButton}
-                                            >
-                                                Copy Full Script
-                                            </button>
+                                            {msg.content.includes('```html') && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setCodeViewerOverlay(msg.content);
+                                                    }}
+                                                    style={styles.viewCodeButton}
+                                                >
+                                                    View Code
+                                                </button>
+                                            )}
+                                            <div style={styles.messageText}>
+                                                {msg.content.split('```')[2]?.split('\n\n')[1] || msg.content}
+                                            </div>
                                         </>
                                     ) : (
-                                        <ReactMarkdown
-                                            children={msg.content}
-                                            components={{
-                                                code({node, inline, className, children, ...props}) {
-                                                    const match = /language-(\w+)/.exec(className || '');
-                                                    return !inline && match ? (
-                                                        <SyntaxHighlighter
-                                                            style={vscDarkPlus}
-                                                            language={match[1]}
-                                                            PreTag="div"
-                                                            {...props}
-                                                        >
-                                                            {String(children).replace(/\n$/, '')}
-                                                        </SyntaxHighlighter>
-                                                    ) : (
-                                                        <code className={className} {...props}>
-                                                            {children}
-                                                        </code>
-                                                    );
-                                                },
-                                            }}
-                                        />
+                                        <>
+                                            <ReactMarkdown
+                                                children={msg.content}
+                                                components={{
+                                                    code({node, inline, className, children, ...props}) {
+                                                        const match = /language-(\w+)/.exec(className || '');
+                                                        return !inline && match ? (
+                                                            <SyntaxHighlighter
+                                                                style={vscDarkPlus}
+                                                                language={match[1]}
+                                                                PreTag="div"
+                                                                {...props}
+                                                            >
+                                                                {String(children).replace(/\n$/, '')}
+                                                            </SyntaxHighlighter>
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        );
+                                                    },
+                                                }}
+                                            />
+                                            {msg.fullScript && (
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigator.clipboard.writeText(msg.fullScript);
+                                                        setScriptChatCopied(true);
+                                                        setTimeout(() => setScriptChatCopied(false), 2000);
+                                                    }}
+                                                    style={styles.copyFullScriptButton}
+                                                >
+                                                    Copy Full Script
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             ))}
+                            
+                            {/* Add code viewer overlay */}
+                            <AnimatePresence>
+                                {codeViewerOverlay && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        style={styles.codeViewerOverlay}
+                                        onClick={() => setCodeViewerOverlay(null)}
+                                    >
+                                        <motion.div
+                                            initial={{ scale: 0.95 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0.95 }}
+                                            style={styles.codeViewerContent}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div style={styles.codeViewerBody}>
+                                                {/* Extract and display only the code snippet */}
+                                                <SyntaxHighlighter
+                                                    style={vscDarkPlus}
+                                                    language="html"
+                                                    PreTag="div"
+                                                >
+                                                    {codeViewerOverlay.split('```html\n')[1].split('```')[0].trim()}
+                                                </SyntaxHighlighter>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigator.clipboard.writeText(
+                                                            codeViewerOverlay.split('```html\n')[1].split('```')[0].trim()
+                                                        );
+                                                        setScriptChatCopied(true);
+                                                        setTimeout(() => setScriptChatCopied(false), 2000);
+                                                        setCodeViewerOverlay(null);
+                                                    }}
+                                                    style={styles.codeViewerCopyButton}
+                                                >
+                                                    Copy Code
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                            
                             {scriptChatActionOverlay && (
                                 <div 
+                                    className="scriptChatActionOverlay"
                                     style={{
                                         ...styles.scriptChatActionOverlay,
                                         position: 'fixed',
@@ -1071,17 +1153,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <button 
-                                        onClick={() => handleScriptChatCopy(scriptChatMessages[scriptChatActionOverlay.index].content)}
-                                        style={styles.scriptChatActionButton}
-                                    >
-                                        Copy
-                                    </button>
-                                    <button 
                                         onClick={() => handleScriptChatDelete(scriptChatActionOverlay.index)}
                                         style={{
                                             ...styles.scriptChatActionButton,
                                             color: '#ff4444',
-                                            borderTop: `1px solid ${darkModeColors.border}`
                                         }}
                                     >
                                         Delete
@@ -1681,6 +1756,143 @@ const styles = {
         transition: 'color 0.2s ease',
         '&:hover': {
             color: '#ff5050',
+        },
+    },
+    scriptChatActionOverlay: {
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '10px',
+        padding: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: 'auto',
+        minWidth: '120px',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+        border: `1px solid ${darkModeColors.border}`,
+        transition: 'transform 0.2s, opacity 0.2s',
+        opacity: 1,
+        pointerEvents: 'auto',
+    },
+    scriptChatActionButton: {
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: darkModeColors.text,
+        padding: '8px 16px',
+        cursor: 'pointer',
+        borderRadius: '6px',
+        transition: 'background-color 0.2s, transform 0.2s',
+        fontSize: '14px',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.hover}80`,
+            transform: 'translateY(-2px)',
+        },
+    },
+    copyCodeButton: {
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '8px',
+        padding: '8px 16px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s, transform 0.2s',
+        marginTop: '8px',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+            transform: 'translateY(-2px)',
+        },
+        '&:active': {
+            transform: 'translateY(0)',
+        },
+    },
+    codeBlockContainer: {
+        position: 'relative',
+        padding: '4px',
+        borderRadius: '8px',
+        backgroundColor: 'transparent',
+    },
+    copyIconOverlay: {
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: '50%',
+        padding: '4px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+        '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        },
+    },
+    copyIcon: {
+        color: darkModeColors.text,
+        fontSize: '14px',
+    },
+    viewCodeButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '6px',
+        padding: '8px 16px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s, transform 0.2s',
+        marginBottom: '8px',
+        '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            transform: 'translateY(-1px)',
+        },
+    },
+    messageText: {
+        color: darkModeColors.text,
+        fontSize: '14px',
+        lineHeight: '1.5',
+    },
+    codeViewerOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000,
+        padding: '20px',
+    },
+    codeViewerContent: {
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '12px',
+        width: '90%',
+        maxWidth: '800px',
+        maxHeight: '80vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        padding: '20px',
+    },
+    codeViewerBody: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+    },
+    codeViewerCopyButton: {
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '8px',
+        padding: '10px 20px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s, transform 0.2s',
+        alignSelf: 'flex-end',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
+            transform: 'translateY(-2px)',
+        },
+        '&:active': {
+            transform: 'translateY(0)',
         },
     },
 };
