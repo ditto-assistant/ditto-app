@@ -172,6 +172,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const resizingRef = useRef(null);
     const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null);
     const [scriptChatCopied, setScriptChatCopied] = useState(false);
+    const [scriptChatPosition, setScriptChatPosition] = useState({ x: null, y: null });
+    const dragRef = useRef(null);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -568,7 +570,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         // Calculate line height (assuming 14px font size and 1.5 line height)
         const lineHeight = 21; // 14px * 1.5
         const padding = 16; // 8px top + 8px bottom
-        const maxHeight = lineHeight * 5 + padding; // 5 rows max
+        const maxHeight = lineHeight * 6 + padding; // 6 rows max
         
         // Set new height
         const newHeight = Math.min(textarea.scrollHeight, maxHeight);
@@ -601,6 +603,46 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const handleScriptChatDelete = (index) => {
         setScriptChatMessages(prev => prev.filter((_, i) => i !== index));
         setScriptChatActionOverlay(null);
+    };
+
+    const handleDragStart = (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.closest('button')) return;
+        
+        const container = dragRef.current;
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+        const startWidth = rect.width;  // Store initial width
+        const startHeight = rect.height;  // Store initial height
+
+        const handleDrag = (e) => {
+            const x = e.clientX - offsetX;
+            const y = e.clientY - offsetY;
+            
+            // Keep window within viewport bounds
+            const maxX = window.innerWidth - startWidth;  // Use stored width
+            const maxY = window.innerHeight - startHeight;  // Use stored height
+            
+            setScriptChatPosition({
+                x: Math.max(0, Math.min(x, maxX)),
+                y: Math.max(0, Math.min(y, maxY))
+            });
+        };
+
+        const handleDragEnd = () => {
+            // Store final dimensions in state
+            setScriptChatSize({
+                width: container.offsetWidth,
+                height: container.offsetHeight
+            });
+            document.removeEventListener('mousemove', handleDrag);
+            document.removeEventListener('mouseup', handleDragEnd);
+        };
+
+        document.addEventListener('mousemove', handleDrag);
+        document.addEventListener('mouseup', handleDragEnd);
     };
 
     return (
@@ -880,13 +922,29 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             <AnimatePresence>
                 {showScriptChat && (
                     <motion.div
+                        ref={dragRef}
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         style={{
                             ...styles.scriptChatContainer,
-                            width: scriptChatSize.width,
-                            height: scriptChatSize.height,
+                            width: `${scriptChatSize.width}px`,  // Use explicit pixels
+                            height: `${scriptChatSize.height}px`,  // Use explicit pixels
+                            left: scriptChatPosition.x !== null ? `${scriptChatPosition.x}px` : 'auto',
+                            top: scriptChatPosition.y !== null ? `${scriptChatPosition.y}px` : '90px',
+                            cursor: 'move',
+                            resize: 'both',
+                        }}
+                        onMouseDown={handleDragStart}
+                        onResize={(e) => {
+                            // Update size state when resized
+                            const container = dragRef.current;
+                            if (container) {
+                                setScriptChatSize({
+                                    width: container.offsetWidth,
+                                    height: container.offsetHeight
+                                });
+                            }
                         }}
                     >
                         <div style={styles.scriptChatHeader}>
@@ -980,50 +1038,37 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             <div ref={scriptChatMessagesEndRef} />
                         </div>
                         <div style={styles.scriptChatInputContainer}>
-                            <div style={styles.textareaWrapper}>
-                                <div
-                                    style={styles.resizeHandle}
-                                    onMouseDown={(e) => handleResizeMouseDown(e, 'messageBox')}
-                                />
-                                <textarea
-                                    value={scriptChatInput}
-                                    onChange={(e) => {
-                                        setScriptChatInput(e.target.value);
-                                        adjustTextareaHeight(e.target);
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (isMobileRef.current) {
-                                            if (e.key === 'Enter') {
+                            <textarea
+                                value={scriptChatInput}
+                                onChange={(e) => {
+                                    setScriptChatInput(e.target.value);
+                                    adjustTextareaHeight(e.target);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (isMobileRef.current) {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            const newValue = scriptChatInput + '\n';
+                                            setScriptChatInput(newValue);
+                                            setTimeout(() => adjustTextareaHeight(e.target), 0);
+                                        }
+                                    } else {
+                                        if (e.key === 'Enter') {
+                                            if (e.shiftKey) {
                                                 e.preventDefault();
                                                 const newValue = scriptChatInput + '\n';
                                                 setScriptChatInput(newValue);
-                                                // Use setTimeout to ensure the new value is set
                                                 setTimeout(() => adjustTextareaHeight(e.target), 0);
-                                            }
-                                        } else {
-                                            if (e.key === 'Enter') {
-                                                if (e.shiftKey) {
-                                                    e.preventDefault();
-                                                    const newValue = scriptChatInput + '\n';
-                                                    setScriptChatInput(newValue);
-                                                    // Use setTimeout to ensure the new value is set
-                                                    setTimeout(() => adjustTextareaHeight(e.target), 0);
-                                                } else {
-                                                    e.preventDefault();
-                                                    handleScriptChatSend();
-                                                }
+                                            } else {
+                                                e.preventDefault();
+                                                handleScriptChatSend();
                                             }
                                         }
-                                    }}
-                                    placeholder="Send a command..."
-                                    style={{
-                                        ...styles.scriptChatInput,
-                                        minHeight: '40px', // Single line height
-                                        height: 'auto', // Let the content determine the height
-                                    }}
-                                    rows={1}
-                                />
-                            </div>
+                                    }
+                                }}
+                                placeholder="Send a command..."
+                                style={styles.scriptChatInput}
+                            />
                             <button 
                                 onClick={handleScriptChatSend}
                                 style={styles.scriptChatSendButton}
@@ -1031,10 +1076,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 Send
                             </button>
                         </div>
-                        <div 
-                            style={styles.scriptChatResizeHandle}
-                            onMouseDown={(e) => handleResizeMouseDown(e, 'scriptChat')}
-                        />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -1371,9 +1412,7 @@ const styles = {
         margin: 0,
     },
     scriptChatContainer: {
-        position: 'absolute',
-        top: '90px',
-        right: '12px',
+        position: 'fixed',
         backgroundColor: darkModeColors.foreground,
         borderRadius: '12px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
@@ -1384,6 +1423,8 @@ const styles = {
         overflow: 'hidden',
         minWidth: '300px',
         minHeight: '300px',
+        right: '12px',
+        resize: 'both',
         '@media (max-width: 768px)': {
             width: 'calc(100% - 24px)',
             height: '400px',
@@ -1426,6 +1467,8 @@ const styles = {
         lineHeight: '1.5',
         outline: 'none',
         resize: 'none',
+        minHeight: '40px',
+        maxHeight: '147px', // 6 rows * 21px + 16px padding
         overflowY: 'auto',
         transition: 'height 0.2s ease',
         '&:focus': {
