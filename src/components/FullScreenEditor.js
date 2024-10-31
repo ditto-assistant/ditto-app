@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes, FaChevronDown } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
@@ -30,7 +30,7 @@ const darkModeColors = {
 
 const useSplitPane = (isMobile, initialPosition = 50) => {
     const [splitPosition, setSplitPosition] = useState(initialPosition);
-    const [isMaximized, setIsMaximized] = useState(null); // null, 'editor', or 'preview'
+    const [isMaximized, setIsMaximized] = useState('preview');
     const isDragging = useRef(false);
     const containerRef = useRef(null);
 
@@ -184,6 +184,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     // Add this state to track if we're currently resizing
     const [isResizing, setIsResizing] = useState(false);
 
+    // Add new state for selected code
+    const [selectedCodeAttachment, setSelectedCodeAttachment] = useState(null);
+
     useEffect(() => {
         // Fetch user's preferred programmer model
         getModelPreferencesFromFirestore(userID).then(prefs => {
@@ -200,15 +203,36 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         return /android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
     };
 
+    // Add function to track selection in AceEditor
+    const handleEditorSelection = (selection) => {
+        const editor = editorRef.current?.editor;
+        if (editor) {
+            const selectedText = editor.getSelectedText();
+            if (selectedText) {
+                setSelectedCodeAttachment(selectedText);
+            }
+        }
+    };
+
     const handleScriptChatSend = async () => {
         if (!scriptChatInput.trim()) return;
         const userMessage = scriptChatInput.trim();
-        setScriptChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        
+        // Create the message content with code attachment if present
+        const messageContent = selectedCodeAttachment ? 
+            `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}` : 
+            userMessage;
+        
+        setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
         setScriptChatInput('');
+        setSelectedCodeAttachment(null); // Clear the attachment after sending
         setIsTyping(true);
 
         try {
-            const constructedPrompt = htmlTemplate(userMessage, code);
+            const constructedPrompt = selectedCodeAttachment ?
+                htmlTemplate(`The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`, code) :
+                htmlTemplate(userMessage, code);
+
             const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
             
             // Extract code between ```html and ```
@@ -643,6 +667,30 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         document.addEventListener('mouseup', handleDragEnd);
     };
 
+    // Add this useEffect to handle window resizing
+    useEffect(() => {
+        const handleWindowResize = () => {
+            const maxWidth = window.innerWidth - 24; // Account for margins
+            const maxHeight = window.innerHeight - 24; // Account for margins
+
+            setScriptChatSize((prevSize) => ({
+                width: Math.min(prevSize.width, maxWidth),
+                height: Math.min(prevSize.height, maxHeight),
+            }));
+
+            setScriptChatPosition((prevPosition) => ({
+                x: Math.min(prevPosition.x, maxWidth - scriptChatSize.width),
+                y: Math.min(prevPosition.y, maxHeight - scriptChatSize.height),
+            }));
+        };
+
+        window.addEventListener('resize', handleWindowResize);
+
+        return () => {
+            window.removeEventListener('resize', handleWindowResize);
+        };
+    }, [scriptChatSize]);
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -838,6 +886,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     useWorker: false,
                                     wrap: wrapEnabled,
                                 }}
+                                onSelectionChange={handleEditorSelection}
                             />
                         ) : (
                             <DOMTreeViewer 
@@ -865,14 +914,19 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 >
                     <div style={styles.paneHeader}>
                         <span style={styles.paneTitle}>Preview</span>
-                        <Tooltip title={isMaximized === 'preview' ? 'Restore' : 'Maximize'}>
-                            <IconButton
-                                onClick={() => toggleMaximize('preview')}
-                                sx={styles.iconButton}
-                            >
-                                {isMaximized === 'preview' ? <FaCompress size={12} /> : <FaExpand size={12} />}
-                            </IconButton>
-                        </Tooltip>
+                        <button
+                            onClick={() => toggleMaximize('preview')}
+                            style={styles.showEditorButton}
+                        >
+                            {isMaximized === 'preview' ? (
+                                <>
+                                    <span style={styles.showEditorText}>Show Editor</span>
+                                    <FaChevronDown size={12} />
+                                </>
+                            ) : (
+                                <FaExpand size={12} />
+                            )}
+                        </button>
                     </div>
                     <iframe
                         key={previewKey}
@@ -931,9 +985,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             height: `${scriptChatSize.height}px`,
                             left: scriptChatPosition.x !== null ? `${scriptChatPosition.x}px` : 'auto',
                             top: scriptChatPosition.y !== null ? `${scriptChatPosition.y}px` : '90px',
-                            cursor: isResizing ? 'nw-resize' : isMobile ? 'default' : 'move',
+                            cursor: 'move',
                         }}
-                        onMouseDown={!isMobile ? handleDragStart : undefined}
+                        onMouseDown={handleDragStart}
                     >
                         <div style={styles.scriptChatHeader}>
                             <span style={styles.scriptChatTitle}>Programmer Agent</span>
@@ -1043,6 +1097,20 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             <div ref={scriptChatMessagesEndRef} />
                         </div>
                         <div style={styles.scriptChatInputContainer}>
+                            {selectedCodeAttachment && (
+                                <div style={styles.codeAttachmentPreview}>
+                                    <pre style={styles.codePreview}>
+                                        {selectedCodeAttachment.length > 100 
+                                            ? selectedCodeAttachment.substring(0, 100) + '...' 
+                                            : selectedCodeAttachment}
+                                    </pre>
+                                    <FaTimes 
+                                        className="RemoveCode" 
+                                        style={styles.removeCodeButton}
+                                        onClick={() => setSelectedCodeAttachment(null)} 
+                                    />
+                                </div>
+                            )}
                             <textarea
                                 value={scriptChatInput}
                                 onChange={(e) => {
@@ -1458,6 +1526,7 @@ const styles = {
         gap: '8px',
     },
     scriptChatInputContainer: {
+        position: 'relative',  // Added to support absolute positioning of attachment
         padding: '12px',
         borderTop: `1px solid ${darkModeColors.border}`,
         display: 'flex',
@@ -1545,6 +1614,67 @@ const styles = {
         },
         '&:active': {
             transform: 'translateY(0)',
+        },
+    },
+    showEditorButton: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: darkModeColors.text,
+        padding: '6px 12px',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        transition: 'background-color 0.2s',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.hover}80`,
+        },
+    },
+    showEditorText: {
+        color: darkModeColors.text,
+        fontSize: '14px',
+        fontWeight: 500,
+    },
+    codeAttachmentPreview: {
+        position: 'absolute',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        padding: '5px',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        boxShadow: '0px 2px 5px rgba(0,0,0,0.5)',
+        maxWidth: '90%',
+        zIndex: 2,
+        cursor: 'default',
+        transition: 'all 0.3s ease',
+        bottom: '100%',
+        left: 0,
+        marginBottom: '10px',
+    },
+
+    codePreview: {
+        margin: 0,
+        padding: '4px 8px',
+        backgroundColor: darkModeColors.background,
+        borderRadius: '4px',
+        color: darkModeColors.text,
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        maxWidth: '100%',
+        overflow: 'hidden',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-all',
+    },
+
+    removeCodeButton: {
+        color: darkModeColors.text,
+        cursor: 'pointer',
+        marginLeft: '8px',
+        transition: 'color 0.2s ease',
+        '&:hover': {
+            color: '#ff5050',
         },
     },
 };
