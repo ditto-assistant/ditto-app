@@ -228,6 +228,12 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setSelectedCodeAttachment(null); // Clear the attachment after sending
         setIsTyping(true);
 
+        // Clear the selection in the editor
+        const editor = editorRef.current?.editor;
+        if (editor) {
+            editor.clearSelection();
+        }
+
         try {
             const constructedPrompt = selectedCodeAttachment ?
                 htmlTemplate(`The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`, code) :
