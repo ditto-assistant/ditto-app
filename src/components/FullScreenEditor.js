@@ -937,19 +937,44 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 >
                     <div style={styles.paneHeader}>
                         <span style={styles.paneTitle}>Preview</span>
-                        <button
-                            onClick={() => toggleMaximize('preview')}
-                            style={styles.showEditorButton}
-                        >
-                            {isMaximized === 'preview' ? (
+                        <div style={styles.paneActions}>
+                            {isMaximized === 'preview' && (
                                 <>
-                                    <span style={styles.showEditorText}>Show Editor</span>
-                                    <FaChevronDown size={12} />
+                                    <Tooltip title="Undo">
+                                        <IconButton
+                                            onClick={handleUndo}
+                                            disabled={historyIndex === 0}
+                                            sx={styles.iconButton}
+                                        >
+                                            <FaUndo size={12} color={historyIndex === 0 ? darkModeColors.textSecondary : darkModeColors.text} />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Redo">
+                                        <IconButton
+                                            onClick={handleRedo}
+                                            disabled={historyIndex === editHistory.length - 1}
+                                            sx={styles.iconButton}
+                                        >
+                                            <FaRedo size={12} color={historyIndex === editHistory.length - 1 ? darkModeColors.textSecondary : darkModeColors.text} />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <div style={styles.divider} />
                                 </>
-                            ) : (
-                                <FaExpand size={12} />
                             )}
-                        </button>
+                            <button
+                                onClick={() => toggleMaximize('preview')}
+                                style={styles.showEditorButton}
+                            >
+                                {isMaximized === 'preview' ? (
+                                    <>
+                                        <span style={styles.showEditorText}>Show Editor</span>
+                                        <FaChevronDown size={12} />
+                                    </>
+                                ) : (
+                                    <FaExpand size={12} />
+                                )}
+                            </button>
+                        </div>
                     </div>
                     <iframe
                         key={previewKey}
