@@ -9,11 +9,13 @@ import { parseHTML, stringifyHTML } from '../utils/htmlParser';
 import { saveScriptToFirestore, syncLocalScriptsWithFirestore, getModelPreferencesFromFirestore } from '../control/firebase'; // Changed from '../control/agent'
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './LoadingSpinner';
-import { promptLLM } from '../api/LLM';
+import { promptLLM, textEmbed } from '../api/LLM';
 import { htmlTemplate, htmlSystemTemplate } from '../ditto/templates/htmlTemplate';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { getShortTermMemory, getLongTermMemory } from '../control/memory';
+import { useIntentRecognition } from '../hooks/useIntentRecognition';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -190,6 +192,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     // Add new state for code viewer overlay
     const [codeViewerOverlay, setCodeViewerOverlay] = useState(null);
 
+    // Add new state for intent warning overlay
+    const [showIntentWarning, setShowIntentWarning] = useState(false);
+    const [intentConfidence, setIntentConfidence] = useState(null);
+
+    // Use the intent recognition hook
+    const { isLoaded, models } = useIntentRecognition();
+
     useEffect(() => {
         // Fetch user's preferred programmer model
         getModelPreferencesFromFirestore(userID).then(prefs => {
@@ -221,29 +230,62 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         if (!scriptChatInput.trim()) return;
         const userMessage = scriptChatInput.trim();
         
-        // Create the message content with code attachment if present
-        const messageContent = selectedCodeAttachment ? 
-            `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}` : 
-            userMessage;
-        
-        setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
-        setScriptChatInput('');
-        setSelectedCodeAttachment(null); // Clear the attachment after sending
-        setIsTyping(true);
-
-        // Clear the selection in the editor
-        const editor = editorRef.current?.editor;
-        if (editor) {
-            editor.clearSelection();
-        }
-
         try {
+            // Get embedding for the user's message
+            const embedding = await textEmbed(userMessage);
+            
+            // Classify intent
+            const intentPredictions = await models.classify(embedding);
+            console.log('Intent Predictions:', intentPredictions);
+
+            // Check HTMLAgent intent confidence
+            const htmlAgentConfidence = intentPredictions.HTMLAgent;
+            setIntentConfidence(htmlAgentConfidence);
+
+            if (htmlAgentConfidence < 0.4) {
+                setShowIntentWarning(true);
+                return; // Exit early, keeping the message in the input
+            }
+
+            // Only proceed with sending if intent check passes
+            // Create the message content with code attachment if present
+            const messageContent = selectedCodeAttachment ? 
+                `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}` : 
+                userMessage;
+            
+            setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
+            setScriptChatInput(''); // Only clear input after passing intent check
+            setSelectedCodeAttachment(null);
+            setIsTyping(true);
+
+            // Clear the selection in the editor
+            const editor = editorRef.current?.editor;
+            if (editor) {
+                editor.clearSelection();
+            }
+
+            // Fetch memories
+            const shortTermMemory = await getShortTermMemory(userID, 5);
+            const longTermMemory = await getLongTermMemory(userID, embedding, 5);
+
+            // Construct the prompt with memories
             const constructedPrompt = selectedCodeAttachment ?
-                htmlTemplate(`The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`, code) :
-                htmlTemplate(userMessage, code);
+                htmlTemplate(
+                    `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`,
+                    code,
+                    longTermMemory,
+                    shortTermMemory
+                ) :
+                htmlTemplate(userMessage, code, longTermMemory, shortTermMemory);
+
+            // Log the constructed prompt in green
+            console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
 
             const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
             
+            // Log the response in yellow
+            console.log('\x1b[33m%s\x1b[0m', response);
+
             // Extract code between ```html and ```
             const codeBlockRegex = /```html\n([\s\S]*?)```/;
             const match = response.match(codeBlockRegex);
@@ -1258,6 +1300,119 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Add the intent warning overlay */}
+            <AnimatePresence>
+                {showIntentWarning && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={styles.intentWarningOverlay}
+                        onClick={() => setShowIntentWarning(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.95 }}
+                            style={styles.intentWarningContent}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <p style={styles.intentWarningText}>
+                                The Programmer Agent is designed for executing commands and tasks related to your app, not for general chatting. Your intent confidence is {Math.round(intentConfidence * 100)}%.
+                            </p>
+                            <div style={styles.intentWarningActions}>
+                                <button 
+                                    onClick={() => setShowIntentWarning(false)}
+                                    style={styles.intentWarningButton}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowIntentWarning(false);
+                                        const sendMessageAnyway = async () => {
+                                            const messageContent = selectedCodeAttachment ? 
+                                                `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${scriptChatInput}` : 
+                                                scriptChatInput;
+                                            
+                                            setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
+                                            setScriptChatInput('');
+                                            setSelectedCodeAttachment(null);
+                                            setIsTyping(true);
+
+                                            try {
+                                                const embedding = await textEmbed(messageContent);
+                                                const shortTermMemory = await getShortTermMemory(userID, 5);
+                                                const longTermMemory = await getLongTermMemory(userID, embedding, 5);
+
+                                                // Construct the prompt with memories
+                                                const constructedPrompt = selectedCodeAttachment ?
+                                                    htmlTemplate(
+                                                        `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`,
+                                                        code,
+                                                        longTermMemory,
+                                                        shortTermMemory
+                                                    ) :
+                                                    htmlTemplate(scriptChatInput, code, longTermMemory, shortTermMemory);
+
+                                                // Log the constructed prompt in green
+                                                console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
+
+                                                const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
+                                                
+                                                // Log the response in yellow
+                                                console.log('\x1b[33m%s\x1b[0m', response);
+
+                                                // Extract code between ```html and ```
+                                                const codeBlockRegex = /```html\n([\s\S]*?)```/;
+                                                const match = response.match(codeBlockRegex);
+                                                let updatedCode = match ? match[1].trim() : null;
+
+                                                if (updatedCode) {
+                                                    // Add current state to history before updating
+                                                    const newHistory = editHistory.slice(0, historyIndex + 1);
+                                                    newHistory.push({ content: updatedCode });
+                                                    setEditHistory(newHistory);
+                                                    setHistoryIndex(newHistory.length - 1);
+                                                    
+                                                    // Update the code
+                                                    setCode(updatedCode);
+                                                    setPreviewKey(prev => prev + 1);
+
+                                                    // Add a message indicating task completion
+                                                    setScriptChatMessages(prev => [...prev, { 
+                                                        role: 'assistant', 
+                                                        content: 'Task completed', 
+                                                        fullScript: updatedCode 
+                                                    }]);
+                                                } else {
+                                                    setScriptChatMessages(prev => [...prev, { 
+                                                        role: 'assistant', 
+                                                        content: response 
+                                                    }]);
+                                                }
+                                            } catch (error) {
+                                                console.error('Error in chat:', error);
+                                                setScriptChatMessages(prev => [...prev, { 
+                                                    role: 'assistant', 
+                                                    content: 'Sorry, there was an error processing your request.' 
+                                                }]);
+                                            }
+
+                                            setIsTyping(false);
+                                        };
+                                        sendMessageAnyway();
+                                    }}
+                                    style={styles.intentWarningButton}
+                                >
+                                    Send Anyways
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -1918,6 +2073,50 @@ const styles = {
         },
         '&:active': {
             transform: 'translateY(0)',
+        },
+    },
+    intentWarningOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000,
+        padding: '20px',
+    },
+    intentWarningContent: {
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '12px',
+        width: '90%',
+        maxWidth: '400px',
+        padding: '20px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+    },
+    intentWarningText: {
+        color: darkModeColors.text,
+        fontSize: '16px',
+        marginBottom: '20px',
+    },
+    intentWarningActions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '10px',
+    },
+    intentWarningButton: {
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        border: 'none',
+        borderRadius: '6px',
+        padding: '8px 16px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+        '&:hover': {
+            backgroundColor: darkModeColors.secondary,
         },
     },
 };

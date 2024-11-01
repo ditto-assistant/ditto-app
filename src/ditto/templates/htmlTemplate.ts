@@ -16,9 +16,30 @@ Current HTML Script:
 `.replace('<!script>', script)
 }
 
-export const htmlTemplate = (query: string, script: string) => {
-    let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file.
-    
+export const historyModule = (ltm: string, stm: string) => {
+    if (ltm === "" && stm === "") {
+        return ""
+    }
+    return `## Long Term Memory
+- Relevant prompt/response pairs from the user's prompt history are indexed using the user's prompt embedding and cosine similarity and are shown below as Long Term Memory. 
+Long Term Memory Buffer (most relevant prompt/response pairs):
+-- Begin Long Term Memory --
+${ltm}
+-- End Long Term Memory --
+
+## Short Term Memory
+- The most recent prompt/response pairs are shown below as Short Term Memory. This is usually 5-10 most recent prompt/response pairs.
+Short Term Memory Buffer (most recent prompt/response pairs):
+-- Begin Short Term Memory --
+${stm}
+-- End Short Term Memory --`
+}
+
+export const htmlTemplate = (query: string, script: string, ltm: string = "", stm: string = "") => {
+    let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
+
+<!history>
+
 ## Instructions
 - Below will contain the user's design idea. Make sure the script can be rendered without any external files.
 - You MUST use the <script> tag to include Javascript code in the HTML file from popular libraries that all browsers support, even on mobile devices, as everything you make has to work and look good on mobile devices.
@@ -50,5 +71,6 @@ HTML Script:
 `
     prompt = prompt.replace('<!query>', query)
     prompt = prompt.replace('<!working_on_script_module>', workingOnScriptModule(script))
+    prompt = prompt.replace('<!history>', historyModule(ltm, stm))
     return prompt
 }

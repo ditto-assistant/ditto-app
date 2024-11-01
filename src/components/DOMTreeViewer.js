@@ -6,12 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IconButton } from '@mui/material';
 import { FaTimes, FaCheck, FaComments, FaUndo, FaRedo, FaHistory, FaAlignLeft } from 'react-icons/fa';
 import { LoadingSpinner } from './LoadingSpinner';
-import { promptLLM } from '../api/LLM';
+import { promptLLM, textEmbed } from '../api/LLM';
 import { getModelPreferencesFromFirestore } from '../control/firebase';
 import { htmlTemplate, htmlSystemTemplate } from '../ditto/templates/htmlTemplate';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { getShortTermMemory, getLongTermMemory } from '../control/memory';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -90,29 +91,53 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
         setChatInput('');
         setIsTyping(true);
 
-        // Construct the prompt using htmlTemplate
-        const snippet = "```html\n" + node.outerHTML + "\n```";
-        const taskDescription = userMessage;
-        const fullTaskDescription = "The user has selected this section of the code to focus on:\n" + snippet + ". The user has also provided the following instructions:\n" + taskDescription;
-        
-        const constructedPrompt = htmlTemplate(fullTaskDescription, htmlContent);
-        console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
-        const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
-        console.log('\x1b[33m%s\x1b[0m', response);
-        setIsTyping(false);
+        try {
+            // Get embedding for the user's message
+            const embedding = await textEmbed(userMessage);
+            
+            // Fetch memories
+            const shortTermMemory = await getShortTermMemory(userID, 5);
+            const longTermMemory = await getLongTermMemory(userID, embedding, 5);
 
-        // Extract code between ```html and ```
-        const codeBlockRegex = /```html\n([\s\S]*?)```/;
-        const match = response.match(codeBlockRegex);
-        let updatedCode = match ? match[1].trim() : response.trim();
+            // Construct the prompt using htmlTemplate
+            const snippet = "```html\n" + node.outerHTML + "\n```";
+            const taskDescription = userMessage;
+            const fullTaskDescription = "The user has selected this section of the code to focus on:\n" + snippet + ". The user has also provided the following instructions:\n" + taskDescription;
+            
+            const constructedPrompt = htmlTemplate(fullTaskDescription, htmlContent, longTermMemory, shortTermMemory);
+            
+            // Log the constructed prompt in green
+            console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
+            
+            const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
+            
+            // Log the response in yellow
+            console.log('\x1b[33m%s\x1b[0m', response);
 
-        // Update the parent's code state directly with the full HTML
-        if (updateHtmlContent) {
-            updateHtmlContent(node, updatedCode);
+            // Extract code between ```html and ```
+            const codeBlockRegex = /```html\n([\s\S]*?)```/;
+            const match = response.match(codeBlockRegex);
+            let updatedCode = match ? match[1].trim() : response.trim();
+
+            // Update the parent's code state directly with the full HTML
+            if (updateHtmlContent) {
+                updateHtmlContent(node, updatedCode);
+            }
+
+            // Add the assistant's response to chat
+            setChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
+
+            // Close the editor
+            onClose();
+        } catch (error) {
+            console.error('Error in chat:', error);
+            setChatMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: 'Sorry, there was an error processing your request.' 
+            }]);
         }
 
-        // Close the editor
-        onClose();
+        setIsTyping(false);
     };
 
     const handleSave = () => {
