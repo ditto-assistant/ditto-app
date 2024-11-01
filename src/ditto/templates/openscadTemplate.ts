@@ -15,9 +15,30 @@ export const workingOnScriptModule = (script: string) => {
 `.replace('<!script>', script)
 }
 
-export const openscadTemplate = (query: string, script: string) => {
-    let prompt = `You are an experienced OpenSCAD developer and 3D designer ready to create a new 3D model. You will be given a design idea and you will need to create the 3D mode using OpenSCAD. 
+export const historyModule = (ltm: string, stm: string) => {
+    if (ltm === "" && stm === "") {
+        return ""
+    }   
+    return `## Long Term Memory
+- Relevant prompt/response pairs from the user's prompt history are indexed using the user's prompt embedding and cosine similarity and are shown below as Long Term Memory. 
+Long Term Memory Buffer (most relevant prompt/response pairs):
+-- Begin Long Term Memory --
+${ltm}
+-- End Long Term Memory --
+
+## Short Term Memory
+- The most recent prompt/response pairs are shown below as Short Term Memory. This is usually 5-10 most recent prompt/response pairs.
+Short Term Memory Buffer (most recent prompt/response pairs):
+-- Begin Short Term Memory --
+${stm}
+-- End Short Term Memory --`
+}
+
+export const openscadTemplate = (query: string, script: string, ltm: string = "", stm: string = "") => {
+    let prompt = `You are an experienced OpenSCAD developer and 3D designer ready to create a new 3D model. You will be given a design idea and you will need to create the 3D mode using OpenSCAD. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
     
+<!history>
+
 ## Instructions
 - Below will contain the user's design idea. Make sure the script can be compiled by OpenSCAD.
 - Respond in a markdown code block with the OpenSCAD script that creates the 3D model.
@@ -46,5 +67,6 @@ OpenSCAD Script:
 `
     prompt = prompt.replace('<!query>', query)
     prompt = prompt.replace('<!working_on_script_module>', workingOnScriptModule(script))
+    prompt = prompt.replace('<!history>', historyModule(ltm, stm))
     return prompt
 }

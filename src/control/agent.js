@@ -88,6 +88,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptContents,
       scriptName,
       image,
+      memories,
     );
 
     localStorage.setItem("idle", "true");
@@ -139,6 +140,7 @@ const processResponse = async (
   scriptContents,
   scriptName,
   image,
+  memories,
 ) => {
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
@@ -162,6 +164,7 @@ const processResponse = async (
       prompt,
       userID,
       image,
+      memories,
     );
   } else if (response.includes("<HTML_SCRIPT>") && isValidResponse) {
     return await handleScriptGeneration(
@@ -177,6 +180,7 @@ const processResponse = async (
       prompt,
       userID,
       image,
+      memories,
     );
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     const query = response.split("<IMAGE_GENERATION>")[1];
@@ -253,11 +257,13 @@ const handleScriptGeneration = async (
   prompt,
   userID,
   image,
+  memories,
 ) => {
   const modelPreferences = await getModelPreferencesFromFirestore(userID);
   
   const query = response.split(tag)[1];
-  const constructedPrompt = templateFunction(query, scriptContents);
+
+  const constructedPrompt = templateFunction(query, scriptContents, memories.longTermMemory, memories.shortTermMemory);
   // print constructed prompt in green
   console.log("%c" + constructedPrompt, "color: green");
   const scriptResponse = await promptLLM(

@@ -905,20 +905,116 @@ const ScriptsScreen = () => {
                 </header>
 
                 {selectedScript && (
-                    <div style={styles.selectedScriptContainer}>
-                        <div style={styles.selectedScript}>
-                            <p style={styles.selectedScriptLabel}>Currently Selected:</p>
-                            <p style={styles.selectedScriptName}>{selectedScript}</p>
-                            <div style={styles.selectedScriptButtons}>
-                                <Button variant="contained" style={styles.deselectButton} onClick={handleDeselectScript}>
-                                    Deselect Script
-                                </Button>
-                                <Button variant="contained" style={styles.launchButton} onClick={handleLaunchScript}>
-                                    Launch Script
-                                </Button>
+                    <motion.div 
+                        style={styles.selectedScriptContainer}
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <motion.div 
+                            style={styles.selectedScript}
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <div style={styles.selectedScriptHeader}>
+                                <div>
+                                    <motion.p 
+                                        style={styles.selectedScriptLabel}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 0.8 }}
+                                        transition={{ delay: 0.1 }}
+                                    >
+                                        Currently Selected
+                                    </motion.p>
+                                    <motion.p 
+                                        style={styles.selectedScriptName}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.2 }}
+                                    >
+                                        {selectedScript}
+                                    </motion.p>
+                                </div>
+                                <div style={styles.selectedScriptActions}>
+                                    <motion.button
+                                        style={styles.editSelectedButton}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            const script = scripts[activeTab].find(s => s.name === selectedScript);
+                                            if (script) handleEditScript(script);
+                                        }}
+                                    >
+                                        Edit
+                                    </motion.button>
+                                    <motion.div
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <MdMoreVert
+                                            className="more-icon"
+                                            style={styles.selectedMoreIcon}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const menuHeight = 200;
+                                                const menuWidth = window.innerWidth <= 768 ? 160 : 140; // Account for mobile menu width
+                                                const windowHeight = window.innerHeight;
+                                                const windowWidth = window.innerWidth;
+                                                
+                                                // Calculate available space
+                                                const spaceBelow = windowHeight - rect.bottom;
+                                                const spaceAbove = rect.top;
+                                                const spaceRight = windowWidth - rect.left;
+                                                
+                                                // Determine if menu should open upward
+                                                const openUpward = spaceBelow < menuHeight && spaceAbove > menuHeight;
+                                                
+                                                // Calculate left position ensuring menu doesn't go off-screen
+                                                let leftPosition = rect.left;
+                                                if (leftPosition + menuWidth > windowWidth) {
+                                                    leftPosition = windowWidth - menuWidth - 16; // 16px padding from edge
+                                                }
+                                                
+                                                setMenuPosition({
+                                                    top: openUpward ? rect.top - menuHeight - 8 : rect.bottom + 8,
+                                                    left: leftPosition,
+                                                    openUpward,
+                                                });
+                                                const script = scripts[activeTab].find(s => s.name === selectedScript);
+                                                if (script) setActiveCard(script.id);
+                                            }}
+                                        />
+                                    </motion.div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                            <motion.div 
+                                style={styles.selectedScriptButtons}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <motion.button
+                                    style={styles.deselectButton}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleDeselectScript}
+                                >
+                                    Deselect Script
+                                </motion.button>
+                                <motion.button
+                                    style={styles.launchButton}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleLaunchScript}
+                                >
+                                    <FaPlay style={{ fontSize: '14px' }} />
+                                    Launch Script
+                                </motion.button>
+                            </motion.div>
+                        </motion.div>
+                    </motion.div>
                 )}
 
                 <div style={styles.tabContainer}>
@@ -1066,44 +1162,75 @@ const styles = {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        marginBottom: '20px',
+        padding: '20px',
+        boxSizing: 'border-box',
         flexShrink: 0,
+        background: `linear-gradient(180deg, ${darkModeColors.headerBackground} 0%, transparent 100%)`,
     },
     selectedScript: {
         backgroundColor: darkModeColors.cardBackground,
         border: `1px solid ${darkModeColors.border}`,
-        padding: '20px',
-        borderRadius: '8px',
-        textAlign: 'center',
-        maxWidth: '600px',
+        padding: '24px',
+        borderRadius: '16px',
+        maxWidth: '800px',
         width: '100%',
-        marginBottom: '24px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(10px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
     },
     selectedScriptLabel: {
-        color: darkModeColors.text,
-        marginBottom: '5px',
+        color: darkModeColors.textSecondary,
+        margin: 0,
+        fontSize: '14px',
+        fontWeight: '500',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
     },
     selectedScriptName: {
         color: darkModeColors.primary,
-        fontWeight: 'bold',
-        fontSize: '1.1em',
-        marginBottom: '10px',
+        fontWeight: '600',
+        fontSize: '24px',
+        margin: 0,
+        wordBreak: 'break-word',
     },
     selectedScriptButtons: {
         display: 'flex',
-        justifyContent: 'center',
-        gap: '10px',
+        gap: '12px',
+        marginTop: '8px',
     },
     deselectButton: {
-        backgroundColor: darkModeColors.danger,
+        backgroundColor: 'transparent',
+        border: `2px solid ${darkModeColors.danger}`,
+        color: darkModeColors.danger,
+        padding: '10px 20px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
         '&:hover': {
-            backgroundColor: '#d04040',
+            backgroundColor: `${darkModeColors.danger}15`,
+            transform: 'translateY(-2px)',
         },
     },
     launchButton: {
         backgroundColor: darkModeColors.primary,
+        border: 'none',
+        color: '#FFFFFF',
+        padding: '10px 24px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
         '&:hover': {
-            backgroundColor: '#5b6eae',
+            backgroundColor: darkModeColors.secondary,
+            transform: 'translateY(-2px)',
         },
     },
     category: {
@@ -1484,6 +1611,48 @@ const styles = {
         color: darkModeColors.textSecondary,
         opacity: 0.8,
         fontWeight: '500',
+    },
+    selectedScriptHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        width: '100%',
+    },
+    selectedScriptActions: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+    },
+    editSelectedButton: {
+        backgroundColor: darkModeColors.cardBackground,
+        border: `1px solid ${darkModeColors.border}`,
+        color: darkModeColors.text,
+        padding: '8px 16px',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}15`,
+            borderColor: darkModeColors.primary,
+            color: darkModeColors.primary,
+        },
+    },
+    selectedMoreIcon: {
+        fontSize: '24px',
+        cursor: 'pointer',
+        color: darkModeColors.textSecondary,
+        padding: '4px',
+        borderRadius: '4px',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+            backgroundColor: `${darkModeColors.primary}15`,
+            color: darkModeColors.primary,
+        },
     },
 };
 
