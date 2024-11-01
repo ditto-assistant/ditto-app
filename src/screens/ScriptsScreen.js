@@ -456,18 +456,15 @@ const ScriptsScreen = () => {
     const formatTimestamp = (timestamp, script, category) => {
         if (!timestamp) return '';
         
-        // Get all versions of this script
+        // Get all timestamps for all versions
         const allTimestamps = getLocalScriptTimestamps(category);
         const baseScriptName = getBaseName(script.name.replace(/ /g, ""));
         
         // Find the most recent timestamp among all versions
         let mostRecentTimestamp = timestamp;
         Object.entries(allTimestamps).forEach(([name, ts]) => {
-            if (name.startsWith(baseScriptName) && name !== script.name) {
-                // Compare timestamps and keep the most recent
-                const currentTime = ts.timestamp.seconds;
-                const mostRecentTime = mostRecentTimestamp.seconds;
-                if (currentTime > mostRecentTime) {
+            if (getBaseName(name.replace(/ /g, "")) === baseScriptName) {
+                if (ts.timestamp.seconds > mostRecentTimestamp.seconds) {
                     mostRecentTimestamp = ts.timestamp;
                 }
             }
