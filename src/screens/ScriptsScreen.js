@@ -15,7 +15,7 @@ import FullScreenSpinner from "../components/LoadingSpinner";
 import FullScreenEditor from '../components/FullScreenEditor';
 import CardMenu from '../components/CardMenu';
 import VersionOverlay from '../components/VersionOverlay';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
 import SearchBar from '../components/SearchBar';
 import AddScriptOverlay from '../components/AddScriptOverlay';
@@ -904,118 +904,122 @@ const ScriptsScreen = () => {
                     <h2 style={styles.headerText}>Scripts</h2>
                 </header>
 
-                {selectedScript && (
-                    <motion.div 
-                        style={styles.selectedScriptContainer}
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
+                <AnimatePresence mode="wait">
+                    {selectedScript && (
                         <motion.div 
-                            style={styles.selectedScript}
-                            initial={{ scale: 0.95 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.2 }}
+                            style={styles.selectedScriptContainer}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+                            transition={{ duration: 0.3 }}
                         >
-                            <div style={styles.selectedScriptHeader}>
-                                <div>
-                                    <motion.p 
-                                        style={styles.selectedScriptLabel}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 0.8 }}
-                                        transition={{ delay: 0.1 }}
-                                    >
-                                        Currently Selected
-                                    </motion.p>
-                                    <motion.p 
-                                        style={styles.selectedScriptName}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                    >
-                                        {selectedScript}
-                                    </motion.p>
-                                </div>
-                                <div style={styles.selectedScriptActions}>
-                                    <motion.button
-                                        style={styles.editSelectedButton}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => {
-                                            const script = scripts[activeTab].find(s => s.name === selectedScript);
-                                            if (script) handleEditScript(script);
-                                        }}
-                                    >
-                                        Edit
-                                    </motion.button>
-                                    <motion.div
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <MdMoreVert
-                                            className="more-icon"
-                                            style={styles.selectedMoreIcon}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const rect = e.currentTarget.getBoundingClientRect();
-                                                const menuHeight = 200;
-                                                const menuWidth = window.innerWidth <= 768 ? 160 : 140; // Account for mobile menu width
-                                                const windowHeight = window.innerHeight;
-                                                const windowWidth = window.innerWidth;
-                                                
-                                                // Calculate available space
-                                                const spaceBelow = windowHeight - rect.bottom;
-                                                const spaceAbove = rect.top;
-                                                const spaceRight = windowWidth - rect.left;
-                                                
-                                                // Determine if menu should open upward
-                                                const openUpward = spaceBelow < menuHeight && spaceAbove > menuHeight;
-                                                
-                                                // Calculate left position ensuring menu doesn't go off-screen
-                                                let leftPosition = rect.left;
-                                                if (leftPosition + menuWidth > windowWidth) {
-                                                    leftPosition = windowWidth - menuWidth - 16; // 16px padding from edge
-                                                }
-                                                
-                                                setMenuPosition({
-                                                    top: openUpward ? rect.top - menuHeight - 8 : rect.bottom + 8,
-                                                    left: leftPosition,
-                                                    openUpward,
-                                                });
-                                                const script = scripts[activeTab].find(s => s.name === selectedScript);
-                                                if (script) setActiveCard(script.id);
-                                            }}
-                                        />
-                                    </motion.div>
-                                </div>
-                            </div>
                             <motion.div 
-                                style={styles.selectedScriptButtons}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
+                                style={styles.selectedScript}
+                                initial={{ scale: 0.95 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0.95, transition: { duration: 0.2 } }}
+                                transition={{ duration: 0.2 }}
                             >
-                                <motion.button
-                                    style={styles.deselectButton}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={handleDeselectScript}
+                                <div style={styles.selectedScriptHeader}>
+                                    <div>
+                                        <motion.p 
+                                            style={styles.selectedScriptLabel}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 0.8 }}
+                                            transition={{ delay: 0.1 }}
+                                        >
+                                            Currently Selected
+                                        </motion.p>
+                                        <motion.p 
+                                            style={styles.selectedScriptName}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                        >
+                                            {selectedScript}
+                                        </motion.p>
+                                    </div>
+                                    <div style={styles.selectedScriptActions}>
+                                        <motion.button
+                                            style={styles.editSelectedButton}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => {
+                                                const script = scripts[activeTab].find(s => s.name === selectedScript);
+                                                if (script) handleEditScript(script);
+                                            }}
+                                        >
+                                            Edit
+                                        </motion.button>
+                                        <motion.div
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <MdMoreVert
+                                                className="more-icon"
+                                                style={styles.selectedMoreIcon}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    const menuHeight = 200;
+                                                    const menuWidth = window.innerWidth <= 768 ? 160 : 140; // Account for mobile menu width
+                                                    const windowHeight = window.innerHeight;
+                                                    const windowWidth = window.innerWidth;
+                                                    
+                                                    // Calculate available space
+                                                    const spaceBelow = windowHeight - rect.bottom;
+                                                    const spaceAbove = rect.top;
+                                                    const spaceRight = windowWidth - rect.left;
+                                                    
+                                                    // Determine if menu should open upward
+                                                    const openUpward = spaceBelow < menuHeight && spaceAbove > menuHeight;
+                                                    
+                                                    // Calculate left position ensuring menu doesn't go off-screen
+                                                    let leftPosition = rect.left;
+                                                    if (leftPosition + menuWidth > windowWidth) {
+                                                        leftPosition = windowWidth - menuWidth - 16; // 16px padding from edge
+                                                    }
+                                                    
+                                                    setMenuPosition({
+                                                        top: openUpward ? rect.top - menuHeight - 8 : rect.bottom + 8,
+                                                        left: leftPosition,
+                                                        openUpward,
+                                                    });
+                                                    const script = scripts[activeTab].find(s => s.name === selectedScript);
+                                                    if (script) setActiveCard(script.id);
+                                                }}
+                                            />
+                                        </motion.div>
+                                    </div>
+                                </div>
+                                <motion.div 
+                                    style={styles.selectedScriptButtons}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
                                 >
-                                    Deselect Script
-                                </motion.button>
-                                <motion.button
-                                    style={styles.launchButton}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={handleLaunchScript}
-                                >
-                                    <FaPlay style={{ fontSize: '14px' }} />
-                                    Launch Script
-                                </motion.button>
+                                    <motion.button
+                                        style={styles.deselectButton}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={handleDeselectScript}
+                                    >
+                                        Deselect Script
+                                    </motion.button>
+                                    <motion.button
+                                        style={styles.launchButton}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={handleLaunchScript}
+                                    >
+                                        <FaPlay style={{ fontSize: '14px' }} />
+                                        Launch Script
+                                    </motion.button>
+                                </motion.div>
                             </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
+                    )}
+                </AnimatePresence>
 
                 <div style={styles.tabContainer}>
                     <div 

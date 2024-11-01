@@ -16,6 +16,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { getShortTermMemory, getLongTermMemory } from '../control/memory';
 import { useIntentRecognition } from '../hooks/useIntentRecognition';
+import FullScreenSpinner from './LoadingSpinner';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -28,6 +29,7 @@ const darkModeColors = {
     hover: '#32353B',
     headerBackground: '#2B2D31',
     inputBackground: '#1E1F22',
+    danger: '#ff4444',
 };
 
 const useSplitPane = (isMobile, initialPosition = 50) => {
@@ -198,6 +200,12 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     // Use the intent recognition hook
     const { isLoaded, models } = useIntentRecognition();
+
+    // Add new state for unsaved changes overlay
+    const [showUnsavedChanges, setShowUnsavedChanges] = useState(false);
+
+    // Add state for showing the loading spinner
+    const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -372,18 +380,22 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 return;
             }
 
-            setIsSaving(true); // Show loading overlay
+            setIsSaving(true);
 
             // Let the parent handle the save
             await onSave(code);
 
-            setIsSaving(false); // Hide loading overlay
+            // Clear undo/redo history after successful save
+            setEditHistory([{ content: code }]);
+            setHistoryIndex(0);
+
+            setIsSaving(false);
             setToastMessage('Changes saved successfully!');
             setToastType('success');
             setShowToast(true);
         } catch (error) {
             console.error('Error saving:', error);
-            setIsSaving(false); // Hide loading overlay
+            setIsSaving(false);
             setToastMessage('Error saving changes');
             setToastType('error');
             setShowToast(true);
@@ -532,26 +544,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     };
 
     const handleClose = async () => {
-        const userID = localStorage.getItem("userID");
-        
-        // Sync scripts before closing
-        await syncLocalScriptsWithFirestore(userID, "webApps");
-        await syncLocalScriptsWithFirestore(userID, "openSCAD");
-        
-        // Update localStorage with latest data
-        const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
-        const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
-        
-        // Dispatch event to force scripts screen refresh
-        window.dispatchEvent(new CustomEvent('scriptsUpdated', { 
-            detail: { 
-                webApps: localWebApps,
-                openSCAD: localOpenSCAD
-            }
-        }));
-        
-        // Call the original onClose to return to scripts screen
-        onClose();
+        // Check if there are unsaved changes
+        if (historyIndex > 0 || code !== script.content) {
+            setShowUnsavedChanges(true);
+            return;
+        }
+
+        await closeEditor();
     };
 
     useEffect(() => {
@@ -755,6 +754,29 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [scriptChatActionOverlay]);
+
+    // Add helper function for closing editor
+    const closeEditor = async () => {
+        setShowLoadingSpinner(true); // Show the loading spinner
+
+        const userID = localStorage.getItem("userID");
+        
+        await syncLocalScriptsWithFirestore(userID, "webApps");
+        await syncLocalScriptsWithFirestore(userID, "openSCAD");
+        
+        const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
+        const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+        
+        window.dispatchEvent(new CustomEvent('scriptsUpdated', { 
+            detail: { 
+                webApps: localWebApps,
+                openSCAD: localOpenSCAD
+            }
+        }));
+        
+        setShowLoadingSpinner(false); // Hide the loading spinner
+        onClose();
+    };
 
     return (
         <div style={styles.container}>
@@ -1413,6 +1435,75 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <AnimatePresence>
+                {showUnsavedChanges && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={styles.unsavedOverlay}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ type: "spring", damping: 20 }}
+                            style={styles.unsavedContent}
+                        >
+                            <h3 style={styles.unsavedTitle}>Unsaved Changes</h3>
+                            <p style={styles.unsavedText}>
+                                You have unsaved changes. Would you like to save before closing?
+                            </p>
+                            <div style={styles.unsavedActions}>
+                                <motion.button
+                                    whileHover={{ scale: 1.02, backgroundColor: `${darkModeColors.hover}CC` }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => setShowUnsavedChanges(false)}
+                                    style={styles.unsavedSecondaryButton}
+                                >
+                                    Cancel
+                                </motion.button>
+                                <div style={styles.unsavedPrimaryActions}>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, backgroundColor: `${darkModeColors.danger}15` }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={async () => {
+                                            await closeEditor();
+                                        }}
+                                        style={styles.unsavedDangerButton}
+                                    >
+                                        Don't Save
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, backgroundColor: darkModeColors.secondary }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={async () => {
+                                            await handleSave();
+                                            await closeEditor();
+                                        }}
+                                        style={styles.unsavedPrimaryButton}
+                                    >
+                                        Save & Close
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Add the loading spinner with a backdrop */}
+            {showLoadingSpinner && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={styles.loadingOverlay}
+                >
+                    <FullScreenSpinner text="Cleaning up" />
+                </motion.div>
+            )}
         </div>
     );
 };
@@ -2118,6 +2209,100 @@ const styles = {
         '&:hover': {
             backgroundColor: darkModeColors.secondary,
         },
+    },
+    unsavedOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000,
+    },
+    unsavedContent: {
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '16px',
+        padding: '28px',
+        width: '90%',
+        maxWidth: '420px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
+        border: `1px solid ${darkModeColors.border}`,
+    },
+    unsavedTitle: {
+        color: darkModeColors.text,
+        margin: '0 0 12px 0',
+        fontSize: '24px',
+        fontWeight: '600',
+        letterSpacing: '-0.02em',
+    },
+    unsavedText: {
+        color: darkModeColors.textSecondary,
+        margin: '0 0 28px 0',
+        fontSize: '15px',
+        lineHeight: '1.5',
+        fontWeight: '400',
+    },
+    unsavedActions: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '16px',
+    },
+    unsavedPrimaryActions: {
+        display: 'flex',
+        gap: '12px',
+    },
+    unsavedSecondaryButton: {
+        padding: '10px 16px',
+        borderRadius: '8px',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        backgroundColor: darkModeColors.hover,
+        color: darkModeColors.text,
+        transition: 'all 0.2s ease',
+    },
+    unsavedDangerButton: {
+        padding: '10px 16px',
+        borderRadius: '8px',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        backgroundColor: 'transparent',
+        color: darkModeColors.danger,
+        transition: 'all 0.2s ease',
+    },
+    unsavedPrimaryButton: {
+        padding: '10px 20px',
+        borderRadius: '8px',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        backgroundColor: darkModeColors.primary,
+        color: darkModeColors.text,
+        transition: 'all 0.2s ease',
+    },
+    loadingOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(30, 31, 34, 0.5)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000,
     },
 };
 
