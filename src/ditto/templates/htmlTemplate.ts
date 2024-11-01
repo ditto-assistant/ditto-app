@@ -50,10 +50,11 @@ ${stm}
 }
 
 export const programmerAgentplanner = (query: string, script: string) => {
-    let prompt = `You are an experienced web developer ready to create a set of tasks in a JSON Schema for another AI agent to follow. You will be given a design idea and you will need to create each task in the JSON Schema to contain "start_line" and "end_line" keys to indicate where in the script the task starts and ends, followed by a "task" key that contains the task description. Note that each task you create in the JSON Schema should be achiveable by editing the start and end line contents.
+    let prompt = `You are an experienced web developer ready to create a set of tasks in a JSON Schema for another AI agent to follow. You will be given a design idea and you will need to create a formal writeup of the tasks that need to be completed to create the design idea.
 
 ## Instructions
-- Your job is to create a JSON Schema that contains the tasks for another AI agent to follow.
+- Your response should be a formal writeup of the tasks that need to be completed to create the design idea.
+- Your response should be in markdown format.
 
 ## Example
 -- Begin Examples --
@@ -87,31 +88,42 @@ HTML Script:
     <h1>Hello, World!</h1>
 </body>
 </html>
-JSON Schema:
-{
-    "tasks": [
-        {
-            "snippet": "<title>My Website</title>",
-            "task": "Change the title of the page to "My Website""
-        },
-        {
-            "snippet": "<footer>Copyright 2024 My Website</footer>",
-            "task": "Add a simple footer with the text "Copyright 2024 My Website""
-        },
-        {
-            "snippet": "body {\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            height: 100vh;\n            margin: 0;\n            font-family: sans-serif;\n            background-color: #f0f0f0;\n        }",
-            "task": "Change the body to be more like a dark mode theme. Make sure to change the background color, font color, and font family."
-        },
-        {
-            "snippet": "h1 {\n            font-size: 5rem;\n            color: #333;\n        }",
-            "task": "Change the h1 to be more like a dark mode theme. Change the font size, color, and font family."
-        }
-    ]
-}
+Task Writeup:
+# Dark Mode Website with Footer Update
+## Tasks
+1. Change the page title to "My Website"
+   - Locate the title tag in the head section
+   - Replace "Hello, World!" with "My Website"
+
+2. Add footer with copyright text
+   - Create a new footer element at the bottom of the body
+   - Add "Copyright 2024 My Website" text inside footer
+   - Style footer with:
+     - Fixed position at bottom
+     - Full width
+     - Center-aligned text
+     - Padding for spacing
+     - Dark mode colors matching theme
+
+3. Update theme to dark mode
+   - Modify body styles:
+     - Set background-color to #1E1E1E
+     - Change text color to #FFFFFF
+   - Update h1 styles:
+     - Change color to #FFFFFF
+     - Add text-shadow for better contrast
+     - Keep existing font size and centering
+
+## Implementation Notes
+- Use CSS variables for consistent dark mode colors
+- Ensure footer stays at bottom with fixed positioning
+- Maintain existing layout and spacing while updating colors
+- Test contrast ratios meet accessibility standards
 
 Example 2:
 User's Design Idea: Add a title to the page and add an add button to collect user input for a to-do list.
 HTML Script:
+\`\`\`html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,52 +164,135 @@ HTML Script:
     </div>
 </body>
 </html>
-JSON Schema:
-{
-    "tasks": [
-        {
-            "snippet": "<title>Simple Textbox App</title>",
-            "task": "Change the title of the page to 'To-Do List'"
-        },
-        {
-            "snippet": "<h1>My To-Do List</h1>",
-            "task": "Add a heading to the page"
-        },
-        {
-            "snippet": "<input type=\"text\" id=\"taskInput\" placeholder=\"Enter a new task\">",
-            "task": "Add an input field for entering new tasks"
-        },
-        {
-            "snippet": "<button onclick=\"addTask()\">Add Task</button>",
-            "task": "Add a button to add new tasks"
-        },
-        {
-            "snippet": "<ul id=\"taskList\"></ul>",
-            "task": "Add an unordered list to display tasks"
-        },
-        {
-            "snippet": "function addTask() {\n    // JavaScript function to add tasks\n}",
-            "task": "Add JavaScript function to handle adding tasks"
-        }
-    ]
-}
+\`\`\`
+Task Writeup:
+# To-Do List App
+## Analysis
+The current code provides a simple textbox interface that needs to be enhanced into a to-do list application. The existing styling and layout provide a good foundation but need modifications to support the new functionality.
+
+## Required Changes
+1. Update Page Title
+   - Current: "Simple Textbox App"
+   - Change to: "To-Do List"
+   - Location: <title> tag in <head> section
+
+2. Enhance Input Interface
+   - Convert textarea to input field for better UX
+   - Add "Add Task" button next to input
+   - Style button to match existing design
+   
+3. Add Task List Display
+   - Create unordered list (<ul>) to show tasks
+   - Style list items for consistent appearance
+   - Add task deletion capability
+
+4. Implement Task Management
+   - Add JavaScript for task handling
+   - Use localStorage for data persistence
+   - Include task completion toggling
+
+## Implementation Notes
+- Maintain existing color scheme and styling
+- Ensure responsive design works on mobile
+- Keep centered layout with container
+- Add appropriate spacing between elements
+
 -- End Examples --
 
-User's Name: <!users_name>
-Current Timestamp: <!timestamp>
 Current Time in User's Timezone: <!time>
 User's Design Idea: <!query>
 HTML Script:
 \`\`\`html
 <!script>
 \`\`\`
-JSON Schema:
+Task Writeup:
 `
     prompt = prompt.replace('<!time>', getTimezoneString() + ' ' + (new Date().getHours() >= 12 ? 'PM' : 'AM'))
-    prompt = prompt.replace('<!users_prompt>', query)
+    prompt = prompt.replace('<!query>', query)
     prompt = prompt.replace('<!script>', script)
     return prompt
 }
+
+
+export const programmerAgentTaskCoder = (query: string, script: string) => {
+    let prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and you will need to implement the updates in a markdown code block as code snippets in the HTML script.
+
+## Instructions
+- Your response should be a markdown code block with the updated HTML script.
+- Do not include any other text in the response.
+- Make sure to use <--- previous code remains unchanged --> to indicate where the previous code remains unchanged and <--- insert code here --> to indicate where the new code should be inserted.
+
+## Examples
+-- Begin Examples --
+
+Example 1:
+HTML Script:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, World!</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            font-size: 5rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+</body>
+</html>
+Task Writeup:
+# Dark Mode Website with Footer Update
+## Tasks
+1. Change the page title to "My Website"
+   - Locate the title tag in the head section
+   - Replace "Hello, World!" with "My Website"
+
+2. Add footer with copyright text
+   - Create a new footer element at the bottom of the body
+   - Add "Copyright 2024 My Website" text inside footer
+   - Style footer with:
+     - Fixed position at bottom
+     - Full width
+     - Center-aligned text
+     - Padding for spacing
+     - Dark mode colors matching theme
+
+3. Update theme to dark mode
+   - Modify body styles:
+     - Set background-color to #1E1E1E
+     - Change text color to #FFFFFF
+   - Update h1 styles:
+     - Change color to #FFFFFF
+     - Add text-shadow for better contrast
+     - Keep existing font size and centering
+
+## Implementation Notes
+- Use CSS variables for consistent dark mode colors
+- Ensure footer stays at bottom with fixed positioning
+- Maintain existing layout and spacing while updating colors
+- Test contrast ratios meet accessibility standards
+Changes to HTML Script:
+\`\`\`html
+
+\`\`\`
+-- End Examples --
+
+`
+}
+
 
 export const htmlTemplate = (query: string, script: string, ltm: string = "", stm: string = "") => {
     let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
