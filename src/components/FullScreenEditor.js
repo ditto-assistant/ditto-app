@@ -766,6 +766,77 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         onClose();
     };
 
+    // Add a useEffect to handle the Enter key for the intent warning overlay
+    useEffect(() => {
+        const handleIntentWarningKeyDown = (e) => {
+            if (showIntentWarning && e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                setShowIntentWarning(false);
+                const sendMessageAnyway = async () => {
+                    const messageContent = selectedCodeAttachment ? 
+                        `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${scriptChatInput}` : 
+                        scriptChatInput;
+                    
+                    setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
+                    setScriptChatInput('');
+                    setSelectedCodeAttachment(null);
+                    setIsTyping(true);
+
+                    try {
+                        // Construct the prompt 
+                        const usersPrompt = selectedCodeAttachment ?
+                                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`
+                            : 
+                            scriptChatInput;
+                        
+                        const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, false);
+
+                        // Log the response in yellow
+                        console.log('\x1b[33m%s\x1b[0m', response);
+
+                        if (response) {
+                            // Add current state to history before updating
+                            const newHistory = editHistory.slice(0, historyIndex + 1);
+                            newHistory.push({ content: response });
+                            setEditHistory(newHistory);
+                            setHistoryIndex(newHistory.length - 1);
+                            
+                            // Update the code
+                            setCode(response);
+                            setPreviewKey(prev => prev + 1);
+
+                            // Add a message indicating task completion
+                            setScriptChatMessages(prev => [...prev, { 
+                                role: 'assistant', 
+                                content: 'Task completed', 
+                                fullScript: response 
+                            }]);
+                        } else {
+                            setScriptChatMessages(prev => [...prev, { 
+                                role: 'assistant', 
+                                content: response 
+                            }]);
+                        }
+                    } catch (error) {
+                        console.error('Error in chat:', error);
+                        setScriptChatMessages(prev => [...prev, { 
+                            role: 'assistant', 
+                            content: 'Sorry, there was an error processing your request.' 
+                        }]);
+                    }
+
+                    setIsTyping(false);
+                };
+                sendMessageAnyway();
+            }
+        };
+
+        document.addEventListener('keydown', handleIntentWarningKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleIntentWarningKeyDown);
+        };
+    }, [showIntentWarning, scriptChatInput, selectedCodeAttachment, code, modelPreferences.programmerModel, editHistory, historyIndex]);
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -968,6 +1039,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 htmlContent={code}
                                 onNodeClick={onNodeClick}
                                 onNodeUpdate={handleNodeUpdate}
+                                showScriptChat={showScriptChat}
+                                setShowScriptChat={setShowScriptChat}
+                                setSelectedCodeAttachment={setSelectedCodeAttachment}
                             />
                         )}
                     </div>
@@ -1229,6 +1303,19 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
+                                    {/* Show Copy option for user messages */}
+                                    {scriptChatActionOverlay.role === 'user' && (
+                                        <button 
+                                            onClick={() => {
+                                                const message = scriptChatMessages[scriptChatActionOverlay.index];
+                                                const textToCopy = message.content.split('```')[2]?.split('\n\n')[1] || message.content;
+                                                handleScriptChatCopy(textToCopy);
+                                            }}
+                                            style={styles.scriptChatActionButton}
+                                        >
+                                            Copy
+                                        </button>
+                                    )}
                                     <button 
                                         onClick={() => handleScriptChatDelete(scriptChatActionOverlay.index)}
                                         style={{
@@ -1400,7 +1487,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     }}
                                     style={styles.intentWarningButton}
                                 >
-                                    Send Anyways
+                                    Send Anyways (Enter)
                                 </button>
                             </div>
                         </motion.div>
@@ -1896,6 +1983,8 @@ const styles = {
         borderRadius: '12px 12px 0 12px',
         maxWidth: '80%',
         wordBreak: 'break-word',
+        cursor: 'pointer', // Add this to show it's clickable
+        transition: 'filter 0.2s ease', // Add this for smooth blur transition
     },
     assistantMessage: {
         alignSelf: 'flex-start',
@@ -1905,6 +1994,8 @@ const styles = {
         borderRadius: '12px 12px 12px 0',
         maxWidth: '80%',
         wordBreak: 'break-word',
+        cursor: 'pointer', // Add this to show it's clickable
+        transition: 'filter 0.2s ease', // Add this for smooth blur transition
     },
     copiedNotification: {
         position: 'fixed',

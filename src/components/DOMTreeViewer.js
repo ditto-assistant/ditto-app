@@ -54,80 +54,18 @@ const typingIndicatorCSS = `
 }
 `;
 
-const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) => {
+const NodeEditor = ({ 
+    node, 
+    onClose, 
+    onSave, 
+    htmlContent, 
+    updateHtmlContent,
+    showScriptChat,
+    setShowScriptChat,
+    setSelectedCodeAttachment 
+}) => {
     const [code, setCode] = useState(node.outerHTML);
-    const [chatMessages, setChatMessages] = useState([]);
-    const [chatInput, setChatInput] = useState('');
-    const chatInputRef = useRef(null);
-    const [modelPreferences, setModelPreferences] = useState({ programmerModel: 'claude-3-5-sonnet' });
-    const userID = localStorage.getItem('userID');
-    const [showChat, setShowChat] = useState(false);
-    const messagesEndRef = useRef(null);
-    const [isTyping, setIsTyping] = useState(false);
-    const [codeBase, setCodeBase] = useState(htmlContent);
     const [wrapEnabled, setWrapEnabled] = useState(true);
-
-    useEffect(() => {
-        // Fetch user's preferred programmer model
-        getModelPreferencesFromFirestore(userID).then(prefs => {
-            setModelPreferences(prefs);
-        });
-    }, [userID]);
-
-    useEffect(() => {
-        // Inject the CSS
-        const style = document.createElement('style');
-        style.textContent = typingIndicatorCSS;
-        document.head.appendChild(style);
-
-        return () => {
-            document.head.removeChild(style);
-        };
-    }, []);
-
-    const handleSendMessage = async () => {
-        if (!chatInput.trim()) return;
-        const userMessage = chatInput.trim();
-        setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-        setChatInput('');
-        setIsTyping(true);
-
-        try {
-            // Get embedding for the user's message
-            const embedding = await textEmbed(userMessage);
-
-            // TODO: get intent confidence like we do in FullScreenEditor
-            
-            // Construct the prompt using htmlTemplate
-            const snippet = "```html\n" + node.outerHTML + "\n```";
-            const taskDescription = userMessage;
-            const fullTaskDescription = "The user has selected this section of the code to focus on:\n" + snippet + ". The user has also provided the following instructions:\n" + taskDescription;
-            
-            const response = await updaterAgent(fullTaskDescription, htmlContent, modelPreferences.programmerModel, false);
-            
-            // Log the response in yellow
-            console.log('\x1b[33m%s\x1b[0m', response);
-
-            // Update the parent's code state directly with the full HTML
-            if (updateHtmlContent) {
-                updateHtmlContent(node, response);
-            }
-
-            // Add the assistant's response to chat
-            setChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
-
-            // Close the editor
-            onClose();
-        } catch (error) {
-            console.error('Error in chat:', error);
-            setChatMessages(prev => [...prev, { 
-                role: 'assistant', 
-                content: 'Sorry, there was an error processing your request.' 
-            }]);
-        }
-
-        setIsTyping(false);
-    };
 
     const handleSave = () => {
         if (code !== node.outerHTML) {
@@ -136,27 +74,13 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
         onClose();
     };
 
-    useEffect(() => {
-        // Scroll to bottom when new message is added
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [chatMessages]);
-
-    const adjustTextareaHeight = (textarea) => {
-        if (!textarea) return;
-        
-        // Reset height to auto to get the correct scrollHeight
-        textarea.style.height = 'auto';
-        
-        // Calculate line height (assuming 14px font size and 1.5 line height)
-        const lineHeight = 21; // 14px * 1.5
-        const padding = 16; // 8px top + 8px bottom
-        const maxHeight = lineHeight * 6 + padding; // 6 rows max
-        
-        // Set new height
-        const newHeight = Math.min(textarea.scrollHeight, maxHeight);
-        textarea.style.height = `${newHeight}px`;
+    const handleChatClick = () => {
+        // Set the selected node's code as the code attachment
+        setSelectedCodeAttachment(node.outerHTML);
+        // Open the script chat
+        setShowScriptChat(true);
+        // Close the node editor overlay
+        onClose();
     };
 
     return (
@@ -173,10 +97,10 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                     </IconButton>
                     <IconButton 
                         size="small"
-                        onClick={() => setShowChat(prev => !prev)}
+                        onClick={handleChatClick}
                         style={styles.nodeEditorButton}
                     >
-                        <FaComments size={16} color={showChat ? darkModeColors.primary : darkModeColors.textSecondary} />
+                        <FaComments size={16} color={darkModeColors.textSecondary} />
                     </IconButton>
                     <IconButton 
                         size="small" 
@@ -204,7 +128,7 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                     value={code}
                     name="node-editor"
                     width="100%"
-                    height={showChat ? '200px' : '400px'}
+                    height="400px"
                     fontSize={14}
                     showPrintMargin={false}
                     showGutter={true}
@@ -220,77 +144,18 @@ const NodeEditor = ({ node, onClose, onSave, htmlContent, updateHtmlContent }) =
                     }}
                 />
             </div>
-            <AnimatePresence>
-                {showChat && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        style={styles.chatContainer}
-                    >
-                        <div style={styles.chatMessages}>
-                            {chatMessages.map((msg, index) => (
-                                <div key={index} style={msg.role === 'user' ? styles.userMessage : styles.assistantMessage}>
-                                    <ReactMarkdown
-                                        children={msg.content}
-                                        components={{
-                                            code({node, inline, className, children, ...props}) {
-                                                const match = /language-(\w+)/.exec(className || '');
-                                                return !inline && match ? (
-                                                    <SyntaxHighlighter
-                                                        style={vscDarkPlus}
-                                                        language={match[1]}
-                                                        PreTag="div"
-                                                        {...props}
-                                                    >
-                                                        {String(children).replace(/\n$/, '')}
-                                                    </SyntaxHighlighter>
-                                                ) : (
-                                                    <code className={className} {...props}>
-                                                        {children}
-                                                    </code>
-                                                );
-                                            },
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                            {isTyping && (
-                                <div className="typing-indicator">
-                                    <div className="typing-dot" style={{ '--i': 0 }} />
-                                    <div className="typing-dot" style={{ '--i': 1 }} />
-                                    <div className="typing-dot" style={{ '--i': 2 }} />
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
-                        <div style={styles.chatInputContainer}>
-                            <textarea
-                                ref={chatInputRef}
-                                value={chatInput}
-                                onChange={(e) => {
-                                    setChatInput(e.target.value);
-                                    adjustTextareaHeight(e.target);
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSendMessage();
-                                    }
-                                }}
-                                placeholder="Type your message..."
-                                style={styles.chatInput}
-                            />
-                            <button onClick={handleSendMessage} style={styles.sendButton}>Send</button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </motion.div>
     );
 };
 
-const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
+const DOMTreeViewer = ({ 
+    htmlContent, 
+    onNodeClick, 
+    onNodeUpdate,
+    showScriptChat,
+    setShowScriptChat,
+    setSelectedCodeAttachment 
+}) => {
     const containerRef = useRef(null);
     const networkRef = useRef(null);
     const [selectedNode, setSelectedNode] = useState(null);
@@ -645,6 +510,9 @@ const DOMTreeViewer = ({ htmlContent, onNodeClick, onNodeUpdate }) => {
                                 onSave={handleNodeUpdate}
                                 htmlContent={htmlContent}
                                 updateHtmlContent={onNodeUpdate}
+                                showScriptChat={showScriptChat}
+                                setShowScriptChat={setShowScriptChat}
+                                setSelectedCodeAttachment={setSelectedCodeAttachment}
                             />
                         </motion.div>
                     </motion.div>
@@ -770,75 +638,6 @@ const styles = {
         marginTop: '16px',
         fontSize: '14px',
         fontWeight: 500,
-    },
-    chatContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: darkModeColors.foreground,
-        borderTop: `1px solid ${darkModeColors.border}`,
-        height: '200px',
-        overflow: 'hidden',
-    },
-    chatMessages: {
-        flex: 1,
-        overflowY: 'auto',
-        padding: '8px',
-    },
-    userMessage: {
-        alignSelf: 'flex-end',
-        backgroundColor: darkModeColors.primary,
-        color: darkModeColors.text,
-        padding: '8px',
-        borderRadius: '12px',
-        marginBottom: '4px',
-        maxWidth: '80%',
-    },
-    assistantMessage: {
-        alignSelf: 'flex-start',
-        backgroundColor: darkModeColors.secondary,
-        color: darkModeColors.text,
-        padding: '8px',
-        borderRadius: '12px',
-        marginBottom: '4px',
-        maxWidth: '80%',
-    },
-    chatInputContainer: {
-        padding: '12px',
-        borderTop: `1px solid ${darkModeColors.border}`,
-        display: 'flex',
-        gap: '8px',
-    },
-    chatInput: {
-        flex: 1,
-        backgroundColor: darkModeColors.background,
-        border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '6px',
-        padding: '8px 12px',
-        color: darkModeColors.text,
-        fontSize: '14px',
-        lineHeight: '1.5',
-        outline: 'none',
-        resize: 'none',
-        minHeight: '40px',
-        maxHeight: '147px', // 6 rows * 21px + 16px padding
-        overflowY: 'auto',
-        transition: 'height 0.2s ease',
-        '&:focus': {
-            borderColor: darkModeColors.primary,
-        },
-    },
-    sendButton: {
-        backgroundColor: darkModeColors.primary,
-        color: darkModeColors.text,
-        border: 'none',
-        borderRadius: '6px',
-        padding: '8px 16px',
-        fontSize: '14px',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s',
-        '&:hover': {
-            backgroundColor: darkModeColors.secondary,
-        },
     },
 };
 

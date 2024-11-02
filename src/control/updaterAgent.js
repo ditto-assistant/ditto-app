@@ -16,7 +16,7 @@ export default async function updaterAgent(prompt, scriptContents, programmerMod
         taskWriteup = await promptLLM(
             programmerAgentPlanner(prompt, scriptContents),
             htmlSystemTemplate(),
-            // programmerModel
+            'gemini-1.5-pro'
         );
 
         // } else {
