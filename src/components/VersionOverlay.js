@@ -27,40 +27,57 @@ const VersionOverlay = ({ children, style, onDelete, onSelect, openUpward }) => 
             }}
         >
             <AnimatePresence>
-                {children.map((child, index) => (
-                    <motion.div 
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        whileHover={{ 
-                            backgroundColor: 'rgba(88, 101, 242, 0.1)',
-                            paddingLeft: '24px',
-                            transition: { duration: 0.2 }
-                        }}
-                        style={styles.versionItem}
-                        onClick={() => onSelect && onSelect(child)}
-                    >
-                        <motion.span 
-                            style={styles.versionName}
-                            whileHover={{ color: '#5865F2' }}
+                {children.map((child, index) => {
+                    const versionMatch = child.match(/-v(\d+)$/);
+                    const version = versionMatch ? versionMatch[1] : null;
+                    const baseName = child.replace(/-v\d+$/, '');
+                    const isLatest = !version;
+
+                    return (
+                        <motion.div 
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            whileHover={{ 
+                                backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                                paddingLeft: '24px',
+                                transition: { duration: 0.2 }
+                            }}
+                            style={styles.versionItem}
+                            onClick={() => onSelect && onSelect(child)}
                         >
-                            {child}
-                        </motion.span>
-                        <motion.div
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            <FaTrash 
-                                style={styles.deleteIcon} 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDelete(index);
-                                }} 
-                            />
+                            <motion.span 
+                                style={styles.versionName}
+                                whileHover={{ color: '#5865F2' }}
+                            >
+                                {baseName}
+                            </motion.span>
+                            {version && (
+                                <span style={styles.versionBadge}>
+                                    v{version}
+                                </span>
+                            )}
+                            {isLatest && (
+                                <span style={styles.latestBadge}>
+                                    Latest
+                                </span>
+                            )}
+                            <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <FaTrash 
+                                    style={styles.deleteIcon} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDelete(index);
+                                    }} 
+                                />
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                ))}
+                    );
+                })}
             </AnimatePresence>
         </motion.div>,
         document.body
@@ -84,6 +101,22 @@ const styles = {
     versionName: {
         flex: 1,
         transition: 'color 0.2s ease',
+    },
+    versionBadge: {
+        backgroundColor: '#5865F2',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '10px',
+        marginLeft: '8px',
+    },
+    latestBadge: {
+        backgroundColor: '#28A745',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '10px',
+        marginLeft: '8px',
     },
     deleteIcon: {
         color: '#DA373C',

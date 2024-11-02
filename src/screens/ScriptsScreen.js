@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert, MdSort } from "react-icons/md";
-import { FaPlay, FaArrowLeft, FaTrash, FaDownload } from "react-icons/fa"; // Add FaTrash and FaDownload import
+import { FaPlay, FaArrowLeft, FaTrash, FaDownload, FaUndo } from "react-icons/fa"; // Add FaTrash and FaDownload import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
@@ -20,6 +20,7 @@ import DeleteConfirmationOverlay from '../components/DeleteConfirmationOverlay';
 import SearchBar from '../components/SearchBar';
 import AddScriptOverlay from '../components/AddScriptOverlay';
 import OpenSCADViewer from '../components/OpenSCADViewer';
+import RevertConfirmationOverlay from '../components/RevertConfirmationOverlay';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -76,6 +77,12 @@ const ScriptsScreen = () => {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     const [sortOrder, setSortOrder] = useState('recent');
+
+    const [revertConfirmation, setRevertConfirmation] = useState({ 
+        show: false, 
+        script: null, 
+        category: null 
+    });
 
     const sortScripts = (scripts) => {
         if (sortOrder === 'alphabetical') {
@@ -207,14 +214,77 @@ const ScriptsScreen = () => {
     const handleDeleteScript = async (category, currentScript) => {
         setDeleteConfirmation({ show: false, script: null, category: null });
         
-        // Proceed with deletion
+        const userID = localStorage.getItem("userID");
+        
+        // Check if this is a base version (no -v tag)
+        const isBaseVersion = !currentScript.name.includes('-v');
+        
+        if (isBaseVersion) {
+            // Find all versions of this script
+            const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
+            const relatedScripts = scripts[category].filter(script => 
+                getBaseNameAndVersion(script.name).baseName === baseScriptName
+            );
+            
+            // If there are other versions, promote the highest version
+            if (relatedScripts.length > 1) {
+                // Find the highest version number
+                let highestVersion = 0;
+                let newestScript = null;
+                
+                relatedScripts.forEach(script => {
+                    const { version } = getBaseNameAndVersion(script.name);
+                    if (version && parseInt(version) > highestVersion) {
+                        highestVersion = parseInt(version);
+                        newestScript = script;
+                    }
+                });
+                
+                if (newestScript) {
+                    // Rename the highest version to be the new base version
+                    const newName = baseScriptName;
+                    const oldName = newestScript.name;
+                    
+                    // Update in Firestore
+                    await renameScriptInFirestore(userID, newestScript.id, category, oldName, newName);
+                    
+                    // Update in local state
+                    setScripts(prevState => ({
+                        ...prevState,
+                        [category]: prevState[category].map(script => 
+                            script.id === newestScript.id 
+                                ? { ...script, name: newName }
+                                : script
+                        ).filter(script => script.id !== currentScript.id)
+                    }));
+                    
+                    // Update selected script if necessary
+                    if (selectedScript === currentScript.name) {
+                        localStorage.setItem("workingOnScript", JSON.stringify({ 
+                            script: newName, 
+                            contents: newestScript.content, 
+                            scriptType: category 
+                        }));
+                        setSelectedScript(newName);
+                        setCurrentVersion(prev => ({ ...prev, [category]: { ...newestScript, name: newName } }));
+                    }
+                    
+                    // Delete the old base version from Firestore
+                    await deleteScriptFromFirestore(userID, category, currentScript.name);
+                    return;
+                }
+            }
+        }
+        
+        // Regular delete flow for non-base versions or if no promotion needed
         setScripts((prevState) => ({
             ...prevState,
             [category]: prevState[category].filter((script) => script.id !== currentScript.id),
         }));
         setActiveCard(null);
-        const userID = localStorage.getItem("userID");
+        
         await deleteScriptFromFirestore(userID, category, currentScript.name);
+        
         if (selectedScript === currentScript.name) {
             localStorage.removeItem("workingOnScript");
             setSelectedScript(null);
@@ -411,11 +481,10 @@ const ScriptsScreen = () => {
         if (versionOverlay !== baseName) return null;
 
         const windowHeight = window.innerHeight;
-        const overlayHeight = Math.min(scriptsList.length * 40 + 16, 200); // Approximate height calculation
+        const overlayHeight = Math.min(scriptsList.length * 40 + 16, 200);
         const spaceBelow = windowHeight - cardRect.bottom;
         const spaceAbove = cardRect.top;
         
-        // Determine if overlay should open upward
         const openUpward = spaceBelow < overlayHeight && spaceAbove > overlayHeight;
 
         const style = {
@@ -428,7 +497,7 @@ const ScriptsScreen = () => {
         };
 
         const handleDeleteVersion = (index) => {
-            const scriptToDelete = scriptsList[index];
+            const scriptToDelete = sortedScriptsList[index];
             setDeleteConfirmation({ 
                 show: true, 
                 script: scriptToDelete, 
@@ -436,19 +505,51 @@ const ScriptsScreen = () => {
             });
         };
 
+        // Find the currently displayed script for this specific app
+        const currentlyDisplayedScript = currentVersion[activeTab] && 
+            scriptsList.find(s => s.name === currentVersion[activeTab].name) || 
+            scriptsList.find(s => !s.name.includes('-v')); // Find the latest version for this app
+
+        // Filter out the currently selected version and the latest version if it's currently displayed
+        const filteredScriptsList = scriptsList.filter(script => {
+            if (script.name === selectedScript) return false;
+            
+            const isLatest = !script.name.includes('-v');
+            const isCurrentlyDisplayedLatest = isLatest && script.name === currentlyDisplayedScript?.name;
+            
+            // Only filter out the latest version if it's currently displayed for this specific app
+            // and no other version of this app is selected
+            if (isCurrentlyDisplayedLatest && !selectedScript?.startsWith(baseName)) return false;
+            
+            return true;
+        });
+
+        // Sort versions with the latest (no -v tag) at the top, followed by other versions in descending order
+        const sortedScriptsList = [...filteredScriptsList].sort((a, b) => {
+            const isALatest = !a.name.includes('-v');
+            const isBLatest = !b.name.includes('-v');
+            
+            if (isALatest) return -1;
+            if (isBLatest) return 1;
+
+            const versionA = parseInt(getBaseNameAndVersion(a.name).version || '0');
+            const versionB = parseInt(getBaseNameAndVersion(b.name).version || '0');
+            return versionB - versionA;
+        });
+
         return (
             <VersionOverlay 
                 style={style} 
                 onDelete={handleDeleteVersion}
                 onSelect={(versionName) => {
-                    const selectedVersion = scriptsList.find(script => script.name === versionName);
+                    const selectedVersion = sortedScriptsList.find(script => script.name === versionName);
                     if (selectedVersion) {
                         handleSelectVersion(selectedVersion);
                     }
                 }}
                 openUpward={openUpward}
             >
-                {scriptsList.map((script) => script.name)}
+                {sortedScriptsList.map(script => script.name)}
             </VersionOverlay>
         );
     };
@@ -530,6 +631,8 @@ const ScriptsScreen = () => {
                         cardRefs.current[currentScript.id] = React.createRef();
                     }
 
+                    const { baseName: scriptBaseName, version } = getBaseNameAndVersion(currentScript.name);
+
                     return (
                         <motion.div
                             ref={cardRefs.current[currentScript.id]}
@@ -568,7 +671,12 @@ const ScriptsScreen = () => {
                                     />
                                 ) : (
                                     <p style={{ ...styles.scriptName, fontSize: getFontSize(currentScript.name) }}>
-                                        {currentScript.name}
+                                        {scriptBaseName}
+                                        {version && (
+                                            <span style={styles.versionBadge}>
+                                                v{version}
+                                            </span>
+                                        )}
                                     </p>
                                 )}
                                 <div style={styles.actions} onClick={(e) => e.stopPropagation()}>
@@ -721,7 +829,8 @@ const ScriptsScreen = () => {
                                         setDeleteConfirmation({ 
                                             show: true, 
                                             script: currentScript, 
-                                            category: category 
+                                            category: category,
+                                            isDeleteAll: true
                                         });
                                         setActiveCard(null); 
                                         setMenuPosition(null);
@@ -729,6 +838,28 @@ const ScriptsScreen = () => {
                                         <FaTrash style={{ marginRight: '8px' }} />
                                         Delete
                                     </p>
+                                    {hasMultipleVersions && (
+                                        <p style={{
+                                            ...styles.cardMenuItem,
+                                            color: darkModeColors.primary,
+                                            '&:hover': {
+                                                backgroundColor: `${darkModeColors.primary}15`,
+                                            },
+                                        }} 
+                                        onClick={(e) => { 
+                                            e.stopPropagation();
+                                            setRevertConfirmation({ 
+                                                show: true, 
+                                                script: currentScript, 
+                                                category: category 
+                                            });
+                                            setActiveCard(null); 
+                                            setMenuPosition(null);
+                                        }}>
+                                            <FaUndo style={{ marginRight: '8px' }} />
+                                            Revert
+                                        </p>
+                                    )}
                                 </CardMenu>
                             )}
                             {versionOverlay === baseName && 
@@ -862,6 +993,47 @@ const ScriptsScreen = () => {
         }
     }, []);
 
+    const getBaseNameAndVersion = (name) => {
+        const versionMatch = name.match(/-v(\d+)$/);
+        const version = versionMatch ? versionMatch[1] : null;
+        const baseName = name.replace(/-v\d+$/, '');
+        return { baseName, version };
+    };
+
+    const handleDeleteAllVersions = async (category, currentScript) => {
+        setDeleteConfirmation({ show: false, script: null, category: null });
+        
+        const userID = localStorage.getItem("userID");
+        const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
+        
+        // Find all versions of this script
+        const relatedScripts = scripts[category].filter(script => 
+            getBaseNameAndVersion(script.name).baseName === baseScriptName
+        );
+        
+        // Delete all versions from Firestore
+        for (const script of relatedScripts) {
+            await deleteScriptFromFirestore(userID, category, script.name);
+        }
+        
+        // Update local state to remove all versions
+        setScripts(prevState => ({
+            ...prevState,
+            [category]: prevState[category].filter(script => 
+                getBaseNameAndVersion(script.name).baseName !== baseScriptName
+            )
+        }));
+        
+        // If any version was selected, clear selection
+        if (relatedScripts.some(script => script.name === selectedScript)) {
+            localStorage.removeItem("workingOnScript");
+            setSelectedScript(null);
+            setCurrentVersion((prevState) => ({ ...prevState, [category]: undefined }));
+        }
+        
+        setActiveCard(null);
+    };
+
     if (fullScreenEdit) {
         return (
             <FullScreenEditor
@@ -933,7 +1105,12 @@ const ScriptsScreen = () => {
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: 0.2 }}
                                         >
-                                            {selectedScript}
+                                            {getBaseNameAndVersion(selectedScript).baseName}
+                                            {getBaseNameAndVersion(selectedScript).version && (
+                                                <span style={styles.versionBadge}>
+                                                    v{getBaseNameAndVersion(selectedScript).version}
+                                                </span>
+                                            )}
                                         </motion.p>
                                     </div>
                                     <div style={styles.selectedScriptActions}>
@@ -1082,8 +1259,41 @@ const ScriptsScreen = () => {
             <DeleteConfirmationOverlay
                 isOpen={deleteConfirmation.show}
                 onClose={() => setDeleteConfirmation({ show: false, script: null, category: null })}
-                onConfirm={() => handleDeleteScript(deleteConfirmation.category, deleteConfirmation.script)}
+                onConfirm={() => deleteConfirmation.isDeleteAll 
+                    ? handleDeleteAllVersions(deleteConfirmation.category, deleteConfirmation.script)
+                    : handleDeleteScript(deleteConfirmation.category, deleteConfirmation.script)
+                }
                 scriptName={deleteConfirmation.script?.name}
+                isDeleteAll={deleteConfirmation.isDeleteAll}
+            />
+            <RevertConfirmationOverlay
+                isOpen={revertConfirmation.show}
+                onClose={() => setRevertConfirmation({ show: false, script: null, category: null })}
+                onConfirm={() => {
+                    handleDeleteScript(revertConfirmation.category, revertConfirmation.script);
+                    setRevertConfirmation({ show: false, script: null, category: null });
+                }}
+                scriptName={getBaseNameAndVersion(revertConfirmation.script?.name || '').baseName}
+                version={(() => {
+                    if (!revertConfirmation.script) return '';
+                    
+                    // Find all versions of this script
+                    const baseScriptName = getBaseNameAndVersion(revertConfirmation.script.name).baseName;
+                    const relatedScripts = scripts[revertConfirmation.category]?.filter(script => 
+                        getBaseNameAndVersion(script.name).baseName === baseScriptName
+                    ) || [];
+                    
+                    // Find the highest version number
+                    let highestVersion = 0;
+                    relatedScripts.forEach(script => {
+                        const { version } = getBaseNameAndVersion(script.name);
+                        if (version && parseInt(version) > highestVersion) {
+                            highestVersion = parseInt(version);
+                        }
+                    });
+                    
+                    return highestVersion.toString();
+                })()}
             />
             {openScadViewer && (
                 <OpenSCADViewer
@@ -1654,6 +1864,14 @@ const styles = {
             backgroundColor: `${darkModeColors.primary}15`,
             color: darkModeColors.primary,
         },
+    },
+    versionBadge: {
+        backgroundColor: '#5865F2',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '10px',
+        marginLeft: '8px',
     },
 };
 

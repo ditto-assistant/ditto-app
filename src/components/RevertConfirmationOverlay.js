@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaUndo } from 'react-icons/fa';
 
-const DeleteConfirmationOverlay = ({ isOpen, onClose, onConfirm, scriptName, isDeleteAll = false }) => {
+const RevertConfirmationOverlay = ({ isOpen, onClose, onConfirm, scriptName, version }) => {
     if (!isOpen) return null;
 
     return (
@@ -20,13 +20,11 @@ const DeleteConfirmationOverlay = ({ isOpen, onClose, onConfirm, scriptName, isD
                 style={styles.modal}
                 onClick={e => e.stopPropagation()}
             >
-                <FaExclamationTriangle style={styles.warningIcon} />
-                <h3 style={styles.title}>Confirm Delete</h3>
+                <FaUndo style={styles.revertIcon} />
+                <h3 style={styles.title}>Confirm Revert</h3>
                 <p style={styles.message}>
-                    {isDeleteAll 
-                        ? `Are you sure you want to delete "${scriptName}" and all its versions? This action cannot be undone.`
-                        : `Are you sure you want to delete "${scriptName}"? This action cannot be undone.`
-                    }
+                    Are you sure you want to revert to "{scriptName}"
+                    <span style={styles.versionBadge}>v{version}</span>?
                 </p>
                 <div style={styles.buttons}>
                     <motion.button
@@ -40,10 +38,10 @@ const DeleteConfirmationOverlay = ({ isOpen, onClose, onConfirm, scriptName, isD
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        style={styles.deleteButton}
+                        style={styles.revertButton}
                         onClick={onConfirm}
                     >
-                        Delete {isDeleteAll ? 'All' : ''}
+                        Revert
                     </motion.button>
                 </div>
             </motion.div>
@@ -73,8 +71,8 @@ const styles = {
         textAlign: 'center',
         border: '1px solid #1E1F22',
     },
-    warningIcon: {
-        color: '#DA373C',
+    revertIcon: {
+        color: '#5865F2',
         fontSize: '48px',
         marginBottom: '16px',
     },
@@ -88,6 +86,19 @@ const styles = {
         margin: '0 0 24px 0',
         fontSize: '14px',
         lineHeight: '1.5',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        flexWrap: 'wrap',
+    },
+    versionBadge: {
+        backgroundColor: '#5865F2',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '12px',
+        display: 'inline-block',
     },
     buttons: {
         display: 'flex',
@@ -104,11 +115,11 @@ const styles = {
         fontSize: '14px',
         fontWeight: '500',
     },
-    deleteButton: {
+    revertButton: {
         padding: '8px 16px',
         borderRadius: '8px',
         border: 'none',
-        backgroundColor: '#DA373C',
+        backgroundColor: '#5865F2',
         color: '#FFFFFF',
         cursor: 'pointer',
         fontSize: '14px',
@@ -116,4 +127,4 @@ const styles = {
     },
 };
 
-export default DeleteConfirmationOverlay;
+export default RevertConfirmationOverlay; 
