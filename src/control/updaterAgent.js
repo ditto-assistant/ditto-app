@@ -47,10 +47,10 @@ export default async function updaterAgent(prompt, scriptContents, programmerMod
             key = '```css';
         }
         let useContinuer = false;
-        finalScript = finalScript.replace(key, '')
+        finalScript = finalScript.split(key)[1]
         // check if the ``` substring is present
         if (finalScript.includes('```')) {
-            finalScript = finalScript.replace('```', '');
+            finalScript = finalScript.split('```')[0];
         }
         else {
             console.log("Script is not finished generating, using the continuer...");

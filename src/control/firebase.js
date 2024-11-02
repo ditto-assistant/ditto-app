@@ -355,13 +355,25 @@ export const backupOldScriptMakeVersion = async (userID, scriptType, filename) =
     // Get all versions of the script
     let versions = await getVersionsOfScriptFromFirestore(userID, scriptType, filename);
     
-    // Find the highest version number
+    // Sort versions by version number
+    versions.sort((a, b) => {
+      const versionA = parseInt(a.versionNumber) || 0;
+      const versionB = parseInt(b.versionNumber) || 0;
+      return versionA - versionB;
+    });
+
+    // Find the latest version number by checking actual filenames in Firestore
+    const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
     let highestVersion = 0;
-    versions.forEach(version => {
-      // Convert version number to integer for comparison
-      const versionNum = parseInt(version.versionNumber);
-      if (!isNaN(versionNum) && versionNum > highestVersion) {
-        highestVersion = versionNum;
+    
+    querySnapshot.forEach((doc) => {
+      const docFilename = doc.data().filename;
+      if (docFilename.startsWith(filename + '-v')) {
+        const versionMatch = docFilename.match(/-v(\d+)$/);
+        if (versionMatch) {
+          const version = parseInt(versionMatch[1]);
+          highestVersion = Math.max(highestVersion, version);
+        }
       }
     });
 
@@ -371,22 +383,46 @@ export const backupOldScriptMakeVersion = async (userID, scriptType, filename) =
 
     // Only proceed if we have the original version to backup
     if (versions.length > 0) {
-      const docRef = await addDoc(collection(db, "scripts", userID, scriptType), {
-        script: versions[0].script,
-        filename: newFilename,
-        timestamp: new Date(),
-        timestampString: new Date().toISOString()
-      });
+      // Get the current base version (without -v suffix)
+      const baseVersionDoc = await getBaseVersion(userID, scriptType, filename);
+      
+      if (baseVersionDoc) {
+        const docRef = await addDoc(collection(db, "scripts", userID, scriptType), {
+          script: baseVersionDoc.script,
+          filename: newFilename,
+          timestamp: new Date(),
+          timestampString: new Date().toISOString()
+        });
 
-      if (mode === 'development') {
-        console.log("Old script backed up to Firestore collection with ID: ", docRef.id);
-        console.log(`Created backup version: ${newFilename}`);
+        if (mode === 'development') {
+          console.log("Old script backed up to Firestore collection with ID: ", docRef.id);
+          console.log(`Created backup version: ${newFilename}`);
+        }
       }
     }
   } catch (e) {
     console.error("Error backing up old script to Firestore scripts collection: ", e);
   }
-}
+};
+
+// Helper function to get the base version of a script
+const getBaseVersion = async (userID, scriptType, filename) => {
+  const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
+  let baseVersion = null;
+  
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.filename === filename) { // Exact match for base version (no -v suffix)
+      baseVersion = {
+        script: data.script,
+        filename: data.filename,
+        timestamp: data.timestamp
+      };
+    }
+  });
+  
+  return baseVersion;
+};
 
 
 export const getVersionsOfScriptFromFirestore = async (userID, scriptType, filename) => {
