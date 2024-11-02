@@ -680,30 +680,6 @@ const ScriptsScreen = () => {
                                     </p>
                                 )}
                                 <div style={styles.actions} onClick={(e) => e.stopPropagation()}>
-                                    <motion.div
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        {category === 'webApps' ? (
-                                            <FaPlay 
-                                                className="play-icon" 
-                                                style={styles.playIcon} 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handlePlayScript(currentScript);
-                                                }} 
-                                            />
-                                        ) : (
-                                            <FaDownload 
-                                                className="download-icon" 
-                                                style={styles.playIcon}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDownloadScript(currentScript);
-                                                }} 
-                                            />
-                                        )}
-                                    </motion.div>
                                     {category === 'webApps' ? (
                                         <motion.button 
                                             whileHover={{ scale: 1.05, backgroundColor: darkModeColors.secondary }}

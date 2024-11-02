@@ -207,6 +207,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     // Add state for showing the loading spinner
     const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
 
+    // Add new state for chat history
+    const [scriptChatHistory, setScriptChatHistory] = useState([]);
+
     useEffect(() => {
         // Fetch user's preferred programmer model
         getModelPreferencesFromFirestore(userID).then(prefs => {
@@ -237,6 +240,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const handleScriptChatSend = async () => {
         if (!scriptChatInput.trim()) return;
         const userMessage = scriptChatInput.trim();
+        const timestamp = new Date().toISOString();
         
         try {
             // Get embedding for the user's message
@@ -252,17 +256,35 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
             if (htmlAgentConfidence < 0.4) {
                 setShowIntentWarning(true);
-                return; // Exit early, keeping the message in the input
+                return;
             }
 
-            // Only proceed with sending if intent check passes
-            // Create the message content with code attachment if present
+            // Create the message content with code attachment and history
+            const historyText = scriptChatHistory.length > 0 ? 
+                '\nPrevious commands:\n' + scriptChatHistory.slice(-20).map(h => 
+                    `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
+                ).join('\n') : '';
+
             const messageContent = selectedCodeAttachment ? 
                 `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}` : 
                 userMessage;
             
-            setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
-            setScriptChatInput(''); // Only clear input after passing intent check
+            // Add to history before sending, maintaining 20 item window
+            const newHistoryEntry = { message: userMessage, timestamp };
+            setScriptChatHistory(prev => [...prev.slice(-19), newHistoryEntry]);
+            
+            // Also maintain 20 message window for chat messages
+            setScriptChatMessages(prev => {
+                const newMessages = [...prev, { 
+                    role: 'user', 
+                    content: messageContent,
+                    timestamp 
+                }];
+                // Keep only the last 40 messages (20 pairs of user/assistant messages)
+                return newMessages.slice(-40);
+            });
+
+            setScriptChatInput('');
             setSelectedCodeAttachment(null);
             setIsTyping(true);
 
@@ -272,15 +294,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 editor.clearSelection();
             }
 
-            // Fetch memories
-            // const shortTermMemory = await getShortTermMemory(userID, 5);
-            // const longTermMemory = await getLongTermMemory(userID, embedding, 5);
-
-            // Construct the prompt with memories
+            // Construct the prompt with history
             const usersPrompt = selectedCodeAttachment ?
-                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`
+                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}${historyText}`
                 :
-                userMessage;
+                `${userMessage}${historyText}`;
 
             const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, true);
             
@@ -298,17 +316,33 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 setCode(response);
                 setPreviewKey(prev => prev + 1);
 
-                // Add a message indicating task completion
-                setScriptChatMessages(prev => [...prev, { role: 'assistant', content: 'Task completed', fullScript: response }]);
+                // Add a message indicating task completion, maintaining message window
+                setScriptChatMessages(prev => {
+                    const newMessages = [...prev, { 
+                        role: 'assistant', 
+                        content: 'Task completed', 
+                        fullScript: response 
+                    }];
+                    return newMessages.slice(-40);
+                });
             } else {
-                setScriptChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
+                setScriptChatMessages(prev => {
+                    const newMessages = [...prev, { 
+                        role: 'assistant', 
+                        content: response 
+                    }];
+                    return newMessages.slice(-40);
+                });
             }
         } catch (error) {
             console.error('Error in chat:', error);
-            setScriptChatMessages(prev => [...prev, { 
-                role: 'assistant', 
-                content: 'Sorry, there was an error processing your request.' 
-            }]);
+            setScriptChatMessages(prev => {
+                const newMessages = [...prev, { 
+                    role: 'assistant', 
+                    content: 'Sorry, there was an error processing your request.' 
+                }];
+                return newMessages.slice(-40);
+            });
         }
 
         setIsTyping(false);
@@ -663,6 +697,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     };
 
     const handleScriptChatDelete = (index) => {
+        const messageToDelete = scriptChatMessages[index];
+        if (messageToDelete.role === 'user') {
+            // Remove from history if it exists
+            setScriptChatHistory(prev => 
+                prev.filter(h => h.timestamp !== messageToDelete.timestamp)
+            );
+        }
         setScriptChatMessages(prev => prev.filter((_, i) => i !== index));
         setScriptChatActionOverlay(null);
     };
@@ -766,16 +807,21 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         onClose();
     };
 
-    // Add a useEffect to handle the Enter key for the intent warning overlay
+    // Update the intent warning keydown effect to prevent the event from propagating
     useEffect(() => {
         const handleIntentWarningKeyDown = (e) => {
             if (showIntentWarning && e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
+                e.stopPropagation(); // Add this to stop event propagation
+                
+                // Set a flag to prevent immediate reopening
+                const currentInput = scriptChatInput;
                 setShowIntentWarning(false);
+                
                 const sendMessageAnyway = async () => {
                     const messageContent = selectedCodeAttachment ? 
-                        `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${scriptChatInput}` : 
-                        scriptChatInput;
+                        `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${currentInput}` : 
+                        currentInput;
                     
                     setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
                     setScriptChatInput('');
@@ -785,9 +831,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     try {
                         // Construct the prompt 
                         const usersPrompt = selectedCodeAttachment ?
-                                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`
+                                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${currentInput}`
                             : 
-                            scriptChatInput;
+                            currentInput;
                         
                         const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, false);
 
@@ -831,9 +877,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             }
         };
 
-        document.addEventListener('keydown', handleIntentWarningKeyDown);
+        document.addEventListener('keydown', handleIntentWarningKeyDown, true); // Add capture phase
         return () => {
-            document.removeEventListener('keydown', handleIntentWarningKeyDown);
+            document.removeEventListener('keydown', handleIntentWarningKeyDown, true);
         };
     }, [showIntentWarning, scriptChatInput, selectedCodeAttachment, code, modelPreferences.programmerModel, editHistory, historyIndex]);
 
@@ -1199,8 +1245,15 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                                 </button>
                                             )}
                                             <div style={styles.messageText}>
-                                                {msg.content.split('```')[2]?.split('\n\n')[1] || msg.content}
+                                                {/* Only show the user's message, not the history */}
+                                                {msg.content.split('```')[2]?.split('\n\n')[1] || 
+                                                 msg.content.split('\nPrevious commands:')[0]}
                                             </div>
+                                            {msg.timestamp && (
+                                                <div style={styles.messageTimestamp}>
+                                                    {new Date(msg.timestamp).toLocaleTimeString()}
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -2366,6 +2419,12 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 2000,
+    },
+    messageTimestamp: {
+        fontSize: '10px',
+        color: 'rgba(255, 255, 255, 0.5)',
+        marginTop: '4px',
+        alignSelf: 'flex-end',
     },
 };
 
