@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AceEditor from 'react-ace';
-import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes, FaChevronDown, FaCopy } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaCode, FaExpand, FaCompress, FaSearch, FaProjectDiagram, FaUndo, FaRedo, FaAlignLeft, FaComments, FaTimes, FaChevronDown, FaCopy, FaBrain } from 'react-icons/fa';
 import { Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
 import DOMTreeViewer from './DOMTreeViewer';
 import { parseHTML, stringifyHTML } from '../utils/htmlParser';
-import { saveScriptToFirestore, syncLocalScriptsWithFirestore, getModelPreferencesFromFirestore } from '../control/firebase'; // Changed from '../control/agent'
+import { saveScriptToFirestore, syncLocalScriptsWithFirestore, getModelPreferencesFromFirestore, saveModelPreferencesToFirestore } from '../control/firebase'; // Changed from '../control/agent'
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './LoadingSpinner';
 import { textEmbed } from '../api/LLM';
@@ -17,6 +17,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useIntentRecognition } from '../hooks/useIntentRecognition';
 import FullScreenSpinner from './LoadingSpinner';
 import updaterAgent from '../control/updaterAgent';
+import ScriptMemoryOverlay from './ScriptMemoryOverlay';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -209,6 +210,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     // Add new state for chat history
     const [scriptChatHistory, setScriptChatHistory] = useState([]);
+
+    // Add new state for memory overlay
+    const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -886,6 +890,23 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         };
     }, [showIntentWarning, scriptChatInput, selectedCodeAttachment, code, modelPreferences.programmerModel, editHistory, historyIndex]);
 
+    // Add handler for model change
+    const handleModelChange = async (newModel) => {
+        const userID = localStorage.getItem('userID');
+        const newPreferences = {
+            ...modelPreferences,
+            programmerModel: newModel
+        };
+        setModelPreferences(newPreferences);
+        await saveModelPreferencesToFirestore(userID, newPreferences.mainModel, newPreferences.programmerModel);
+    };
+
+    // Add handler for history reset
+    const handleResetHistory = () => {
+        setScriptChatMessages([]);
+        setScriptChatHistory([]);
+    };
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -918,6 +939,17 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             }}
                         >
                             <FaComments size={16} />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Settings">
+                        <IconButton
+                            onClick={() => setShowMemoryOverlay(true)}
+                            sx={{
+                                ...styles.iconButton,
+                                color: darkModeColors.text,
+                            }}
+                        >
+                            <FaBrain size={16} />
                         </IconButton>
                     </Tooltip>
                     <div style={styles.divider} />
@@ -1618,6 +1650,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 >
                     <FullScreenSpinner text="Cleaning up" />
                 </motion.div>
+            )}
+
+            {/* Add the memory overlay */}
+            {showMemoryOverlay && (
+                <ScriptMemoryOverlay
+                    closeOverlay={() => setShowMemoryOverlay(false)}
+                    modelPreferences={modelPreferences}
+                    onModelChange={handleModelChange}
+                    onResetHistory={handleResetHistory}
+                />
             )}
         </div>
     );
