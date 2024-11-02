@@ -566,8 +566,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     };
 
     const handleClose = async () => {
-        // Check if there are unsaved changes
-        if (historyIndex > 0 || code !== script.content) {
+        // Only show unsaved changes dialog if there are actual changes
+        // and we're not in a post-save state (where history was just cleared)
+        const hasUnsavedChanges = historyIndex > 0 && code !== script.content;
+        
+        if (hasUnsavedChanges) {
             setShowUnsavedChanges(true);
             return;
         }
