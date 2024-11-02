@@ -1,5 +1,5 @@
 import { FaBrain } from "react-icons/fa";
-import { RiMagicLine } from "react-icons/ri";
+import { FaLaptopCode } from "react-icons/fa";
 import { FaPlay } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { downloadHTMLScript, downloadOpenscadScript } from "../control/agentTools";
@@ -43,7 +43,7 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
                 }}
                 whileTap={{ scale: 0.95 }}
             >
-                <RiMagicLine style={styles.icon} />
+                <FaLaptopCode style={styles.icon} />
             </motion.div>
 
             <motion.div 
