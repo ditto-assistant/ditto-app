@@ -25,6 +25,8 @@ import {
   googleSearchSystemTemplate,
 } from "../ditto/templates/googleSearchTemplate";
 
+import updaterAgent from "./updaterAgent";
+
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
 import { db, saveScriptToFirestore, grabConversationHistoryCount, getModelPreferencesFromFirestore } from "./firebase";
@@ -266,12 +268,19 @@ const handleScriptGeneration = async (
   const constructedPrompt = templateFunction(query, scriptContents, memories.longTermMemory, memories.shortTermMemory);
   // print constructed prompt in green
   console.log("%c" + constructedPrompt, "color: green");
-  const scriptResponse = await promptLLM(
-    constructedPrompt,
-    systemTemplateFunction(),
-    modelPreferences.programmerModel,
-    image
-  );
+  let scriptResponse = "";
+  // check if scriptContents is empts
+  if (scriptContents === "") {
+    scriptResponse = await promptLLM(
+      constructedPrompt,
+      systemTemplateFunction(),
+      modelPreferences.programmerModel,
+      image
+    );
+  } else {
+    console.log("Using the agent updater...");
+    scriptResponse = await updaterAgent(prompt, scriptContents, modelPreferences.programmerModel, true); // true to skip the planner
+  }
   /// print the response in yellow
   console.log("%c" + scriptResponse, "color: yellow");
   let errorMessage = "Response Error: please check your internet connection or token balance.";

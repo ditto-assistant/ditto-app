@@ -215,12 +215,14 @@ Task Writeup:
 
 
 export const programmerAgentTaskCoder = (query: string, script: string) => {
-    let prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and you will need to implement the updates in a markdown code block as code snippets in the HTML script.
+    let prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and an entire HTML script. You will also be assessing one line of code at a time and responding with 3 options: "ADD", "REMOVE", or "NO CHANGE". If you use ADD you will need to also respond with the code that needs to be added.
 
 ## Instructions
-- Your response should be a markdown code block with the updated HTML script.
-- Do not include any other text in the response.
-- Make sure to use <--- previous code remains unchanged --> to indicate where the previous code remains unchanged and <--- insert code here --> to indicate where the new code should be inserted.
+- Given the task writeup, HTML script, and current line of code, respond with the option that best completes the task writeup.
+- Your response should be in the following format:
+    - <ADD> code here
+    - <REMOVE>
+    - <NO_CHANGE>
 
 ## Examples
 -- Begin Examples --
@@ -284,12 +286,18 @@ Task Writeup:
 - Ensure footer stays at bottom with fixed positioning
 - Maintain existing layout and spacing while updating colors
 - Test contrast ratios meet accessibility standards
-Changes to HTML Script:
-\`\`\`html
-
-\`\`\`
+Current Line of Code:
+<!DOCTYPE html>
+Action:
+<NO_CHANGE>
 -- End Examples --
-
+HTML Script:
+<!script>
+Task Writeup:
+<!query>
+Current Line of Code:
+<!current_line_of_code>
+Action:
 `
 }
 

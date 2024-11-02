@@ -9,14 +9,14 @@ import { parseHTML, stringifyHTML } from '../utils/htmlParser';
 import { saveScriptToFirestore, syncLocalScriptsWithFirestore, getModelPreferencesFromFirestore } from '../control/firebase'; // Changed from '../control/agent'
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './LoadingSpinner';
-import { promptLLM, textEmbed } from '../api/LLM';
+import { textEmbed } from '../api/LLM';
 import { htmlTemplate, htmlSystemTemplate } from '../ditto/templates/htmlTemplate';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { getShortTermMemory, getLongTermMemory } from '../control/memory';
 import { useIntentRecognition } from '../hooks/useIntentRecognition';
 import FullScreenSpinner from './LoadingSpinner';
+import updaterAgent from '../control/updaterAgent';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -273,45 +273,33 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             }
 
             // Fetch memories
-            const shortTermMemory = await getShortTermMemory(userID, 5);
-            const longTermMemory = await getLongTermMemory(userID, embedding, 5);
+            // const shortTermMemory = await getShortTermMemory(userID, 5);
+            // const longTermMemory = await getLongTermMemory(userID, embedding, 5);
 
             // Construct the prompt with memories
-            const constructedPrompt = selectedCodeAttachment ?
-                htmlTemplate(
-                    `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`,
-                    code,
-                    longTermMemory,
-                    shortTermMemory
-                ) :
-                htmlTemplate(userMessage, code, longTermMemory, shortTermMemory);
+            const usersPrompt = selectedCodeAttachment ?
+                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}`
+                :
+                userMessage;
 
-            // Log the constructed prompt in green
-            console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
-
-            const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
+            const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, true);
             
             // Log the response in yellow
             console.log('\x1b[33m%s\x1b[0m', response);
 
-            // Extract code between ```html and ```
-            const codeBlockRegex = /```html\n([\s\S]*?)```/;
-            const match = response.match(codeBlockRegex);
-            let updatedCode = match ? match[1].trim() : null;
-
-            if (updatedCode) {
+            if (response) {
                 // Add current state to history before updating
                 const newHistory = editHistory.slice(0, historyIndex + 1);
-                newHistory.push({ content: updatedCode });
+                newHistory.push({ content: response });
                 setEditHistory(newHistory);
                 setHistoryIndex(newHistory.length - 1);
                 
                 // Update the code
-                setCode(updatedCode);
+                setCode(response);
                 setPreviewKey(prev => prev + 1);
 
                 // Add a message indicating task completion
-                setScriptChatMessages(prev => [...prev, { role: 'assistant', content: 'Task completed', fullScript: updatedCode }]);
+                setScriptChatMessages(prev => [...prev, { role: 'assistant', content: 'Task completed', fullScript: response }]);
             } else {
                 setScriptChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
             }
@@ -1364,49 +1352,33 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                             setIsTyping(true);
 
                                             try {
-                                                const embedding = await textEmbed(messageContent);
-                                                const shortTermMemory = await getShortTermMemory(userID, 5);
-                                                const longTermMemory = await getLongTermMemory(userID, embedding, 5);
-
-                                                // Construct the prompt with memories
-                                                const constructedPrompt = selectedCodeAttachment ?
-                                                    htmlTemplate(
-                                                        `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`,
-                                                        code,
-                                                        longTermMemory,
-                                                        shortTermMemory
-                                                    ) :
-                                                    htmlTemplate(scriptChatInput, code, longTermMemory, shortTermMemory);
-
-                                                // Log the constructed prompt in green
-                                                console.log('\x1b[32m%s\x1b[0m', constructedPrompt);
-
-                                                const response = await promptLLM(constructedPrompt, htmlSystemTemplate(), modelPreferences.programmerModel);
+                                                // Construct the prompt 
+                                                const usersPrompt = selectedCodeAttachment ?
+                                                        `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`
+                                                    : 
+                                                    scriptChatInput;
                                                 
+                                                const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, false);
+
                                                 // Log the response in yellow
                                                 console.log('\x1b[33m%s\x1b[0m', response);
 
-                                                // Extract code between ```html and ```
-                                                const codeBlockRegex = /```html\n([\s\S]*?)```/;
-                                                const match = response.match(codeBlockRegex);
-                                                let updatedCode = match ? match[1].trim() : null;
-
-                                                if (updatedCode) {
+                                                if (response) {
                                                     // Add current state to history before updating
                                                     const newHistory = editHistory.slice(0, historyIndex + 1);
-                                                    newHistory.push({ content: updatedCode });
+                                                    newHistory.push({ content: response });
                                                     setEditHistory(newHistory);
                                                     setHistoryIndex(newHistory.length - 1);
                                                     
                                                     // Update the code
-                                                    setCode(updatedCode);
+                                                    setCode(response);
                                                     setPreviewKey(prev => prev + 1);
 
                                                     // Add a message indicating task completion
                                                     setScriptChatMessages(prev => [...prev, { 
                                                         role: 'assistant', 
                                                         content: 'Task completed', 
-                                                        fullScript: updatedCode 
+                                                        fullScript: response 
                                                     }]);
                                                 } else {
                                                     setScriptChatMessages(prev => [...prev, { 
