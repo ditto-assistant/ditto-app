@@ -907,6 +907,39 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setScriptChatHistory([]);
     };
 
+    // Add this useEffect to handle viewport height changes (e.g., when keyboard opens)
+    useEffect(() => {
+        const handleResize = () => {
+            // Only update if we're on mobile
+            if (window.innerWidth <= 768) {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+        };
+
+        handleResize(); // Initial call
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('orientationchange', handleResize);
+        };
+    }, []);
+
+    // Update the scriptChatMessages ref scroll behavior
+    useEffect(() => {
+        if (scriptChatMessagesEndRef.current) {
+            // Add a small delay to ensure content is rendered
+            setTimeout(() => {
+                scriptChatMessagesEndRef.current.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'end'
+                });
+            }, 100);
+        }
+    }, [scriptChatMessages]);
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -1452,6 +1485,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 }}
                                 onKeyDown={(e) => {
                                     if (isMobileRef.current) {
+                                        // Mobile behavior - just add newlines
                                         if (e.key === 'Enter') {
                                             e.preventDefault();
                                             const newValue = scriptChatInput + '\n';
@@ -1459,16 +1493,15 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                             setTimeout(() => adjustTextareaHeight(e.target), 0);
                                         }
                                     } else {
-                                        if (e.key === 'Enter') {
-                                            if (e.shiftKey) {
-                                                e.preventDefault();
-                                                const newValue = scriptChatInput + '\n';
-                                                setScriptChatInput(newValue);
-                                                setTimeout(() => adjustTextareaHeight(e.target), 0);
-                                            } else {
-                                                e.preventDefault();
-                                                handleScriptChatSend();
-                                            }
+                                        // Desktop behavior - Enter sends, Shift+Enter adds newline
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleScriptChatSend();
+                                        } else if (e.key === 'Enter' && e.shiftKey) {
+                                            e.preventDefault();
+                                            const newValue = scriptChatInput + '\n';
+                                            setScriptChatInput(newValue);
+                                            setTimeout(() => adjustTextareaHeight(e.target), 0);
                                         }
                                     }
                                 }}
@@ -2012,6 +2045,9 @@ const styles = {
             right: '12px',
             bottom: '12px',
             resize: 'none',
+            maxHeight: '80vh', // Prevent chat from taking up too much space
+            display: 'flex', // Ensure proper flex layout
+            flexDirection: 'column',
         },
     },
     scriptChatHeader: {
@@ -2033,13 +2069,30 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
+        WebkitOverflowScrolling: 'touch', // Add smooth scrolling on iOS
+        msOverflowStyle: 'none', // Hide scrollbar in IE/Edge
+        scrollbarWidth: 'none', // Hide scrollbar in Firefox
+        '&::-webkit-scrollbar': { // Hide scrollbar in Chrome/Safari
+            display: 'none'
+        },
+        '@media (max-width: 768px)': {
+            // Ensure the container doesn't exceed viewport height on mobile
+            maxHeight: 'calc(100% - 120px)', // Account for header and input area
+        }
     },
     scriptChatInputContainer: {
-        position: 'relative',  // Added to support absolute positioning of attachment
+        position: 'relative',
         padding: '12px',
         borderTop: `1px solid ${darkModeColors.border}`,
         display: 'flex',
         gap: '8px',
+        backgroundColor: darkModeColors.foreground, // Add background color
+        '@media (max-width: 768px)': {
+            position: 'sticky', // Keep input visible when keyboard is open
+            bottom: 0,
+            width: '100%',
+            boxSizing: 'border-box',
+        }
     },
     scriptChatInput: {
         flex: 1,
