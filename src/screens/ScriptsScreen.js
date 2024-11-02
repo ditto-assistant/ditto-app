@@ -1010,6 +1010,24 @@ const ScriptsScreen = () => {
         setActiveCard(null);
     };
 
+    const handleEditSelectedScript = () => {
+        // Find the script in both categories
+        const webAppScript = scripts.webApps.find(s => s.name === selectedScript);
+        const openScadScript = scripts.openSCAD.find(s => s.name === selectedScript);
+        
+        // Use whichever script was found
+        const script = webAppScript || openScadScript;
+        
+        if (script) {
+            // Check the scriptType property instead of activeTab
+            if (script.scriptType === 'webApps') {
+                setFullScreenEdit(script);
+            } else {
+                setOpenScadViewer(script);
+            }
+        }
+    };
+
     if (fullScreenEdit) {
         return (
             <FullScreenEditor
@@ -1094,10 +1112,7 @@ const ScriptsScreen = () => {
                                             style={styles.editSelectedButton}
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={() => {
-                                                const script = scripts[activeTab].find(s => s.name === selectedScript);
-                                                if (script) handleEditScript(script);
-                                            }}
+                                            onClick={() => handleEditSelectedScript()}
                                         >
                                             Edit
                                         </motion.button>
