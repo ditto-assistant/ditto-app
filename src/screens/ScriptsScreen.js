@@ -1105,14 +1105,14 @@ const ScriptsScreen = () => {
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.95 }}
                                         >
-                                            <MdMoreVert
+                                            <FaCog
                                                 className="more-icon"
                                                 style={styles.selectedMoreIcon}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     const rect = e.currentTarget.getBoundingClientRect();
                                                     const menuHeight = 200;
-                                                    const menuWidth = window.innerWidth <= 768 ? 160 : 140; // Account for mobile menu width
+                                                    const menuWidth = window.innerWidth <= 768 ? 160 : 140;
                                                     const windowHeight = window.innerHeight;
                                                     const windowWidth = window.innerWidth;
                                                     
@@ -1127,7 +1127,7 @@ const ScriptsScreen = () => {
                                                     // Calculate left position ensuring menu doesn't go off-screen
                                                     let leftPosition = rect.left;
                                                     if (leftPosition + menuWidth > windowWidth) {
-                                                        leftPosition = windowWidth - menuWidth - 16; // 16px padding from edge
+                                                        leftPosition = windowWidth - menuWidth - 16;
                                                     }
                                                     
                                                     setMenuPosition({
@@ -1831,7 +1831,7 @@ const styles = {
         },
     },
     selectedMoreIcon: {
-        fontSize: '24px',
+        fontSize: '20px',
         cursor: 'pointer',
         color: darkModeColors.textSecondary,
         padding: '4px',
@@ -1840,6 +1840,7 @@ const styles = {
         '&:hover': {
             backgroundColor: `${darkModeColors.primary}15`,
             color: darkModeColors.primary,
+            transform: 'rotate(45deg)',
         },
     },
     versionBadge: {
