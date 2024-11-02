@@ -7,23 +7,25 @@ import {
     htmlSystemTemplate
 } from '../ditto/templates/agentUpdaterTemplates';
 
-export default async function updaterAgent(prompt, scriptContents, programmerModel, skipPlanner = false) {
+export default async function updaterAgent(prompt, scriptContents, programmerModel, skipPlanner) {
     try {
         let taskWriteup = "";
         // if (!skipPlanner) {
-        //     // Step 1: Design tasks using the planner
-        //     taskWriteup = await promptLLM(
-        //         programmerAgentPlanner(prompt, scriptContents),
-        //         htmlSystemTemplate(),
-        //         programmerModel
-        //     );
+
+        // Step 1: Design tasks using the planner
+        taskWriteup = await promptLLM(
+            programmerAgentPlanner(prompt, scriptContents),
+            htmlSystemTemplate(),
+            // programmerModel
+        );
+
         // } else {
         //     taskWriteup = prompt;
         // }
 
         // TODO: look into the effectiveness of the planner
-        taskWriteup = prompt;
-        
+        // taskWriteup = prompt;
+
         // Step 2: Generate code snippets from task writeup
         const codeSnippets = await promptLLM(
             programmerAgentTaskCoder(taskWriteup, scriptContents),
