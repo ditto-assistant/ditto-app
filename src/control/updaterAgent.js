@@ -9,35 +9,25 @@ import {
 
 export default async function updaterAgent(prompt, scriptContents, programmerModel, skipPlanner) {
     try {
-        let taskWriteup = "";
-        // if (!skipPlanner) {
-
         // Step 1: Design tasks using the planner
-        taskWriteup = await promptLLM(
+        const taskWriteup = await promptLLM(
             programmerAgentPlanner(prompt, scriptContents),
             htmlSystemTemplate(),
             'gemini-1.5-pro'
-        );
-
-        // } else {
-        //     taskWriteup = prompt;
-        // }
-
-        // TODO: look into the effectiveness of the planner
-        // taskWriteup = prompt;
+        ); // The somewhat important model, which plans the tasks
 
         // Step 2: Generate code snippets from task writeup
         const codeSnippets = await promptLLM(
             programmerAgentTaskCoder(taskWriteup, scriptContents),
             htmlSystemTemplate(),
             programmerModel
-        );
+        ); // The most important model, which does the actual coding
 
         // Step 3: Apply code snippets to script
         let finalScript = await promptLLM(
             programmerAgentTaskApplier(codeSnippets, scriptContents),
             htmlSystemTemplate()
-        ); // default to gemini-1.5-flash for applier
+        ); // defaults to gemini-1.5-flash for a fast applier
 
         // Clean up the script by removing markdown code block markers
         let key = '```html';
