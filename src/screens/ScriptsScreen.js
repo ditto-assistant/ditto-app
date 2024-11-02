@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdMoreVert, MdSort } from "react-icons/md";
-import { FaPlay, FaArrowLeft, FaTrash, FaDownload, FaUndo } from "react-icons/fa"; // Add FaTrash and FaDownload import
+import { FaPlay, FaArrowLeft, FaTrash, FaDownload, FaUndo, FaCog } from "react-icons/fa"; // Add FaTrash and FaDownload import
 import {
     deleteScriptFromFirestore,
     saveScriptToFirestore,
@@ -720,7 +720,7 @@ const ScriptsScreen = () => {
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        <MdMoreVert
+                                        <FaCog
                                             className="more-icon"
                                             style={styles.moreIcon}
                                             onClick={(e) => {
@@ -1568,12 +1568,13 @@ const styles = {
         },
     },
     moreIcon: {
-        fontSize: '24px',
+        fontSize: '20px',
         cursor: 'pointer',
         color: darkModeColors.textSecondary,
-        transition: 'color 0.2s ease',
+        transition: 'color 0.2s ease, transform 0.2s ease',
         '&:hover': {
             color: darkModeColors.primary,
+            transform: 'rotate(45deg)',
         },
     },
     cardMenu: {
