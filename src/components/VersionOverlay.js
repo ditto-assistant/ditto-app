@@ -14,7 +14,7 @@ const VersionOverlay = ({ children, style, onDelete, onSelect, openUpward }) => 
             style={{
                 ...style,
                 position: 'fixed',
-                zIndex: 100000,
+                zIndex: 1500,
                 maxHeight: '200px',
                 overflowY: 'auto',
                 backgroundColor: '#2B2D31',
