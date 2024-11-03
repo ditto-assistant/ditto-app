@@ -162,3 +162,58 @@ button:active, select:active {
 .confirm-button:hover {
     filter: brightness(1.1);
 }
+
+/* Add to existing CSS */
+select option:disabled {
+    color: #666;
+    font-style: italic;
+}
+
+select option {
+    background-color: #2F3136;
+    color: #FFFFFF;
+    padding: 8px;
+}
+
+select option:hover {
+    background-color: #7289DA;
+}
+
+/* Add premium badge styles */
+.premium-badge {
+    color: #FFD700;
+    font-size: 12px;
+    margin-left: 6px;
+    font-weight: 500;
+}
+
+select option .premium-badge {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+/* Style the crown emoji in the premium badge */
+.premium-badge::before {
+    content: '👑';
+    margin-right: 4px;
+    font-size: 14px;
+}
+
+/* Enhance select options appearance */
+select option {
+    background-color: #2F3136;
+    color: #FFFFFF;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+}
+
+select option:disabled .premium-badge {
+    opacity: 0.7;
+}
+
+/* Add a subtle glow effect to premium options when enabled */
+select option:not(:disabled) .premium-badge {
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}

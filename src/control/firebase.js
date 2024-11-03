@@ -690,18 +690,20 @@ export const getModelPreferencesFromFirestore = async (userID) => {
       const doc = querySnapshot.docs[0];
       return {
         mainModel: doc.data().mainModel || "gemini-1.5-flash",
-        programmerModel: doc.data().programmerModel || "claude-3-5-sonnet"
+        programmerModel: doc.data().programmerModel || "gemini-1.5-flash"
       };
     }
+    // Return default preferences for new users
     return {
       mainModel: "gemini-1.5-flash",
-      programmerModel: "claude-3-5-sonnet"
+      programmerModel: "gemini-1.5-flash"
     };
   } catch (e) {
     console.error("Error getting model preferences from Firestore: ", e);
+    // Return default preferences if there's an error
     return {
       mainModel: "gemini-1.5-flash",
-      programmerModel: "claude-3-5-sonnet"
+      programmerModel: "gemini-1.5-flash"
     };
   }
 }

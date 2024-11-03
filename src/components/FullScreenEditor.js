@@ -17,6 +17,8 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useIntentRecognition } from '../hooks/useIntentRecognition';
 import FullScreenSpinner from './LoadingSpinner';
 import updaterAgent from '../control/updaterAgent';
+import ModelDropdown from './ModelDropdown';
+import { useBalance } from '../hooks/useBalance';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -212,6 +214,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     // Add new state for memory overlay
     const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
+
+    // Add these state variables near the top of the component with other state declarations
+    const { balance } = useBalance();
+    const balanceNum = parseFloat(balance?.replace(/[MB]/, '') || '0');
+    const isBalanceInBillions = balance?.includes('B');
 
     useEffect(() => {
         // Fetch user's preferred programmer model
@@ -1327,24 +1334,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                                 }}>
                                                     Model
                                                 </h4>
-                                                <select
+                                                <ModelDropdown
                                                     value={modelPreferences.programmerModel}
-                                                    onChange={(e) => handleModelChange(e.target.value)}
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: '8px',
-                                                        backgroundColor: darkModeColors.background,
-                                                        color: darkModeColors.text,
-                                                        border: `1px solid ${darkModeColors.border}`,
-                                                        borderRadius: '6px',
-                                                        fontSize: '14px'
-                                                    }}
-                                                >
-                                                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                                    <option value="mistral-nemo">Mistral Nemo</option>
-                                                </select>
+                                                    onChange={handleModelChange}
+                                                    hasEnoughBalance={balanceNum >= 1.00 && isBalanceInBillions}
+                                                />
                                             </div>
                                             
                                             <button

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
-import { FaBrain, FaMemory, FaTrash } from "react-icons/fa";
+import { FaBrain, FaMemory, FaTrash, FaCrown } from "react-icons/fa";
 import { IoSettingsSharp } from "react-icons/io5";
 import "./MemoryOverlay.css";
 
 import { resetConversation, deleteAllUserImagesFromFirebaseStorageBucket, saveModelPreferencesToFirestore, getModelPreferencesFromFirestore } from "../control/firebase";
+import { useBalance } from '../hooks/useBalance';
+import ModelDropdown from './ModelDropdown';
 
 const darkModeColors = {
     primary: '#7289DA',
@@ -21,14 +23,26 @@ function MemoryOverlay({ closeOverlay }) {
     const overlayContentRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const [modelPreferences, setModelPreferences] = useState({
-        mainModel: "claude-3-5-sonnet",
-        programmerModel: "claude-3-5-sonnet"
+        mainModel: "gemini-1.5-flash",
+        programmerModel: "gemini-1.5-flash"
     });
 
     const [memoryStatus, setMemoryStatus] = useState({
         longTerm: JSON.parse(localStorage.getItem("deactivateLongTermMemory")) || false,
         shortTerm: JSON.parse(localStorage.getItem("deactivateShortTermMemory")) || false,
     });
+
+    const { balance, usd } = useBalance();
+    
+    // Convert balance string to number (removing 'M' or 'B' and converting to float)
+    const balanceNum = parseFloat(balance?.replace(/[MB]/, '') || '0');
+    const isBalanceInBillions = balance?.includes('B');
+    const hasEnoughBalance = isBalanceInBillions && balanceNum >= 1.00;
+
+    // Helper function to check if model is premium and should be disabled
+    const isPremiumModel = (model) => {
+        return ['claude-3-5-sonnet', 'gemini-1.5-pro'].includes(model);
+    };
 
     useEffect(() => {
         // Load model preferences
@@ -50,31 +64,34 @@ function MemoryOverlay({ closeOverlay }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        // Automatically switch models if balance decreases below 1.00B
+        if (!hasEnoughBalance) {
+            setModelPreferences(prev => ({
+                mainModel: isPremiumModel(prev.mainModel) ? "gemini-1.5-flash" : prev.mainModel,
+                programmerModel: isPremiumModel(prev.programmerModel) ? "gemini-1.5-flash" : prev.programmerModel
+            }));
+        }
+    }, [hasEnoughBalance]);
+
     const handleClose = () => {
         setIsVisible(false);
         setTimeout(closeOverlay, 300); // Wait for the animation to finish before closing
     };
 
-    const toggleMemoryActivation = (memoryType) => {
-        setMemoryStatus((prev) => {
-            const newStatus = !prev[memoryType];
-            if (memoryType === "longTerm") {
-                localStorage.setItem("deactivateLongTermMemory", newStatus);
-                if (!newStatus) {
-                    localStorage.removeItem("longTermMemory");
-                }
-            } else if (memoryType === "shortTerm") {
-                localStorage.setItem("deactivateShortTermMemory", newStatus);
-                if (!newStatus) {
-                    localStorage.removeItem("shortTermMemory");
-                }
-            }
-            return {
-                ...prev,
-                [memoryType]: newStatus,
-            };
-        });
-        console.log(`Deactivate ${memoryType} memory: ${memoryStatus[memoryType]}`);
+    const handleModelChange = async (type, value) => {
+        // Prevent selection of premium models if balance is insufficient
+        if (isPremiumModel(value) && !hasEnoughBalance) {
+            return;
+        }
+
+        const userID = localStorage.getItem("userID");
+        const newPreferences = {
+            ...modelPreferences,
+            [type]: value
+        };
+        setModelPreferences(newPreferences);
+        await saveModelPreferencesToFirestore(userID, newPreferences.mainModel, newPreferences.programmerModel);
     };
 
     const deleteAllMemory = async() => {
@@ -131,16 +148,27 @@ function MemoryOverlay({ closeOverlay }) {
                 if (e.target === dialog) handleCancel();
             });
         });
-    }
+    };
 
-    const handleModelChange = async (type, value) => {
-        const userID = localStorage.getItem("userID");
-        const newPreferences = {
-            ...modelPreferences,
-            [type]: value
-        };
-        setModelPreferences(newPreferences);
-        await saveModelPreferencesToFirestore(userID, newPreferences.mainModel, newPreferences.programmerModel);
+    const toggleMemoryActivation = (memoryType) => {
+        setMemoryStatus((prev) => {
+            const newStatus = !prev[memoryType];
+            if (memoryType === "longTerm") {
+                localStorage.setItem("deactivateLongTermMemory", newStatus);
+                if (!newStatus) {
+                    localStorage.removeItem("longTermMemory");
+                }
+            } else if (memoryType === "shortTerm") {
+                localStorage.setItem("deactivateShortTermMemory", newStatus);
+                if (!newStatus) {
+                    localStorage.removeItem("shortTermMemory");
+                }
+            }
+            return {
+                ...prev,
+                [memoryType]: newStatus,
+            };
+        });
     };
 
     return (
@@ -160,29 +188,21 @@ function MemoryOverlay({ closeOverlay }) {
                     <div style={styles.cardContent}>
                         <div style={styles.modelSelector}>
                             <label style={styles.modelLabel}>Main Agent Model</label>
-                            <select 
+                            <ModelDropdown
                                 value={modelPreferences.mainModel}
-                                onChange={(e) => handleModelChange('mainModel', e.target.value)}
-                                style={styles.modelSelect}
-                            >
-                                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="mistral-nemo">Mistral Nemo</option>
-                            </select>
+                                onChange={(value) => handleModelChange('mainModel', value)}
+                                hasEnoughBalance={hasEnoughBalance}
+                                inMemoryOverlay={true}
+                            />
                         </div>
                         <div style={styles.modelSelector}>
                             <label style={styles.modelLabel}>Programmer Model</label>
-                            <select 
+                            <ModelDropdown
                                 value={modelPreferences.programmerModel}
-                                onChange={(e) => handleModelChange('programmerModel', e.target.value)}
-                                style={styles.modelSelect}
-                            >
-                                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="mistral-nemo">Mistral Nemo</option>
-                            </select>
+                                onChange={(value) => handleModelChange('programmerModel', value)}
+                                hasEnoughBalance={hasEnoughBalance}
+                                inMemoryOverlay={true}
+                            />
                         </div>
                     </div>
                 </div>
@@ -317,20 +337,6 @@ const styles = {
         color: darkModeColors.text,
         opacity: 0.8,
     },
-    modelSelect: {
-        backgroundColor: darkModeColors.foreground,
-        color: darkModeColors.text,
-        border: 'none',
-        borderRadius: '4px',
-        padding: '10px 12px',
-        fontSize: '14px',
-        cursor: 'pointer',
-        outline: 'none',
-        transition: 'background-color 0.2s ease',
-        '&:hover': {
-            backgroundColor: '#292B2F',
-        },
-    },
     memoryControl: {
         display: 'flex',
         flexDirection: 'column',
@@ -372,6 +378,12 @@ const styles = {
         '&:hover': {
             filter: 'brightness(1.1)',
         },
+    },
+    balanceWarning: {
+        color: '#ED4245',
+        fontSize: '12px',
+        marginTop: '4px',
+        fontStyle: 'italic',
     },
 };
 
