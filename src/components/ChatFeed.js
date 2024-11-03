@@ -24,7 +24,7 @@ const INTERACTION_DELAY = 300; // 300ms delay to prevent accidental closures
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
   if (navigator.vibrate) {
-    navigator.vibrate(50);
+    navigator.vibrate(50); // 50ms subtle vibration
   }
 };
 
@@ -89,6 +89,44 @@ const validateImageUrl = async (url) => {
   }
 };
 
+// Add this new function at the top level
+const loadMessagesFromLocalStorage = () => {
+  try {
+    const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
+    const responses = JSON.parse(localStorage.getItem('responses') || '[]');
+    const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+    const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
+    
+    const messages = [];
+    messages.push({ 
+      sender: "Ditto", 
+      text: "Hi! I'm Ditto.", 
+      timestamp: Date.now(),
+      pairID: null 
+    });
+    
+    for (let i = 0; i < prompts.length; i++) {
+      messages.push({ 
+        sender: "User", 
+        text: prompts[i], 
+        timestamp: timestamps[i],
+        pairID: pairIDs[i]
+      });
+      messages.push({ 
+        sender: "Ditto", 
+        text: responses[i], 
+        timestamp: timestamps[i],
+        pairID: pairIDs[i]
+      });
+    }
+    
+    return messages;
+  } catch (error) {
+    console.error('Error loading messages from localStorage:', error);
+    return [];
+  }
+};
+
 export default function ChatFeed({
   messages,
   histCount,
@@ -141,6 +179,19 @@ export default function ChatFeed({
   const streamTimeoutRef = useRef(null);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
+
+  useEffect(() => {
+    // Only load messages if the current messages array is empty
+    if (messages.length <= 1) {
+      const savedMessages = loadMessagesFromLocalStorage();
+      if (savedMessages.length > 0) {
+        updateConversation(prevState => ({
+          ...prevState,
+          messages: savedMessages
+        }));
+      }
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   useEffect(() => {
     const handleStreamUpdate = (event) => {
@@ -423,6 +474,9 @@ export default function ChatFeed({
     if (window.getSelection().toString() || isSelecting) {
       return;
     }
+
+    // Trigger haptic feedback
+    triggerHapticFeedback();
 
     // Get the clicked message
     const message = messages[index];

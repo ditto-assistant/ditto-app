@@ -52,7 +52,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       timestamp: Date.now(),
       isTyping: true,
       docId: null,
-      pairID: null // Initialize pairID
+      pairID: null
     };
 
     updateConversation((prevState) => ({
@@ -99,7 +99,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     let wordQueue = [];
     let isProcessing = false;
 
-    const WORD_DELAY_MS = 25; // Speed up to 25ms between words
+    const WORD_DELAY_MS = 15;
 
     const processNextWord = async () => {
       if (wordQueue.length === 0) {
@@ -132,6 +132,30 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
               return;
             }
           }
+
+          // Only save to memory and sync when streaming is complete
+          if (!toolTriggered) {
+            const docId = await saveToMemory(userID, prompt, updatedText, userPromptEmbedding);
+            
+            // Update conversation with docId and pairID
+            updateConversation((prevState) => {
+              const messages = [...prevState.messages];
+              messages[messages.length - 2] = {
+                ...messages[messages.length - 2],
+                pairID: docId
+              };
+              messages[messages.length - 1] = {
+                ...messages[messages.length - 1],
+                text: updatedText,
+                isTyping: false,
+                docId: docId,
+                pairID: docId
+              };
+              return { ...prevState, messages };
+            });
+
+            saveToLocalStorage(prompt, updatedText, Date.now(), docId);
+          }
         }
         return;
       }
@@ -140,7 +164,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       const word = wordQueue.shift();
       updatedText += word;
 
-      // Update the assistant's message in the conversation
+      // Update the assistant's message in the conversation without saving to Firestore
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
         messages[messages.length - 1] = {

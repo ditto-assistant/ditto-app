@@ -587,9 +587,22 @@ export const deleteAllUserScriptsFromFirestore = async (userID) => {
 
 export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
   try {
+    // Add a debounce mechanism using localStorage
+    const now = Date.now();
+    const lastSyncTime = localStorage.getItem(`lastSync_${scriptType}`);
+    const SYNC_COOLDOWN = 5000; // 5 seconds cooldown between syncs
+    
+    if (lastSyncTime && (now - parseInt(lastSyncTime)) < SYNC_COOLDOWN) {
+      // If we've synced recently, skip this sync
+      return [];
+    }
+
     if (mode === 'development') {
       console.log("Syncing local storage with Firestore for scripts of type: ", scriptType);
     }
+
+    // Update last sync time
+    localStorage.setItem(`lastSync_${scriptType}`, now.toString());
 
     // Fetch timestamps first
     await getScriptTimestamps(userID, scriptType);
@@ -613,6 +626,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     });
 
     localStorage.setItem(scriptType, JSON.stringify(scripts));
+    return scripts;
 
   } catch (e) {
     console.error("Error getting documents from scripts collection: ", e);
@@ -694,6 +708,18 @@ export const getModelPreferencesFromFirestore = async (userID) => {
 
 export const getScriptTimestamps = async (userID, scriptType) => {
   try {
+    const now = Date.now();
+    const lastTimestampFetch = localStorage.getItem(`lastTimestampFetch_${scriptType}`);
+    const FETCH_COOLDOWN = 5000; // 5 seconds cooldown
+
+    if (lastTimestampFetch && (now - parseInt(lastTimestampFetch)) < FETCH_COOLDOWN) {
+      // Return cached timestamps if available
+      const cachedTimestamps = localStorage.getItem(`${scriptType}Timestamps`);
+      return cachedTimestamps ? JSON.parse(cachedTimestamps) : {};
+    }
+
+    localStorage.setItem(`lastTimestampFetch_${scriptType}`, now.toString());
+
     const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
     if (querySnapshot.empty) {
       return {};
@@ -702,7 +728,6 @@ export const getScriptTimestamps = async (userID, scriptType) => {
     const timestamps = {};
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      // Store both the timestamp and timestampString for each script
       timestamps[data.filename] = {
         timestamp: data.timestamp,
         timestampString: data.timestampString
