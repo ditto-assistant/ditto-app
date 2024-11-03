@@ -1,39 +1,20 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlay, FaPen, FaCog, FaUndo, FaTrash, FaTimes } from 'react-icons/fa';
-import CardMenu from './CardMenu';
-import VersionOverlay from './VersionOverlay';
-import DeleteConfirmationOverlay from './DeleteConfirmationOverlay';
-import RevertConfirmationOverlay from './RevertConfirmationOverlay';
+import { FaPlay, FaPen, FaTimes } from 'react-icons/fa';
+import FullScreenEditor from './FullScreenEditor';
 import './ScriptActionsOverlay.css';
-
-const darkModeColors = {
-    background: '#2F3136',
-    cardBackground: '#36393F',
-    primary: '#5865F2',
-    danger: '#ED4245',
-    text: '#FFFFFF',
-};
 
 function ScriptActionsOverlay({ 
     scriptName, 
     onPlay, 
     onEdit,
     onDeselect, 
-    onClose, 
-    onDelete,
-    onRename,
-    scriptVersions = [],
-    onVersionSelect,
-    onRevert
+    onClose,
+    script  // This is the full script object
 }) {
     const [isVisible, setIsVisible] = useState(false);
-    const [showVersionOverlay, setShowVersionOverlay] = useState(false);
-    const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, isDeleteAll: false });
-    const [revertConfirmation, setRevertConfirmation] = useState({ show: false });
-    const [isRenaming, setIsRenaming] = useState(false);
+    const [showEditor, setShowEditor] = useState(false);
     const overlayContentRef = useRef(null);
-    const cardRef = useRef(null);
 
     useEffect(() => {
         setTimeout(() => setIsVisible(true), 50);
@@ -53,143 +34,102 @@ function ScriptActionsOverlay({
         setTimeout(onClose, 300);
     };
 
-    const handleVersionSelect = (version) => {
-        if (onVersionSelect) {
-            onVersionSelect(version);
-        }
-        setShowVersionOverlay(false);
-    };
-
-    const handleRename = () => {
-        setIsRenaming(true);
-        setMenuPosition(null);
-    };
-
-    const handleRenameSubmit = (e) => {
-        const newName = e.target.value;
-        if (onRename) {
-            onRename(newName);
-        }
-        setIsRenaming(false);
-    };
-
-    const getBaseNameAndVersion = (name) => {
-        if (!name) return { baseName: '', version: null };
-        const versionMatch = name.match(/-v(\d+)$/);
-        const version = versionMatch ? versionMatch[1] : null;
-        const baseName = name.replace(/-v\d+$/, '');
-        return { baseName, version };
-    };
-
     const handleDeselectClick = () => {
         onDeselect();
         handleClose();
     };
 
-    return (
-        <div className={`ScriptActionsOverlay ${isVisible ? 'visible' : ''}`}>
-            <motion.div 
-                ref={overlayContentRef}
-                className="ScriptActionsContent"
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-            >
-                <button className="CloseButton" onClick={handleClose}>
-                    <FaTimes />
-                </button>
-                <div className="ScriptActionsHeader">
-                    <h3>CURRENTLY SELECTED</h3>
-                    <div className="ScriptNameContainer">
-                        {scriptName ? (
-                            <>
-                                <h2>{getBaseNameAndVersion(scriptName).baseName}</h2>
-                                {getBaseNameAndVersion(scriptName).version && (
-                                    <span className="VersionBadge">
-                                        v{getBaseNameAndVersion(scriptName).version}
-                                    </span>
-                                )}
-                            </>
-                        ) : (
-                            <h2>No script selected</h2>
-                        )}
-                    </div>
-                </div>
-                <div className="ScriptActionsButtons">
-                    <motion.button
-                        className="DeselectButton"
-                        onClick={handleDeselectClick}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                    >
-                        Deselect Script
-                    </motion.button>
-                    <motion.button
-                        className="EditButton"
-                        onClick={onEdit}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                    >
-                        <FaPen style={{ marginRight: '8px' }} />
-                        Edit Script
-                    </motion.button>
-                    <motion.button
-                        className="LaunchButton"
-                        onClick={onPlay}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                    >
-                        <FaPlay style={{ marginRight: '8px' }} />
-                        Launch Script
-                    </motion.button>
-                </div>
-            </motion.div>
+    const handleEdit = () => {
+        setShowEditor(true);
+        setIsVisible(false);
+    };
 
-            {showVersionOverlay && cardRef.current && (
-                <VersionOverlay
-                    style={{
-                        top: cardRef.current.getBoundingClientRect().bottom + 5,
-                        left: cardRef.current.getBoundingClientRect().left,
-                        width: cardRef.current.getBoundingClientRect().width,
-                    }}
-                    onSelect={handleVersionSelect}
-                    onDelete={(index) => {
-                        setDeleteConfirmation({ show: true, isDeleteAll: false });
-                    }}
-                >
-                    {scriptVersions}
-                </VersionOverlay>
+    return (
+        <>
+            {!showEditor && (
+                <div className={`ScriptActionsOverlay ${isVisible ? 'visible' : ''}`}>
+                    <motion.div 
+                        ref={overlayContentRef}
+                        className="ScriptActionsContent"
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <button className="CloseButton" onClick={handleClose}>
+                            <FaTimes />
+                        </button>
+                        <div className="ScriptActionsHeader">
+                            <h3>Currently Selected Script</h3>
+                            <div className="ScriptNameContainer">
+                                <h2>{scriptName}</h2>
+                            </div>
+                        </div>
+                        <div className="ScriptActionsButtons">
+                            <motion.button
+                                className="EditButton"
+                                onClick={handleEdit}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <FaPen className="button-icon" />
+                                Edit Script
+                            </motion.button>
+                            <motion.button
+                                className="LaunchButton"
+                                onClick={onPlay}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <FaPlay className="button-icon" />
+                                Launch Script
+                            </motion.button>
+                            <motion.button
+                                className="DeselectButton"
+                                onClick={handleDeselectClick}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Deselect Script
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                </div>
             )}
 
-            <DeleteConfirmationOverlay
-                isOpen={deleteConfirmation.show}
-                onClose={() => setDeleteConfirmation({ show: false })}
-                onConfirm={() => {
-                    if (onDelete) {
-                        onDelete(deleteConfirmation.isDeleteAll);
-                    }
-                    setDeleteConfirmation({ show: false });
-                    handleClose();
-                }}
-                scriptName={scriptName}
-                isDeleteAll={deleteConfirmation.isDeleteAll}
-            />
-
-            <RevertConfirmationOverlay
-                isOpen={revertConfirmation.show}
-                onClose={() => setRevertConfirmation({ show: false })}
-                onConfirm={() => {
-                    if (onRevert) {
-                        onRevert();
-                    }
-                    setRevertConfirmation({ show: false });
-                    handleClose();
-                }}
-                scriptName={getBaseNameAndVersion(scriptName).baseName}
-                version={scriptVersions.length > 0 ? scriptVersions[0].version : '1'}
-            />
-        </div>
+            {showEditor && (
+                <div style={{ 
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    zIndex: 5000,
+                    backgroundColor: '#1E1F22' // Dark mode background
+                }}>
+                    <FullScreenEditor
+                        script={{
+                            name: scriptName,
+                            content: JSON.parse(localStorage.getItem("workingOnScript")).contents,
+                            scriptType: JSON.parse(localStorage.getItem("workingOnScript")).scriptType
+                        }}
+                        onClose={() => {
+                            setShowEditor(false);
+                            handleClose();
+                        }}
+                        onSave={async (updatedContent) => {
+                            if (onEdit) {
+                                await onEdit(updatedContent);
+                            }
+                            setShowEditor(false);
+                            handleClose();
+                        }}
+                        theme="monokai" // Ensure dark theme is used
+                        hideStatusIcons={true} // Hide status icons
+                    />
+                </div>
+            )}
+        </>
     );
 }
 

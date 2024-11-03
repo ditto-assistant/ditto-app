@@ -21,6 +21,7 @@ import SearchBar from '../components/SearchBar';
 import AddScriptOverlay from '../components/AddScriptOverlay';
 import OpenSCADViewer from '../components/OpenSCADViewer';
 import RevertConfirmationOverlay from '../components/RevertConfirmationOverlay';
+import ScriptActionsOverlay from '../components/ScriptActionsOverlay';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -83,6 +84,8 @@ const ScriptsScreen = () => {
         script: null, 
         category: null 
     });
+
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     const sortScripts = (scripts) => {
         if (sortOrder === 'alphabetical') {
@@ -302,16 +305,26 @@ const ScriptsScreen = () => {
         }
     };
 
-    const handleEditScript = (script) => {
-        // Add a small delay to ensure menu is closed before opening editor
-        setTimeout(() => {
+    const handleEditScript = () => {
+        // Find the current script in both categories
+        const webAppScript = scripts.webApps.find(s => s.name === selectedScript);
+        const openScadScript = scripts.openSCAD.find(s => s.name === selectedScript);
+        
+        // Use whichever script was found
+        const script = webAppScript || openScadScript;
+        
+        if (script) {
+            // Check the scriptType to determine which editor to open
             if (script.scriptType === 'webApps') {
                 setFullScreenEdit(script);
             } else {
-                setEditScript(script);
-                setTemporaryEditContent(script.content);
+                setOpenScadViewer(script);
             }
-        }, 50);
+        }
+    };
+
+    const handleCloseEditor = () => {
+        setIsEditorOpen(false);
     };
 
     const handleSaveEdit = async (category, id) => {
@@ -1290,6 +1303,17 @@ const ScriptsScreen = () => {
                 <OpenSCADViewer
                     script={openScadViewer}
                     onClose={() => setOpenScadViewer(null)}
+                />
+            )}
+            {isEditorOpen && selectedScript && (
+                <FullScreenEditor
+                    script={selectedScript}
+                    onClose={handleCloseEditor}
+                    onSave={(updatedContent) => {
+                        // Handle saving the updated content
+                        console.log("Updated content:", updatedContent);
+                        handleCloseEditor();
+                    }}
                 />
             )}
         </div>

@@ -809,8 +809,27 @@ export default function HomeScreen() {
         {showScriptActions && (
           <ScriptActionsOverlay
             scriptName={workingScript}
-            onPlay={handlePlayScript}
-            onEdit={handleEditScript}
+            script={{
+                name: workingScript,
+                content: JSON.parse(localStorage.getItem("workingOnScript")).contents,
+                scriptType: JSON.parse(localStorage.getItem("workingOnScript")).scriptType
+            }}
+            onPlay={() => handlePlayScript(workingScript)}
+            onEdit={async (updatedContent) => {
+                const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+                const userID = localStorage.getItem("userID");
+                await saveScriptToFirestore(
+                    userID, 
+                    updatedContent, 
+                    storedScript.scriptType, 
+                    storedScript.script
+                );
+                // Update the stored script content
+                localStorage.setItem("workingOnScript", JSON.stringify({
+                    ...storedScript,
+                    contents: updatedContent
+                }));
+            }}
             onDeselect={handleDeselectScript}
             onClose={() => setShowScriptActions(false)}
             onDelete={handleScriptDelete}
