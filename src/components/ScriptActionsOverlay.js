@@ -35,7 +35,9 @@ function ScriptActionsOverlay({
     };
 
     const handleDeselectClick = () => {
-        onDeselect();
+        if (onDeselect) {
+            onDeselect();
+        }
         handleClose();
     };
 
@@ -97,7 +99,7 @@ function ScriptActionsOverlay({
                 </div>
             )}
 
-            {showEditor && (
+            {showEditor && script && (
                 <div style={{ 
                     position: 'fixed',
                     top: 0,
@@ -105,13 +107,13 @@ function ScriptActionsOverlay({
                     width: '100%',
                     height: '100%',
                     zIndex: 5000,
-                    backgroundColor: '#1E1F22' // Dark mode background
+                    backgroundColor: '#1E1F22'
                 }}>
                     <FullScreenEditor
                         script={{
                             name: scriptName,
-                            content: JSON.parse(localStorage.getItem("workingOnScript")).contents,
-                            scriptType: JSON.parse(localStorage.getItem("workingOnScript")).scriptType
+                            content: script.content || '',
+                            scriptType: script.scriptType
                         }}
                         onClose={() => {
                             setShowEditor(false);
@@ -124,8 +126,8 @@ function ScriptActionsOverlay({
                             setShowEditor(false);
                             handleClose();
                         }}
-                        theme="monokai" // Ensure dark theme is used
-                        hideStatusIcons={true} // Hide status icons
+                        theme="monokai"
+                        hideStatusIcons={true}
                     />
                 </div>
             )}

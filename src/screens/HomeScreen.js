@@ -75,7 +75,14 @@ export default function HomeScreen() {
 
   const [workingScript, setWorkingScript] = useState(() => {
     const storedScript = localStorage.getItem("workingOnScript");
-    return storedScript ? JSON.parse(storedScript).script : null;
+    if (!storedScript) return null;
+    try {
+        const parsed = JSON.parse(storedScript);
+        return parsed.script || null;
+    } catch (e) {
+        console.error("Error parsing workingOnScript:", e);
+        return null;
+    }
   });
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
@@ -806,37 +813,59 @@ export default function HomeScreen() {
       {showTOS && <TermsOfService onClose={handleTOSClose} />}
 
       <AnimatePresence>
-        {showScriptActions && (
+        {showScriptActions && workingScript && (
           <ScriptActionsOverlay
             scriptName={workingScript}
             script={{
                 name: workingScript,
-                content: JSON.parse(localStorage.getItem("workingOnScript")).contents,
-                scriptType: JSON.parse(localStorage.getItem("workingOnScript")).scriptType
+                content: (() => {
+                    const stored = localStorage.getItem("workingOnScript");
+                    if (!stored) return '';
+                    try {
+                        const parsed = JSON.parse(stored);
+                        return parsed.contents || '';
+                    } catch (e) {
+                        console.error("Error parsing script contents:", e);
+                        return '';
+                    }
+                })(),
+                scriptType: (() => {
+                    const stored = localStorage.getItem("workingOnScript");
+                    if (!stored) return '';
+                    try {
+                        const parsed = JSON.parse(stored);
+                        return parsed.scriptType || '';
+                    } catch (e) {
+                        console.error("Error parsing script type:", e);
+                        return '';
+                    }
+                })()
             }}
-            onPlay={() => handlePlayScript(workingScript)}
+            onPlay={handlePlayScript}
             onEdit={async (updatedContent) => {
-                const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-                const userID = localStorage.getItem("userID");
-                await saveScriptToFirestore(
-                    userID, 
-                    updatedContent, 
-                    storedScript.scriptType, 
-                    storedScript.script
-                );
-                // Update the stored script content
-                localStorage.setItem("workingOnScript", JSON.stringify({
-                    ...storedScript,
-                    contents: updatedContent
-                }));
+                const storedScript = localStorage.getItem("workingOnScript");
+                if (!storedScript) return;
+                
+                try {
+                    const parsed = JSON.parse(storedScript);
+                    const userID = localStorage.getItem("userID");
+                    await saveScriptToFirestore(
+                        userID, 
+                        updatedContent, 
+                        parsed.scriptType, 
+                        parsed.script
+                    );
+                    // Update the stored script content
+                    localStorage.setItem("workingOnScript", JSON.stringify({
+                        ...parsed,
+                        contents: updatedContent
+                    }));
+                } catch (e) {
+                    console.error("Error updating script:", e);
+                }
             }}
             onDeselect={handleDeselectScript}
             onClose={() => setShowScriptActions(false)}
-            onDelete={handleScriptDelete}
-            onRename={handleScriptRename}
-            scriptVersions={scriptVersions}
-            onVersionSelect={handleVersionSelect}
-            onRevert={handleRevert}
           />
         )}
       </AnimatePresence>
