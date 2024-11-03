@@ -74,6 +74,23 @@
     border-top: 1px solid #202225;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
+}
+
+.tos-decline-button {
+    background-color: #f04747;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.tos-decline-button:hover {
+    background-color: #d84040;
 }
 
 .tos-accept-button {
@@ -90,6 +107,22 @@
 
 .tos-accept-button:hover {
     background-color: #677bc4;
+}
+
+.tos-close-button-bottom {
+    background-color: #4f545c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.tos-close-button-bottom:hover {
+    background-color: #5d6269;
 }
 
 @media (max-width: 768px) {

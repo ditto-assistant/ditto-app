@@ -1,12 +1,36 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { removeUserFromFirestore } from '../control/firebase';
 import './TermsOfService.css';
 
-const TermsOfService = ({ onClose }) => {
+const TermsOfService = ({ onClose, isNewAccount = false }) => {
     const [isVisible, setIsVisible] = useState(true);
+    const navigate = useNavigate();
 
-    const handleClose = () => {
+    const handleAccept = () => {
+        if (isNewAccount) {
+            // Set hasSeenTOS in localStorage when accepting during account creation
+            localStorage.setItem('hasSeenTOS', 'true');
+        }
         setIsVisible(false);
         if (onClose) onClose();
+    };
+
+    const handleDecline = async () => {
+        if (isNewAccount) {
+            // Delete the user's account
+            const userID = localStorage.getItem('userID');
+            if (userID) {
+                await removeUserFromFirestore(userID);
+            }
+            // Clear local storage
+            localStorage.clear();
+            // Navigate to login page
+            navigate('/login');
+        } else {
+            setIsVisible(false);
+            if (onClose) onClose();
+        }
     };
 
     if (!isVisible) return null;
@@ -16,7 +40,9 @@ const TermsOfService = ({ onClose }) => {
             <div className="tos-container">
                 <div className="tos-header">
                     <h2>Terms of Service</h2>
-                    <button className="tos-close-button" onClick={handleClose}>×</button>
+                    {!isNewAccount && (
+                        <button className="tos-close-button" onClick={handleDecline}>×</button>
+                    )}
                 </div>
                 <div className="tos-content">
                     <h3>Last Updated: October 29, 2024</h3>
@@ -74,7 +100,14 @@ const TermsOfService = ({ onClose }) => {
                     <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@ditto.ai">support@heyditto.ai</a>.</p>
                 </div>
                 <div className="tos-footer">
-                    <button className="tos-accept-button" onClick={handleClose}>I Accept</button>
+                    {isNewAccount ? (
+                        <>
+                            <button className="tos-decline-button" onClick={handleDecline}>Decline</button>
+                            <button className="tos-accept-button" onClick={handleAccept}>Accept</button>
+                        </>
+                    ) : (
+                        <button className="tos-close-button-bottom" onClick={handleDecline}>Close</button>
+                    )}
                 </div>
             </div>
         </div>

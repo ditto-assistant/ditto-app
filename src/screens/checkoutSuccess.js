@@ -2,9 +2,52 @@ import { Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaCheckCircle } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { getModelPreferencesFromFirestore, saveModelPreferencesToFirestore } from '../control/firebase';
+import ModelDropdown from '../components/ModelDropdown';
+import { useBalance } from '../hooks/useBalance';
 
 const CheckoutSuccess = () => {
     const navigate = useNavigate();
+    const [modelPreferences, setModelPreferences] = useState({
+        mainModel: "gemini-1.5-flash",
+        programmerModel: "gemini-1.5-flash"
+    });
+    const { balance } = useBalance();
+    const balanceNum = parseFloat(balance?.replace(/[MB]/, '') || '0');
+    const isBalanceInBillions = balance?.includes('B');
+    const hasEnoughBalance = isBalanceInBillions && balanceNum >= 1.00;
+
+    useEffect(() => {
+        const initializeModels = async () => {
+            const userID = localStorage.getItem("userID");
+            const prefs = await getModelPreferencesFromFirestore(userID);
+            
+            // If user has enough balance and was using flash, automatically upgrade to pro
+            if (hasEnoughBalance) {
+                const updatedPrefs = {
+                    mainModel: prefs.mainModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : prefs.mainModel,
+                    programmerModel: prefs.programmerModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : prefs.programmerModel
+                };
+                await saveModelPreferencesToFirestore(userID, updatedPrefs.mainModel, updatedPrefs.programmerModel);
+                setModelPreferences(updatedPrefs);
+            } else {
+                setModelPreferences(prefs);
+            }
+        };
+
+        initializeModels();
+    }, [hasEnoughBalance]);
+
+    const handleModelChange = async (type, value) => {
+        const userID = localStorage.getItem("userID");
+        const newPreferences = {
+            ...modelPreferences,
+            [type]: value
+        };
+        setModelPreferences(newPreferences);
+        await saveModelPreferencesToFirestore(userID, newPreferences.mainModel, newPreferences.programmerModel);
+    };
 
     return (
         <div style={styles.overlay}>
@@ -43,10 +86,35 @@ const CheckoutSuccess = () => {
                     >
                         Your tokens have been added to your account
                     </motion.p>
-                    <motion.div
+
+                    <motion.div 
+                        style={styles.modelSelectors}
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.5 }}
+                    >
+                        <div style={styles.modelSelector}>
+                            <label style={styles.modelLabel}>Main Agent Model</label>
+                            <ModelDropdown
+                                value={modelPreferences.mainModel}
+                                onChange={(value) => handleModelChange('mainModel', value)}
+                                hasEnoughBalance={hasEnoughBalance}
+                            />
+                        </div>
+                        <div style={styles.modelSelector}>
+                            <label style={styles.modelLabel}>Programmer Model</label>
+                            <ModelDropdown
+                                value={modelPreferences.programmerModel}
+                                onChange={(value) => handleModelChange('programmerModel', value)}
+                                hasEnoughBalance={hasEnoughBalance}
+                            />
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.6 }}
                     >
                         <Button 
                             variant="contained" 
@@ -110,9 +178,29 @@ const styles = {
         backgroundColor: '#7289da',
         padding: '10px 24px',
         fontSize: '1.1em',
+        marginTop: '32px',
         '&:hover': {
             backgroundColor: '#677bc4',
         },
+    },
+    modelSelectors: {
+        width: '100%',
+        maxWidth: '360px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        marginTop: '16px',
+    },
+    modelSelector: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+    },
+    modelLabel: {
+        color: '#b9bbbe',
+        fontSize: '14px',
+        textAlign: 'left',
+        fontWeight: '500',
     },
 };
 

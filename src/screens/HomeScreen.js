@@ -51,8 +51,7 @@ export default function HomeScreen() {
   const [capturedImage, setCapturedImage] = useState(null);
   const [showMediaOptions, setShowMediaOptions] = useState(false);
   const [showTOS, setShowTOS] = useState(() => {
-    const hasSeenTOS = localStorage.getItem('hasSeenTOS');
-    return !hasSeenTOS;
+    return !localStorage.getItem('hasSeenTOS');
   });
 
   const loadConversationFromLocalStorage = () => {
@@ -810,7 +809,12 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
 
-      {showTOS && <TermsOfService onClose={handleTOSClose} />}
+      {showTOS && (
+        <TermsOfService 
+          onClose={() => setShowTOS(false)} 
+          isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
+        />
+      )}
 
       <AnimatePresence>
         {showScriptActions && workingScript && (

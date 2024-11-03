@@ -109,21 +109,12 @@ const Login = () => {
             localStorage.setItem('lastName', lastName);
             localStorage.removeItem('hasSeenTOS');
 
-            // Wipe local storage of conversation history 
-            localStorage.removeItem('prompts');
-            localStorage.removeItem('responses');
-            localStorage.removeItem('histCount');
-
-            setIsCreatingAccount(false); // Switch back to sign-in mode
-            setEmail("");
-            setPassword("");
-            setRetypePassword("");
-            setFirstName("");
-            setLastName("");
-
+            // Show TOS immediately after signup
+            setShowTOS(true);
+            
+            // Don't switch back to sign-in mode or clear fields until user accepts TOS
         } catch (error) {
             console.error("Error creating account:", error.message);
-            // Handle errors (e.g., show an error message to the user)
             alert("Error creating account. Please try again.");
         }
     };
@@ -166,10 +157,15 @@ const Login = () => {
                 localStorage.setItem('histCount', conversationHistory.prompts.length);
             }
 
+            // If it's a new user, show TOS before proceeding
+            if (isNewUser) {
+                setShowTOS(true);
+                return; // Don't navigate yet
+            }
+
             navigate("/");
         } catch (error) {
             console.error("Error signing in with Google:", error.message);
-            // Handle errors (e.g., show an error message to the user)
             alert("Error signing in with Google. Please try again.");
         }
     }
@@ -258,7 +254,12 @@ const Login = () => {
                     </span>
                 </p>
             </div>
-            {showTOS && <TermsOfService onClose={() => setShowTOS(false)} />}
+            {showTOS && (
+                <TermsOfService 
+                    onClose={() => setShowTOS(false)} 
+                    isNewAccount={isCreatingAccount}
+                />
+            )}
         </div>
     );
 }
