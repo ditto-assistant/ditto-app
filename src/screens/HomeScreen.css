@@ -51,11 +51,11 @@ body:not(.login-page) {
 
 .App-header {
   flex-shrink: 0;
-  height: var(--header-height);
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 16px;
   background-color: rgba(32, 34, 37, 0.9);
   backdrop-filter: blur(10px);
   z-index: 10;
@@ -72,11 +72,14 @@ body:not(.login-page) {
   justify-content: center;
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 0;
 }
 
 .microphone-button:hover,
@@ -89,6 +92,8 @@ body:not(.login-page) {
 .icon {
   font-size: 20px;
   color: var(--text-color);
+  width: 20px;
+  height: 20px;
 }
 
 .icon.active {

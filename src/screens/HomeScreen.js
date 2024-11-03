@@ -21,6 +21,13 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
 import MiniFocusOverlay from '../components/MiniFocusOverlay';
+import ScriptActionsOverlay from '../components/ScriptActionsOverlay';
+import { 
+  deleteScriptFromFirestore, 
+  renameScriptInFirestore, 
+  getVersionsOfScriptFromFirestore,
+  getScriptTimestamps
+} from "../control/firebase";
 
 const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
 
@@ -490,6 +497,162 @@ export default function HomeScreen() {
     setWorkingScript(null);
   };
 
+  const [showScriptActions, setShowScriptActions] = useState(false);
+
+  const handleScriptNameClick = () => {
+    setShowScriptActions(true);
+  };
+
+  const [scriptVersions, setScriptVersions] = useState([]);
+
+  useEffect(() => {
+    const loadScriptVersions = async () => {
+      if (workingScript) {
+        const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+        if (storedScript) {
+          const userID = localStorage.getItem("userID");
+          const versions = await getVersionsOfScriptFromFirestore(
+            userID,
+            storedScript.scriptType,
+            storedScript.script
+          );
+          setScriptVersions(versions);
+        }
+      }
+    };
+
+    loadScriptVersions();
+  }, [workingScript]);
+
+  const handleScriptDelete = async (isDeleteAll) => {
+    const userID = localStorage.getItem("userID");
+    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+    
+    if (storedScript) {
+      if (isDeleteAll) {
+        // Delete base version and all versioned copies
+        const baseScriptName = storedScript.script.split('-v')[0];
+        const versions = await getVersionsOfScriptFromFirestore(
+          userID,
+          storedScript.scriptType,
+          baseScriptName
+        );
+        
+        // Delete each version
+        for (const version of versions) {
+          const versionName = version.versionNumber === 0 
+            ? baseScriptName 
+            : `${baseScriptName}-v${version.versionNumber}`;
+          await deleteScriptFromFirestore(
+            userID,
+            storedScript.scriptType,
+            versionName
+          );
+        }
+      } else {
+        // Delete just the current version
+        await deleteScriptFromFirestore(
+          userID,
+          storedScript.scriptType,
+          storedScript.script
+        );
+      }
+
+      // Update local storage and state
+      handleDeselectScript();
+      
+      // Refresh timestamps
+      await getScriptTimestamps(userID, storedScript.scriptType);
+      
+      // Dispatch event to refresh scripts list
+      window.dispatchEvent(new Event('scriptsUpdated'));
+    }
+  };
+
+  const handleScriptRename = async (newName) => {
+    const userID = localStorage.getItem("userID");
+    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+    
+    if (storedScript) {
+      await renameScriptInFirestore(
+        userID,
+        storedScript.timestampString,
+        storedScript.scriptType,
+        storedScript.script,
+        newName
+      );
+      
+      // Update local storage
+      const updatedScript = {
+        ...storedScript,
+        script: newName
+      };
+      localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
+      
+      // Update state
+      setWorkingScript(newName);
+      
+      // Refresh timestamps
+      await getScriptTimestamps(userID, storedScript.scriptType);
+      
+      // Dispatch event to refresh scripts list
+      window.dispatchEvent(new Event('scriptsUpdated'));
+    }
+  };
+
+  const handleVersionSelect = async (version) => {
+    const userID = localStorage.getItem("userID");
+    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+    
+    if (storedScript && version) {
+      const baseScriptName = storedScript.script.split('-v')[0];
+      const versionName = version.versionNumber === 0 
+        ? baseScriptName 
+        : `${baseScriptName}-v${version.versionNumber}`;
+      
+      // Update working script to selected version
+      const updatedScript = {
+        ...storedScript,
+        script: versionName,
+        contents: version.script
+      };
+      localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
+      
+      // Update state
+      setWorkingScript(versionName);
+      
+      // Refresh timestamps
+      await getScriptTimestamps(userID, storedScript.scriptType);
+      
+      // Dispatch event to refresh scripts list
+      window.dispatchEvent(new Event('scriptsUpdated'));
+    }
+  };
+
+  const handleRevert = async () => {
+    const userID = localStorage.getItem("userID");
+    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+    
+    if (storedScript) {
+      const baseScriptName = storedScript.script.split('-v')[0];
+      const versions = await getVersionsOfScriptFromFirestore(
+        userID,
+        storedScript.scriptType,
+        baseScriptName
+      );
+      
+      if (versions.length > 1) {
+        // Get the highest version number
+        const latestVersion = versions.reduce((max, version) => 
+          Math.max(max, version.versionNumber), 0);
+        
+        // Select that version
+        const version = versions.find(v => v.versionNumber === latestVersion);
+        await handleVersionSelect(version);
+      }
+    }
+  };
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
@@ -507,9 +670,9 @@ export default function HomeScreen() {
         {workingScript ? (
           <MiniFocusOverlay
             scriptName={workingScript}
-            onEdit={handleEditScript}
             onPlay={handlePlayScript}
             onDeselect={handleDeselectScript}
+            onOverlayTrigger={handleScriptNameClick}
           />
         ) : (
           <motion.div
@@ -641,6 +804,23 @@ export default function HomeScreen() {
       </AnimatePresence>
 
       {showTOS && <TermsOfService onClose={handleTOSClose} />}
+
+      <AnimatePresence>
+        {showScriptActions && (
+          <ScriptActionsOverlay
+            scriptName={workingScript}
+            onPlay={handlePlayScript}
+            onEdit={handleEditScript}
+            onDeselect={handleDeselectScript}
+            onClose={() => setShowScriptActions(false)}
+            onDelete={handleScriptDelete}
+            onRename={handleScriptRename}
+            scriptVersions={scriptVersions}
+            onVersionSelect={handleVersionSelect}
+            onRevert={handleRevert}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

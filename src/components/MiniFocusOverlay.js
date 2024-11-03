@@ -1,50 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaPlay, FaPen } from 'react-icons/fa';
-import { MdClose } from 'react-icons/md';
 
 const darkModeColors = {
   primary: '#7289DA',
   text: '#FFFFFF',
 };
 
-function MiniFocusOverlay({ scriptName, onEdit, onPlay, onDeselect }) {
+function MiniFocusOverlay({ scriptName, onOverlayTrigger }) {
   return (
     <div style={styles.container}>
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        style={styles.actionButton}
-        onClick={onEdit}
-      >
-        <FaPen size={16} />
-      </motion.button>
+      <div style={styles.leftActions} />
       
       <motion.div
         style={styles.scriptInfo}
-        onClick={onPlay}
+        onClick={onOverlayTrigger}
       >
-        <span style={styles.scriptName}>{scriptName}</span>
+        <span style={styles.scriptName} title={scriptName}>
+          {scriptName}
+        </span>
       </motion.div>
 
-      <div style={styles.rightActions}>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          style={styles.actionButton}
-          onClick={onPlay}
-        >
-          <FaPlay size={16} />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          style={styles.actionButton}
-          onClick={onDeselect}
-        >
-          <MdClose size={18} />
-        </motion.button>
-      </div>
+      <div style={styles.rightActions} />
     </div>
   );
 }
@@ -55,8 +31,13 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    padding: '0 10px',
+    padding: '0 8px',
     position: 'relative',
+    height: '60px',
+  },
+  leftActions: {
+    minWidth: '40px',
+    marginRight: '8px',
   },
   scriptInfo: {
     position: 'absolute',
@@ -65,6 +46,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
+    maxWidth: 'calc(100% - 100px)',
+    padding: '0 4px',
   },
   scriptName: {
     color: darkModeColors.primary,
@@ -73,20 +56,12 @@ const styles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    maxWidth: '100%',
+    textAlign: 'center',
   },
   rightActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  actionButton: {
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: darkModeColors.text,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '8px',
+    minWidth: '40px',
+    marginLeft: '8px',
   },
 };
 
