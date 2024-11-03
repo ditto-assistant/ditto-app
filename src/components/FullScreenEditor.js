@@ -17,7 +17,6 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useIntentRecognition } from '../hooks/useIntentRecognition';
 import FullScreenSpinner from './LoadingSpinner';
 import updaterAgent from '../control/updaterAgent';
-import ScriptMemoryOverlay from './ScriptMemoryOverlay';
 
 const darkModeColors = {
     background: '#1E1F22',
@@ -940,6 +939,26 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         }
     }, [scriptChatMessages]);
 
+    // Add useEffect to handle clicking outside the settings panel
+    useEffect(() => {
+        if (!showMemoryOverlay) return;
+
+        const handleClickOutside = (event) => {
+            // Check if click is outside the settings panel and not on the settings button
+            const settingsPanel = document.querySelector('.script-chat-settings');
+            const settingsButton = document.querySelector('.settings-button');
+            
+            if (settingsPanel && settingsButton && 
+                !settingsPanel.contains(event.target) && 
+                !settingsButton.contains(event.target)) {
+                setShowMemoryOverlay(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showMemoryOverlay]);
+
     return (
         <div style={styles.container}>
             <motion.div 
@@ -972,17 +991,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             }}
                         >
                             <FaComments size={16} />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Settings">
-                        <IconButton
-                            onClick={() => setShowMemoryOverlay(true)}
-                            sx={{
-                                ...styles.iconButton,
-                                color: darkModeColors.text,
-                            }}
-                        >
-                            <FaBrain size={16} />
                         </IconButton>
                     </Tooltip>
                     <div style={styles.divider} />
@@ -1278,13 +1286,90 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         onMouseDown={handleDragStart}
                     >
                         <div style={styles.scriptChatHeader}>
-                            <span style={styles.scriptChatTitle}>Programmer Agent</span>
-                            <IconButton
-                                onClick={() => setShowScriptChat(false)}
-                                sx={styles.iconButton}
-                            >
-                                <FaTimes size={16} />
-                            </IconButton>
+                            <div style={styles.scriptChatTitle}>Programmer Agent</div>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <Tooltip title="Settings">
+                                    <IconButton
+                                        className="settings-button"  // Add this class
+                                        onClick={() => setShowMemoryOverlay(prev => !prev)}
+                                        sx={{
+                                            ...styles.iconButton,
+                                            color: showMemoryOverlay ? darkModeColors.primary : darkModeColors.text,
+                                        }}
+                                    >
+                                        <FaBrain size={16} />
+                                    </IconButton>
+                                </Tooltip>
+                                <IconButton
+                                    onClick={() => setShowScriptChat(false)}
+                                    sx={styles.iconButton}
+                                >
+                                    <FaTimes size={16} />
+                                </IconButton>
+                            </div>
+                            
+                            {/* Add Settings Panel */}
+                            <AnimatePresence>
+                                {showMemoryOverlay && (
+                                    <motion.div
+                                        className="script-chat-settings"  // Add this class
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        style={styles.scriptChatSettings}
+                                    >
+                                        <div style={{ padding: '16px' }}>
+                                            <div style={{ marginBottom: '16px' }}>
+                                                <h4 style={{ 
+                                                    margin: '0 0 8px 0',
+                                                    color: darkModeColors.text,
+                                                    fontSize: '14px'
+                                                }}>
+                                                    Model
+                                                </h4>
+                                                <select
+                                                    value={modelPreferences.programmerModel}
+                                                    onChange={(e) => handleModelChange(e.target.value)}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '8px',
+                                                        backgroundColor: darkModeColors.background,
+                                                        color: darkModeColors.text,
+                                                        border: `1px solid ${darkModeColors.border}`,
+                                                        borderRadius: '6px',
+                                                        fontSize: '14px'
+                                                    }}
+                                                >
+                                                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                                    <option value="mistral-nemo">Mistral Nemo</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={handleResetHistory}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '8px',
+                                                    backgroundColor: 'transparent',
+                                                    color: darkModeColors.danger,
+                                                    border: `1px solid ${darkModeColors.danger}`,
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '14px',
+                                                    transition: 'all 0.2s ease',
+                                                    '&:hover': {
+                                                        backgroundColor: `${darkModeColors.danger}15`
+                                                    }
+                                                }}
+                                            >
+                                                Reset Chat History
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                         <div style={styles.scriptChatMessages}>
                             {scriptChatMessages.map((msg, index) => (
@@ -1684,16 +1769,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     <FullScreenSpinner text="Cleaning up" />
                 </motion.div>
             )}
-
-            {/* Add the memory overlay */}
-            {showMemoryOverlay && (
-                <ScriptMemoryOverlay
-                    closeOverlay={() => setShowMemoryOverlay(false)}
-                    modelPreferences={modelPreferences}
-                    onModelChange={handleModelChange}
-                    onResetHistory={handleResetHistory}
-                />
-            )}
         </div>
     );
 };
@@ -2056,6 +2131,7 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        position: 'relative', // Add this
     },
     scriptChatTitle: {
         color: darkModeColors.text,
@@ -2523,6 +2599,22 @@ const styles = {
         color: 'rgba(255, 255, 255, 0.5)',
         marginTop: '4px',
         alignSelf: 'flex-end',
+    },
+    scriptChatSettings: {
+        position: 'absolute',
+        top: '100%',
+        right: 0,
+        backgroundColor: darkModeColors.foreground,
+        borderRadius: '0 0 12px 12px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+        border: `1px solid ${darkModeColors.border}`,
+        borderTop: 'none',
+        width: '300px',
+        zIndex: 10,
+        overflow: 'hidden',
+        transition: 'transform 0.2s ease, opacity 0.2s ease',
+        transform: 'translateY(0)',
+        opacity: 1,
     },
 };
 
