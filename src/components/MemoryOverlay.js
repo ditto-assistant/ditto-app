@@ -117,6 +117,11 @@ function MemoryOverlay({ closeOverlay }) {
                 localStorage.removeItem("histCount");
                 await resetConversation(userID);
                 await deleteAllUserImagesFromFirebaseStorageBucket(userID);
+
+                // Dispatch a custom event to notify other components
+                const event = new CustomEvent('memoryDeleted');
+                window.dispatchEvent(event);
+
                 resolve(true);
             };
 

@@ -9,6 +9,7 @@
   max-width: none;
   box-sizing: border-box;
   transition: padding-top 0.3s ease-out;
+  scroll-behavior: smooth;
 }
 
 /* Add smooth scrolling behavior to the container */
@@ -27,6 +28,7 @@
   margin-bottom: 12px; /* Slightly more spacing between messages */
   position: relative;
   width: 100%;
+  transition: all 0.3s ease-out;
 }
 
 .message-container.Ditto {
@@ -1827,5 +1829,140 @@ input:checked + .toggle-slider:before {
 .delete-confirmation-content {
   /* ... existing styles */
   will-change: transform, opacity;
+}
+
+/* Add these styles for the animated chunks */
+.animating-chunk {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.7);
+  animation: fadeInChunk 0.5s ease-out;
+  margin-left: 2px;
+  white-space: pre-wrap;
+}
+
+@keyframes fadeInChunk {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  50% {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+/* Add smooth transition for message containers */
+.message-container {
+  transition: all 0.3s ease-out;
+}
+
+/* Add animation for new messages */
+.message-container.new-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Ensure smooth scrolling */
+.chat-feed {
+  scroll-behavior: smooth;
+}
+
+/* Update the animating word styles */
+.animating-word {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.9);
+  animation: fadeInWord 0.4s ease-out;
+  margin-left: 2px;
+  white-space: pre-wrap;
+  display: inline-block;
+}
+
+@keyframes fadeInWord {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+    color: #7289da;
+  }
+  50% {
+    color: #7289da;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* Update message text container to handle animations */
+.message-text {
+  position: relative;
+  min-height: 20px;
+  overflow: hidden;
+}
+
+/* Tool badge styles */
+.tool-badge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+  background-color: #2f3136;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.tool-badge.openscad { background-color: #e67e22; }
+.tool-badge.html { background-color: #3498db; }
+.tool-badge.image { background-color: #2ecc71; }
+.tool-badge.search { background-color: #9b59b6; }
+.tool-badge.home { background-color: #e74c3c; }
+
+/* Tool status styles */
+.tool-status {
+  font-size: 0.8em;
+  padding: 4px 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.tool-status.failed {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  animation: none;
+}
+
+.tool-status.complete {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  animation: none;
 }
 
