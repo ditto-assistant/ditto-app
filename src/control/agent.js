@@ -133,29 +133,16 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
             }
           }
 
-          // Only save to memory and sync when streaming is complete
-          if (!toolTriggered) {
-            const docId = await saveToMemory(userID, prompt, updatedText, userPromptEmbedding);
-            
-            // Update conversation with docId and pairID
-            updateConversation((prevState) => {
-              const messages = [...prevState.messages];
-              messages[messages.length - 2] = {
-                ...messages[messages.length - 2],
-                pairID: docId
-              };
-              messages[messages.length - 1] = {
-                ...messages[messages.length - 1],
-                text: updatedText,
-                isTyping: false,
-                docId: docId,
-                pairID: docId
-              };
-              return { ...prevState, messages };
-            });
-
-            saveToLocalStorage(prompt, updatedText, Date.now(), docId);
-          }
+          // Only update the UI state here, don't save to memory yet
+          updateConversation((prevState) => {
+            const messages = [...prevState.messages];
+            messages[messages.length - 1] = {
+              ...messages[messages.length - 1],
+              text: updatedText,
+              isTyping: false
+            };
+            return { ...prevState, messages };
+          });
         }
         return;
       }
