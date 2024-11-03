@@ -305,20 +305,18 @@ const ScriptsScreen = () => {
         }
     };
 
-    const handleEditScript = () => {
-        // Find the current script in both categories
-        const webAppScript = scripts.webApps.find(s => s.name === selectedScript);
-        const openScadScript = scripts.openSCAD.find(s => s.name === selectedScript);
+    const handleEditScript = (script) => {
+        // If script is passed directly, use it, otherwise try to find the selected script
+        const scriptToEdit = script || (selectedScript && (
+            scripts.webApps.find(s => s.name === selectedScript) || 
+            scripts.openSCAD.find(s => s.name === selectedScript)
+        ));
         
-        // Use whichever script was found
-        const script = webAppScript || openScadScript;
-        
-        if (script) {
-            // Check the scriptType to determine which editor to open
-            if (script.scriptType === 'webApps') {
-                setFullScreenEdit(script);
+        if (scriptToEdit) {
+            if (scriptToEdit.scriptType === 'webApps') {
+                setFullScreenEdit(scriptToEdit);
             } else {
-                setOpenScadViewer(script);
+                setOpenScadViewer(scriptToEdit);
             }
         }
     };
