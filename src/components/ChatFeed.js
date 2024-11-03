@@ -98,6 +98,7 @@ export default function ChatFeed({
   bubblesCentered = false,
   scrollToBottom = false,
   startAtBottom = false,
+  updateConversation,
   bubbleStyles = {
     text: {
       fontSize: 14,
@@ -135,29 +136,82 @@ export default function ChatFeed({
   const [showScores, setShowScores] = useState(false);
   const [sortBy, setSortBy] = useState('relevance'); // 'relevance' or 'timestamp'
   const [sortDirection, setSortDirection] = useState('desc');
+  const [streamingResponses, setStreamingResponses] = useState({});
+  const [animatingWord, setAnimatingWord] = useState({ index: null, word: "" });
+  const streamTimeoutRef = useRef(null);
+  const [newMessageAnimation, setNewMessageAnimation] = useState(false);
+  const [lastMessageIndex, setLastMessageIndex] = useState(-1);
+
+  useEffect(() => {
+    const handleStreamUpdate = (event) => {
+      const { responseIndex, word, fullResponse, isNewMessage } = event.detail;
+      
+      // Update streaming responses with full text
+      setStreamingResponses(prev => ({
+        ...prev,
+        [responseIndex]: fullResponse
+      }));
+      
+      // Set the currently animating word
+      setAnimatingWord({
+        index: responseIndex,
+        word: word
+      });
+      
+      // Clear previous timeout
+      if (streamTimeoutRef.current) {
+        clearTimeout(streamTimeoutRef.current);
+      }
+      
+      // Set new timeout to clear animation
+      streamTimeoutRef.current = setTimeout(() => {
+        setAnimatingWord({ index: null, word: "" });
+      }, 400); // Animation duration
+      
+      // Scroll smoothly as new content arrives
+      if (bottomRef.current) {
+        // Check if user is near bottom before auto-scrolling
+        const feedElement = feedRef.current;
+        const isNearBottom = feedElement && 
+          (feedElement.scrollHeight - feedElement.scrollTop - feedElement.clientHeight < 100);
+
+        if (isNearBottom || isNewMessage) {
+          bottomRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'end'
+          });
+        }
+      }
+    };
+
+    window.addEventListener('responseStreamUpdate', handleStreamUpdate);
+    return () => {
+      window.removeEventListener('responseStreamUpdate', handleStreamUpdate);
+      if (streamTimeoutRef.current) {
+        clearTimeout(streamTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
-      const scrollOptions = quick ? {} : { behavior: 'smooth' };
+      const scrollOptions = {
+        behavior: quick ? 'auto' : 'smooth',
+        block: 'end',
+        inline: 'nearest'
+      };
       bottomRef.current.scrollIntoView(scrollOptions);
     }
   };
 
   useEffect(() => {
-    if (startAtBottom) {
-      // Wait for StatusBar animation to complete before scrolling
-      const timeoutId = setTimeout(() => {
-        scrollToBottomOfFeed(false); // Use smooth scroll for better UX
-      }, 400); // Delay scroll until after StatusBar animation (300ms + 100ms buffer)
-      
-      return () => clearTimeout(timeoutId);
-    } else if (scrollToBottom) {
-      const timeoutId = setTimeout(() => {
+    if (messages.length > 0 && (startAtBottom || scrollToBottom)) {
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
         scrollToBottomOfFeed(false);
-      }, 500);
-      return () => clearTimeout(timeoutId);
+      });
     }
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom, startAtBottom]);
 
   useEffect(() => {
     // Cache Ditto avatar
@@ -361,53 +415,33 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
-  const handleBubbleInteraction = (e, index, type = 'text') => {
-    // Check if there's text selected
-    const selectedText = window.getSelection().toString();
-    
-    if (selectedText) {
-      // If text is selected, allow the default context menu
-      if (e.type === 'contextmenu') {
-        return; // Let the native context menu appear
-      }
-      return; // Don't show overlay when text is selected
-    }
-    
-    // If no text is selected, prevent default behavior and show our overlay
+  const handleBubbleInteraction = (e, index) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Don't show overlay if still selecting
-    if (isSelecting) {
+
+    // Don't show action overlay if user is selecting text
+    if (window.getSelection().toString() || isSelecting) {
       return;
     }
-    
-    // Get coordinates before any state updates
+
+    // Get the clicked message
+    const message = messages[index];
+    const isImage = message.text.match(/!\[.*?\]\((.*?)\)/);
+
+    // Calculate position for the overlay
     const rect = e.currentTarget.getBoundingClientRect();
-    const isUserMessage = messages[index].sender === 'User';
-    const clientX = e.touches?.[0]?.clientX || e.clientX || rect.left + rect.width / 2;
-    const clientY = e.touches?.[0]?.clientY || e.clientY || rect.top + rect.height / 2;
+    const x = e.clientX || (rect.left + rect.width / 2);
+    const y = e.clientY || (rect.top + rect.height / 2);
 
-    // Add a small delay to prevent immediate closure
-    setTimeout(() => {
-      setActionOverlay(prev => {
-        if (prev && prev.index === index) {
-          return null;
-        }
-        return { 
-          index, 
-          type, 
-          clientX,
-          clientY,
-          isUserMessage,
-          rect
-        };
-      });
-      setReactionOverlay(null);
-    }, 50);
+    setActionOverlay({
+      index,
+      clientX: x,
+      clientY: y,
+      type: isImage ? 'image' : 'text'
+    });
 
-    // Trigger haptic feedback
-    triggerHapticFeedback();
+    // Close any open reaction overlay
+    setReactionOverlay(null);
   };
 
   const handleImageClick = (src) => {
@@ -427,15 +461,15 @@ export default function ChatFeed({
     setImageControlsVisible(!imageControlsVisible);
   };
 
-  // Update the renderMessageText function to handle clickable links
-  const renderMessageText = (text, index) => {
+  // Update the renderMessageText function
+  const renderMessageText = (text, index, sender) => {
     // First replace code block markers
-    text = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
-    text = text.replace(/```\./g, '```\n');
+    let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
+    displayText = displayText.replace(/```\./g, '```\n');
 
     return (
       <ReactMarkdown
-        children={text}
+        children={displayText}
         components={{
           a: ({ node, href, children, ...props }) => (
             <a 
@@ -483,8 +517,8 @@ export default function ChatFeed({
           code({ node, inline, className, children, ...props }) {
             let match = /language-(\w+)/.exec(className || '');
             let hasCodeBlock;
-            if (text.match(/```/g)) {
-              hasCodeBlock = text.match(/```/g).length % 2 === 0;
+            if (displayText.match(/```/g)) {
+              hasCodeBlock = displayText.match(/```/g).length % 2 === 0;
             }
             if (match === null && hasCodeBlock) {
               match = ['language-txt', 'txt'];
@@ -547,10 +581,13 @@ export default function ChatFeed({
     }).format(date);
   };
 
-  // Update the renderMessageWithAvatar function to handle long press on mobile
+  // Update the renderMessageWithAvatar function
   const renderMessageWithAvatar = (message, index) => {
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
+    const isNewMessage = index === messages.length - 1 && index > lastMessageIndex;
+    const showTypingIndicator = message.isTyping && message.text === "";
+    const hasToolStatus = message.toolStatus && message.toolType;
 
     const handleTouchStart = (e) => {
       // Check if text is selected
@@ -573,9 +610,23 @@ export default function ChatFeed({
     };
 
     return (
-      <div
-        key={index}
+      <motion.div
+        key={`${message.pairID}-${index}`}
         className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
+        initial={isNewMessage ? { 
+          opacity: 0, 
+          y: 20,
+          scale: 0.9
+        } : false}
+        animate={{ 
+          opacity: 1, 
+          y: 0,
+          scale: 1
+        }}
+        transition={{ 
+          duration: 0.3,
+          ease: "easeOut"
+        }}
       >
         {message.sender === 'Ditto' && (
           <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
@@ -592,7 +643,7 @@ export default function ChatFeed({
           onTouchMove={handleTouchEnd}
           onMouseDown={() => setIsSelecting(false)}
           onMouseMove={(e) => {
-            if (e.buttons === 1) { // Left mouse button is being held
+            if (e.buttons === 1) {
               setIsSelecting(true);
             }
           }}
@@ -601,17 +652,39 @@ export default function ChatFeed({
           }}
           data-index={index}
         >
-          {showSenderName && message.sender && <div className='sender-name'>{message.sender}</div>}
+          {hasToolStatus && (
+            <div className={`tool-badge ${message.toolType}`}>
+              {message.toolType.toUpperCase()}
+            </div>
+          )}
+          {showSenderName && message.sender && (
+            <div className='sender-name'>{message.sender}</div>
+          )}
           <div className='message-text' style={bubbleStyles.text}>
-            {renderMessageText(message.text, index)}
+            {showTypingIndicator ? (
+              <div className='typing-indicator'>
+                <div className='typing-dot' style={{ '--i': 0 }} />
+                <div className='typing-dot' style={{ '--i': 1 }} />
+                <div className='typing-dot' style={{ '--i': 2 }} />
+              </div>
+            ) : (
+              renderMessageText(message.text, index, message.sender)
+            )}
           </div>
+          {hasToolStatus && message.toolStatus !== "complete" && (
+            <div className={`tool-status ${message.toolStatus}`}>
+              {message.toolStatus}
+            </div>
+          )}
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
           </div>
           {reactions[index] && reactions[index].length > 0 && (
             <div className='message-reactions'>
               {reactions[index].map((emoji, emojiIndex) => (
-                <span key={emojiIndex} className='reaction'>{emoji}</span>
+                <span key={emojiIndex} className='reaction'>
+                  {emoji}
+                </span>
               ))}
             </div>
           )}
@@ -682,7 +755,7 @@ export default function ChatFeed({
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
     );
   };
 
@@ -860,6 +933,11 @@ export default function ChatFeed({
     // Get the pairID from the message
     const pairID = message.pairID;
     
+    if (!pairID) {
+      console.error('No pairID found for message:', message);
+      return;
+    }
+    
     // Show confirmation overlay
     setDeleteConfirmation({
       memory: {
@@ -867,7 +945,7 @@ export default function ChatFeed({
         response: message.sender === 'Ditto' ? message.text : null
       },
       idx: index,
-      docId: pairID, // Use pairID directly
+      docId: pairID,
       isMessageDelete: true
     });
     
@@ -892,51 +970,38 @@ export default function ChatFeed({
       
       if (success) {
         if (isMessageDelete) {
-          // Handle chat message deletion (existing code)
-          const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-          const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-          const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-          const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
-
-          const conversationIndex = pairIDs.findIndex(id => id === docId);
-          
-          if (conversationIndex !== -1) {
-            prompts.splice(conversationIndex, 1);
-            responses.splice(conversationIndex, 1);
-            timestamps.splice(conversationIndex, 1);
-            pairIDs.splice(conversationIndex, 1);
-
-            localStorage.setItem('prompts', JSON.stringify(prompts));
-            localStorage.setItem('responses', JSON.stringify(responses));
-            localStorage.setItem('timestamps', JSON.stringify(timestamps));
-            localStorage.setItem('pairIDs', JSON.stringify(pairIDs));
-            
-            const newHistCount = prompts.length;
-            localStorage.setItem('histCount', newHistCount.toString());
-
-            window.dispatchEvent(new CustomEvent(MEMORY_DELETED_EVENT, {
-              detail: { 
-                conversationIndex,
-                newHistCount 
-              }
+          // Find the pair of messages to delete (user message and Ditto response)
+          const pairToDelete = messages.filter(msg => msg.pairID === docId);
+          if (pairToDelete.length > 0) {
+            // Update conversation state to remove the message pair
+            updateConversation((prevState) => ({
+              ...prevState,
+              messages: prevState.messages.filter(msg => msg.pairID !== docId)
             }));
-          }
-        } else {
-          // Handle memory overlay item deletion
-          const newMemories = relatedMemories.filter((_, i) => i !== idx);
-          setRelatedMemories(newMemories);
-          
-          // Clear ALL memory caches that contain this memory
-          const cache = getMemoryCache();
-          for (const promptId in cache) {
-            const memories = cache[promptId].memories;
-            // Check if this memory exists in the cached memories
-            const memoryExists = memories.some(m => m.id === memory.id);
-            if (memoryExists) {
-              delete cache[promptId];
+
+            // Update local storage
+            const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+            const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+            const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+            const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
+
+            const pairIndex = pairIDs.indexOf(docId);
+            if (pairIndex !== -1) {
+              prompts.splice(pairIndex, 1);
+              responses.splice(pairIndex, 1);
+              timestamps.splice(pairIndex, 1);
+              pairIDs.splice(pairIndex, 1);
+
+              localStorage.setItem("prompts", JSON.stringify(prompts));
+              localStorage.setItem("responses", JSON.stringify(responses));
+              localStorage.setItem("timestamps", JSON.stringify(timestamps));
+              localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
+              localStorage.setItem("histCount", pairIDs.length);
             }
           }
-          localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
+        } else {
+          const newMemories = relatedMemories.filter((_, i) => i !== idx);
+          setRelatedMemories(newMemories);
           
           if (newMemories.length === 0) {
             setMemoryOverlay(null);
@@ -958,7 +1023,7 @@ export default function ChatFeed({
   // Add this useEffect to listen for memory deletion events
   useEffect(() => {
     const handleMemoryDeleted = () => {
-      // Force re-render by updating messages
+      // Refresh the chat feed by updating the messages state
       const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
       const responses = JSON.parse(localStorage.getItem('responses') || '[]');
       const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
@@ -979,19 +1044,19 @@ export default function ChatFeed({
         });
       }
       
-      // Update the messages prop through parent component
-      if (typeof messages !== 'undefined') {
-        messages.length = 0;
-        messages.push(...newMessages);
-      }
+      // Update the messages state
+      updateConversation((prevState) => ({
+        ...prevState,
+        messages: newMessages
+      }));
     };
 
-    window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
+    window.addEventListener('memoryDeleted', handleMemoryDeleted);
     
     return () => {
-      window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
+      window.removeEventListener('memoryDeleted', handleMemoryDeleted);
     };
-  }, [messages]);
+  }, [updateConversation]);
 
   // Update the memory-list rendering in the return statement
   const renderMemoryContent = (content) => {
@@ -1139,16 +1204,23 @@ export default function ChatFeed({
     };
   };
 
+  // Add effect to handle new messages
+  useEffect(() => {
+    if (messages.length > lastMessageIndex) {
+      setNewMessageAnimation(true);
+      setLastMessageIndex(messages.length);
+      
+      // Scroll to bottom with animation
+      setTimeout(() => {
+        scrollToBottomOfFeed(false);
+        setNewMessageAnimation(false);
+      }, 300); // Match animation duration
+    }
+  }, [messages.length]);
+
   return (
     <div className='chat-feed' ref={feedRef}>
       {messages.map(renderMessageWithAvatar)}
-      {isTyping && (
-        <div className='typing-indicator'>
-          <div className='typing-dot' style={{ '--i': 0 }} />
-          <div className='typing-dot' style={{ '--i': 1 }} />
-          <div className='typing-dot' style={{ '--i': 2 }} />
-        </div>
-      )}
       {hasInputField && <input type='text' className='chat-input-field' />}
       {copied && <div className='copied-notification'>Copied!</div>}
       <div ref={bottomRef} />

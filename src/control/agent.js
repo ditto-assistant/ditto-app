@@ -36,28 +36,45 @@ const mode = import.meta.env.MODE;
 /**
  * Send a prompt to Ditto.
  */
-export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmbedding) => {
+export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmbedding, updateConversation) => {
   try {
-    localStorage.setItem("idle", "false");
-    handleInitialization(prompt);
+    // Add the user's message to the conversation
+    const userMessage = { sender: "User", text: prompt, timestamp: Date.now(), pairID: null };
+    updateConversation((prevState) => ({
+      ...prevState,
+      messages: [...prevState.messages, userMessage],
+    }));
 
-    if (userPromptEmbedding === "") {
-      localStorage.removeItem("thinking");
-      localStorage.setItem("idle", "true");
-      return "An error occurred while processing your request. Please try again.";
-    }
+    // Add a placeholder for the assistant's response with typing indicator
+    const assistantMessage = { 
+      sender: "Ditto", 
+      text: "", 
+      timestamp: Date.now(),
+      isTyping: true,
+      docId: null,
+      pairID: null // Initialize pairID
+    };
+
+    updateConversation((prevState) => ({
+      ...prevState,
+      messages: [...prevState.messages, assistantMessage],
+    }));
+
+    // Initialize the conversation update
+    updateConversation((prevState) => ({
+      ...prevState,
+      is_typing: true,
+    }));
 
     // Get model preferences
     const modelPreferences = await getModelPreferencesFromFirestore(userID);
 
-    // do the above three with a promise.all
-    const allResponses = await Promise.all([
-      fetchMemories(userID, userPromptEmbedding), // fetch memories
-      getRelevantExamples(userPromptEmbedding, 5), // fetch relevant examples
-      fetchScriptDetails() // fetch script details
+    const [memories, examplesString, scriptDetails] = await Promise.all([
+      fetchMemories(userID, userPromptEmbedding),
+      getRelevantExamples(userPromptEmbedding, 5),
+      fetchScriptDetails(),
     ]);
 
-    const [memories, examplesString, scriptDetails] = allResponses;
     const { shortTermMemory, longTermMemory } = memories;
     const { scriptName, scriptType, scriptContents } = scriptDetails;
 
@@ -73,33 +90,159 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     );
     const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
 
-    // print constructed prompt in green
-    console.log("%c" + constructedPrompt, "color: green");
+    // Prepare to update the assistant's message as the response streams in
+    let updatedText = "";
+    let toolTriggered = false;
+
+    // Streaming callback
+    let buffer = "";
+    let wordQueue = [];
+    let isProcessing = false;
+
+    const WORD_DELAY_MS = 25; // Speed up to 25ms between words
+
+    const processNextWord = async () => {
+      if (wordQueue.length === 0) {
+        isProcessing = false;
+        
+        // Check for tool triggers in the complete response when streaming is done
+        if (!toolTriggered && updatedText) {
+          const toolTriggers = [
+            "<OPENSCAD>",
+            "<HTML_SCRIPT>",
+            "<IMAGE_GENERATION>",
+            "<GOOGLE_SEARCH>",
+            "<GOOGLE_HOME>"
+          ];
+          
+          for (const trigger of toolTriggers) {
+            if (updatedText.includes(trigger) && !toolTriggered) {
+              toolTriggered = true;
+              await processResponse(
+                updatedText,
+                prompt,
+                userPromptEmbedding,
+                userID,
+                scriptContents,
+                scriptName,
+                image,
+                memories,
+                updateConversation
+              );
+              return;
+            }
+          }
+        }
+        return;
+      }
+      isProcessing = true;
+
+      const word = wordQueue.shift();
+      updatedText += word;
+
+      // Update the assistant's message in the conversation
+      updateConversation((prevState) => {
+        const messages = [...prevState.messages];
+        messages[messages.length - 1] = {
+          ...messages[messages.length - 1],
+          text: updatedText,
+          isTyping: false
+        };
+        return { ...prevState, messages };
+      });
+
+      // Schedule the next word
+      setTimeout(processNextWord, WORD_DELAY_MS);
+    };
+
+    const finalizeResponse = async (responseText) => {
+      const docId = await saveToMemory(userID, prompt, responseText, userPromptEmbedding);
+
+      // Update conversation with docId and pairID
+      updateConversation((prevState) => {
+        const messages = [...prevState.messages];
+        messages[messages.length - 2] = {
+          ...messages[messages.length - 2],
+          pairID: docId
+        };
+        messages[messages.length - 1] = {
+          ...messages[messages.length - 1],
+          text: responseText,
+          isTyping: false,
+          docId: docId,
+          pairID: docId
+        };
+        return { ...prevState, messages };
+      });
+
+      saveToLocalStorage(prompt, responseText, Date.now(), docId);
+    };
+
+    const streamingCallback = (chunk) => {
+      buffer += chunk;
+
+      // Split buffer into words including whitespace
+      const words = buffer.split(/(\s+)/);
+      buffer = words.pop(); // Keep any incomplete word in the buffer
+      wordQueue.push(...words);
+
+      if (!isProcessing) {
+        processNextWord();
+      }
+    };
+
+    // Call the LLM with the streaming callback
     const response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
       mainAgentModel,
-      image
-    );
-
-    let finalResponse = await processResponse(
-      response,
-      prompt,
-      userPromptEmbedding,
-      userID,
-      scriptContents,
-      scriptName,
       image,
-      memories,
+      streamingCallback
     );
 
-    localStorage.setItem("idle", "true");
+    // Process any remaining text
+    if (buffer.length > 0) {
+      wordQueue.push(buffer);
+      buffer = "";
+      if (!isProcessing) {
+        processNextWord();
+      }
+    }
 
-    return finalResponse;
-  } catch (e) {
-    localStorage.removeItem("thinking");
+    // Wait for all words to be processed
+    while (wordQueue.length > 0 || isProcessing) {
+      await new Promise((resolve) => setTimeout(resolve, WORD_DELAY_MS));
+    }
+
+    // Only save to memory if no tool was triggered
+    if (!toolTriggered) {
+      const docId = await saveToMemory(userID, prompt, response, userPromptEmbedding);
+      
+      // Update conversation with docId and pairID
+      updateConversation((prevState) => {
+        const messages = [...prevState.messages];
+        messages[messages.length - 2] = {
+          ...messages[messages.length - 2],
+          pairID: docId
+        };
+        messages[messages.length - 1] = {
+          ...messages[messages.length - 1],
+          text: response,
+          isTyping: false,
+          docId: docId,
+          pairID: docId
+        };
+        return { ...prevState, messages };
+      });
+
+      saveToLocalStorage(prompt, response, Date.now(), docId);
+    }
+
     localStorage.setItem("idle", "true");
+    return response;
+  } catch (e) {
     console.error(e);
+    updateConversation((prevState) => ({ ...prevState, is_typing: false }));
     return "An error occurred while processing your request. Please try again.";
   }
 };
@@ -134,26 +277,136 @@ const fetchScriptDetails = () => {
   return { scriptName, scriptType, scriptContents };
 };
 
+const generateScriptName = async (script, query) => {
+  const scriptToNameConstructedPrompt = scriptToNameTemplate(script, query);
+  console.log("%c" + scriptToNameConstructedPrompt, "color: green");
+  let scriptToNameResponse = await promptLLM(
+    scriptToNameConstructedPrompt,
+    scriptToNameSystemTemplate(),
+    "gemini-1.5-flash"
+  );
+  
+  // Check for API error and retry once
+  if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+    console.log("API error detected, retrying script name generation...");
+    scriptToNameResponse = await promptLLM(
+      scriptToNameConstructedPrompt,
+      scriptToNameSystemTemplate(),
+      "gemini-1.5-flash"
+    );
+    if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+      console.log("Second attempt failed, defaulting to 'App Name Here'");
+      scriptToNameResponse = "App Name Here";
+    }
+  }
+
+  // Check user balance
+  if (scriptToNameResponse.includes("user balance is:")) {
+    alert("Please add more Tokens in Settings to continue using this app.");
+    scriptToNameResponse = "App Name Here";
+  }
+  
+  // print the response in yellow
+  console.log("%c" + scriptToNameResponse, "color: yellow");
+  // strip any whitespace from the response or the Script Name: part
+  return scriptToNameResponse.trim().replace("Script Name:", "").trim();
+};
+
 const processResponse = async (
   response,
   prompt,
-  embedding,
+  userPromptEmbedding,
   userID,
   scriptContents,
   scriptName,
   image,
   memories,
+  updateConversation
 ) => {
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
-  let errorMessage = "Response Error: please check your internet connection or token balance.";
-  if (response === errorMessage) {
+  let errorMessage = "Error: Payment Required. Please check your token balance.";
+  
+  if (response === errorMessage || response.includes("402") || response.includes("Payment Required")) {
     isValidResponse = false;
     response = errorMessage;
+    
+    // Update conversation with error message
+    updateConversation((prevState) => {
+      const messages = [...prevState.messages];
+      messages[messages.length - 1] = {
+        ...messages[messages.length - 1],
+        text: errorMessage,
+        isTyping: false,
+        isError: true
+      };
+      return { ...prevState, messages };
+    });
+    
+    return errorMessage;
   }
 
+  const updateMessageWithToolStatus = async (status, type, finalResponse = null) => {
+    try {
+      // Only save to memory when the tool is complete
+      if (status === "complete" && finalResponse) {
+        const docId = await saveToMemory(userID, prompt, finalResponse, userPromptEmbedding);
+        
+        // Update conversation with docId and pairID
+        updateConversation((prevState) => {
+          const messages = [...prevState.messages];
+          messages[messages.length - 2] = {
+            ...messages[messages.length - 2],
+            pairID: docId
+          };
+          messages[messages.length - 1] = {
+            ...messages[messages.length - 1],
+            text: finalResponse,
+            toolStatus: status,
+            toolType: type,
+            isTyping: false,
+            showToolBadge: true,
+            docId: docId,
+            pairID: docId
+          };
+          return { ...prevState, messages };
+        });
+
+        saveToLocalStorage(prompt, finalResponse, Date.now(), docId);
+      } else {
+        // Just update the UI state for non-complete statuses
+        updateConversation((prevState) => {
+          const messages = [...prevState.messages];
+          messages[messages.length - 1] = {
+            ...messages[messages.length - 1],
+            text: finalResponse || response,
+            toolStatus: status,
+            toolType: type,
+            isTyping: false,
+            showToolBadge: true
+          };
+          return { ...prevState, messages };
+        });
+      }
+    } catch (error) {
+      console.error('Error in updateMessageWithToolStatus:', error);
+      updateConversation((prevState) => {
+        const messages = [...prevState.messages];
+        messages[messages.length - 1] = {
+          ...messages[messages.length - 1],
+          text: errorMessage,
+          isTyping: false,
+          isError: true
+        };
+        return { ...prevState, messages };
+      });
+    }
+  };
+
   if (response.includes("<OPENSCAD>") && isValidResponse) {
-    return await handleScriptGeneration(
+    const query = response.split("<OPENSCAD>")[1];
+    await updateMessageWithToolStatus("Generating OpenSCAD Script...", "openscad");
+    const finalResponse = await handleScriptGeneration(
       response,
       "<OPENSCAD>",
       openscadTemplate,
@@ -162,14 +415,20 @@ const processResponse = async (
       "openSCAD",
       scriptContents,
       scriptName,
-      embedding,
+      userPromptEmbedding,
       prompt,
       userID,
       image,
       memories,
+      updateConversation
     );
+    const displayResponse = `**OpenSCAD Script Generated and Downloaded.**\n- Task: ${query}`;
+    await updateMessageWithToolStatus("complete", "openscad", displayResponse);
+    return displayResponse;
   } else if (response.includes("<HTML_SCRIPT>") && isValidResponse) {
-    return await handleScriptGeneration(
+    const query = response.split("<HTML_SCRIPT>")[1];
+    await updateMessageWithToolStatus("Generating HTML Script...", "html");
+    const finalResponse = await handleScriptGeneration(
       response,
       "<HTML_SCRIPT>",
       htmlTemplate,
@@ -178,72 +437,49 @@ const processResponse = async (
       "webApps",
       scriptContents,
       scriptName,
-      embedding,
+      userPromptEmbedding,
       prompt,
       userID,
       image,
       memories,
+      updateConversation
     );
+    const displayResponse = `**HTML Script Generated and Downloaded.**\n- Task: ${query}`;
+    await updateMessageWithToolStatus("complete", "html", displayResponse);
+    return displayResponse;
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     const query = response.split("<IMAGE_GENERATION>")[1];
+    await updateMessageWithToolStatus("Generating Image...", "image");
     const imageURL = await openaiImageGeneration(query);
-    let newresponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
-    
-    // Save to memory and get the docId
-    const docId = await saveToMemory(userID, prompt, newresponse, embedding);
-    
-    const timestamp = Date.now();
-    // Save to localStorage with the docId
-    await saveToLocalStorage(prompt, newresponse, timestamp, docId);
-    
-    localStorage.removeItem("thinking");
-    return newresponse;
+    const finalResponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
+    await updateMessageWithToolStatus("complete", "image", finalResponse);
+    return finalResponse;
   } else if (response.includes("<GOOGLE_SEARCH>") && isValidResponse) {
     const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
+    await updateMessageWithToolStatus("Searching Google...", "search");
     const googleSearchResponse = await googleSearch(query);
     let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
-    console.log("%c" + googleSearchAgentTemplate, "color: green");
-    const googleSearchAgentResponse = await promptLLM(googleSearchAgentTemplate, googleSearchSystemTemplate(), "gemini-1.5-flash");
-    console.log("%c" + googleSearchAgentResponse, "color: yellow");
-    let newresponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
-    
-    // Save to memory and get the docId
-    const docId = await saveToMemory(userID, prompt, newresponse, embedding);
-    
-    const timestamp = Date.now();
-    // Save to localStorage with the docId
-    await saveToLocalStorage(prompt, newresponse, timestamp, docId);
-    
-    localStorage.removeItem("thinking");
-    return newresponse;
+    const googleSearchAgentResponse = await promptLLM(
+      googleSearchAgentTemplate, 
+      googleSearchSystemTemplate(), 
+      "gemini-1.5-flash"
+    );
+    const finalResponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
+    await updateMessageWithToolStatus("complete", "search", finalResponse);
+    return finalResponse;
   } else if (response.includes("<GOOGLE_HOME>") && isValidResponse) {
     const query = response.split("<GOOGLE_HOME>")[1];
+    await updateMessageWithToolStatus("Executing Home Assistant Task...", "home");
     let success = await handleHomeAssistantTask(query);
-    let newresponse = success ? 
+    const finalResponse = success ? 
       `Home Assistant Task: ${query}\n\nTask completed successfully.` :
       `Home Assistant Task: ${query}\n\nTask failed.`;
-    
-    // Save to memory and get the docId
-    const docId = await saveToMemory(userID, prompt, newresponse, embedding);
-    
-    const timestamp = Date.now();
-    // Save to localStorage with the docId
-    await saveToLocalStorage(prompt, newresponse, timestamp, docId);
-    
-    localStorage.removeItem("thinking");
-    return newresponse;
-  } else {
-    // Save to memory and get the docId
-    const docId = await saveToMemory(userID, prompt, response, embedding);
-    
-    const timestamp = Date.now();
-    // Save to localStorage with the docId
-    await saveToLocalStorage(prompt, response, timestamp, docId);
-    
-    localStorage.removeItem("thinking");
-    return response;
+    await updateMessageWithToolStatus(success ? "complete" : "failed", "home", finalResponse);
+    return finalResponse;
   }
+
+  return response;
 };
 
 const handleScriptGeneration = async (
@@ -255,99 +491,59 @@ const handleScriptGeneration = async (
   scriptType,
   scriptContents,
   scriptName,
-  embedding,
+  userPromptEmbedding,
   prompt,
   userID,
   image,
   memories,
+  updateConversation
 ) => {
-  const modelPreferences = await getModelPreferencesFromFirestore(userID);
-  
   const query = response.split(tag)[1];
-
   const constructedPrompt = templateFunction(query, scriptContents, memories.longTermMemory, memories.shortTermMemory);
-  // print constructed prompt in green
-  console.log("%c" + constructedPrompt, "color: green");
+  
   let scriptResponse = "";
-  // check if scriptContents is empts
+  
+  // Don't save the "Generating..." message to Firestore
+  updateConversation((prevState) => {
+    const messages = [...prevState.messages];
+    messages[messages.length - 1] = {
+      ...messages[messages.length - 1],
+      text: `**${scriptType === "webApps" ? "HTML" : "OpenSCAD"} Script Generation**\n- Task: ${query}`,
+      toolStatus: "Generating...",
+      toolType: scriptType.toLowerCase(),
+      isTyping: false,
+      showToolBadge: true
+    };
+    return { ...prevState, messages };
+  });
+
   if (scriptContents === "") {
     scriptResponse = await promptLLM(
       constructedPrompt,
       systemTemplateFunction(),
-      modelPreferences.programmerModel,
-      image
+      "gemini-1.5-flash",
+      image,
+      () => {}  // Prevent streaming updates
     );
   } else {
-    console.log("Using the agent updater...");
-    scriptResponse = await updaterAgent(prompt, scriptContents, modelPreferences.programmerModel, true); // true to skip the planner
+    scriptResponse = await updaterAgent(prompt, scriptContents, "gemini-1.5-flash", true);
   }
-  /// print the response in yellow
-  console.log("%c" + scriptResponse, "color: yellow");
-  let errorMessage = "Response Error: please check your internet connection or token balance.";
-  if (scriptResponse === errorMessage) {
-    return errorMessage;
-  }
+
   const cleanedScript = cleanScriptResponse(scriptResponse);
   if (scriptName === "") {
-    // generate the script name
-    let scriptToNameConstructedPrompt = scriptToNameTemplate(cleanedScript, query);
-    // print the prompt in green
-    console.log("%c" + scriptToNameConstructedPrompt, "color: green");
-    let scriptToNameResponse = await promptLLM(
-      scriptToNameConstructedPrompt,
-      scriptToNameSystemTemplate(),
-      "gemini-1.5-flash"
-    );
-    
-    // Check for API error and retry once
-    if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
-      console.log("API error detected, retrying script name generation...");
-      scriptToNameResponse = await promptLLM(
-        scriptToNameConstructedPrompt,
-        scriptToNameSystemTemplate(),
-        "gemini-1.5-flash"
-      );
-      if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
-        console.log("Second attempt failed, defaulting to 'App Name Here'");
-        scriptToNameResponse = "App Name Here";
-      }
-    }
+    scriptName = await generateScriptName(cleanedScript, query);
+  }
 
-    // Check user balance
-    if (scriptToNameResponse.includes("user balance is:")) {
-      alert("Please add more Tokens in Settings to continue using this app.");
-      scriptToNameResponse = "App Name Here";
-    }
-    
-    // print the response in yellow
-    console.log("%c" + scriptToNameResponse, "color: yellow");
-    // strip any whitespace from the response or the Script Name: part
-    scriptName = scriptToNameResponse.trim().replace("Script Name:", "").trim();
-  }
   const fileName = downloadFunction(cleanedScript, scriptName);
-  let fileNameNoExt = fileName;
-  // find file ext on the end (ignoring .'s in the filename) and remove
-  if (fileName.includes(".")) {
-    // get the contents to the left of the last '.'
-    fileNameNoExt = fileName.substring(0, fileName.lastIndexOf(".")); // remove the file extension
-  }
+  let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf("."));
   let scriptTypeToWords = scriptType === "webApps" ? "HTML" : "OpenSCAD";
-  const newResponse =
-    `**${scriptTypeToWords} Script Generated and Downloaded.**\n- Task:` +
-    query;
-  saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt).catch((e) => {
-    console.error("Error saving to firestore: ", e);
-  });
+  
+  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
   handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
   
-  // Save to memory and get the docId
-  const docId = await saveToMemory(userID, prompt, newResponse, embedding);
+  const newResponse = `**${scriptTypeToWords} Script Generated and Downloaded.**\n- Task: ${query}`;
   
-  const timestamp = Date.now();
-  // Save to localStorage with the docId
-  await saveToLocalStorage(prompt, newResponse, timestamp, docId);
-  
-  localStorage.removeItem("thinking");
+  // Return the response without saving to memory - let updateMessageWithToolStatus handle that
   return newResponse;
 };
 
@@ -404,32 +600,27 @@ export const saveToMemory = async (
   }
 };
 
-const saveToLocalStorage = async (prompt, response, timestamp, pairID) => {
+const saveToLocalStorage = (prompt, response, timestamp, pairID) => {
   const prompts = loadFromLocalStorage("prompts", []);
   const responses = loadFromLocalStorage("responses", []);
   const timestamps = loadFromLocalStorage("timestamps", []);
   const pairIDs = loadFromLocalStorage("pairIDs", []);
-  let userID = localStorage.getItem("userID");
-  let histCount = await grabConversationHistoryCount(userID);
-  if (mode === "development") {
-    console.log("Hist Count: ", histCount);
+  
+  if (!pairIDs.includes(pairID)) { // Ensure no duplicates
+    prompts.push(prompt);
+    responses.push(response);
+    timestamps.push(timestamp);
+    pairIDs.push(pairID);
+    localStorage.setItem("prompts", JSON.stringify(prompts));
+    localStorage.setItem("responses", JSON.stringify(responses));
+    localStorage.setItem("timestamps", JSON.stringify(timestamps));
+    localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
   }
-  prompts.push(prompt);
-  responses.push(response);
-  timestamps.push(timestamp);
-  pairIDs.push(pairID);
-  localStorage.setItem("prompts", JSON.stringify(prompts));
-  localStorage.setItem("responses", JSON.stringify(responses));
-  localStorage.setItem("timestamps", JSON.stringify(timestamps));
-  localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
-
-  // histCount++;
-  localStorage.setItem("histCount", histCount);
 };
 
 const loadFromLocalStorage = (key, defaultValue) => {
-  const item = localStorage.getItem(key);
-  return item ? JSON.parse(item) : defaultValue;
+  const storedValue = localStorage.getItem(key);
+  return storedValue ? JSON.parse(storedValue) : defaultValue;
 };
 
 export const handleWorkingOnScript = (

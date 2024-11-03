@@ -47,6 +47,24 @@ export default function HomeScreen() {
     return !hasSeenTOS;
   });
 
+  const loadConversationFromLocalStorage = () => {
+    const savedConversation = localStorage.getItem("conversation");
+    return savedConversation ? JSON.parse(savedConversation) : {
+      messages: [{ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() }],
+      is_typing: false,
+    };
+  };
+
+  const [conversation, setConversation] = useState(loadConversationFromLocalStorage);
+
+  const updateConversation = (updateFn) => {
+    setConversation((prevState) => {
+      const newState = updateFn(prevState);
+      localStorage.setItem("conversation", JSON.stringify(newState));
+      return newState;
+    });
+  };
+
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
   useEffect(() => {
@@ -115,7 +133,6 @@ export default function HomeScreen() {
 
   let convo = getSavedConversation();
   let previousConversation = createConversation(convo, false, true)
-  const [conversation, setConversation] = useState(previousConversation);
 
   const localStorageMicrophoneStatus = localStorage.getItem("microphoneStatus") === "true";
   const [microphoneStatus, setMicrophoneStatus] = useState(localStorageMicrophoneStatus);
@@ -506,6 +523,7 @@ export default function HomeScreen() {
               isTyping={conversation.is_typing}
               scrollToBottom={true}
               startAtBottom={startAtBottom}
+              updateConversation={updateConversation}
             />
           </Suspense>
         </div>
@@ -520,6 +538,7 @@ export default function HomeScreen() {
             showMediaOptions={showMediaOptions}
             onOpenMediaOptions={handleOpenMediaOptions}
             onCloseMediaOptions={handleCloseMediaOptions}
+            updateConversation={updateConversation}
           />
         </Suspense>
       </footer>

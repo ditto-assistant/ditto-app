@@ -20,7 +20,8 @@ export default function SendMessage({
   onClearCapturedImage,
   showMediaOptions,
   onOpenMediaOptions,
-  onCloseMediaOptions
+  onCloseMediaOptions,
+  updateConversation,
 }) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');
@@ -242,17 +243,8 @@ export default function SendMessage({
             // Fetch user prompt embeddings
             let userPromptEmbedding = await textEmbed(messageToSend);
             
-            // Use embeddings to get intent from useIntentRecognition
-            if (intentRecognitionLoaded && intentRecognitionModels) {
-                const intentResponse = await intentRecognitionModels.classify(userPromptEmbedding);
-                console.log('Intent Recognition Response:', intentResponse);
-            } else {
-                console.log('Intent Recognition models not loaded yet');
-            }
-            
-            await sendPrompt(userID, firstName, messageToSend, imageURI, userPromptEmbedding);
-            // alert the intent response for testing
-            // alert(intentResponse);
+            // Send the prompt and update the conversation
+            await sendPrompt(userID, firstName, messageToSend, imageURI, userPromptEmbedding, updateConversation);
         }
     };
 
