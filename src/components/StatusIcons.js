@@ -21,7 +21,6 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
             let content = workingOnScript.contents;
             let name = workingOnScript.script;
             if (scriptType === "webApps") {
-                // downloadHTMLScript(content, name);
                 navigate("/canvas", { state: { script: content, scriptName: name } });
             } else if (scriptType === "openSCAD") {
                 downloadOpenscadScript(content, name);
@@ -71,14 +70,6 @@ function StatusIcons({ handleBookmarkClick, handleMemoryClick, selectedScript })
                     <FaPlay style={styles.playIcon} />
                 </motion.div>
             )}
-
-            {selectedScript && (
-                <div style={styles.selectedScriptIndicator}>
-                    <p style={{ color: darkModeColors.primary, fontSize: '0.9em' }}>Focus: </p>
-                    <p style={styles.selectedScriptText}>{selectedScript}</p>
-                </div>
-            )}
-
         </div>
     );
 }
@@ -112,29 +103,7 @@ const styles = {
     playIcon: {
         fontSize: '22px',
         color: darkModeColors.primary,
-    },
-    selectedScriptIndicator: {
-        color: darkModeColors.text,
-        fontWeight: 'bold',
-        position: 'absolute',
-        zIndex: 3000,
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        top: '74px',
-        backgroundColor: '#36393f',
-        padding: '0px 10px',
-        borderRadius: '5px',
-        whiteSpace: 'nowrap',
-        flexDirection: 'row',
-    },
-    selectedScriptText: {
-        fontSize: '0.9em',
-        margin: 0,
-        paddingTop: '1.0em',
-    },
+    }
 };
 
 export default StatusIcons;

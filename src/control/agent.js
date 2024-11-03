@@ -363,7 +363,6 @@ const processResponse = async (
       if (status === "complete" && finalResponse) {
         const docId = await saveToMemory(userID, prompt, finalResponse, userPromptEmbedding);
         
-        // Update conversation with docId and pairID
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 2] = {
@@ -385,16 +384,18 @@ const processResponse = async (
 
         saveToLocalStorage(prompt, finalResponse, Date.now(), docId);
       } else {
-        // Just update the UI state for non-complete statuses
+        // For in-progress states, add the typing dots
+        const statusText = status.endsWith('...') ? status : `${status}`;
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 1] = {
             ...messages[messages.length - 1],
             text: finalResponse || response,
-            toolStatus: status,
+            toolStatus: statusText,
             toolType: type,
             isTyping: false,
-            showToolBadge: true
+            showToolBadge: true,
+            showTypingDots: status !== "complete" && status !== "failed"
           };
           return { ...prevState, messages };
         });
@@ -460,14 +461,14 @@ const processResponse = async (
     return displayResponse;
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     const query = response.split("<IMAGE_GENERATION>")[1];
-    await updateMessageWithToolStatus("Generating Image...", "image");
+    await updateMessageWithToolStatus("Generating Image", "image");
     const imageURL = await openaiImageGeneration(query);
     const finalResponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
     await updateMessageWithToolStatus("complete", "image", finalResponse);
     return finalResponse;
   } else if (response.includes("<GOOGLE_SEARCH>") && isValidResponse) {
     const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
-    await updateMessageWithToolStatus("Searching Google...", "search");
+    await updateMessageWithToolStatus("Searching Google", "search");
     const googleSearchResponse = await googleSearch(query);
     let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
@@ -481,7 +482,7 @@ const processResponse = async (
     return finalResponse;
   } else if (response.includes("<GOOGLE_HOME>") && isValidResponse) {
     const query = response.split("<GOOGLE_HOME>")[1];
-    await updateMessageWithToolStatus("Executing Home Assistant Task...", "home");
+    await updateMessageWithToolStatus("Executing Home Assistant Task", "home");
     let success = await handleHomeAssistantTask(query);
     const finalResponse = success ? 
       `Home Assistant Task: ${query}\n\nTask completed successfully.` :
@@ -520,7 +521,7 @@ const handleScriptGeneration = async (
     messages[messages.length - 1] = {
       ...messages[messages.length - 1],
       text: `**${scriptType === "webApps" ? "HTML" : "OpenSCAD"} Script Generation**\n- Task: ${query}`,
-      toolStatus: "Generating...",
+      toolStatus: "Generating",
       toolType: scriptType.toLowerCase(),
       isTyping: false,
       showToolBadge: true

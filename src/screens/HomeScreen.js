@@ -20,6 +20,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
+import MiniFocusOverlay from '../components/MiniFocusOverlay';
 
 const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
 
@@ -64,6 +65,11 @@ export default function HomeScreen() {
       return newState;
     });
   };
+
+  const [workingScript, setWorkingScript] = useState(() => {
+    const storedScript = localStorage.getItem("workingOnScript");
+    return storedScript ? JSON.parse(storedScript).script : null;
+  });
 
   // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
   // canvas takes the script and scriptName as props
@@ -458,6 +464,32 @@ export default function HomeScreen() {
     setShowTOS(false);
   };
 
+  // Functions for play, edit, and deselect actions
+  const handlePlayScript = () => {
+    try {
+      let workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
+      let scriptType = workingOnScript.scriptType;
+      let content = workingOnScript.contents;
+      let name = workingOnScript.script;
+      if (scriptType === "webApps") {
+        navigate("/canvas", { state: { script: content, scriptName: name } });
+      } else if (scriptType === "openSCAD") {
+        downloadOpenscadScript(content, name);
+      }
+    } catch (error) {
+      console.error("Error playing script:", error);
+    }
+  };
+
+  const handleEditScript = () => {
+    navigate('/scripts');
+  };
+
+  const handleDeselectScript = () => {
+    localStorage.removeItem('workingOnScript');
+    setWorkingScript(null);
+  };
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
@@ -472,24 +504,33 @@ export default function HomeScreen() {
             <FaMicrophoneSlash className="icon inactive" />
           )}
         </motion.div>
-        <motion.div
-          className="title-container"
-          onClick={toggleStatusBar}
-          whileHover={{ 
-            scale: 1.02,
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
-          <h1 className="App-title">Ditto</h1>
+        {workingScript ? (
+          <MiniFocusOverlay
+            scriptName={workingScript}
+            onEdit={handleEditScript}
+            onPlay={handlePlayScript}
+            onDeselect={handleDeselectScript}
+          />
+        ) : (
           <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
+            className="title-container"
+            onClick={toggleStatusBar}
+            whileHover={{ 
+              scale: 1.02,
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            }}
+            whileTap={{ scale: 0.98 }}
           >
-            {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
+            <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
+            <h1 className="App-title">Ditto</h1>
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        )}
         <motion.div
           className="settings-button"
           whileTap={{ scale: 0.95 }}

@@ -726,8 +726,15 @@ export default function ChatFeed({
             )}
           </div>
           {hasToolStatus && message.toolStatus !== "complete" && (
-            <div className={`tool-status ${message.toolStatus}`}>
+            <div className={`tool-status ${message.toolStatus === "failed" ? "failed" : ""}`}>
               {message.toolStatus}
+              {message.showTypingDots && (
+                <div className="typing-dots">
+                  <div className="dot"></div>
+                  <div className="dot"></div>
+                  <div className="dot"></div>
+                </div>
+              )}
             </div>
           )}
           <div className='message-footer'>

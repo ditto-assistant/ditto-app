@@ -22,6 +22,8 @@ export default function SendMessage({
   onOpenMediaOptions,
   onCloseMediaOptions,
   updateConversation,
+  onFocus,
+  onBlur,
 }) {
     const [message, setMessage] = useState('');
     const [image, setImage] = useState('');

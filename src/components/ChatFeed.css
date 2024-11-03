@@ -62,7 +62,7 @@
   touch-action: manipulation;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  margin-top: 12px; /* Reduced top margin */
+  margin-top: 16px; /* Increased to make room for reactions */
   user-select: text; /* Default to allowing text selection */
   -webkit-user-select: text;
   -moz-user-select: text;
@@ -415,30 +415,68 @@
 
 .message-reactions {
   position: absolute;
-  top: -3px;
-  right: 4px;
+  top: -12px;
+  left: 8px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 2px;
-  z-index: 1;
+  gap: 4px;
+  z-index: 2;
 }
 
 .reaction {
-  background-color: rgba(47, 49, 54, 0.85);
-  border-radius: 12px;
-  padding: 2px 6px;
-  height: auto;
-  width: auto;
-  min-width: 24px;
-  font-size: 0.85em;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(47, 49, 54, 0.95);
+  border-radius: 16px;
+  padding: 4px 8px;
+  min-width: 32px;
+  height: 24px;
+  font-size: 0.95em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
 }
 
-/* Adjust the chat bubble to make room for reactions */
+/* Add hover effect for reactions */
+@media (hover: hover) {
+  .reaction:hover {
+    transform: translateY(-1px);
+    background-color: rgba(47, 49, 54, 0.98);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Adjust chat bubble to make room for reactions on the left */
 .chat-bubble {
-  margin-top: 15px;
+  margin-top: 16px; /* Increased to make room for reactions */
   position: relative;
+}
+
+/* Update tool badge position to not conflict with reactions */
+.tool-badge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  /* ... rest of the existing tool badge styles ... */
+}
+
+/* Add a subtle animation for new reactions */
+@keyframes reactionAppear {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.reaction {
+  animation: reactionAppear 0.2s ease-out forwards;
 }
 
 .image-overlay {
@@ -716,7 +754,7 @@
   padding: 10px 14px; /* Slightly tighter padding */
   min-width: 80px;
   transition: all 0.15s ease; /* Faster transition */
-  margin-top: 12px; /* Reduced top margin */
+  margin-top: 16px; /* Increased to make room for reactions */
 }
 
 /* Update avatar styles */
@@ -1941,28 +1979,65 @@ input:checked + .toggle-slider:before {
 .tool-status {
   font-size: 0.8em;
   padding: 4px 8px;
-  margin-top: 8px;
+  margin-top: 4px; /* Reduced margin */
+  margin-bottom: -8px; /* Negative margin to pull timestamp up */
   border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  animation: pulse 1.5s infinite;
+  color: rgba(255, 255, 255, 0.7); /* Slightly more transparent */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none; /* Remove background */
 }
 
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+/* Remove the background styles for non-complete/failed states */
+.tool-status:not(.complete):not(.failed) {
+  display: flex;
+  align-items: center;
+  padding-left: 0; /* Remove left padding */
 }
 
+/* Add the typing dots for in-progress status */
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+  height: 20px;
+}
+
+.typing-dots .dot {
+  width: 3px; /* Slightly smaller dots */
+  height: 3px;
+  margin: 0 1px;
+  background-color: rgba(255, 255, 255, 0.7); /* Match text color */
+  border-radius: 50%;
+  animation: bounce 0.6s infinite alternate;
+}
+
+.typing-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Keep these styles for completed/failed states */
 .tool-status.failed {
-  background-color: rgba(231, 76, 60, 0.2);
+  background: none;
   color: #e74c3c;
-  animation: none;
 }
 
 .tool-status.complete {
-  background-color: rgba(46, 204, 113, 0.2);
+  background: none;
   color: #2ecc71;
-  animation: none;
 }
 
