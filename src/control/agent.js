@@ -102,7 +102,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     let wordQueue = [];
     let isProcessing = false;
 
-    const WORD_DELAY_MS = 15;
+    const WORD_DELAY_MS = 12;
 
     const processNextWord = async () => {
       if (wordQueue.length === 0) {
