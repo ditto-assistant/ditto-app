@@ -88,7 +88,10 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptName,
       scriptType
     );
-    const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
+    
+    // Disabled until we fix Claude 3.5 Sonnet in the backend (TODO)
+    // const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
+    const mainAgentModel = modelPreferences.mainModel;
 
     // Prepare to update the assistant's message as the response streams in
     let updatedText = "";
