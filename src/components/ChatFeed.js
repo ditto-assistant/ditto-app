@@ -219,16 +219,15 @@ export default function ChatFeed({
         setAnimatingWord({ index: null, word: "" });
       }, 400); // Animation duration
       
-      // Scroll smoothly as new content arrives
+      // Only scroll if user is near bottom or it's a new message
       if (bottomRef.current) {
-        // Check if user is near bottom before auto-scrolling
         const feedElement = feedRef.current;
         const isNearBottom = feedElement && 
           (feedElement.scrollHeight - feedElement.scrollTop - feedElement.clientHeight < 100);
 
         if (isNearBottom || isNewMessage) {
           bottomRef.current.scrollIntoView({ 
-            behavior: 'smooth',
+            behavior: 'auto', // Use instant scrolling
             block: 'end'
           });
         }
@@ -246,12 +245,11 @@ export default function ChatFeed({
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
-      const scrollOptions = {
-        behavior: quick ? 'auto' : 'smooth',
+      bottomRef.current.scrollIntoView({
+        behavior: 'auto', // Always use instant scrolling
         block: 'end',
         inline: 'nearest'
-      };
-      bottomRef.current.scrollIntoView(scrollOptions);
+      });
     }
   };
 
@@ -259,7 +257,8 @@ export default function ChatFeed({
     if (messages.length > 0 && (startAtBottom || scrollToBottom)) {
       // Use requestAnimationFrame to ensure DOM has updated
       requestAnimationFrame(() => {
-        scrollToBottomOfFeed(false);
+        // Scroll immediately without smooth behavior
+        scrollToBottomOfFeed(true);
       });
     }
   }, [messages, scrollToBottom, startAtBottom]);
@@ -637,50 +636,19 @@ export default function ChatFeed({
 
   // Update the renderMessageWithAvatar function
   const renderMessageWithAvatar = (message, index) => {
+    const isLastMessage = index === messages.length - 1; // Check if it's the last message
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
-    const isNewMessage = index === messages.length - 1 && index > lastMessageIndex;
     const showTypingIndicator = message.isTyping && message.text === "";
     const hasToolStatus = message.toolStatus && message.toolType;
-
-    const handleTouchStart = (e) => {
-      // Check if text is selected
-      if (window.getSelection().toString()) {
-        return; // Allow native context menu if text is selected
-      }
-
-      const timer = setTimeout(() => {
-        handleBubbleInteraction(e, index);
-      }, 500); // 500ms long press
-      
-      setLongPressTimer(timer);
-    };
-
-    const handleTouchEnd = () => {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        setLongPressTimer(null);
-      }
-    };
 
     return (
       <motion.div
         key={`${message.pairID}-${index}`}
         className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
-        initial={isNewMessage ? { 
-          opacity: 0, 
-          y: 20,
-          scale: 0.9
-        } : false}
-        animate={{ 
-          opacity: 1, 
-          y: 0,
-          scale: 1
-        }}
-        transition={{ 
-          duration: 0.3,
-          ease: "easeOut"
-        }}
+        initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }} // Reduced y and scale for tighter animation
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }} // Reduced duration for a tighter feel
       >
         {message.sender === 'Ditto' && (
           <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
@@ -692,18 +660,6 @@ export default function ChatFeed({
           style={bubbleStyles.chatbubble}
           onClick={(e) => handleBubbleInteraction(e, index)}
           onContextMenu={(e) => handleBubbleInteraction(e, index)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onTouchMove={handleTouchEnd}
-          onMouseDown={() => setIsSelecting(false)}
-          onMouseMove={(e) => {
-            if (e.buttons === 1) {
-              setIsSelecting(true);
-            }
-          }}
-          onMouseUp={() => {
-            setTimeout(() => setIsSelecting(false), 100);
-          }}
           data-index={index}
         >
           {hasToolStatus && (
@@ -725,18 +681,6 @@ export default function ChatFeed({
               renderMessageText(message.text, index, message.sender)
             )}
           </div>
-          {hasToolStatus && message.toolStatus !== "complete" && (
-            <div className={`tool-status ${message.toolStatus === "failed" ? "failed" : ""}`}>
-              {message.toolStatus}
-              {message.showTypingDots && (
-                <div className="typing-dots">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                </div>
-              )}
-            </div>
-          )}
           <div className='message-footer'>
             <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
           </div>
@@ -1267,7 +1211,11 @@ export default function ChatFeed({
   }, [messages.length]);
 
   return (
-    <div className='chat-feed' ref={feedRef}>
+    <div 
+      className='chat-feed' 
+      ref={feedRef}
+      style={{ scrollBehavior: 'auto' }} // Override any smooth scrolling
+    >
       {messages.map(renderMessageWithAvatar)}
       {hasInputField && <input type='text' className='chat-input-field' />}
       {copied && <div className='copied-notification'>Copied!</div>}

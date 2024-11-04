@@ -89,6 +89,8 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptType
     );
     
+    console.log("%c" + constructedPrompt, "color: green");
+
     // Disabled until we fix Claude 3.5 Sonnet in the backend (TODO)
     // const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
     const mainAgentModel = modelPreferences.mainModel;
@@ -475,11 +477,13 @@ const processResponse = async (
     const googleSearchResponse = await googleSearch(query);
     let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
+    console.log("%c" + googleSearchAgentTemplate, "color: green");
     const googleSearchAgentResponse = await promptLLM(
       googleSearchAgentTemplate, 
       googleSearchSystemTemplate(), 
       "gemini-1.5-flash"
     );
+    console.log("%c" + googleSearchAgentResponse, "color: yellow");
     const finalResponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
     await updateMessageWithToolStatus("complete", "search", finalResponse);
     return finalResponse;
@@ -516,6 +520,8 @@ const handleScriptGeneration = async (
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents, memories.longTermMemory, memories.shortTermMemory);
   
+  console.log("%c" + constructedPrompt, "color: green");
+  
   let scriptResponse = "";
   
   // Don't save the "Generating..." message to Firestore
@@ -540,8 +546,10 @@ const handleScriptGeneration = async (
       image,
       () => {}  // Prevent streaming updates
     );
+    console.log("%c" + scriptResponse, "color: yellow");
   } else {
     scriptResponse = await updaterAgent(prompt, scriptContents, "gemini-1.5-flash", true);
+    console.log("%c" + scriptResponse, "color: yellow");
   }
 
   const cleanedScript = cleanScriptResponse(scriptResponse);
