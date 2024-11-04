@@ -127,6 +127,20 @@ const loadMessagesFromLocalStorage = () => {
   }
 };
 
+// Add this helper function near the top of the file
+const detectToolType = (text) => {
+  if (!text) return null;
+  
+  // Check for tool indicators in the message text
+  if (text.includes('OpenSCAD Script Generated')) return 'openscad';
+  if (text.includes('HTML Script Generated')) return 'html';
+  if (text.includes('Image Task:')) return 'image';
+  if (text.includes('Google Search Query:')) return 'search';
+  if (text.includes('Home Assistant Task:')) return 'home';
+  
+  return null;
+};
+
 export default function ChatFeed({
   messages,
   histCount,
@@ -640,7 +654,10 @@ export default function ChatFeed({
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
     const showTypingIndicator = message.isTyping && message.text === "";
-    const hasToolStatus = message.toolStatus && message.toolType;
+    
+    // Detect tool type from message content if not already set
+    const toolType = message.toolType || detectToolType(message.text);
+    const hasToolStatus = message.toolStatus && toolType;
 
     return (
       <motion.div
@@ -671,9 +688,9 @@ export default function ChatFeed({
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
             data-index={index}
           >
-            {message.toolType && (
-              <div className={`tool-badge ${message.toolType.toLowerCase()}`}>
-                {message.toolType}
+            {toolType && (
+              <div className={`tool-badge ${toolType.toLowerCase()}`}>
+                {toolType.toUpperCase()}
               </div>
             )}
             
@@ -681,7 +698,7 @@ export default function ChatFeed({
               <div className='sender-name'>{message.sender}</div>
             )}
             <div className='message-text' style={bubbleStyles.text}>
-              {message.toolStatus && message.toolType ? (
+              {message.toolStatus && toolType ? (
                 <>
                   {renderMessageText(message.text, index, message.sender)}
                   <div className={`tool-status ${message.toolStatus === 'complete' ? 'complete' : 
