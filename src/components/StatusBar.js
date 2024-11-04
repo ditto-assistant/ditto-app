@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusIcons from "./StatusIcons";
 import MemoryOverlay from "./MemoryOverlay";
-import { syncLocalScriptsWithFirestore } from "../control/firebase";
+import { syncLocalScriptsWithFirestore, grabConversationHistoryCount } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 
@@ -22,6 +22,8 @@ function StatusBar() {
         }
         return savedMode === 't';
     });
+    const [showMemories, setShowMemories] = useState(false);
+    const [memoryCount, setMemoryCount] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const [scripts, setScripts] = useState(() => {
@@ -97,10 +99,57 @@ function StatusBar() {
         localStorage.setItem("openSCAD", JSON.stringify(openSCAD));
     }, [scripts]);
 
+    useEffect(() => {
+        const fetchMemoryCount = async () => {
+            const userID = localStorage.getItem('userID');
+            if (userID) {
+                const count = await grabConversationHistoryCount(userID);
+                setMemoryCount(count);
+            }
+        };
+
+        // Create event listener for memory updates
+        const handleMemoryUpdate = () => {
+            fetchMemoryCount();
+        };
+
+        // Listen for histCount changes in localStorage
+        const handleStorageChange = (e) => {
+            if (e.key === 'histCount') {
+                fetchMemoryCount();
+            }
+        };
+
+        // Initial fetch
+        fetchMemoryCount();
+
+        // Add event listeners
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('memoryUpdated', handleMemoryUpdate);
+        window.addEventListener('memoryDeleted', handleMemoryUpdate);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('memoryUpdated', handleMemoryUpdate);
+            window.removeEventListener('memoryDeleted', handleMemoryUpdate);
+        };
+    }, []);
+
     const toggleBalanceDisplay = () => {
-        const newShowUSD = !showUSD;
-        setShowUSD(newShowUSD);
-        localStorage.setItem("status_bar_fiat_balance", newShowUSD ? 't' : 'f');
+        if (showMemories) {
+            setShowMemories(false);
+            setShowUSD(false);
+            localStorage.setItem("status_bar_fiat_balance", 'f');
+        } else if (showUSD) {
+            setShowMemories(true);
+            setShowUSD(false);
+            localStorage.setItem("status_bar_fiat_balance", 'm');
+        } else {
+            setShowUSD(true);
+            setShowMemories(false);
+            localStorage.setItem("status_bar_fiat_balance", 't');
+        }
     };
 
     return (
@@ -127,8 +176,12 @@ function StatusBar() {
                 <p style={styles.balanceIndicator}>
                     {balance.loading ? (
                         <LoadingSpinner size={14} inline={true} />
+                    ) : showMemories ? (
+                        `${memoryCount} Memories`
+                    ) : showUSD ? (
+                        balance.usd
                     ) : (
-                        showUSD ? balance.usd : balance.balance
+                        balance.balance
                     )}
                 </p>
             </div>

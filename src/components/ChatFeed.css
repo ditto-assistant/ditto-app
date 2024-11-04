@@ -2041,3 +2041,40 @@ input:checked + .toggle-slider:before {
   color: #2ecc71;
 }
 
+/* Add these new styles for the standalone typing indicator */
+.typing-indicator-container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin: 0 8px;
+  border-radius: 20px;
+  background: transparent;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  height: 20px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  background-color: #99aab5;
+  border-radius: 50%;
+  animation: bounce 0.6s infinite alternate;
+  animation-delay: calc(var(--i) * 0.2s);
+}
+
+/* Update existing typing indicator styles */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+

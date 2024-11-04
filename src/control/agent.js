@@ -364,7 +364,6 @@ const processResponse = async (
 
   const updateMessageWithToolStatus = async (status, type, finalResponse = null) => {
     try {
-      // Only save to memory when the tool is complete
       if (status === "complete" && finalResponse) {
         const docId = await saveToMemory(userID, prompt, finalResponse, userPromptEmbedding);
         
@@ -377,26 +376,26 @@ const processResponse = async (
           messages[messages.length - 1] = {
             ...messages[messages.length - 1],
             text: finalResponse,
-            toolStatus: status,
             toolType: type,
             isTyping: false,
             showToolBadge: true,
             docId: docId,
-            pairID: docId
+            pairID: docId,
+            toolStatus: null,
+            showTypingDots: false
           };
           return { ...prevState, messages };
         });
 
         saveToLocalStorage(prompt, finalResponse, Date.now(), docId);
       } else {
-        // For in-progress states, add the typing dots
         const statusText = status.endsWith('...') ? status : `${status}`;
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 1] = {
             ...messages[messages.length - 1],
             text: finalResponse || response,
-            toolStatus: statusText,
+            toolStatus: status !== "complete" ? statusText : null,
             toolType: type,
             isTyping: false,
             showToolBadge: true,

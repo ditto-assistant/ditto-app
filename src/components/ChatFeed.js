@@ -636,7 +636,7 @@ export default function ChatFeed({
 
   // Update the renderMessageWithAvatar function
   const renderMessageWithAvatar = (message, index) => {
-    const isLastMessage = index === messages.length - 1; // Check if it's the last message
+    const isLastMessage = index === messages.length - 1;
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
     const showTypingIndicator = message.isTyping && message.text === "";
@@ -646,54 +646,74 @@ export default function ChatFeed({
       <motion.div
         key={`${message.pairID}-${index}`}
         className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
-        initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }} // Reduced y and scale for tighter animation
+        initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }} // Reduced duration for a tighter feel
+        transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {message.sender === 'Ditto' && (
           <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
         )}
-        <div
-          className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${
-            actionOverlay && actionOverlay.index === index ? 'blurred' : ''
-          } ${isSmallMessage ? 'small-message' : ''}`}
-          style={bubbleStyles.chatbubble}
-          onClick={(e) => handleBubbleInteraction(e, index)}
-          onContextMenu={(e) => handleBubbleInteraction(e, index)}
-          data-index={index}
-        >
-          {hasToolStatus && (
-            <div className={`tool-badge ${message.toolType}`}>
-              {message.toolType.toUpperCase()}
+        {showTypingIndicator ? (
+          <div className='typing-indicator-container'>
+            <div className='typing-indicator'>
+              <div className='typing-dot' style={{ '--i': 0 }} />
+              <div className='typing-dot' style={{ '--i': 1 }} />
+              <div className='typing-dot' style={{ '--i': 2 }} />
             </div>
-          )}
-          {showSenderName && message.sender && (
-            <div className='sender-name'>{message.sender}</div>
-          )}
-          <div className='message-text' style={bubbleStyles.text}>
-            {showTypingIndicator ? (
-              <div className='typing-indicator'>
-                <div className='typing-dot' style={{ '--i': 0 }} />
-                <div className='typing-dot' style={{ '--i': 1 }} />
-                <div className='typing-dot' style={{ '--i': 2 }} />
+          </div>
+        ) : (
+          <div
+            className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${
+              actionOverlay && actionOverlay.index === index ? 'blurred' : ''
+            } ${isSmallMessage ? 'small-message' : ''}`}
+            style={bubbleStyles.chatbubble}
+            onClick={(e) => handleBubbleInteraction(e, index)}
+            onContextMenu={(e) => handleBubbleInteraction(e, index)}
+            data-index={index}
+          >
+            {message.toolType && (
+              <div className={`tool-badge ${message.toolType.toLowerCase()}`}>
+                {message.toolType}
               </div>
-            ) : (
-              renderMessageText(message.text, index, message.sender)
+            )}
+            
+            {showSenderName && message.sender && (
+              <div className='sender-name'>{message.sender}</div>
+            )}
+            <div className='message-text' style={bubbleStyles.text}>
+              {message.toolStatus && message.toolType ? (
+                <>
+                  {renderMessageText(message.text, index, message.sender)}
+                  <div className={`tool-status ${message.toolStatus === 'complete' ? 'complete' : 
+                                             message.toolStatus === 'failed' ? 'failed' : ''}`}>
+                    {message.toolStatus}
+                    {message.showTypingDots && (
+                      <div className="typing-dots">
+                        <div className="dot"></div>
+                        <div className="dot"></div>
+                        <div className="dot"></div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                renderMessageText(message.text, index, message.sender)
+              )}
+            </div>
+            <div className='message-footer'>
+              <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
+            </div>
+            {reactions[index] && reactions[index].length > 0 && (
+              <div className='message-reactions'>
+                {reactions[index].map((emoji, emojiIndex) => (
+                  <span key={emojiIndex} className='reaction'>
+                    {emoji}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
-          <div className='message-footer'>
-            <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
-          </div>
-          {reactions[index] && reactions[index].length > 0 && (
-            <div className='message-reactions'>
-              {reactions[index].map((emoji, emojiIndex) => (
-                <span key={emojiIndex} className='reaction'>
-                  {emoji}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
         {message.sender === 'User' && (
           <img src={profilePic} alt='User' className='avatar user-avatar' />
         )}
