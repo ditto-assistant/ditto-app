@@ -475,12 +475,13 @@ export default function ChatFeed({
       return;
     }
 
+    // Don't show action overlay if click was on an image
+    if (e.target.classList.contains('chat-image')) {
+      return;
+    }
+
     // Trigger haptic feedback
     triggerHapticFeedback();
-
-    // Get the clicked message
-    const message = messages[index];
-    const isImage = message.text.match(/!\[.*?\]\((.*?)\)/);
 
     // Calculate position for the overlay
     const rect = e.currentTarget.getBoundingClientRect();
@@ -491,7 +492,7 @@ export default function ChatFeed({
       index,
       clientX: x,
       clientY: y,
-      type: isImage ? 'image' : 'text'
+      type: 'text' // Always show text actions since image has its own handler
     });
 
     // Close any open reaction overlay
@@ -533,7 +534,6 @@ export default function ChatFeed({
               rel="noopener noreferrer"
               onClick={(e) => {
                 e.stopPropagation(); // Prevent bubble interaction
-                // Let the default link behavior handle the navigation
               }}
               style={{ 
                 color: '#3941b8', 
@@ -558,7 +558,7 @@ export default function ChatFeed({
                 alt={alt}
                 className='chat-image'
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.stopPropagation(); // Stop bubble interaction
                   handleImageClick(src);
                 }}
                 onError={(e) => {
@@ -764,47 +764,34 @@ export default function ChatFeed({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            {actionOverlay.type === 'text' ? (
-              <>
-                <button onClick={() => handleCopy(messages[actionOverlay.index].text)} className='action-button'>
-                  Copy
-                </button>
-                <button 
-                  onClick={() => handleReactionOverlay(
-                    actionOverlay.index, 
-                    actionOverlay.clientX, 
-                    actionOverlay.clientY
-                  )} 
-                  className='action-button'
-                >
-                  React
-                </button>
-                <button 
-                  onClick={() => handleShowMemories(actionOverlay.index)} 
-                  className='action-button'
-                  disabled={loadingMemories}
-                >
-                  <FaBrain style={{ marginRight: '5px' }} />
-                  {loadingMemories ? 'Loading...' : 'Memories'}
-                </button>
-                <button 
-                  onClick={() => handleMessageDelete(actionOverlay.index)} 
-                  className='action-button delete-action'
-                >
-                  <FaTrash style={{ marginRight: '5px' }} />
-                  Delete
-                </button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => handleImageOpen(messages[actionOverlay.index].text)} className='action-button'>
-                  Open
-                </button>
-                <button onClick={() => handleImageDownload(messages[actionOverlay.index].text)} className='action-button'>
-                  Download
-                </button>
-              </>
-            )}
+            <button onClick={() => handleCopy(messages[actionOverlay.index].text)} className='action-button'>
+              Copy
+            </button>
+            <button 
+              onClick={() => handleReactionOverlay(
+                actionOverlay.index, 
+                actionOverlay.clientX, 
+                actionOverlay.clientY
+              )} 
+              className='action-button'
+            >
+              React
+            </button>
+            <button 
+              onClick={() => handleShowMemories(actionOverlay.index)} 
+              className='action-button'
+              disabled={loadingMemories}
+            >
+              <FaBrain style={{ marginRight: '5px' }} />
+              {loadingMemories ? 'Loading...' : 'Memories'}
+            </button>
+            <button 
+              onClick={() => handleMessageDelete(actionOverlay.index)} 
+              className='action-button delete-action'
+            >
+              <FaTrash style={{ marginRight: '5px' }} />
+              Delete
+            </button>
           </div>
         )}
         {reactionOverlay === index && (

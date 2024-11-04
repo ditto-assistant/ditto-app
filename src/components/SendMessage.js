@@ -42,6 +42,7 @@ export default function SendMessage({
     const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } = useIntentRecognition();
     const [isImageEnlarged, setIsImageEnlarged] = useState(false);
     const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+    const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
     useEffect(() => {
         isMobile.current = checkIfMobile();
@@ -225,28 +226,35 @@ export default function SendMessage({
         const thinkingObjectString = localStorage.getItem('thinking');
         const isThinking = thinkingObjectString !== null;
 
+        if (isWaitingForResponse) return;
+
         if ((message !== '' || finalTranscriptRef.current) && !isThinking) {
-            const userID = auth.currentUser.uid;
-            const firstName = localStorage.getItem('firstName');
-            let messageToSend = finalTranscriptRef.current || message;
-            let imageURI = '';
-            if (image) {
-                imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
-                messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+            setIsWaitingForResponse(true);
+            try {
+                const userID = auth.currentUser.uid;
+                const firstName = localStorage.getItem('firstName');
+                let messageToSend = finalTranscriptRef.current || message;
+                let imageURI = '';
+                if (image) {
+                    imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
+                    messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+                }
+                setMessage('');
+                setImage('');
+                finalTranscriptRef.current = '';
+                resizeTextArea();
+                if (isListening) {
+                    stopRecording();
+                }
+                
+                let userPromptEmbedding = await textEmbed(messageToSend);
+                
+                await sendPrompt(userID, firstName, messageToSend, imageURI, userPromptEmbedding, updateConversation);
+            } catch (error) {
+                console.error('Error sending message:', error);
+            } finally {
+                setIsWaitingForResponse(false);
             }
-            setMessage('');
-            setImage('');
-            finalTranscriptRef.current = '';
-            resizeTextArea();
-            if (isListening) {
-                stopRecording();
-            }
-            
-            // Fetch user prompt embeddings
-            let userPromptEmbedding = await textEmbed(messageToSend);
-            
-            // Send the prompt and update the conversation
-            await sendPrompt(userID, firstName, messageToSend, imageURI, userPromptEmbedding, updateConversation);
         }
     };
 
@@ -400,7 +408,12 @@ export default function SendMessage({
                     />
                 </div>
             </div>
-            <input className='Submit' type='submit' value='Send' />
+            <input 
+                className={`Submit ${isWaitingForResponse ? 'disabled' : ''}`}
+                type='submit' 
+                value='Send'
+                disabled={isWaitingForResponse}
+            />
 
             {image && (
                 <div className='ImagePreview' onClick={toggleImageEnlarge}>

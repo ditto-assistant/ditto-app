@@ -103,20 +103,27 @@
     border: none;
     border-radius: 10px;
     color: white;
-    padding: 8px 15px; /* Reduce padding */
-    margin-left: 0; /* Remove left margin */
-    margin-right: -2px; /* Remove right margin */
+    padding: 8px 15px;
+    margin-left: 0;
+    margin-right: -2px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    white-space: nowrap; /* Prevent text wrapping */
-    min-width: fit-content; /* Ensure button takes minimum required width */
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-width: fit-content;
 }
 
-.Submit:hover {
+.Submit.disabled {
+    background-color: #2f3136;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.Submit:not(.disabled):hover {
     background-color: #3c45a5;
 }
 
-.Submit:active {
+.Submit:not(.disabled):active {
     background-color: #3941b8;
 }
 
