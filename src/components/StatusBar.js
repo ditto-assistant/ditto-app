@@ -17,7 +17,7 @@ function StatusBar() {
     const [showUSD, setShowUSD] = useState(() => {
         let savedMode = localStorage.getItem("status_bar_fiat_balance");
         if (savedMode == null) {
-            savedMode = 't';
+            savedMode = 'f';
             localStorage.setItem("status_bar_fiat_balance", savedMode);
         }
         return savedMode === 't';
