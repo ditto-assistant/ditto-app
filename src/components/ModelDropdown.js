@@ -2,26 +2,27 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MdExpandMore } from 'react-icons/md';
 import { FaCrown } from 'react-icons/fa';
+import { DEFAULT_MODELS } from '../constants';
 
-const darkModeColors = {
-    primary: '#7289DA',
-    text: '#FFFFFF',
-    foreground: '#23272A',
-    cardBg: '#2F3136',
-    border: '#1E1F22',
-};
+/** @typedef {import('../constants').Model} Model */
+/** @typedef {import('../constants').ModelOption} ModelOption */
 
-const ModelDropdown = ({ 
-    value, 
-    onChange, 
-    hasEnoughBalance, 
+/**
+ * A dropdown component for selecting AI models
+ * @param {object} props
+ * @param {Model} props.value - Currently selected model ID
+ * @param {(modelId: Model) => void} props.onChange - Callback when model selection changes
+ * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
+ * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
+ * @param {readonly ModelOption[]} [props.models=DEFAULT_MODELS] - Array of available models
+ * @returns {JSX.Element} The ModelDropdown component
+ */
+const ModelDropdown = ({
+    value,
+    onChange,
+    hasEnoughBalance,
     inMemoryOverlay = false,
-    models = [
-        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', isPremium: false },
-        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', isPremium: true },
-        { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', isPremium: true },
-        { id: 'mistral-nemo', name: 'Mistral Nemo', isPremium: false }
-    ]
+    models = DEFAULT_MODELS
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -39,6 +40,10 @@ const ModelDropdown = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    /**
+     * Handles the selection of a model from the dropdown
+     * @param {Model} modelId - The ID of the selected model
+     */
     const handleSelect = (modelId) => {
         const model = models.find(m => m.id === modelId);
         if (model.isPremium && !hasEnoughBalance) return;
@@ -59,7 +64,7 @@ const ModelDropdown = ({
                     dropdown.style.position = 'fixed';
                     dropdown.style.top = `${rect.bottom + 4}px`;
                     dropdown.style.left = `${rect.left}px`;
-                    
+
                     const dropdownRect = dropdown.getBoundingClientRect();
                     const viewportHeight = window.innerHeight;
                     if (dropdownRect.bottom > viewportHeight) {
@@ -123,19 +128,26 @@ const ModelDropdown = ({
                                 onClick={() => handleSelect(model.id)}
                             >
                                 <span>{model.name}</span>
-                                {model.isPremium && (
-                                    <div style={styles.badges}>
-                                        <span style={styles.premiumBadge}>
-                                            <FaCrown style={styles.crownIcon} />
-                                            Premium
-                                        </span>
-                                        {!hasEnoughBalance && (
-                                            <span style={styles.requirementBadge}>
-                                                Requires 1.00B
+                                <div style={styles.badges}>
+                                    {model.isPremium && (
+                                        <>
+                                            <span style={styles.premiumBadge}>
+                                                <FaCrown style={styles.crownIcon} />
+                                                Premium
                                             </span>
-                                        )}
-                                    </div>
-                                )}
+                                            {!hasEnoughBalance && (
+                                                <span style={styles.requirementBadge}>
+                                                    Requires 1.00B
+                                                </span>
+                                            )}
+                                        </>
+                                    )}
+                                    {model.isFree && (
+                                        <span style={styles.freeBadge}>
+                                            FREE
+                                        </span>
+                                    )}
+                                </div>
                             </motion.div>
                         ))}
                     </motion.div>
@@ -143,6 +155,14 @@ const ModelDropdown = ({
             </AnimatePresence>
         </div>
     );
+};
+
+const darkModeColors = {
+    primary: '#7289DA',
+    text: '#FFFFFF',
+    foreground: '#23272A',
+    cardBg: '#2F3136',
+    border: '#1E1F22',
 };
 
 const styles = {
@@ -224,6 +244,14 @@ const styles = {
         fontSize: '10px',
         flexShrink: 0,
         color: '#FFFFFF',
+    },
+    freeBadge: {
+        backgroundColor: '#43B581',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '10px',
+        whiteSpace: 'nowrap',
     },
 };
 

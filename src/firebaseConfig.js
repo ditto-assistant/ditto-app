@@ -23,7 +23,7 @@ function getMemoriesURL(dittoEnv) {
       return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
     default:
       return "https://us-central1-ditto-app-dev.cloudfunctions.net/api/get-memories";
-      // return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
+    // return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
   }
 }
 

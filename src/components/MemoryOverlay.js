@@ -33,7 +33,7 @@ function MemoryOverlay({ closeOverlay }) {
     });
 
     const { balance, usd } = useBalance();
-    
+
     // Convert balance string to number (removing 'M' or 'B' and converting to float)
     const balanceNum = parseFloat(balance?.replace(/[MB]/, '') || '0');
     const isBalanceInBillions = balance?.includes('B');
@@ -94,7 +94,7 @@ function MemoryOverlay({ closeOverlay }) {
         await saveModelPreferencesToFirestore(userID, newPreferences.mainModel, newPreferences.programmerModel);
     };
 
-    const deleteAllMemory = async() => {
+    const deleteAllMemory = async () => {
         // Create and show the custom confirmation dialog
         const dialog = document.createElement('div');
         dialog.className = 'confirmation-dialog';
@@ -125,7 +125,7 @@ function MemoryOverlay({ closeOverlay }) {
             const handleConfirm = async () => {
                 dialog.classList.remove('visible');
                 setTimeout(() => dialog.remove(), 300);
-                
+
                 console.log("Resetting conversation history...");
                 localStorage.setItem("resetMemory", "true");
                 const userID = localStorage.getItem("userID");
@@ -178,7 +178,7 @@ function MemoryOverlay({ closeOverlay }) {
                     <h3 style={styles.overlayHeaderText}>Agent Settings</h3>
                     <MdClose style={styles.closeIcon} onClick={handleClose} />
                 </div>
-                
+
                 {/* Model Preferences Card */}
                 <div style={styles.card}>
                     <div style={styles.cardHeader}>

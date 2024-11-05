@@ -358,7 +358,7 @@ export const backupOldScriptMakeVersion = async (userID, scriptType, filename) =
 
     // Get all versions of the script
     let versions = await getVersionsOfScriptFromFirestore(userID, scriptType, filename);
-    
+
     // Sort versions by version number
     versions.sort((a, b) => {
       const versionA = parseInt(a.versionNumber) || 0;
@@ -369,7 +369,7 @@ export const backupOldScriptMakeVersion = async (userID, scriptType, filename) =
     // Find the latest version number by checking actual filenames in Firestore
     const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
     let highestVersion = 0;
-    
+
     querySnapshot.forEach((doc) => {
       const docFilename = doc.data().filename;
       if (docFilename.startsWith(filename + '-v')) {
@@ -389,7 +389,7 @@ export const backupOldScriptMakeVersion = async (userID, scriptType, filename) =
     if (versions.length > 0) {
       // Get the current base version (without -v suffix)
       const baseVersionDoc = await getBaseVersion(userID, scriptType, filename);
-      
+
       if (baseVersionDoc) {
         const docRef = await addDoc(collection(db, "scripts", userID, scriptType), {
           script: baseVersionDoc.script,
@@ -413,7 +413,7 @@ export const backupOldScriptMakeVersion = async (userID, scriptType, filename) =
 const getBaseVersion = async (userID, scriptType, filename) => {
   const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
   let baseVersion = null;
-  
+
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.filename === filename) { // Exact match for base version (no -v suffix)
@@ -424,7 +424,7 @@ const getBaseVersion = async (userID, scriptType, filename) => {
       };
     }
   });
-  
+
   return baseVersion;
 };
 
@@ -595,7 +595,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     const now = Date.now();
     const lastSyncTime = localStorage.getItem(`lastSync_${scriptType}`);
     const SYNC_COOLDOWN = 5000; // 5 seconds cooldown between syncs
-    
+
     if (lastSyncTime && (now - parseInt(lastSyncTime)) < SYNC_COOLDOWN) {
       // If we've synced recently, skip this sync
       return [];
@@ -618,11 +618,11 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
 
     let scripts = [];
     querySnapshot.forEach((doc) => {
-      let scriptObj = { 
-        id: doc.data().timestampString, 
-        name: doc.data().filename, 
-        content: doc.data().script, 
-        scriptType: scriptType, 
+      let scriptObj = {
+        id: doc.data().timestampString,
+        name: doc.data().filename,
+        content: doc.data().script,
+        scriptType: scriptType,
         timestamp: doc.data().timestamp,
         timestampString: doc.data().timestampString
       };
@@ -687,6 +687,13 @@ export const saveModelPreferencesToFirestore = async (userID, mainModel, program
   }
 }
 
+/** @typedef {import('../constants').Model} Model */
+
+/**
+ * Gets model preferences from Firestore.
+ * @param {string} userID - The user's ID.
+ * @returns {Promise<{mainModel: Model, programmerModel: Model}>}
+ */
 export const getModelPreferencesFromFirestore = async (userID) => {
   try {
     const querySnapshot = await getDocs(collection(db, "users", userID, "preferences"));
@@ -742,7 +749,7 @@ export const getScriptTimestamps = async (userID, scriptType) => {
 
     // Save to localStorage
     localStorage.setItem(`${scriptType}Timestamps`, JSON.stringify(timestamps));
-    
+
     if (mode === 'development') {
       console.log(`Timestamps fetched and stored for ${scriptType}:`, timestamps);
     }
