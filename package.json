@@ -7,7 +7,7 @@
     "@emotion/styled": "^11.13.0",
     "@huggingface/inference": "^2.8.1",
     "@mui/icons-material": "^6.1.4",
-    "@mui/material": "^6.1.4",
+    "@mui/material": "^6.1.6",
     "@paypal/react-paypal-js": "^8.7.0",
     "@tensorflow/tfjs": "^4.21.0",
     "ace-builds": "^1.36.2",
