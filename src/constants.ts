@@ -13,6 +13,7 @@ export interface ModelOption {
     isMaintenance?: boolean;
 }
 
+// TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
     { id: "llama-3-2", name: "Llama 3.2", isPremium: false, isFree: true },
     { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', isPremium: false },
