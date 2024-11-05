@@ -47,6 +47,7 @@ const ModelDropdown = ({
     const handleSelect = (modelId) => {
         const model = models.find(m => m.id === modelId);
         if (model.isPremium && !hasEnoughBalance) return;
+        if (model.isMaintenance) return;
         onChange(modelId);
         setIsOpen(false);
     };
@@ -119,10 +120,10 @@ const ModelDropdown = ({
                                 key={model.id}
                                 style={{
                                     ...styles.option,
-                                    opacity: model.isPremium && !hasEnoughBalance ? 0.5 : 1,
-                                    cursor: model.isPremium && !hasEnoughBalance ? 'not-allowed' : 'pointer',
+                                    opacity: (model.isPremium && !hasEnoughBalance) || model.isMaintenance ? 0.5 : 1,
+                                    cursor: (model.isPremium && !hasEnoughBalance) || model.isMaintenance ? 'not-allowed' : 'pointer',
                                 }}
-                                whileHover={!(model.isPremium && !hasEnoughBalance) ? {
+                                whileHover={!(model.isPremium && !hasEnoughBalance) && !model.isMaintenance ? {
                                     backgroundColor: 'rgba(88, 101, 242, 0.1)',
                                 } : {}}
                                 onClick={() => handleSelect(model.id)}
@@ -145,6 +146,11 @@ const ModelDropdown = ({
                                     {model.isFree && (
                                         <span style={styles.freeBadge}>
                                             FREE
+                                        </span>
+                                    )}
+                                    {model.isMaintenance && (
+                                        <span style={styles.maintenanceBadge}>
+                                            MAINTENANCE
                                         </span>
                                     )}
                                 </div>
@@ -247,6 +253,14 @@ const styles = {
     },
     freeBadge: {
         backgroundColor: '#43B581',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '10px',
+        whiteSpace: 'nowrap',
+    },
+    maintenanceBadge: {
+        backgroundColor: '#ED4245',
         color: '#FFFFFF',
         borderRadius: '4px',
         padding: '2px 6px',
