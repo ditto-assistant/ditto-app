@@ -48,14 +48,14 @@ const useSplitPane = (isMobile, initialPosition = 50) => {
     };
 };
 
-const SearchOverlay = ({ 
-    visible, 
-    searchTerm, 
-    setSearchTerm, 
-    onSearch, 
-    onClose, 
+const SearchOverlay = ({
+    visible,
+    searchTerm,
+    setSearchTerm,
+    onSearch,
+    onClose,
     searchResults,
-    isMobile 
+    isMobile
 }) => {
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -251,11 +251,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         if (!scriptChatInput.trim()) return;
         const userMessage = scriptChatInput.trim();
         const timestamp = new Date().toISOString();
-        
+
         try {
             // Get embedding for the user's message
             const embedding = await textEmbed(userMessage);
-            
+
             // Classify intent
             const intentPredictions = await models.classify(embedding);
             console.log('Intent Predictions:', intentPredictions);
@@ -270,25 +270,25 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             }
 
             // Create the message content with code attachment and history
-            const historyText = scriptChatHistory.length > 0 ? 
-                '\nPrevious commands:\n' + scriptChatHistory.slice(-20).map(h => 
+            const historyText = scriptChatHistory.length > 0 ?
+                '\nPrevious commands:\n' + scriptChatHistory.slice(-20).map(h =>
                     `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
                 ).join('\n') : '';
 
-            const messageContent = selectedCodeAttachment ? 
-                `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}` : 
+            const messageContent = selectedCodeAttachment ?
+                `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}` :
                 userMessage;
-            
+
             // Add to history before sending, maintaining 20 item window
             const newHistoryEntry = { message: userMessage, timestamp };
             setScriptChatHistory(prev => [...prev.slice(-19), newHistoryEntry]);
-            
+
             // Also maintain 20 message window for chat messages
             setScriptChatMessages(prev => {
-                const newMessages = [...prev, { 
-                    role: 'user', 
+                const newMessages = [...prev, {
+                    role: 'user',
                     content: messageContent,
-                    timestamp 
+                    timestamp
                 }];
                 // Keep only the last 40 messages (20 pairs of user/assistant messages)
                 return newMessages.slice(-40);
@@ -311,7 +311,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 `${userMessage}${historyText}`;
 
             const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, true);
-            
+
             // Log the response in yellow
             console.log('\x1b[33m%s\x1b[0m', response);
 
@@ -321,25 +321,25 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 newHistory.push({ content: response });
                 setEditHistory(newHistory);
                 setHistoryIndex(newHistory.length - 1);
-                
+
                 // Update the code
                 setCode(response);
                 setPreviewKey(prev => prev + 1);
 
                 // Add a message indicating task completion, maintaining message window
                 setScriptChatMessages(prev => {
-                    const newMessages = [...prev, { 
-                        role: 'assistant', 
-                        content: 'Task completed', 
-                        fullScript: response 
+                    const newMessages = [...prev, {
+                        role: 'assistant',
+                        content: 'Task completed',
+                        fullScript: response
                     }];
                     return newMessages.slice(-40);
                 });
             } else {
                 setScriptChatMessages(prev => {
-                    const newMessages = [...prev, { 
-                        role: 'assistant', 
-                        content: response 
+                    const newMessages = [...prev, {
+                        role: 'assistant',
+                        content: response
                     }];
                     return newMessages.slice(-40);
                 });
@@ -347,9 +347,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         } catch (error) {
             console.error('Error in chat:', error);
             setScriptChatMessages(prev => {
-                const newMessages = [...prev, { 
-                    role: 'assistant', 
-                    content: 'Sorry, there was an error processing your request.' 
+                const newMessages = [...prev, {
+                    role: 'assistant',
+                    content: 'Sorry, there was an error processing your request.'
                 }];
                 return newMessages.slice(-40);
             });
@@ -440,7 +440,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     const handleSearch = useCallback((term, direction = 'forward') => {
         if (!editorRef.current || !term) return;
-        
+
         const editor = editorRef.current.editor;
         const searchOptions = {
             backwards: direction === 'backward',
@@ -459,10 +459,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 matches++;
             }
         });
-        
+
         // Perform the search
         editor.find(term, searchOptions);
-        
+
         // Get current match number
         let current = 1;
         const currentPos = editor.selection.getCursor();
@@ -550,13 +550,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const handleNodeUpdate = (node, updatedHTML) => {
         // Update the code state with the new HTML
         setCode(updatedHTML);
-        
+
         // Add to edit history
         const newHistory = editHistory.slice(0, historyIndex + 1);
         newHistory.push({ content: updatedHTML });
         setEditHistory(newHistory);
         setHistoryIndex(newHistory.length - 1);
-        
+
         // Force preview refresh
         setPreviewKey(prev => prev + 1);
     };
@@ -579,7 +579,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         // Only show unsaved changes dialog if there are actual changes
         // and we're not in a post-save state (where history was just cleared)
         const hasUnsavedChanges = historyIndex > 0 && code !== script.content;
-        
+
         if (hasUnsavedChanges) {
             setShowUnsavedChanges(true);
             return;
@@ -643,7 +643,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const handleResizeMouseDown = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const startX = e.pageX;
         const startY = e.pageY;
         const startWidth = scriptChatSize.width;
@@ -653,7 +653,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             requestAnimationFrame(() => {
                 const newWidth = Math.max(300, startWidth + (e.pageX - startX));
                 const newHeight = Math.max(300, startHeight + (e.pageY - startY));
-                
+
                 setScriptChatSize({
                     width: newWidth,
                     height: newHeight
@@ -672,15 +672,15 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     const adjustTextareaHeight = (textarea) => {
         if (!textarea) return;
-        
+
         // Reset height to auto to get the correct scrollHeight
         textarea.style.height = 'auto';
-        
+
         // Calculate line height (assuming 14px font size and 1.5 line height)
         const lineHeight = 21; // 14px * 1.5
         const padding = 16; // 8px top + 8px bottom
         const maxHeight = lineHeight * 6 + padding; // 6 rows max
-        
+
         // Set new height
         const newHeight = Math.min(textarea.scrollHeight, maxHeight);
         textarea.style.height = `${newHeight}px`;
@@ -713,7 +713,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         const messageToDelete = scriptChatMessages[index];
         if (messageToDelete.role === 'user') {
             // Remove from history if it exists
-            setScriptChatHistory(prev => 
+            setScriptChatHistory(prev =>
                 prev.filter(h => h.timestamp !== messageToDelete.timestamp)
             );
         }
@@ -722,11 +722,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     };
 
     const handleDragStart = (e) => {
-        if (e.target.tagName === 'TEXTAREA' || 
-            e.target.closest('button') || 
-            isResizing || 
+        if (e.target.tagName === 'TEXTAREA' ||
+            e.target.closest('button') ||
+            isResizing ||
             e.target === dragRef.current) return;
-        
+
         const container = dragRef.current;
         if (!container) return;
 
@@ -738,11 +738,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             requestAnimationFrame(() => {
                 const x = e.clientX - offsetX;
                 const y = e.clientY - offsetY;
-                
+
                 // Keep window within viewport bounds
                 const maxX = window.innerWidth - rect.width;
                 const maxY = window.innerHeight - rect.height;
-                
+
                 setScriptChatPosition({
                     x: Math.max(0, Math.min(x, maxX)),
                     y: Math.max(0, Math.min(y, maxY))
@@ -802,20 +802,20 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setShowLoadingSpinner(true); // Show the loading spinner
 
         const userID = localStorage.getItem("userID");
-        
+
         await syncLocalScriptsWithFirestore(userID, "webApps");
         await syncLocalScriptsWithFirestore(userID, "openSCAD");
-        
+
         const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
         const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
-        
-        window.dispatchEvent(new CustomEvent('scriptsUpdated', { 
-            detail: { 
+
+        window.dispatchEvent(new CustomEvent('scriptsUpdated', {
+            detail: {
                 webApps: localWebApps,
                 openSCAD: localOpenSCAD
             }
         }));
-        
+
         setShowLoadingSpinner(false); // Hide the loading spinner
         onClose();
     };
@@ -826,16 +826,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             if (showIntentWarning && e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 e.stopPropagation(); // Add this to stop event propagation
-                
+
                 // Set a flag to prevent immediate reopening
                 const currentInput = scriptChatInput;
                 setShowIntentWarning(false);
-                
+
                 const sendMessageAnyway = async () => {
-                    const messageContent = selectedCodeAttachment ? 
-                        `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${currentInput}` : 
+                    const messageContent = selectedCodeAttachment ?
+                        `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${currentInput}` :
                         currentInput;
-                    
+
                     setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
                     setScriptChatInput('');
                     setSelectedCodeAttachment(null);
@@ -844,10 +844,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     try {
                         // Construct the prompt 
                         const usersPrompt = selectedCodeAttachment ?
-                                `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${currentInput}`
-                            : 
+                            `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${currentInput}`
+                            :
                             currentInput;
-                        
+
                         const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, false);
 
                         // Log the response in yellow
@@ -859,28 +859,28 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             newHistory.push({ content: response });
                             setEditHistory(newHistory);
                             setHistoryIndex(newHistory.length - 1);
-                            
+
                             // Update the code
                             setCode(response);
                             setPreviewKey(prev => prev + 1);
 
                             // Add a message indicating task completion
-                            setScriptChatMessages(prev => [...prev, { 
-                                role: 'assistant', 
-                                content: 'Task completed', 
-                                fullScript: response 
+                            setScriptChatMessages(prev => [...prev, {
+                                role: 'assistant',
+                                content: 'Task completed',
+                                fullScript: response
                             }]);
                         } else {
-                            setScriptChatMessages(prev => [...prev, { 
-                                role: 'assistant', 
-                                content: response 
+                            setScriptChatMessages(prev => [...prev, {
+                                role: 'assistant',
+                                content: response
                             }]);
                         }
                     } catch (error) {
                         console.error('Error in chat:', error);
-                        setScriptChatMessages(prev => [...prev, { 
-                            role: 'assistant', 
-                            content: 'Sorry, there was an error processing your request.' 
+                        setScriptChatMessages(prev => [...prev, {
+                            role: 'assistant',
+                            content: 'Sorry, there was an error processing your request.'
                         }]);
                     }
 
@@ -938,7 +938,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         if (scriptChatMessagesEndRef.current) {
             // Add a small delay to ensure content is rendered
             setTimeout(() => {
-                scriptChatMessagesEndRef.current.scrollIntoView({ 
+                scriptChatMessagesEndRef.current.scrollIntoView({
                     behavior: 'smooth',
                     block: 'end'
                 });
@@ -954,9 +954,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             // Check if click is outside the settings panel and not on the settings button
             const settingsPanel = document.querySelector('.script-chat-settings');
             const settingsButton = document.querySelector('.settings-button');
-            
-            if (settingsPanel && settingsButton && 
-                !settingsPanel.contains(event.target) && 
+
+            if (settingsPanel && settingsButton &&
+                !settingsPanel.contains(event.target) &&
                 !settingsButton.contains(event.target)) {
                 setShowMemoryOverlay(false);
             }
@@ -968,7 +968,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     return (
         <div style={styles.container}>
-            <motion.div 
+            <motion.div
                 style={styles.header}
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -1019,7 +1019,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     </Button>
                 </div>
             </motion.div>
-            <div 
+            <div
                 ref={containerRef}
                 style={{
                     ...styles.content,
@@ -1029,14 +1029,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 <motion.div
                     style={styles.editorPane}
                     animate={{
-                        width: isMobile ? '100%' : 
+                        width: isMobile ? '100%' :
                             isMaximized === 'editor' ? '100%' :
-                            isMaximized === 'preview' ? '0%' :
-                            `${splitPosition}%`,
-                        height: isMobile ? 
+                                isMaximized === 'preview' ? '0%' :
+                                    `${splitPosition}%`,
+                        height: isMobile ?
                             (isMaximized === 'editor' ? '100%' :
-                            isMaximized === 'preview' ? '0%' :
-                            `${splitPosition}%`) : '100%'
+                                isMaximized === 'preview' ? '0%' :
+                                    `${splitPosition}%`) : '100%'
                     }}
                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                 >
@@ -1063,7 +1063,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             </Tooltip>
                             <div style={styles.divider} />
                             <div style={styles.searchContainer}>
-                                <SearchOverlay 
+                                <SearchOverlay
                                     visible={searchVisible}
                                     searchTerm={searchTerm}
                                     setSearchTerm={setSearchTerm}
@@ -1164,7 +1164,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 onSelectionChange={handleEditorSelection}
                             />
                         ) : (
-                            <DOMTreeViewer 
+                            <DOMTreeViewer
                                 htmlContent={code}
                                 onNodeClick={onNodeClick}
                                 onNodeUpdate={handleNodeUpdate}
@@ -1179,14 +1179,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 <motion.div
                     style={styles.previewPane}
                     animate={{
-                        width: isMobile ? '100%' : 
+                        width: isMobile ? '100%' :
                             isMaximized === 'preview' ? '100%' :
-                            isMaximized === 'editor' ? '0%' :
-                            `${100 - splitPosition}%`,
-                        height: isMobile ? 
+                                isMaximized === 'editor' ? '0%' :
+                                    `${100 - splitPosition}%`,
+                        height: isMobile ?
                             (isMaximized === 'preview' ? '100%' :
-                            isMaximized === 'editor' ? '0%' :
-                            `${100 - splitPosition}%`) : '100%'
+                                isMaximized === 'editor' ? '0%' :
+                                    `${100 - splitPosition}%`) : '100%'
                     }}
                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                 >
@@ -1268,7 +1268,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 )}
             </AnimatePresence>
 
-            <Toast 
+            <Toast
                 message={toastMessage}
                 isVisible={showToast}
                 onHide={() => setShowToast(false)}
@@ -1314,7 +1314,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     <FaTimes size={16} />
                                 </IconButton>
                             </div>
-                            
+
                             {/* Add Settings Panel */}
                             <AnimatePresence>
                                 {showMemoryOverlay && (
@@ -1327,7 +1327,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     >
                                         <div style={{ padding: '16px' }}>
                                             <div style={{ marginBottom: '16px' }}>
-                                                <h4 style={{ 
+                                                <h4 style={{
                                                     margin: '0 0 8px 0',
                                                     color: darkModeColors.text,
                                                     fontSize: '14px'
@@ -1340,7 +1340,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                                     hasEnoughBalance={balanceNum >= 1.00 && isBalanceInBillions}
                                                 />
                                             </div>
-                                            
+
                                             <button
                                                 onClick={handleResetHistory}
                                                 style={{
@@ -1367,8 +1367,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         </div>
                         <div style={styles.scriptChatMessages}>
                             {scriptChatMessages.map((msg, index) => (
-                                <div 
-                                    key={index} 
+                                <div
+                                    key={index}
                                     style={{
                                         ...msg.role === 'user' ? styles.userMessage : styles.assistantMessage,
                                         position: 'relative',
@@ -1393,8 +1393,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                             )}
                                             <div style={styles.messageText}>
                                                 {/* Only show the user's message, not the history */}
-                                                {msg.content.split('```')[2]?.split('\n\n')[1] || 
-                                                 msg.content.split('\nPrevious commands:')[0]}
+                                                {msg.content.split('```')[2]?.split('\n\n')[1] ||
+                                                    msg.content.split('\nPrevious commands:')[0]}
                                             </div>
                                             {msg.timestamp && (
                                                 <div style={styles.messageTimestamp}>
@@ -1407,7 +1407,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                             <ReactMarkdown
                                                 children={msg.content}
                                                 components={{
-                                                    code({node, inline, className, children, ...props}) {
+                                                    code({ node, inline, className, children, ...props }) {
                                                         const match = /language-(\w+)/.exec(className || '');
                                                         return !inline && match ? (
                                                             <SyntaxHighlighter
@@ -1427,7 +1427,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                                 }}
                                             />
                                             {msg.fullScript && (
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         navigator.clipboard.writeText(msg.fullScript);
@@ -1443,7 +1443,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     )}
                                 </div>
                             ))}
-                            
+
                             {/* Add code viewer overlay */}
                             <AnimatePresence>
                                 {codeViewerOverlay && (
@@ -1470,7 +1470,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                                 >
                                                     {codeViewerOverlay.split('```html\n')[1].split('```')[0].trim()}
                                                 </SyntaxHighlighter>
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         navigator.clipboard.writeText(
@@ -1489,9 +1489,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-                            
+
                             {scriptChatActionOverlay && (
-                                <div 
+                                <div
                                     className="scriptChatActionOverlay"
                                     style={{
                                         ...styles.scriptChatActionOverlay,
@@ -1505,7 +1505,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 >
                                     {/* Show Copy option for user messages */}
                                     {scriptChatActionOverlay.role === 'user' && (
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 const message = scriptChatMessages[scriptChatActionOverlay.index];
                                                 const textToCopy = message.content.split('```')[2]?.split('\n\n')[1] || message.content;
@@ -1516,7 +1516,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                             Copy
                                         </button>
                                     )}
-                                    <button 
+                                    <button
                                         onClick={() => handleScriptChatDelete(scriptChatActionOverlay.index)}
                                         style={{
                                             ...styles.scriptChatActionButton,
@@ -1545,14 +1545,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             {selectedCodeAttachment && (
                                 <div style={styles.codeAttachmentPreview}>
                                     <pre style={styles.codePreview}>
-                                        {selectedCodeAttachment.length > 100 
-                                            ? selectedCodeAttachment.substring(0, 100) + '...' 
+                                        {selectedCodeAttachment.length > 100
+                                            ? selectedCodeAttachment.substring(0, 100) + '...'
                                             : selectedCodeAttachment}
                                     </pre>
-                                    <FaTimes 
-                                        className="RemoveCode" 
+                                    <FaTimes
+                                        className="RemoveCode"
                                         style={styles.removeCodeButton}
-                                        onClick={() => setSelectedCodeAttachment(null)} 
+                                        onClick={() => setSelectedCodeAttachment(null)}
                                     />
                                 </div>
                             )}
@@ -1587,7 +1587,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 placeholder="Send a command..."
                                 style={styles.scriptChatInput}
                             />
-                            <button 
+                            <button
                                 onClick={handleScriptChatSend}
                                 style={styles.scriptChatSendButton}
                             >
@@ -1619,20 +1619,20 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                 The Programmer Agent is designed for executing commands and tasks related to your app, not for general chatting. Your intent confidence is {Math.round(intentConfidence * 100)}%.
                             </p>
                             <div style={styles.intentWarningActions}>
-                                <button 
+                                <button
                                     onClick={() => setShowIntentWarning(false)}
                                     style={styles.intentWarningButton}
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowIntentWarning(false);
                                         const sendMessageAnyway = async () => {
-                                            const messageContent = selectedCodeAttachment ? 
-                                                `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${scriptChatInput}` : 
+                                            const messageContent = selectedCodeAttachment ?
+                                                `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${scriptChatInput}` :
                                                 scriptChatInput;
-                                            
+
                                             setScriptChatMessages(prev => [...prev, { role: 'user', content: messageContent }]);
                                             setScriptChatInput('');
                                             setSelectedCodeAttachment(null);
@@ -1641,10 +1641,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                             try {
                                                 // Construct the prompt 
                                                 const usersPrompt = selectedCodeAttachment ?
-                                                        `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`
-                                                    : 
+                                                    `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`
+                                                    :
                                                     scriptChatInput;
-                                                
+
                                                 const response = await updaterAgent(usersPrompt, code, modelPreferences.programmerModel, false);
 
                                                 // Log the response in yellow
@@ -1656,28 +1656,28 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                                                     newHistory.push({ content: response });
                                                     setEditHistory(newHistory);
                                                     setHistoryIndex(newHistory.length - 1);
-                                                    
+
                                                     // Update the code
                                                     setCode(response);
                                                     setPreviewKey(prev => prev + 1);
 
                                                     // Add a message indicating task completion
-                                                    setScriptChatMessages(prev => [...prev, { 
-                                                        role: 'assistant', 
-                                                        content: 'Task completed', 
-                                                        fullScript: response 
+                                                    setScriptChatMessages(prev => [...prev, {
+                                                        role: 'assistant',
+                                                        content: 'Task completed',
+                                                        fullScript: response
                                                     }]);
                                                 } else {
-                                                    setScriptChatMessages(prev => [...prev, { 
-                                                        role: 'assistant', 
-                                                        content: response 
+                                                    setScriptChatMessages(prev => [...prev, {
+                                                        role: 'assistant',
+                                                        content: response
                                                     }]);
                                                 }
                                             } catch (error) {
                                                 console.error('Error in chat:', error);
-                                                setScriptChatMessages(prev => [...prev, { 
-                                                    role: 'assistant', 
-                                                    content: 'Sorry, there was an error processing your request.' 
+                                                setScriptChatMessages(prev => [...prev, {
+                                                    role: 'assistant',
+                                                    content: 'Sorry, there was an error processing your request.'
                                                 }]);
                                             }
 
@@ -1921,25 +1921,6 @@ const styles = {
         position: 'relative',
         overflow: 'hidden',
         marginRight: '4px',
-    },
-    searchInput: {
-        backgroundColor: darkModeColors.inputBackground,
-        border: `1px solid ${darkModeColors.border}`,
-        borderRadius: '6px',
-        padding: '6px 12px',
-        color: darkModeColors.text,
-        fontSize: '14px',
-        width: '100%',
-        outline: 'none',
-        transition: 'all 0.2s ease',
-        '&:focus': {
-            borderColor: darkModeColors.primary,
-            boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
-        },
-        '@media (max-width: 768px)': {
-            padding: '4px 8px',
-            fontSize: '13px',
-        },
     },
     divider: {
         width: '1px',
