@@ -46,9 +46,9 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     }));
 
     // Add a placeholder for the assistant's response with typing indicator
-    const assistantMessage = { 
-      sender: "Ditto", 
-      text: "", 
+    const assistantMessage = {
+      sender: "Ditto",
+      text: "",
       timestamp: Date.now(),
       isTyping: true,
       docId: null,
@@ -66,10 +66,8 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       is_typing: true,
     }));
 
-    // Get model preferences
-    const modelPreferences = await getModelPreferencesFromFirestore(userID);
-
-    const [memories, examplesString, scriptDetails] = await Promise.all([
+    const [modelPreferences, memories, examplesString, scriptDetails] = await Promise.all([
+      getModelPreferencesFromFirestore(userID),
       fetchMemories(userID, userPromptEmbedding),
       getRelevantExamples(userPromptEmbedding, 5),
       fetchScriptDetails(),
@@ -88,12 +86,18 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       scriptName,
       scriptType
     );
-    
+
     console.log("%c" + constructedPrompt, "color: green");
 
-    // Disabled until we fix Claude 3.5 Sonnet in the backend (TODO)
-    // const mainAgentModel = image ? "claude-3-5-sonnet" : modelPreferences.mainModel;
     const mainAgentModel = modelPreferences.mainModel;
+    // Disable Claude until our rate limits are increased
+    if (mainAgentModel === "claude-3-5-sonnet") {
+      mainAgentModel = "gemini-1.5-pro";
+    }
+    // nemo doesn't support images
+    if (image && mainAgentModel === "mistral-nemo") {
+      mainAgentModel = "gemini-1.5-flash";
+    }
 
     // Prepare to update the assistant's message as the response streams in
     let updatedText = "";
@@ -109,7 +113,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     const processNextWord = async () => {
       if (wordQueue.length === 0) {
         isProcessing = false;
-        
+
         // Check for tool triggers in the complete response when streaming is done
         if (!toolTriggered && updatedText) {
           const toolTriggers = [
@@ -119,7 +123,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
             "<GOOGLE_SEARCH>",
             "<GOOGLE_HOME>"
           ];
-          
+
           for (const trigger of toolTriggers) {
             if (updatedText.includes(trigger) && !toolTriggered) {
               toolTriggered = true;
@@ -233,7 +237,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     // Only save to memory if no tool was triggered
     if (!toolTriggered) {
       const docId = await saveToMemory(userID, prompt, response, userPromptEmbedding);
-      
+
       // Update conversation with docId and pairID
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
@@ -301,7 +305,7 @@ const generateScriptName = async (script, query) => {
     scriptToNameSystemTemplate(),
     "gemini-1.5-flash"
   );
-  
+
   // Check for API error and retry once
   if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
     console.log("API error detected, retrying script name generation...");
@@ -321,7 +325,7 @@ const generateScriptName = async (script, query) => {
     alert("Please add more Tokens in Settings to continue using this app.");
     scriptToNameResponse = "App Name Here";
   }
-  
+
   // print the response in yellow
   console.log("%c" + scriptToNameResponse, "color: yellow");
   // strip any whitespace from the response or the Script Name: part
@@ -342,11 +346,11 @@ const processResponse = async (
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
   let errorMessage = "Error: Payment Required. Please check your token balance.";
-  
+
   if (response === errorMessage || response.includes("402") || response.includes("Payment Required")) {
     isValidResponse = false;
     response = errorMessage;
-    
+
     // Update conversation with error message
     updateConversation((prevState) => {
       const messages = [...prevState.messages];
@@ -358,7 +362,7 @@ const processResponse = async (
       };
       return { ...prevState, messages };
     });
-    
+
     return errorMessage;
   }
 
@@ -366,7 +370,7 @@ const processResponse = async (
     try {
       if (status === "complete" && finalResponse) {
         const docId = await saveToMemory(userID, prompt, finalResponse, userPromptEmbedding);
-        
+
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 2] = {
@@ -478,8 +482,8 @@ const processResponse = async (
     const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
     console.log("%c" + googleSearchAgentTemplate, "color: green");
     const googleSearchAgentResponse = await promptLLM(
-      googleSearchAgentTemplate, 
-      googleSearchSystemTemplate(), 
+      googleSearchAgentTemplate,
+      googleSearchSystemTemplate(),
       "gemini-1.5-flash"
     );
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
@@ -490,7 +494,7 @@ const processResponse = async (
     const query = response.split("<GOOGLE_HOME>")[1];
     await updateMessageWithToolStatus("Executing Home Assistant Task", "home");
     let success = await handleHomeAssistantTask(query);
-    const finalResponse = success ? 
+    const finalResponse = success ?
       `Home Assistant Task: ${query}\n\nTask completed successfully.` :
       `Home Assistant Task: ${query}\n\nTask failed.`;
     await updateMessageWithToolStatus(success ? "complete" : "failed", "home", finalResponse);
@@ -518,11 +522,11 @@ const handleScriptGeneration = async (
 ) => {
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(query, scriptContents, memories.longTermMemory, memories.shortTermMemory);
-  
+
   console.log("%c" + constructedPrompt, "color: green");
-  
+
   let scriptResponse = "";
-  
+
   // Don't save the "Generating..." message to Firestore
   updateConversation((prevState) => {
     const messages = [...prevState.messages];
@@ -543,7 +547,7 @@ const handleScriptGeneration = async (
       systemTemplateFunction(),
       "gemini-1.5-flash",
       image,
-      () => {}  // Prevent streaming updates
+      () => { }  // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
@@ -559,12 +563,12 @@ const handleScriptGeneration = async (
   const fileName = downloadFunction(cleanedScript, scriptName);
   let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf("."));
   let scriptTypeToWords = scriptType === "webApps" ? "HTML" : "OpenSCAD";
-  
+
   await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
   handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-  
+
   const newResponse = `**${scriptTypeToWords} Script Generated and Downloaded.**\n- Task: ${query}`;
-  
+
   // Return the response without saving to memory - let updateMessageWithToolStatus handle that
   return newResponse;
 };
@@ -627,7 +631,7 @@ const saveToLocalStorage = (prompt, response, timestamp, pairID) => {
   const responses = loadFromLocalStorage("responses", []);
   const timestamps = loadFromLocalStorage("timestamps", []);
   const pairIDs = loadFromLocalStorage("pairIDs", []);
-  
+
   if (!pairIDs.includes(pairID)) { // Ensure no duplicates
     prompts.push(prompt);
     responses.push(response);
