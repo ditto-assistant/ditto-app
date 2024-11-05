@@ -128,19 +128,26 @@ const ModelDropdown = ({
                                 onClick={() => handleSelect(model.id)}
                             >
                                 <span>{model.name}</span>
-                                {model.isPremium && (
-                                    <div style={styles.badges}>
-                                        <span style={styles.premiumBadge}>
-                                            <FaCrown style={styles.crownIcon} />
-                                            Premium
-                                        </span>
-                                        {!hasEnoughBalance && (
-                                            <span style={styles.requirementBadge}>
-                                                Requires 1.00B
+                                <div style={styles.badges}>
+                                    {model.isPremium && (
+                                        <>
+                                            <span style={styles.premiumBadge}>
+                                                <FaCrown style={styles.crownIcon} />
+                                                Premium
                                             </span>
-                                        )}
-                                    </div>
-                                )}
+                                            {!hasEnoughBalance && (
+                                                <span style={styles.requirementBadge}>
+                                                    Requires 1.00B
+                                                </span>
+                                            )}
+                                        </>
+                                    )}
+                                    {model.isFree && (
+                                        <span style={styles.freeBadge}>
+                                            FREE
+                                        </span>
+                                    )}
+                                </div>
                             </motion.div>
                         ))}
                     </motion.div>
@@ -237,6 +244,14 @@ const styles = {
         fontSize: '10px',
         flexShrink: 0,
         color: '#FFFFFF',
+    },
+    freeBadge: {
+        backgroundColor: '#43B581',
+        color: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '2px 6px',
+        fontSize: '10px',
+        whiteSpace: 'nowrap',
     },
 };
 

@@ -89,7 +89,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
 
     console.log("%c" + constructedPrompt, "color: green");
 
-    const mainAgentModel = modelPreferences.mainModel;
+    let mainAgentModel = modelPreferences.mainModel;
     // Disable Claude until our rate limits are increased
     if (mainAgentModel === "claude-3-5-sonnet") {
       mainAgentModel = "gemini-1.5-pro";
