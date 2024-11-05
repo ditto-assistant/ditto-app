@@ -167,6 +167,8 @@ export const removeUsersMemoryFromFirestore = async (userID) => {
     if (mode === 'development') {
       console.log("User's memory removed from Firestore collection with ID: ", userID);
     }
+    // Dispatch event when memories are deleted
+    window.dispatchEvent(new Event('memoryUpdated'));
   } catch (e) {
     console.error("Error removing user's memory from Firestore memory collection: ", e);
   }
@@ -291,6 +293,8 @@ export const resetConversation = async (userID) => {
   try {
     await deleteCollection(db, collection(db, "memory", userID, "conversations"), 10);
     localStorage.setItem('histCount', 0);
+    // Dispatch event when conversation is reset
+    window.dispatchEvent(new Event('memoryUpdated'));
   } catch (e) {
     console.error("Error resetting memory collection: ", e);
   }

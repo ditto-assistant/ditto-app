@@ -130,13 +130,13 @@ export const getLongTermMemory = async (userID, embedding, k) => {
       }
 
       // Log the type of response we're processing
-      console.log("Processing response type:", 
-        pair.response.includes("Script Generated") ? "Script" :
-        pair.response.includes("Image Task") ? "Image" :
-        pair.response.includes("Google Search") ? "Search" :
-        pair.response.includes("Home Assistant") ? "Home" :
-        "Normal"
-      );
+      // console.log("Processing response type:", 
+      //   pair.response.includes("Script Generated") ? "Script" :
+      //   pair.response.includes("Image Task") ? "Image" :
+      //   pair.response.includes("Google Search") ? "Search" :
+      //   pair.response.includes("Home Assistant") ? "Home" :
+      //   "Normal"
+      // );
 
       // Rest of the formatting logic remains the same
       if (pair.response.includes("Script Generated and Downloaded.**")) {

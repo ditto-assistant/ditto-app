@@ -1026,6 +1026,9 @@ export default function ChatFeed({
               localStorage.setItem("timestamps", JSON.stringify(timestamps));
               localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
               localStorage.setItem("histCount", pairIDs.length);
+
+              // Dispatch memoryUpdated event to trigger memory count refresh
+              window.dispatchEvent(new Event('memoryUpdated'));
             }
           }
         } else {
@@ -1035,6 +1038,9 @@ export default function ChatFeed({
           if (newMemories.length === 0) {
             setMemoryOverlay(null);
           }
+
+          // Dispatch memoryUpdated event to trigger memory count refresh
+          window.dispatchEvent(new Event('memoryUpdated'));
         }
       }
     } catch (error) {

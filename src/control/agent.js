@@ -616,6 +616,8 @@ export const saveToMemory = async (
         docRef.id
       );
     }
+    // Dispatch event when memory is created
+    window.dispatchEvent(new Event('memoryUpdated'));
     return docRef.id;
   } catch (e) {
     console.error(

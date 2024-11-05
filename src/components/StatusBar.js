@@ -5,10 +5,12 @@ import MemoryOverlay from "./MemoryOverlay";
 import { syncLocalScriptsWithFirestore, grabConversationHistoryCount } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { useMemoryCount } from "../hooks/useMemoryCount";
 
 function StatusBar() {
     const navigate = useNavigate();
     const balance = useBalance();
+    const memoryCount = useMemoryCount();
     const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
     const [workingScript, setWorkingScript] = useState(() => {
         const storedScript = localStorage.getItem("workingOnScript");
@@ -23,7 +25,6 @@ function StatusBar() {
         return savedMode === 't';
     });
     const [showMemories, setShowMemories] = useState(false);
-    const [memoryCount, setMemoryCount] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const [scripts, setScripts] = useState(() => {
@@ -99,43 +100,6 @@ function StatusBar() {
         localStorage.setItem("openSCAD", JSON.stringify(openSCAD));
     }, [scripts]);
 
-    useEffect(() => {
-        const fetchMemoryCount = async () => {
-            const userID = localStorage.getItem('userID');
-            if (userID) {
-                const count = await grabConversationHistoryCount(userID);
-                setMemoryCount(count);
-            }
-        };
-
-        // Create event listener for memory updates
-        const handleMemoryUpdate = () => {
-            fetchMemoryCount();
-        };
-
-        // Listen for histCount changes in localStorage
-        const handleStorageChange = (e) => {
-            if (e.key === 'histCount') {
-                fetchMemoryCount();
-            }
-        };
-
-        // Initial fetch
-        fetchMemoryCount();
-
-        // Add event listeners
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('memoryUpdated', handleMemoryUpdate);
-        window.addEventListener('memoryDeleted', handleMemoryUpdate);
-
-        // Cleanup
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('memoryUpdated', handleMemoryUpdate);
-            window.removeEventListener('memoryDeleted', handleMemoryUpdate);
-        };
-    }, []);
-
     const toggleBalanceDisplay = () => {
         if (showMemories) {
             setShowMemories(false);
@@ -177,7 +141,7 @@ function StatusBar() {
                     {balance.loading ? (
                         <LoadingSpinner size={14} inline={true} />
                     ) : showMemories ? (
-                        `${memoryCount} Memories`
+                        `${memoryCount.count} Memories`
                     ) : showUSD ? (
                         balance.usd
                     ) : (
