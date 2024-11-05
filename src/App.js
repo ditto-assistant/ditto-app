@@ -7,6 +7,7 @@ import { BalanceProvider } from './hooks/useBalance';
 import { DittoActivationProvider } from './hooks/useDittoActivation';
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import Login from './screens/login';
+import { MemoryCountProvider } from './hooks/useMemoryCount';
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -43,13 +44,15 @@ const router = createBrowserRouter(
 export default function App() {
     return (
         <AuthProvider>
-            <IntentRecognitionProvider>
-                <DittoActivationProvider>
-                    <BalanceProvider>
-                        <RouterProvider router={router} />
-                    </BalanceProvider>
-                </DittoActivationProvider>
-            </IntentRecognitionProvider>
+            <BalanceProvider>
+                <MemoryCountProvider>
+                    <IntentRecognitionProvider>
+                        <DittoActivationProvider>
+                            <RouterProvider router={router} />
+                        </DittoActivationProvider>
+                    </IntentRecognitionProvider>
+                </MemoryCountProvider>
+            </BalanceProvider>
         </AuthProvider>
     );
 }
