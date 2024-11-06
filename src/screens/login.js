@@ -257,7 +257,7 @@ const Login = () => {
             {showTOS && (
                 <TermsOfService 
                     onClose={() => setShowTOS(false)} 
-                    isNewAccount={isCreatingAccount}
+                    isNewAccount={false}
                 />
             )}
         </div>

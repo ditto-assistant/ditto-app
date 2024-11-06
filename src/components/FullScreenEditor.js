@@ -414,17 +414,31 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
             setIsSaving(true);
 
-            // Let the parent handle the save
-            await onSave(code);
-
-            // Clear undo/redo history after successful save
-            setEditHistory([{ content: code }]);
-            setHistoryIndex(0);
+            if (script.onSaveCallback) {
+                // This is being called from HomeScreen
+                await script.onSaveCallback(code);
+                
+                // Clear undo/redo history after successful save
+                setEditHistory([{ content: code }]);
+                setHistoryIndex(0);
+                
+                setToastMessage('Changes saved successfully!');
+                setToastType('success');
+                setShowToast(true);
+            } else {
+                // This is being called from ScriptsScreen
+                await onSave(code);
+                
+                // Clear undo/redo history after successful save
+                setEditHistory([{ content: code }]);
+                setHistoryIndex(0);
+                
+                setToastMessage('Changes saved successfully!');
+                setToastType('success');
+                setShowToast(true);
+            }
 
             setIsSaving(false);
-            setToastMessage('Changes saved successfully!');
-            setToastType('success');
-            setShowToast(true);
         } catch (error) {
             console.error('Error saving:', error);
             setIsSaving(false);
@@ -585,7 +599,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             return;
         }
 
-        await closeEditor();
+        if (script.onSaveCallback) {
+            // If launched from HomeScreen, just close the editor
+            setFullScreenEdit(null);
+        } else {
+            // If launched from ScriptsScreen, do the cleanup
+            await closeEditor();
+        }
     };
 
     useEffect(() => {

@@ -40,6 +40,12 @@ const ModelDropdown = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        if (!hasEnoughBalance && selectedModel?.isPremium) {
+            onChange("llama-3-2");
+        }
+    }, [hasEnoughBalance, selectedModel, onChange]);
+
     /**
      * Handles the selection of a model from the dropdown
      * @param {Model} modelId - The ID of the selected model
@@ -267,6 +273,10 @@ const styles = {
         fontSize: '10px',
         whiteSpace: 'nowrap',
     },
+};
+
+const isPremiumModel = (model) => {
+    return ['claude-3-5-sonnet', 'gemini-1.5-pro'].includes(model);
 };
 
 export default ModelDropdown; 

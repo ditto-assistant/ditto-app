@@ -26,7 +26,8 @@ import {
   deleteScriptFromFirestore, 
   renameScriptInFirestore, 
   getVersionsOfScriptFromFirestore,
-  getScriptTimestamps
+  getScriptTimestamps,
+  saveScriptToFirestore 
 } from "../control/firebase";
 
 const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
@@ -494,9 +495,47 @@ export default function HomeScreen() {
     }
   };
 
-  const handleEditScript = () => {
-    navigate('/scripts');
-  };
+  const handleEditScript = (script) => {
+    // If script is passed directly, use it, otherwise try to find the selected script
+    const scriptToEdit = script || (selectedScript && (
+        scripts.webApps.find(s => s.name === selectedScript) || 
+        scripts.openSCAD.find(s => s.name === selectedScript)
+    ));
+    
+    if (scriptToEdit) {
+        if (scriptToEdit.scriptType === 'webApps') {
+            setFullScreenEdit({
+                ...scriptToEdit,
+                onSaveCallback: async (newContent) => {
+                    const userID = localStorage.getItem("userID");
+                    try {
+                        setShowLoadingSpinner(true);
+                        await saveScriptToFirestore(userID, newContent, scriptToEdit.scriptType, scriptToEdit.name);
+                        
+                        // Update local scripts
+                        await syncLocalScriptsWithFirestore(userID, scriptToEdit.scriptType);
+                        
+                        // Update workingOnScript in localStorage
+                        const workingOnScript = {
+                            script: scriptToEdit.name,
+                            contents: newContent,
+                            scriptType: scriptToEdit.scriptType
+                        };
+                        localStorage.setItem("workingOnScript", JSON.stringify(workingOnScript));
+                        
+                        setShowLoadingSpinner(false);
+                        setFullScreenEdit(null);
+                    } catch (error) {
+                        console.error('Error saving:', error);
+                        setShowLoadingSpinner(false);
+                    }
+                }
+            });
+        } else {
+            setOpenScadViewer(scriptToEdit);
+        }
+    }
+};
 
   const handleDeselectScript = () => {
     localStorage.removeItem('workingOnScript');
