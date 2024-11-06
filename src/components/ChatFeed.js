@@ -12,6 +12,7 @@ import { FaBrain, FaTrash, FaSpinner } from 'react-icons/fa';
 import { deleteConversation } from '../control/memory';
 import { routes } from '../firebaseConfig';
 import { textEmbed } from '../api/LLM';  // Add this import
+import MemoryNetwork from './MemoryNetwork';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -847,101 +848,117 @@ export default function ChatFeed({
 
   const handleShowMemories = async (index) => {
     try {
-      const controller = new AbortController();
-      setAbortController(controller);
-      setLoadingMemories(true);
+        const controller = new AbortController();
+        setAbortController(controller);
+        setLoadingMemories(true);
 
-      const message = messages[index];
-      const userID = auth.currentUser.uid;
-      
-      let promptToUse;
-      let currentPairID;
-      if (message.sender === 'User') {
-        promptToUse = message.text;
-        currentPairID = message.pairID;
-      } else {
-        if (index > 0 && messages[index - 1].sender === 'User') {
-          promptToUse = messages[index - 1].text;
-          currentPairID = messages[index - 1].pairID;
+        const message = messages[index];
+        const userID = auth.currentUser.uid;
+        
+        let promptToUse;
+        let currentPairID;
+        if (message.sender === 'User') {
+            promptToUse = message.text;
+            currentPairID = message.pairID;
         } else {
-          console.error('Could not find corresponding prompt for response');
-          setLoadingMemories(false);
-          return;
+            if (index > 0 && messages[index - 1].sender === 'User') {
+                promptToUse = messages[index - 1].text;
+                currentPairID = messages[index - 1].pairID;
+            } else {
+                console.error('Could not find corresponding prompt for response');
+                setLoadingMemories(false);
+                return;
+            }
         }
-      }
 
-      // Create a unique ID for this prompt
-      const promptId = `${userID}-${promptToUse}`;
+        // Get embedding for the prompt
+        const embedding = await textEmbed(promptToUse);
+        if (!embedding) {
+            console.error('Could not generate embedding for prompt');
+            setLoadingMemories(false);
+            return;
+        }
 
-      // Check cache first
-      const cachedMemories = getCachedMemories(promptId);
-      if (cachedMemories) {
-        console.log('Using cached memories');
-        // Filter out the current conversation from cached memories
-        const filteredMemories = cachedMemories.filter(memory => memory.id !== currentPairID);
-        setRelatedMemories(filteredMemories);
+        // Fetch top 6 memories
+        const token = await auth.currentUser.getIdToken();
+        const response = await fetch(routes.memories, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            },
+            body: JSON.stringify({
+                userId: userID,
+                vector: embedding,
+                k: 6
+            }),
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch memories');
+        }
+
+        const data = await response.json();
+        let topMemories = data.memories || [];
+
+        // Discard the top-1 memory
+        topMemories = topMemories.slice(1, 6);
+
+        // For each of the top 5 memories, fetch their 2 most related memories
+        const memoriesWithRelated = await Promise.all(topMemories.map(async (memory) => {
+            const relatedEmbedding = await textEmbed(memory.prompt);
+            const relatedResponse = await fetch(routes.memories, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
+                },
+                body: JSON.stringify({
+                    userId: userID,
+                    vector: relatedEmbedding,
+                    k: 3 // Fetch 3 to filter out self
+                })
+            });
+
+            const relatedData = await relatedResponse.json();
+            // Filter out the memory itself and take top 2
+            const relatedMemories = relatedData.memories
+                .filter(m => m.id !== memory.id)
+                .slice(0, 2);
+
+            return {
+                ...memory,
+                related: relatedMemories
+            };
+        }));
+
+        // Create the central node structure
+        const networkData = {
+            prompt: promptToUse,
+            response: message.text,
+            related: memoriesWithRelated
+        };
+
+        console.log('Network Data:', networkData);
+        setRelatedMemories([networkData]);
         setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
         setActionOverlay(null);
-        setLoadingMemories(false);
-        return;
-      }
-
-      // Get embedding for the prompt
-      const embedding = await textEmbed(promptToUse);
-      if (!embedding) {
-        console.error('Could not generate embedding for prompt');
-        setLoadingMemories(false);
-        return;
-      }
-
-      // Use the embedding to search for memories, requesting one extra (k=6)
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch(routes.memories, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Origin': window.location.origin
-        },
-        body: JSON.stringify({
-          userId: userID,
-          vector: embedding,
-          k: 6 // Request one extra memory
-        }),
-        signal: controller.signal
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch memories');
-      }
-
-      const data = await response.json();
-      let memories = data.memories || [];
-      
-      // Filter out the current conversation
-      memories = memories.filter(memory => memory.id !== currentPairID);
-      
-      // Only keep the first 5 memories after filtering
-      memories = memories.slice(0, 5);
-      
-      // Cache the filtered results
-      setMemoryCache(promptId, memories);
-      
-      setRelatedMemories(memories);
-      setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
-      setActionOverlay(null);
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('Memory fetch cancelled');
-      } else {
-        console.error('Error fetching memories:', error);
-      }
+        if (error.name === 'AbortError') {
+            console.log('Memory fetch cancelled');
+        } else {
+            console.error('Error fetching memories:', error);
+        }
     } finally {
-      setLoadingMemories(false);
-      setAbortController(null);
+        setLoadingMemories(false);
+        setAbortController(null);
     }
-  };
+};
 
   const handleDeleteMemory = async (memory, idx) => {
     const userID = auth.currentUser.uid;
@@ -1354,82 +1371,7 @@ export default function ChatFeed({
                 <h3>Related Memories</h3>
                 <button className="close-button" onClick={() => setMemoryOverlay(null)}>×</button>
               </div>
-              <div className="memory-controls">
-                <div className="memory-controls-left">
-                  <button 
-                    className={`memory-control-button ${sortBy === 'relevance' ? 'active' : ''}`}
-                    onClick={() => handleSort('relevance')}
-                  >
-                    <FiBarChart2 />
-                    Relevance
-                    <span className={`sort-direction ${sortBy === 'relevance' && sortDirection === 'asc' ? 'asc' : ''}`}>
-                      <FiChevronDown />
-                    </span>
-                  </button>
-                  <button 
-                    className={`memory-control-button ${sortBy === 'timestamp' ? 'active' : ''}`}
-                    onClick={() => handleSort('timestamp')}
-                  >
-                    <FiClock />
-                    Time
-                    <span className={`sort-direction ${sortBy === 'timestamp' && sortDirection === 'asc' ? 'asc' : ''}`}>
-                      <FiChevronDown />
-                    </span>
-                  </button>
-                </div>
-                <div className="memory-controls-right">
-                  <div className="score-toggle">
-                    <span>Show Scores</span>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={showScores}
-                        onChange={(e) => setShowScores(e.target.checked)}
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div className="memory-list">
-                {getSortedMemories().map((memory, idx) => (
-                  <motion.div
-                    key={idx}
-                    className="memory-item"
-                    initial={{ opacity: 1, height: 'auto', scale: 1 }}
-                    animate={{
-                      opacity: deletingMemories.has(idx) ? 0 : 1,
-                      height: deletingMemories.has(idx) ? 0 : 'auto',
-                      scale: deletingMemories.has(idx) ? 0.8 : 1,
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {showScores && (
-                      <div className="memory-score">
-                        Relevance: {(memory.score * 100).toFixed(2)}%
-                      </div>
-                    )}
-                    <div className="memory-prompt">
-                      {renderMemoryContent(memory.prompt)}
-                    </div>
-                    <div className="memory-response">
-                      {renderMemoryContent(memory.response)}
-                    </div>
-                    <div className="memory-footer">
-                      <div className="memory-timestamp">
-                        {formatFullTimestamp(new Date(memory.timestampString).getTime())}
-                      </div>
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDeleteMemory(memory, idx)}
-                        disabled={deletingMemories.has(idx)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <MemoryNetwork memories={relatedMemories} />
             </motion.div>
           </motion.div>
         )}
