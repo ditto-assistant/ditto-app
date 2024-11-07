@@ -452,7 +452,10 @@ const MemoryPathOverlay = ({ path, onClose }) => {
         window.open(src, '_blank');
     };
 
-    const closeImageOverlay = () => {
+    const closeImageOverlay = (e) => {
+        if (e) {
+            e.stopPropagation(); // Stop event from bubbling up to parent overlay
+        }
         setImageOverlay(null);
     };
 
@@ -666,12 +669,15 @@ const MemoryPathOverlay = ({ path, onClose }) => {
                 )}
             </AnimatePresence>
 
-            {/* Image Overlay */}
+            {/* Update the Image Overlay */}
             <AnimatePresence>
                 {imageOverlay && (
                     <motion.div 
                         className="image-overlay" 
-                        onClick={closeImageOverlay}
+                        onClick={(e) => {
+                            e.stopPropagation(); // Stop propagation to parent overlay
+                            closeImageOverlay(e);
+                        }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -700,14 +706,20 @@ const MemoryPathOverlay = ({ path, onClose }) => {
                                     >
                                         <button 
                                             className="image-control-button back"
-                                            onClick={closeImageOverlay}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                closeImageOverlay(e);
+                                            }}
                                             title="Back"
                                         >
                                             <IoMdArrowBack />
                                         </button>
                                         <button 
                                             className="image-control-button download"
-                                            onClick={() => handleImageDownload(imageOverlay)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleImageDownload(imageOverlay);
+                                            }}
                                             title="Download"
                                         >
                                             <FiDownload />
