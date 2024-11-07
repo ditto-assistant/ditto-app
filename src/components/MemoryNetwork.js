@@ -1144,13 +1144,19 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
-        paddingBottom: '40px'
+        paddingBottom: '100px'
     },
     memoryCard: {
         backgroundColor: '#36393f',
         padding: '16px',
         borderRadius: '8px',
-        border: '1px solid rgba(255, 255, 255, 0.1)'
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        overflow: 'auto',
+        boxSizing: 'border-box'
+    },
+    memoryContent: {
+        maxHeight: 'calc(100vh - 200px)',
+        overflowY: 'auto',
     },
     memoryHeader: {
         display: 'flex',
@@ -1292,9 +1298,9 @@ const styles = {
     },
     tableContainer: {
         height: '100%',
-        overflow: 'auto',
+        overflowY: 'auto',
         padding: '20px',
-        paddingBottom: '80px'
+        boxSizing: 'border-box'
     },
     memoryActions: {
         display: 'flex',
