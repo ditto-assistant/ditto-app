@@ -33,7 +33,7 @@
     "hammerjs": "^2.0.8"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
