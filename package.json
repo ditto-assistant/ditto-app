@@ -29,7 +29,7 @@
     "workbox-expiration": "^6.6.1",
     "workbox-precaching": "^7.3.0",
     "workbox-routing": "^6.6.1",
-    "workbox-strategies": "^6.6.1",
+    "workbox-strategies": "^7.3.0",
     "hammerjs": "^2.0.8"
   },
   "devDependencies": {
