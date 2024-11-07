@@ -985,7 +985,6 @@ const styles = {
         flexDirection: 'column',
         width: '100%',
         height: '100vh',
-        overflow: 'hidden',
         backgroundColor: '#2f3136'
     },
     network: {
@@ -1040,8 +1039,7 @@ const styles = {
     content: {
         flex: 1,
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column'
+        position: 'relative'
     },
     pathOverlay: {
         position: 'fixed',
@@ -1054,17 +1052,18 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 5000,
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(5px)',
+        padding: '20px'
     },
     pathContent: {
         backgroundColor: '#36393f',
         borderRadius: '12px',
-        width: '90%',
+        width: '100%',
         maxWidth: '800px',
-        maxHeight: '90vh',
-        overflow: 'hidden',
+        height: '90vh',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
     },
     pathHeader: {
         padding: '16px 24px',
@@ -1082,7 +1081,8 @@ const styles = {
     pathBody: {
         padding: '24px',
         overflowY: 'auto',
-        flex: 1
+        flex: 1,
+        paddingBottom: '80px'
     },
     pathNode: {
         marginBottom: '24px'
@@ -1144,7 +1144,7 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
-        overflowY: 'auto',
+        paddingBottom: '40px'
     },
     memoryCard: {
         backgroundColor: '#36393f',
@@ -1225,6 +1225,7 @@ const styles = {
         padding: '24px',
         overflowY: 'auto',
         maxHeight: 'calc(90vh - 80px)',
+        paddingBottom: '80px'
     },
     parentMemory: {
         marginBottom: '24px'
@@ -1293,6 +1294,7 @@ const styles = {
         height: '100%',
         overflow: 'auto',
         padding: '20px',
+        paddingBottom: '80px'
     },
     memoryActions: {
         display: 'flex',
