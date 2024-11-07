@@ -857,13 +857,16 @@ export default function ChatFeed({
         
         let promptToUse;
         let currentPairID;
+        let currentTimestamp;
         if (message.sender === 'User') {
             promptToUse = message.text;
             currentPairID = message.pairID;
+            currentTimestamp = message.timestamp;
         } else {
             if (index > 0 && messages[index - 1].sender === 'User') {
                 promptToUse = messages[index - 1].text;
                 currentPairID = messages[index - 1].pairID;
+                currentTimestamp = messages[index - 1].timestamp;
             } else {
                 console.error('Could not find corresponding prompt for response');
                 setLoadingMemories(false);
@@ -921,7 +924,7 @@ export default function ChatFeed({
                 body: JSON.stringify({
                     userId: userID,
                     vector: relatedEmbedding,
-                    k: 3 // Fetch 3 to filter out self
+                    k: 3
                 })
             });
 
@@ -938,14 +941,25 @@ export default function ChatFeed({
         }));
 
         // Create the central node structure
-        const networkData = {
+        const networkData = [{
             prompt: promptToUse,
             response: message.text,
-            related: memoriesWithRelated
-        };
+            timestamp: currentTimestamp,
+            timestampString: new Date(currentTimestamp).toISOString(),
+            related: memoriesWithRelated.map(mem => ({
+                ...mem,
+                timestamp: mem.timestamp,
+                timestampString: mem.timestampString,
+                related: mem.related.map(rel => ({
+                    ...rel,
+                    timestamp: rel.timestamp,
+                    timestampString: rel.timestampString
+                }))
+            }))
+        }];
 
         console.log('Network Data:', networkData);
-        setRelatedMemories([networkData]);
+        setRelatedMemories(networkData);
         setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
         setActionOverlay(null);
     } catch (error) {
@@ -1367,11 +1381,10 @@ export default function ChatFeed({
               exit={{ scale: 0.9, opacity: 0, y: 50 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              <div className="memory-header">
-                <h3>Related Memories</h3>
-                <button className="close-button" onClick={() => setMemoryOverlay(null)}>×</button>
-              </div>
-              <MemoryNetwork memories={relatedMemories} />
+              <MemoryNetwork 
+                memories={relatedMemories} 
+                onClose={() => setMemoryOverlay(null)} 
+              />
             </motion.div>
           </motion.div>
         )}
