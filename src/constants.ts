@@ -3,6 +3,7 @@ export type Model =
     "gemini-1.5-flash" |
     "claude-3-5-sonnet" |
     "mistral-nemo" |
+    "mistral-large" |
     "llama-3-2";
 
 export interface ModelOption {
@@ -20,4 +21,5 @@ export const DEFAULT_MODELS: ModelOption[] = [
     { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', isPremium: true },
     { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', isPremium: true, isMaintenance: true },
     { id: 'mistral-nemo', name: 'Mistral Nemo', isPremium: false },
+    { id: 'mistral-large', name: 'Mistral Large', isPremium: true },
 ] as const;
