@@ -33,11 +33,17 @@ import { db, saveScriptToFirestore, grabConversationHistoryCount, getModelPrefer
 
 const mode = import.meta.env.MODE;
 
+// Add this near the top of the file with other constants
+let toolTriggered = false;
+
 /**
  * Send a prompt to Ditto.
  */
 export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmbedding, updateConversation) => {
   try {
+    // Reset tool trigger state at the start of each prompt
+    toolTriggered = false;
+    
     // Add the user's message to the conversation
     const userMessage = { sender: "User", text: prompt, timestamp: Date.now(), pairID: null };
     updateConversation((prevState) => ({
@@ -101,7 +107,6 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
 
     // Prepare to update the assistant's message as the response streams in
     let updatedText = "";
-    let toolTriggered = false;
 
     // Streaming callback
     let buffer = "";
@@ -199,16 +204,20 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     };
 
     const streamingCallback = (chunk) => {
-      buffer += chunk;
-
-      // Split buffer into words including whitespace
-      const words = buffer.split(/(\s+)/);
-      buffer = words.pop(); // Keep any incomplete word in the buffer
-      wordQueue.push(...words);
-
-      if (!isProcessing) {
-        processNextWord();
-      }
+      // Check if this is the first chunk of a new message
+      const isNewMessage = !buffer && !wordQueue.length;
+      
+      // Don't stream if we've detected a tool trigger
+      if (toolTriggered) return;
+      
+      // Dispatch the streaming event with the chunk and isNewMessage flag
+      const event = new CustomEvent('responseStreamUpdate', {
+        detail: { 
+          chunk,
+          isNewMessage 
+        }
+      });
+      window.dispatchEvent(event);
     };
 
     // Call the LLM with the streaming callback
@@ -234,8 +243,19 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       await new Promise((resolve) => setTimeout(resolve, WORD_DELAY_MS));
     }
 
-    // Only save to memory if no tool was triggered
-    if (!toolTriggered) {
+    // Check for tool triggers before saving
+    const toolTriggers = [
+      "<OPENSCAD>",
+      "<HTML_SCRIPT>",
+      "<IMAGE_GENERATION>",
+      "<GOOGLE_SEARCH>",
+      "<GOOGLE_HOME>"
+    ];
+
+    const hasTrigger = toolTriggers.some(trigger => response.includes(trigger));
+
+    // Only save to memory if no tool trigger is found
+    if (!hasTrigger && response) {
       const docId = await saveToMemory(userID, prompt, response, userPromptEmbedding);
 
       // Update conversation with docId and pairID
@@ -332,7 +352,7 @@ const generateScriptName = async (script, query) => {
   return scriptToNameResponse.trim().replace("Script Name:", "").trim();
 };
 
-const processResponse = async (
+export const processResponse = async (
   response,
   prompt,
   userPromptEmbedding,
@@ -343,6 +363,8 @@ const processResponse = async (
   memories,
   updateConversation
 ) => {
+  toolTriggered = true; // Set this flag to stop streaming
+  
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
   let errorMessage = "Error: Payment Required. Please check your token balance.";
@@ -369,7 +391,11 @@ const processResponse = async (
   const updateMessageWithToolStatus = async (status, type, finalResponse = null) => {
     try {
       if (status === "complete" && finalResponse) {
-        const docId = await saveToMemory(userID, prompt, finalResponse, userPromptEmbedding);
+        // Generate a new embedding for the final response
+        const responseEmbedding = await textEmbed(finalResponse);
+        
+        // Save the final processed response to memory with the embedding
+        const docId = await saveToMemory(userID, prompt, finalResponse, responseEmbedding || userPromptEmbedding);
 
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
@@ -500,6 +526,9 @@ const processResponse = async (
     await updateMessageWithToolStatus(success ? "complete" : "failed", "home", finalResponse);
     return finalResponse;
   }
+
+  // After tool processing is complete, make sure to reset the flag
+  toolTriggered = false;
 
   return response;
 };

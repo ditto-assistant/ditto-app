@@ -13,6 +13,8 @@ import { deleteConversation } from '../control/memory';
 import { routes } from '../firebaseConfig';
 import { textEmbed } from '../api/LLM';  // Add this import
 import MemoryNetwork from './MemoryNetwork';
+import { useTokenStreaming } from '../hooks/useTokenStreaming';
+import { processResponse } from '../control/agent';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -194,6 +196,7 @@ export default function ChatFeed({
   const streamTimeoutRef = useRef(null);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
+  const { streamedText, currentWord, isStreaming, processChunk, reset, isComplete } = useTokenStreaming();
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -210,39 +213,22 @@ export default function ChatFeed({
 
   useEffect(() => {
     const handleStreamUpdate = (event) => {
-      const { responseIndex, word, fullResponse, isNewMessage } = event.detail;
+      const { chunk, isNewMessage } = event.detail;
       
-      // Update streaming responses with full text
-      setStreamingResponses(prev => ({
-        ...prev,
-        [responseIndex]: fullResponse
-      }));
+      if (!chunk) return;
       
-      // Set the currently animating word
-      setAnimatingWord({
-        index: responseIndex,
-        word: word
-      });
-      
-      // Clear previous timeout
-      if (streamTimeoutRef.current) {
-        clearTimeout(streamTimeoutRef.current);
-      }
-      
-      // Set new timeout to clear animation
-      streamTimeoutRef.current = setTimeout(() => {
-        setAnimatingWord({ index: null, word: "" });
-      }, 400); // Animation duration
-      
-      // Only scroll if user is near bottom or it's a new message
+      // Process the incoming chunk, passing isNewMessage flag
+      processChunk(chunk, isNewMessage);
+
+      // Only scroll if user is near bottom
       if (bottomRef.current) {
         const feedElement = feedRef.current;
         const isNearBottom = feedElement && 
           (feedElement.scrollHeight - feedElement.scrollTop - feedElement.clientHeight < 100);
 
-        if (isNearBottom || isNewMessage) {
+        if (isNearBottom) {
           bottomRef.current.scrollIntoView({ 
-            behavior: 'auto', // Use instant scrolling
+            behavior: 'auto',
             block: 'end'
           });
         }
@@ -252,11 +238,28 @@ export default function ChatFeed({
     window.addEventListener('responseStreamUpdate', handleStreamUpdate);
     return () => {
       window.removeEventListener('responseStreamUpdate', handleStreamUpdate);
-      if (streamTimeoutRef.current) {
-        clearTimeout(streamTimeoutRef.current);
-      }
     };
-  }, []);
+  }, [processChunk]);
+
+  useEffect(() => {
+    if (messages.length > 0 && isStreaming) {
+      updateConversation((prevState) => {
+        const messages = [...prevState.messages];
+        const lastMessage = messages[messages.length - 1];
+        
+        if (lastMessage.sender === 'Ditto') {
+          lastMessage.text = streamedText;
+          lastMessage.currentWord = currentWord;
+        }
+        
+        return { ...prevState, messages };
+      });
+    }
+  }, [streamedText, currentWord, isStreaming]);
+
+  useEffect(() => {
+    return () => reset();
+  }, [reset]);
 
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
@@ -1283,6 +1286,44 @@ export default function ChatFeed({
       }, 300); // Match animation duration
     }
   }, [messages.length]);
+
+  // Add this effect to reset streaming state when messages change
+  useEffect(() => {
+    if (messages.length > lastMessageIndex) {
+      reset();
+      setLastMessageIndex(messages.length);
+    }
+  }, [messages.length, lastMessageIndex, reset]);
+
+  useEffect(() => {
+    if (isComplete && streamedText) {
+      const toolTriggers = [
+        "<OPENSCAD>",
+        "<HTML_SCRIPT>",
+        "<IMAGE_GENERATION>",
+        "<GOOGLE_SEARCH>",
+        "<GOOGLE_HOME>"
+      ];
+
+      for (const trigger of toolTriggers) {
+        if (streamedText.includes(trigger)) {
+          // Process the tool trigger
+          processResponse(
+            streamedText,
+            messages[messages.length - 2].text, // User's prompt
+            messages[messages.length - 2].embedding, // User's prompt embedding
+            auth.currentUser.uid,
+            localStorage.getItem('workingOnScript') ? JSON.parse(localStorage.getItem('workingOnScript')).contents : '',
+            localStorage.getItem('workingOnScript') ? JSON.parse(localStorage.getItem('workingOnScript')).script : '',
+            messages[messages.length - 2].image || '',
+            {}, // memories object - you might want to pass this properly
+            updateConversation
+          );
+          return;
+        }
+      }
+    }
+  }, [isComplete, streamedText]);
 
   return (
     <div 
