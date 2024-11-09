@@ -23,6 +23,8 @@ const MEMORY_CACHE_KEY = 'memoryCache';
 const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
 const INTERACTION_DELAY = 300; // 300ms delay to prevent accidental closures
+const AVATAR_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const AVATAR_FETCH_COOLDOWN = 60 * 1000; // 1 minute cooldown between fetch attempts
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
@@ -142,6 +144,61 @@ const detectToolType = (text) => {
   if (text.includes('Home Assistant Task:')) return 'home';
   
   return null;
+};
+
+// Add this helper function
+const getAvatarWithCooldown = async (photoURL) => {
+  try {
+    const now = Date.now();
+    const lastFetchAttempt = localStorage.getItem('lastAvatarFetchAttempt');
+    const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+    const cacheTimestamp = localStorage.getItem('avatarCacheTimestamp');
+
+    // If we have a cached avatar and it's not expired, use it
+    if (cachedAvatar && cacheTimestamp && (now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION)) {
+      return cachedAvatar;
+    }
+
+    // If we're within the cooldown period, use fallback or cached avatar
+    if (lastFetchAttempt && (now - parseInt(lastFetchAttempt) < AVATAR_FETCH_COOLDOWN)) {
+      return cachedAvatar || '/user_placeholder.png';
+    }
+
+    // Update last fetch attempt timestamp
+    localStorage.setItem('lastAvatarFetchAttempt', now.toString());
+
+    // Fetch the avatar with proper options
+    const response = await fetch(photoURL, {
+      mode: 'cors',
+      credentials: 'omit',
+      headers: {
+        'Accept': 'image/*'
+      },
+      cache: 'force-cache'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch photo: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const reader = new FileReader();
+    
+    return new Promise((resolve, reject) => {
+      reader.onloadend = () => {
+        const base64data = reader.result;
+        // Cache the successful result
+        localStorage.setItem(USER_AVATAR_KEY, base64data);
+        localStorage.setItem('avatarCacheTimestamp', now.toString());
+        resolve(base64data);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.log('Avatar fetch error:', error.message);
+    return localStorage.getItem(USER_AVATAR_KEY) || '/user_placeholder.png';
+  }
 };
 
 export default function ChatFeed({
@@ -296,66 +353,18 @@ export default function ChatFeed({
       })
       .catch(error => console.error('Error caching Ditto avatar:', error));
 
-    // Cache user avatar
-    if (auth.currentUser) {
-      const photoURL = auth.currentUser.photoURL;
-      console.log('User photo URL:', photoURL);
-
-      if (photoURL) {
-        // Remove credentials and modify fetch options for Google photos
-        fetch(photoURL, {
-          mode: 'cors',
-          credentials: 'omit',
-          headers: {
-            'Accept': 'image/*'
-          },
-          cache: 'force-cache'
+    // Load user avatar with cooldown and caching
+    if (auth.currentUser?.photoURL) {
+      getAvatarWithCooldown(auth.currentUser.photoURL)
+        .then(avatarData => {
+          setProfilePic(avatarData);
         })
-          .then(response => {
-            // Immediately throw if we get rate limited
-            if (response.status === 429) {
-              throw new Error('Rate limited');
-            }
-            if (!response.ok) {
-              throw new Error(`Failed to fetch photo: ${response.status}`);
-            }
-            return response.blob();
-          })
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = reader.result;
-              localStorage.setItem(USER_AVATAR_KEY, base64data);
-              setProfilePic(base64data);
-            };
-            reader.readAsDataURL(blob);
-          })
-          .catch((error) => {
-            console.log('Using fallback photo due to error:', error.message);
-            // Immediately use fallback without trying additional fetches
-            fetch('/user_placeholder.png')
-              .then(response => response.blob())
-              .then(blob => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  const base64data = reader.result;
-                  localStorage.setItem(USER_AVATAR_KEY, base64data);
-                  setProfilePic(base64data);
-                };
-                reader.readAsDataURL(blob);
-              })
-              .catch(error => {
-                console.error('Error loading placeholder:', error);
-                setProfilePic('/user_placeholder.png');
-              });
-          });
-      } else {
-        setProfilePic('/user_placeholder.png');
-        console.log('No user photo URL, using placeholder');
-      }
+        .catch(error => {
+          console.error('Error loading user avatar:', error);
+          setProfilePic('/user_placeholder.png');
+        });
     } else {
       setProfilePic('/user_placeholder.png');
-      console.log('No authenticated user, using placeholder');
     }
   }, []);
 
