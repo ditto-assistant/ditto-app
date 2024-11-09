@@ -698,6 +698,8 @@ export default function HomeScreen() {
     }
   };
 
+  const [statusBarLoaded, setStatusBarLoaded] = useState(false);
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
@@ -755,6 +757,7 @@ export default function HomeScreen() {
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             style={{ marginBottom: '-4px' }}
+            onAnimationComplete={() => setStatusBarLoaded(true)}
           >
             <Suspense fallback={<div className="loading-placeholder">Loading status...</div>}>
               <StatusBar />
@@ -764,17 +767,27 @@ export default function HomeScreen() {
       </AnimatePresence>
       <div className="App-body" ref={appBodyRef} onClick={handleCloseMediaOptions}>
         <div className="chat-card">
-          <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
-            <ChatFeed
-              messages={conversation.messages}
-              showSenderName={false}
-              histCount={histCount}
-              isTyping={conversation.is_typing}
-              scrollToBottom={true}
-              startAtBottom={startAtBottom}
-              updateConversation={updateConversation}
-            />
-          </Suspense>
+          <AnimatePresence>
+            {(!showStatusBar || statusBarLoaded) && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
+                  <ChatFeed
+                    messages={conversation.messages}
+                    showSenderName={false}
+                    histCount={histCount}
+                    isTyping={conversation.is_typing}
+                    scrollToBottom={true}
+                    startAtBottom={startAtBottom}
+                    updateConversation={updateConversation}
+                  />
+                </Suspense>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       <footer className="App-footer">
