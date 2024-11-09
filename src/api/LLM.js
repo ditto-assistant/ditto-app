@@ -42,7 +42,7 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
         },
         body: JSON.stringify(requestBody),
       });
-      
+
       // Check for payment required error
       if (response.status === 402) {
         return "Error: Payment Required. Please check your token balance.";
@@ -50,9 +50,9 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
 
       // Handle other error statuses
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       // Handle the response stream
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -71,7 +71,7 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
       console.error("Error in promptLLM:", error);
       retries++;
       console.log("Retry: ", retries);
-      
+
       // If it's a payment error, return immediately
       if (error.message?.includes('402') || error.message?.includes('Payment Required')) {
         return "Error: Payment Required. Please check your token balance.";
