@@ -5,10 +5,11 @@ import {
   orderBy,
   limit,
   deleteDoc,
-  doc
+  doc,
+  getDoc
 } from "firebase/firestore";
 
-import { db, grabConversationHistory } from "./firebase";
+import { db, grabConversationHistory, extractFirebaseImageUrls, deleteImageFromFirebaseStorage } from "./firebase";
 import { routes } from '../firebaseConfig';
 import { auth } from "./firebase";
 
@@ -206,9 +207,33 @@ export const getConversationEmbedding = async (userID, docId) => {
  */
 export const deleteConversation = async (userID, docId) => {
   try {
+    // First get the document to check for images
     const docRef = doc(db, "memory", userID, "conversations", docId);
-    await deleteDoc(docRef);
-    return true;
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      
+      // Check prompt for Firebase Storage URLs
+      if (data.prompt) {
+        const imageUrls = extractFirebaseImageUrls(data.prompt);
+        
+        // Delete any found images
+        const deletePromises = imageUrls.map(imagePath => 
+          deleteImageFromFirebaseStorage(imagePath)
+        );
+        
+        if (deletePromises.length > 0) {
+          await Promise.all(deletePromises);
+        }
+      }
+      
+      // Delete the conversation document
+      await deleteDoc(docRef);
+      return true;
+    }
+    
+    return false;
   } catch (e) {
     console.error("Error deleting conversation:", e);
     return false;
