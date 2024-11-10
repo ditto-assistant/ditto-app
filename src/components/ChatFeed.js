@@ -15,6 +15,8 @@ import { textEmbed } from '../api/LLM';  // Add this import
 import MemoryNetwork from './MemoryNetwork';
 import { useTokenStreaming } from '../hooks/useTokenStreaming';
 import { processResponse } from '../control/agent';
+import Toast from './Toast';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
@@ -254,6 +256,9 @@ export default function ChatFeed({
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
   const { streamedText, currentWord, isStreaming, processChunk, reset, isComplete } = useTokenStreaming();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -509,6 +514,13 @@ export default function ChatFeed({
     // Trigger haptic feedback
     triggerHapticFeedback();
 
+    // If clicking the same bubble that has an open overlay, close it
+    if (actionOverlay && actionOverlay.index === index) {
+      setActionOverlay(null);
+      setReactionOverlay(null);
+      return;
+    }
+
     // Calculate position for the overlay
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX || (rect.left + rect.width / 2);
@@ -518,7 +530,7 @@ export default function ChatFeed({
       index,
       clientX: x,
       clientY: y,
-      type: 'text' // Always show text actions since image has its own handler
+      type: 'text'
     });
 
     // Close any open reaction overlay
@@ -828,26 +840,49 @@ export default function ChatFeed({
     return { left: adjustedLeft, top: adjustedTop };
   };
 
-  // Add scroll handler to feedRef
+  // Update the scroll handler useEffect
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = (e) => {
+      // Close overlays immediately when scrolling starts
       if (actionOverlay || reactionOverlay) {
         setActionOverlay(null);
         setReactionOverlay(null);
       }
     };
 
+    // Add scroll listener to both the feed container and window
     const feedElement = feedRef.current;
     if (feedElement) {
-      feedElement.addEventListener('scroll', handleScroll);
+      feedElement.addEventListener('scroll', handleScroll, { passive: true });
     }
+    
+    // Also listen for window scroll in case the feed is part of a larger scrollable area
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Add wheel event listeners for mouse wheel scrolling
+    if (feedElement) {
+      feedElement.addEventListener('wheel', handleScroll, { passive: true });
+    }
+    window.addEventListener('wheel', handleScroll, { passive: true });
+
+    // Add touch move listener for mobile scrolling
+    if (feedElement) {
+      feedElement.addEventListener('touchmove', handleScroll, { passive: true });
+    }
+    window.addEventListener('touchmove', handleScroll, { passive: true });
 
     return () => {
+      // Clean up all event listeners
       if (feedElement) {
         feedElement.removeEventListener('scroll', handleScroll);
+        feedElement.removeEventListener('wheel', handleScroll);
+        feedElement.removeEventListener('touchmove', handleScroll);
       }
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
     };
-  }, [actionOverlay, reactionOverlay]);
+  }, [actionOverlay, reactionOverlay]); // Dependencies ensure we're using current overlay states
 
   const handleReactionOverlay = (index, clientX, clientY) => {
     setReactionOverlay({
@@ -1033,46 +1068,43 @@ export default function ChatFeed({
     const userID = auth.currentUser.uid;
     
     try {
+      setIsDeletingMessage(true);
+      
       if (isMessageDelete) {
         setDeletingMemories(prev => new Set([...prev, idx]));
       }
-      await new Promise(resolve => setTimeout(resolve, 300));
-
+      
       const success = await deleteConversation(userID, docId);
       
       if (success) {
+        // Close delete confirmation with animation
+        setDeleteConfirmation(null);
+        
         if (isMessageDelete) {
-          // Find the pair of messages to delete (user message and Ditto response)
-          const pairToDelete = messages.filter(msg => msg.pairID === docId);
-          if (pairToDelete.length > 0) {
-            // Update conversation state to remove the message pair
-            updateConversation((prevState) => ({
-              ...prevState,
-              messages: prevState.messages.filter(msg => msg.pairID !== docId)
-            }));
+          // Update conversation state to remove the message pair
+          updateConversation((prevState) => ({
+            ...prevState,
+            messages: prevState.messages.filter(msg => msg.pairID !== docId)
+          }));
 
-            // Update local storage
-            const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-            const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-            const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-            const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
+          // Update local storage
+          const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+          const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+          const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+          const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
-            const pairIndex = pairIDs.indexOf(docId);
-            if (pairIndex !== -1) {
-              prompts.splice(pairIndex, 1);
-              responses.splice(pairIndex, 1);
-              timestamps.splice(pairIndex, 1);
-              pairIDs.splice(pairIndex, 1);
+          const pairIndex = pairIDs.indexOf(docId);
+          if (pairIndex !== -1) {
+            prompts.splice(pairIndex, 1);
+            responses.splice(pairIndex, 1);
+            timestamps.splice(pairIndex, 1);
+            pairIDs.splice(pairIndex, 1);
 
-              localStorage.setItem("prompts", JSON.stringify(prompts));
-              localStorage.setItem("responses", JSON.stringify(responses));
-              localStorage.setItem("timestamps", JSON.stringify(timestamps));
-              localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
-              localStorage.setItem("histCount", pairIDs.length);
-
-              // Dispatch memoryUpdated event to trigger memory count refresh
-              window.dispatchEvent(new Event('memoryUpdated'));
-            }
+            localStorage.setItem("prompts", JSON.stringify(prompts));
+            localStorage.setItem("responses", JSON.stringify(responses));
+            localStorage.setItem("timestamps", JSON.stringify(timestamps));
+            localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
+            localStorage.setItem("histCount", pairIDs.length);
           }
         } else {
           const newMemories = relatedMemories.filter((_, i) => i !== idx);
@@ -1081,20 +1113,26 @@ export default function ChatFeed({
           if (newMemories.length === 0) {
             setMemoryOverlay(null);
           }
-
-          // Dispatch memoryUpdated event to trigger memory count refresh
-          window.dispatchEvent(new Event('memoryUpdated'));
         }
+
+        // Show success toast
+        setToastMessage('Message deleted successfully');
+        setShowToast(true);
+        
+        // Dispatch memoryUpdated event
+        window.dispatchEvent(new Event('memoryUpdated'));
       }
     } catch (error) {
       console.error('Error deleting:', error);
+      setToastMessage('Failed to delete message');
+      setShowToast(true);
     } finally {
+      setIsDeletingMessage(false);
       setDeletingMemories(prev => {
         const next = new Set(prev);
         next.delete(idx);
         return next;
       });
-      setDeleteConfirmation(null);
     }
   };
 
@@ -1461,39 +1499,42 @@ export default function ChatFeed({
               <div className="delete-confirmation-message">
                 Are you sure you want to delete this message? This action cannot be undone.
               </div>
-              {deleteConfirmation.isLoading ? (
+              {isDeletingMessage ? (
                 <div className="delete-confirmation-loading">
-                  <FaSpinner className="spinner" />
-                  <div>Finding message in database...</div>
-                </div>
-              ) : deleteConfirmation.error ? (
-                <div className="delete-confirmation-docid not-found">
-                  {deleteConfirmation.error}
+                  <LoadingSpinner size={24} inline={true} />
+                  <div>Deleting message...</div>
                 </div>
               ) : (
-                <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
-                  Document ID: {deleteConfirmation.docId || 'Not found'}
-                </div>
+                <>
+                  <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
+                    Document ID: {deleteConfirmation.docId || 'Not found'}
+                  </div>
+                  <div className="delete-confirmation-buttons">
+                    <button 
+                      className="delete-confirmation-button cancel"
+                      onClick={() => setDeleteConfirmation(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="delete-confirmation-button confirm"
+                      onClick={confirmDelete}
+                      disabled={!deleteConfirmation.docId}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
               )}
-              <div className="delete-confirmation-buttons">
-                <button 
-                  className="delete-confirmation-button cancel"
-                  onClick={() => setDeleteConfirmation(null)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="delete-confirmation-button confirm"
-                  onClick={confirmDelete}
-                  disabled={deleteConfirmation.isLoading || !deleteConfirmation.docId}
-                >
-                  Delete
-                </button>
-              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+      <Toast 
+        message={toastMessage}
+        isVisible={showToast}
+        onHide={() => setShowToast(false)}
+      />
     </div>
   );
 }

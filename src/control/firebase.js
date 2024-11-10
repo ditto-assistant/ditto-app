@@ -134,6 +134,10 @@ export const saveUserToFirestore = async (userID, email, firstName, lastName) =>
 
 export const removeUserFromFirestore = async (userID) => {
   try {
+    // First delete all user's images
+    await deleteAllUserImagesFromFirebaseStorageBucket(userID);
+    
+    // Then delete user's account data
     await deleteCollection(db, collection(db, "users", userID, "account"), 10);
     if (mode === 'development') {
       console.log("User removed from Firestore collection with ID: ", userID);
@@ -163,10 +167,34 @@ export const getUserObjectFromFirestore = async (userID) => {
 
 export const removeUsersMemoryFromFirestore = async (userID) => {
   try {
-    await deleteCollection(db, collection(db, "memory", userID, "conversations"), 10);
-    if (mode === 'development') {
-      console.log("User's memory removed from Firestore collection with ID: ", userID);
+    // Get all conversations first to check for images
+    const conversationsRef = collection(db, "memory", userID, "conversations");
+    const querySnapshot = await getDocs(conversationsRef);
+    
+    // Extract and delete all images found in prompts
+    const deleteImagePromises = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.prompt) {
+        const imageUrls = extractFirebaseImageUrls(data.prompt);
+        imageUrls.forEach(imagePath => {
+          deleteImagePromises.push(deleteImageFromFirebaseStorage(imagePath));
+        });
+      }
+    });
+    
+    // Wait for all image deletions to complete
+    if (deleteImagePromises.length > 0) {
+      await Promise.all(deleteImagePromises);
     }
+
+    // Then delete the conversations collection
+    await deleteCollection(db, conversationsRef, 10);
+    
+    if (mode === 'development') {
+      console.log("User's memory and associated images removed for ID: ", userID);
+    }
+    
     // Dispatch event when memories are deleted
     window.dispatchEvent(new Event('memoryUpdated'));
   } catch (e) {
@@ -769,5 +797,34 @@ export const getLocalScriptTimestamps = (scriptType) => {
   } catch (e) {
     console.error("Error getting script timestamps from localStorage:", e);
     return {};
+  }
+};
+
+// Update the helper function to be exported
+export const extractFirebaseImageUrls = (text) => {
+  const regex = /https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/images%2F[^?]+/g;
+  const matches = text.match(regex);
+  if (!matches) return [];
+  
+  return matches.map(url => {
+    // Convert the URL-encoded path back to a regular path
+    const decodedUrl = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
+    return decodedUrl;
+  });
+};
+
+// Add this new function to delete a single image by its path
+export const deleteImageFromFirebaseStorage = async (imagePath) => {
+  try {
+    const storage = getStorage(app);
+    const imageRef = ref(storage, imagePath);
+    await deleteObject(imageRef);
+    if (mode === 'development') {
+      console.log('Image deleted successfully:', imagePath);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    return false;
   }
 };
