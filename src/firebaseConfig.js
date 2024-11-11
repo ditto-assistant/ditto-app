@@ -42,6 +42,7 @@ export const routes = {
   balance: (userID) => `${BASE_URL}/v1/balance?userID=${userID}`,
   memories: getMemoriesURL(MODE),
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
+  presignURL: BASE_URL + "/v1/presign-url",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

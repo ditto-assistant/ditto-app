@@ -17,7 +17,7 @@ import { useTokenStreaming } from '../hooks/useTokenStreaming';
 import { processResponse } from '../control/agent';
 import Toast from './Toast';
 import { LoadingSpinner } from './LoadingSpinner';
-
+import { presignURL } from '../api/bucket';
 const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
 const DITTO_AVATAR_KEY = 'dittoAvatar';
 const USER_AVATAR_KEY = 'userAvatar';
@@ -103,30 +103,30 @@ const loadMessagesFromLocalStorage = () => {
     const responses = JSON.parse(localStorage.getItem('responses') || '[]');
     const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
     const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
-    
+
     const messages = [];
-    messages.push({ 
-      sender: "Ditto", 
-      text: "Hi! I'm Ditto.", 
+    messages.push({
+      sender: "Ditto",
+      text: "Hi! I'm Ditto.",
       timestamp: Date.now(),
-      pairID: null 
+      pairID: null
     });
-    
+
     for (let i = 0; i < prompts.length; i++) {
-      messages.push({ 
-        sender: "User", 
-        text: prompts[i], 
+      messages.push({
+        sender: "User",
+        text: prompts[i],
         timestamp: timestamps[i],
         pairID: pairIDs[i]
       });
-      messages.push({ 
-        sender: "Ditto", 
-        text: responses[i], 
+      messages.push({
+        sender: "Ditto",
+        text: responses[i],
         timestamp: timestamps[i],
         pairID: pairIDs[i]
       });
     }
-    
+
     return messages;
   } catch (error) {
     console.error('Error loading messages from localStorage:', error);
@@ -137,14 +137,14 @@ const loadMessagesFromLocalStorage = () => {
 // Add this helper function near the top of the file
 const detectToolType = (text) => {
   if (!text) return null;
-  
+
   // Check for tool indicators in the message text
   if (text.includes('OpenSCAD Script Generated')) return 'openscad';
   if (text.includes('HTML Script Generated')) return 'html';
   if (text.includes('Image Task:')) return 'image';
   if (text.includes('Google Search Query:')) return 'search';
   if (text.includes('Home Assistant Task:')) return 'home';
-  
+
   return null;
 };
 
@@ -185,7 +185,7 @@ const getAvatarWithCooldown = async (photoURL) => {
 
     const blob = await response.blob();
     const reader = new FileReader();
-    
+
     return new Promise((resolve, reject) => {
       reader.onloadend = () => {
         const base64data = reader.result;
@@ -276,20 +276,20 @@ export default function ChatFeed({
   useEffect(() => {
     const handleStreamUpdate = (event) => {
       const { chunk, isNewMessage } = event.detail;
-      
+
       if (!chunk) return;
-      
+
       // Process the incoming chunk, passing isNewMessage flag
       processChunk(chunk, isNewMessage);
 
       // Only scroll if user is near bottom
       if (bottomRef.current) {
         const feedElement = feedRef.current;
-        const isNearBottom = feedElement && 
+        const isNearBottom = feedElement &&
           (feedElement.scrollHeight - feedElement.scrollTop - feedElement.clientHeight < 100);
 
         if (isNearBottom) {
-          bottomRef.current.scrollIntoView({ 
+          bottomRef.current.scrollIntoView({
             behavior: 'auto',
             block: 'end'
           });
@@ -308,12 +308,12 @@ export default function ChatFeed({
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
         const lastMessage = messages[messages.length - 1];
-        
+
         if (lastMessage.sender === 'Ditto') {
           lastMessage.text = streamedText;
           lastMessage.currentWord = currentWord;
         }
-        
+
         return { ...prevState, messages };
       });
     }
@@ -409,15 +409,15 @@ export default function ChatFeed({
       if (!target) return;
 
       // Don't close if touching inside overlays
-      const isOverlayTouch = target.closest('.action-overlay') || 
-                            target.closest('.reaction-overlay') ||
-                            target.closest('.action-button');
-                          
+      const isOverlayTouch = target.closest('.action-overlay') ||
+        target.closest('.reaction-overlay') ||
+        target.closest('.action-button');
+
       if (isOverlayTouch) return;
 
       // Get the touched bubble
       const touchedBubble = target.closest('.chat-bubble');
-      
+
       // If touching outside both overlays and bubbles, close overlay
       if (!isOverlayTouch && !touchedBubble) {
         isClosing = true;
@@ -444,14 +444,14 @@ export default function ChatFeed({
     const handleMouseDown = (e) => {
       if (e.touches || !actionOverlay || isClosing) return;
 
-      const isOverlayClick = e.target.closest('.action-overlay') || 
-                            e.target.closest('.reaction-overlay') ||
-                            e.target.closest('.action-button');
-                          
+      const isOverlayClick = e.target.closest('.action-overlay') ||
+        e.target.closest('.reaction-overlay') ||
+        e.target.closest('.action-button');
+
       if (isOverlayClick) return;
 
       const clickedBubble = e.target.closest('.chat-bubble');
-      
+
       if (!isOverlayClick && !clickedBubble) {
         isClosing = true;
         setTimeout(() => {
@@ -565,7 +565,7 @@ export default function ChatFeed({
         children={displayText}
         components={{
           a: ({ node, href, children, ...props }) => (
-            <a 
+            <a
               {...props}
               href={href}
               target="_blank"
@@ -573,13 +573,13 @@ export default function ChatFeed({
               onClick={(e) => {
                 e.stopPropagation(); // Prevent bubble interaction
               }}
-              style={{ 
-                color: '#3941b8', 
-                textDecoration: 'none', 
+              style={{
+                color: '#3941b8',
+                textDecoration: 'none',
                 textShadow: '0 0 1px #7787d7',
                 cursor: 'pointer',
                 pointerEvents: 'auto'
-              }} 
+              }}
             >
               {children}
             </a>
@@ -600,8 +600,16 @@ export default function ChatFeed({
                   handleImageClick(src);
                 }}
                 onError={(e) => {
-                  console.error('Image failed to load:', src);
-                  setFailedImages(prev => new Set([...prev, src]));
+                  presignURL(src).then(
+                    (presignedURL) => {
+                      if (presignedURL) {
+                        e.target.src = presignedURL;
+                      }
+                    },
+                    (err) => {
+                      setFailedImages(prev => prev.add(src));
+                      console.error(`Image Load error: ${err}; src: ${src}`);
+                    });
                 }}
               />
             );
@@ -679,7 +687,7 @@ export default function ChatFeed({
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === 'User';
     const showTypingIndicator = message.isTyping && message.text === "";
-    
+
     // Detect tool type from message content if not already set
     const toolType = message.toolType || detectToolType(message.text);
     const hasToolStatus = message.toolStatus && toolType;
@@ -705,9 +713,8 @@ export default function ChatFeed({
           </div>
         ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${
-              actionOverlay && actionOverlay.index === index ? 'blurred' : ''
-            } ${isSmallMessage ? 'small-message' : ''}`}
+            className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${actionOverlay && actionOverlay.index === index ? 'blurred' : ''
+              } ${isSmallMessage ? 'small-message' : ''}`}
             style={bubbleStyles.chatbubble}
             onClick={(e) => handleBubbleInteraction(e, index)}
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
@@ -718,7 +725,7 @@ export default function ChatFeed({
                 {toolType.toUpperCase()}
               </div>
             )}
-            
+
             {showSenderName && message.sender && (
               <div className='sender-name'>{message.sender}</div>
             )}
@@ -726,8 +733,8 @@ export default function ChatFeed({
               {message.toolStatus && toolType ? (
                 <>
                   {renderMessageText(message.text, index, message.sender)}
-                  <div className={`tool-status ${message.toolStatus === 'complete' ? 'complete' : 
-                                             message.toolStatus === 'failed' ? 'failed' : ''}`}>
+                  <div className={`tool-status ${message.toolStatus === 'complete' ? 'complete' :
+                    message.toolStatus === 'failed' ? 'failed' : ''}`}>
                     {message.toolStatus}
                     {message.showTypingDots && (
                       <div className="typing-dots">
@@ -760,8 +767,8 @@ export default function ChatFeed({
           <img src={profilePic} alt='User' className='avatar user-avatar' />
         )}
         {actionOverlay && actionOverlay.index === index && (
-          <div 
-            className='action-overlay' 
+          <div
+            className='action-overlay'
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'fixed',
@@ -773,26 +780,26 @@ export default function ChatFeed({
             <button onClick={() => handleCopy(messages[actionOverlay.index].text)} className='action-button'>
               Copy
             </button>
-            <button 
+            <button
               onClick={() => handleReactionOverlay(
-                actionOverlay.index, 
-                actionOverlay.clientX, 
+                actionOverlay.index,
+                actionOverlay.clientX,
                 actionOverlay.clientY
-              )} 
+              )}
               className='action-button'
             >
               React
             </button>
-            <button 
-              onClick={() => handleShowMemories(actionOverlay.index)} 
+            <button
+              onClick={() => handleShowMemories(actionOverlay.index)}
               className='action-button'
               disabled={loadingMemories}
             >
               <FaBrain style={{ marginRight: '5px' }} />
               {loadingMemories ? 'Loading...' : 'Memories'}
             </button>
-            <button 
-              onClick={() => handleMessageDelete(actionOverlay.index)} 
+            <button
+              onClick={() => handleMessageDelete(actionOverlay.index)}
               className='action-button delete-action'
             >
               <FaTrash style={{ marginRight: '5px' }} />
@@ -855,7 +862,7 @@ export default function ChatFeed({
     if (feedElement) {
       feedElement.addEventListener('scroll', handleScroll, { passive: true });
     }
-    
+
     // Also listen for window scroll in case the feed is part of a larger scrollable area
     window.addEventListener('scroll', handleScroll, { passive: true });
 
@@ -895,135 +902,135 @@ export default function ChatFeed({
 
   const handleShowMemories = async (index) => {
     try {
-        const controller = new AbortController();
-        setAbortController(controller);
-        setLoadingMemories(true);
+      const controller = new AbortController();
+      setAbortController(controller);
+      setLoadingMemories(true);
 
-        const message = messages[index];
-        const userID = auth.currentUser.uid;
-        
-        let promptToUse;
-        let currentPairID;
-        let currentTimestamp;
-        if (message.sender === 'User') {
-            promptToUse = message.text;
-            currentPairID = message.pairID;
-            currentTimestamp = message.timestamp;
+      const message = messages[index];
+      const userID = auth.currentUser.uid;
+
+      let promptToUse;
+      let currentPairID;
+      let currentTimestamp;
+      if (message.sender === 'User') {
+        promptToUse = message.text;
+        currentPairID = message.pairID;
+        currentTimestamp = message.timestamp;
+      } else {
+        if (index > 0 && messages[index - 1].sender === 'User') {
+          promptToUse = messages[index - 1].text;
+          currentPairID = messages[index - 1].pairID;
+          currentTimestamp = messages[index - 1].timestamp;
         } else {
-            if (index > 0 && messages[index - 1].sender === 'User') {
-                promptToUse = messages[index - 1].text;
-                currentPairID = messages[index - 1].pairID;
-                currentTimestamp = messages[index - 1].timestamp;
-            } else {
-                console.error('Could not find corresponding prompt for response');
-                setLoadingMemories(false);
-                return;
-            }
+          console.error('Could not find corresponding prompt for response');
+          setLoadingMemories(false);
+          return;
         }
+      }
 
-        // Get embedding for the prompt
-        const embedding = await textEmbed(promptToUse);
-        if (!embedding) {
-            console.error('Could not generate embedding for prompt');
-            setLoadingMemories(false);
-            return;
-        }
+      // Get embedding for the prompt
+      const embedding = await textEmbed(promptToUse);
+      if (!embedding) {
+        console.error('Could not generate embedding for prompt');
+        setLoadingMemories(false);
+        return;
+      }
 
-        // Fetch top 6 memories
-        const token = await auth.currentUser.getIdToken();
-        const response = await fetch(routes.memories, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-                'Origin': window.location.origin
-            },
-            body: JSON.stringify({
-                userId: userID,
-                vector: embedding,
-                k: 6
-            }),
-            signal: controller.signal
+      // Fetch top 6 memories
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(routes.memories, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Origin': window.location.origin
+        },
+        body: JSON.stringify({
+          userId: userID,
+          vector: embedding,
+          k: 6
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch memories');
+      }
+
+      const data = await response.json();
+      let topMemories = data.memories || [];
+
+      // Discard the top-1 memory
+      topMemories = topMemories.slice(1, 6);
+
+      // For each of the top 5 memories, fetch their 2 most related memories
+      const memoriesWithRelated = await Promise.all(topMemories.map(async (memory) => {
+        const relatedEmbedding = await textEmbed(memory.prompt);
+        const relatedResponse = await fetch(routes.memories, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Origin': window.location.origin
+          },
+          body: JSON.stringify({
+            userId: userID,
+            vector: relatedEmbedding,
+            k: 3
+          })
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch memories');
-        }
+        const relatedData = await relatedResponse.json();
+        // Filter out the memory itself and take top 2
+        const relatedMemories = relatedData.memories
+          .filter(m => m.id !== memory.id)
+          .slice(0, 2);
 
-        const data = await response.json();
-        let topMemories = data.memories || [];
+        return {
+          ...memory,
+          related: relatedMemories
+        };
+      }));
 
-        // Discard the top-1 memory
-        topMemories = topMemories.slice(1, 6);
+      // Create the central node structure
+      const networkData = [{
+        prompt: promptToUse,
+        response: message.text,
+        timestamp: currentTimestamp,
+        timestampString: new Date(currentTimestamp).toISOString(),
+        related: memoriesWithRelated.map(mem => ({
+          ...mem,
+          timestamp: mem.timestamp,
+          timestampString: mem.timestampString,
+          related: mem.related.map(rel => ({
+            ...rel,
+            timestamp: rel.timestamp,
+            timestampString: rel.timestampString
+          }))
+        }))
+      }];
 
-        // For each of the top 5 memories, fetch their 2 most related memories
-        const memoriesWithRelated = await Promise.all(topMemories.map(async (memory) => {
-            const relatedEmbedding = await textEmbed(memory.prompt);
-            const relatedResponse = await fetch(routes.memories, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json',
-                    'Origin': window.location.origin
-                },
-                body: JSON.stringify({
-                    userId: userID,
-                    vector: relatedEmbedding,
-                    k: 3
-                })
-            });
-
-            const relatedData = await relatedResponse.json();
-            // Filter out the memory itself and take top 2
-            const relatedMemories = relatedData.memories
-                .filter(m => m.id !== memory.id)
-                .slice(0, 2);
-
-            return {
-                ...memory,
-                related: relatedMemories
-            };
-        }));
-
-        // Create the central node structure
-        const networkData = [{
-            prompt: promptToUse,
-            response: message.text,
-            timestamp: currentTimestamp,
-            timestampString: new Date(currentTimestamp).toISOString(),
-            related: memoriesWithRelated.map(mem => ({
-                ...mem,
-                timestamp: mem.timestamp,
-                timestampString: mem.timestampString,
-                related: mem.related.map(rel => ({
-                    ...rel,
-                    timestamp: rel.timestamp,
-                    timestampString: rel.timestampString
-                }))
-            }))
-        }];
-
-        console.log('Network Data:', networkData);
-        setRelatedMemories(networkData);
-        setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
-        setActionOverlay(null);
+      console.log('Network Data:', networkData);
+      setRelatedMemories(networkData);
+      setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
+      setActionOverlay(null);
     } catch (error) {
-        if (error.name === 'AbortError') {
-            console.log('Memory fetch cancelled');
-        } else {
-            console.error('Error fetching memories:', error);
-        }
+      if (error.name === 'AbortError') {
+        console.log('Memory fetch cancelled');
+      } else {
+        console.error('Error fetching memories:', error);
+      }
     } finally {
-        setLoadingMemories(false);
-        setAbortController(null);
+      setLoadingMemories(false);
+      setAbortController(null);
     }
-};
+  };
 
   const handleDeleteMemory = async (memory, idx) => {
     const userID = auth.currentUser.uid;
-    
+
     // Show confirmation overlay with docId that came from get-memories
     setDeleteConfirmation({
       memory,
@@ -1036,15 +1043,15 @@ export default function ChatFeed({
   const handleMessageDelete = async (index) => {
     const message = messages[index];
     const userID = auth.currentUser.uid;
-    
+
     // Get the pairID from the message
     const pairID = message.pairID;
-    
+
     if (!pairID) {
       console.error('No pairID found for message:', message);
       return;
     }
-    
+
     // Show confirmation overlay
     setDeleteConfirmation({
       memory: {
@@ -1055,7 +1062,7 @@ export default function ChatFeed({
       docId: pairID,
       isMessageDelete: true
     });
-    
+
     // Close the action overlay
     setActionOverlay(null);
   };
@@ -1063,23 +1070,23 @@ export default function ChatFeed({
   // Update confirmDelete to handle both cases
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
-    
+
     const { memory, idx, docId, isMessageDelete } = deleteConfirmation;
     const userID = auth.currentUser.uid;
-    
+
     try {
       setIsDeletingMessage(true);
-      
+
       if (isMessageDelete) {
         setDeletingMemories(prev => new Set([...prev, idx]));
       }
-      
+
       const success = await deleteConversation(userID, docId);
-      
+
       if (success) {
         // Close delete confirmation with animation
         setDeleteConfirmation(null);
-        
+
         if (isMessageDelete) {
           // Update conversation state to remove the message pair
           updateConversation((prevState) => ({
@@ -1109,7 +1116,7 @@ export default function ChatFeed({
         } else {
           const newMemories = relatedMemories.filter((_, i) => i !== idx);
           setRelatedMemories(newMemories);
-          
+
           if (newMemories.length === 0) {
             setMemoryOverlay(null);
           }
@@ -1118,7 +1125,7 @@ export default function ChatFeed({
         // Show success toast
         setToastMessage('Message deleted successfully');
         setShowToast(true);
-        
+
         // Dispatch memoryUpdated event
         window.dispatchEvent(new Event('memoryUpdated'));
       }
@@ -1143,23 +1150,23 @@ export default function ChatFeed({
       const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
       const responses = JSON.parse(localStorage.getItem('responses') || '[]');
       const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-      
+
       const newMessages = [];
       newMessages.push({ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() });
-      
+
       for (let i = 0; i < prompts.length; i++) {
-        newMessages.push({ 
-          sender: "User", 
-          text: prompts[i], 
-          timestamp: timestamps[i] 
+        newMessages.push({
+          sender: "User",
+          text: prompts[i],
+          timestamp: timestamps[i]
         });
-        newMessages.push({ 
-          sender: "Ditto", 
-          text: responses[i], 
-          timestamp: timestamps[i] 
+        newMessages.push({
+          sender: "Ditto",
+          text: responses[i],
+          timestamp: timestamps[i]
         });
       }
-      
+
       // Update the messages state
       updateConversation((prevState) => ({
         ...prevState,
@@ -1168,7 +1175,7 @@ export default function ChatFeed({
     };
 
     window.addEventListener('memoryDeleted', handleMemoryDeleted);
-    
+
     return () => {
       window.removeEventListener('memoryDeleted', handleMemoryDeleted);
     };
@@ -1203,17 +1210,17 @@ export default function ChatFeed({
           code: ({ node, inline, className, children, ...props }) => {
             const match = /language-(\w+)/.exec(className || '');
             const codeContent = String(children).replace(/\n$/, '');
-            
+
             // Check if this is a code block
             const isCodeBlock = !inline && (match || (content.includes('```') && content.split('```').length > 1));
-            
+
             const handleCodeCopy = (e, text) => {
               e.stopPropagation();
               navigator.clipboard.writeText(text);
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
             };
-            
+
             if (isCodeBlock) {
               const language = match ? match[1] : 'text';
               return (
@@ -1281,7 +1288,7 @@ export default function ChatFeed({
 
   const getSortedMemories = () => {
     if (!relatedMemories) return [];
-    
+
     return [...relatedMemories].sort((a, b) => {
       if (sortBy === 'relevance') {
         const comparison = b.score - a.score;
@@ -1325,7 +1332,7 @@ export default function ChatFeed({
     if (messages.length > lastMessageIndex) {
       setNewMessageAnimation(true);
       setLastMessageIndex(messages.length);
-      
+
       // Scroll to bottom with animation
       setTimeout(() => {
         scrollToBottomOfFeed(false);
@@ -1373,8 +1380,8 @@ export default function ChatFeed({
   }, [isComplete, streamedText]);
 
   return (
-    <div 
-      className='chat-feed' 
+    <div
+      className='chat-feed'
       ref={feedRef}
       style={{ scrollBehavior: 'auto' }} // Override any smooth scrolling
     >
@@ -1383,8 +1390,8 @@ export default function ChatFeed({
       {copied && <div className='copied-notification'>Copied!</div>}
       <div ref={bottomRef} />
       {reactionOverlay && (
-        <div 
-          className='reaction-overlay' 
+        <div
+          className='reaction-overlay'
           onClick={(e) => e.stopPropagation()}
           style={{
             position: 'fixed',
@@ -1401,43 +1408,43 @@ export default function ChatFeed({
       )}
       {imageOverlay && (
         <AnimatePresence>
-          <motion.div 
-            className="image-overlay" 
+          <motion.div
+            className="image-overlay"
             onClick={closeImageOverlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div 
-              className="image-overlay-content" 
+            <motion.div
+              className="image-overlay-content"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
-              <img 
-                src={imageOverlay} 
-                alt="Full size" 
+              <img
+                src={imageOverlay}
+                alt="Full size"
                 onClick={toggleImageControls}
               />
               <AnimatePresence>
                 {imageControlsVisible && (
-                  <motion.div 
+                  <motion.div
                     className="image-overlay-controls"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <button 
+                    <button
                       className="image-control-button back"
                       onClick={closeImageOverlay}
                       title="Back"
                     >
                       <IoMdArrowBack />
                     </button>
-                    <button 
+                    <button
                       className="image-control-button download"
                       onClick={() => handleImageDownload(imageOverlay)}
                       title="Download"
@@ -1469,9 +1476,9 @@ export default function ChatFeed({
               exit={{ scale: 0.9, opacity: 0, y: 50 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              <MemoryNetwork 
-                memories={relatedMemories} 
-                onClose={() => setMemoryOverlay(null)} 
+              <MemoryNetwork
+                memories={relatedMemories}
+                onClose={() => setMemoryOverlay(null)}
               />
             </motion.div>
           </motion.div>
@@ -1479,7 +1486,7 @@ export default function ChatFeed({
       </AnimatePresence>
       <AnimatePresence>
         {deleteConfirmation && (
-          <motion.div 
+          <motion.div
             className="delete-confirmation-overlay"
             onClick={() => setDeleteConfirmation(null)}
             initial={{ opacity: 0 }}
@@ -1487,7 +1494,7 @@ export default function ChatFeed({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <motion.div 
+            <motion.div
               className="delete-confirmation-content"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.9, opacity: 0, y: 50 }}
@@ -1510,13 +1517,13 @@ export default function ChatFeed({
                     Document ID: {deleteConfirmation.docId || 'Not found'}
                   </div>
                   <div className="delete-confirmation-buttons">
-                    <button 
+                    <button
                       className="delete-confirmation-button cancel"
                       onClick={() => setDeleteConfirmation(null)}
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       className="delete-confirmation-button confirm"
                       onClick={confirmDelete}
                       disabled={!deleteConfirmation.docId}
@@ -1530,7 +1537,7 @@ export default function ChatFeed({
           </motion.div>
         )}
       </AnimatePresence>
-      <Toast 
+      <Toast
         message={toastMessage}
         isVisible={showToast}
         onHide={() => setShowToast(false)}
@@ -1553,7 +1560,7 @@ ChatFeed.propTypes = {
   bubblesCentered: PropTypes.bool,
   scrollToBottom: PropTypes.bool,
   bubbleStyles: PropTypes.shape({
-    text: PropTypes.object, 
+    text: PropTypes.object,
     chatbubble: PropTypes.object,
   }),
 };
