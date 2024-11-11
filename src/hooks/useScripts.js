@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
-import { syncLocalScriptsWithFirestore, getScriptTimestamps } from '../control/firebase';
+import { useState, useEffect } from "react";
+import {
+  syncLocalScriptsWithFirestore,
+  getScriptTimestamps,
+} from "../control/firebase";
 
 export const useScripts = () => {
   const [scripts, setScripts] = useState(() => ({
@@ -22,7 +25,7 @@ export const useScripts = () => {
     try {
       const [webApps, openSCAD] = await Promise.all([
         syncLocalScriptsWithFirestore(userID, "webApps"),
-        syncLocalScriptsWithFirestore(userID, "openSCAD")
+        syncLocalScriptsWithFirestore(userID, "openSCAD"),
       ]);
 
       setScripts({ webApps, openSCAD });
@@ -38,12 +41,12 @@ export const useScripts = () => {
     if (userID) {
       // Initial sync
       syncScripts(true);
-      
+
       // Initial timestamp fetch
       const fetchTimestamps = async () => {
         await Promise.all([
-          getScriptTimestamps(userID, 'webApps'),
-          getScriptTimestamps(userID, 'openSCAD')
+          getScriptTimestamps(userID, "webApps"),
+          getScriptTimestamps(userID, "openSCAD"),
         ]);
       };
       fetchTimestamps();
@@ -56,9 +59,9 @@ export const useScripts = () => {
       syncScripts(true);
     };
 
-    window.addEventListener('scriptsUpdated', handleScriptsUpdate);
+    window.addEventListener("scriptsUpdated", handleScriptsUpdate);
     return () => {
-      window.removeEventListener('scriptsUpdated', handleScriptsUpdate);
+      window.removeEventListener("scriptsUpdated", handleScriptsUpdate);
     };
   }, []);
 
@@ -75,4 +78,4 @@ export const useScripts = () => {
     scripts,
     syncScripts: () => syncScripts(true),
   };
-}; 
+};

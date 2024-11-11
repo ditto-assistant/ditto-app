@@ -189,7 +189,9 @@
   z-index: 12;
 }
 
-.emoji-button, .action-button, .image-action-button {
+.emoji-button,
+.action-button,
+.image-action-button {
   background: none;
   border: none;
   font-size: 1.3em;
@@ -198,7 +200,9 @@
   color: white;
 }
 
-.emoji-button:hover, .action-button:hover, .image-action-button:hover {
+.emoji-button:hover,
+.action-button:hover,
+.image-action-button:hover {
   transform: scale(1.2);
 }
 
@@ -217,7 +221,8 @@
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -280,7 +285,7 @@
 
 .inline-code {
   color: #ffffff;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   margin-right: 4px;
   user-select: text;
   -webkit-user-select: text;
@@ -341,7 +346,7 @@
 
 .copied-notification {
   position: fixed;
-  bottom: 6.0em;
+  bottom: 6em;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(0, 128, 0, 0.75);
@@ -522,7 +527,11 @@
   padding: 16px;
   display: flex;
   justify-content: space-between;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
   pointer-events: none; /* This allows clicks to pass through to the image */
 }
 
@@ -660,7 +669,10 @@
 
 /* Add transition for blur effect */
 .chat-bubble {
-  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .chat-bubble:active {
@@ -670,7 +682,10 @@
 
 /* Update the chat bubble transition to include transform */
 .chat-bubble {
-  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 /* Add hover effect for non-touch devices */
@@ -720,7 +735,7 @@
     user-select: none;
     touch-action: manipulation;
   }
-  
+
   .chat-bubble:active {
     transform: scale(0.98);
     transition: transform 0.1s ease;
@@ -816,7 +831,12 @@
 }
 
 .chat-bubble.Ditto .copy-button {
-  background-color: rgba(71, 82, 196, 0.9); /* Keep original blue for Ditto messages */
+  background-color: rgba(
+    71,
+    82,
+    196,
+    0.9
+  ); /* Keep original blue for Ditto messages */
 }
 
 /* Update hover states */
@@ -869,7 +889,9 @@
 }
 
 /* Prevent any text selection */
-.chat-bubble, .action-overlay, .action-button {
+.chat-bubble,
+.action-overlay,
+.action-button {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -882,7 +904,7 @@
     min-height: 44px;
     padding: 14px 16px;
   }
-  
+
   .action-overlay {
     padding: 10px;
   }
@@ -1184,7 +1206,7 @@
   right: 0;
   bottom: 0;
   background-color: #4f545c;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 20px;
 }
 
@@ -1196,7 +1218,7 @@
   left: 2px;
   bottom: 2px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -1412,7 +1434,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Ensure code blocks are selectable everywhere */
-.code-block, 
+.code-block,
 .inline-code {
   user-select: text !important;
   -webkit-user-select: text !important;
@@ -1645,7 +1667,7 @@ input:checked + .toggle-slider:before {
 
 /* Add connecting element between image and text */
 .chat-image-container::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -8px;
   width: 16px;
@@ -1703,7 +1725,7 @@ input:checked + .toggle-slider:before {
 }
 
 .chat-image-container.loading::before {
-  content: '';
+  content: "";
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.3);
@@ -1773,7 +1795,7 @@ input:checked + .toggle-slider:before {
 
 .memory-inline-code .inline-code {
   color: #ffffff;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 /* Update copy button styles for memory code blocks */
@@ -1846,11 +1868,11 @@ input:checked + .toggle-slider:before {
     font-size: 0.8em;
     padding: 8px;
   }
-  
+
   .memory-inline-code {
     font-size: 0.8em;
   }
-  
+
   .memory-code-container .copy-button {
     opacity: 1; /* Always show copy button on mobile */
     transform: scale(0.9);
@@ -1969,11 +1991,21 @@ input:checked + .toggle-slider:before {
   z-index: 1;
 }
 
-.tool-badge.openscad { background-color: #e67e22; }
-.tool-badge.html { background-color: #3498db; }
-.tool-badge.image { background-color: #2ecc71; }
-.tool-badge.search { background-color: #9b59b6; }
-.tool-badge.home { background-color: #e74c3c; }
+.tool-badge.openscad {
+  background-color: #e67e22;
+}
+.tool-badge.html {
+  background-color: #3498db;
+}
+.tool-badge.image {
+  background-color: #2ecc71;
+}
+.tool-badge.search {
+  background-color: #9b59b6;
+}
+.tool-badge.home {
+  background-color: #e74c3c;
+}
 
 /* Tool status styles */
 .tool-status {
@@ -2022,7 +2054,8 @@ input:checked + .toggle-slider:before {
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -2070,7 +2103,8 @@ input:checked + .toggle-slider:before {
 
 /* Update existing typing indicator styles */
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -2164,4 +2198,3 @@ input:checked + .toggle-slider:before {
 .delete-confirmation-content {
   will-change: transform, opacity;
 }
-

@@ -1,55 +1,57 @@
 /* Add this to your App.css or create a new CSS file and import it in App.js */
 
 .CameraOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .CameraFeed {
-    width: 90%;
-    max-width: 640px;
-    max-height: 80vh;
-    border-radius: 10px;
+  width: 90%;
+  max-width: 640px;
+  max-height: 80vh;
+  border-radius: 10px;
 }
 
 .FlipCameraIcon,
 .CameraSnap,
 .CameraClose {
-    margin-top: 20px;
-    background-color: #7289da;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  margin-top: 20px;
+  background-color: #7289da;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .FlipCameraIcon:hover,
 .CameraSnap:hover,
 .CameraClose:hover {
-    background-color: #5b6eae;
+  background-color: #5b6eae;
 }
 
 .FlipCameraIcon {
-    font-size: 40px;
-    padding: 10px;
+  font-size: 40px;
+  padding: 10px;
 }
 
 /* Add these new styles at the end of the file */
 
 /* Updated and new styles */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -117,7 +119,8 @@ body {
 }
 
 /* Force hardware acceleration */
-.App, .content-container {
+.App,
+.content-container {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;

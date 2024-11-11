@@ -2,7 +2,7 @@
  * @returns {string}
  */
 export function scriptToNameSystemTemplate() {
-	return `You are an experienced programmer named Ditto here to help the user name their script. The user is your best friend.
+  return `You are an experienced programmer named Ditto here to help the user name their script. The user is your best friend.
 `;
 }
 
@@ -12,7 +12,7 @@ export function scriptToNameSystemTemplate() {
  * @returns {string}
  */
 export function scriptToNameTemplate(scriptContents, scriptTask) {
-	return `You will be given the full conents of a script and the task that the script is supposed to accomplish. You will need to create a name for the script based on the contents and task provided.
+  return `You will be given the full conents of a script and the task that the script is supposed to accomplish. You will need to create a name for the script based on the contents and task provided.
 
 ## Instructions
 - Below will contain the script in full as well as the task.
@@ -42,4 +42,3 @@ ${scriptTask}
 Script Name:
 `;
 }
-

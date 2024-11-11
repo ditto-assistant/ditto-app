@@ -1,13 +1,15 @@
 import { collection, addDoc, vector } from "firebase/firestore";
-import { promptLLM, textEmbed, openaiImageGeneration, getRelevantExamples } from "../api/LLM";
+import {
+  promptLLM,
+  textEmbed,
+  openaiImageGeneration,
+  getRelevantExamples,
+} from "../api/LLM";
 import { googleSearch } from "../api/searchEngine";
 import { handleHomeAssistantTask } from "./agentTools";
 
 // import { huggingFaceEmbed } from "../ditto/modules/huggingFaceChat";
-import {
-  mainTemplate,
-  systemTemplate,
-} from "../ditto/templates/mainTemplate";
+import { mainTemplate, systemTemplate } from "../ditto/templates/mainTemplate";
 import {
   openscadTemplate,
   openscadSystemTemplate,
@@ -29,7 +31,12 @@ import updaterAgent from "./updaterAgent";
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import { db, saveScriptToFirestore, grabConversationHistoryCount, getModelPreferencesFromFirestore } from "./firebase";
+import {
+  db,
+  saveScriptToFirestore,
+  grabConversationHistoryCount,
+  getModelPreferencesFromFirestore,
+} from "./firebase";
 
 const mode = import.meta.env.MODE;
 
@@ -39,13 +46,25 @@ let toolTriggered = false;
 /**
  * Send a prompt to Ditto.
  */
-export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmbedding, updateConversation) => {
+export const sendPrompt = async (
+  userID,
+  firstName,
+  prompt,
+  image,
+  userPromptEmbedding,
+  updateConversation,
+) => {
   try {
     // Reset tool trigger state at the start of each prompt
     toolTriggered = false;
-    
+
     // Add the user's message to the conversation
-    const userMessage = { sender: "User", text: prompt, timestamp: Date.now(), pairID: null };
+    const userMessage = {
+      sender: "User",
+      text: prompt,
+      timestamp: Date.now(),
+      pairID: null,
+    };
     updateConversation((prevState) => ({
       ...prevState,
       messages: [...prevState.messages, userMessage],
@@ -58,7 +77,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       timestamp: Date.now(),
       isTyping: true,
       docId: null,
-      pairID: null
+      pairID: null,
     };
 
     updateConversation((prevState) => ({
@@ -72,12 +91,13 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       is_typing: true,
     }));
 
-    const [modelPreferences, memories, examplesString, scriptDetails] = await Promise.all([
-      getModelPreferencesFromFirestore(userID),
-      fetchMemories(userID, userPromptEmbedding),
-      getRelevantExamples(userPromptEmbedding, 5),
-      fetchScriptDetails(),
-    ]);
+    const [modelPreferences, memories, examplesString, scriptDetails] =
+      await Promise.all([
+        getModelPreferencesFromFirestore(userID),
+        fetchMemories(userID, userPromptEmbedding),
+        getRelevantExamples(userPromptEmbedding, 5),
+        fetchScriptDetails(),
+      ]);
 
     const { shortTermMemory, longTermMemory } = memories;
     const { scriptName, scriptType, scriptContents } = scriptDetails;
@@ -90,7 +110,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       new Date().toISOString(),
       prompt,
       scriptName,
-      scriptType
+      scriptType,
     );
 
     console.log("%c" + constructedPrompt, "color: green");
@@ -126,7 +146,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
             "<HTML_SCRIPT>",
             "<IMAGE_GENERATION>",
             "<GOOGLE_SEARCH>",
-            "<GOOGLE_HOME>"
+            "<GOOGLE_HOME>",
           ];
 
           for (const trigger of toolTriggers) {
@@ -141,7 +161,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
                 scriptName,
                 image,
                 memories,
-                updateConversation
+                updateConversation,
               );
               return;
             }
@@ -153,7 +173,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
             messages[messages.length - 1] = {
               ...messages[messages.length - 1],
               text: updatedText,
-              isTyping: false
+              isTyping: false,
             };
             return { ...prevState, messages };
           });
@@ -171,7 +191,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
         messages[messages.length - 1] = {
           ...messages[messages.length - 1],
           text: updatedText,
-          isTyping: false
+          isTyping: false,
         };
         return { ...prevState, messages };
       });
@@ -181,21 +201,26 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     };
 
     const finalizeResponse = async (responseText) => {
-      const docId = await saveToMemory(userID, prompt, responseText, userPromptEmbedding);
+      const docId = await saveToMemory(
+        userID,
+        prompt,
+        responseText,
+        userPromptEmbedding,
+      );
 
       // Update conversation with docId and pairID
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
         messages[messages.length - 2] = {
           ...messages[messages.length - 2],
-          pairID: docId
+          pairID: docId,
         };
         messages[messages.length - 1] = {
           ...messages[messages.length - 1],
           text: responseText,
           isTyping: false,
           docId: docId,
-          pairID: docId
+          pairID: docId,
         };
         return { ...prevState, messages };
       });
@@ -206,16 +231,16 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
     const streamingCallback = (chunk) => {
       // Check if this is the first chunk of a new message
       const isNewMessage = !buffer && !wordQueue.length;
-      
+
       // Don't stream if we've detected a tool trigger
       if (toolTriggered) return;
-      
+
       // Dispatch the streaming event with the chunk and isNewMessage flag
-      const event = new CustomEvent('responseStreamUpdate', {
-        detail: { 
+      const event = new CustomEvent("responseStreamUpdate", {
+        detail: {
           chunk,
-          isNewMessage 
-        }
+          isNewMessage,
+        },
       });
       window.dispatchEvent(event);
     };
@@ -226,7 +251,7 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       systemTemplate(),
       mainAgentModel,
       image,
-      streamingCallback
+      streamingCallback,
     );
 
     // Process any remaining text
@@ -249,28 +274,35 @@ export const sendPrompt = async (userID, firstName, prompt, image, userPromptEmb
       "<HTML_SCRIPT>",
       "<IMAGE_GENERATION>",
       "<GOOGLE_SEARCH>",
-      "<GOOGLE_HOME>"
+      "<GOOGLE_HOME>",
     ];
 
-    const hasTrigger = toolTriggers.some(trigger => response.includes(trigger));
+    const hasTrigger = toolTriggers.some((trigger) =>
+      response.includes(trigger),
+    );
 
     // Only save to memory if no tool trigger is found
     if (!hasTrigger && response) {
-      const docId = await saveToMemory(userID, prompt, response, userPromptEmbedding);
+      const docId = await saveToMemory(
+        userID,
+        prompt,
+        response,
+        userPromptEmbedding,
+      );
 
       // Update conversation with docId and pairID
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
         messages[messages.length - 2] = {
           ...messages[messages.length - 2],
-          pairID: docId
+          pairID: docId,
         };
         messages[messages.length - 1] = {
           ...messages[messages.length - 1],
           text: response,
           isTyping: false,
           docId: docId,
-          pairID: docId
+          pairID: docId,
         };
         return { ...prevState, messages };
       });
@@ -323,18 +355,26 @@ const generateScriptName = async (script, query) => {
   let scriptToNameResponse = await promptLLM(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
-    "gemini-1.5-flash"
+    "gemini-1.5-flash",
   );
 
   // Check for API error and retry once
-  if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+  if (
+    scriptToNameResponse.includes(
+      "error sending request: error response from API: status 500",
+    )
+  ) {
     console.log("API error detected, retrying script name generation...");
     scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gemini-1.5-flash"
+      "gemini-1.5-flash",
     );
-    if (scriptToNameResponse.includes("error sending request: error response from API: status 500")) {
+    if (
+      scriptToNameResponse.includes(
+        "error sending request: error response from API: status 500",
+      )
+    ) {
       console.log("Second attempt failed, defaulting to 'App Name Here'");
       scriptToNameResponse = "App Name Here";
     }
@@ -361,15 +401,20 @@ export const processResponse = async (
   scriptName,
   image,
   memories,
-  updateConversation
+  updateConversation,
 ) => {
   toolTriggered = true; // Set this flag to stop streaming
-  
+
   console.log("%c" + response, "color: yellow");
   let isValidResponse = true;
-  let errorMessage = "Error: Payment Required. Please check your token balance.";
+  let errorMessage =
+    "Error: Payment Required. Please check your token balance.";
 
-  if (response === errorMessage || response.includes("402") || response.includes("Payment Required")) {
+  if (
+    response === errorMessage ||
+    response.includes("402") ||
+    response.includes("Payment Required")
+  ) {
     isValidResponse = false;
     response = errorMessage;
 
@@ -380,7 +425,7 @@ export const processResponse = async (
         ...messages[messages.length - 1],
         text: errorMessage,
         isTyping: false,
-        isError: true
+        isError: true,
       };
       return { ...prevState, messages };
     });
@@ -388,20 +433,29 @@ export const processResponse = async (
     return errorMessage;
   }
 
-  const updateMessageWithToolStatus = async (status, type, finalResponse = null) => {
+  const updateMessageWithToolStatus = async (
+    status,
+    type,
+    finalResponse = null,
+  ) => {
     try {
       if (status === "complete" && finalResponse) {
         // Generate a new embedding for the final response
         const responseEmbedding = await textEmbed(finalResponse);
-        
+
         // Save the final processed response to memory with the embedding
-        const docId = await saveToMemory(userID, prompt, finalResponse, responseEmbedding || userPromptEmbedding);
+        const docId = await saveToMemory(
+          userID,
+          prompt,
+          finalResponse,
+          responseEmbedding || userPromptEmbedding,
+        );
 
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 2] = {
             ...messages[messages.length - 2],
-            pairID: docId
+            pairID: docId,
           };
           messages[messages.length - 1] = {
             ...messages[messages.length - 1],
@@ -412,14 +466,14 @@ export const processResponse = async (
             docId: docId,
             pairID: docId,
             toolStatus: null,
-            showTypingDots: false
+            showTypingDots: false,
           };
           return { ...prevState, messages };
         });
 
         saveToLocalStorage(prompt, finalResponse, Date.now(), docId);
       } else {
-        const statusText = status.endsWith('...') ? status : `${status}`;
+        const statusText = status.endsWith("...") ? status : `${status}`;
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 1] = {
@@ -429,20 +483,20 @@ export const processResponse = async (
             toolType: type,
             isTyping: false,
             showToolBadge: true,
-            showTypingDots: status !== "complete" && status !== "failed"
+            showTypingDots: status !== "complete" && status !== "failed",
           };
           return { ...prevState, messages };
         });
       }
     } catch (error) {
-      console.error('Error in updateMessageWithToolStatus:', error);
+      console.error("Error in updateMessageWithToolStatus:", error);
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
         messages[messages.length - 1] = {
           ...messages[messages.length - 1],
           text: errorMessage,
           isTyping: false,
-          isError: true
+          isError: true,
         };
         return { ...prevState, messages };
       });
@@ -451,7 +505,10 @@ export const processResponse = async (
 
   if (response.includes("<OPENSCAD>") && isValidResponse) {
     const query = response.split("<OPENSCAD>")[1];
-    await updateMessageWithToolStatus("Generating OpenSCAD Script...", "openscad");
+    await updateMessageWithToolStatus(
+      "Generating OpenSCAD Script...",
+      "openscad",
+    );
     const finalResponse = await handleScriptGeneration(
       response,
       "<OPENSCAD>",
@@ -466,7 +523,7 @@ export const processResponse = async (
       userID,
       image,
       memories,
-      updateConversation
+      updateConversation,
     );
     const displayResponse = `**OpenSCAD Script Generated and Downloaded.**\n- Task: ${query}`;
     await updateMessageWithToolStatus("complete", "openscad", displayResponse);
@@ -488,7 +545,7 @@ export const processResponse = async (
       userID,
       image,
       memories,
-      updateConversation
+      updateConversation,
     );
     const displayResponse = `**HTML Script Generated and Downloaded.**\n- Task: ${query}`;
     await updateMessageWithToolStatus("complete", "html", displayResponse);
@@ -504,26 +561,35 @@ export const processResponse = async (
     const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
     await updateMessageWithToolStatus("Searching Google", "search");
     const googleSearchResponse = await googleSearch(query);
-    let searchResults = "Google Search Query: " + query + "\n" + googleSearchResponse;
-    const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
+    let searchResults =
+      "Google Search Query: " + query + "\n" + googleSearchResponse;
+    const googleSearchAgentTemplate = googleSearchTemplate(
+      prompt,
+      searchResults,
+    );
     console.log("%c" + googleSearchAgentTemplate, "color: green");
     const googleSearchAgentResponse = await promptLLM(
       googleSearchAgentTemplate,
       googleSearchSystemTemplate(),
-      "gemini-1.5-flash"
+      "gemini-1.5-flash",
     );
     console.log("%c" + googleSearchAgentResponse, "color: yellow");
-    const finalResponse = "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
+    const finalResponse =
+      "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
     await updateMessageWithToolStatus("complete", "search", finalResponse);
     return finalResponse;
   } else if (response.includes("<GOOGLE_HOME>") && isValidResponse) {
     const query = response.split("<GOOGLE_HOME>")[1];
     await updateMessageWithToolStatus("Executing Home Assistant Task", "home");
     let success = await handleHomeAssistantTask(query);
-    const finalResponse = success ?
-      `Home Assistant Task: ${query}\n\nTask completed successfully.` :
-      `Home Assistant Task: ${query}\n\nTask failed.`;
-    await updateMessageWithToolStatus(success ? "complete" : "failed", "home", finalResponse);
+    const finalResponse = success
+      ? `Home Assistant Task: ${query}\n\nTask completed successfully.`
+      : `Home Assistant Task: ${query}\n\nTask failed.`;
+    await updateMessageWithToolStatus(
+      success ? "complete" : "failed",
+      "home",
+      finalResponse,
+    );
     return finalResponse;
   }
 
@@ -547,10 +613,15 @@ const handleScriptGeneration = async (
   userID,
   image,
   memories,
-  updateConversation
+  updateConversation,
 ) => {
   const query = response.split(tag)[1];
-  const constructedPrompt = templateFunction(query, scriptContents, memories.longTermMemory, memories.shortTermMemory);
+  const constructedPrompt = templateFunction(
+    query,
+    scriptContents,
+    memories.longTermMemory,
+    memories.shortTermMemory,
+  );
 
   console.log("%c" + constructedPrompt, "color: green");
 
@@ -565,7 +636,7 @@ const handleScriptGeneration = async (
       toolStatus: "Generating",
       toolType: scriptType.toLowerCase(),
       isTyping: false,
-      showToolBadge: true
+      showToolBadge: true,
     };
     return { ...prevState, messages };
   });
@@ -576,11 +647,16 @@ const handleScriptGeneration = async (
       systemTemplateFunction(),
       "gemini-1.5-flash",
       image,
-      () => { }  // Prevent streaming updates
+      () => {}, // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
-    scriptResponse = await updaterAgent(prompt, scriptContents, "gemini-1.5-flash", true);
+    scriptResponse = await updaterAgent(
+      prompt,
+      scriptContents,
+      "gemini-1.5-flash",
+      true,
+    );
     console.log("%c" + scriptResponse, "color: yellow");
   }
 
@@ -617,12 +693,7 @@ const cleanScriptResponse = (response) => {
   return cleanedScript;
 };
 
-export const saveToMemory = async (
-  userID,
-  prompt,
-  response,
-  embedding
-) => {
+export const saveToMemory = async (userID, prompt, response, embedding) => {
   try {
     if (mode === "development") {
       console.log("Creating memory collection with userID: ", userID);
@@ -642,17 +713,14 @@ export const saveToMemory = async (
     if (mode === "development") {
       console.log(
         "Memory written to Firestore collection with ID: ",
-        docRef.id
+        docRef.id,
       );
     }
     // Dispatch event when memory is created
-    window.dispatchEvent(new Event('memoryUpdated'));
+    window.dispatchEvent(new Event("memoryUpdated"));
     return docRef.id;
   } catch (e) {
-    console.error(
-      "Error adding document to Firestore memory collection: ",
-      e
-    );
+    console.error("Error adding document to Firestore memory collection: ", e);
     return null;
   }
 };
@@ -663,7 +731,8 @@ const saveToLocalStorage = (prompt, response, timestamp, pairID) => {
   const timestamps = loadFromLocalStorage("timestamps", []);
   const pairIDs = loadFromLocalStorage("pairIDs", []);
 
-  if (!pairIDs.includes(pairID)) { // Ensure no duplicates
+  if (!pairIDs.includes(pairID)) {
+    // Ensure no duplicates
     prompts.push(prompt);
     responses.push(response);
     timestamps.push(timestamp);
@@ -680,11 +749,7 @@ const loadFromLocalStorage = (key, defaultValue) => {
   return storedValue ? JSON.parse(storedValue) : defaultValue;
 };
 
-export const handleWorkingOnScript = (
-  cleanedScript,
-  filename,
-  scriptType
-) => {
+export const handleWorkingOnScript = (cleanedScript, filename, scriptType) => {
   console.log("Handling working on script state...");
   const workingOnScriptJSONString = localStorage.getItem("workingOnScript");
   if (workingOnScriptJSONString) {
@@ -705,14 +770,18 @@ export const handleWorkingOnScript = (
 const saveWorkingScript = (name, cleanedScript, scriptType) => {
   localStorage.setItem(
     "workingOnScript",
-    JSON.stringify({ script: name, contents: cleanedScript, scriptType: scriptType })
+    JSON.stringify({
+      script: name,
+      contents: cleanedScript,
+      scriptType: scriptType,
+    }),
   );
 };
 
 const updateScriptInLocalStorage = (scriptName, cleanedScript, scriptType) => {
   let scriptTypeObject = loadFromLocalStorage(scriptType, []);
   const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === scriptName
+    (script) => script.name === scriptName,
   );
   scriptTypeObject[scriptIndex].content = cleanedScript;
   localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
@@ -722,7 +791,7 @@ const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
   const scriptTypeObject = loadFromLocalStorage(scriptType, []);
   // check if already in and JUST update the content
   const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === filename
+    (script) => script.name === filename,
   );
   if (scriptIndex !== -1) {
     scriptTypeObject[scriptIndex].content = cleanedScript;
@@ -733,7 +802,7 @@ const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
     id: Date.now(),
     name: filename,
     content: cleanedScript,
-    scriptType: scriptType
+    scriptType: scriptType,
   });
   localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
 };

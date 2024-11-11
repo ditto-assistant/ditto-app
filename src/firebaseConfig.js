@@ -35,7 +35,7 @@ export const routes = {
   searchExamples: BASE_URL + "/v1/search-examples",
   /**
    * Generates the URL for retrieving the user's balance.
-   * 
+   *
    * @param {string} userID - The unique identifier of the user.
    * @returns {string} The complete URL for the balance endpoint.
    */
@@ -44,7 +44,7 @@ export const routes = {
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",
   createUploadURL: BASE_URL + "/v1/create-upload-url",
-}
+};
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const firebaseConfig = {

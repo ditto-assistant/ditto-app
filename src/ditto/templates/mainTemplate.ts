@@ -1,36 +1,45 @@
 export const systemTemplate = () => {
-    return "You are a friendly AI named Ditto here to help the user who is your best friend."
-}
-
+  return "You are a friendly AI named Ditto here to help the user who is your best friend.";
+};
 
 /**
  * This function returns the current time in the timezone of the user.
  * @returns {string} timezoneString - The current time in the timezone of the user.
-    */
+ */
 export const getTimezoneString = () => {
-    let timezoneString;
-    let timezone = new Date().toLocaleString("en-US", {timeZoneName: "short"}).split(' ');
-    if (timezone[1] === "Standard") {
-        timezoneString = timezone[2]
-    } else {
-        timezoneString = timezone[1]
-    }
-    return timezoneString
-}
-
+  let timezoneString;
+  let timezone = new Date()
+    .toLocaleString("en-US", { timeZoneName: "short" })
+    .split(" ");
+  if (timezone[1] === "Standard") {
+    timezoneString = timezone[2];
+  } else {
+    timezoneString = timezone[1];
+  }
+  return timezoneString;
+};
 
 export const workingOnScriptModule = (scriptName: string, type: string) => {
-    if (scriptName === "") {
-        return ""
-    }
-    return `## Current Script: ${scriptName}
+  if (scriptName === "") {
+    return "";
+  }
+  return `## Current Script: ${scriptName}
 - If you are reading this, that means the user is currently working on a ${type} script. Please send any requests from the user to the respective agent/tool for the user's ${type} script.
 - Don't send a user's prompt to the tool if they are obviously asking you something off topic to the current script or chatting with you. 
-`
-}
+`;
+};
 
-export const mainTemplate = (longTermMemory: string, shortTermMemory: string, examples: string, firstName: string, timestamp: string, usersPrompt: string, workingOnScriptName: string, workingOnScriptType: string) => {
-    let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
+export const mainTemplate = (
+  longTermMemory: string,
+  shortTermMemory: string,
+  examples: string,
+  firstName: string,
+  timestamp: string,
+  usersPrompt: string,
+  workingOnScriptName: string,
+  workingOnScriptType: string,
+) => {
+  let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
 
 ## Tools
 1. OpenSCAD:
@@ -80,15 +89,20 @@ Current Timestamp: <!timestamp>
 Current Time in User's Timezone: <!time>
 User's Prompt: <!users_prompt>
 Ditto:
-`
-    prompt = prompt.replace('<!time>', getTimezoneString() + ' ' + (new Date().getHours() >= 12 ? 'PM' : 'AM'))
-    prompt = prompt.replace('<!long_term_memory>', longTermMemory)
-    prompt = prompt.replace('<!short_term_memory>', shortTermMemory)
-    prompt = prompt.replace('<!examples>', examples)
-    prompt = prompt.replace('<!working_on_script_module>', workingOnScriptModule(workingOnScriptName, workingOnScriptType))
-    prompt = prompt.replace('<!users_name>', firstName)
-    prompt = prompt.replace('<!timestamp>', timestamp)
-    prompt = prompt.replace('<!users_prompt>', usersPrompt)
-    return prompt
-}
-
+`;
+  prompt = prompt.replace(
+    "<!time>",
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM"),
+  );
+  prompt = prompt.replace("<!long_term_memory>", longTermMemory);
+  prompt = prompt.replace("<!short_term_memory>", shortTermMemory);
+  prompt = prompt.replace("<!examples>", examples);
+  prompt = prompt.replace(
+    "<!working_on_script_module>",
+    workingOnScriptModule(workingOnScriptName, workingOnScriptType),
+  );
+  prompt = prompt.replace("<!users_name>", firstName);
+  prompt = prompt.replace("<!timestamp>", timestamp);
+  prompt = prompt.replace("<!users_prompt>", usersPrompt);
+  return prompt;
+};

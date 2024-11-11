@@ -1,415 +1,439 @@
 .Contents {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .Bar {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    justify-content: center;
-    align-items: flex-end;
-    position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+  align-items: flex-end;
+  position: relative;
 }
 
 .Form {
-    display: flex;
-    flex: 1;
-    max-width: 100%;
-    margin-left: -10px;
-    margin-right: -10px;
-    padding: 5px 10px;
-    background-color: #40444b; /* Changed to the lighter grey color */
-    border-radius: 10px;
-    position: relative;
-    gap: 8px; /* Add gap between textarea and button */
+  display: flex;
+  flex: 1;
+  max-width: 100%;
+  margin-left: -10px;
+  margin-right: -10px;
+  padding: 5px 10px;
+  background-color: #40444b; /* Changed to the lighter grey color */
+  border-radius: 10px;
+  position: relative;
+  gap: 8px; /* Add gap between textarea and button */
 }
 
 .InputWrapper {
-    position: relative;
-    width: 100%;
-    display: flex;
-    align-items: center;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .TextArea {
-    flex: 1;
-    border: none;
-    border-radius: 10px;
-    resize: none;
-    background-color: #40444b;
-    color: white;
-    padding: 10px 15px;
-    line-height: 1.5;
-    font-size: 16px;
-    max-height: 200px;
-    box-shadow: none;
-    outline: none !important;
-    padding-right: 100px;
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  resize: none;
+  background-color: #40444b;
+  color: white;
+  padding: 10px 15px;
+  line-height: 1.5;
+  font-size: 16px;
+  max-height: 200px;
+  box-shadow: none;
+  outline: none !important;
+  padding-right: 100px;
 }
 
 .TextArea:focus {
-    border: 1px solid #7289da;
-    box-shadow: 0 0 3px #7289da;
+  border: 1px solid #7289da;
+  box-shadow: 0 0 3px #7289da;
 }
 
 .IconsWrapper {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    height: 100%;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
-.Mic, 
+.Mic,
 .PlusButton {
-    color: white;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    margin-left: 15px;
-    font-size: 20px;
+  color: white;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin-left: 15px;
+  font-size: 20px;
 }
 
-.Mic:hover, 
+.Mic:hover,
 .PlusButton:hover {
-    color: #7289da;
+  color: #7289da;
 }
 
 .Mic.listening {
-    animation: pulse 1s infinite;
-    color: #ff5050;
+  animation: pulse 1s infinite;
+  color: #ff5050;
 }
 
 @keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
+  0% {
+    transform: scale(1);
+  }
 
-    50% {
-        transform: scale(1.1);
-    }
+  50% {
+    transform: scale(1.1);
+  }
 
-    100% {
-        transform: scale(1);
-    }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .Submit {
-    background-color: #4752c4;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    padding: 8px 15px;
-    margin-left: 0;
-    margin-right: -2px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    min-width: fit-content;
+  background-color: #4752c4;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  padding: 8px 15px;
+  margin-left: 0;
+  margin-right: -2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .Submit.disabled {
-    background-color: #2f3136;
-    color: rgba(255, 255, 255, 0.5);
-    cursor: not-allowed;
-    pointer-events: none;
+  background-color: #2f3136;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .Submit:not(.disabled):hover {
-    background-color: #3c45a5;
+  background-color: #3c45a5;
 }
 
 .Submit:not(.disabled):active {
-    background-color: #3941b8;
+  background-color: #3941b8;
 }
 
 .ImagePreview {
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 5px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
-    max-width: 90%;
-    z-index: 2;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    bottom: 100%;
-    left: 0;
-    margin-bottom: 10px;
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 5px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  z-index: 2;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 10px;
 }
 
 .ImagePreview img {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 5px;
-    margin-right: 10px;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 10px;
 }
 
 .RemoveImage {
-    color: white;
-    cursor: pointer;
-    transition: color 0.2s ease;
+  color: white;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .RemoveImage:hover {
-    color: #ff5050;
+  color: #ff5050;
 }
 
 .CameraOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 3000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
 }
 
 .CameraContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 90%;
-    max-height: 90%;
-    background-color: #2f3136;
-    border-radius: 10px;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90%;
+  max-height: 90%;
+  background-color: #2f3136;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .CameraFeed {
-    width: 100%;
-    height: auto;
-    max-height: calc(90vh - 100px); /* Adjust based on your needs */
-    object-fit: contain;
+  width: 100%;
+  height: auto;
+  max-height: calc(90vh - 100px); /* Adjust based on your needs */
+  object-fit: contain;
 }
 
 .CameraControls {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    padding: 15px;
-    background-color: #40444b;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  padding: 15px;
+  background-color: #40444b;
 }
 
 .FlipCameraIcon {
-    color: white;
-    font-size: 30px;
-    cursor: pointer;
-    transition: color 0.2s ease;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .FlipCameraIcon:hover {
-    color: #7289da;
+  color: #7289da;
 }
 
 .CameraSnap,
 .CameraClose {
-    background-color: #7289da;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: #7289da;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .CameraSnap:hover,
 .CameraClose:hover {
-    background-color: #5b6eae;
+  background-color: #5b6eae;
 }
 
 .CameraSnap:active,
 .CameraClose:active {
-    background-color: #4a5899;
+  background-color: #4a5899;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0.8); }
-    to { transform: scale(1); }
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 .EnlargedImageOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    animation: fadeIn 0.3s ease;
-    backdrop-filter: blur(5px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(5px);
 }
 
 .EnlargedImageContainer {
-    max-width: 90%;
-    max-height: 90%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: scaleIn 0.3s ease;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: scaleIn 0.3s ease;
 }
 
 .EnlargedImageOverlay img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0.8); }
-    to { transform: scale(1); }
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 .FullscreenImageOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5000;
-    animation: fadeIn 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  animation: fadeIn 0.3s ease;
 }
 
 .FullscreenImageOverlay img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    border-radius: 8px;
-    animation: scaleIn 0.3s ease;
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 8px;
+  animation: scaleIn 0.3s ease;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0.8); }
-    to { transform: scale(1); }
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 /* Updated styles for the media options overlay */
 .MediaOptionsOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 1000;
 }
 
 .MediaOptionsContent {
-    background-color: #2f3136;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    padding: 20px;
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
+  background-color: #2f3136;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
 .MediaOption {
-    background-color: #40444b;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    padding: 15px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
+  background-color: #40444b;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
 .MediaOption:last-of-type {
-    margin-bottom: 20px; /* Add space between options and cancel button */
+  margin-bottom: 20px; /* Add space between options and cancel button */
 }
 
 .MediaOption:hover {
-    background-color: #4a4d57;
+  background-color: #4a4d57;
 }
 
 .MediaOption svg {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 /* Updated styles for the cancel button */
 .CancelButton {
-    background-color: transparent;
-    border: 2px solid #7289da;
-    border-radius: 10px;
-    color: #7289da;
-    padding: 12px;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  background-color: transparent;
+  border: 2px solid #7289da;
+  border-radius: 10px;
+  color: #7289da;
+  padding: 12px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .CancelButton:hover {
-    background-color: rgba(114, 137, 218, 0.1);
-    color: #ffffff;
-    border-color: #ffffff;
+  background-color: rgba(114, 137, 218, 0.1);
+  color: #ffffff;
+  border-color: #ffffff;
 }
 
 .CancelButton:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 /* Add media query for small screens */
 @media screen and (max-width: 380px) {
-    .Form {
-        padding: 5px 8px; /* Reduce padding on small screens */
-    }
-    
-    .Submit {
-        padding: 8px 12px; /* Further reduce padding on small screens */
-        font-size: 14px; /* Slightly smaller font size */
-    }
-    
-    .TextArea {
-        padding-right: 80px; /* Reduce padding to prevent overlap with icons */
-    }
+  .Form {
+    padding: 5px 8px; /* Reduce padding on small screens */
+  }
+
+  .Submit {
+    padding: 8px 12px; /* Further reduce padding on small screens */
+    font-size: 14px; /* Slightly smaller font size */
+  }
+
+  .TextArea {
+    padding-right: 80px; /* Reduce padding to prevent overlap with icons */
+  }
 }
