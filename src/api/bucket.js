@@ -20,6 +20,7 @@ export async function presignURL(url) {
         },
         body: JSON.stringify({
             url,
+            userID: tok.ok.userID,
         }),
     });
     return await response.text();
