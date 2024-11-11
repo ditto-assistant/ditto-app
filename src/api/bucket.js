@@ -25,3 +25,21 @@ export async function presignURL(url) {
     });
     return await response.text();
 }
+
+export async function createUploadURL(userID) {
+    const tok = await getToken();
+    if (tok.err) {
+        return tok.err;
+    }
+    const response = await fetch(routes.createUploadURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tok.ok.token}`
+        },
+        body: JSON.stringify({
+            userID,
+        }),
+    });
+    return await response.text();
+}   

@@ -601,9 +601,10 @@ export default function ChatFeed({
                 }}
                 onError={(e) => {
                   presignURL(src).then(
-                    (presignedURL) => {
-                      if (presignedURL) {
-                        e.target.src = presignedURL;
+                    (url) => {
+                      if (url) {
+                        e.target.src = url;
+                        console.log(`Got presigned URL: ${url}`);
                       }
                     },
                     (err) => {

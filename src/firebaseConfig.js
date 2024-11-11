@@ -43,6 +43,7 @@ export const routes = {
   memories: getMemoriesURL(MODE),
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",
+  createUploadURL: BASE_URL + "/v1/create-upload-url",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
