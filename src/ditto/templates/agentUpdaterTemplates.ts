@@ -1,17 +1,17 @@
 export function getTimezoneString(): string {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 export function htmlSystemTemplate(): string {
-    return "You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend.";
+  return "You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend.";
 }
 
 export function programmerAgentPlanner(query: string, script: string): string {
-    const timezone = getTimezoneString();
-    const now = new Date();
-    const amPm = now.getHours() >= 12 ? 'PM' : 'AM';
+  const timezone = getTimezoneString();
+  const now = new Date();
+  const amPm = now.getHours() >= 12 ? "PM" : "AM";
 
-    const prompt = `You are an experienced web developer ready to create a set of tasks in a JSON Schema for another AI agent to follow. You will be given a design idea and you will need to create a formal writeup of the tasks that need to be completed to create the design idea.
+  const prompt = `You are an experienced web developer ready to create a set of tasks in a JSON Schema for another AI agent to follow. You will be given a design idea and you will need to create a formal writeup of the tasks that need to be completed to create the design idea.
 
 ## Instructions
 - Your response should be a formal writeup of the tasks that need to be completed to create the design idea.
@@ -165,15 +165,18 @@ HTML Script:
 Task Writeup:
 `;
 
-    return prompt
-        .replace('<!timezone>', timezone)
-        .replace('<!am_pm>', amPm)
-        .replace('<!query>', query)
-        .replace('<!script>', script);
+  return prompt
+    .replace("<!timezone>", timezone)
+    .replace("<!am_pm>", amPm)
+    .replace("<!query>", query)
+    .replace("<!script>", script);
 }
 
-export function programmerAgentTaskCoder(taskWriteup: string, script: string): string {
-    const prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and an entire HTML script.
+export function programmerAgentTaskCoder(
+  taskWriteup: string,
+  script: string,
+): string {
+  const prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and an entire HTML script.
 
 ## Design Instructions
 - You MUST use the <script> tag to include Javascript code in the HTML file from popular libraries that all browsers support, even on mobile devices, as everything you make has to work and look good on mobile devices.
@@ -192,13 +195,16 @@ Response:
 \`\`\`html
 `;
 
-    return prompt
-        .replace('<!script>', script)
-        .replace('<!task_writeup>', taskWriteup);
+  return prompt
+    .replace("<!script>", script)
+    .replace("<!task_writeup>", taskWriteup);
 }
 
-export function programmerAgentTaskApplier(codeSnippets: string, script: string): string {
-    const prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a set of code snippets that need to be added to the HTML script and the entire HTML script.
+export function programmerAgentTaskApplier(
+  codeSnippets: string,
+  script: string,
+): string {
+  const prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a set of code snippets that need to be added to the HTML script and the entire HTML script.
 
 ## Instructions
 - Please respond with the entire HTML script with the code snippets added. Make sure your code is in a markdown code block.
@@ -211,13 +217,16 @@ Response:
 \`\`\`html
 `;
 
-    return prompt
-        .replace('<!script>', script)
-        .replace('<!code_snippets>', codeSnippets);
+  return prompt
+    .replace("<!script>", script)
+    .replace("<!code_snippets>", codeSnippets);
 }
 
-export function programmerAgentContinuer(codeSnippets: string, finalScript: string): string {
-    const prompt = `Code Snippets we were in the middle of writing:
+export function programmerAgentContinuer(
+  codeSnippets: string,
+  finalScript: string,
+): string {
+  const prompt = `Code Snippets we were in the middle of writing:
 <!code_snippets>
 
 Final Script we were in the middle of writing:
@@ -228,7 +237,7 @@ Finish this script where it left off in a markdown code block. DO NOT repeat ANY
 Response:
 `;
 
-    return prompt
-        .replace('<!code_snippets>', codeSnippets)
-        .replace('<!final_script>', finalScript);
+  return prompt
+    .replace("<!code_snippets>", codeSnippets)
+    .replace("<!final_script>", finalScript);
 }

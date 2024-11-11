@@ -1,40 +1,42 @@
 export const htmlSystemTemplate = () => {
-    return "You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend."
-}
+  return "You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend.";
+};
 
 export const workingOnScriptModule = (script: string) => {
-    if (script === "") {
-        return ""
-    }
-    return `## Current Script
+  if (script === "") {
+    return "";
+  }
+  return `## Current Script
 - The user is currently working on this HTML script below. DO NOT change the script's functionality or design unless the user asks you to do so.
 Current HTML Script:
 \`\`\`html
 <!script>
 \`\`\`
-`.replace('<!script>', script)
-}
+`.replace("<!script>", script);
+};
 
 /**
  * This function returns the current time in the timezone of the user.
  * @returns {string} timezoneString - The current time in the timezone of the user.
-    */
+ */
 export const getTimezoneString = () => {
-    let timezoneString;
-    let timezone = new Date().toLocaleString("en-US", {timeZoneName: "short"}).split(' ');
-    if (timezone[1] === "Standard") {
-        timezoneString = timezone[2]
-    } else {
-        timezoneString = timezone[1]
-    }
-    return timezoneString
-}
+  let timezoneString;
+  let timezone = new Date()
+    .toLocaleString("en-US", { timeZoneName: "short" })
+    .split(" ");
+  if (timezone[1] === "Standard") {
+    timezoneString = timezone[2];
+  } else {
+    timezoneString = timezone[1];
+  }
+  return timezoneString;
+};
 
 export const historyModule = (ltm: string, stm: string) => {
-    if (ltm === "" && stm === "") {
-        return ""
-    }
-    return `## Long Term Memory
+  if (ltm === "" && stm === "") {
+    return "";
+  }
+  return `## Long Term Memory
 - Relevant prompt/response pairs from the user's prompt history are indexed using the user's prompt embedding and cosine similarity and are shown below as Long Term Memory. 
 Long Term Memory Buffer (most relevant prompt/response pairs):
 -- Begin Long Term Memory --
@@ -46,11 +48,11 @@ ${ltm}
 Short Term Memory Buffer (most recent prompt/response pairs):
 -- Begin Short Term Memory --
 ${stm}
--- End Short Term Memory --`
-}
+-- End Short Term Memory --`;
+};
 
 export const programmerAgentplanner = (query: string, script: string) => {
-    let prompt = `You are an experienced web developer ready to create a set of tasks in a JSON Schema for another AI agent to follow. You will be given a design idea and you will need to create a formal writeup of the tasks that need to be completed to create the design idea.
+  let prompt = `You are an experienced web developer ready to create a set of tasks in a JSON Schema for another AI agent to follow. You will be given a design idea and you will need to create a formal writeup of the tasks that need to be completed to create the design idea.
 
 ## Instructions
 - Your response should be a formal writeup of the tasks that need to be completed to create the design idea.
@@ -206,16 +208,18 @@ HTML Script:
 <!script>
 \`\`\`
 Task Writeup:
-`
-    prompt = prompt.replace('<!time>', getTimezoneString() + ' ' + (new Date().getHours() >= 12 ? 'PM' : 'AM'))
-    prompt = prompt.replace('<!query>', query)
-    prompt = prompt.replace('<!script>', script)
-    return prompt
-}
-
+`;
+  prompt = prompt.replace(
+    "<!time>",
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM"),
+  );
+  prompt = prompt.replace("<!query>", query);
+  prompt = prompt.replace("<!script>", script);
+  return prompt;
+};
 
 export const programmerAgentTaskCoder = (query: string, script: string) => {
-    let prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and an entire HTML script. You will also be assessing one line of code at a time and responding with 3 options: "ADD", "REMOVE", or "NO CHANGE". If you use ADD you will need to also respond with the code that needs to be added.
+  let prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and an entire HTML script. You will also be assessing one line of code at a time and responding with 3 options: "ADD", "REMOVE", or "NO CHANGE". If you use ADD you will need to also respond with the code that needs to be added.
 
 ## Instructions
 - Given the task writeup, HTML script, and current line of code, respond with the option that best completes the task writeup.
@@ -298,12 +302,16 @@ Task Writeup:
 Current Line of Code:
 <!current_line_of_code>
 Action:
-`
-}
+`;
+};
 
-
-export const htmlTemplate = (query: string, script: string, ltm: string = "", stm: string = "") => {
-    let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
+export const htmlTemplate = (
+  query: string,
+  script: string,
+  ltm: string = "",
+  stm: string = "",
+) => {
+  let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
 
 <!history>
 
@@ -335,9 +343,12 @@ HTML Script:
 User's Design Idea: <!query>
 HTML Script:
 \`\`\`html
-`
-    prompt = prompt.replace('<!query>', query)
-    prompt = prompt.replace('<!working_on_script_module>', workingOnScriptModule(script))
-    prompt = prompt.replace('<!history>', historyModule(ltm, stm))
-    return prompt
-}
+`;
+  prompt = prompt.replace("<!query>", query);
+  prompt = prompt.replace(
+    "<!working_on_script_module>",
+    workingOnScriptModule(script),
+  );
+  prompt = prompt.replace("<!history>", historyModule(ltm, stm));
+  return prompt;
+};

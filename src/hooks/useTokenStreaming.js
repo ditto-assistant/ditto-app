@@ -1,32 +1,32 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
-export const useTokenStreaming = (initialText = '') => {
+export const useTokenStreaming = (initialText = "") => {
   const [streamedText, setStreamedText] = useState(initialText);
-  const [currentWord, setCurrentWord] = useState('');
+  const [currentWord, setCurrentWord] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
   const processChunk = useCallback((chunk, isNewMessage = false) => {
     setIsStreaming(true);
-    
+
     // Reset text if this is a new message
     if (isNewMessage) {
-      setStreamedText('');
+      setStreamedText("");
       setIsComplete(false);
     }
-    
+
     // Split chunk into words while preserving whitespace
     const words = chunk.split(/(\s+)/);
-    
+
     // Process each word with a delay
     words.forEach((word, index) => {
       setTimeout(() => {
         setCurrentWord(word);
-        setStreamedText(prev => prev + word);
-        
+        setStreamedText((prev) => prev + word);
+
         // If this is the last word in the chunk
         if (index === words.length - 1) {
-          setCurrentWord('');
+          setCurrentWord("");
           setIsComplete(true);
         }
       }, index * 15); // 15ms delay between words
@@ -34,8 +34,8 @@ export const useTokenStreaming = (initialText = '') => {
   }, []);
 
   const reset = useCallback(() => {
-    setStreamedText('');
-    setCurrentWord('');
+    setStreamedText("");
+    setCurrentWord("");
     setIsStreaming(false);
     setIsComplete(false);
   }, []);
@@ -46,6 +46,6 @@ export const useTokenStreaming = (initialText = '') => {
     isStreaming,
     isComplete,
     processChunk,
-    reset
+    reset,
   };
-}; 
+};

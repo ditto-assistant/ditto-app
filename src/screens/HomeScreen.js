@@ -1,7 +1,7 @@
 import "./HomeScreen.css";
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { grabStatus, syncLocalScriptsWithFirestore, } from "../control/firebase";
+import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import { MdSettings } from "react-icons/md";
 import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 import FullScreenSpinner from "../components/LoadingSpinner";
@@ -9,40 +9,43 @@ import { Divider } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
-import TermsOfService from '../components/TermsOfService';
+import TermsOfService from "../components/TermsOfService";
 // Lazy load components
 const ChatFeed = lazy(() => import("@/components/ChatFeed"));
 const SendMessage = lazy(() => import("@/components/SendMessage"));
 const StatusBar = lazy(() => import("@/components/StatusBar"));
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
-import dittoIcon from '/icons/ditto-icon-clear2.png';
+import dittoIcon from "/icons/ditto-icon-clear2.png";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
-import MiniFocusOverlay from '../components/MiniFocusOverlay';
-import ScriptActionsOverlay from '../components/ScriptActionsOverlay';
-import { 
-  deleteScriptFromFirestore, 
-  renameScriptInFirestore, 
+import MiniFocusOverlay from "../components/MiniFocusOverlay";
+import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
+import {
+  deleteScriptFromFirestore,
+  renameScriptInFirestore,
   getVersionsOfScriptFromFirestore,
   getScriptTimestamps,
-  saveScriptToFirestore 
+  saveScriptToFirestore,
 } from "../control/firebase";
 
-const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
+const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
 
 export default function HomeScreen() {
   const navigate = useNavigate();
   const balance = useBalance();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
-  const [histCount, setCount] = useState(localStorage.getItem("histCount") || 0);
+  const [histCount, setCount] = useState(
+    localStorage.getItem("histCount") || 0,
+  );
   const [localScripts, setLocalScripts] = useState({
     webApps: [],
     openSCAD: [],
   });
-  const { model: DittoActivation, isLoaded: dittoActivationLoaded } = useDittoActivation();
+  const { model: DittoActivation, isLoaded: dittoActivationLoaded } =
+    useDittoActivation();
   const [showStatusBar, setShowStatusBar] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -52,18 +55,24 @@ export default function HomeScreen() {
   const [capturedImage, setCapturedImage] = useState(null);
   const [showMediaOptions, setShowMediaOptions] = useState(false);
   const [showTOS, setShowTOS] = useState(() => {
-    return !localStorage.getItem('hasSeenTOS');
+    return !localStorage.getItem("hasSeenTOS");
   });
 
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
-    return savedConversation ? JSON.parse(savedConversation) : {
-      messages: [{ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() }],
-      is_typing: false,
-    };
+    return savedConversation
+      ? JSON.parse(savedConversation)
+      : {
+          messages: [
+            { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
+          ],
+          is_typing: false,
+        };
   };
 
-  const [conversation, setConversation] = useState(loadConversationFromLocalStorage);
+  const [conversation, setConversation] = useState(
+    loadConversationFromLocalStorage,
+  );
 
   const updateConversation = (updateFn) => {
     setConversation((prevState) => {
@@ -77,11 +86,11 @@ export default function HomeScreen() {
     const storedScript = localStorage.getItem("workingOnScript");
     if (!storedScript) return null;
     try {
-        const parsed = JSON.parse(storedScript);
-        return parsed.script || null;
+      const parsed = JSON.parse(storedScript);
+      return parsed.script || null;
     } catch (e) {
-        console.error("Error parsing workingOnScript:", e);
-        return null;
+      console.error("Error parsing workingOnScript:", e);
+      return null;
     }
   });
 
@@ -94,13 +103,14 @@ export default function HomeScreen() {
       localStorage.removeItem("latestWorkingOnScript");
       navigate("/canvas", { state: { script, scriptName } });
     }
-  }
-    , [localStorage.getItem("latestWorkingOnScript")]);
+  }, [localStorage.getItem("latestWorkingOnScript")]);
 
   const createConversation = (hist, reset, onload) => {
     try {
       let newConversation = {
-        messages: [{ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() }],
+        messages: [
+          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
+        ],
         is_typing: false,
       };
       if (reset) {
@@ -118,17 +128,17 @@ export default function HomeScreen() {
         let timestamp = timestamps[i];
         let pairID = pairIDs[i];
 
-        newConversation.messages.push({ 
-          sender: "User", 
-          text: prompt, 
+        newConversation.messages.push({
+          sender: "User",
+          text: prompt,
           timestamp: timestamp,
-          pairID: pairID
+          pairID: pairID,
         });
-        newConversation.messages.push({ 
-          sender: "Ditto", 
-          text: response, 
+        newConversation.messages.push({
+          sender: "Ditto",
+          text: response,
           timestamp: timestamp,
-          pairID: pairID
+          pairID: pairID,
         });
       }
       if (onload) {
@@ -137,7 +147,6 @@ export default function HomeScreen() {
         setStartAtBottom(false);
         setConversation(newConversation);
       }
-
     } catch (e) {
       console.log(e);
     }
@@ -152,10 +161,13 @@ export default function HomeScreen() {
   };
 
   let convo = getSavedConversation();
-  let previousConversation = createConversation(convo, false, true)
+  let previousConversation = createConversation(convo, false, true);
 
-  const localStorageMicrophoneStatus = localStorage.getItem("microphoneStatus") === "true";
-  const [microphoneStatus, setMicrophoneStatus] = useState(localStorageMicrophoneStatus);
+  const localStorageMicrophoneStatus =
+    localStorage.getItem("microphoneStatus") === "true";
+  const [microphoneStatus, setMicrophoneStatus] = useState(
+    localStorageMicrophoneStatus,
+  );
 
   let buttonSize = 25;
 
@@ -169,7 +181,7 @@ export default function HomeScreen() {
     } else {
       DittoActivation.startListening();
     }
-  };
+  }
 
   const appBodyRef = useRef(null);
 
@@ -178,7 +190,10 @@ export default function HomeScreen() {
     if (localStorage.getItem("resetMemory") === "true") {
       localStorage.setItem("resetMemory", "false");
       setCount(0);
-      createConversation({ prompts: [], responses: [], timestamps: [], pairIDs: [] }, true);
+      createConversation(
+        { prompts: [], responses: [], timestamps: [], pairIDs: [] },
+        true,
+      );
     }
   }, [localStorage.getItem("resetMemory")]);
 
@@ -191,14 +206,16 @@ export default function HomeScreen() {
           DittoActivation.startListening();
         }
         const webApps = await syncLocalScriptsWithFirestore(userID, "webApps");
-        const openSCAD = await syncLocalScriptsWithFirestore(userID, "openSCAD");
+        const openSCAD = await syncLocalScriptsWithFirestore(
+          userID,
+          "openSCAD",
+        );
         setLocalScripts({ webApps, openSCAD });
       } catch (e) {
         console.error("Error syncing scripts:", e);
       }
     }
   };
-
 
   const syncConversationHist = async () => {
     const localHistCount = parseInt(localStorage.getItem("histCount"));
@@ -234,43 +251,66 @@ export default function HomeScreen() {
 
   // Add this function after getSavedConversation
   const checkAndResyncPairIDs = () => {
-    const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-    const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-    const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-    const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
+    const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+    const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+    const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
     // Check if arrays exist and have matching lengths
-    if (prompts.length !== responses.length || 
-        prompts.length !== timestamps.length || 
-        prompts.length !== pairIDs.length) {
-      console.log('Detected mismatch in localStorage arrays:');
+    if (
+      prompts.length !== responses.length ||
+      prompts.length !== timestamps.length ||
+      prompts.length !== pairIDs.length
+    ) {
+      console.log("Detected mismatch in localStorage arrays:");
       console.log(`prompts: ${prompts.length}`);
       console.log(`responses: ${responses.length}`);
       console.log(`timestamps: ${timestamps.length}`);
       console.log(`pairIDs: ${pairIDs.length}`);
 
       // Load conversation history from Firestore to resync
-      const userID = localStorage.getItem('userID');
+      const userID = localStorage.getItem("userID");
       if (userID) {
-        console.log('Resyncing conversation history from Firestore...');
+        console.log("Resyncing conversation history from Firestore...");
         loadConversationHistoryFromFirestore(userID)
-          .then(conversationHistory => {
+          .then((conversationHistory) => {
             if (conversationHistory) {
-              localStorage.setItem('prompts', JSON.stringify(conversationHistory.prompts));
-              localStorage.setItem('responses', JSON.stringify(conversationHistory.responses));
-              localStorage.setItem('timestamps', JSON.stringify(conversationHistory.timestamps));
-              localStorage.setItem('pairIDs', JSON.stringify(conversationHistory.pairIDs));
-              localStorage.setItem('histCount', conversationHistory.prompts.length);
-              console.log('Successfully resynced conversation history');
-              console.log(`New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`);
-              
+              localStorage.setItem(
+                "prompts",
+                JSON.stringify(conversationHistory.prompts),
+              );
+              localStorage.setItem(
+                "responses",
+                JSON.stringify(conversationHistory.responses),
+              );
+              localStorage.setItem(
+                "timestamps",
+                JSON.stringify(conversationHistory.timestamps),
+              );
+              localStorage.setItem(
+                "pairIDs",
+                JSON.stringify(conversationHistory.pairIDs),
+              );
+              localStorage.setItem(
+                "histCount",
+                conversationHistory.prompts.length,
+              );
+              console.log("Successfully resynced conversation history");
+              console.log(
+                `New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`,
+              );
+
               // Update the conversation state
-              const newConversation = createConversation(conversationHistory, false, true);
+              const newConversation = createConversation(
+                conversationHistory,
+                false,
+                true,
+              );
               setConversation(newConversation);
             }
           })
-          .catch(error => {
-            console.error('Error resyncing conversation history:', error);
+          .catch((error) => {
+            console.error("Error resyncing conversation history:", error);
           });
       }
     }
@@ -281,7 +321,7 @@ export default function HomeScreen() {
     syncScripts();
     balance.refetch();
     checkAndResyncPairIDs(); // Add this line
-    
+
     const handleStatus = async () => {
       var statusDb = await grabStatus();
       if (bootStatus !== statusDb.status) {
@@ -310,7 +350,10 @@ export default function HomeScreen() {
     };
 
     const handleFocus = (event) => {
-      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
+      if (
+        event.target.tagName === "INPUT" ||
+        event.target.tagName === "TEXTAREA"
+      ) {
         setTimeout(handleResize, 500); // Timeout to wait for keyboard to simply open
       }
     };
@@ -330,19 +373,19 @@ export default function HomeScreen() {
       // First get the viewport height and multiply it by 1% to get a value for a vh unit
       const vh = window.innerHeight * 0.01;
       // Then set the value in the --vh custom property to the root of the document
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
     };
 
     // Initial set
     setVH();
 
     // Add event listeners
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', setVH);
-    
+    window.addEventListener("resize", setVH);
+    window.addEventListener("orientationchange", setVH);
+
     // For Chrome mobile, handle toolbar show/hide
     let lastHeight = window.innerHeight;
-    window.addEventListener('scroll', () => {
+    window.addEventListener("scroll", () => {
       if (window.innerHeight !== lastHeight) {
         lastHeight = window.innerHeight;
         setVH();
@@ -351,9 +394,9 @@ export default function HomeScreen() {
 
     // Cleanup
     return () => {
-      window.removeEventListener('resize', setVH);
-      window.removeEventListener('orientationchange', setVH);
-      window.removeEventListener('scroll', setVH);
+      window.removeEventListener("resize", setVH);
+      window.removeEventListener("orientationchange", setVH);
+      window.removeEventListener("scroll", setVH);
     };
   }, []);
 
@@ -381,14 +424,16 @@ export default function HomeScreen() {
 
   const startCamera = (useFrontCamera) => {
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: useFrontCamera ? 'user' : 'environment' } })
+      .getUserMedia({
+        video: { facingMode: useFrontCamera ? "user" : "environment" },
+      })
       .then((stream) => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       })
       .catch((err) => {
-        console.error('Error accessing the camera: ', err);
+        console.error("Error accessing the camera: ", err);
       });
   };
 
@@ -403,11 +448,11 @@ export default function HomeScreen() {
 
   const handleSnap = () => {
     if (canvasRef.current && videoRef.current) {
-      const context = canvasRef.current.getContext('2d');
+      const context = canvasRef.current.getContext("2d");
       canvasRef.current.width = videoRef.current.videoWidth;
       canvasRef.current.height = videoRef.current.videoHeight;
       context.drawImage(videoRef.current, 0, 0);
-      const imageDataURL = canvasRef.current.toDataURL('image/png');
+      const imageDataURL = canvasRef.current.toDataURL("image/png");
       setCapturedImage(imageDataURL);
       handleCameraClose();
     }
@@ -435,46 +480,48 @@ export default function HomeScreen() {
       setCount(newHistCount);
 
       // Get the latest data from localStorage
-      const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-      const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-      const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-      const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
-      
+      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+      const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
+
       // Create new conversation object
       const newConversation = {
-        messages: [{ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() }],
-        is_typing: false
+        messages: [
+          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
+        ],
+        is_typing: false,
       };
-      
+
       // Rebuild messages array with latest data including pairIDs
       for (let i = 0; i < prompts.length; i++) {
-        newConversation.messages.push({ 
-          sender: "User", 
-          text: prompts[i], 
+        newConversation.messages.push({
+          sender: "User",
+          text: prompts[i],
           timestamp: timestamps[i],
-          pairID: pairIDs[i]
+          pairID: pairIDs[i],
         });
-        newConversation.messages.push({ 
-          sender: "Ditto", 
-          text: responses[i], 
+        newConversation.messages.push({
+          sender: "Ditto",
+          text: responses[i],
           timestamp: timestamps[i],
-          pairID: pairIDs[i]
+          pairID: pairIDs[i],
         });
       }
-      
+
       // Update the conversation state with new data
       setConversation(newConversation);
     };
 
     window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-    
+
     return () => {
       window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
     };
   }, []);
 
   const handleTOSClose = () => {
-    localStorage.setItem('hasSeenTOS', 'true');
+    localStorage.setItem("hasSeenTOS", "true");
     setShowTOS(false);
   };
 
@@ -497,48 +544,60 @@ export default function HomeScreen() {
 
   const handleEditScript = (script) => {
     // If script is passed directly, use it, otherwise try to find the selected script
-    const scriptToEdit = script || (selectedScript && (
-        scripts.webApps.find(s => s.name === selectedScript) || 
-        scripts.openSCAD.find(s => s.name === selectedScript)
-    ));
-    
+    const scriptToEdit =
+      script ||
+      (selectedScript &&
+        (scripts.webApps.find((s) => s.name === selectedScript) ||
+          scripts.openSCAD.find((s) => s.name === selectedScript)));
+
     if (scriptToEdit) {
-        if (scriptToEdit.scriptType === 'webApps') {
-            setFullScreenEdit({
-                ...scriptToEdit,
-                onSaveCallback: async (newContent) => {
-                    const userID = localStorage.getItem("userID");
-                    try {
-                        setShowLoadingSpinner(true);
-                        await saveScriptToFirestore(userID, newContent, scriptToEdit.scriptType, scriptToEdit.name);
-                        
-                        // Update local scripts
-                        await syncLocalScriptsWithFirestore(userID, scriptToEdit.scriptType);
-                        
-                        // Update workingOnScript in localStorage
-                        const workingOnScript = {
-                            script: scriptToEdit.name,
-                            contents: newContent,
-                            scriptType: scriptToEdit.scriptType
-                        };
-                        localStorage.setItem("workingOnScript", JSON.stringify(workingOnScript));
-                        
-                        setShowLoadingSpinner(false);
-                        setFullScreenEdit(null);
-                    } catch (error) {
-                        console.error('Error saving:', error);
-                        setShowLoadingSpinner(false);
-                    }
-                }
-            });
-        } else {
-            setOpenScadViewer(scriptToEdit);
-        }
+      if (scriptToEdit.scriptType === "webApps") {
+        setFullScreenEdit({
+          ...scriptToEdit,
+          onSaveCallback: async (newContent) => {
+            const userID = localStorage.getItem("userID");
+            try {
+              setShowLoadingSpinner(true);
+              await saveScriptToFirestore(
+                userID,
+                newContent,
+                scriptToEdit.scriptType,
+                scriptToEdit.name,
+              );
+
+              // Update local scripts
+              await syncLocalScriptsWithFirestore(
+                userID,
+                scriptToEdit.scriptType,
+              );
+
+              // Update workingOnScript in localStorage
+              const workingOnScript = {
+                script: scriptToEdit.name,
+                contents: newContent,
+                scriptType: scriptToEdit.scriptType,
+              };
+              localStorage.setItem(
+                "workingOnScript",
+                JSON.stringify(workingOnScript),
+              );
+
+              setShowLoadingSpinner(false);
+              setFullScreenEdit(null);
+            } catch (error) {
+              console.error("Error saving:", error);
+              setShowLoadingSpinner(false);
+            }
+          },
+        });
+      } else {
+        setOpenScadViewer(scriptToEdit);
+      }
     }
-};
+  };
 
   const handleDeselectScript = () => {
-    localStorage.removeItem('workingOnScript');
+    localStorage.removeItem("workingOnScript");
     setWorkingScript(null);
   };
 
@@ -553,13 +612,15 @@ export default function HomeScreen() {
   useEffect(() => {
     const loadScriptVersions = async () => {
       if (workingScript) {
-        const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
+        const storedScript = JSON.parse(
+          localStorage.getItem("workingOnScript"),
+        );
         if (storedScript) {
           const userID = localStorage.getItem("userID");
           const versions = await getVersionsOfScriptFromFirestore(
             userID,
             storedScript.scriptType,
-            storedScript.script
+            storedScript.script,
           );
           setScriptVersions(versions);
         }
@@ -572,26 +633,27 @@ export default function HomeScreen() {
   const handleScriptDelete = async (isDeleteAll) => {
     const userID = localStorage.getItem("userID");
     const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-    
+
     if (storedScript) {
       if (isDeleteAll) {
         // Delete base version and all versioned copies
-        const baseScriptName = storedScript.script.split('-v')[0];
+        const baseScriptName = storedScript.script.split("-v")[0];
         const versions = await getVersionsOfScriptFromFirestore(
           userID,
           storedScript.scriptType,
-          baseScriptName
+          baseScriptName,
         );
-        
+
         // Delete each version
         for (const version of versions) {
-          const versionName = version.versionNumber === 0 
-            ? baseScriptName 
-            : `${baseScriptName}-v${version.versionNumber}`;
+          const versionName =
+            version.versionNumber === 0
+              ? baseScriptName
+              : `${baseScriptName}-v${version.versionNumber}`;
           await deleteScriptFromFirestore(
             userID,
             storedScript.scriptType,
-            versionName
+            versionName,
           );
         }
       } else {
@@ -599,100 +661,103 @@ export default function HomeScreen() {
         await deleteScriptFromFirestore(
           userID,
           storedScript.scriptType,
-          storedScript.script
+          storedScript.script,
         );
       }
 
       // Update local storage and state
       handleDeselectScript();
-      
+
       // Refresh timestamps
       await getScriptTimestamps(userID, storedScript.scriptType);
-      
+
       // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event('scriptsUpdated'));
+      window.dispatchEvent(new Event("scriptsUpdated"));
     }
   };
 
   const handleScriptRename = async (newName) => {
     const userID = localStorage.getItem("userID");
     const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-    
+
     if (storedScript) {
       await renameScriptInFirestore(
         userID,
         storedScript.timestampString,
         storedScript.scriptType,
         storedScript.script,
-        newName
+        newName,
       );
-      
+
       // Update local storage
       const updatedScript = {
         ...storedScript,
-        script: newName
+        script: newName,
       };
       localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
-      
+
       // Update state
       setWorkingScript(newName);
-      
+
       // Refresh timestamps
       await getScriptTimestamps(userID, storedScript.scriptType);
-      
+
       // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event('scriptsUpdated'));
+      window.dispatchEvent(new Event("scriptsUpdated"));
     }
   };
 
   const handleVersionSelect = async (version) => {
     const userID = localStorage.getItem("userID");
     const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-    
+
     if (storedScript && version) {
-      const baseScriptName = storedScript.script.split('-v')[0];
-      const versionName = version.versionNumber === 0 
-        ? baseScriptName 
-        : `${baseScriptName}-v${version.versionNumber}`;
-      
+      const baseScriptName = storedScript.script.split("-v")[0];
+      const versionName =
+        version.versionNumber === 0
+          ? baseScriptName
+          : `${baseScriptName}-v${version.versionNumber}`;
+
       // Update working script to selected version
       const updatedScript = {
         ...storedScript,
         script: versionName,
-        contents: version.script
+        contents: version.script,
       };
       localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
-      
+
       // Update state
       setWorkingScript(versionName);
-      
+
       // Refresh timestamps
       await getScriptTimestamps(userID, storedScript.scriptType);
-      
+
       // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event('scriptsUpdated'));
+      window.dispatchEvent(new Event("scriptsUpdated"));
     }
   };
 
   const handleRevert = async () => {
     const userID = localStorage.getItem("userID");
     const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-    
+
     if (storedScript) {
-      const baseScriptName = storedScript.script.split('-v')[0];
+      const baseScriptName = storedScript.script.split("-v")[0];
       const versions = await getVersionsOfScriptFromFirestore(
         userID,
         storedScript.scriptType,
-        baseScriptName
+        baseScriptName,
       );
-      
+
       if (versions.length > 1) {
         // Get the highest version number
-        const latestVersion = versions.reduce((max, version) => 
-          Math.max(max, version.versionNumber), 0);
-        
+        const latestVersion = versions.reduce(
+          (max, version) => Math.max(max, version.versionNumber),
+          0,
+        );
+
         // Select that version
-        const version = versions.find(v => v.versionNumber === latestVersion);
+        const version = versions.find((v) => v.versionNumber === latestVersion);
         await handleVersionSelect(version);
       }
     }
@@ -725,18 +790,15 @@ export default function HomeScreen() {
           <motion.div
             className="title-container"
             onClick={toggleStatusBar}
-            whileHover={{ 
+            whileHover={{
               scale: 1.02,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
             }}
             whileTap={{ scale: 0.98 }}
           >
             <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
             <h1 className="App-title">Ditto</h1>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
               {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
             </motion.div>
           </motion.div>
@@ -756,16 +818,24 @@ export default function HomeScreen() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            style={{ marginBottom: '-4px' }}
+            style={{ marginBottom: "-4px" }}
             onAnimationComplete={() => setStatusBarLoaded(true)}
           >
-            <Suspense fallback={<div className="loading-placeholder">Loading status...</div>}>
+            <Suspense
+              fallback={
+                <div className="loading-placeholder">Loading status...</div>
+              }
+            >
               <StatusBar />
             </Suspense>
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="App-body" ref={appBodyRef} onClick={handleCloseMediaOptions}>
+      <div
+        className="App-body"
+        ref={appBodyRef}
+        onClick={handleCloseMediaOptions}
+      >
         <div className="chat-card">
           <AnimatePresence>
             {(!showStatusBar || statusBarLoaded) && (
@@ -774,7 +844,11 @@ export default function HomeScreen() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <Suspense fallback={<div className="loading-placeholder">Loading chat...</div>}>
+                <Suspense
+                  fallback={
+                    <div className="loading-placeholder">Loading chat...</div>
+                  }
+                >
                   <ChatFeed
                     messages={conversation.messages}
                     showSenderName={false}
@@ -792,9 +866,9 @@ export default function HomeScreen() {
       </div>
       <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>
-          <SendMessage 
-            onImageEnlarge={handleImageEnlarge} 
-            onCameraOpen={handleCameraOpen} 
+          <SendMessage
+            onImageEnlarge={handleImageEnlarge}
+            onCameraOpen={handleCameraOpen}
             capturedImage={capturedImage}
             onClearCapturedImage={() => setCapturedImage(null)}
             showMediaOptions={showMediaOptions}
@@ -804,7 +878,7 @@ export default function HomeScreen() {
           />
         </Suspense>
       </footer>
-      
+
       <AnimatePresence>
         {isCameraOpen && (
           <motion.div
@@ -824,7 +898,10 @@ export default function HomeScreen() {
             >
               <video ref={videoRef} autoPlay className="CameraFeed"></video>
               <div className="CameraControls">
-                <MdFlipCameraIos className="FlipCameraIcon" onClick={toggleCamera} />
+                <MdFlipCameraIos
+                  className="FlipCameraIcon"
+                  onClick={toggleCamera}
+                />
                 <button className="CameraSnap" onClick={handleSnap}>
                   Snap
                 </button>
@@ -837,8 +914,8 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
 
-      <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-      
+      <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+
       <AnimatePresence>
         {enlargedImage && (
           <motion.div
@@ -862,8 +939,8 @@ export default function HomeScreen() {
       </AnimatePresence>
 
       {showTOS && (
-        <TermsOfService 
-          onClose={() => setShowTOS(false)} 
+        <TermsOfService
+          onClose={() => setShowTOS(false)}
           isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
         />
       )}
@@ -873,52 +950,55 @@ export default function HomeScreen() {
           <ScriptActionsOverlay
             scriptName={workingScript}
             script={{
-                name: workingScript,
-                content: (() => {
-                    const stored = localStorage.getItem("workingOnScript");
-                    if (!stored) return '';
-                    try {
-                        const parsed = JSON.parse(stored);
-                        return parsed.contents || '';
-                    } catch (e) {
-                        console.error("Error parsing script contents:", e);
-                        return '';
-                    }
-                })(),
-                scriptType: (() => {
-                    const stored = localStorage.getItem("workingOnScript");
-                    if (!stored) return '';
-                    try {
-                        const parsed = JSON.parse(stored);
-                        return parsed.scriptType || '';
-                    } catch (e) {
-                        console.error("Error parsing script type:", e);
-                        return '';
-                    }
-                })()
+              name: workingScript,
+              content: (() => {
+                const stored = localStorage.getItem("workingOnScript");
+                if (!stored) return "";
+                try {
+                  const parsed = JSON.parse(stored);
+                  return parsed.contents || "";
+                } catch (e) {
+                  console.error("Error parsing script contents:", e);
+                  return "";
+                }
+              })(),
+              scriptType: (() => {
+                const stored = localStorage.getItem("workingOnScript");
+                if (!stored) return "";
+                try {
+                  const parsed = JSON.parse(stored);
+                  return parsed.scriptType || "";
+                } catch (e) {
+                  console.error("Error parsing script type:", e);
+                  return "";
+                }
+              })(),
             }}
             onPlay={handlePlayScript}
             onEdit={async (updatedContent) => {
-                const storedScript = localStorage.getItem("workingOnScript");
-                if (!storedScript) return;
-                
-                try {
-                    const parsed = JSON.parse(storedScript);
-                    const userID = localStorage.getItem("userID");
-                    await saveScriptToFirestore(
-                        userID, 
-                        updatedContent, 
-                        parsed.scriptType, 
-                        parsed.script
-                    );
-                    // Update the stored script content
-                    localStorage.setItem("workingOnScript", JSON.stringify({
-                        ...parsed,
-                        contents: updatedContent
-                    }));
-                } catch (e) {
-                    console.error("Error updating script:", e);
-                }
+              const storedScript = localStorage.getItem("workingOnScript");
+              if (!storedScript) return;
+
+              try {
+                const parsed = JSON.parse(storedScript);
+                const userID = localStorage.getItem("userID");
+                await saveScriptToFirestore(
+                  userID,
+                  updatedContent,
+                  parsed.scriptType,
+                  parsed.script,
+                );
+                // Update the stored script content
+                localStorage.setItem(
+                  "workingOnScript",
+                  JSON.stringify({
+                    ...parsed,
+                    contents: updatedContent,
+                  }),
+                );
+              } catch (e) {
+                console.error("Error updating script:", e);
+              }
             }}
             onDeselect={handleDeselectScript}
             onClose={() => setShowScriptActions(false)}

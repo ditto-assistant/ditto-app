@@ -19,12 +19,12 @@ export default function ChatBubbles(props) {
         bubbleStyles={{
           text: {
             fontSize: bubblefontSize,
-            color: '#000000' // Ensure text color is black
+            color: "#000000", // Ensure text color is black
           },
           chatbubble: {
             borderRadius: 60,
-            padding: bubblePadding
-          }
+            padding: bubblePadding,
+          },
         }}
       />
     </div>

@@ -1,29 +1,35 @@
-import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import { auth } from '../control/firebase';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import ReactMarkdown from 'react-markdown';
-import './ChatFeed.css';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiCopy, FiDownload, FiClock, FiBarChart2, FiChevronDown } from 'react-icons/fi';
-import { IoMdArrowBack } from 'react-icons/io';
-import { FaBrain, FaTrash, FaSpinner } from 'react-icons/fa';
-import { deleteConversation } from '../control/memory';
-import { routes } from '../firebaseConfig';
-import { textEmbed } from '../api/LLM';  // Add this import
-import MemoryNetwork from './MemoryNetwork';
-import { useTokenStreaming } from '../hooks/useTokenStreaming';
-import { processResponse } from '../control/agent';
-import Toast from './Toast';
-import { LoadingSpinner } from './LoadingSpinner';
-import { presignURL } from '../api/bucket';
-const emojis = ['❤️', '👍', '👎', '😠', '😢', '😂', '❗'];
-const DITTO_AVATAR_KEY = 'dittoAvatar';
-const USER_AVATAR_KEY = 'userAvatar';
-const MEMORY_CACHE_KEY = 'memoryCache';
+import React, { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
+import { auth } from "../control/firebase";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import ReactMarkdown from "react-markdown";
+import "./ChatFeed.css";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiCopy,
+  FiDownload,
+  FiClock,
+  FiBarChart2,
+  FiChevronDown,
+} from "react-icons/fi";
+import { IoMdArrowBack } from "react-icons/io";
+import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
+import { deleteConversation } from "../control/memory";
+import { routes } from "../firebaseConfig";
+import { textEmbed } from "../api/LLM"; // Add this import
+import MemoryNetwork from "./MemoryNetwork";
+import { useTokenStreaming } from "../hooks/useTokenStreaming";
+import { processResponse } from "../control/agent";
+import Toast from "./Toast";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { presignURL } from "../api/bucket";
+const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
+const DITTO_AVATAR_KEY = "dittoAvatar";
+const USER_AVATAR_KEY = "userAvatar";
+const MEMORY_CACHE_KEY = "memoryCache";
 const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const MEMORY_DELETED_EVENT = 'memoryDeleted'; // Add this line
+const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
 const INTERACTION_DELAY = 300; // 300ms delay to prevent accidental closures
 const AVATAR_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const AVATAR_FETCH_COOLDOWN = 60 * 1000; // 1 minute cooldown between fetch attempts
@@ -42,7 +48,7 @@ const getMemoryCache = () => {
     if (!cache) return {};
     return JSON.parse(cache);
   } catch (e) {
-    console.error('Error reading memory cache:', e);
+    console.error("Error reading memory cache:", e);
     return {};
   }
 };
@@ -52,11 +58,11 @@ const setMemoryCache = (promptId, memories) => {
     const cache = getMemoryCache();
     cache[promptId] = {
       memories,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
   } catch (e) {
-    console.error('Error setting memory cache:', e);
+    console.error("Error setting memory cache:", e);
   }
 };
 
@@ -76,7 +82,7 @@ const getCachedMemories = (promptId) => {
 
     return entry.memories;
   } catch (e) {
-    console.error('Error getting cached memories:', e);
+    console.error("Error getting cached memories:", e);
     return null;
   }
 };
@@ -85,13 +91,13 @@ const getCachedMemories = (promptId) => {
 const validateImageUrl = async (url) => {
   try {
     const response = await fetch(url, {
-      method: 'HEAD',
-      mode: 'cors',
-      credentials: 'omit'
+      method: "HEAD",
+      mode: "cors",
+      credentials: "omit",
     });
     return response.ok;
   } catch (error) {
-    console.error('Error validating image URL:', error);
+    console.error("Error validating image URL:", error);
     return false;
   }
 };
@@ -99,17 +105,17 @@ const validateImageUrl = async (url) => {
 // Add this new function at the top level
 const loadMessagesFromLocalStorage = () => {
   try {
-    const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-    const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-    const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
-    const pairIDs = JSON.parse(localStorage.getItem('pairIDs') || '[]');
+    const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+    const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+    const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
     const messages = [];
     messages.push({
       sender: "Ditto",
       text: "Hi! I'm Ditto.",
       timestamp: Date.now(),
-      pairID: null
+      pairID: null,
     });
 
     for (let i = 0; i < prompts.length; i++) {
@@ -117,19 +123,19 @@ const loadMessagesFromLocalStorage = () => {
         sender: "User",
         text: prompts[i],
         timestamp: timestamps[i],
-        pairID: pairIDs[i]
+        pairID: pairIDs[i],
       });
       messages.push({
         sender: "Ditto",
         text: responses[i],
         timestamp: timestamps[i],
-        pairID: pairIDs[i]
+        pairID: pairIDs[i],
       });
     }
 
     return messages;
   } catch (error) {
-    console.error('Error loading messages from localStorage:', error);
+    console.error("Error loading messages from localStorage:", error);
     return [];
   }
 };
@@ -139,11 +145,11 @@ const detectToolType = (text) => {
   if (!text) return null;
 
   // Check for tool indicators in the message text
-  if (text.includes('OpenSCAD Script Generated')) return 'openscad';
-  if (text.includes('HTML Script Generated')) return 'html';
-  if (text.includes('Image Task:')) return 'image';
-  if (text.includes('Google Search Query:')) return 'search';
-  if (text.includes('Home Assistant Task:')) return 'home';
+  if (text.includes("OpenSCAD Script Generated")) return "openscad";
+  if (text.includes("HTML Script Generated")) return "html";
+  if (text.includes("Image Task:")) return "image";
+  if (text.includes("Google Search Query:")) return "search";
+  if (text.includes("Home Assistant Task:")) return "home";
 
   return null;
 };
@@ -152,31 +158,38 @@ const detectToolType = (text) => {
 const getAvatarWithCooldown = async (photoURL) => {
   try {
     const now = Date.now();
-    const lastFetchAttempt = localStorage.getItem('lastAvatarFetchAttempt');
+    const lastFetchAttempt = localStorage.getItem("lastAvatarFetchAttempt");
     const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
-    const cacheTimestamp = localStorage.getItem('avatarCacheTimestamp');
+    const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
 
     // If we have a cached avatar and it's not expired, use it
-    if (cachedAvatar && cacheTimestamp && (now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION)) {
+    if (
+      cachedAvatar &&
+      cacheTimestamp &&
+      now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
+    ) {
       return cachedAvatar;
     }
 
     // If we're within the cooldown period, use fallback or cached avatar
-    if (lastFetchAttempt && (now - parseInt(lastFetchAttempt) < AVATAR_FETCH_COOLDOWN)) {
-      return cachedAvatar || '/user_placeholder.png';
+    if (
+      lastFetchAttempt &&
+      now - parseInt(lastFetchAttempt) < AVATAR_FETCH_COOLDOWN
+    ) {
+      return cachedAvatar || "/user_placeholder.png";
     }
 
     // Update last fetch attempt timestamp
-    localStorage.setItem('lastAvatarFetchAttempt', now.toString());
+    localStorage.setItem("lastAvatarFetchAttempt", now.toString());
 
     // Fetch the avatar with proper options
     const response = await fetch(photoURL, {
-      mode: 'cors',
-      credentials: 'omit',
+      mode: "cors",
+      credentials: "omit",
       headers: {
-        'Accept': 'image/*'
+        Accept: "image/*",
       },
-      cache: 'force-cache'
+      cache: "force-cache",
     });
 
     if (!response.ok) {
@@ -191,15 +204,15 @@ const getAvatarWithCooldown = async (photoURL) => {
         const base64data = reader.result;
         // Cache the successful result
         localStorage.setItem(USER_AVATAR_KEY, base64data);
-        localStorage.setItem('avatarCacheTimestamp', now.toString());
+        localStorage.setItem("avatarCacheTimestamp", now.toString());
         resolve(base64data);
       };
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
   } catch (error) {
-    console.log('Avatar fetch error:', error.message);
-    return localStorage.getItem(USER_AVATAR_KEY) || '/user_placeholder.png';
+    console.log("Avatar fetch error:", error.message);
+    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
   }
 };
 
@@ -230,10 +243,10 @@ export default function ChatFeed({
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(() => {
-    return localStorage.getItem(USER_AVATAR_KEY) || '/user_placeholder.png'; // Update path
+    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png"; // Update path
   });
   const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || '/logo512.png'; // Update path
+    return localStorage.getItem(DITTO_AVATAR_KEY) || "/logo512.png"; // Update path
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -248,16 +261,23 @@ export default function ChatFeed({
   const [isSelecting, setIsSelecting] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState(null);
   const [showScores, setShowScores] = useState(false);
-  const [sortBy, setSortBy] = useState('relevance'); // 'relevance' or 'timestamp'
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [sortBy, setSortBy] = useState("relevance"); // 'relevance' or 'timestamp'
+  const [sortDirection, setSortDirection] = useState("desc");
   const [streamingResponses, setStreamingResponses] = useState({});
   const [animatingWord, setAnimatingWord] = useState({ index: null, word: "" });
   const streamTimeoutRef = useRef(null);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
-  const { streamedText, currentWord, isStreaming, processChunk, reset, isComplete } = useTokenStreaming();
+  const {
+    streamedText,
+    currentWord,
+    isStreaming,
+    processChunk,
+    reset,
+    isComplete,
+  } = useTokenStreaming();
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
   useEffect(() => {
@@ -265,9 +285,9 @@ export default function ChatFeed({
     if (messages.length <= 1) {
       const savedMessages = loadMessagesFromLocalStorage();
       if (savedMessages.length > 0) {
-        updateConversation(prevState => ({
+        updateConversation((prevState) => ({
           ...prevState,
-          messages: savedMessages
+          messages: savedMessages,
         }));
       }
     }
@@ -285,21 +305,25 @@ export default function ChatFeed({
       // Only scroll if user is near bottom
       if (bottomRef.current) {
         const feedElement = feedRef.current;
-        const isNearBottom = feedElement &&
-          (feedElement.scrollHeight - feedElement.scrollTop - feedElement.clientHeight < 100);
+        const isNearBottom =
+          feedElement &&
+          feedElement.scrollHeight -
+            feedElement.scrollTop -
+            feedElement.clientHeight <
+            100;
 
         if (isNearBottom) {
           bottomRef.current.scrollIntoView({
-            behavior: 'auto',
-            block: 'end'
+            behavior: "auto",
+            block: "end",
           });
         }
       }
     };
 
-    window.addEventListener('responseStreamUpdate', handleStreamUpdate);
+    window.addEventListener("responseStreamUpdate", handleStreamUpdate);
     return () => {
-      window.removeEventListener('responseStreamUpdate', handleStreamUpdate);
+      window.removeEventListener("responseStreamUpdate", handleStreamUpdate);
     };
   }, [processChunk]);
 
@@ -309,7 +333,7 @@ export default function ChatFeed({
         const messages = [...prevState.messages];
         const lastMessage = messages[messages.length - 1];
 
-        if (lastMessage.sender === 'Ditto') {
+        if (lastMessage.sender === "Ditto") {
           lastMessage.text = streamedText;
           lastMessage.currentWord = currentWord;
         }
@@ -326,9 +350,9 @@ export default function ChatFeed({
   const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({
-        behavior: 'auto', // Always use instant scrolling
-        block: 'end',
-        inline: 'nearest'
+        behavior: "auto", // Always use instant scrolling
+        block: "end",
+        inline: "nearest",
       });
     }
   };
@@ -345,9 +369,9 @@ export default function ChatFeed({
 
   useEffect(() => {
     // Cache Ditto avatar
-    fetch('/logo512.png')
-      .then(response => response.blob())
-      .then(blob => {
+    fetch("/logo512.png")
+      .then((response) => response.blob())
+      .then((blob) => {
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64data = reader.result;
@@ -356,20 +380,20 @@ export default function ChatFeed({
         };
         reader.readAsDataURL(blob);
       })
-      .catch(error => console.error('Error caching Ditto avatar:', error));
+      .catch((error) => console.error("Error caching Ditto avatar:", error));
 
     // Load user avatar with cooldown and caching
     if (auth.currentUser?.photoURL) {
       getAvatarWithCooldown(auth.currentUser.photoURL)
-        .then(avatarData => {
+        .then((avatarData) => {
           setProfilePic(avatarData);
         })
-        .catch(error => {
-          console.error('Error loading user avatar:', error);
-          setProfilePic('/user_placeholder.png');
+        .catch((error) => {
+          console.error("Error loading user avatar:", error);
+          setProfilePic("/user_placeholder.png");
         });
     } else {
-      setProfilePic('/user_placeholder.png');
+      setProfilePic("/user_placeholder.png");
     }
   }, []);
 
@@ -401,7 +425,11 @@ export default function ChatFeed({
       const deltaY = Math.abs(touchEndY - touchStartY);
 
       // If movement is too large or touch duration is too short, don't close
-      if (deltaX > TOUCH_THRESHOLD || deltaY > TOUCH_THRESHOLD || touchDuration < TIME_THRESHOLD) {
+      if (
+        deltaX > TOUCH_THRESHOLD ||
+        deltaY > TOUCH_THRESHOLD ||
+        touchDuration < TIME_THRESHOLD
+      ) {
         return;
       }
 
@@ -409,14 +437,15 @@ export default function ChatFeed({
       if (!target) return;
 
       // Don't close if touching inside overlays
-      const isOverlayTouch = target.closest('.action-overlay') ||
-        target.closest('.reaction-overlay') ||
-        target.closest('.action-button');
+      const isOverlayTouch =
+        target.closest(".action-overlay") ||
+        target.closest(".reaction-overlay") ||
+        target.closest(".action-button");
 
       if (isOverlayTouch) return;
 
       // Get the touched bubble
-      const touchedBubble = target.closest('.chat-bubble');
+      const touchedBubble = target.closest(".chat-bubble");
 
       // If touching outside both overlays and bubbles, close overlay
       if (!isOverlayTouch && !touchedBubble) {
@@ -444,13 +473,14 @@ export default function ChatFeed({
     const handleMouseDown = (e) => {
       if (e.touches || !actionOverlay || isClosing) return;
 
-      const isOverlayClick = e.target.closest('.action-overlay') ||
-        e.target.closest('.reaction-overlay') ||
-        e.target.closest('.action-button');
+      const isOverlayClick =
+        e.target.closest(".action-overlay") ||
+        e.target.closest(".reaction-overlay") ||
+        e.target.closest(".action-button");
 
       if (isOverlayClick) return;
 
-      const clickedBubble = e.target.closest('.chat-bubble');
+      const clickedBubble = e.target.closest(".chat-bubble");
 
       if (!isOverlayClick && !clickedBubble) {
         isClosing = true;
@@ -461,14 +491,14 @@ export default function ChatFeed({
       }
     };
 
-    document.addEventListener('touchstart', handleTouchStart, true);
-    document.addEventListener('touchend', handleTouchEnd, true);
-    document.addEventListener('mousedown', handleMouseDown, true);
+    document.addEventListener("touchstart", handleTouchStart, true);
+    document.addEventListener("touchend", handleTouchEnd, true);
+    document.addEventListener("mousedown", handleMouseDown, true);
 
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart, true);
-      document.removeEventListener('touchend', handleTouchEnd, true);
-      document.removeEventListener('mousedown', handleMouseDown, true);
+      document.removeEventListener("touchstart", handleTouchStart, true);
+      document.removeEventListener("touchend", handleTouchEnd, true);
+      document.removeEventListener("mousedown", handleMouseDown, true);
     };
   }, [actionOverlay]);
 
@@ -507,7 +537,7 @@ export default function ChatFeed({
     }
 
     // Don't show action overlay if click was on an image
-    if (e.target.classList.contains('chat-image')) {
+    if (e.target.classList.contains("chat-image")) {
       return;
     }
 
@@ -523,14 +553,14 @@ export default function ChatFeed({
 
     // Calculate position for the overlay
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX || (rect.left + rect.width / 2);
-    const y = e.clientY || (rect.top + rect.height / 2);
+    const x = e.clientX || rect.left + rect.width / 2;
+    const y = e.clientY || rect.top + rect.height / 2;
 
     setActionOverlay({
       index,
       clientX: x,
       clientY: y,
-      type: 'text'
+      type: "text",
     });
 
     // Close any open reaction overlay
@@ -542,7 +572,7 @@ export default function ChatFeed({
   };
 
   const handleImageDownload = (src) => {
-    window.open(src, '_blank');
+    window.open(src, "_blank");
   };
 
   const closeImageOverlay = () => {
@@ -558,7 +588,7 @@ export default function ChatFeed({
   const renderMessageText = (text, index, sender) => {
     // First replace code block markers
     let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
-    displayText = displayText.replace(/```\./g, '```\n');
+    displayText = displayText.replace(/```\./g, "```\n");
 
     return (
       <ReactMarkdown
@@ -574,11 +604,11 @@ export default function ChatFeed({
                 e.stopPropagation(); // Prevent bubble interaction
               }}
               style={{
-                color: '#3941b8',
-                textDecoration: 'none',
-                textShadow: '0 0 1px #7787d7',
-                cursor: 'pointer',
-                pointerEvents: 'auto'
+                color: "#3941b8",
+                textDecoration: "none",
+                textShadow: "0 0 1px #7787d7",
+                cursor: "pointer",
+                pointerEvents: "auto",
               }}
             >
               {children}
@@ -594,7 +624,7 @@ export default function ChatFeed({
                 {...props}
                 src={src}
                 alt={alt}
-                className='chat-image'
+                className="chat-image"
                 onClick={(e) => {
                   e.stopPropagation(); // Stop bubble interaction
                   handleImageClick(src);
@@ -608,38 +638,39 @@ export default function ChatFeed({
                       }
                     },
                     (err) => {
-                      setFailedImages(prev => prev.add(src));
+                      setFailedImages((prev) => prev.add(src));
                       console.error(`Image Load error: ${err}; src: ${src}`);
-                    });
+                    },
+                  );
                 }}
               />
             );
           },
           code({ node, inline, className, children, ...props }) {
-            let match = /language-(\w+)/.exec(className || '');
+            let match = /language-(\w+)/.exec(className || "");
             let hasCodeBlock;
             if (displayText.match(/```/g)) {
               hasCodeBlock = displayText.match(/```/g).length % 2 === 0;
             }
             if (match === null && hasCodeBlock) {
-              match = ['language-txt', 'txt'];
+              match = ["language-txt", "txt"];
             }
             if (!inline && match) {
               return (
-                <div className='code-container'>
+                <div className="code-container">
                   <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, '')}
+                    children={String(children).replace(/\n$/, "")}
                     style={vscDarkPlus}
                     language={match[1]}
-                    PreTag='div'
+                    PreTag="div"
                     {...props}
-                    className='code-block'
+                    className="code-block"
                   />
                   <button
-                    className='copy-button code-block-button'
+                    className="copy-button code-block-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleCopy(String(children).replace(/\n$/, ''));
+                      handleCopy(String(children).replace(/\n$/, ""));
                     }}
                     title="Copy code"
                   >
@@ -648,12 +679,14 @@ export default function ChatFeed({
                 </div>
               );
             } else {
-              const inlineText = String(children).replace(/\n$/, '');
+              const inlineText = String(children).replace(/\n$/, "");
               return (
-                <div className='inline-code-container'>
-                  <code className='inline-code' {...props}>{children}</code>
+                <div className="inline-code-container">
+                  <code className="inline-code" {...props}>
+                    {children}
+                  </code>
                   <button
-                    className='copy-button inline-code-button'
+                    className="copy-button inline-code-button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopy(inlineText);
@@ -672,13 +705,13 @@ export default function ChatFeed({
   };
 
   const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
+    if (!timestamp) return "";
     const date = new Date(timestamp);
     const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return new Intl.DateTimeFormat('default', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: browserTimezone
+    return new Intl.DateTimeFormat("default", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: browserTimezone,
     }).format(date);
   };
 
@@ -686,7 +719,7 @@ export default function ChatFeed({
   const renderMessageWithAvatar = (message, index) => {
     const isLastMessage = index === messages.length - 1;
     const isSmallMessage = message.text.length <= 5;
-    const isUserMessage = message.sender === 'User';
+    const isUserMessage = message.sender === "User";
     const showTypingIndicator = message.isTyping && message.text === "";
 
     // Detect tool type from message content if not already set
@@ -696,26 +729,27 @@ export default function ChatFeed({
     return (
       <motion.div
         key={`${message.pairID}-${index}`}
-        className={`message-container ${isUserMessage ? 'User' : 'Ditto'}`}
+        className={`message-container ${isUserMessage ? "User" : "Ditto"}`}
         initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
-        {message.sender === 'Ditto' && (
-          <img src={dittoAvatar} alt='Ditto' className='avatar ditto-avatar' />
+        {message.sender === "Ditto" && (
+          <img src={dittoAvatar} alt="Ditto" className="avatar ditto-avatar" />
         )}
         {showTypingIndicator ? (
-          <div className='typing-indicator-container'>
-            <div className='typing-indicator'>
-              <div className='typing-dot' style={{ '--i': 0 }} />
-              <div className='typing-dot' style={{ '--i': 1 }} />
-              <div className='typing-dot' style={{ '--i': 2 }} />
+          <div className="typing-indicator-container">
+            <div className="typing-indicator">
+              <div className="typing-dot" style={{ "--i": 0 }} />
+              <div className="typing-dot" style={{ "--i": 1 }} />
+              <div className="typing-dot" style={{ "--i": 2 }} />
             </div>
           </div>
         ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? 'User' : 'Ditto'} ${actionOverlay && actionOverlay.index === index ? 'blurred' : ''
-              } ${isSmallMessage ? 'small-message' : ''}`}
+            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
+              actionOverlay && actionOverlay.index === index ? "blurred" : ""
+            } ${isSmallMessage ? "small-message" : ""}`}
             style={bubbleStyles.chatbubble}
             onClick={(e) => handleBubbleInteraction(e, index)}
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
@@ -728,14 +762,21 @@ export default function ChatFeed({
             )}
 
             {showSenderName && message.sender && (
-              <div className='sender-name'>{message.sender}</div>
+              <div className="sender-name">{message.sender}</div>
             )}
-            <div className='message-text' style={bubbleStyles.text}>
+            <div className="message-text" style={bubbleStyles.text}>
               {message.toolStatus && toolType ? (
                 <>
                   {renderMessageText(message.text, index, message.sender)}
-                  <div className={`tool-status ${message.toolStatus === 'complete' ? 'complete' :
-                    message.toolStatus === 'failed' ? 'failed' : ''}`}>
+                  <div
+                    className={`tool-status ${
+                      message.toolStatus === "complete"
+                        ? "complete"
+                        : message.toolStatus === "failed"
+                          ? "failed"
+                          : ""
+                    }`}
+                  >
                     {message.toolStatus}
                     {message.showTypingDots && (
                       <div className="typing-dots">
@@ -750,13 +791,15 @@ export default function ChatFeed({
                 renderMessageText(message.text, index, message.sender)
               )}
             </div>
-            <div className='message-footer'>
-              <div className='message-timestamp'>{formatTimestamp(message.timestamp)}</div>
+            <div className="message-footer">
+              <div className="message-timestamp">
+                {formatTimestamp(message.timestamp)}
+              </div>
             </div>
             {reactions[index] && reactions[index].length > 0 && (
-              <div className='message-reactions'>
+              <div className="message-reactions">
                 {reactions[index].map((emoji, emojiIndex) => (
-                  <span key={emojiIndex} className='reaction'>
+                  <span key={emojiIndex} className="reaction">
                     {emoji}
                   </span>
                 ))}
@@ -764,54 +807,66 @@ export default function ChatFeed({
             )}
           </div>
         )}
-        {message.sender === 'User' && (
-          <img src={profilePic} alt='User' className='avatar user-avatar' />
+        {message.sender === "User" && (
+          <img src={profilePic} alt="User" className="avatar user-avatar" />
         )}
         {actionOverlay && actionOverlay.index === index && (
           <div
-            className='action-overlay'
+            className="action-overlay"
             onClick={(e) => e.stopPropagation()}
             style={{
-              position: 'fixed',
+              position: "fixed",
               left: `${actionOverlay.clientX}px`,
               top: `${actionOverlay.clientY}px`,
-              transform: 'translate(-50%, -50%)',
+              transform: "translate(-50%, -50%)",
             }}
           >
-            <button onClick={() => handleCopy(messages[actionOverlay.index].text)} className='action-button'>
+            <button
+              onClick={() => handleCopy(messages[actionOverlay.index].text)}
+              className="action-button"
+            >
               Copy
             </button>
             <button
-              onClick={() => handleReactionOverlay(
-                actionOverlay.index,
-                actionOverlay.clientX,
-                actionOverlay.clientY
-              )}
-              className='action-button'
+              onClick={() =>
+                handleReactionOverlay(
+                  actionOverlay.index,
+                  actionOverlay.clientX,
+                  actionOverlay.clientY,
+                )
+              }
+              className="action-button"
             >
               React
             </button>
             <button
               onClick={() => handleShowMemories(actionOverlay.index)}
-              className='action-button'
+              className="action-button"
               disabled={loadingMemories}
             >
-              <FaBrain style={{ marginRight: '5px' }} />
-              {loadingMemories ? 'Loading...' : 'Memories'}
+              <FaBrain style={{ marginRight: "5px" }} />
+              {loadingMemories ? "Loading..." : "Memories"}
             </button>
             <button
               onClick={() => handleMessageDelete(actionOverlay.index)}
-              className='action-button delete-action'
+              className="action-button delete-action"
             >
-              <FaTrash style={{ marginRight: '5px' }} />
+              <FaTrash style={{ marginRight: "5px" }} />
               Delete
             </button>
           </div>
         )}
         {reactionOverlay === index && (
-          <div className='reaction-overlay' onClick={(e) => e.stopPropagation()}>
+          <div
+            className="reaction-overlay"
+            onClick={(e) => e.stopPropagation()}
+          >
             {emojis.map((emoji) => (
-              <button key={emoji} onClick={() => handleReaction(index, emoji)} className='emoji-button'>
+              <button
+                key={emoji}
+                onClick={() => handleReaction(index, emoji)}
+                className="emoji-button"
+              >
                 {emoji}
               </button>
             ))}
@@ -822,7 +877,7 @@ export default function ChatFeed({
   };
 
   const adjustOverlayPosition = (left, top) => {
-    const overlay = document.querySelector('.reaction-overlay');
+    const overlay = document.querySelector(".reaction-overlay");
     if (!overlay) return { left, top };
 
     const rect = overlay.getBoundingClientRect();
@@ -861,34 +916,36 @@ export default function ChatFeed({
     // Add scroll listener to both the feed container and window
     const feedElement = feedRef.current;
     if (feedElement) {
-      feedElement.addEventListener('scroll', handleScroll, { passive: true });
+      feedElement.addEventListener("scroll", handleScroll, { passive: true });
     }
 
     // Also listen for window scroll in case the feed is part of a larger scrollable area
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     // Add wheel event listeners for mouse wheel scrolling
     if (feedElement) {
-      feedElement.addEventListener('wheel', handleScroll, { passive: true });
+      feedElement.addEventListener("wheel", handleScroll, { passive: true });
     }
-    window.addEventListener('wheel', handleScroll, { passive: true });
+    window.addEventListener("wheel", handleScroll, { passive: true });
 
     // Add touch move listener for mobile scrolling
     if (feedElement) {
-      feedElement.addEventListener('touchmove', handleScroll, { passive: true });
+      feedElement.addEventListener("touchmove", handleScroll, {
+        passive: true,
+      });
     }
-    window.addEventListener('touchmove', handleScroll, { passive: true });
+    window.addEventListener("touchmove", handleScroll, { passive: true });
 
     return () => {
       // Clean up all event listeners
       if (feedElement) {
-        feedElement.removeEventListener('scroll', handleScroll);
-        feedElement.removeEventListener('wheel', handleScroll);
-        feedElement.removeEventListener('touchmove', handleScroll);
+        feedElement.removeEventListener("scroll", handleScroll);
+        feedElement.removeEventListener("wheel", handleScroll);
+        feedElement.removeEventListener("touchmove", handleScroll);
       }
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('wheel', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("wheel", handleScroll);
+      window.removeEventListener("touchmove", handleScroll);
     };
   }, [actionOverlay, reactionOverlay]); // Dependencies ensure we're using current overlay states
 
@@ -896,7 +953,7 @@ export default function ChatFeed({
     setReactionOverlay({
       index,
       clientX,
-      clientY
+      clientY,
     });
     setActionOverlay(null);
   };
@@ -913,17 +970,17 @@ export default function ChatFeed({
       let promptToUse;
       let currentPairID;
       let currentTimestamp;
-      if (message.sender === 'User') {
+      if (message.sender === "User") {
         promptToUse = message.text;
         currentPairID = message.pairID;
         currentTimestamp = message.timestamp;
       } else {
-        if (index > 0 && messages[index - 1].sender === 'User') {
+        if (index > 0 && messages[index - 1].sender === "User") {
           promptToUse = messages[index - 1].text;
           currentPairID = messages[index - 1].pairID;
           currentTimestamp = messages[index - 1].timestamp;
         } else {
-          console.error('Could not find corresponding prompt for response');
+          console.error("Could not find corresponding prompt for response");
           setLoadingMemories(false);
           return;
         }
@@ -932,7 +989,7 @@ export default function ChatFeed({
       // Get embedding for the prompt
       const embedding = await textEmbed(promptToUse);
       if (!embedding) {
-        console.error('Could not generate embedding for prompt');
+        console.error("Could not generate embedding for prompt");
         setLoadingMemories(false);
         return;
       }
@@ -940,23 +997,23 @@ export default function ChatFeed({
       // Fetch top 6 memories
       const token = await auth.currentUser.getIdToken();
       const response = await fetch(routes.memories, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Origin': window.location.origin
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          Origin: window.location.origin,
         },
         body: JSON.stringify({
           userId: userID,
           vector: embedding,
-          k: 6
+          k: 6,
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch memories');
+        throw new Error("Failed to fetch memories");
       }
 
       const data = await response.json();
@@ -966,62 +1023,70 @@ export default function ChatFeed({
       topMemories = topMemories.slice(1, 6);
 
       // For each of the top 5 memories, fetch their 2 most related memories
-      const memoriesWithRelated = await Promise.all(topMemories.map(async (memory) => {
-        const relatedEmbedding = await textEmbed(memory.prompt);
-        const relatedResponse = await fetch(routes.memories, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Origin': window.location.origin
-          },
-          body: JSON.stringify({
-            userId: userID,
-            vector: relatedEmbedding,
-            k: 3
-          })
-        });
+      const memoriesWithRelated = await Promise.all(
+        topMemories.map(async (memory) => {
+          const relatedEmbedding = await textEmbed(memory.prompt);
+          const relatedResponse = await fetch(routes.memories, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+              Origin: window.location.origin,
+            },
+            body: JSON.stringify({
+              userId: userID,
+              vector: relatedEmbedding,
+              k: 3,
+            }),
+          });
 
-        const relatedData = await relatedResponse.json();
-        // Filter out the memory itself and take top 2
-        const relatedMemories = relatedData.memories
-          .filter(m => m.id !== memory.id)
-          .slice(0, 2);
+          const relatedData = await relatedResponse.json();
+          // Filter out the memory itself and take top 2
+          const relatedMemories = relatedData.memories
+            .filter((m) => m.id !== memory.id)
+            .slice(0, 2);
 
-        return {
-          ...memory,
-          related: relatedMemories
-        };
-      }));
+          return {
+            ...memory,
+            related: relatedMemories,
+          };
+        }),
+      );
 
       // Create the central node structure
-      const networkData = [{
-        prompt: promptToUse,
-        response: message.text,
-        timestamp: currentTimestamp,
-        timestampString: new Date(currentTimestamp).toISOString(),
-        related: memoriesWithRelated.map(mem => ({
-          ...mem,
-          timestamp: mem.timestamp,
-          timestampString: mem.timestampString,
-          related: mem.related.map(rel => ({
-            ...rel,
-            timestamp: rel.timestamp,
-            timestampString: rel.timestampString
-          }))
-        }))
-      }];
+      const networkData = [
+        {
+          prompt: promptToUse,
+          response: message.text,
+          timestamp: currentTimestamp,
+          timestampString: new Date(currentTimestamp).toISOString(),
+          related: memoriesWithRelated.map((mem) => ({
+            ...mem,
+            timestamp: mem.timestamp,
+            timestampString: mem.timestampString,
+            related: mem.related.map((rel) => ({
+              ...rel,
+              timestamp: rel.timestamp,
+              timestampString: rel.timestampString,
+            })),
+          })),
+        },
+      ];
 
-      console.log('Network Data:', networkData);
+      console.log("Network Data:", networkData);
       setRelatedMemories(networkData);
-      setMemoryOverlay({ index, clientX: actionOverlay.clientX, clientY: actionOverlay.clientY });
+      setMemoryOverlay({
+        index,
+        clientX: actionOverlay.clientX,
+        clientY: actionOverlay.clientY,
+      });
       setActionOverlay(null);
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('Memory fetch cancelled');
+      if (error.name === "AbortError") {
+        console.log("Memory fetch cancelled");
       } else {
-        console.error('Error fetching memories:', error);
+        console.error("Error fetching memories:", error);
       }
     } finally {
       setLoadingMemories(false);
@@ -1036,7 +1101,7 @@ export default function ChatFeed({
     setDeleteConfirmation({
       memory,
       idx,
-      docId: memory.id // Use the id that came from get-memories
+      docId: memory.id, // Use the id that came from get-memories
     });
   };
 
@@ -1049,19 +1114,22 @@ export default function ChatFeed({
     const pairID = message.pairID;
 
     if (!pairID) {
-      console.error('No pairID found for message:', message);
+      console.error("No pairID found for message:", message);
       return;
     }
 
     // Show confirmation overlay
     setDeleteConfirmation({
       memory: {
-        prompt: message.sender === 'Ditto' && index > 0 ? messages[index - 1].text : message.text,
-        response: message.sender === 'Ditto' ? message.text : null
+        prompt:
+          message.sender === "Ditto" && index > 0
+            ? messages[index - 1].text
+            : message.text,
+        response: message.sender === "Ditto" ? message.text : null,
       },
       idx: index,
       docId: pairID,
-      isMessageDelete: true
+      isMessageDelete: true,
     });
 
     // Close the action overlay
@@ -1079,7 +1147,7 @@ export default function ChatFeed({
       setIsDeletingMessage(true);
 
       if (isMessageDelete) {
-        setDeletingMemories(prev => new Set([...prev, idx]));
+        setDeletingMemories((prev) => new Set([...prev, idx]));
       }
 
       const success = await deleteConversation(userID, docId);
@@ -1092,13 +1160,17 @@ export default function ChatFeed({
           // Update conversation state to remove the message pair
           updateConversation((prevState) => ({
             ...prevState,
-            messages: prevState.messages.filter(msg => msg.pairID !== docId)
+            messages: prevState.messages.filter((msg) => msg.pairID !== docId),
           }));
 
           // Update local storage
           const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-          const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-          const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+          const responses = JSON.parse(
+            localStorage.getItem("responses") || "[]",
+          );
+          const timestamps = JSON.parse(
+            localStorage.getItem("timestamps") || "[]",
+          );
           const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
           const pairIndex = pairIDs.indexOf(docId);
@@ -1124,19 +1196,19 @@ export default function ChatFeed({
         }
 
         // Show success toast
-        setToastMessage('Message deleted successfully');
+        setToastMessage("Message deleted successfully");
         setShowToast(true);
 
         // Dispatch memoryUpdated event
-        window.dispatchEvent(new Event('memoryUpdated'));
+        window.dispatchEvent(new Event("memoryUpdated"));
       }
     } catch (error) {
-      console.error('Error deleting:', error);
-      setToastMessage('Failed to delete message');
+      console.error("Error deleting:", error);
+      setToastMessage("Failed to delete message");
       setShowToast(true);
     } finally {
       setIsDeletingMessage(false);
-      setDeletingMemories(prev => {
+      setDeletingMemories((prev) => {
         const next = new Set(prev);
         next.delete(idx);
         return next;
@@ -1148,37 +1220,41 @@ export default function ChatFeed({
   useEffect(() => {
     const handleMemoryDeleted = () => {
       // Refresh the chat feed by updating the messages state
-      const prompts = JSON.parse(localStorage.getItem('prompts') || '[]');
-      const responses = JSON.parse(localStorage.getItem('responses') || '[]');
-      const timestamps = JSON.parse(localStorage.getItem('timestamps') || '[]');
+      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
 
       const newMessages = [];
-      newMessages.push({ sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() });
+      newMessages.push({
+        sender: "Ditto",
+        text: "Hi! I'm Ditto.",
+        timestamp: Date.now(),
+      });
 
       for (let i = 0; i < prompts.length; i++) {
         newMessages.push({
           sender: "User",
           text: prompts[i],
-          timestamp: timestamps[i]
+          timestamp: timestamps[i],
         });
         newMessages.push({
           sender: "Ditto",
           text: responses[i],
-          timestamp: timestamps[i]
+          timestamp: timestamps[i],
         });
       }
 
       // Update the messages state
       updateConversation((prevState) => ({
         ...prevState,
-        messages: newMessages
+        messages: newMessages,
       }));
     };
 
-    window.addEventListener('memoryDeleted', handleMemoryDeleted);
+    window.addEventListener("memoryDeleted", handleMemoryDeleted);
 
     return () => {
-      window.removeEventListener('memoryDeleted', handleMemoryDeleted);
+      window.removeEventListener("memoryDeleted", handleMemoryDeleted);
     };
   }, [updateConversation]);
 
@@ -1201,19 +1277,22 @@ export default function ChatFeed({
                   className="memory-image"
                   onClick={() => handleImageClick(src)}
                   onError={(e) => {
-                    console.error('Memory image failed to load:', src);
-                    setFailedImages(prev => new Set([...prev, src]));
+                    console.error("Memory image failed to load:", src);
+                    setFailedImages((prev) => new Set([...prev, src]));
                   }}
                 />
               </div>
             );
           },
           code: ({ node, inline, className, children, ...props }) => {
-            const match = /language-(\w+)/.exec(className || '');
-            const codeContent = String(children).replace(/\n$/, '');
+            const match = /language-(\w+)/.exec(className || "");
+            const codeContent = String(children).replace(/\n$/, "");
 
             // Check if this is a code block
-            const isCodeBlock = !inline && (match || (content.includes('```') && content.split('```').length > 1));
+            const isCodeBlock =
+              !inline &&
+              (match ||
+                (content.includes("```") && content.split("```").length > 1));
 
             const handleCodeCopy = (e, text) => {
               e.stopPropagation();
@@ -1223,19 +1302,22 @@ export default function ChatFeed({
             };
 
             if (isCodeBlock) {
-              const language = match ? match[1] : 'text';
+              const language = match ? match[1] : "text";
               return (
-                <div className='code-container memory-code-container' data-language={language}>
+                <div
+                  className="code-container memory-code-container"
+                  data-language={language}
+                >
                   <SyntaxHighlighter
                     children={codeContent}
                     style={vscDarkPlus}
                     language={language}
-                    PreTag='div'
+                    PreTag="div"
                     {...props}
-                    className='code-block'
+                    className="code-block"
                   />
                   <button
-                    className='copy-button code-block-button'
+                    className="copy-button code-block-button"
                     onClick={(e) => handleCodeCopy(e, codeContent)}
                     title="Copy code"
                   >
@@ -1247,10 +1329,12 @@ export default function ChatFeed({
 
             // Inline code
             return (
-              <div className='inline-code-container memory-inline-code'>
-                <code className='inline-code' {...props}>{codeContent}</code>
+              <div className="inline-code-container memory-inline-code">
+                <code className="inline-code" {...props}>
+                  {codeContent}
+                </code>
                 <button
-                  className='copy-button inline-code-button'
+                  className="copy-button inline-code-button"
                   onClick={(e) => handleCodeCopy(e, codeContent)}
                   title="Copy code"
                 >
@@ -1258,32 +1342,32 @@ export default function ChatFeed({
                 </button>
               </div>
             );
-          }
+          },
         }}
       />
     );
   };
 
   const formatFullTimestamp = (timestamp) => {
-    if (!timestamp) return '';
+    if (!timestamp) return "";
     const date = new Date(timestamp);
-    return new Intl.DateTimeFormat('default', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZoneName: 'short'
+    return new Intl.DateTimeFormat("default", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short",
     }).format(date);
   };
 
   const handleSort = (type) => {
     if (sortBy === type) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(type);
-      setSortDirection('desc');
+      setSortDirection("desc");
     }
   };
 
@@ -1291,12 +1375,13 @@ export default function ChatFeed({
     if (!relatedMemories) return [];
 
     return [...relatedMemories].sort((a, b) => {
-      if (sortBy === 'relevance') {
+      if (sortBy === "relevance") {
         const comparison = b.score - a.score;
-        return sortDirection === 'asc' ? -comparison : comparison;
+        return sortDirection === "asc" ? -comparison : comparison;
       } else {
-        const comparison = new Date(b.timestampString) - new Date(a.timestampString);
-        return sortDirection === 'asc' ? -comparison : comparison;
+        const comparison =
+          new Date(b.timestampString) - new Date(a.timestampString);
+        return sortDirection === "asc" ? -comparison : comparison;
       }
     });
   };
@@ -1311,8 +1396,8 @@ export default function ChatFeed({
     };
 
     const debouncedResize = debounce(handleResize, 100);
-    window.addEventListener('resize', debouncedResize);
-    return () => window.removeEventListener('resize', debouncedResize);
+    window.addEventListener("resize", debouncedResize);
+    return () => window.removeEventListener("resize", debouncedResize);
   }, [messages]);
 
   // Add debounce utility function
@@ -1357,7 +1442,7 @@ export default function ChatFeed({
         "<HTML_SCRIPT>",
         "<IMAGE_GENERATION>",
         "<GOOGLE_SEARCH>",
-        "<GOOGLE_HOME>"
+        "<GOOGLE_HOME>",
       ];
 
       for (const trigger of toolTriggers) {
@@ -1368,11 +1453,15 @@ export default function ChatFeed({
             messages[messages.length - 2].text, // User's prompt
             messages[messages.length - 2].embedding, // User's prompt embedding
             auth.currentUser.uid,
-            localStorage.getItem('workingOnScript') ? JSON.parse(localStorage.getItem('workingOnScript')).contents : '',
-            localStorage.getItem('workingOnScript') ? JSON.parse(localStorage.getItem('workingOnScript')).script : '',
-            messages[messages.length - 2].image || '',
+            localStorage.getItem("workingOnScript")
+              ? JSON.parse(localStorage.getItem("workingOnScript")).contents
+              : "",
+            localStorage.getItem("workingOnScript")
+              ? JSON.parse(localStorage.getItem("workingOnScript")).script
+              : "",
+            messages[messages.length - 2].image || "",
             {}, // memories object - you might want to pass this properly
-            updateConversation
+            updateConversation,
           );
           return;
         }
@@ -1382,26 +1471,33 @@ export default function ChatFeed({
 
   return (
     <div
-      className='chat-feed'
+      className="chat-feed"
       ref={feedRef}
-      style={{ scrollBehavior: 'auto' }} // Override any smooth scrolling
+      style={{ scrollBehavior: "auto" }} // Override any smooth scrolling
     >
       {messages.map(renderMessageWithAvatar)}
-      {hasInputField && <input type='text' className='chat-input-field' />}
-      {copied && <div className='copied-notification'>Copied!</div>}
+      {hasInputField && <input type="text" className="chat-input-field" />}
+      {copied && <div className="copied-notification">Copied!</div>}
       <div ref={bottomRef} />
       {reactionOverlay && (
         <div
-          className='reaction-overlay'
+          className="reaction-overlay"
           onClick={(e) => e.stopPropagation()}
           style={{
-            position: 'fixed',
-            ...adjustOverlayPosition(reactionOverlay.clientX, reactionOverlay.clientY),
-            transform: 'translate(-50%, -50%)',
+            position: "fixed",
+            ...adjustOverlayPosition(
+              reactionOverlay.clientX,
+              reactionOverlay.clientY,
+            ),
+            transform: "translate(-50%, -50%)",
           }}
         >
           {emojis.map((emoji) => (
-            <button key={emoji} onClick={() => handleReaction(reactionOverlay.index, emoji)} className='emoji-button'>
+            <button
+              key={emoji}
+              onClick={() => handleReaction(reactionOverlay.index, emoji)}
+              className="emoji-button"
+            >
               {emoji}
             </button>
           ))}
@@ -1475,7 +1571,7 @@ export default function ChatFeed({
               initial={{ scale: 0.9, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <MemoryNetwork
                 memories={relatedMemories}
@@ -1501,11 +1597,12 @@ export default function ChatFeed({
               initial={{ scale: 0.9, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <div className="delete-confirmation-title">Delete Message?</div>
               <div className="delete-confirmation-message">
-                Are you sure you want to delete this message? This action cannot be undone.
+                Are you sure you want to delete this message? This action cannot
+                be undone.
               </div>
               {isDeletingMessage ? (
                 <div className="delete-confirmation-loading">
@@ -1514,8 +1611,10 @@ export default function ChatFeed({
                 </div>
               ) : (
                 <>
-                  <div className={`delete-confirmation-docid ${!deleteConfirmation.docId ? 'not-found' : ''}`}>
-                    Document ID: {deleteConfirmation.docId || 'Not found'}
+                  <div
+                    className={`delete-confirmation-docid ${!deleteConfirmation.docId ? "not-found" : ""}`}
+                  >
+                    Document ID: {deleteConfirmation.docId || "Not found"}
                   </div>
                   <div className="delete-confirmation-buttons">
                     <button
@@ -1553,7 +1652,7 @@ ChatFeed.propTypes = {
       sender: PropTypes.string,
       text: PropTypes.string.isRequired,
       timestamp: PropTypes.number, // Add this line to include timestamp in PropTypes
-    })
+    }),
   ).isRequired,
   isTyping: PropTypes.bool,
   hasInputField: PropTypes.bool,

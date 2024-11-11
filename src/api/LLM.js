@@ -15,8 +15,14 @@ import { getToken } from "./auth";
  * @returns {Promise<string>} A promise that resolves to the LLM's response.
  * @throws {Error} If there's an error during the LLM call.
  */
-export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-flash', imageURL = "", textCallback = null) {
-  console.log('Sending prompt to LLM: ', model);
+export async function promptLLM(
+  userPrompt,
+  systemPrompt,
+  model = "gemini-1.5-flash",
+  imageURL = "",
+  textCallback = null,
+) {
+  console.log("Sending prompt to LLM: ", model);
   let responseMessage = "";
   let retries = 0;
   const maxRetries = 3;
@@ -33,12 +39,12 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
         systemPrompt,
         model,
         imageURL,
-      }
+      };
       const response = await fetch(routes.prompt, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tok.ok.token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tok.ok.token}`,
         },
         body: JSON.stringify(requestBody),
       });
@@ -66,14 +72,16 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
         responseMessage += chunk;
       }
       return responseMessage;
-
     } catch (error) {
       console.error("Error in promptLLM:", error);
       retries++;
       console.log("Retry: ", retries);
 
       // If it's a payment error, return immediately
-      if (error.message?.includes('402') || error.message?.includes('Payment Required')) {
+      if (
+        error.message?.includes("402") ||
+        error.message?.includes("Payment Required")
+      ) {
         return "Error: Payment Required. Please check your token balance.";
       }
     }
@@ -92,17 +100,17 @@ export async function promptLLM(userPrompt, systemPrompt, model = 'gemini-1.5-fl
  * @returns {Promise<string>} A promise that resolves to the generated image URL.
  * @throws {Error} If there's an error during the image generation process.
  */
-export async function openaiImageGeneration(prompt, model = 'dall-e-3') {
+export async function openaiImageGeneration(prompt, model = "dall-e-3") {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
     return "Error: Unable to get image generation";
   }
   const response = await fetch(routes.imageGeneration, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${tok.ok.token}`
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${tok.ok.token}`,
     },
     body: JSON.stringify({
       userID: tok.ok.userID,
@@ -130,10 +138,10 @@ export async function textEmbed(text) {
     const tok = await auth.currentUser.getIdToken();
     const userID = auth.currentUser.uid;
     const response = await fetch(routes.embed, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tok}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok}`,
       },
       body: JSON.stringify({
         userID,
@@ -170,10 +178,10 @@ export async function getRelevantExamples(embedding, k) {
   }
   try {
     const response = await fetch(routes.searchExamples, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tok.ok.token}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
       },
       body: JSON.stringify({
         embedding,
@@ -182,7 +190,6 @@ export async function getRelevantExamples(embedding, k) {
       }),
     });
     return await response.text();
-
   } catch (error) {
     console.error(error);
     alert("Error. Please check your balance or contact support.");

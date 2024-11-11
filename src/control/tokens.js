@@ -12,4 +12,3 @@ export function countTokens(inputString) {
   // Return the count of tokens
   return tokens.length;
 }
-
