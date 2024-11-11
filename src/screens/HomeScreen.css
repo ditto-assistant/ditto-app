@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 :root {
   --primary-color: #7289da;
@@ -11,18 +11,18 @@
   --scrollbar-track-color: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
   --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
-  --vh: 1vh;  /* This will be updated via JavaScript */
+  --vh: 1vh; /* This will be updated via JavaScript */
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', sans-serif;
-  overscroll-behavior: none;  /* Prevent pull to refresh */
-  overflow: hidden;  /* Prevent bouncing on iOS */
-  position: fixed;  /* Additional fix for iOS bounce */
+  font-family: "Inter", sans-serif;
+  overscroll-behavior: none; /* Prevent pull to refresh */
+  overflow: hidden; /* Prevent bouncing on iOS */
+  position: fixed; /* Additional fix for iOS bounce */
   width: 100%;
-  touch-action: none;  /* Prevent default touch behaviors */
+  touch-action: none; /* Prevent default touch behaviors */
 }
 
 body:not(.login-page) {
@@ -46,7 +46,7 @@ body:not(.login-page) {
   top: 0;
   left: 0;
   overscroll-behavior: none;
-  touch-action: pan-y pinch-zoom;  /* Allow vertical scrolling and pinch zoom only */
+  touch-action: pan-y pinch-zoom; /* Allow vertical scrolling and pinch zoom only */
 }
 
 .App-header {
@@ -135,8 +135,8 @@ body:not(.login-page) {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  overscroll-behavior: contain;  /* Prevent pull to refresh while allowing normal scroll */
-  -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
+  overscroll-behavior: contain; /* Prevent pull to refresh while allowing normal scroll */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 .App-footer {
@@ -249,7 +249,7 @@ body:not(.login-page) {
   .App {
     height: -webkit-fill-available;
   }
-  
+
   .App-body {
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -312,33 +312,33 @@ body:not(.login-page) {
 }
 
 .EnlargedImageOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(5px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
 }
 
 .EnlargedImageContainer {
-    max-width: 90%;
-    max-height: 90%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .EnlargedImageContainer img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Add these styles to your existing CSS */

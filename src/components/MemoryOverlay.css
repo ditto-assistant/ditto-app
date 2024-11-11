@@ -1,219 +1,224 @@
 .MemoryOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 4000;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    backdrop-filter: blur(4px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4000;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  backdrop-filter: blur(4px);
 }
 
 .MemoryOverlay.visible {
-    opacity: 1;
+  opacity: 1;
 }
 
 .MemoryContent {
-    background-color: #36393F;
-    border-radius: 8px;
-    padding: 24px;
-    width: 90%;
-    max-width: 480px;
-    max-height: 85vh;
-    overflow-y: auto;
-    color: white;
-    transform: scale(0.95);
-    opacity: 0;
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  color: white;
+  transform: scale(0.95);
+  opacity: 0;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .MemoryOverlay.visible .MemoryContent {
-    transform: scale(1);
-    opacity: 1;
+  transform: scale(1);
+  opacity: 1;
 }
 
 /* Custom scrollbar */
 .MemoryContent::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 .MemoryContent::-webkit-scrollbar-track {
-    background: #2F3136;
-    border-radius: 4px;
+  background: #2f3136;
+  border-radius: 4px;
 }
 
 .MemoryContent::-webkit-scrollbar-thumb {
-    background: #202225;
-    border-radius: 4px;
+  background: #202225;
+  border-radius: 4px;
 }
 
 .MemoryContent::-webkit-scrollbar-thumb:hover {
-    background: #18191C;
+  background: #18191c;
 }
 
 /* Smooth hover transitions for all interactive elements */
-button, select {
-    transition: all 0.2s ease-in-out !important;
+button,
+select {
+  transition: all 0.2s ease-in-out !important;
 }
 
-button:hover, select:hover {
-    transform: translateY(-1px);
+button:hover,
+select:hover {
+  transform: translateY(-1px);
 }
 
-button:active, select:active {
-    transform: translateY(0px);
+button:active,
+select:active {
+  transform: translateY(0px);
 }
 
 /* Add to existing CSS */
 .confirmation-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5000;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    backdrop-filter: blur(4px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  backdrop-filter: blur(4px);
 }
 
 .confirmation-dialog.visible {
-    opacity: 1;
+  opacity: 1;
 }
 
 .confirmation-content {
-    background-color: #36393F;
-    border-radius: 8px;
-    padding: 24px;
-    width: 90%;
-    max-width: 400px;
-    transform: scale(0.95);
-    transition: transform 0.3s ease-in-out;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  transform: scale(0.95);
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .confirmation-dialog.visible .confirmation-content {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .confirmation-content h3 {
-    margin: 0 0 16px 0;
-    color: #FFFFFF;
-    font-size: 20px;
-    font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .confirmation-content p {
-    margin: 0 0 24px 0;
-    color: #DCDDDE;
-    font-size: 14px;
-    line-height: 1.5;
+  margin: 0 0 24px 0;
+  color: #dcddde;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .confirmation-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .confirmation-buttons button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .confirmation-buttons button:hover {
-    transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .confirmation-buttons button:active {
-    transform: translateY(0px);
+  transform: translateY(0px);
 }
 
 .cancel-button {
-    background-color: #4F545C;
-    color: #FFFFFF;
+  background-color: #4f545c;
+  color: #ffffff;
 }
 
 .cancel-button:hover {
-    background-color: #5D6269;
+  background-color: #5d6269;
 }
 
 .confirm-button {
-    background: linear-gradient(135deg, #ED4245 0%, #AB2123 100%);
-    color: #FFFFFF;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  background: linear-gradient(135deg, #ed4245 0%, #ab2123 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .confirm-button:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
 
 /* Add to existing CSS */
 select option:disabled {
-    color: #666;
-    font-style: italic;
+  color: #666;
+  font-style: italic;
 }
 
 select option {
-    background-color: #2F3136;
-    color: #FFFFFF;
-    padding: 8px;
+  background-color: #2f3136;
+  color: #ffffff;
+  padding: 8px;
 }
 
 select option:hover {
-    background-color: #7289DA;
+  background-color: #7289da;
 }
 
 /* Add premium badge styles */
 .premium-badge {
-    color: #FFD700;
-    font-size: 12px;
-    margin-left: 6px;
-    font-weight: 500;
+  color: #ffd700;
+  font-size: 12px;
+  margin-left: 6px;
+  font-weight: 500;
 }
 
 select option .premium-badge {
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 6px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
 }
 
 /* Style the crown emoji in the premium badge */
 .premium-badge::before {
-    content: '👑';
-    margin-right: 4px;
-    font-size: 14px;
+  content: "👑";
+  margin-right: 4px;
+  font-size: 14px;
 }
 
 /* Enhance select options appearance */
 select option {
-    background-color: #2F3136;
-    color: #FFFFFF;
-    padding: 12px;
-    display: flex;
-    align-items: center;
+  background-color: #2f3136;
+  color: #ffffff;
+  padding: 12px;
+  display: flex;
+  align-items: center;
 }
 
 select option:disabled .premium-badge {
-    opacity: 0.7;
+  opacity: 0.7;
 }
 
 /* Add a subtle glow effect to premium options when enabled */
 select option:not(:disabled) .premium-badge {
-    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
 }

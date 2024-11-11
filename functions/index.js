@@ -84,11 +84,9 @@ app.post("/get-memories", authenticateUser, async (req, res) => {
       console.log(
         "Number of requested neighbors exceeds maximum allowed (1000)",
       );
-      return res
-        .status(400)
-        .json({
-          error: "Number of requested neighbors exceeds maximum allowed (1000)",
-        });
+      return res.status(400).json({
+        error: "Number of requested neighbors exceeds maximum allowed (1000)",
+      });
     }
     if (!userId || !vector) {
       console.log("Missing parameters:", {
