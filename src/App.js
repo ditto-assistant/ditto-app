@@ -14,7 +14,7 @@ import { DittoActivationProvider } from "./hooks/useDittoActivation";
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
-import { PresignedUrlProvider } from './hooks/usePresignedUrls';
+import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));

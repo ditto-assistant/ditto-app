@@ -23,7 +23,7 @@ import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
 import Toast from "./Toast";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { usePresignedUrls } from '../hooks/usePresignedUrls';
+import { usePresignedUrls } from "../hooks/usePresignedUrls";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -309,9 +309,9 @@ export default function ChatFeed({
         const isNearBottom =
           feedElement &&
           feedElement.scrollHeight -
-          feedElement.scrollTop -
-          feedElement.clientHeight <
-          100;
+            feedElement.scrollTop -
+            feedElement.clientHeight <
+            100;
 
         if (isNearBottom) {
           bottomRef.current.scrollIntoView({
@@ -622,7 +622,7 @@ export default function ChatFeed({
             }
             const cachedUrl = getCachedUrl(src);
             if (cachedUrl) {
-              src = cachedUrl
+              src = cachedUrl;
             }
             return (
               <img
@@ -644,7 +644,7 @@ export default function ChatFeed({
                     (err) => {
                       setFailedImages((prev) => prev.add(src));
                       console.error(`Image Load error: ${err}; src: ${src}`);
-                    }
+                    },
                   );
                 }}
               />
@@ -751,8 +751,9 @@ export default function ChatFeed({
           </div>
         ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${actionOverlay && actionOverlay.index === index ? "blurred" : ""
-              } ${isSmallMessage ? "small-message" : ""}`}
+            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
+              actionOverlay && actionOverlay.index === index ? "blurred" : ""
+            } ${isSmallMessage ? "small-message" : ""}`}
             style={bubbleStyles.chatbubble}
             onClick={(e) => handleBubbleInteraction(e, index)}
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
@@ -772,12 +773,13 @@ export default function ChatFeed({
                 <>
                   {renderMessageText(message.text, index, message.sender)}
                   <div
-                    className={`tool-status ${message.toolStatus === "complete"
-                      ? "complete"
-                      : message.toolStatus === "failed"
-                        ? "failed"
-                        : ""
-                      }`}
+                    className={`tool-status ${
+                      message.toolStatus === "complete"
+                        ? "complete"
+                        : message.toolStatus === "failed"
+                          ? "failed"
+                          : ""
+                    }`}
                   >
                     {message.toolStatus}
                     {message.showTypingDots && (
