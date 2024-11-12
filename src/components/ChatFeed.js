@@ -23,7 +23,7 @@ import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
 import Toast from "./Toast";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { presignURL } from "../api/bucket";
+import { usePresignedUrls } from '../hooks/usePresignedUrls';
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -279,6 +279,7 @@ export default function ChatFeed({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+  const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -308,9 +309,9 @@ export default function ChatFeed({
         const isNearBottom =
           feedElement &&
           feedElement.scrollHeight -
-            feedElement.scrollTop -
-            feedElement.clientHeight <
-            100;
+          feedElement.scrollTop -
+          feedElement.clientHeight <
+          100;
 
         if (isNearBottom) {
           bottomRef.current.scrollIntoView({
@@ -568,7 +569,8 @@ export default function ChatFeed({
   };
 
   const handleImageClick = (src) => {
-    setImageOverlay(src);
+    const cachedUrl = getCachedUrl(src);
+    setImageOverlay(cachedUrl || src);
   };
 
   const handleImageDownload = (src) => {
@@ -618,7 +620,10 @@ export default function ChatFeed({
             if (failedImages.has(src)) {
               return <span className="invalid-image">Invalid URI</span>;
             }
-
+            const cachedUrl = getCachedUrl(src);
+            if (cachedUrl) {
+              src = cachedUrl
+            }
             return (
               <img
                 {...props}
@@ -630,17 +635,16 @@ export default function ChatFeed({
                   handleImageClick(src);
                 }}
                 onError={(e) => {
-                  presignURL(src).then(
+                  getPresignedUrl(src).then(
                     (url) => {
                       if (url) {
                         e.target.src = url;
-                        console.log(`Got presigned URL: ${url}`);
                       }
                     },
                     (err) => {
                       setFailedImages((prev) => prev.add(src));
                       console.error(`Image Load error: ${err}; src: ${src}`);
-                    },
+                    }
                   );
                 }}
               />
@@ -747,9 +751,8 @@ export default function ChatFeed({
           </div>
         ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
-              actionOverlay && actionOverlay.index === index ? "blurred" : ""
-            } ${isSmallMessage ? "small-message" : ""}`}
+            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${actionOverlay && actionOverlay.index === index ? "blurred" : ""
+              } ${isSmallMessage ? "small-message" : ""}`}
             style={bubbleStyles.chatbubble}
             onClick={(e) => handleBubbleInteraction(e, index)}
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
@@ -769,13 +772,12 @@ export default function ChatFeed({
                 <>
                   {renderMessageText(message.text, index, message.sender)}
                   <div
-                    className={`tool-status ${
-                      message.toolStatus === "complete"
-                        ? "complete"
-                        : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
-                    }`}
+                    className={`tool-status ${message.toolStatus === "complete"
+                      ? "complete"
+                      : message.toolStatus === "failed"
+                        ? "failed"
+                        : ""
+                      }`}
                   >
                     {message.toolStatus}
                     {message.showTypingDots && (
