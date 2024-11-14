@@ -2077,124 +2077,181 @@ input:checked + .toggle-slider:before {
 /* Add these new styles for the standalone typing indicator */
 .typing-indicator-container {
   display: flex;
-  align-items: center;
-  padding: 10px;
-  margin: 0 8px;
-  border-radius: 20px;
-  background: transparent;
-}
-
-.typing-indicator {
-  display: flex;
-  align-items: center;
-  margin: 0;
-  height: 20px;
-}
-
-.typing-dot {
-  width: 6px;
-  height: 6px;
-  margin: 0 2px;
-  background-color: #99aab5;
-  border-radius: 50%;
-  animation: bounce 0.6s infinite alternate;
-  animation-delay: calc(var(--i) * 0.2s);
-}
-
-/* Update existing typing indicator styles */
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Update delete confirmation loading styles */
-.delete-confirmation-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
+  margin: 8px 0;
   gap: 12px;
-  padding: 20px;
-  color: rgba(255, 255, 255, 0.8);
 }
 
-.delete-confirmation-loading .loading-spinner {
-  width: 24px;
-  height: 24px;
-  margin-bottom: 8px;
+.typing-indicator-container .avatar.ditto-avatar {
+  animation: windUp 1s ease-in-out infinite, spin 2s linear infinite;
 }
 
-/* Update delete confirmation overlay animation */
-.delete-confirmation-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-  backdrop-filter: blur(5px);
+/* Add wind-up animation for Ditto avatar */
+@keyframes windUp {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    25% {
+        transform: rotate(-15deg) scale(1.1);
+    }
+    50% {
+        transform: rotate(0deg) scale(1);
+    }
+    75% {
+        transform: rotate(15deg) scale(1.1);
+    }
+    100% {
+        transform: rotate(0deg) scale(1);
+    }
 }
 
-.delete-confirmation-content {
-  background-color: #36393f;
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  color: #ffffff;
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-/* Update button styles for better feedback */
-.delete-confirmation-button {
-  padding: 12px 24px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 100px;
+/* Add animation classes for the avatar */
+.avatar.ditto-avatar {
+    transition: all 0.3s ease;
 }
 
-.delete-confirmation-button.cancel {
-  background-color: #4f545c;
-  color: white;
+.avatar.ditto-avatar.animating {
+    animation: windUp 1s ease-in-out infinite;
 }
 
-.delete-confirmation-button.cancel:hover {
-  background-color: #5d6269;
+.avatar.ditto-avatar.spinning {
+    animation: spin 1s linear infinite;
 }
 
-.delete-confirmation-button.confirm {
-  background-color: #ed4245;
-  color: white;
+/* Update typing indicator container to include avatar animation */
+.typing-indicator-container {
+    display: flex;
+    align-items: flex-end;
+    margin: 8px 0;
+    gap: 12px;
 }
 
-.delete-confirmation-button.confirm:hover:not(:disabled) {
-  background-color: #f04346;
-  transform: translateY(-1px);
+.typing-indicator-container .avatar.ditto-avatar {
+    animation: windUp 1s ease-in-out infinite, spin 2s linear infinite;
 }
 
-.delete-confirmation-button.confirm:active:not(:disabled) {
-  transform: translateY(0);
+/* Update the wind-up animation for the initial jolt */
+@keyframes initialJolt {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    20% {
+        transform: rotate(-90deg) scale(1.1);
+    }
+    25% {
+        transform: rotate(-85deg) scale(1.1);
+    }
+    30% {
+        transform: rotate(-90deg) scale(1.1);
+    }
+    100% {
+        transform: rotate(-90deg) scale(1.1);
+    }
 }
 
-.delete-confirmation-button.confirm:disabled {
-  background-color: #72494a;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: not-allowed;
+/* Update the spin animation to be faster */
+@keyframes fastSpin {
+    from {
+        transform: rotate(-90deg) scale(1.1);
+    }
+    to {
+        transform: rotate(270deg) scale(1.1);
+    }
 }
 
-/* Add transition for smoother animations */
-.delete-confirmation-overlay,
-.delete-confirmation-content {
-  will-change: transform, opacity;
+/* Update the avatar animation classes */
+.avatar.ditto-avatar {
+    transition: all 0.3s ease;
+}
+
+/* Animation for when message is generating */
+.avatar.ditto-avatar.animating {
+    animation: slowWindUp 3s ease-in-out infinite;
+}
+
+/* Animation for when message is complete */
+.avatar.ditto-avatar.spinning {
+    animation: veryFastSpin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Typing indicator container animation */
+.typing-indicator-container .avatar.ditto-avatar {
+    animation: slowWindUp 3s ease-in-out infinite;
+}
+
+/* When message is complete, apply the fast spin */
+.message-container:not(.typing) .avatar.ditto-avatar {
+    animation: veryFastSpin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Counter-clockwise rotation during generation */
+@keyframes generateRotation {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    100% {
+        transform: rotate(-360deg) scale(1.05);
+    }
+}
+
+/* Fast clockwise spin for completion */
+@keyframes completionSpin {
+    0% {
+        transform: rotate(-360deg) scale(1.05);
+    }
+    25% {
+        transform: rotate(270deg) scale(1.1);
+    }
+    50% {
+        transform: rotate(720deg) scale(1.05);
+    }
+    75% {
+        transform: rotate(990deg) scale(1.1);
+    }
+    100% {
+        transform: rotate(1080deg) scale(1);
+    }
+}
+
+/* Base avatar styles with smoother transition */
+.avatar.ditto-avatar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    transform-origin: center center;
+}
+
+/* Smooth animation for generating state */
+.message-container.Ditto .avatar.ditto-avatar.animating {
+    animation: generateRotation 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Smooth animation for completion */
+.message-container.Ditto .avatar.ditto-avatar.spinning {
+    animation: completionSpin 0.8s cubic-bezier(0.2, 0, 0.8, 1);
+}
+
+/* Typing indicator animation */
+.typing-indicator-container .avatar.ditto-avatar {
+    animation: generateRotation 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Clear any previous animations */
+.message-container.Ditto .avatar.ditto-avatar:not(.animating):not(.spinning) {
+    animation: none;
+}
+
+/* Add hardware acceleration */
+.avatar.ditto-avatar {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
