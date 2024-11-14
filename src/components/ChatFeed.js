@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Suspense } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -24,6 +24,7 @@ import { processResponse } from "../control/agent";
 import Toast from "./Toast";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
+import DeleteConfirmationOverlay from './DeleteConfirmationOverlay';
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -280,6 +281,9 @@ export default function ChatFeed({
   const [toastMessage, setToastMessage] = useState("");
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
+  const [showMemoryNetwork, setShowMemoryNetwork] = useState(false);
+  const [showDeleteOverlay, setShowDeleteOverlay] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -514,9 +518,8 @@ export default function ChatFeed({
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setActionOverlay(null);
-    setTimeout(() => setCopied(false), 2000);
+    setToastMessage('Copied to clipboard!');
+    setShowToast(true);
   };
 
   const handleReaction = (index, emoji) => {
@@ -534,22 +537,26 @@ export default function ChatFeed({
 
     // Don't show action overlay if user is selecting text
     if (window.getSelection().toString() || isSelecting) {
-      return;
+        return;
     }
 
     // Don't show action overlay if click was on an image
     if (e.target.classList.contains("chat-image")) {
-      return;
+        return;
     }
 
     // Trigger haptic feedback
     triggerHapticFeedback();
 
+    // Toggle active class for timestamp
+    const bubble = e.currentTarget;
+    bubble.classList.add('active');
+
     // If clicking the same bubble that has an open overlay, close it
     if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
-      setReactionOverlay(null);
-      return;
+        setActionOverlay(null);
+        setReactionOverlay(null);
+        return;
     }
 
     // Calculate position for the overlay
@@ -558,14 +565,19 @@ export default function ChatFeed({
     const y = e.clientY || rect.top + rect.height / 2;
 
     setActionOverlay({
-      index,
-      clientX: x,
-      clientY: y,
-      type: "text",
+        index,
+        clientX: x,
+        clientY: y,
+        type: "text",
     });
 
     // Close any open reaction overlay
     setReactionOverlay(null);
+
+    // Remove active class after overlay closes
+    setTimeout(() => {
+        bubble.classList.remove('active');
+    }, 2000); // Remove after 2 seconds
   };
 
   const handleImageClick = (src) => {
@@ -724,12 +736,21 @@ export default function ChatFeed({
     const isLastMessage = index === messages.length - 1;
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === "User";
-    const showTypingIndicator = message.isTyping && message.text === "";
     const isGenerating = message.sender === "Ditto" && message.isTyping;
+    const isComplete = !message.isTyping && message.sender === "Ditto";
 
-    // Detect tool type from message content if not already set
-    const toolType = message.toolType || detectToolType(message.text);
-    const hasToolStatus = message.toolStatus && toolType;
+    // Define toolType based on message content
+    const toolType = detectToolType(message.text);
+
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const toggleExpanded = () => {
+      setIsExpanded((prev) => !prev);
+    };
+
+    const handleMouseLeave = () => {
+      setIsExpanded(false); // Reset expanded state on mouse leave
+    };
 
     return (
       <motion.div
@@ -738,150 +759,65 @@ export default function ChatFeed({
         initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
+        onMouseLeave={handleMouseLeave} // Add mouse leave handler
       >
         {message.sender === "Ditto" && (
-          <img 
-            src={dittoAvatar} 
-            alt="Ditto" 
-            className={`avatar ditto-avatar ${
-              isGenerating ? 'animating' : 'spinning'
-            }`}
-          />
+          <>
+            <img 
+              src={dittoAvatar} 
+              alt="Ditto" 
+              className={`avatar ditto-avatar ${
+                isGenerating ? 'animating' : isComplete ? 'spinning' : ''
+              }`}
+            />
+            <div className="ditto-shadow"></div>
+          </>
         )}
-        {showTypingIndicator ? (
-          <div className="typing-indicator-container">
-            <div className="typing-indicator">
-              <div className="typing-dot" style={{ "--i": 0 }} />
-              <div className="typing-dot" style={{ "--i": 1 }} />
-              <div className="typing-dot" style={{ "--i": 2 }} />
+        <div
+          className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
+            actionOverlay && actionOverlay.index === index ? "blurred" : ""
+          } ${isSmallMessage ? "small-message" : ""}`}
+          style={{
+            ...bubbleStyles.chatbubble,
+            borderTopLeftRadius: "18px",
+            borderTopRightRadius: "18px",
+            borderBottomLeftRadius: isUserMessage ? "18px" : "4px",
+            borderBottomRightRadius: isUserMessage ? "4px" : "18px",
+          }}
+          onClick={(e) => handleBubbleInteraction(e, index)}
+          onContextMenu={(e) => handleBubbleInteraction(e, index)}
+          data-index={index}
+        >
+          {toolType && (
+            <div className={`tool-badge ${toolType.toLowerCase()}`}>
+              {toolType.toUpperCase()}
             </div>
+          )}
+          <div className="message-text" style={bubbleStyles.text}>
+            {renderMessageText(message.text, index, message.sender)}
           </div>
-        ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
-              actionOverlay && actionOverlay.index === index ? "blurred" : ""
-            } ${isSmallMessage ? "small-message" : ""}`}
-            style={bubbleStyles.chatbubble}
-            onClick={(e) => handleBubbleInteraction(e, index)}
-            onContextMenu={(e) => handleBubbleInteraction(e, index)}
-            data-index={index}
+            className={`three-dots-button ${isExpanded ? "expanded" : ""}`}
+            onClick={toggleExpanded}
           >
-            {toolType && (
-              <div className={`tool-badge ${toolType.toLowerCase()}`}>
-                {toolType.toUpperCase()}
-              </div>
-            )}
-
-            {showSenderName && message.sender && (
-              <div className="sender-name">{message.sender}</div>
-            )}
-            <div className="message-text" style={bubbleStyles.text}>
-              {message.toolStatus && toolType ? (
-                <>
-                  {renderMessageText(message.text, index, message.sender)}
-                  <div
-                    className={`tool-status ${
-                      message.toolStatus === "complete"
-                        ? "complete"
-                        : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
-                    }`}
-                  >
-                    {message.toolStatus}
-                    {message.showTypingDots && (
-                      <div className="typing-dots">
-                        <div className="dot"></div>
-                        <div className="dot"></div>
-                        <div className="dot"></div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                renderMessageText(message.text, index, message.sender)
-              )}
-            </div>
-            <div className="message-footer">
-              <div className="message-timestamp">
-                {formatTimestamp(message.timestamp)}
-              </div>
-            </div>
-            {reactions[index] && reactions[index].length > 0 && (
-              <div className="message-reactions">
-                {reactions[index].map((emoji, emojiIndex) => (
-                  <span key={emojiIndex} className="reaction">
-                    {emoji}
-                  </span>
-                ))}
-              </div>
+            {isExpanded ? (
+              <>
+                <button className="action-button" onClick={() => handleCopy(message.text)}>Copy</button>
+                <button className="action-button" onClick={() => handleDelete(message)}>Delete</button>
+                <button className="action-button" onClick={() => handleShowMemories(message)}>Relevant Memories</button>
+              </>
+            ) : (
+              "..."
             )}
           </div>
-        )}
+          <div className="message-footer">
+            <span className="message-timestamp">
+              {formatTimestamp(message.timestamp)}
+            </span>
+          </div>
+        </div>
         {message.sender === "User" && (
           <img src={profilePic} alt="User" className="avatar user-avatar" />
-        )}
-        {actionOverlay && actionOverlay.index === index && (
-          <div
-            className="action-overlay"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: "fixed",
-              left: `${actionOverlay.clientX}px`,
-              top: `${actionOverlay.clientY}px`,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <button
-              onClick={() => handleCopy(messages[actionOverlay.index].text)}
-              className="action-button"
-            >
-              Copy
-            </button>
-            <button
-              onClick={() =>
-                handleReactionOverlay(
-                  actionOverlay.index,
-                  actionOverlay.clientX,
-                  actionOverlay.clientY,
-                )
-              }
-              className="action-button"
-            >
-              React
-            </button>
-            <button
-              onClick={() => handleShowMemories(actionOverlay.index)}
-              className="action-button"
-              disabled={loadingMemories}
-            >
-              <FaBrain style={{ marginRight: "5px" }} />
-              {loadingMemories ? "Loading..." : "Memories"}
-            </button>
-            <button
-              onClick={() => handleMessageDelete(actionOverlay.index)}
-              className="action-button delete-action"
-            >
-              <FaTrash style={{ marginRight: "5px" }} />
-              Delete
-            </button>
-          </div>
-        )}
-        {reactionOverlay === index && (
-          <div
-            className="reaction-overlay"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {emojis.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => handleReaction(index, emoji)}
-                className="emoji-button"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
         )}
       </motion.div>
     );
@@ -969,154 +905,16 @@ export default function ChatFeed({
     setActionOverlay(null);
   };
 
-  const handleShowMemories = async (index) => {
-    try {
-      const controller = new AbortController();
-      setAbortController(controller);
-      setLoadingMemories(true);
-
-      const message = messages[index];
-      const userID = auth.currentUser.uid;
-
-      let promptToUse;
-      let currentPairID;
-      let currentTimestamp;
-      if (message.sender === "User") {
-        promptToUse = message.text;
-        currentPairID = message.pairID;
-        currentTimestamp = message.timestamp;
-      } else {
-        if (index > 0 && messages[index - 1].sender === "User") {
-          promptToUse = messages[index - 1].text;
-          currentPairID = messages[index - 1].pairID;
-          currentTimestamp = messages[index - 1].timestamp;
-        } else {
-          console.error("Could not find corresponding prompt for response");
-          setLoadingMemories(false);
-          return;
-        }
-      }
-
-      // Get embedding for the prompt
-      const embedding = await textEmbed(promptToUse);
-      if (!embedding) {
-        console.error("Could not generate embedding for prompt");
-        setLoadingMemories(false);
-        return;
-      }
-
-      // Fetch top 6 memories
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch(routes.memories, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          Origin: window.location.origin,
-        },
-        body: JSON.stringify({
-          userId: userID,
-          vector: embedding,
-          k: 6,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch memories");
-      }
-
-      const data = await response.json();
-      let topMemories = data.memories || [];
-
-      // Discard the top-1 memory
-      topMemories = topMemories.slice(1, 6);
-
-      // For each of the top 5 memories, fetch their 2 most related memories
-      const memoriesWithRelated = await Promise.all(
-        topMemories.map(async (memory) => {
-          const relatedEmbedding = await textEmbed(memory.prompt);
-          const relatedResponse = await fetch(routes.memories, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-              Origin: window.location.origin,
-            },
-            body: JSON.stringify({
-              userId: userID,
-              vector: relatedEmbedding,
-              k: 3,
-            }),
-          });
-
-          const relatedData = await relatedResponse.json();
-          // Filter out the memory itself and take top 2
-          const relatedMemories = relatedData.memories
-            .filter((m) => m.id !== memory.id)
-            .slice(0, 2);
-
-          return {
-            ...memory,
-            related: relatedMemories,
-          };
-        }),
-      );
-
-      // Create the central node structure
-      const networkData = [
-        {
-          prompt: promptToUse,
-          response: message.text,
-          timestamp: currentTimestamp,
-          timestampString: new Date(currentTimestamp).toISOString(),
-          related: memoriesWithRelated.map((mem) => ({
-            ...mem,
-            timestamp: mem.timestamp,
-            timestampString: mem.timestampString,
-            related: mem.related.map((rel) => ({
-              ...rel,
-              timestamp: rel.timestamp,
-              timestampString: rel.timestampString,
-            })),
-          })),
-        },
-      ];
-
-      console.log("Network Data:", networkData);
-      setRelatedMemories(networkData);
-      setMemoryOverlay({
-        index,
-        clientX: actionOverlay.clientX,
-        clientY: actionOverlay.clientY,
-      });
-      setActionOverlay(null);
-    } catch (error) {
-      if (error.name === "AbortError") {
-        console.log("Memory fetch cancelled");
-      } else {
-        console.error("Error fetching memories:", error);
-      }
-    } finally {
-      setLoadingMemories(false);
-      setAbortController(null);
-    }
+  const handleShowMemories = (message) => {
+    setSelectedMessage(message);
+    setShowMemoryNetwork(true);
   };
 
-  const handleDeleteMemory = async (memory, idx) => {
-    const userID = auth.currentUser.uid;
-
-    // Show confirmation overlay with docId that came from get-memories
-    setDeleteConfirmation({
-      memory,
-      idx,
-      docId: memory.id, // Use the id that came from get-memories
-    });
+  const handleDelete = (message) => {
+    setSelectedMessage(message);
+    setShowDeleteOverlay(true);
   };
 
-  // Update handleMessageDelete to use pairID directly
   const handleMessageDelete = async (index) => {
     const message = messages[index];
     const userID = auth.currentUser.uid;
@@ -1648,6 +1446,57 @@ export default function ChatFeed({
           </motion.div>
         )}
       </AnimatePresence>
+      {showMemoryNetwork && (
+        <motion.div
+          className="memory-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 5000,
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          <Suspense fallback={<LoadingSpinner size={50} />}>
+            <motion.div
+              style={{
+                width: '90%',
+                maxWidth: '1200px',
+                height: '90vh',
+                backgroundColor: '#36393f',
+                borderRadius: '12px',
+                overflow: 'hidden'
+              }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+            >
+              <MemoryNetwork
+                memories={[selectedMessage]}
+                onClose={() => setShowMemoryNetwork(false)}
+              />
+            </motion.div>
+          </Suspense>
+        </motion.div>
+      )}
+      <DeleteConfirmationOverlay
+        isOpen={showDeleteOverlay}
+        onClose={() => setShowDeleteOverlay(false)}
+        onConfirm={() => {
+          handleMessageDelete(selectedMessage);
+          setShowDeleteOverlay(false);
+        }}
+        scriptName="Message"
+      />
       <Toast
         message={toastMessage}
         isVisible={showToast}

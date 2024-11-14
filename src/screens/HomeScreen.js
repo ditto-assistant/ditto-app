@@ -836,33 +836,31 @@ export default function HomeScreen() {
         ref={appBodyRef}
         onClick={handleCloseMediaOptions}
       >
-        <div className="chat-card">
-          <AnimatePresence>
-            {(!showStatusBar || statusBarLoaded) && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
+        <AnimatePresence>
+          {(!showStatusBar || statusBarLoaded) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense
+                fallback={
+                  <div className="loading-placeholder">Loading chat...</div>
+                }
               >
-                <Suspense
-                  fallback={
-                    <div className="loading-placeholder">Loading chat...</div>
-                  }
-                >
-                  <ChatFeed
-                    messages={conversation.messages}
-                    showSenderName={false}
-                    histCount={histCount}
-                    isTyping={conversation.is_typing}
-                    scrollToBottom={true}
-                    startAtBottom={startAtBottom}
-                    updateConversation={updateConversation}
-                  />
-                </Suspense>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                <ChatFeed
+                  messages={conversation.messages}
+                  showSenderName={false}
+                  histCount={histCount}
+                  isTyping={conversation.is_typing}
+                  scrollToBottom={true}
+                  startAtBottom={startAtBottom}
+                  updateConversation={updateConversation}
+                />
+              </Suspense>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>

@@ -56,11 +56,9 @@ body:not(.login-page) {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background-color: rgba(32, 34, 37, 0.9);
+  background-color: rgba(32, 34, 37, 0.8);
   backdrop-filter: blur(10px);
   z-index: 10;
-  border-top-left-radius: 0px;
-  border-top-right-radius: 0px;
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
 }
@@ -141,7 +139,7 @@ body:not(.login-page) {
 
 .App-footer {
   flex-shrink: 0;
-  background-color: rgba(32, 34, 37, 0.9);
+  background-color: rgba(32, 34, 37, 0.8);
   backdrop-filter: blur(10px);
   border-top-left-radius: var(--border-radius);
   border-top-right-radius: var(--border-radius);
