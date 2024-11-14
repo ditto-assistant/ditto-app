@@ -370,18 +370,18 @@ export default function ChatFeed({
 
   useEffect(() => {
     // Cache Ditto avatar - update the path to the new image
-    fetch("/icons/fancy-ditto.png")  // Updated path
-        .then((response) => response.blob())
-        .then((blob) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                localStorage.setItem(DITTO_AVATAR_KEY, base64data);
-                setDittoAvatar(base64data);
-            };
-            reader.readAsDataURL(blob);
-        })
-        .catch((error) => console.error("Error caching Ditto avatar:", error));
+    fetch("/icons/fancy-ditto.png") // Updated path
+      .then((response) => response.blob())
+      .then((blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result;
+          localStorage.setItem(DITTO_AVATAR_KEY, base64data);
+          setDittoAvatar(base64data);
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch((error) => console.error("Error caching Ditto avatar:", error));
 
     // Load user avatar with cooldown and caching
     if (auth.currentUser?.photoURL) {
@@ -740,11 +740,11 @@ export default function ChatFeed({
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {message.sender === "Ditto" && (
-          <img 
-            src={dittoAvatar} 
-            alt="Ditto" 
+          <img
+            src={dittoAvatar}
+            alt="Ditto"
             className={`avatar ditto-avatar ${
-              isGenerating ? 'animating' : 'spinning'
+              isGenerating ? "animating" : "spinning"
             }`}
           />
         )}
