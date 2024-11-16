@@ -24,6 +24,7 @@ import { processResponse } from "../control/agent";
 import Toast from "./Toast";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
+import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -280,6 +281,7 @@ export default function ChatFeed({
   const [toastMessage, setToastMessage] = useState("");
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
+  const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -1580,6 +1582,10 @@ export default function ChatFeed({
               <MemoryNetwork
                 memories={relatedMemories}
                 onClose={() => setMemoryOverlay(null)}
+                onMemoryDeleted={(deletedId) => {
+                  const userID = auth.currentUser.uid;
+                  deleteMemory(userID, deletedId);
+                }}
               />
             </motion.div>
           </motion.div>
