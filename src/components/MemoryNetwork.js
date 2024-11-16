@@ -6,7 +6,11 @@ import { FaTable, FaProjectDiagram, FaTimes, FaTrash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { IoMdArrowBack, IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
+import {
+  IoMdArrowBack,
+  IoMdArrowDropdown,
+  IoMdArrowDropup,
+} from "react-icons/io";
 import { FiDownload, FiCopy } from "react-icons/fi";
 import { auth } from "../control/firebase";
 import { deleteConversation } from "../control/memory";
@@ -45,11 +49,11 @@ const formatDateTime = (timestamp) => {
 };
 
 // Add this component near the top of the file
-const DeleteConfirmationContent = ({ 
-  deleteConfirmation, 
-  setDeleteConfirmation, 
-  confirmDelete, 
-  isDeletingMessage 
+const DeleteConfirmationContent = ({
+  deleteConfirmation,
+  setDeleteConfirmation,
+  confirmDelete,
+  isDeletingMessage,
 }) => (
   <motion.div
     className="delete-confirmation-content"
@@ -62,8 +66,7 @@ const DeleteConfirmationContent = ({
   >
     <div style={styles.deleteConfirmationTitle}>Delete Memory?</div>
     <div style={styles.deleteConfirmationMessage}>
-      Are you sure you want to delete this memory? This action cannot
-      be undone.
+      Are you sure you want to delete this memory? This action cannot be undone.
     </div>
     {isDeletingMessage ? (
       <div style={styles.deleteConfirmationLoading}>
@@ -504,7 +507,7 @@ const MemoryPathOverlay = ({ path, onClose }) => {
   };
 
   const toggleExpand = (memoryId) => {
-    setExpandedMemories(prev => {
+    setExpandedMemories((prev) => {
       const next = new Set(prev);
       if (next.has(memoryId)) {
         next.delete(memoryId);
@@ -624,7 +627,9 @@ const MemoryPathOverlay = ({ path, onClose }) => {
             };
             reader.readAsDataURL(blob);
           })
-          .catch((error) => console.error("Error caching Ditto avatar:", error));
+          .catch((error) =>
+            console.error("Error caching Ditto avatar:", error),
+          );
       }
     }, []);
 
@@ -657,7 +662,10 @@ const MemoryPathOverlay = ({ path, onClose }) => {
 
   return (
     <motion.div style={styles.pathOverlay} onClick={onClose}>
-      <motion.div style={styles.pathContent} onClick={(e) => e.stopPropagation()}>
+      <motion.div
+        style={styles.pathContent}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={styles.pathHeader}>
           <h3 style={styles.pathTitle}>Memory Path</h3>
           <button onClick={onClose} style={styles.closeButton}>
@@ -693,13 +701,21 @@ const MemoryPathOverlay = ({ path, onClose }) => {
                     <button
                       style={styles.relatedButton}
                       onClick={() => toggleExpand(child.id)}
-                      title={expandedMemories.has(child.id) ? "Hide Related" : "Show Related"}
+                      title={
+                        expandedMemories.has(child.id)
+                          ? "Hide Related"
+                          : "Show Related"
+                      }
                     >
                       <span style={styles.relatedButtonText}>
-                        {expandedMemories.has(child.id) ? "Hide Related" : "Show Related"}
+                        {expandedMemories.has(child.id)
+                          ? "Hide Related"
+                          : "Show Related"}
                       </span>
                       <motion.div
-                        animate={{ rotate: expandedMemories.has(child.id) ? 180 : 0 }}
+                        animate={{
+                          rotate: expandedMemories.has(child.id) ? 180 : 0,
+                        }}
                         transition={{ duration: 0.2 }}
                         style={styles.relatedButtonIcon}
                       >
@@ -717,44 +733,51 @@ const MemoryPathOverlay = ({ path, onClose }) => {
                 </div>
               </div>
               <div style={styles.pathNodeContent}>
-                <MemoryMessage prompt={child.prompt} response={child.response} />
-                
+                <MemoryMessage
+                  prompt={child.prompt}
+                  response={child.response}
+                />
+
                 {/* Related Memories */}
-                {expandedMemories.has(child.id) && child.children?.map((grandChild) => (
-                  <motion.div
-                    key={grandChild.id}
-                    style={styles.pathNodeChild}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div style={styles.pathNodeChildHeader}>
-                      <div style={styles.pathNodeChildLeft}>
-                        <div style={styles.pathNodeChildTitle}>
-                          Related {grandChild.parentIndex}.{grandChild.index}
+                {expandedMemories.has(child.id) &&
+                  child.children?.map((grandChild) => (
+                    <motion.div
+                      key={grandChild.id}
+                      style={styles.pathNodeChild}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div style={styles.pathNodeChildHeader}>
+                        <div style={styles.pathNodeChildLeft}>
+                          <div style={styles.pathNodeChildTitle}>
+                            Related {grandChild.parentIndex}.{grandChild.index}
+                          </div>
+                          <div style={styles.timestamp}>
+                            {formatDateTime(grandChild.timestamp)}
+                          </div>
                         </div>
-                        <div style={styles.timestamp}>
-                          {formatDateTime(grandChild.timestamp)}
-                        </div>
+                        <button
+                          onClick={() => handleDelete(grandChild)}
+                          style={styles.deleteButton}
+                          disabled={deletingMemories.has(grandChild.id)}
+                        >
+                          <FaTrash />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleDelete(grandChild)}
-                        style={styles.deleteButton}
-                        disabled={deletingMemories.has(grandChild.id)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                    <MemoryMessage prompt={grandChild.prompt} response={grandChild.response} />
-                  </motion.div>
-                ))}
+                      <MemoryMessage
+                        prompt={grandChild.prompt}
+                        response={grandChild.response}
+                      />
+                    </motion.div>
+                  ))}
               </div>
             </div>
           ))}
         </div>
       </motion.div>
-      
+
       {/* Delete Confirmation Overlay */}
       <AnimatePresence>
         {deleteConfirmation && (
@@ -1019,15 +1042,12 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
             </div>
           </div>
           <div style={styles.nodeFooter}>
-            <button
-              onClick={handleDelete}
-              style={styles.deleteButton}
-            >
+            <button onClick={handleDelete} style={styles.deleteButton}>
               <FaTrash /> Delete
             </button>
           </div>
         </motion.div>
-        
+
         {/* Delete Confirmation Overlay */}
         {deleteConfirmation && (
           <motion.div
@@ -1049,7 +1069,8 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
             >
               <div style={styles.deleteConfirmationTitle}>Delete Memory?</div>
               <div style={styles.deleteConfirmationMessage}>
-                Are you sure you want to delete this memory? This action cannot be undone.
+                Are you sure you want to delete this memory? This action cannot
+                be undone.
               </div>
               {isDeletingMessage ? (
                 <div style={styles.deleteConfirmationLoading}>
@@ -1506,10 +1527,10 @@ const styles = {
     fontWeight: 500,
   },
   pathNodeContent: {
-    backgroundColor: 'transparent',
-    marginTop: '12px',
-    '& > * + *': {
-      marginTop: '12px',
+    backgroundColor: "transparent",
+    marginTop: "12px",
+    "& > * + *": {
+      marginTop: "12px",
     },
   },
   pathNodePrompt: {
@@ -1523,12 +1544,12 @@ const styles = {
     marginTop: "12px",
   },
   pathNodeChild: {
-    marginTop: '16px',
-    backgroundColor: '#40444b',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-    padding: '16px',
+    marginTop: "16px",
+    backgroundColor: "#40444b",
+    borderRadius: "12px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    overflow: "hidden",
+    padding: "16px",
   },
   pathNodeChildHeader: {
     display: "flex",
@@ -1603,7 +1624,7 @@ const styles = {
     marginRight: "8px",
     "&:hover": {
       backgroundColor: "#3941b8",
-    }
+    },
   },
   memoryPrompt: {
     color: "#ffffff",
@@ -1868,7 +1889,7 @@ const styles = {
     marginRight: "4px",
     "&:hover": {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
-    }
+    },
   },
 
   expandIcon: {
@@ -1883,7 +1904,7 @@ const styles = {
     gap: "4px",
     "& > *:not(:last-child)": {
       marginRight: "4px",
-    }
+    },
   },
 
   // Update pathNodeChild for animation
@@ -1897,110 +1918,110 @@ const styles = {
   },
 
   relatedButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    backgroundColor: '#4752c4',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    padding: '8px 12px',
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    marginRight: '8px',
-    '&:hover': {
-      backgroundColor: '#3941b8',
-      transform: 'translateY(-1px)',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    backgroundColor: "#4752c4",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "8px 12px",
+    fontSize: "12px",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    marginRight: "8px",
+    "&:hover": {
+      backgroundColor: "#3941b8",
+      transform: "translateY(-1px)",
     },
-    '&:active': {
-      transform: 'translateY(0px)',
+    "&:active": {
+      transform: "translateY(0px)",
     },
   },
 
   relatedButtonText: {
-    display: 'inline-block',
-    minWidth: '80px', // Ensures consistent width when text changes
-    textAlign: 'left',
+    display: "inline-block",
+    minWidth: "80px", // Ensures consistent width when text changes
+    textAlign: "left",
   },
 
   relatedButtonIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '16px',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "16px",
   },
 
   // Update memoryActions
   memoryActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
 
   // Update deleteButton
   deleteButton: {
-    background: 'none',
-    border: 'none',
-    color: '#ff4444',
-    cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: 'rgba(255, 68, 68, 0.1)',
-      transform: 'translateY(-1px)',
+    background: "none",
+    border: "none",
+    color: "#ff4444",
+    cursor: "pointer",
+    padding: "8px",
+    borderRadius: "6px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "rgba(255, 68, 68, 0.1)",
+      transform: "translateY(-1px)",
     },
-    '&:active': {
-      transform: 'translateY(0px)',
+    "&:active": {
+      transform: "translateY(0px)",
     },
-    '&:disabled': {
+    "&:disabled": {
       opacity: 0.5,
-      cursor: 'not-allowed',
-      transform: 'none',
+      cursor: "not-allowed",
+      transform: "none",
     },
   },
 
   // Update pathNodeChild animation
   pathNodeChild: {
-    marginTop: '16px',
-    padding: '12px',
-    backgroundColor: '#40444b',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-    transition: 'all 0.2s ease',
+    marginTop: "16px",
+    padding: "12px",
+    backgroundColor: "#40444b",
+    borderRadius: "8px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    overflow: "hidden",
+    transition: "all 0.2s ease",
   },
 
   messageContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
   },
 
   userMessage: {
-    backgroundColor: '#2f3136',
-    borderRadius: '12px',
-    padding: '12px',
-    color: '#ffffff',
+    backgroundColor: "#2f3136",
+    borderRadius: "12px",
+    padding: "12px",
+    color: "#ffffff",
   },
 
   dittoMessage: {
-    backgroundColor: '#2f3136',
-    borderRadius: '12px',
-    padding: '12px',
-    color: '#ffffff',
+    backgroundColor: "#2f3136",
+    borderRadius: "12px",
+    padding: "12px",
+    color: "#ffffff",
   },
 
   messagesDivider: {
-    height: '1px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    margin: '4px 0',
+    height: "1px",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    margin: "4px 0",
   },
 
   deleteConfirmationOverlay: {
@@ -2062,12 +2083,12 @@ const styles = {
     transition: "all 0.2s ease",
   },
   deleteConfirmationLoading: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '20px',
-    color: 'rgba(255, 255, 255, 0.8)',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "12px",
+    padding: "20px",
+    color: "rgba(255, 255, 255, 0.8)",
   },
   memoryNodeOverlay: {
     position: "fixed",

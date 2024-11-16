@@ -3,7 +3,7 @@ import { deleteConversation } from "../control/memory";
 
 // Utility function to log messages only in development mode
 const logInDevelopment = (message, ...optionalParams) => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.log(message, ...optionalParams);
   }
 };
@@ -29,8 +29,12 @@ export const useMemoryDeletion = (updateConversation) => {
           }));
 
           const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-          const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-          const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+          const responses = JSON.parse(
+            localStorage.getItem("responses") || "[]",
+          );
+          const timestamps = JSON.parse(
+            localStorage.getItem("timestamps") || "[]",
+          );
           const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
           const pairIndex = pairIDs.indexOf(docId);
@@ -58,8 +62,8 @@ export const useMemoryDeletion = (updateConversation) => {
         });
       }
     },
-    [updateConversation]
+    [updateConversation],
   );
 
   return { isDeleting, deletingMemories, deleteMemory };
-}; 
+};
