@@ -247,7 +247,7 @@ export default function ChatFeed({
     return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png"; // Update path
   });
   const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || "/logo512.png"; // Update path
+    return localStorage.getItem(DITTO_AVATAR_KEY) || "/icons/fancy-ditto.png";
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -371,8 +371,8 @@ export default function ChatFeed({
   }, [messages, scrollToBottom, startAtBottom]);
 
   useEffect(() => {
-    // Cache Ditto avatar
-    fetch("/logo512.png")
+    // Cache Ditto avatar - update the path to the new image
+    fetch("/icons/fancy-ditto.png") // Updated path
       .then((response) => response.blob())
       .then((blob) => {
         const reader = new FileReader();
@@ -727,6 +727,7 @@ export default function ChatFeed({
     const isSmallMessage = message.text.length <= 5;
     const isUserMessage = message.sender === "User";
     const showTypingIndicator = message.isTyping && message.text === "";
+    const isGenerating = message.sender === "Ditto" && message.isTyping;
 
     // Detect tool type from message content if not already set
     const toolType = message.toolType || detectToolType(message.text);
@@ -741,7 +742,13 @@ export default function ChatFeed({
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {message.sender === "Ditto" && (
-          <img src={dittoAvatar} alt="Ditto" className="avatar ditto-avatar" />
+          <img
+            src={dittoAvatar}
+            alt="Ditto"
+            className={`avatar ditto-avatar ${
+              isGenerating ? "animating" : "spinning"
+            }`}
+          />
         )}
         {showTypingIndicator ? (
           <div className="typing-indicator-container">
