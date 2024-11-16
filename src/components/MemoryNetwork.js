@@ -6,10 +6,15 @@ import { FaTable, FaProjectDiagram, FaTimes, FaTrash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { IoMdArrowBack } from "react-icons/io";
+import {
+  IoMdArrowBack,
+  IoMdArrowDropdown,
+  IoMdArrowDropup,
+} from "react-icons/io";
 import { FiDownload, FiCopy } from "react-icons/fi";
 import { auth } from "../control/firebase";
 import { deleteConversation } from "../control/memory";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 // Update the formatDateTime function to handle both Firestore timestamps and regular dates
 const formatDateTime = (timestamp) => {
@@ -43,6 +48,56 @@ const formatDateTime = (timestamp) => {
   }).format(timestamp);
 };
 
+// Add this component near the top of the file
+const DeleteConfirmationContent = ({
+  deleteConfirmation,
+  setDeleteConfirmation,
+  confirmDelete,
+  isDeletingMessage,
+}) => (
+  <motion.div
+    className="delete-confirmation-content"
+    onClick={(e) => e.stopPropagation()}
+    initial={{ scale: 0.9, opacity: 0, y: 50 }}
+    animate={{ scale: 1, opacity: 1, y: 0 }}
+    exit={{ scale: 0.9, opacity: 0, y: 50 }}
+    transition={{ duration: 0.3, ease: "easeOut" }}
+    style={styles.deleteConfirmationContent}
+  >
+    <div style={styles.deleteConfirmationTitle}>Delete Memory?</div>
+    <div style={styles.deleteConfirmationMessage}>
+      Are you sure you want to delete this memory? This action cannot be undone.
+    </div>
+    {isDeletingMessage ? (
+      <div style={styles.deleteConfirmationLoading}>
+        <LoadingSpinner size={24} inline={true} />
+        <div>Deleting memory...</div>
+      </div>
+    ) : (
+      <>
+        <div style={styles.deleteConfirmationDocId}>
+          Document ID: {deleteConfirmation.docId || "Not found"}
+        </div>
+        <div style={styles.deleteConfirmationButtons}>
+          <button
+            style={styles.deleteConfirmationButtonCancel}
+            onClick={() => setDeleteConfirmation(null)}
+          >
+            Cancel
+          </button>
+          <button
+            style={styles.deleteConfirmationButtonConfirm}
+            onClick={confirmDelete}
+            disabled={!deleteConfirmation.docId}
+          >
+            Delete
+          </button>
+        </div>
+      </>
+    )}
+  </motion.div>
+);
+
 // Update the TableView component
 const TableView = ({ memories, onMemoryClick }) => {
   const [selectedParent, setSelectedParent] = useState(null);
@@ -50,6 +105,7 @@ const TableView = ({ memories, onMemoryClick }) => {
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [imageOverlay, setImageOverlay] = useState(null);
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
   const handleDelete = async (memory) => {
     setDeleteConfirmation({
@@ -65,8 +121,8 @@ const TableView = ({ memories, onMemoryClick }) => {
     const userID = auth.currentUser.uid;
 
     try {
+      setIsDeletingMessage(true);
       setDeletingMemories((prev) => new Set([...prev, docId]));
-      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const success = await deleteConversation(userID, docId);
 
@@ -81,6 +137,7 @@ const TableView = ({ memories, onMemoryClick }) => {
     } catch (error) {
       console.error("Error deleting:", error);
     } finally {
+      setIsDeletingMessage(false);
       setDeletingMemories((prev) => {
         const next = new Set(prev);
         next.delete(docId);
@@ -311,44 +368,18 @@ const TableView = ({ memories, onMemoryClick }) => {
         {deleteConfirmation && (
           <motion.div
             className="delete-confirmation-overlay"
-            onClick={() => setDeleteConfirmation(null)}
+            onClick={() => !isDeletingMessage && setDeleteConfirmation(null)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <motion.div
-              className="delete-confirmation-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="delete-confirmation-title">Delete Memory?</div>
-              <div className="delete-confirmation-message">
-                Are you sure you want to delete this memory? This action cannot
-                be undone.
-              </div>
-              <div className="delete-confirmation-docid">
-                Document ID: {deleteConfirmation.docId || "Not found"}
-              </div>
-              <div className="delete-confirmation-buttons">
-                <button
-                  className="delete-confirmation-button cancel"
-                  onClick={() => setDeleteConfirmation(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="delete-confirmation-button confirm"
-                  onClick={confirmDelete}
-                  disabled={!deleteConfirmation.docId}
-                >
-                  Delete
-                </button>
-              </div>
-            </motion.div>
+            <DeleteConfirmationContent
+              deleteConfirmation={deleteConfirmation}
+              setDeleteConfirmation={setDeleteConfirmation}
+              confirmDelete={confirmDelete}
+              isDeletingMessage={isDeletingMessage}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -416,6 +447,8 @@ const MemoryPathOverlay = ({ path, onClose }) => {
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [imageOverlay, setImageOverlay] = useState(null);
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
+  const [expandedMemories, setExpandedMemories] = useState(new Set());
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
   const handleDelete = async (memory) => {
     setDeleteConfirmation({
@@ -431,8 +464,8 @@ const MemoryPathOverlay = ({ path, onClose }) => {
     const userID = auth.currentUser.uid;
 
     try {
+      setIsDeletingMessage(true);
       setDeletingMemories((prev) => new Set([...prev, docId]));
-      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const success = await deleteConversation(userID, docId);
 
@@ -444,12 +477,12 @@ const MemoryPathOverlay = ({ path, onClose }) => {
     } catch (error) {
       console.error("Error deleting:", error);
     } finally {
+      setIsDeletingMessage(false);
       setDeletingMemories((prev) => {
         const next = new Set(prev);
         next.delete(docId);
         return next;
       });
-      setDeleteConfirmation(null);
     }
   };
 
@@ -471,6 +504,18 @@ const MemoryPathOverlay = ({ path, onClose }) => {
   const toggleImageControls = (e) => {
     e.stopPropagation();
     setImageControlsVisible(!imageControlsVisible);
+  };
+
+  const toggleExpand = (memoryId) => {
+    setExpandedMemories((prev) => {
+      const next = new Set(prev);
+      if (next.has(memoryId)) {
+        next.delete(memoryId);
+      } else {
+        next.add(memoryId);
+      }
+      return next;
+    });
   };
 
   const renderMarkdown = (content) => (
@@ -559,79 +604,174 @@ const MemoryPathOverlay = ({ path, onClose }) => {
     </ReactMarkdown>
   );
 
+  // Add this helper component for consistent message display
+  const MemoryMessage = ({ prompt, response }) => {
+    const [profilePic, setProfilePic] = useState(() => {
+      return localStorage.getItem("userAvatar") || "/user_placeholder.png";
+    });
+    const [dittoAvatar, setDittoAvatar] = useState(() => {
+      return localStorage.getItem("dittoAvatar") || "/logo512.png";
+    });
+
+    useEffect(() => {
+      // Cache Ditto avatar if not already cached
+      if (!localStorage.getItem("dittoAvatar")) {
+        fetch("/logo512.png")
+          .then((response) => response.blob())
+          .then((blob) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result;
+              localStorage.setItem("dittoAvatar", base64data);
+              setDittoAvatar(base64data);
+            };
+            reader.readAsDataURL(blob);
+          })
+          .catch((error) =>
+            console.error("Error caching Ditto avatar:", error),
+          );
+      }
+    }, []);
+
+    return (
+      <div style={styles.messageContainer}>
+        <div style={styles.userMessage}>
+          <div style={styles.messageHeader}>
+            <img src={profilePic} alt="User" style={styles.avatar} />
+            <div style={styles.messageContent}>
+              {prompt && renderMarkdown(prompt)}
+            </div>
+          </div>
+        </div>
+        {response && (
+          <>
+            <div style={styles.messagesDivider} />
+            <div style={styles.dittoMessage}>
+              <div style={styles.messageHeader}>
+                <img src={dittoAvatar} alt="Ditto" style={styles.avatar} />
+                <div style={styles.messageContent}>
+                  {renderMarkdown(response)}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <motion.div
-      style={styles.pathOverlay}
-      onClick={onClose}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <motion.div style={styles.pathOverlay} onClick={onClose}>
       <motion.div
         style={styles.pathContent}
         onClick={(e) => e.stopPropagation()}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
       >
         <div style={styles.pathHeader}>
           <h3 style={styles.pathTitle}>Memory Path</h3>
           <button onClick={onClose} style={styles.closeButton}>
-            ×
+            <FaTimes />
           </button>
         </div>
         <div style={styles.pathBody}>
+          {/* Your Prompt Section */}
           <div style={styles.pathNode}>
             <div style={styles.pathNodeHeader}>
-              <div style={styles.pathNodeTitle}>Your Prompt</div>
-              <div style={styles.timestamp}>
-                {formatDateTime(path.timestamp)}
+              <div>
+                <div style={styles.pathNodeTitle}>Your Prompt</div>
+                <div style={styles.timestamp}>
+                  {formatDateTime(path.timestamp)}
+                </div>
               </div>
             </div>
             {renderMarkdown(path.prompt)}
           </div>
-          {path.children.map((child, index) => (
-            <div key={child.id || index} style={styles.pathNode}>
+
+          {/* Memory Sections */}
+          {path.children.map((child) => (
+            <div key={child.id} style={styles.pathNode}>
               <div style={styles.pathNodeHeader}>
                 <div>
-                  <div style={styles.pathNodeTitle}>Memory {index + 1}</div>
+                  <div style={styles.pathNodeTitle}>Memory {child.index}</div>
                   <div style={styles.timestamp}>
                     {formatDateTime(child.timestamp)}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(child)}
-                  style={styles.deleteButton}
-                  disabled={deletingMemories.has(child.id)}
-                >
-                  <FaTrash />
-                </button>
+                <div style={styles.memoryActions}>
+                  {child.children?.length > 0 && (
+                    <button
+                      style={styles.relatedButton}
+                      onClick={() => toggleExpand(child.id)}
+                      title={
+                        expandedMemories.has(child.id)
+                          ? "Hide Related"
+                          : "Show Related"
+                      }
+                    >
+                      <span style={styles.relatedButtonText}>
+                        {expandedMemories.has(child.id)
+                          ? "Hide Related"
+                          : "Show Related"}
+                      </span>
+                      <motion.div
+                        animate={{
+                          rotate: expandedMemories.has(child.id) ? 180 : 0,
+                        }}
+                        transition={{ duration: 0.2 }}
+                        style={styles.relatedButtonIcon}
+                      >
+                        <IoMdArrowDropdown />
+                      </motion.div>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(child)}
+                    style={styles.deleteButton}
+                    disabled={deletingMemories.has(child.id)}
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
               </div>
               <div style={styles.pathNodeContent}>
-                {renderMarkdown(child.prompt)}
-                {child.response && renderMarkdown(child.response)}
-                {child.children?.map((grandChild, idx) => (
-                  <div key={grandChild.id || idx} style={styles.pathNodeChild}>
-                    <div style={styles.pathNodeChildHeader}>
-                      <div style={styles.pathNodeChildLeft}>
-                        <div style={styles.pathNodeChildTitle}>
-                          Related {index + 1}.{idx + 1}
+                <MemoryMessage
+                  prompt={child.prompt}
+                  response={child.response}
+                />
+
+                {/* Related Memories */}
+                {expandedMemories.has(child.id) &&
+                  child.children?.map((grandChild) => (
+                    <motion.div
+                      key={grandChild.id}
+                      style={styles.pathNodeChild}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div style={styles.pathNodeChildHeader}>
+                        <div style={styles.pathNodeChildLeft}>
+                          <div style={styles.pathNodeChildTitle}>
+                            Related {grandChild.parentIndex}.{grandChild.index}
+                          </div>
+                          <div style={styles.timestamp}>
+                            {formatDateTime(grandChild.timestamp)}
+                          </div>
                         </div>
-                        <div style={styles.timestamp}>
-                          {formatDateTime(grandChild.timestamp)}
-                        </div>
+                        <button
+                          onClick={() => handleDelete(grandChild)}
+                          style={styles.deleteButton}
+                          disabled={deletingMemories.has(grandChild.id)}
+                        >
+                          <FaTrash />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleDelete(grandChild)}
-                        style={styles.deleteButton}
-                        disabled={deletingMemories.has(grandChild.id)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                    {renderMarkdown(grandChild.prompt)}
-                  </div>
-                ))}
+                      <MemoryMessage
+                        prompt={grandChild.prompt}
+                        response={grandChild.response}
+                      />
+                    </motion.div>
+                  ))}
               </div>
             </div>
           ))}
@@ -643,44 +783,18 @@ const MemoryPathOverlay = ({ path, onClose }) => {
         {deleteConfirmation && (
           <motion.div
             className="delete-confirmation-overlay"
-            onClick={() => setDeleteConfirmation(null)}
+            onClick={() => !isDeletingMessage && setDeleteConfirmation(null)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <motion.div
-              className="delete-confirmation-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="delete-confirmation-title">Delete Memory?</div>
-              <div className="delete-confirmation-message">
-                Are you sure you want to delete this memory? This action cannot
-                be undone.
-              </div>
-              <div className="delete-confirmation-docid">
-                Document ID: {deleteConfirmation.docId || "Not found"}
-              </div>
-              <div className="delete-confirmation-buttons">
-                <button
-                  className="delete-confirmation-button cancel"
-                  onClick={() => setDeleteConfirmation(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="delete-confirmation-button confirm"
-                  onClick={confirmDelete}
-                  disabled={!deleteConfirmation.docId}
-                >
-                  Delete
-                </button>
-              </div>
-            </motion.div>
+            <DeleteConfirmationContent
+              deleteConfirmation={deleteConfirmation}
+              setDeleteConfirmation={setDeleteConfirmation}
+              confirmDelete={confirmDelete}
+              isDeletingMessage={isDeletingMessage}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -751,81 +865,359 @@ const MemoryPathOverlay = ({ path, onClose }) => {
   );
 };
 
-const MemoryNetwork = ({ memories = [], onClose }) => {
-  const containerRef = useRef(null);
-  const networkRef = useRef(null);
-  const [selectedPath, setSelectedPath] = useState(null);
-  const [viewMode, setViewMode] = useState("tree");
+// Add the MemoryNodeOverlay component
+const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
+  const [deleteConfirmation, setDeleteConfirmation] = useState(false);
+  const [imageOverlay, setImageOverlay] = useState(null);
+  const [imageControlsVisible, setImageControlsVisible] = useState(true);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
-  const handleNodeClick = (nodeId, nodes) => {
-    const clickedNode = nodes.get(nodeId);
-    let path = null;
+  const handleDelete = () => {
+    setDeleteConfirmation(true);
+  };
 
-    if (nodeId === 1) {
-      path = {
-        prompt: memories[0].prompt,
-        timestamp: memories[0].timestampString || memories[0].timestamp,
-        children:
-          memories[0].related?.map((mem) => ({
-            prompt: mem.prompt,
-            response: mem.response,
-            id: mem.id,
-            timestamp: mem.timestampString || mem.timestamp,
-          })) || [],
-      };
-    } else {
-      const parentMemory = memories[0].related?.find(
-        (mem) =>
-          mem.prompt === clickedNode.title ||
-          mem.related?.some((r) => r.prompt === clickedNode.title),
-      );
+  const confirmDelete = async () => {
+    setIsDeletingMessage(true);
+    const userID = auth.currentUser.uid;
 
-      if (parentMemory) {
-        path = {
-          prompt: memories[0].prompt,
-          timestamp: memories[0].timestampString || memories[0].timestamp,
-          children: [
-            {
-              prompt: parentMemory.prompt,
-              response: parentMemory.response,
-              id: parentMemory.id,
-              timestamp: parentMemory.timestampString || parentMemory.timestamp,
-              children:
-                parentMemory.related?.map((mem) => ({
-                  prompt: mem.prompt,
-                  response: mem.response,
-                  id: mem.id,
-                  timestamp: mem.timestampString || mem.timestamp,
-                })) || [],
-            },
-          ],
-        };
+    try {
+      const success = await deleteConversation(userID, node.id);
+
+      if (success) {
+        onDelete(node.id);
+        setDeleteConfirmation(false);
+        onClose();
       }
-    }
-
-    if (path) {
-      setSelectedPath(path);
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    } finally {
+      setIsDeletingMessage(false);
     }
   };
 
-  useEffect(() => {
-    if (!containerRef.current || !memories[0] || viewMode !== "tree") return;
+  const handleImageClick = (src) => {
+    setImageOverlay(src);
+  };
+
+  const closeImageOverlay = () => {
+    setImageOverlay(null);
+  };
+
+  const toggleImageControls = (e) => {
+    e.stopPropagation();
+    setImageControlsVisible(!imageControlsVisible);
+  };
+
+  // Define renderMarkdown within the scope of MemoryNodeOverlay
+  const renderMarkdown = (content) => (
+    <ReactMarkdown
+      components={{
+        code({ node, inline, className, children, ...props }) {
+          let match = /language-(\w+)/.exec(className || "");
+          let hasCodeBlock;
+          if (content.match(/```/g)) {
+            hasCodeBlock = content.match(/```/g).length % 2 === 0;
+          }
+          if (!match && hasCodeBlock) {
+            match = ["language-txt", "txt"];
+          }
+          if (!inline && match) {
+            return (
+              <div className="code-container">
+                <SyntaxHighlighter
+                  children={String(children).replace(/\n$/, "")}
+                  style={vscDarkPlus}
+                  language={match[1]}
+                  PreTag="div"
+                  {...props}
+                  className="code-block"
+                />
+                <button
+                  className="copy-button code-block-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(
+                      String(children).replace(/\n$/, ""),
+                    );
+                    const toast = document.createElement("div");
+                    toast.className = "copied-notification";
+                    toast.textContent = "Copied!";
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                      toast.remove();
+                    }, 2000);
+                  }}
+                  title="Copy code"
+                >
+                  <FiCopy />
+                </button>
+              </div>
+            );
+          } else {
+            const inlineText = String(children).replace(/\n$/, "");
+            return (
+              <div className="inline-code-container">
+                <code className="inline-code" {...props}>
+                  {children}
+                </code>
+                <button
+                  className="copy-button inline-code-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(inlineText);
+                    const toast = document.createElement("div");
+                    toast.className = "copied-notification";
+                    toast.textContent = "Copied!";
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                      toast.remove();
+                    }, 2000);
+                  }}
+                  title="Copy code"
+                >
+                  <FiCopy />
+                </button>
+              </div>
+            );
+          }
+        },
+        img: ({ src, alt }) => (
+          <img
+            src={src}
+            alt={alt}
+            style={styles.image}
+            onClick={() => handleImageClick(src)}
+          />
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+
+  // Add a check to see if this is the root node
+  const isRootNode = !node.response || node.response === node.prompt;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="memory-node-overlay"
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        style={styles.memoryNodeOverlay}
+      >
+        <motion.div
+          className="memory-node-content"
+          onClick={(e) => e.stopPropagation()}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          style={styles.memoryNodeContent}
+        >
+          <div style={styles.nodeHeader}>
+            <h3 style={styles.nodeTitle}>
+              {isRootNode ? "Your Prompt" : "Memory"}
+            </h3>
+            <button onClick={onClose} style={styles.closeButton}>
+              <FaTimes />
+            </button>
+          </div>
+          <div style={styles.nodeBody}>
+            <div style={styles.messageContainer}>
+              <div style={styles.userMessage}>
+                {renderMarkdown(node.prompt)}
+              </div>
+              {/* Only show divider and response if this isn't the root node */}
+              {!isRootNode && (
+                <>
+                  <div style={styles.messagesDivider} />
+                  <div style={styles.dittoMessage}>
+                    {renderMarkdown(node.response)}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <div style={styles.nodeFooter}>
+            <button onClick={handleDelete} style={styles.deleteButton}>
+              <FaTrash /> Delete
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Delete Confirmation Overlay */}
+        {deleteConfirmation && (
+          <motion.div
+            className="delete-confirmation-overlay"
+            onClick={() => setDeleteConfirmation(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={styles.deleteConfirmationOverlay}
+          >
+            <motion.div
+              className="delete-confirmation-content"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              style={styles.deleteConfirmationContent}
+            >
+              <div style={styles.deleteConfirmationTitle}>Delete Memory?</div>
+              <div style={styles.deleteConfirmationMessage}>
+                Are you sure you want to delete this memory? This action cannot
+                be undone.
+              </div>
+              {isDeletingMessage ? (
+                <div style={styles.deleteConfirmationLoading}>
+                  <LoadingSpinner size={24} inline={true} />
+                  <div>Deleting memory...</div>
+                </div>
+              ) : (
+                <div style={styles.deleteConfirmationButtons}>
+                  <button
+                    style={styles.deleteConfirmationButtonCancel}
+                    onClick={() => setDeleteConfirmation(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    style={styles.deleteConfirmationButtonConfirm}
+                    onClick={confirmDelete}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+        {/* Image Overlay */}
+        <AnimatePresence>
+          {imageOverlay && (
+            <motion.div
+              className="image-overlay"
+              onClick={closeImageOverlay}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="image-overlay-content"
+                onClick={(e) => e.stopPropagation()}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              >
+                <img
+                  src={imageOverlay}
+                  alt="Full size"
+                  onClick={toggleImageControls}
+                />
+                <AnimatePresence>
+                  {imageControlsVisible && (
+                    <motion.div
+                      className="image-overlay-controls"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <button
+                        className="image-control-button back"
+                        onClick={closeImageOverlay}
+                        title="Back"
+                      >
+                        <IoMdArrowBack />
+                      </button>
+                      <button
+                        className="image-control-button download"
+                        onClick={() => handleImageDownload(imageOverlay)}
+                        title="Download"
+                      >
+                        <FiDownload />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// Update the MemoryNetwork component
+const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
+  const [nodesData, setNodesData] = useState(memories);
+  const [viewMode, setViewMode] = useState("tree");
+  const containerRef = useRef(null);
+  const networkRef = useRef(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const nodeIdMapRef = useRef({});
+
+  const handleMemoryDeleted = (deletedId) => {
+    // Remove the deleted memory from the nodes data
+    const updatedNodes = removeMemoryById(nodesData, deletedId);
+    setNodesData(updatedNodes);
+
+    // Re-build the network
+    buildNetwork(updatedNodes);
+
+    if (onMemoryDeleted) {
+      onMemoryDeleted(deletedId);
+    }
+  };
+
+  const removeMemoryById = (nodes, id) => {
+    const newNodes = JSON.parse(JSON.stringify(nodes)); // Deep copy
+    const removeHelper = (memories) => {
+      return memories.filter((memory) => {
+        if (memory.id === id) {
+          return false;
+        }
+        if (memory.related) {
+          memory.related = removeHelper(memory.related);
+        }
+        return true;
+      });
+    };
+    newNodes[0].related = removeHelper(newNodes[0].related || []);
+    return newNodes;
+  };
+
+  const buildNetwork = (nodesData) => {
+    if (!containerRef.current) return;
 
     const nodes = new DataSet();
     const edges = new DataSet();
     let nodeId = 1;
+    const nodeIdMap = {};
 
     const centralId = nodeId++;
     nodes.add({
       id: centralId,
       label: "Your Prompt",
-      title: memories[0].prompt,
+      title: nodesData[0].prompt,
       color: "#FF5733",
       size: 30,
       font: { size: 16 },
     });
+    nodeIdMap[centralId] = {
+      prompt: nodesData[0].prompt,
+      response: nodesData[0].response || "",
+      timestamp: nodesData[0].timestampString || nodesData[0].timestamp,
+      id: nodesData[0].id,
+    };
 
-    memories[0].related?.forEach((memory, index) => {
+    nodesData[0].related?.forEach((memory, index) => {
       const parentId = nodeId++;
       nodes.add({
         id: parentId,
@@ -839,6 +1231,12 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
         to: parentId,
         length: 200,
       });
+      nodeIdMap[parentId] = {
+        prompt: memory.prompt,
+        response: memory.response || "",
+        timestamp: memory.timestampString || memory.timestamp,
+        id: memory.id,
+      };
 
       memory.related?.forEach((relatedMemory, relatedIndex) => {
         const childId = nodeId++;
@@ -854,8 +1252,17 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
           to: childId,
           length: 150,
         });
+        nodeIdMap[childId] = {
+          prompt: relatedMemory.prompt,
+          response: relatedMemory.response || "",
+          timestamp: relatedMemory.timestampString || relatedMemory.timestamp,
+          id: relatedMemory.id,
+        };
       });
     });
+
+    // Store the nodeIdMap in the ref
+    nodeIdMapRef.current = nodeIdMap;
 
     const options = {
       nodes: {
@@ -904,6 +1311,11 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
       },
     };
 
+    // If network already exists, destroy it before creating a new one
+    if (networkRef.current) {
+      networkRef.current.destroy();
+    }
+
     networkRef.current = new Network(
       containerRef.current,
       { nodes, edges },
@@ -912,13 +1324,13 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
 
     networkRef.current.on("click", (params) => {
       if (params.nodes.length > 0) {
-        handleNodeClick(params.nodes[0], nodes);
+        handleNodeClick(params.nodes[0]);
       }
     });
 
     networkRef.current.on("selectNode", (params) => {
       if (params.nodes.length > 0) {
-        handleNodeClick(params.nodes[0], nodes);
+        handleNodeClick(params.nodes[0]);
       }
     });
 
@@ -927,7 +1339,7 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
       const { offsetX, offsetY } = event.srcEvent;
       const nodeId = networkRef.current.getNodeAt({ x: offsetX, y: offsetY });
       if (nodeId) {
-        handleNodeClick(nodeId, nodes);
+        handleNodeClick(nodeId);
       }
     });
 
@@ -935,21 +1347,19 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
       networkRef.current.destroy();
       hammer.destroy();
     };
-  }, [memories, viewMode]);
+  };
+
+  const handleNodeClick = (nodeId) => {
+    // Get the data for the clicked node from the nodeIdMap
+    const data = nodeIdMapRef.current[nodeId];
+    if (data) {
+      setSelectedNode(data);
+    }
+  };
 
   useEffect(() => {
-    if (memories[0]) {
-      console.log("Memory data:", {
-        mainTimestamp: memories[0].timestamp,
-        mainTimestampString: memories[0].timestampString,
-        relatedMemories: memories[0].related?.map((m) => ({
-          id: m.id,
-          timestamp: m.timestamp,
-          timestampString: m.timestampString,
-        })),
-      });
-    }
-  }, [memories]);
+    buildNetwork(nodesData);
+  }, [nodesData]);
 
   return (
     <div style={styles.container}>
@@ -990,14 +1400,14 @@ const MemoryNetwork = ({ memories = [], onClose }) => {
         )}
       </div>
 
-      <AnimatePresence>
-        {selectedPath && (
-          <MemoryPathOverlay
-            path={selectedPath}
-            onClose={() => setSelectedPath(null)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Add the MemoryNodeOverlay component */}
+      {selectedNode && (
+        <MemoryNodeOverlay
+          node={selectedNode}
+          onClose={() => setSelectedNode(null)}
+          onDelete={(id) => handleMemoryDeleted(id)}
+        />
+      )}
     </div>
   );
 };
@@ -1117,9 +1527,11 @@ const styles = {
     fontWeight: 500,
   },
   pathNodeContent: {
-    backgroundColor: "#2f3136",
-    padding: "16px",
-    borderRadius: "8px",
+    backgroundColor: "transparent",
+    marginTop: "12px",
+    "& > * + *": {
+      marginTop: "12px",
+    },
   },
   pathNodePrompt: {
     color: "#ffffff",
@@ -1132,15 +1544,23 @@ const styles = {
     marginTop: "12px",
   },
   pathNodeChild: {
-    marginTop: "12px",
-    padding: "12px",
+    marginTop: "16px",
     backgroundColor: "#40444b",
-    borderRadius: "4px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    overflow: "hidden",
+    padding: "16px",
+  },
+  pathNodeChildHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "8px",
   },
   pathNodeChildTitle: {
     color: "#72767d",
-    fontSize: "12px",
-    marginBottom: "4px",
+    fontSize: "14px",
+    fontWeight: "500",
   },
   pathNodeChildContent: {
     color: "#ffffff",
@@ -1200,7 +1620,8 @@ const styles = {
     padding: "6px 12px",
     fontSize: "12px",
     cursor: "pointer",
-    transition: "background-color 0.2s ease",
+    transition: "all 0.2s ease",
+    marginRight: "8px",
     "&:hover": {
       backgroundColor: "#3941b8",
     },
@@ -1452,6 +1873,294 @@ const styles = {
     fontSize: "0.8em",
     fontFamily: "monospace",
     whiteSpace: "nowrap",
+  },
+
+  expandButton: {
+    background: "none",
+    border: "none",
+    color: "#ffffff",
+    cursor: "pointer",
+    padding: "4px",
+    borderRadius: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
+    marginRight: "4px",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+  },
+
+  expandIcon: {
+    fontSize: "24px",
+    color: "#ffffff",
+  },
+
+  // Update memoryActions to better align the buttons
+  memoryActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    "& > *:not(:last-child)": {
+      marginRight: "4px",
+    },
+  },
+
+  // Update pathNodeChild for animation
+  pathNodeChild: {
+    marginTop: "16px",
+    padding: "12px",
+    backgroundColor: "#40444b",
+    borderRadius: "8px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    overflow: "hidden",
+  },
+
+  relatedButton: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    backgroundColor: "#4752c4",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "8px 12px",
+    fontSize: "12px",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    marginRight: "8px",
+    "&:hover": {
+      backgroundColor: "#3941b8",
+      transform: "translateY(-1px)",
+    },
+    "&:active": {
+      transform: "translateY(0px)",
+    },
+  },
+
+  relatedButtonText: {
+    display: "inline-block",
+    minWidth: "80px", // Ensures consistent width when text changes
+    textAlign: "left",
+  },
+
+  relatedButtonIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "16px",
+  },
+
+  // Update memoryActions
+  memoryActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+
+  // Update deleteButton
+  deleteButton: {
+    background: "none",
+    border: "none",
+    color: "#ff4444",
+    cursor: "pointer",
+    padding: "8px",
+    borderRadius: "6px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "rgba(255, 68, 68, 0.1)",
+      transform: "translateY(-1px)",
+    },
+    "&:active": {
+      transform: "translateY(0px)",
+    },
+    "&:disabled": {
+      opacity: 0.5,
+      cursor: "not-allowed",
+      transform: "none",
+    },
+  },
+
+  // Update pathNodeChild animation
+  pathNodeChild: {
+    marginTop: "16px",
+    padding: "12px",
+    backgroundColor: "#40444b",
+    borderRadius: "8px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    overflow: "hidden",
+    transition: "all 0.2s ease",
+  },
+
+  messageContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+
+  userMessage: {
+    backgroundColor: "#2f3136",
+    borderRadius: "12px",
+    padding: "12px",
+    color: "#ffffff",
+  },
+
+  dittoMessage: {
+    backgroundColor: "#2f3136",
+    borderRadius: "12px",
+    padding: "12px",
+    color: "#ffffff",
+  },
+
+  messagesDivider: {
+    height: "1px",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    margin: "4px 0",
+  },
+
+  deleteConfirmationOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 5001,
+    backdropFilter: "blur(5px)",
+    padding: "20px",
+  },
+  deleteConfirmationContent: {
+    backgroundColor: "#36393f",
+    borderRadius: "12px",
+    padding: "24px",
+    width: "90%",
+    maxWidth: "400px",
+    textAlign: "center",
+    color: "#ffffff",
+  },
+  deleteConfirmationTitle: {
+    fontSize: "1.2em",
+    marginBottom: "16px",
+    fontWeight: "600",
+  },
+  deleteConfirmationMessage: {
+    marginBottom: "24px",
+    color: "rgba(255, 255, 255, 0.8)",
+    lineHeight: "1.4",
+  },
+  deleteConfirmationButtons: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "16px",
+  },
+  deleteConfirmationButtonCancel: {
+    backgroundColor: "#4f545c",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px 20px",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  deleteConfirmationButtonConfirm: {
+    backgroundColor: "#ed4245",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px 20px",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  deleteConfirmationLoading: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "12px",
+    padding: "20px",
+    color: "rgba(255, 255, 255, 0.8)",
+  },
+  memoryNodeOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 5000,
+    backdropFilter: "blur(5px)",
+    padding: "20px",
+  },
+  memoryNodeContent: {
+    backgroundColor: "#36393f",
+    borderRadius: "12px",
+    width: "90%",
+    maxWidth: "600px",
+    maxHeight: "80vh",
+    overflow: "auto",
+    display: "flex",
+    flexDirection: "column",
+    padding: "24px",
+  },
+  nodeHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "16px",
+  },
+  nodeTitle: {
+    margin: 0,
+    color: "#ffffff",
+    fontSize: "1.2em",
+    fontWeight: 600,
+  },
+  closeButton: {
+    background: "none",
+    border: "none",
+    color: "#ffffff",
+    fontSize: "24px",
+    cursor: "pointer",
+    padding: "0 8px",
+    transition: "opacity 0.2s",
+  },
+  nodeBody: {
+    flex: 1,
+    overflowY: "auto",
+  },
+  nodePrompt: {
+    color: "#ffffff",
+    marginBottom: "16px",
+  },
+  nodeResponse: {
+    color: "#ffffff",
+  },
+  nodeFooter: {
+    marginTop: "16px",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  deleteButton: {
+    background: "#ed4245",
+    color: "#ffffff",
+    border: "none",
+    padding: "10px 16px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "500",
+    transition: "background-color 0.2s ease",
   },
 };
 
