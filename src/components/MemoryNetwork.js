@@ -2103,6 +2103,8 @@ const styles = {
     zIndex: 5000,
     backdropFilter: "blur(5px)",
     padding: "20px",
+    overflow: "hidden",
+    boxSizing: "border-box",
   },
   memoryNodeContent: {
     backgroundColor: "#36393f",
@@ -2114,6 +2116,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     padding: "24px",
+    boxSizing: "border-box",
+    margin: "0 auto",
   },
   nodeHeader: {
     display: "flex",
