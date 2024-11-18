@@ -13,12 +13,13 @@ Simply visit [heyditto.ai](https://heyditto.ai) to get started with Ditto Assist
 
 ### Installation for Development Environment
 
-- `npm install`
+- `bun install`
 
 ### Running the App Locally
 
-- `npm run start`
+- `bun run start`
 
-### GUI Screenshot
+### Demo Videos
 
-![](/images/ui.png)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Jqu3rMI3hVQ/0.jpg)](https://www.youtube.com/watch?v=Jqu3rMI3hVQ)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/VeMF4ZXAabM/0.jpg)](https://www.youtube.com/watch?v=VeMF4ZXAabM)
