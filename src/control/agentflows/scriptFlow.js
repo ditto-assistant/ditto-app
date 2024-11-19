@@ -8,6 +8,19 @@ import {
 
 /**
  * Handles script generation flow (OpenSCAD or HTML)
+ * @typedef {import("../../types").ModelPreferences} ModelPreferences
+ * @param {Object} params - The parameters for script generation.
+ * @param {string} params.response - The user's response to the script generation prompt.
+ * @param {string} params.tag - The tag used to identify the script generation prompt.
+ * @param {function} params.templateFunction - The function that constructs the script generation prompt.
+ * @param {function} params.systemTemplateFunction - The function that constructs the system prompt for the script generation.
+ * @param {function} params.downloadFunction - The function that downloads the generated script.
+ * @param {string} params.scriptType - The type of script to generate.
+ * @param {string} params.scriptContents - The contents of the script to generate.
+ * @param {string} params.scriptName - The name of the script to generate.
+ * @param {Array} params.memories - The memories of the user.
+ * @param {Object} params.updateConversation - The function to update the conversation.
+ * @param {ModelPreferences} params.preferences - The preferences of the user.
  */
 export const handleScriptGeneration = async ({
   response,
@@ -24,6 +37,7 @@ export const handleScriptGeneration = async ({
   image,
   memories,
   updateConversation,
+  preferences,
 }) => {
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(
@@ -41,16 +55,16 @@ export const handleScriptGeneration = async ({
     scriptResponse = await promptLLM(
       constructedPrompt,
       systemTemplateFunction(),
-      "gemini-1.5-flash",
+      preferences.programmerModel,
       image,
-      () => {}, // Prevent streaming updates
+      () => { }, // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
     scriptResponse = await updaterAgent(
       prompt,
       scriptContents,
-      "gemini-1.5-flash",
+      preferences.programmerModel,
       true,
     );
     console.log("%c" + scriptResponse, "color: yellow");

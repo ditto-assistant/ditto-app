@@ -463,6 +463,7 @@ export const processResponse = async (
         image,
         memories,
         updateConversation,
+        preferences,
       });
       await updateMessageWithToolStatus("complete", "openscad", finalResponse);
       return finalResponse;
@@ -486,6 +487,7 @@ export const processResponse = async (
         image,
         memories,
         updateConversation,
+        preferences,
       });
       await updateMessageWithToolStatus("complete", "html", finalResponse);
       return finalResponse;
