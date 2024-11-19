@@ -316,7 +316,7 @@ const DOMTreeViewer = ({
     networkRef.current = new Network(
       containerRef.current,
       { nodes, edges },
-      options,
+      options
     );
 
     networkRef.current.on("click", (params) => {
@@ -447,7 +447,7 @@ const DOMTreeViewer = ({
         // Replace the old node with the new content
         nodeToUpdate.parentNode.replaceChild(
           tempContainer.firstChild,
-          nodeToUpdate,
+          nodeToUpdate
         );
 
         // Get the updated HTML content

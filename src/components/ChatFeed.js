@@ -648,7 +648,7 @@ export default function ChatFeed({
                     (err) => {
                       setFailedImages((prev) => prev.add(src));
                       console.error(`Image Load error: ${err}; src: ${src}`);
-                    },
+                    }
                   );
                 }}
               />
@@ -847,7 +847,7 @@ export default function ChatFeed({
                 handleReactionOverlay(
                   actionOverlay.index,
                   actionOverlay.clientX,
-                  actionOverlay.clientY,
+                  actionOverlay.clientY
                 )
               }
               className="action-button"
@@ -1066,7 +1066,7 @@ export default function ChatFeed({
             ...memory,
             related: relatedMemories,
           };
-        }),
+        })
       );
 
       // Create the central node structure
@@ -1181,10 +1181,10 @@ export default function ChatFeed({
           // Update local storage
           const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
           const responses = JSON.parse(
-            localStorage.getItem("responses") || "[]",
+            localStorage.getItem("responses") || "[]"
           );
           const timestamps = JSON.parse(
-            localStorage.getItem("timestamps") || "[]",
+            localStorage.getItem("timestamps") || "[]"
           );
           const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
@@ -1477,7 +1477,7 @@ export default function ChatFeed({
             messages[messages.length - 2].image || "",
             {}, // memories object - you might want to pass this properly
             updateConversation,
-            preferences,
+            preferences
           );
           return;
         }
@@ -1503,7 +1503,7 @@ export default function ChatFeed({
             position: "fixed",
             ...adjustOverlayPosition(
               reactionOverlay.clientX,
-              reactionOverlay.clientY,
+              reactionOverlay.clientY
             ),
             transform: "translate(-50%, -50%)",
           }}
@@ -1672,7 +1672,7 @@ ChatFeed.propTypes = {
       sender: PropTypes.string,
       text: PropTypes.string.isRequired,
       timestamp: PropTypes.number, // Add this line to include timestamp in PropTypes
-    }),
+    })
   ).isRequired,
   isTyping: PropTypes.bool,
   hasInputField: PropTypes.bool,

@@ -290,7 +290,7 @@ export default function SendMessage({
           imageURI,
           userPromptEmbedding,
           updateConversation,
-          preferences,
+          preferences
         );
       } catch (error) {
         console.error("Error sending message:", error);

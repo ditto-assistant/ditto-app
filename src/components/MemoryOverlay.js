@@ -84,7 +84,7 @@ function MemoryOverlay({ closeOverlay }) {
       }
       if (mainSwitch || programmerSwitch) {
         alert(
-          "Your balance is too low for premium models. Switching to Llama 3.2.",
+          "Your balance is too low for premium models. Switching to Llama 3.2."
         );
       }
     }

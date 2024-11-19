@@ -38,7 +38,7 @@ export default function HomeScreen() {
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
   const [histCount, setCount] = useState(
-    localStorage.getItem("histCount") || 0,
+    localStorage.getItem("histCount") || 0
   );
   const [localScripts, setLocalScripts] = useState({
     webApps: [],
@@ -71,7 +71,7 @@ export default function HomeScreen() {
   };
 
   const [conversation, setConversation] = useState(
-    loadConversationFromLocalStorage,
+    loadConversationFromLocalStorage
   );
 
   const updateConversation = (updateFn) => {
@@ -166,7 +166,7 @@ export default function HomeScreen() {
   const localStorageMicrophoneStatus =
     localStorage.getItem("microphoneStatus") === "true";
   const [microphoneStatus, setMicrophoneStatus] = useState(
-    localStorageMicrophoneStatus,
+    localStorageMicrophoneStatus
   );
 
   let buttonSize = 25;
@@ -192,7 +192,7 @@ export default function HomeScreen() {
       setCount(0);
       createConversation(
         { prompts: [], responses: [], timestamps: [], pairIDs: [] },
-        true,
+        true
       );
     }
   }, [localStorage.getItem("resetMemory")]);
@@ -208,7 +208,7 @@ export default function HomeScreen() {
         const webApps = await syncLocalScriptsWithFirestore(userID, "webApps");
         const openSCAD = await syncLocalScriptsWithFirestore(
           userID,
-          "openSCAD",
+          "openSCAD"
         );
         setLocalScripts({ webApps, openSCAD });
       } catch (e) {
@@ -277,34 +277,34 @@ export default function HomeScreen() {
             if (conversationHistory) {
               localStorage.setItem(
                 "prompts",
-                JSON.stringify(conversationHistory.prompts),
+                JSON.stringify(conversationHistory.prompts)
               );
               localStorage.setItem(
                 "responses",
-                JSON.stringify(conversationHistory.responses),
+                JSON.stringify(conversationHistory.responses)
               );
               localStorage.setItem(
                 "timestamps",
-                JSON.stringify(conversationHistory.timestamps),
+                JSON.stringify(conversationHistory.timestamps)
               );
               localStorage.setItem(
                 "pairIDs",
-                JSON.stringify(conversationHistory.pairIDs),
+                JSON.stringify(conversationHistory.pairIDs)
               );
               localStorage.setItem(
                 "histCount",
-                conversationHistory.prompts.length,
+                conversationHistory.prompts.length
               );
               console.log("Successfully resynced conversation history");
               console.log(
-                `New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`,
+                `New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`
               );
 
               // Update the conversation state
               const newConversation = createConversation(
                 conversationHistory,
                 false,
-                true,
+                true
               );
               setConversation(newConversation);
             }
@@ -566,13 +566,13 @@ export default function HomeScreen() {
                 userID,
                 newContent,
                 scriptToEdit.scriptType,
-                scriptToEdit.name,
+                scriptToEdit.name
               );
 
               // Update local scripts
               await syncLocalScriptsWithFirestore(
                 userID,
-                scriptToEdit.scriptType,
+                scriptToEdit.scriptType
               );
 
               // Update workingOnScript in localStorage
@@ -583,7 +583,7 @@ export default function HomeScreen() {
               };
               localStorage.setItem(
                 "workingOnScript",
-                JSON.stringify(workingOnScript),
+                JSON.stringify(workingOnScript)
               );
 
               setShowLoadingSpinner(false);
@@ -617,14 +617,14 @@ export default function HomeScreen() {
     const loadScriptVersions = async () => {
       if (workingScript) {
         const storedScript = JSON.parse(
-          localStorage.getItem("workingOnScript"),
+          localStorage.getItem("workingOnScript")
         );
         if (storedScript) {
           const userID = localStorage.getItem("userID");
           const versions = await getVersionsOfScriptFromFirestore(
             userID,
             storedScript.scriptType,
-            storedScript.script,
+            storedScript.script
           );
           setScriptVersions(versions);
         }
@@ -645,7 +645,7 @@ export default function HomeScreen() {
         const versions = await getVersionsOfScriptFromFirestore(
           userID,
           storedScript.scriptType,
-          baseScriptName,
+          baseScriptName
         );
 
         // Delete each version
@@ -657,7 +657,7 @@ export default function HomeScreen() {
           await deleteScriptFromFirestore(
             userID,
             storedScript.scriptType,
-            versionName,
+            versionName
           );
         }
       } else {
@@ -665,7 +665,7 @@ export default function HomeScreen() {
         await deleteScriptFromFirestore(
           userID,
           storedScript.scriptType,
-          storedScript.script,
+          storedScript.script
         );
       }
 
@@ -690,7 +690,7 @@ export default function HomeScreen() {
         storedScript.timestampString,
         storedScript.scriptType,
         storedScript.script,
-        newName,
+        newName
       );
 
       // Update local storage
@@ -750,14 +750,14 @@ export default function HomeScreen() {
       const versions = await getVersionsOfScriptFromFirestore(
         userID,
         storedScript.scriptType,
-        baseScriptName,
+        baseScriptName
       );
 
       if (versions.length > 1) {
         // Get the highest version number
         const latestVersion = versions.reduce(
           (max, version) => Math.max(max, version.versionNumber),
-          0,
+          0
         );
 
         // Select that version
@@ -990,7 +990,7 @@ export default function HomeScreen() {
                   userID,
                   updatedContent,
                   parsed.scriptType,
-                  parsed.script,
+                  parsed.script
                 );
                 // Update the stored script content
                 localStorage.setItem(
@@ -998,7 +998,7 @@ export default function HomeScreen() {
                   JSON.stringify({
                     ...parsed,
                     contents: updatedContent,
-                  }),
+                  })
                 );
               } catch (e) {
                 console.error("Error updating script:", e);

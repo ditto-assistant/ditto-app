@@ -92,7 +92,7 @@ const CardMenu = ({ children, style }) => {
         })}
       </motion.div>
     </AnimatePresence>,
-    document.body,
+    document.body
   );
 };
 

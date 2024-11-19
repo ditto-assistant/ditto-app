@@ -25,7 +25,7 @@ export function useModelPreferences() {
   const context = useContext(ModelPreferencesContext);
   if (context === undefined) {
     throw new Error(
-      "useModelPreferences must be used within a ModelPreferencesProvider",
+      "useModelPreferences must be used within a ModelPreferencesProvider"
     );
   }
   return context;

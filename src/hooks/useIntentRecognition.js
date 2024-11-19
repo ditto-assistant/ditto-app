@@ -13,7 +13,7 @@ export function useIntentRecognition() {
   const context = useContext(IntentRecognitionContext);
   if (context === undefined) {
     throw new Error(
-      "useIntentRecognition must be used within an IntentRecognitionProvider",
+      "useIntentRecognition must be used within an IntentRecognitionProvider"
     );
   }
   return context;

@@ -44,7 +44,7 @@ export const handleScriptGeneration = async ({
     query,
     scriptContents,
     memories.longTermMemory,
-    memories.shortTermMemory,
+    memories.shortTermMemory
   );
 
   console.log("%c" + constructedPrompt, "color: green");
@@ -57,7 +57,7 @@ export const handleScriptGeneration = async ({
       systemTemplateFunction(),
       preferences.programmerModel,
       image,
-      () => {}, // Prevent streaming updates
+      () => {} // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
@@ -65,7 +65,7 @@ export const handleScriptGeneration = async ({
       prompt,
       scriptContents,
       preferences.programmerModel,
-      true,
+      true
     );
     console.log("%c" + scriptResponse, "color: yellow");
   }
@@ -94,7 +94,7 @@ export const generateScriptName = async (script, query) => {
   let scriptToNameResponse = await promptLLM(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
-    "gemini-1.5-flash",
+    "gemini-1.5-flash"
   );
 
   // Handle errors and retries
@@ -103,7 +103,7 @@ export const generateScriptName = async (script, query) => {
     scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gemini-1.5-flash",
+      "gemini-1.5-flash"
     );
     if (scriptToNameResponse.includes("error sending request")) {
       console.log("Second attempt failed, defaulting to 'App Name Here'");
@@ -162,7 +162,7 @@ export const handleWorkingOnScript = (cleanedScript, filename, scriptType) => {
 const updateScriptInLocalStorage = (scriptName, cleanedScript, scriptType) => {
   let scriptTypeObject = JSON.parse(localStorage.getItem(scriptType) || "[]");
   const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === scriptName,
+    (script) => script.name === scriptName
   );
   scriptTypeObject[scriptIndex].content = cleanedScript;
   localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
@@ -175,14 +175,14 @@ const saveWorkingScript = (name, cleanedScript, scriptType) => {
       script: name,
       contents: cleanedScript,
       scriptType: scriptType,
-    }),
+    })
   );
 };
 
 const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
   const scriptTypeObject = JSON.parse(localStorage.getItem(scriptType) || "[]");
   const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === filename,
+    (script) => script.name === filename
   );
 
   if (scriptIndex !== -1) {

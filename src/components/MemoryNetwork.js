@@ -192,7 +192,7 @@ const TableView = ({ memories, onMemoryClick }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(
-                      String(children).replace(/\n$/, ""),
+                      String(children).replace(/\n$/, "")
                     );
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
@@ -257,7 +257,7 @@ const TableView = ({ memories, onMemoryClick }) => {
           <div style={styles.promptLabel}>Your Prompt</div>
           <div style={styles.timestamp}>
             {formatDateTime(
-              memories[0]?.timestampString || memories[0]?.timestamp,
+              memories[0]?.timestampString || memories[0]?.timestamp
             )}
           </div>
         </div>
@@ -546,7 +546,7 @@ const MemoryPathOverlay = ({ path, onClose }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(
-                      String(children).replace(/\n$/, ""),
+                      String(children).replace(/\n$/, "")
                     );
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
@@ -628,7 +628,7 @@ const MemoryPathOverlay = ({ path, onClose }) => {
             reader.readAsDataURL(blob);
           })
           .catch((error) =>
-            console.error("Error caching Ditto avatar:", error),
+            console.error("Error caching Ditto avatar:", error)
           );
       }
     }, []);
@@ -937,7 +937,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(
-                      String(children).replace(/\n$/, ""),
+                      String(children).replace(/\n$/, "")
                     );
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
@@ -1319,7 +1319,7 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
     networkRef.current = new Network(
       containerRef.current,
       { nodes, edges },
-      options,
+      options
     );
 
     networkRef.current.on("click", (params) => {

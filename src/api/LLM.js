@@ -21,7 +21,7 @@ export async function promptLLM(
   systemPrompt,
   model = "gemini-1.5-flash",
   imageURL = "",
-  textCallback = null,
+  textCallback = null
 ) {
   console.log("Sending prompt to LLM: ", model);
   let responseMessage = "";
@@ -102,7 +102,7 @@ export async function promptLLM(
  */
 export async function openaiImageGeneration(
   prompt,
-  preferences = DEFAULT_PREFERENCES.imageGeneration,
+  preferences = DEFAULT_PREFERENCES.imageGeneration
 ) {
   const tok = await getToken();
   if (tok.err) {

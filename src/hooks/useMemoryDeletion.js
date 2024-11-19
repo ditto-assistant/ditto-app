@@ -30,10 +30,10 @@ export const useMemoryDeletion = (updateConversation) => {
 
           const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
           const responses = JSON.parse(
-            localStorage.getItem("responses") || "[]",
+            localStorage.getItem("responses") || "[]"
           );
           const timestamps = JSON.parse(
-            localStorage.getItem("timestamps") || "[]",
+            localStorage.getItem("timestamps") || "[]"
           );
           const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
@@ -62,7 +62,7 @@ export const useMemoryDeletion = (updateConversation) => {
         });
       }
     },
-    [updateConversation],
+    [updateConversation]
   );
 
   return { isDeleting, deletingMemories, deleteMemory };

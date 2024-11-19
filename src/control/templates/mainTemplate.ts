@@ -37,7 +37,7 @@ export const mainTemplate = (
   timestamp: string,
   usersPrompt: string,
   workingOnScriptName: string,
-  workingOnScriptType: string,
+  workingOnScriptType: string
 ) => {
   let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
 
@@ -92,14 +92,14 @@ Ditto:
 `;
   prompt = prompt.replace(
     "<!time>",
-    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM"),
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
   );
   prompt = prompt.replace("<!long_term_memory>", longTermMemory);
   prompt = prompt.replace("<!short_term_memory>", shortTermMemory);
   prompt = prompt.replace("<!examples>", examples);
   prompt = prompt.replace(
     "<!working_on_script_module>",
-    workingOnScriptModule(workingOnScriptName, workingOnScriptType),
+    workingOnScriptModule(workingOnScriptName, workingOnScriptType)
   );
   prompt = prompt.replace("<!users_name>", firstName);
   prompt = prompt.replace("<!timestamp>", timestamp);

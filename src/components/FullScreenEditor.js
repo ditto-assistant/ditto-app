@@ -281,7 +281,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               .slice(-20)
               .map(
                 (h) =>
-                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
+                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
               )
               .join("\n")
           : "";
@@ -327,7 +327,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         usersPrompt,
         code,
         preferences.programmerModel,
-        true,
+        true
       );
 
       // Log the response in yellow
@@ -777,7 +777,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     if (messageToDelete.role === "user") {
       // Remove from history if it exists
       setScriptChatHistory((prev) =>
-        prev.filter((h) => h.timestamp !== messageToDelete.timestamp),
+        prev.filter((h) => h.timestamp !== messageToDelete.timestamp)
       );
     }
     setScriptChatMessages((prev) => prev.filter((_, i) => i !== index));
@@ -884,7 +884,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
           webApps: localWebApps,
           openSCAD: localOpenSCAD,
         },
-      }),
+      })
     );
 
     setShowLoadingSpinner(false); // Hide the loading spinner
@@ -925,7 +925,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               usersPrompt,
               code,
               preferences.programmerModel,
-              false,
+              false
             );
 
             // Log the response in yellow
@@ -1585,7 +1585,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             ...props
                           }) {
                             const match = /language-(\w+)/.exec(
-                              className || "",
+                              className || ""
                             );
                             return !inline && match ? (
                               <SyntaxHighlighter
@@ -1658,7 +1658,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                               codeViewerOverlay
                                 .split("```html\n")[1]
                                 .split("```")[0]
-                                .trim(),
+                                .trim()
                             );
                             setScriptChatCopied(true);
                             setTimeout(() => setScriptChatCopied(false), 2000);
@@ -1840,7 +1840,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           usersPrompt,
                           code,
                           preferences.programmerModel,
-                          false,
+                          false
                         );
 
                         // Log the response in yellow
@@ -1850,7 +1850,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           // Add current state to history before updating
                           const newHistory = editHistory.slice(
                             0,
-                            historyIndex + 1,
+                            historyIndex + 1
                           );
                           newHistory.push({ content: response });
                           setEditHistory(newHistory);

@@ -30,7 +30,7 @@ export const getShortTermMemory = async (userID, k) => {
     const q = query(
       collection(db, "memory", userID, "conversations"),
       orderBy("timestamp", "desc"),
-      limit(k),
+      limit(k)
     );
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -77,7 +77,7 @@ export const getShortTermMemory = async (userID, k) => {
   } catch (e) {
     console.error(
       "Error getting short term memory (5) documents from memory collection: ",
-      e,
+      e
     );
     return "No history! :)";
   }
@@ -125,7 +125,7 @@ export const getLongTermMemory = async (userID, embedding, k) => {
       const errorData = await response.json();
       console.error("API Error response:", errorData);
       throw new Error(
-        errorData.details || `HTTP error! status: ${response.status}`,
+        errorData.details || `HTTP error! status: ${response.status}`
       );
     }
 
@@ -192,7 +192,7 @@ export const getLongTermMemory = async (userID, embedding, k) => {
 export const getConversationEmbedding = async (userID, docId) => {
   try {
     const querySnapshot = await getDocs(
-      collection(db, "memory", userID, "conversations"),
+      collection(db, "memory", userID, "conversations")
     );
 
     let embedding = null;
@@ -230,7 +230,7 @@ export const deleteConversation = async (userID, docId) => {
 
         // Delete any found images
         const deletePromises = imageUrls.map((imagePath) =>
-          deleteImageFromFirebaseStorage(imagePath),
+          deleteImageFromFirebaseStorage(imagePath)
         );
 
         if (deletePromises.length > 0) {

@@ -12,7 +12,7 @@ export function useDittoActivation() {
   const context = useContext(DittoActivationContext);
   if (context === undefined) {
     throw new Error(
-      "useDittoActivation must be used within a DittoActivationProvider",
+      "useDittoActivation must be used within a DittoActivationProvider"
     );
   }
   return context;
