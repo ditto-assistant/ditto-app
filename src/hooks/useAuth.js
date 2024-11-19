@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       (error) => {
         setError(error);
         setLoading(false);
-      },
+      }
     );
 
     return () => unsubscribe();

@@ -11,6 +11,9 @@ serve:
 
 bs: build serve
 
+format:
+	prettier --write **/*.{ts,js,jsx,md,json,css}
+
 # push a new tag to the remote repository
 tag-latest:
 	#!/bin/sh

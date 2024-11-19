@@ -30,10 +30,10 @@ const Settings = () => {
   const auth = getAuth();
   const [keyInputVisible, setKeyInputVisible] = useState(false);
   const [haApiKey, setHaApiKey] = useState(
-    localStorage.getItem("ha_api_key") || "",
+    localStorage.getItem("ha_api_key") || ""
   );
   const [haRemoteUrl, setHaRemoteUrl] = useState(
-    localStorage.getItem("home_assistant_url") || "http://localhost:8123",
+    localStorage.getItem("home_assistant_url") || "http://localhost:8123"
   );
   const [showHaApiKey, setShowHaApiKey] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -112,7 +112,7 @@ const Settings = () => {
     setKeyInputVisible(false);
     setHaApiKey(localStorage.getItem("ha_api_key") || "");
     setHaRemoteUrl(
-      localStorage.getItem("home_assistant_url") || "http://localhost:8123",
+      localStorage.getItem("home_assistant_url") || "http://localhost:8123"
     );
   };
 

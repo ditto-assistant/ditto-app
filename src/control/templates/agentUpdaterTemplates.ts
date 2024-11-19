@@ -174,7 +174,7 @@ Task Writeup:
 
 export function programmerAgentTaskCoder(
   taskWriteup: string,
-  script: string,
+  script: string
 ): string {
   const prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a task writeup from another AI agent and an entire HTML script.
 
@@ -202,7 +202,7 @@ Response:
 
 export function programmerAgentTaskApplier(
   codeSnippets: string,
-  script: string,
+  script: string
 ): string {
   const prompt = `You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend. You will be given a set of code snippets that need to be added to the HTML script and the entire HTML script.
 
@@ -224,7 +224,7 @@ Response:
 
 export function programmerAgentContinuer(
   codeSnippets: string,
-  finalScript: string,
+  finalScript: string
 ): string {
   const prompt = `Code Snippets we were in the middle of writing:
 <!code_snippets>

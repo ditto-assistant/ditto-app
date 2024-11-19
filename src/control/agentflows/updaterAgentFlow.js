@@ -11,27 +11,28 @@ export default async function updaterAgent(
   prompt,
   scriptContents,
   programmerModel,
-  skipPlanner,
+  skipPlanner
 ) {
   try {
     // Step 1: Design tasks using the planner
     const taskWriteup = await promptLLM(
       programmerAgentPlanner(prompt, scriptContents),
       htmlSystemTemplate(),
-      "gemini-1.5-pro",
+      programmerModel
     ); // The somewhat important model, which plans the tasks
 
     // Step 2: Generate code snippets from task writeup
     const codeSnippets = await promptLLM(
       programmerAgentTaskCoder(taskWriteup, scriptContents),
       htmlSystemTemplate(),
-      programmerModel,
+      programmerModel
     ); // The most important model, which does the actual coding
 
     // Step 3: Apply code snippets to script
     let finalScript = await promptLLM(
       programmerAgentTaskApplier(codeSnippets, scriptContents),
       htmlSystemTemplate(),
+      "gemini-1.5-flash"
     ); // defaults to gemini-1.5-flash for a fast applier
 
     // Clean up the script by removing markdown code block markers
@@ -55,7 +56,7 @@ export default async function updaterAgent(
       // Snip the last 10% of the script to nearest newline
       const finalScriptSnipped = finalScript.slice(
         0,
-        -Math.floor(finalScript.length * 0.1),
+        -Math.floor(finalScript.length * 0.1)
       );
       const snippedToNewline = finalScriptSnipped
         .split("\n")
@@ -66,7 +67,7 @@ export default async function updaterAgent(
       console.log("Using the continuer...");
       const continuedScript = await promptLLM(
         programmerAgentContinuer(codeSnippets, snippedToNewline),
-        htmlSystemTemplate(),
+        htmlSystemTemplate()
       ); // default to gemini-1.5-flash for continuer
 
       // Extract the content between markdown code block markers

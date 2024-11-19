@@ -72,7 +72,7 @@ const getForecast = async () => {
       if (service.entity_id.includes("forecast")) {
         forecastId = index;
         console.log(
-          `Found and saved HA Forecast State ID: ${service.entity_id}`,
+          `Found and saved HA Forecast State ID: ${service.entity_id}`
         );
       }
     });

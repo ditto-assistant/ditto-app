@@ -39,7 +39,7 @@ export default class HeyDitto {
       this.processorNode = this.audioContext.createScriptProcessor(
         this.chunkSize,
         1,
-        1,
+        1
       );
 
       this.processorNode.onaudioprocess = (event) => {
@@ -48,7 +48,7 @@ export default class HeyDitto {
           const downsampledData = this.downsampleBuffer(
             inputData,
             this.audioContext.sampleRate,
-            this.sampleRate,
+            this.sampleRate
           );
 
           const remainingSpace = this.bufferSize - bufferOffset;
@@ -56,7 +56,7 @@ export default class HeyDitto {
 
           this.audioBuffer.set(
             downsampledData.slice(0, copySize),
-            bufferOffset,
+            bufferOffset
           );
           bufferOffset += copySize;
 
@@ -75,7 +75,7 @@ export default class HeyDitto {
     } catch (err) {
       console.error(
         "Error accessing microphone or setting up ScriptProcessorNode:",
-        err,
+        err
       );
     }
   }
@@ -86,7 +86,7 @@ export default class HeyDitto {
     }
     if (outSampleRate > sampleRate) {
       throw new Error(
-        `Downsampling rate should be smaller than the original sample rate`,
+        `Downsampling rate should be smaller than the original sample rate`
       );
     }
     const sampleRateRatio = sampleRate / outSampleRate;

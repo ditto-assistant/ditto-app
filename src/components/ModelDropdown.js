@@ -4,8 +4,8 @@ import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { DEFAULT_MODELS } from "../constants";
 
-/** @typedef {import('../constants').Model} Model */
-/** @typedef {import('../constants').ModelOption} ModelOption */
+/** @typedef {import('../types').Model} Model */
+/** @typedef {import('../types').ModelOption} ModelOption */
 
 /**
  * A dropdown component for selecting AI models
@@ -99,6 +99,10 @@ const ModelDropdown = ({
               Premium
             </span>
           )}
+          {selectedModel?.isFree && <span style={styles.freeBadge}>FREE</span>}
+          {selectedModel?.isMaintenance && (
+            <span style={styles.maintenanceBadge}>MAINTENANCE</span>
+          )}
         </div>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
@@ -184,7 +188,7 @@ const darkModeColors = {
   border: "#1E1F22",
 };
 
-const styles = {
+export const styles = {
   container: {
     position: "relative",
     width: "100%",
@@ -280,10 +284,6 @@ const styles = {
     fontSize: "10px",
     whiteSpace: "nowrap",
   },
-};
-
-const isPremiumModel = (model) => {
-  return ["claude-3-5-sonnet", "gemini-1.5-pro"].includes(model);
 };
 
 export default ModelDropdown;

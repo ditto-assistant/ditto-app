@@ -17,7 +17,7 @@ import {
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import { db, getModelPreferencesFromFirestore } from "./firebase";
+import { db } from "./firebase";
 
 import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
@@ -30,7 +30,15 @@ const mode = import.meta.env.MODE;
 let toolTriggered = false;
 
 /**
- * Send a prompt to Ditto.
+ * @typedef {import("../types").ModelPreferences} ModelPreferences
+ * Sends a prompt to Ditto.
+ * @param {string} userID - The user's ID.
+ * @param {string} firstName - The user's first name.
+ * @param {string} prompt - The user's prompt.
+ * @param {string} image - The user's image.
+ * @param {string} userPromptEmbedding - The user's prompt embedding.
+ * @param {function} updateConversation - A function that updates the conversation.
+ * @param {ModelPreferences} preferences - The user's preferences.
  */
 export const sendPrompt = async (
   userID,
@@ -39,6 +47,7 @@ export const sendPrompt = async (
   image,
   userPromptEmbedding,
   updateConversation,
+  preferences
 ) => {
   try {
     // Reset tool trigger state at the start of each prompt
@@ -77,13 +86,11 @@ export const sendPrompt = async (
       is_typing: true,
     }));
 
-    const [modelPreferences, memories, examplesString, scriptDetails] =
-      await Promise.all([
-        getModelPreferencesFromFirestore(userID),
-        fetchMemories(userID, userPromptEmbedding),
-        getRelevantExamples(userPromptEmbedding, 5),
-        fetchScriptDetails(),
-      ]);
+    const [memories, examplesString, scriptDetails] = await Promise.all([
+      fetchMemories(userID, userPromptEmbedding),
+      getRelevantExamples(userPromptEmbedding, 5),
+      fetchScriptDetails(),
+    ]);
 
     const { shortTermMemory, longTermMemory } = memories;
     const { scriptName, scriptType, scriptContents } = scriptDetails;
@@ -96,12 +103,12 @@ export const sendPrompt = async (
       new Date().toISOString(),
       prompt,
       scriptName,
-      scriptType,
+      scriptType
     );
 
     console.log("%c" + constructedPrompt, "color: green");
 
-    let mainAgentModel = modelPreferences.mainModel;
+    let mainAgentModel = preferences.mainModel;
     // Disable Claude until our rate limits are increased
     if (mainAgentModel === "claude-3-5-sonnet") {
       mainAgentModel = "gemini-1.5-pro";
@@ -148,6 +155,7 @@ export const sendPrompt = async (
                 image,
                 memories,
                 updateConversation,
+                preferences
               );
               return;
             }
@@ -191,7 +199,7 @@ export const sendPrompt = async (
         userID,
         prompt,
         responseText,
-        userPromptEmbedding,
+        userPromptEmbedding
       );
 
       // Update conversation with docId and pairID
@@ -237,7 +245,7 @@ export const sendPrompt = async (
       systemTemplate(),
       mainAgentModel,
       image,
-      streamingCallback,
+      streamingCallback
     );
 
     // Process any remaining text
@@ -264,7 +272,7 @@ export const sendPrompt = async (
     ];
 
     const hasTrigger = toolTriggers.some((trigger) =>
-      response.includes(trigger),
+      response.includes(trigger)
     );
 
     // Only save to memory if no tool trigger is found
@@ -273,7 +281,7 @@ export const sendPrompt = async (
         userID,
         prompt,
         response,
-        userPromptEmbedding,
+        userPromptEmbedding
       );
 
       // Update conversation with docId and pairID
@@ -341,6 +349,7 @@ export const processResponse = async (
   image,
   memories,
   updateConversation,
+  preferences
 ) => {
   toolTriggered = true;
 
@@ -355,7 +364,7 @@ export const processResponse = async (
       messages: prevState.messages.map((msg, i) =>
         i === prevState.messages.length - 1
           ? { ...msg, text: errorMessage, isTyping: false, isError: true }
-          : msg,
+          : msg
       ),
     }));
     return errorMessage;
@@ -364,7 +373,7 @@ export const processResponse = async (
   const updateMessageWithToolStatus = async (
     status,
     type,
-    finalResponse = null,
+    finalResponse = null
   ) => {
     try {
       if (status === "complete" && finalResponse) {
@@ -376,7 +385,7 @@ export const processResponse = async (
           userID,
           prompt,
           finalResponse,
-          responseEmbedding || userPromptEmbedding,
+          responseEmbedding || userPromptEmbedding
         );
 
         updateConversation((prevState) => {
@@ -436,7 +445,7 @@ export const processResponse = async (
     if (response.includes("<OPENSCAD>")) {
       await updateMessageWithToolStatus(
         "Generating OpenSCAD Script...",
-        "openscad",
+        "openscad"
       );
       const finalResponse = await handleScriptGeneration({
         response,
@@ -453,6 +462,7 @@ export const processResponse = async (
         image,
         memories,
         updateConversation,
+        preferences,
       });
       await updateMessageWithToolStatus("complete", "openscad", finalResponse);
       return finalResponse;
@@ -476,6 +486,7 @@ export const processResponse = async (
         image,
         memories,
         updateConversation,
+        preferences,
       });
       await updateMessageWithToolStatus("complete", "html", finalResponse);
       return finalResponse;
@@ -501,13 +512,13 @@ export const processResponse = async (
     if (response.includes("<GOOGLE_HOME>")) {
       await updateMessageWithToolStatus(
         "Executing Home Assistant Task",
-        "home",
+        "home"
       );
       const finalResponse = await handleHomeAssistant(response);
       await updateMessageWithToolStatus(
         finalResponse.includes("failed") ? "failed" : "complete",
         "home",
-        finalResponse,
+        finalResponse
       );
       return finalResponse;
     }
@@ -542,7 +553,7 @@ export const saveToMemory = async (userID, prompt, response, embedding) => {
     if (mode === "development") {
       console.log(
         "Memory written to Firestore collection with ID: ",
-        docRef.id,
+        docRef.id
       );
     }
     // Dispatch event when memory is created

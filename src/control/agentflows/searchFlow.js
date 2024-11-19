@@ -21,7 +21,7 @@ export const handleGoogleSearch = async (response, prompt) => {
   const googleSearchAgentResponse = await promptLLM(
     googleSearchAgentTemplate,
     googleSearchSystemTemplate(),
-    "gemini-1.5-flash",
+    "gemini-1.5-flash"
   );
 
   console.log("%c" + googleSearchAgentResponse, "color: yellow");

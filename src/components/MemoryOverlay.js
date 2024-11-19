@@ -1,18 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
-import { FaBrain, FaMemory, FaTrash, FaCrown } from "react-icons/fa";
+import { FaBrain, FaTrash } from "react-icons/fa";
 import { IoSettingsSharp } from "react-icons/io5";
 import "./MemoryOverlay.css";
 
 import {
   resetConversation,
   deleteAllUserImagesFromFirebaseStorageBucket,
-  saveModelPreferencesToFirestore,
-  getModelPreferencesFromFirestore,
 } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import ModelDropdown from "./ModelDropdown";
-
+import ModelDropdownImage from "./ModelDropdownImage";
+import { useModelPreferences } from "../hooks/useModelPreferences";
+import {
+  IMAGE_GENERATION_MODELS,
+  isPremiumModel,
+  DEFAULT_PREFERENCES,
+} from "../constants";
+import FullScreenSpinner from "./LoadingSpinner";
 const darkModeColors = {
   primary: "#7289DA",
   text: "#FFFFFF",
@@ -27,11 +32,12 @@ const darkModeColors = {
 function MemoryOverlay({ closeOverlay }) {
   const overlayContentRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [modelPreferences, setModelPreferences] = useState({
-    mainModel: "gemini-1.5-flash",
-    programmerModel: "gemini-1.5-flash",
-  });
-
+  const {
+    preferences,
+    loading: prefsLoading,
+    error: prefsError,
+    updatePreferences,
+  } = useModelPreferences();
   const [memoryStatus, setMemoryStatus] = useState({
     longTerm:
       JSON.parse(localStorage.getItem("deactivateLongTermMemory")) || false,
@@ -44,20 +50,9 @@ function MemoryOverlay({ closeOverlay }) {
   // Convert balance string to number (removing 'M' or 'B' and converting to float)
   const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
   const isBalanceInBillions = balance?.includes("B");
-  const hasEnoughBalance = isBalanceInBillions && balanceNum >= 1.0;
-
-  // Helper function to check if model is premium and should be disabled
-  const isPremiumModel = (model) => {
-    return ["claude-3-5-sonnet", "gemini-1.5-pro"].includes(model);
-  };
+  const hasEnoughBalance = isBalanceInBillions && balanceNum >= 5.0;
 
   useEffect(() => {
-    // Load model preferences
-    const userID = localStorage.getItem("userID");
-    getModelPreferencesFromFirestore(userID).then((prefs) => {
-      setModelPreferences(prefs);
-    });
-
     // Trigger the animation after component mount
     setTimeout(() => setIsVisible(true), 50);
 
@@ -75,41 +70,29 @@ function MemoryOverlay({ closeOverlay }) {
   }, []);
 
   useEffect(() => {
-    // Automatically switch models if balance decreases below 1.00B
+    // Automatically switch models if balance decreases below 5.00B
     if (!hasEnoughBalance) {
-      setModelPreferences((prev) => ({
-        mainModel: isPremiumModel(prev.mainModel)
-          ? "gemini-1.5-flash"
-          : prev.mainModel,
-        programmerModel: isPremiumModel(prev.programmerModel)
-          ? "gemini-1.5-flash"
-          : prev.programmerModel,
-      }));
+      let mainSwitch = false;
+      let programmerSwitch = false;
+      if (isPremiumModel(preferences.mainModel)) {
+        mainSwitch = true;
+        updatePreferences("mainModel", "llama-3-2");
+      }
+      if (isPremiumModel(preferences.programmerModel)) {
+        programmerSwitch = true;
+        updatePreferences("programmerModel", "llama-3-2");
+      }
+      if (mainSwitch || programmerSwitch) {
+        alert(
+          "Your balance is too low for premium models. Switching to Llama 3.2."
+        );
+      }
     }
-  }, [hasEnoughBalance]);
+  }, [hasEnoughBalance, preferences.mainModel, preferences.programmerModel]);
 
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(closeOverlay, 300); // Wait for the animation to finish before closing
-  };
-
-  const handleModelChange = async (type, value) => {
-    // Prevent selection of premium models if balance is insufficient
-    if (isPremiumModel(value) && !hasEnoughBalance) {
-      return;
-    }
-
-    const userID = localStorage.getItem("userID");
-    const newPreferences = {
-      ...modelPreferences,
-      [type]: value,
-    };
-    setModelPreferences(newPreferences);
-    await saveModelPreferencesToFirestore(
-      userID,
-      newPreferences.mainModel,
-      newPreferences.programmerModel,
-    );
   };
 
   const deleteAllMemory = async () => {
@@ -207,28 +190,61 @@ function MemoryOverlay({ closeOverlay }) {
             <IoSettingsSharp style={styles.cardIcon} />
             <h4 style={styles.cardTitle}>Model Preferences</h4>
           </div>
-          <div style={styles.cardContent}>
-            <div style={styles.modelSelector}>
-              <label style={styles.modelLabel}>Main Agent Model</label>
-              <ModelDropdown
-                value={modelPreferences.mainModel}
-                onChange={(value) => handleModelChange("mainModel", value)}
-                hasEnoughBalance={hasEnoughBalance}
-                inMemoryOverlay={true}
-              />
+          {prefsError ? (
+            <div style={styles.errorContainer}>
+              <p style={styles.errorText}>
+                Error loading preferences: {prefsError}
+              </p>
+              <button
+                style={{
+                  ...styles.button,
+                  backgroundColor: darkModeColors.dangerRed,
+                }}
+                onClick={() => window.location.reload()}
+              >
+                Retry
+              </button>
             </div>
-            <div style={styles.modelSelector}>
-              <label style={styles.modelLabel}>Programmer Model</label>
-              <ModelDropdown
-                value={modelPreferences.programmerModel}
-                onChange={(value) =>
-                  handleModelChange("programmerModel", value)
-                }
-                hasEnoughBalance={hasEnoughBalance}
-                inMemoryOverlay={true}
-              />
+          ) : prefsLoading ? (
+            <div style={styles.loadingContainer}>
+              <FullScreenSpinner text="Loading preferences..." />
             </div>
-          </div>
+          ) : (
+            <div style={styles.cardContent}>
+              <div style={styles.modelSelector}>
+                <label style={styles.modelLabel}>Main Agent Model</label>
+                <ModelDropdown
+                  value={preferences.mainModel}
+                  onChange={(value) => updatePreferences({ mainModel: value })}
+                  hasEnoughBalance={hasEnoughBalance}
+                  inMemoryOverlay={true}
+                />
+              </div>
+              <div style={styles.modelSelector}>
+                <label style={styles.modelLabel}>Programmer Model</label>
+                <ModelDropdown
+                  value={preferences.programmerModel}
+                  onChange={(value) =>
+                    updatePreferences({ programmerModel: value })
+                  }
+                  hasEnoughBalance={hasEnoughBalance}
+                  inMemoryOverlay={true}
+                />
+              </div>
+              <div style={styles.modelSelector}>
+                <label style={styles.modelLabel}>Image Generation Model</label>
+                <ModelDropdownImage
+                  value={preferences.imageGeneration}
+                  onChange={(model, size) =>
+                    updatePreferences({ imageGeneration: { model, size } })
+                  }
+                  hasEnoughBalance={hasEnoughBalance}
+                  inMemoryOverlay={true}
+                  models={IMAGE_GENERATION_MODELS}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Memory Controls Card */}
@@ -420,6 +436,26 @@ const styles = {
     fontSize: "12px",
     marginTop: "4px",
     fontStyle: "italic",
+  },
+  loadingContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100px", // Adjust as needed
+    width: "100%",
+  },
+  errorContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "20px",
+    gap: "16px",
+  },
+  errorText: {
+    color: darkModeColors.dangerRed,
+    textAlign: "center",
+    margin: 0,
+    fontSize: "14px",
   },
 };
 

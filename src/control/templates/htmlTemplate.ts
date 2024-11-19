@@ -211,7 +211,7 @@ Task Writeup:
 `;
   prompt = prompt.replace(
     "<!time>",
-    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM"),
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
   );
   prompt = prompt.replace("<!query>", query);
   prompt = prompt.replace("<!script>", script);
@@ -309,7 +309,7 @@ export const htmlTemplate = (
   query: string,
   script: string,
   ltm: string = "",
-  stm: string = "",
+  stm: string = ""
 ) => {
   let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
 
@@ -347,7 +347,7 @@ HTML Script:
   prompt = prompt.replace("<!query>", query);
   prompt = prompt.replace(
     "<!working_on_script_module>",
-    workingOnScriptModule(script),
+    workingOnScriptModule(script)
   );
   prompt = prompt.replace("<!history>", historyModule(ltm, stm));
   return prompt;

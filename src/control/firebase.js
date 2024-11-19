@@ -18,7 +18,6 @@ import {
   where,
   getCountFromServer,
 } from "firebase/firestore";
-
 import {
   getStorage,
   ref,
@@ -28,6 +27,7 @@ import {
   listAll,
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
+import { DEFAULT_PREFERENCES } from "../constants";
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
@@ -46,7 +46,7 @@ export const saveBalanceToFirestore = async (userID, balance) => {
   try {
     // find the user's balance document and update it
     const querySnapshot = await getDocs(
-      collection(db, "users", userID, "balance"),
+      collection(db, "users", userID, "balance")
     );
     let docRef;
     if (querySnapshot.empty) {
@@ -66,7 +66,7 @@ export const saveBalanceToFirestore = async (userID, balance) => {
     if (mode === "development") {
       console.log(
         "Balance written to Firestore collection with ID: ",
-        docRef.id,
+        docRef.id
       );
     }
   } catch (e) {
@@ -91,7 +91,7 @@ export const getBalanceFromFirestore = async (userID) => {
   } catch (e) {
     console.error(
       "Error getting document from Firestore users collection: ",
-      e,
+      e
     );
     return false;
   }
@@ -99,7 +99,7 @@ export const getBalanceFromFirestore = async (userID) => {
 
 export const uploadImageToFirebaseStorageBucket = async (
   base64Image,
-  userID,
+  userID
 ) => {
   const storage = getStorage(app);
   // convert base64 to blob
@@ -133,12 +133,12 @@ export const saveUserToFirestore = async (
   userID,
   email,
   firstName,
-  lastName,
+  lastName
 ) => {
   try {
     // check if user already exists in the database, delete all other documents with the same userID and save with this one
     const querySnapshot = await getDocs(
-      collection(db, "users", userID, "account"),
+      collection(db, "users", userID, "account")
     );
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
@@ -175,7 +175,7 @@ export const removeUserFromFirestore = async (userID) => {
   } catch (e) {
     console.error(
       "Error removing document from Firestore users collection: ",
-      e,
+      e
     );
   }
 };
@@ -193,7 +193,7 @@ export const getUserObjectFromFirestore = async (userID) => {
   } catch (e) {
     console.error(
       "Error getting document from Firestore users collection: ",
-      e,
+      e
     );
   }
 };
@@ -227,7 +227,7 @@ export const removeUsersMemoryFromFirestore = async (userID) => {
     if (mode === "development") {
       console.log(
         "User's memory and associated images removed for ID: ",
-        userID,
+        userID
       );
     }
 
@@ -236,7 +236,7 @@ export const removeUsersMemoryFromFirestore = async (userID) => {
   } catch (e) {
     console.error(
       "Error removing user's memory from Firestore memory collection: ",
-      e,
+      e
     );
   }
 };
@@ -253,7 +253,7 @@ export const grabConversationHistory = async (userID) => {
     const q = query(
       collection(db, "memory", userID, "conversations"),
       orderBy("timestamp", "desc"),
-      limit(20),
+      limit(20)
     );
     const querySnapshot = await getDocs(q);
     // check if the user has any history
@@ -275,7 +275,7 @@ export const grabConversationHistory = async (userID) => {
       // log historyCount in localStorage
       console.log(
         "localStorage histCount: ",
-        localStorage.getItem("histCount"),
+        localStorage.getItem("histCount")
       );
     }
     return history;
@@ -364,7 +364,7 @@ export const resetConversation = async (userID) => {
     await deleteCollection(
       db,
       collection(db, "memory", userID, "conversations"),
-      10,
+      10
     );
     localStorage.setItem("histCount", 0);
     // Dispatch event when conversation is reset
@@ -397,14 +397,14 @@ export const saveScriptToFirestore = async (
   script,
   scriptType,
   filename,
-  skipBackup = false,
+  skipBackup = false
 ) => {
   try {
     // check if the script is already in the database and just update the script
     const scriptExists = await isScriptInFirestore(
       userID,
       scriptType,
-      filename,
+      filename
     );
     if (scriptExists) {
       if (!skipBackup) {
@@ -413,7 +413,7 @@ export const saveScriptToFirestore = async (
           let scriptVersions = await getVersionsOfScriptFromFirestore(
             userID,
             scriptType,
-            filename,
+            filename
           );
           console.log("Script versions in Firestore: ", scriptVersions);
         }
@@ -430,7 +430,7 @@ export const saveScriptToFirestore = async (
     if (mode === "development") {
       console.log(
         "Script written to Firestore collection with ID: ",
-        docRef.id,
+        docRef.id
       );
     }
   } catch (e) {
@@ -441,13 +441,13 @@ export const saveScriptToFirestore = async (
 export const backupOldScriptMakeVersion = async (
   userID,
   scriptType,
-  filename,
+  filename
 ) => {
   try {
     if (mode === "development") {
       console.log(
         "Backing up old script to Firestore collection with filename: ",
-        filename,
+        filename
       );
     }
 
@@ -455,7 +455,7 @@ export const backupOldScriptMakeVersion = async (
     let versions = await getVersionsOfScriptFromFirestore(
       userID,
       scriptType,
-      filename,
+      filename
     );
 
     // Sort versions by version number
@@ -467,7 +467,7 @@ export const backupOldScriptMakeVersion = async (
 
     // Find the latest version number by checking actual filenames in Firestore
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     let highestVersion = 0;
 
@@ -499,13 +499,13 @@ export const backupOldScriptMakeVersion = async (
             filename: newFilename,
             timestamp: new Date(),
             timestampString: new Date().toISOString(),
-          },
+          }
         );
 
         if (mode === "development") {
           console.log(
             "Old script backed up to Firestore collection with ID: ",
-            docRef.id,
+            docRef.id
           );
           console.log(`Created backup version: ${newFilename}`);
         }
@@ -514,7 +514,7 @@ export const backupOldScriptMakeVersion = async (
   } catch (e) {
     console.error(
       "Error backing up old script to Firestore scripts collection: ",
-      e,
+      e
     );
   }
 };
@@ -522,7 +522,7 @@ export const backupOldScriptMakeVersion = async (
 // Helper function to get the base version of a script
 const getBaseVersion = async (userID, scriptType, filename) => {
   const querySnapshot = await getDocs(
-    collection(db, "scripts", userID, scriptType),
+    collection(db, "scripts", userID, scriptType)
   );
   let baseVersion = null;
 
@@ -544,17 +544,17 @@ const getBaseVersion = async (userID, scriptType, filename) => {
 export const getVersionsOfScriptFromFirestore = async (
   userID,
   scriptType,
-  filename,
+  filename
 ) => {
   try {
     if (mode === "development") {
       console.log(
         "Getting versions of script from Firestore collection with filename: ",
-        filename,
+        filename
       );
     }
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return [];
@@ -595,7 +595,7 @@ export const getVersionsOfScriptFromFirestore = async (
   } catch (e) {
     console.error(
       "Error getting document in Firestore scripts collection: ",
-      e,
+      e
     );
     return [];
   }
@@ -605,12 +605,12 @@ export const updateFirestoreScript = async (
   userID,
   scriptType,
   filename,
-  script,
+  script
 ) => {
   // find the script with the filename and update it
   try {
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return;
@@ -631,7 +631,7 @@ export const updateFirestoreScript = async (
   } catch (e) {
     console.error(
       "Error updating document in Firestore scripts collection: ",
-      e,
+      e
     );
   }
 };
@@ -641,11 +641,11 @@ export const isScriptInFirestore = async (userID, scriptType, filename) => {
     if (mode === "development") {
       console.log(
         "Checking if script is in Firestore collection with filename: ",
-        filename,
+        filename
       );
     }
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return false;
@@ -668,7 +668,7 @@ export const isScriptInFirestore = async (userID, scriptType, filename) => {
   } catch (e) {
     console.error(
       "Error checking if document is in Firestore scripts collection: ",
-      e,
+      e
     );
     return false;
   }
@@ -679,17 +679,17 @@ export const renameScriptInFirestore = async (
   scriptId,
   scriptType,
   oldFilename,
-  newFilename,
+  newFilename
 ) => {
   try {
     if (mode === "development") {
       console.log(
         "Renaming script in Firestore collection with filename: ",
-        oldFilename,
+        oldFilename
       );
     }
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return;
@@ -705,7 +705,7 @@ export const renameScriptInFirestore = async (
   } catch (e) {
     console.error(
       "Error renaming document in Firestore scripts collection: ",
-      e,
+      e
     );
   }
 };
@@ -713,17 +713,17 @@ export const renameScriptInFirestore = async (
 export const deleteScriptFromFirestore = async (
   userID,
   scriptType,
-  filename,
+  filename
 ) => {
   try {
     if (mode === "development") {
       console.log(
         "Deleting script from Firestore collection with filename: ",
-        filename,
+        filename
       );
     }
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return;
@@ -736,7 +736,7 @@ export const deleteScriptFromFirestore = async (
   } catch (e) {
     console.error(
       "Error deleting document from Firestore scripts collection: ",
-      e,
+      e
     );
   }
 };
@@ -746,23 +746,23 @@ export const deleteAllUserScriptsFromFirestore = async (userID) => {
     await deleteCollection(
       db,
       collection(db, "scripts", userID, "webApps"),
-      10,
+      10
     );
     await deleteCollection(
       db,
       collection(db, "scripts", userID, "openSCAD"),
-      10,
+      10
     );
     if (mode === "development") {
       console.log(
         "All user scripts removed from Firestore collection with ID: ",
-        userID,
+        userID
       );
     }
   } catch (e) {
     console.error(
       "Error removing user's scripts from Firestore scripts collection: ",
-      e,
+      e
     );
   }
 };
@@ -782,7 +782,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     if (mode === "development") {
       console.log(
         "Syncing local storage with Firestore for scripts of type: ",
-        scriptType,
+        scriptType
       );
     }
 
@@ -793,7 +793,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     await getScriptTimestamps(userID, scriptType);
 
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return [];
@@ -822,7 +822,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
 
 export const uploadGeneratedImageToFirebaseStorage = async (
   imageURL,
-  userID,
+  userID
 ) => {
   // first, fetch the image from the imageURL to get the blob
   // console.log("fetching image from URL: ", imageURL);
@@ -846,30 +846,30 @@ export const uploadGeneratedImageToFirebaseStorage = async (
   // return await getDownloadURL(snapshot.ref);
 };
 
-export const saveModelPreferencesToFirestore = async (
-  userID,
-  mainModel,
-  programmerModel,
-) => {
+/** @typedef {import('../constants').Model} Model */
+/**
+ * Saves model preferences to Firestore.
+ * @param {string} userID - The user's ID.
+ * @param {Model} mainModel - The main model.
+ * @param {Model} programmerModel - The programmer model.
+ * @param {Model} imageGenerationModel - The image generation model.
+ */
+export const saveModelPreferencesToFirestore = async (userID, preferences) => {
   try {
     const querySnapshot = await getDocs(
-      collection(db, "users", userID, "preferences"),
+      collection(db, "users", userID, "preferences")
     );
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
         updateDoc(doc.ref, {
-          mainModel,
-          programmerModel,
-          timestamp: new Date(),
-          timestampString: new Date().toISOString(),
+          preferences,
+          timestamp: Date.now(),
         });
       });
     } else {
       await addDoc(collection(db, "users", userID, "preferences"), {
-        mainModel,
-        programmerModel,
-        timestamp: new Date(),
-        timestampString: new Date().toISOString(),
+        preferences,
+        timestamp: Date.now(),
       });
     }
   } catch (e) {
@@ -877,37 +877,28 @@ export const saveModelPreferencesToFirestore = async (
   }
 };
 
-/** @typedef {import('../constants').Model} Model */
+/** @typedef {import('../types').ModelPreferences} ModelPreferences */
 
 /**
  * Gets model preferences from Firestore.
  * @param {string} userID - The user's ID.
- * @returns {Promise<{mainModel: Model, programmerModel: Model}>}
+ * @returns {Promise<ModelPreferences>}
  */
 export const getModelPreferencesFromFirestore = async (userID) => {
   try {
     const querySnapshot = await getDocs(
-      collection(db, "users", userID, "preferences"),
+      collection(db, "users", userID, "preferences")
     );
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
-      return {
-        mainModel: doc.data().mainModel || "llama-3-2",
-        programmerModel: doc.data().programmerModel || "llama-3-2",
-      };
+      return doc.data().preferences ?? DEFAULT_PREFERENCES;
     }
     // Return default preferences for new users
-    return {
-      mainModel: "llama-3-2",
-      programmerModel: "llama-3-2",
-    };
+    return DEFAULT_PREFERENCES;
   } catch (e) {
     console.error("Error getting model preferences from Firestore: ", e);
     // Return default preferences if there's an error
-    return {
-      mainModel: "llama-3-2",
-      programmerModel: "llama-3-2",
-    };
+    return DEFAULT_PREFERENCES;
   }
 };
 
@@ -915,7 +906,7 @@ export const getScriptTimestamps = async (userID, scriptType) => {
   try {
     const now = Date.now();
     const lastTimestampFetch = localStorage.getItem(
-      `lastTimestampFetch_${scriptType}`,
+      `lastTimestampFetch_${scriptType}`
     );
     const FETCH_COOLDOWN = 5000; // 5 seconds cooldown
 
@@ -931,7 +922,7 @@ export const getScriptTimestamps = async (userID, scriptType) => {
     localStorage.setItem(`lastTimestampFetch_${scriptType}`, now.toString());
 
     const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType),
+      collection(db, "scripts", userID, scriptType)
     );
     if (querySnapshot.empty) {
       return {};
@@ -952,7 +943,7 @@ export const getScriptTimestamps = async (userID, scriptType) => {
     if (mode === "development") {
       console.log(
         `Timestamps fetched and stored for ${scriptType}:`,
-        timestamps,
+        timestamps
       );
     }
 

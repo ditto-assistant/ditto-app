@@ -59,7 +59,7 @@ const ScriptsScreen = () => {
   const localWorkingOnScript =
     JSON.parse(localStorage.getItem("workingOnScript")) || {};
   const [selectedScript, setSelectedScript] = useState(
-    localWorkingOnScript.script || null,
+    localWorkingOnScript.script || null
   );
 
   const [activeCard, setActiveCard] = useState(null);
@@ -131,7 +131,7 @@ const ScriptsScreen = () => {
       const normalizedSearch = searchTerm.toLowerCase();
       filteredScripts = scripts.filter((script) => {
         const baseName = getBaseName(
-          script.name.replace(/ /g, ""),
+          script.name.replace(/ /g, "")
         ).toLowerCase();
         return baseName.includes(normalizedSearch);
       });
@@ -184,7 +184,7 @@ const ScriptsScreen = () => {
   const handleSaveScript = (category) => {
     const nameInput = document.getElementById(`${category}-name-input`).value;
     const contentInput = document.getElementById(
-      `${category}-content-input`,
+      `${category}-content-input`
     ).value;
     if (nameInput && contentInput) {
       const newScript = {
@@ -210,7 +210,7 @@ const ScriptsScreen = () => {
         script: script.name,
         contents: script.content,
         scriptType: script.scriptType,
-      }),
+      })
     );
     setSelectedScript(script.name);
     setCurrentVersion((prevState) => ({
@@ -238,7 +238,7 @@ const ScriptsScreen = () => {
     setScripts((prevState) => ({
       ...prevState,
       [category]: prevState[category].map((script) =>
-        script.id === id ? { ...script, name: newName } : script,
+        script.id === id ? { ...script, name: newName } : script
       ),
     }));
     const userID = localStorage.getItem("userID");
@@ -252,7 +252,7 @@ const ScriptsScreen = () => {
           script: newName,
           contents: script.content,
           scriptType: category,
-        }),
+        })
       );
       setSelectedScript(newName);
     }
@@ -272,7 +272,7 @@ const ScriptsScreen = () => {
       const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
       const relatedScripts = scripts[category].filter(
         (script) =>
-          getBaseNameAndVersion(script.name).baseName === baseScriptName,
+          getBaseNameAndVersion(script.name).baseName === baseScriptName
       );
 
       // If there are other versions, promote the highest version
@@ -300,7 +300,7 @@ const ScriptsScreen = () => {
             newestScript.id,
             category,
             oldName,
-            newName,
+            newName
           );
 
           // Update in local state
@@ -310,7 +310,7 @@ const ScriptsScreen = () => {
               .map((script) =>
                 script.id === newestScript.id
                   ? { ...script, name: newName }
-                  : script,
+                  : script
               )
               .filter((script) => script.id !== currentScript.id),
           }));
@@ -323,7 +323,7 @@ const ScriptsScreen = () => {
                 script: newName,
                 contents: newestScript.content,
                 scriptType: category,
-              }),
+              })
             );
             setSelectedScript(newName);
             setCurrentVersion((prev) => ({
@@ -343,7 +343,7 @@ const ScriptsScreen = () => {
     setScripts((prevState) => ({
       ...prevState,
       [category]: prevState[category].filter(
-        (script) => script.id !== currentScript.id,
+        (script) => script.id !== currentScript.id
       ),
     }));
     setActiveCard(null);
@@ -410,7 +410,7 @@ const ScriptsScreen = () => {
           script: newName,
           contents: code,
           scriptType: category,
-        }),
+        })
       );
     }
   };
@@ -516,7 +516,7 @@ const ScriptsScreen = () => {
           userID,
           fullScreenEdit.content,
           category,
-          oldVersionName,
+          oldVersionName
         );
       }
 
@@ -529,7 +529,7 @@ const ScriptsScreen = () => {
         [category]: prevScripts[category].map((script) =>
           script.name === fullScreenEdit.name
             ? { ...script, name: baseName, content: newContent }
-            : script,
+            : script
         ),
       }));
 
@@ -539,7 +539,7 @@ const ScriptsScreen = () => {
         [category]: scripts[category].map((script) =>
           script.name === fullScreenEdit.name
             ? { ...script, name: baseName, content: newContent }
-            : script,
+            : script
         ),
       };
       localStorage.setItem(category, JSON.stringify(updatedScripts[category]));
@@ -551,7 +551,7 @@ const ScriptsScreen = () => {
           script: baseName,
           contents: newContent,
           scriptType: category,
-        }),
+        })
       );
 
       return Promise.resolve();
@@ -638,7 +638,7 @@ const ScriptsScreen = () => {
         onDelete={handleDeleteVersion}
         onSelect={(versionName) => {
           const selectedVersion = sortedScriptsList.find(
-            (script) => script.name === versionName,
+            (script) => script.name === versionName
           );
           if (selectedVersion) {
             handleSelectVersion(selectedVersion);
@@ -723,7 +723,7 @@ const ScriptsScreen = () => {
           const currentScript =
             (currentVersion[category] &&
               scriptsList.find(
-                (s) => s.name === currentVersion[category].name,
+                (s) => s.name === currentVersion[category].name
               )) ||
             scriptsList[0];
           const hasMultipleVersions = scriptsList.length > 1;
@@ -733,7 +733,7 @@ const ScriptsScreen = () => {
           }
 
           const { baseName: scriptBaseName, version } = getBaseNameAndVersion(
-            currentScript.name,
+            currentScript.name
           );
 
           return (
@@ -771,7 +771,7 @@ const ScriptsScreen = () => {
                       await handleRenameScript(
                         category,
                         currentScript.id,
-                        e.target.value,
+                        e.target.value
                       )
                     }
                     style={styles.renameInput}
@@ -879,7 +879,7 @@ const ScriptsScreen = () => {
                     getLocalScriptTimestamps(category)[currentScript.name]
                       ?.timestamp,
                     currentScript,
-                    category,
+                    category
                   )}
                 </span>
               </div>
@@ -984,7 +984,7 @@ const ScriptsScreen = () => {
                   scriptsList,
                   cardRefs.current[
                     currentScript.id
-                  ].current.getBoundingClientRect(),
+                  ].current.getBoundingClientRect()
                 )}
             </motion.div>
           );
@@ -1131,8 +1131,7 @@ const ScriptsScreen = () => {
 
     // Find all versions of this script
     const relatedScripts = scripts[category].filter(
-      (script) =>
-        getBaseNameAndVersion(script.name).baseName === baseScriptName,
+      (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
     );
 
     // Delete all versions from Firestore
@@ -1145,7 +1144,7 @@ const ScriptsScreen = () => {
       ...prevState,
       [category]: prevState[category].filter(
         (script) =>
-          getBaseNameAndVersion(script.name).baseName !== baseScriptName,
+          getBaseNameAndVersion(script.name).baseName !== baseScriptName
       ),
     }));
 
@@ -1166,7 +1165,7 @@ const ScriptsScreen = () => {
     // Find the script in both categories
     const webAppScript = scripts.webApps.find((s) => s.name === selectedScript);
     const openScadScript = scripts.openSCAD.find(
-      (s) => s.name === selectedScript,
+      (s) => s.name === selectedScript
     );
 
     // Use whichever script was found
@@ -1313,7 +1312,7 @@ const ScriptsScreen = () => {
                             openUpward,
                           });
                           const script = scripts[activeTab].find(
-                            (s) => s.name === selectedScript,
+                            (s) => s.name === selectedScript
                           );
                           if (script) setActiveCard(script.id);
                         }}
@@ -1423,11 +1422,11 @@ const ScriptsScreen = () => {
           deleteConfirmation.isDeleteAll
             ? handleDeleteAllVersions(
                 deleteConfirmation.category,
-                deleteConfirmation.script,
+                deleteConfirmation.script
               )
             : handleDeleteScript(
                 deleteConfirmation.category,
-                deleteConfirmation.script,
+                deleteConfirmation.script
               )
         }
         scriptName={deleteConfirmation.script?.name}
@@ -1441,7 +1440,7 @@ const ScriptsScreen = () => {
         onConfirm={() => {
           handleDeleteScript(
             revertConfirmation.category,
-            revertConfirmation.script,
+            revertConfirmation.script
           );
           setRevertConfirmation({ show: false, script: null, category: null });
         }}
@@ -1453,12 +1452,12 @@ const ScriptsScreen = () => {
 
           // Find all versions of this script
           const baseScriptName = getBaseNameAndVersion(
-            revertConfirmation.script.name,
+            revertConfirmation.script.name
           ).baseName;
           const relatedScripts =
             scripts[revertConfirmation.category]?.filter(
               (script) =>
-                getBaseNameAndVersion(script.name).baseName === baseScriptName,
+                getBaseNameAndVersion(script.name).baseName === baseScriptName
             ) || [];
 
           // Find the highest version number

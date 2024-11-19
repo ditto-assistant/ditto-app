@@ -17,7 +17,7 @@ export function usePresignedUrls() {
   const context = useContext(PresignedUrlContext);
   if (context === undefined) {
     throw new Error(
-      "usePresignedUrls must be used within a PresignedUrlProvider",
+      "usePresignedUrls must be used within a PresignedUrlProvider"
     );
   }
   return context;

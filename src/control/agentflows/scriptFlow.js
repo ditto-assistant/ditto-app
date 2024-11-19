@@ -8,6 +8,19 @@ import {
 
 /**
  * Handles script generation flow (OpenSCAD or HTML)
+ * @typedef {import("../../types").ModelPreferences} ModelPreferences
+ * @param {Object} params - The parameters for script generation.
+ * @param {string} params.response - The user's response to the script generation prompt.
+ * @param {string} params.tag - The tag used to identify the script generation prompt.
+ * @param {function} params.templateFunction - The function that constructs the script generation prompt.
+ * @param {function} params.systemTemplateFunction - The function that constructs the system prompt for the script generation.
+ * @param {function} params.downloadFunction - The function that downloads the generated script.
+ * @param {string} params.scriptType - The type of script to generate.
+ * @param {string} params.scriptContents - The contents of the script to generate.
+ * @param {string} params.scriptName - The name of the script to generate.
+ * @param {Array} params.memories - The memories of the user.
+ * @param {Object} params.updateConversation - The function to update the conversation.
+ * @param {ModelPreferences} params.preferences - The preferences of the user.
  */
 export const handleScriptGeneration = async ({
   response,
@@ -24,13 +37,14 @@ export const handleScriptGeneration = async ({
   image,
   memories,
   updateConversation,
+  preferences,
 }) => {
   const query = response.split(tag)[1];
   const constructedPrompt = templateFunction(
     query,
     scriptContents,
     memories.longTermMemory,
-    memories.shortTermMemory,
+    memories.shortTermMemory
   );
 
   console.log("%c" + constructedPrompt, "color: green");
@@ -41,17 +55,17 @@ export const handleScriptGeneration = async ({
     scriptResponse = await promptLLM(
       constructedPrompt,
       systemTemplateFunction(),
-      "gemini-1.5-flash",
+      preferences.programmerModel,
       image,
-      () => {}, // Prevent streaming updates
+      () => {} // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
     scriptResponse = await updaterAgent(
       prompt,
       scriptContents,
-      "gemini-1.5-flash",
-      true,
+      preferences.programmerModel,
+      true
     );
     console.log("%c" + scriptResponse, "color: yellow");
   }
@@ -80,7 +94,7 @@ export const generateScriptName = async (script, query) => {
   let scriptToNameResponse = await promptLLM(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
-    "gemini-1.5-flash",
+    "gemini-1.5-flash"
   );
 
   // Handle errors and retries
@@ -89,7 +103,7 @@ export const generateScriptName = async (script, query) => {
     scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gemini-1.5-flash",
+      "gemini-1.5-flash"
     );
     if (scriptToNameResponse.includes("error sending request")) {
       console.log("Second attempt failed, defaulting to 'App Name Here'");
@@ -148,7 +162,7 @@ export const handleWorkingOnScript = (cleanedScript, filename, scriptType) => {
 const updateScriptInLocalStorage = (scriptName, cleanedScript, scriptType) => {
   let scriptTypeObject = JSON.parse(localStorage.getItem(scriptType) || "[]");
   const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === scriptName,
+    (script) => script.name === scriptName
   );
   scriptTypeObject[scriptIndex].content = cleanedScript;
   localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
@@ -161,14 +175,14 @@ const saveWorkingScript = (name, cleanedScript, scriptType) => {
       script: name,
       contents: cleanedScript,
       scriptType: scriptType,
-    }),
+    })
   );
 };
 
 const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
   const scriptTypeObject = JSON.parse(localStorage.getItem(scriptType) || "[]");
   const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === filename,
+    (script) => script.name === filename
   );
 
   if (scriptIndex !== -1) {

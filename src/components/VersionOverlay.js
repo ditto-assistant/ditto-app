@@ -78,7 +78,7 @@ const VersionOverlay = ({
         })}
       </AnimatePresence>
     </motion.div>,
-    document.body,
+    document.body
   );
 };
 

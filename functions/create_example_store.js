@@ -35,7 +35,7 @@ const getTextEmbeddings = async (text) => {
         body: JSON.stringify({
           instances: [{ content: text }],
         }),
-      },
+      }
     );
     const data = await apiResponse.json();
     responseEmbeddings = data.predictions[0].embeddings.values;
@@ -76,7 +76,7 @@ const createExampleStore = async () => {
           const promptEmbedding = await getTextEmbeddings(pair.prompt);
           const responseEmbedding = await getTextEmbeddings(pair.response);
           const promptAndResponseEmbedding = await getTextEmbeddings(
-            `${pair.prompt} ${pair.response}`,
+            `${pair.prompt} ${pair.response}`
           );
           return {
             prompt: pair.prompt,
@@ -85,17 +85,17 @@ const createExampleStore = async () => {
             responseEmbedding,
             promptAndResponseEmbedding,
           };
-        }),
+        })
       );
       newExampleObj.examples = newExamples;
       return newExampleObj;
-    }),
+    })
   );
 
   // save the updated examples to modules/exampleStore.json
   fs.writeFileSync(
     "./modules/exampleStore.json",
-    JSON.stringify(updatedExamples),
+    JSON.stringify(updatedExamples)
   );
 };
 

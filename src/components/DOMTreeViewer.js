@@ -4,27 +4,8 @@ import { DataSet } from "vis-data";
 import AceEditor from "react-ace";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconButton } from "@mui/material";
-import {
-  FaTimes,
-  FaCheck,
-  FaComments,
-  FaUndo,
-  FaRedo,
-  FaHistory,
-  FaAlignLeft,
-} from "react-icons/fa";
+import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { textEmbed } from "../api/LLM";
-import { getModelPreferencesFromFirestore } from "../control/firebase";
-import {
-  htmlTemplate,
-  htmlSystemTemplate,
-} from "../ditto/templates/htmlTemplate";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-// import { getShortTermMemory, getLongTermMemory } from '../control/memory';
-import updaterAgent from "../control/updaterAgent";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -335,7 +316,7 @@ const DOMTreeViewer = ({
     networkRef.current = new Network(
       containerRef.current,
       { nodes, edges },
-      options,
+      options
     );
 
     networkRef.current.on("click", (params) => {
@@ -466,7 +447,7 @@ const DOMTreeViewer = ({
         // Replace the old node with the new content
         nodeToUpdate.parentNode.replaceChild(
           tempContainer.firstChild,
-          nodeToUpdate,
+          nodeToUpdate
         );
 
         // Get the updated HTML content

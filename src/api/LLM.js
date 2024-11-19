@@ -1,3 +1,4 @@
+import { DEFAULT_PREFERENCES, IMAGE_GENERATION_MODELS } from "../constants";
 import { auth } from "../control/firebase";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
@@ -20,7 +21,7 @@ export async function promptLLM(
   systemPrompt,
   model = "gemini-1.5-flash",
   imageURL = "",
-  textCallback = null,
+  textCallback = null
 ) {
   console.log("Sending prompt to LLM: ", model);
   let responseMessage = "";
@@ -96,11 +97,13 @@ export async function promptLLM(
  * @async
  * @function openaiImageGeneration
  * @param {string} prompt - The prompt for image generation.
- * @param {string} [model='dall-e-3'] - The model to use for image generation.
  * @returns {Promise<string>} A promise that resolves to the generated image URL.
  * @throws {Error} If there's an error during the image generation process.
  */
-export async function openaiImageGeneration(prompt, model = "dall-e-3") {
+export async function openaiImageGeneration(
+  prompt,
+  preferences = DEFAULT_PREFERENCES.imageGeneration
+) {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
@@ -115,7 +118,8 @@ export async function openaiImageGeneration(prompt, model = "dall-e-3") {
     body: JSON.stringify({
       userID: tok.ok.userID,
       prompt,
-      model,
+      model: preferences.model,
+      size: preferences.size.wh,
     }),
   });
   return await response.text();
