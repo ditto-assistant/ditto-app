@@ -1,3 +1,4 @@
+import { DEFAULT_PREFERENCES, IMAGE_GENERATION_MODELS } from "../constants";
 import { auth } from "../control/firebase";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
@@ -99,7 +100,7 @@ export async function promptLLM(
  * @returns {Promise<string>} A promise that resolves to the generated image URL.
  * @throws {Error} If there's an error during the image generation process.
  */
-export async function openaiImageGeneration(prompt, preferences = { model: "dall-e-3", size: "1024x1024" }) {
+export async function openaiImageGeneration(prompt, preferences = DEFAULT_PREFERENCES.imageGeneration) {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
@@ -115,7 +116,7 @@ export async function openaiImageGeneration(prompt, preferences = { model: "dall
       userID: tok.ok.userID,
       prompt,
       model: preferences.model,
-      size: preferences.size,
+      size: preferences.size.wh,
     }),
   });
   return await response.text();

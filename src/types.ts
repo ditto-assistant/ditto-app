@@ -14,9 +14,9 @@ export type Model =
   | "mistral-nemo"
   | "mistral-large"
   | "llama-3-2"
-  | "dalle-2"
-  | "dalle-3"
-  | "dalle-3-hd";
+  | "dall-e-2"
+  | "dall-e-3"
+  | "dall-e-3-hd";
 
 export type ImageGenerationSize = { wh: string; description: string; supportedModels: Model[] };
 
