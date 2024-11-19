@@ -100,7 +100,9 @@ const ModelDropdown = ({
             </span>
           )}
           {selectedModel?.isFree && <span style={styles.freeBadge}>FREE</span>}
-          {selectedModel?.isMaintenance && (<span style={styles.maintenanceBadge}>MAINTENANCE</span>)}
+          {selectedModel?.isMaintenance && (
+            <span style={styles.maintenanceBadge}>MAINTENANCE</span>
+          )}
         </div>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
@@ -130,21 +132,21 @@ const ModelDropdown = ({
                   ...styles.option,
                   opacity:
                     (model.isPremium && !hasEnoughBalance) ||
-                      model.isMaintenance
+                    model.isMaintenance
                       ? 0.5
                       : 1,
                   cursor:
                     (model.isPremium && !hasEnoughBalance) ||
-                      model.isMaintenance
+                    model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
                 }}
                 whileHover={
                   !(model.isPremium && !hasEnoughBalance) &&
-                    !model.isMaintenance
+                  !model.isMaintenance
                     ? {
-                      backgroundColor: "rgba(88, 101, 242, 0.1)",
-                    }
+                        backgroundColor: "rgba(88, 101, 242, 0.1)",
+                      }
                     : {}
                 }
                 onClick={() => handleSelect(model.id)}

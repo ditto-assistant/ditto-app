@@ -100,7 +100,10 @@ export async function promptLLM(
  * @returns {Promise<string>} A promise that resolves to the generated image URL.
  * @throws {Error} If there's an error during the image generation process.
  */
-export async function openaiImageGeneration(prompt, preferences = DEFAULT_PREFERENCES.imageGeneration) {
+export async function openaiImageGeneration(
+  prompt,
+  preferences = DEFAULT_PREFERENCES.imageGeneration,
+) {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);

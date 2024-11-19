@@ -21,9 +21,7 @@ import { Button, useMediaQuery, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "./Toast";
 import DOMTreeViewer from "./DOMTreeViewer";
-import {
-  syncLocalScriptsWithFirestore,
-} from "../control/firebase"; // Changed from '../control/agent'
+import { syncLocalScriptsWithFirestore } from "../control/firebase"; // Changed from '../control/agent'
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { textEmbed } from "../api/LLM";
@@ -279,13 +277,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
       const historyText =
         scriptChatHistory.length > 0
           ? "\nPrevious commands:\n" +
-          scriptChatHistory
-            .slice(-20)
-            .map(
-              (h) =>
-                `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
-            )
-            .join("\n")
+            scriptChatHistory
+              .slice(-20)
+              .map(
+                (h) =>
+                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
+              )
+              .join("\n")
           : "";
 
       const messageContent = selectedCodeAttachment
@@ -1497,7 +1495,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         </h4>
                         <ModelDropdown
                           value={preferences.programmerModel}
-                          onChange={(newModel) => { updatePreferences({ programmerModel: newModel }); }}
+                          onChange={(newModel) => {
+                            updatePreferences({ programmerModel: newModel });
+                          }}
                           hasEnoughBalance={
                             balanceNum >= 1.0 && isBalanceInBillions
                           }

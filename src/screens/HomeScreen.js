@@ -63,11 +63,11 @@ export default function HomeScreen() {
     return savedConversation
       ? JSON.parse(savedConversation)
       : {
-        messages: [
-          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-        ],
-        is_typing: false,
-      };
+          messages: [
+            { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
+          ],
+          is_typing: false,
+        };
   };
 
   const [conversation, setConversation] = useState(
