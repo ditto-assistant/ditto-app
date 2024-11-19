@@ -18,7 +18,7 @@ export default async function updaterAgent(
     const taskWriteup = await promptLLM(
       programmerAgentPlanner(prompt, scriptContents),
       htmlSystemTemplate(),
-      "gemini-1.5-pro"
+      programmerModel
     ); // The somewhat important model, which plans the tasks
 
     // Step 2: Generate code snippets from task writeup
@@ -31,7 +31,8 @@ export default async function updaterAgent(
     // Step 3: Apply code snippets to script
     let finalScript = await promptLLM(
       programmerAgentTaskApplier(codeSnippets, scriptContents),
-      htmlSystemTemplate()
+      htmlSystemTemplate(),
+      "gemini-1.5-flash"
     ); // defaults to gemini-1.5-flash for a fast applier
 
     // Clean up the script by removing markdown code block markers
