@@ -1,11 +1,11 @@
-import { promptLLM } from "../api/LLM";
+import { promptLLM } from "../../api/LLM";
 import {
   programmerAgentPlanner,
   programmerAgentTaskCoder,
   programmerAgentTaskApplier,
   programmerAgentContinuer,
   htmlSystemTemplate,
-} from "../ditto/templates/agentUpdaterTemplates";
+} from "../templates/agentUpdaterTemplates";
 
 export default async function updaterAgent(
   prompt,

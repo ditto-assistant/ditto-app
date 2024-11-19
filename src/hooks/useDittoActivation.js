@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import HeyDitto from "../ditto/activation/heyDitto";
+import HeyDitto from "../control/activation/heyDitto";
 /**
  * Access the DittoActivation context.
  *

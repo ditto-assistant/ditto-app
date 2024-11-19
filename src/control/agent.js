@@ -1,33 +1,28 @@
 import { collection, addDoc, vector } from "firebase/firestore";
+import { promptLLM, textEmbed, getRelevantExamples } from "../api/LLM";
+
+// import { huggingFaceEmbed } from "../control/modules/huggingFaceChat";
 import {
-  promptLLM,
-  textEmbed,
-  openaiImageGeneration,
-  getRelevantExamples,
-} from "../api/LLM";
-import { googleSearch } from "../api/searchEngine";
-import { handleHomeAssistantTask } from "./agentTools";
-import { mainTemplate, systemTemplate } from "../ditto/templates/mainTemplate";
+  mainTemplate,
+  systemTemplate,
+} from "../control/templates/mainTemplate";
 import {
   openscadTemplate,
   openscadSystemTemplate,
-} from "../ditto/templates/openscadTemplate";
+} from "../control/templates/openscadTemplate";
 import {
   htmlTemplate,
   htmlSystemTemplate,
-} from "../ditto/templates/htmlTemplate";
-import {
-  scriptToNameSystemTemplate,
-  scriptToNameTemplate,
-} from "../ditto/templates/scriptToNameTemplate";
-import {
-  googleSearchTemplate,
-  googleSearchSystemTemplate,
-} from "../ditto/templates/googleSearchTemplate";
-import updaterAgent from "./updaterAgent";
+} from "../control/templates/htmlTemplate";
+
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import { db, saveScriptToFirestore } from "./firebase";
+import { db } from "./firebase";
+
+import { handleScriptGeneration } from "./agentflows/scriptFlow";
+import { handleImageGeneration } from "./agentflows/imageFlow";
+import { handleGoogleSearch } from "./agentflows/searchFlow";
+import { handleHomeAssistant } from "./agentflows/homeFlow";
 
 const mode = import.meta.env.MODE;
 
@@ -319,10 +314,6 @@ export const sendPrompt = async (
   }
 };
 
-const handleInitialization = (prompt) => {
-  localStorage.setItem("thinking", JSON.stringify({ prompt: prompt }));
-};
-
 const fetchMemories = async (userID, embedding) => {
   // if embedding is ""
   if (embedding === "") {
@@ -349,49 +340,6 @@ const fetchScriptDetails = () => {
   return { scriptName, scriptType, scriptContents };
 };
 
-const generateScriptName = async (script, query) => {
-  const scriptToNameConstructedPrompt = scriptToNameTemplate(script, query);
-  console.log("%c" + scriptToNameConstructedPrompt, "color: green");
-  let scriptToNameResponse = await promptLLM(
-    scriptToNameConstructedPrompt,
-    scriptToNameSystemTemplate(),
-    "gemini-1.5-flash",
-  );
-
-  // Check for API error and retry once
-  if (
-    scriptToNameResponse.includes(
-      "error sending request: error response from API: status 500",
-    )
-  ) {
-    console.log("API error detected, retrying script name generation...");
-    scriptToNameResponse = await promptLLM(
-      scriptToNameConstructedPrompt,
-      scriptToNameSystemTemplate(),
-      "gemini-1.5-flash",
-    );
-    if (
-      scriptToNameResponse.includes(
-        "error sending request: error response from API: status 500",
-      )
-    ) {
-      console.log("Second attempt failed, defaulting to 'App Name Here'");
-      scriptToNameResponse = "App Name Here";
-    }
-  }
-
-  // Check user balance
-  if (scriptToNameResponse.includes("user balance is:")) {
-    alert("Please add more Tokens in Settings to continue using this app.");
-    scriptToNameResponse = "App Name Here";
-  }
-
-  // print the response in yellow
-  console.log("%c" + scriptToNameResponse, "color: yellow");
-  // strip any whitespace from the response or the Script Name: part
-  return scriptToNameResponse.trim().replace("Script Name:", "").trim();
-};
-
 export const processResponse = async (
   response,
   prompt,
@@ -404,33 +352,22 @@ export const processResponse = async (
   updateConversation,
   preferences,
 ) => {
-  toolTriggered = true; // Set this flag to stop streaming
+  toolTriggered = true;
 
   console.log("%c" + response, "color: yellow");
-  let isValidResponse = true;
-  let errorMessage =
-    "Error: Payment Required. Please check your token balance.";
 
-  if (
-    response === errorMessage ||
-    response.includes("402") ||
-    response.includes("Payment Required")
-  ) {
-    isValidResponse = false;
-    response = errorMessage;
-
-    // Update conversation with error message
-    updateConversation((prevState) => {
-      const messages = [...prevState.messages];
-      messages[messages.length - 1] = {
-        ...messages[messages.length - 1],
-        text: errorMessage,
-        isTyping: false,
-        isError: true,
-      };
-      return { ...prevState, messages };
-    });
-
+  // Handle payment/error cases
+  if (response.includes("402") || response.includes("Payment Required")) {
+    const errorMessage =
+      "Error: Payment Required. Please check your token balance.";
+    updateConversation((prevState) => ({
+      ...prevState,
+      messages: prevState.messages.map((msg, i) =>
+        i === prevState.messages.length - 1
+          ? { ...msg, text: errorMessage, isTyping: false, isError: true }
+          : msg,
+      ),
+    }));
     return errorMessage;
   }
 
@@ -504,194 +441,95 @@ export const processResponse = async (
     }
   };
 
-  if (response.includes("<OPENSCAD>") && isValidResponse) {
-    const query = response.split("<OPENSCAD>")[1];
-    await updateMessageWithToolStatus(
-      "Generating OpenSCAD Script...",
-      "openscad",
-    );
-    const finalResponse = await handleScriptGeneration(
-      response,
-      "<OPENSCAD>",
-      openscadTemplate,
-      openscadSystemTemplate,
-      downloadOpenscadScript,
-      "openSCAD",
-      scriptContents,
-      scriptName,
-      userPromptEmbedding,
-      prompt,
-      userID,
-      image,
-      memories,
-      updateConversation,
-    );
-    const displayResponse = `**OpenSCAD Script Generated and Downloaded.**\n- Task: ${query}`;
-    await updateMessageWithToolStatus("complete", "openscad", displayResponse);
-    return displayResponse;
-  } else if (response.includes("<HTML_SCRIPT>") && isValidResponse) {
-    const query = response.split("<HTML_SCRIPT>")[1];
-    await updateMessageWithToolStatus("Generating HTML Script...", "html");
-    const finalResponse = await handleScriptGeneration(
-      response,
-      "<HTML_SCRIPT>",
-      htmlTemplate,
-      htmlSystemTemplate,
-      downloadHTMLScript,
-      "webApps",
-      scriptContents,
-      scriptName,
-      userPromptEmbedding,
-      prompt,
-      userID,
-      image,
-      memories,
-      updateConversation,
-    );
-    const displayResponse = `**HTML Script Generated and Downloaded.**\n- Task: ${query}`;
-    await updateMessageWithToolStatus("complete", "html", displayResponse);
-    return displayResponse;
-  } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
-    const query = response.split("<IMAGE_GENERATION>")[1];
-    await updateMessageWithToolStatus("Generating Image", "image");
-    const imageURL = await openaiImageGeneration(query, preferences.imageGeneration);
-    const finalResponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
-    await updateMessageWithToolStatus("complete", "image", finalResponse);
-    return finalResponse;
-  } else if (response.includes("<GOOGLE_SEARCH>") && isValidResponse) {
-    const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
-    await updateMessageWithToolStatus("Searching Google", "search");
-    const googleSearchResponse = await googleSearch(query);
-    let searchResults =
-      "Google Search Query: " + query + "\n" + googleSearchResponse;
-    const googleSearchAgentTemplate = googleSearchTemplate(
-      prompt,
-      searchResults,
-    );
-    console.log("%c" + googleSearchAgentTemplate, "color: green");
-    const googleSearchAgentResponse = await promptLLM(
-      googleSearchAgentTemplate,
-      googleSearchSystemTemplate(),
-      "gemini-1.5-flash",
-    );
-    console.log("%c" + googleSearchAgentResponse, "color: yellow");
-    const finalResponse =
-      "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
-    await updateMessageWithToolStatus("complete", "search", finalResponse);
-    return finalResponse;
-  } else if (response.includes("<GOOGLE_HOME>") && isValidResponse) {
-    const query = response.split("<GOOGLE_HOME>")[1];
-    await updateMessageWithToolStatus("Executing Home Assistant Task", "home");
-    let success = await handleHomeAssistantTask(query);
-    const finalResponse = success
-      ? `Home Assistant Task: ${query}\n\nTask completed successfully.`
-      : `Home Assistant Task: ${query}\n\nTask failed.`;
-    await updateMessageWithToolStatus(
-      success ? "complete" : "failed",
-      "home",
-      finalResponse,
-    );
-    return finalResponse;
+  try {
+    // Handle OpenSCAD script generation
+    if (response.includes("<OPENSCAD>")) {
+      await updateMessageWithToolStatus(
+        "Generating OpenSCAD Script...",
+        "openscad",
+      );
+      const finalResponse = await handleScriptGeneration({
+        response,
+        tag: "<OPENSCAD>",
+        templateFunction: openscadTemplate,
+        systemTemplateFunction: openscadSystemTemplate,
+        downloadFunction: downloadOpenscadScript,
+        scriptType: "openSCAD",
+        scriptContents,
+        scriptName,
+        userPromptEmbedding,
+        prompt,
+        userID,
+        image,
+        memories,
+        updateConversation,
+      });
+      await updateMessageWithToolStatus("complete", "openscad", finalResponse);
+      return finalResponse;
+    }
+
+    // Handle HTML script generation
+    if (response.includes("<HTML_SCRIPT>")) {
+      await updateMessageWithToolStatus("Generating HTML Script...", "html");
+      const finalResponse = await handleScriptGeneration({
+        response,
+        tag: "<HTML_SCRIPT>",
+        templateFunction: htmlTemplate,
+        systemTemplateFunction: htmlSystemTemplate,
+        downloadFunction: downloadHTMLScript,
+        scriptType: "webApps",
+        scriptContents,
+        scriptName,
+        userPromptEmbedding,
+        prompt,
+        userID,
+        image,
+        memories,
+        updateConversation,
+      });
+      await updateMessageWithToolStatus("complete", "html", finalResponse);
+      return finalResponse;
+    }
+
+    // Handle image generation
+    if (response.includes("<IMAGE_GENERATION>")) {
+      await updateMessageWithToolStatus("Generating Image", "image");
+      const finalResponse = await handleImageGeneration(response);
+      await updateMessageWithToolStatus("complete", "image", finalResponse);
+      return finalResponse;
+    }
+
+    // Handle Google search
+    if (response.includes("<GOOGLE_SEARCH>")) {
+      await updateMessageWithToolStatus("Searching Google", "search");
+      const finalResponse = await handleGoogleSearch(response, prompt);
+      await updateMessageWithToolStatus("complete", "search", finalResponse);
+      return finalResponse;
+    }
+
+    // Handle Home Assistant tasks
+    if (response.includes("<GOOGLE_HOME>")) {
+      await updateMessageWithToolStatus(
+        "Executing Home Assistant Task",
+        "home",
+      );
+      const finalResponse = await handleHomeAssistant(response);
+      await updateMessageWithToolStatus(
+        finalResponse.includes("failed") ? "failed" : "complete",
+        "home",
+        finalResponse,
+      );
+      return finalResponse;
+    }
+
+    toolTriggered = false;
+    return response;
+  } catch (error) {
+    console.error("Error in processResponse:", error);
+    const errorMessage = "An error occurred while processing your request.";
+    await updateMessageWithToolStatus("failed", null, errorMessage);
+    return errorMessage;
   }
-
-  // After tool processing is complete, make sure to reset the flag
-  toolTriggered = false;
-
-  return response;
-};
-
-const handleScriptGeneration = async (
-  response,
-  tag,
-  templateFunction,
-  systemTemplateFunction,
-  downloadFunction,
-  scriptType,
-  scriptContents,
-  scriptName,
-  userPromptEmbedding,
-  prompt,
-  userID,
-  image,
-  memories,
-  updateConversation,
-) => {
-  const query = response.split(tag)[1];
-  const constructedPrompt = templateFunction(
-    query,
-    scriptContents,
-    memories.longTermMemory,
-    memories.shortTermMemory,
-  );
-
-  console.log("%c" + constructedPrompt, "color: green");
-
-  let scriptResponse = "";
-
-  // Don't save the "Generating..." message to Firestore
-  updateConversation((prevState) => {
-    const messages = [...prevState.messages];
-    messages[messages.length - 1] = {
-      ...messages[messages.length - 1],
-      text: `**${scriptType === "webApps" ? "HTML" : "OpenSCAD"} Script Generation**\n- Task: ${query}`,
-      toolStatus: "Generating",
-      toolType: scriptType.toLowerCase(),
-      isTyping: false,
-      showToolBadge: true,
-    };
-    return { ...prevState, messages };
-  });
-
-  if (scriptContents === "") {
-    scriptResponse = await promptLLM(
-      constructedPrompt,
-      systemTemplateFunction(),
-      "gemini-1.5-flash",
-      image,
-      () => { }, // Prevent streaming updates
-    );
-    console.log("%c" + scriptResponse, "color: yellow");
-  } else {
-    scriptResponse = await updaterAgent(
-      prompt,
-      scriptContents,
-      "gemini-1.5-flash",
-      true,
-    );
-    console.log("%c" + scriptResponse, "color: yellow");
-  }
-
-  const cleanedScript = cleanScriptResponse(scriptResponse);
-  if (scriptName === "") {
-    scriptName = await generateScriptName(cleanedScript, query);
-  }
-
-  const fileName = downloadFunction(cleanedScript, scriptName);
-  let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf("."));
-  let scriptTypeToWords = scriptType === "webApps" ? "HTML" : "OpenSCAD";
-
-  await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
-  handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-
-  const newResponse = `**${scriptTypeToWords} Script Generated and Downloaded.**\n- Task: ${query}`;
-
-  // Return the response without saving to memory - let updateMessageWithToolStatus handle that
-  return newResponse;
-};
-
-const cleanScriptResponse = (response) => {
-  // add conditionals to not error out for each of the three operations above
-  let cleanedScript = response;
-  if (cleanedScript.includes("```")) {
-    cleanedScript = cleanedScript.split("```")[1];
-  }
-  if (cleanedScript.includes("\n")) {
-    cleanedScript = cleanedScript.split("\n").slice(1).join("\n");
-  }
-  if (cleanedScript.includes("```")) {
-    cleanedScript = cleanedScript.split("```")[0];
-  }
-  return cleanedScript;
 };
 
 export const saveToMemory = async (userID, prompt, response, embedding) => {
@@ -748,62 +586,4 @@ const saveToLocalStorage = (prompt, response, timestamp, pairID) => {
 const loadFromLocalStorage = (key, defaultValue) => {
   const storedValue = localStorage.getItem(key);
   return storedValue ? JSON.parse(storedValue) : defaultValue;
-};
-
-export const handleWorkingOnScript = (cleanedScript, filename, scriptType) => {
-  console.log("Handling working on script state...");
-  const workingOnScriptJSONString = localStorage.getItem("workingOnScript");
-  if (workingOnScriptJSONString) {
-    const scriptName = JSON.parse(workingOnScriptJSONString).script;
-    updateScriptInLocalStorage(scriptName, cleanedScript, scriptType);
-    saveWorkingScript(scriptName, cleanedScript, scriptType);
-  } else {
-    const newScript = {
-      script: filename,
-      contents: cleanedScript,
-      scriptType: scriptType,
-    };
-    localStorage.setItem("workingOnScript", JSON.stringify(newScript));
-    saveScriptToLocalStorage(filename, cleanedScript, scriptType);
-  }
-};
-
-const saveWorkingScript = (name, cleanedScript, scriptType) => {
-  localStorage.setItem(
-    "workingOnScript",
-    JSON.stringify({
-      script: name,
-      contents: cleanedScript,
-      scriptType: scriptType,
-    }),
-  );
-};
-
-const updateScriptInLocalStorage = (scriptName, cleanedScript, scriptType) => {
-  let scriptTypeObject = loadFromLocalStorage(scriptType, []);
-  const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === scriptName,
-  );
-  scriptTypeObject[scriptIndex].content = cleanedScript;
-  localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
-};
-
-const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
-  const scriptTypeObject = loadFromLocalStorage(scriptType, []);
-  // check if already in and JUST update the content
-  const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === filename,
-  );
-  if (scriptIndex !== -1) {
-    scriptTypeObject[scriptIndex].content = cleanedScript;
-    localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
-    return;
-  }
-  scriptTypeObject.push({
-    id: Date.now(),
-    name: filename,
-    content: cleanedScript,
-    scriptType: scriptType,
-  });
-  localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
 };

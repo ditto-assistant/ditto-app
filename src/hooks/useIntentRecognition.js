@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import IntentRecognition from "../ditto/intent/intentRecognition";
+import IntentRecognition from "../control/intent/intentRecognition";
 
 /**
  * Access the IntentRecognition context.

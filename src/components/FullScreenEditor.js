@@ -32,7 +32,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useIntentRecognition } from "../hooks/useIntentRecognition";
 import FullScreenSpinner from "./LoadingSpinner";
-import updaterAgent from "../control/updaterAgent";
+import updaterAgent from "../control/agentflows/updaterAgentFlow";
 import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
