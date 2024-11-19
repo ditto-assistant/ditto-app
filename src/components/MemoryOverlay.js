@@ -203,7 +203,7 @@ function MemoryOverlay({ closeOverlay }) {
               <div style={styles.modelSelector}>
                 <label style={styles.modelLabel}>Main Agent Model</label>
                 <ModelDropdown
-                  value={preferences.mainModel ?? DEFAULT_PREFERENCES.mainModel}
+                  value={preferences.mainModel}
                   onChange={(value) => updatePreferences({ mainModel: value })}
                   hasEnoughBalance={hasEnoughBalance}
                   inMemoryOverlay={true}
@@ -212,7 +212,7 @@ function MemoryOverlay({ closeOverlay }) {
               <div style={styles.modelSelector}>
                 <label style={styles.modelLabel}>Programmer Model</label>
                 <ModelDropdown
-                  value={preferences.programmerModel ?? DEFAULT_PREFERENCES.programmerModel}
+                  value={preferences.programmerModel}
                   onChange={(value) => updatePreferences({ programmerModel: value })}
                   hasEnoughBalance={hasEnoughBalance}
                   inMemoryOverlay={true}
@@ -221,7 +221,7 @@ function MemoryOverlay({ closeOverlay }) {
               <div style={styles.modelSelector}>
                 <label style={styles.modelLabel}>Image Generation Model</label>
                 <ModelDropdownImage
-                  value={preferences.imageGeneration.model ?? DEFAULT_PREFERENCES.imageGeneration.model}
+                  value={preferences.imageGeneration}
                   onChange={(model, size) => updatePreferences({ imageGeneration: { model, size } })}
                   hasEnoughBalance={hasEnoughBalance}
                   inMemoryOverlay={true}

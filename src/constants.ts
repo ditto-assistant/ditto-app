@@ -1,4 +1,4 @@
-import { ModelOption, Model, ModelPreferences } from "./types";
+import { ModelOption, Model, ModelPreferences, ImageGenerationSize } from "./types";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
@@ -15,24 +15,32 @@ export const DEFAULT_MODELS: ModelOption[] = [
   { id: "mistral-large", name: "Mistral Large", isPremium: true },
 ] as const;
 
+export const IMAGE_GENERATION_SIZES: Record<string, ImageGenerationSize> = {
+  "256x256": { wh: "256x256", description: "Square (256x256)", supportedModels: ["dalle-2"] },
+  "512x512": { wh: "512x512", description: "Square (512x512)", supportedModels: ["dalle-2"] },
+  "1024x1024": { wh: "1024x1024", description: "Square (1024x1024)", supportedModels: ["dalle-2", "dalle-3"] },
+  "1792x1024": { wh: "1792x1024", description: "Landscape (1792x1024)", supportedModels: ["dalle-3"] },
+  "1024x1792": { wh: "1024x1792", description: "Portrait (1024x1792)", supportedModels: ["dalle-3"] },
+} as const;
+
 export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dalle-2",
     name: "DALL-E 2",
     isPremium: true,
-    sizeOptions: ["256x256", "512x512", "1024x1024"],
+    sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) => size.supportedModels.includes("dalle-2")),
   },
   {
     id: "dalle-3",
     name: "DALL-E 3",
     isPremium: true,
-    sizeOptions: ["1024x1024", "1792x1024", "1024x1792"],
+    sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) => size.supportedModels.includes("dalle-3")),
   },
   {
     id: "dalle-3-hd",
     name: "DALL-E 3 HD",
     isPremium: true,
-    sizeOptions: ["1024x1024", "1792x1024", "1024x1792"],
+    sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) => size.supportedModels.includes("dalle-3")),
   },
 ] as const;
 
@@ -47,6 +55,7 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   programmerModel: "llama-3-2",
   imageGeneration: {
     model: "dalle-3",
-    size: "1024x1024",
+    size: IMAGE_GENERATION_SIZES["1024x1024"],
   },
 };
+

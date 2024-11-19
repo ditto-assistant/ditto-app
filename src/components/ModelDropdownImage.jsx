@@ -12,8 +12,7 @@ import { styles as modelDropdownStyles } from "./ModelDropdown";
 /**
  * A dropdown component for selecting AI image generation models with size options
  * @param {object} props
- * @param {Model} props.value - Currently selected model ID
- * @param {ImageGenerationSize} props.selectedSize - Currently selected size
+ * @param {{model: Model, size: ImageGenerationSize}} props.value - Currently selected model and size
  * @param {(model: Model, size: ImageGenerationSize) => void} props.onChange - Callback when selection changes
  * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
@@ -21,7 +20,6 @@ import { styles as modelDropdownStyles } from "./ModelDropdown";
  */
 const ModelDropdownImage = ({
   value,
-  selectedSize,
   onChange,
   hasEnoughBalance,
   inMemoryOverlay = false,
@@ -31,7 +29,7 @@ const ModelDropdownImage = ({
   const dropdownRef = useRef(null);
 
   const selectedModel = IMAGE_GENERATION_MODELS.find(
-    (model) => model.id === value
+    (model) => model.id === value.model
   );
 
   useEffect(() => {
@@ -95,7 +93,7 @@ const ModelDropdownImage = ({
       >
         <div style={styles.selectedContent}>
           <span>{selectedModel?.name}</span>
-          <span style={styles.sizeIndicator}>{selectedSize}</span>
+          <span style={styles.sizeIndicator}>{value.size.description}</span>
           {selectedModel?.isPremium && (
             <span style={styles.premiumBadge}>
               <FaCrown style={styles.crownIcon} />
@@ -185,7 +183,7 @@ const ModelDropdownImage = ({
                     >
                       {model.sizeOptions?.map((size) => (
                         <motion.div
-                          key={size}
+                          key={size.wh}
                           style={{
                             ...styles.sizeOption,
                             backgroundColor:
@@ -198,7 +196,7 @@ const ModelDropdownImage = ({
                           }}
                           onClick={() => handleSelect(model.id, size)}
                         >
-                          {size}
+                          {size.description}
                         </motion.div>
                       ))}
                     </motion.div>

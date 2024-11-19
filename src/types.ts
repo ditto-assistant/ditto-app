@@ -18,12 +18,8 @@ export type Model =
   | "dalle-3"
   | "dalle-3-hd";
 
-export type ImageGenerationSize =
-  | "256x256" // Dalle-2 Only
-  | "512x512" // Dalle-2 Only
-  | "1024x1024" // Dalle-2 and 3
-  | "1792x1024" // Dalle-3 Only
-  | "1024x1792"; // Dalle-3 Only
+export type ImageGenerationSize = { wh: string; description: string; supportedModels: Model[] };
+
 
 export interface ModelOption {
   id: Model;
