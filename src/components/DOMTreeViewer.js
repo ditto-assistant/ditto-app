@@ -8,23 +8,9 @@ import {
   FaTimes,
   FaCheck,
   FaComments,
-  FaUndo,
-  FaRedo,
-  FaHistory,
   FaAlignLeft,
 } from "react-icons/fa";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { textEmbed } from "../api/LLM";
-import { getModelPreferencesFromFirestore } from "../control/firebase";
-import {
-  htmlTemplate,
-  htmlSystemTemplate,
-} from "../ditto/templates/htmlTemplate";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-// import { getShortTermMemory, getLongTermMemory } from '../control/memory';
-import updaterAgent from "../control/updaterAgent";
 
 const darkModeColors = {
   background: "#1E1F22",

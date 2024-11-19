@@ -40,18 +40,18 @@ export function LoadingSpinner({ size = 50, inline = false }) {
     overflow: "hidden",
     ...(inline
       ? {
-          width: size,
-          height: size,
-          display: "inline-flex",
-        }
+        width: size,
+        height: size,
+        display: "inline-flex",
+      }
       : {
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent overlay
-        }),
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent overlay
+      }),
   };
 
   const spinnerStyle = (index) => ({

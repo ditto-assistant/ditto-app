@@ -7,8 +7,6 @@ import {
 } from "../api/LLM";
 import { googleSearch } from "../api/searchEngine";
 import { handleHomeAssistantTask } from "./agentTools";
-
-// import { huggingFaceEmbed } from "../ditto/modules/huggingFaceChat";
 import { mainTemplate, systemTemplate } from "../ditto/templates/mainTemplate";
 import {
   openscadTemplate,
@@ -26,17 +24,10 @@ import {
   googleSearchTemplate,
   googleSearchSystemTemplate,
 } from "../ditto/templates/googleSearchTemplate";
-
 import updaterAgent from "./updaterAgent";
-
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import {
-  db,
-  saveScriptToFirestore,
-  grabConversationHistoryCount,
-  getModelPreferencesFromFirestore,
-} from "./firebase";
+import { db, saveScriptToFirestore } from "./firebase";
 
 const mode = import.meta.env.MODE;
 
@@ -44,7 +35,15 @@ const mode = import.meta.env.MODE;
 let toolTriggered = false;
 
 /**
- * Send a prompt to Ditto.
+ * @typedef {import("../types").ModelPreferences} ModelPreferences
+ * Sends a prompt to Ditto.
+ * @param {string} userID - The user's ID.
+ * @param {string} firstName - The user's first name.
+ * @param {string} prompt - The user's prompt.
+ * @param {string} image - The user's image.
+ * @param {string} userPromptEmbedding - The user's prompt embedding.
+ * @param {function} updateConversation - A function that updates the conversation.
+ * @param {ModelPreferences} preferences - The user's preferences.
  */
 export const sendPrompt = async (
   userID,
@@ -53,6 +52,7 @@ export const sendPrompt = async (
   image,
   userPromptEmbedding,
   updateConversation,
+  preferences,
 ) => {
   try {
     // Reset tool trigger state at the start of each prompt
@@ -91,9 +91,8 @@ export const sendPrompt = async (
       is_typing: true,
     }));
 
-    const [modelPreferences, memories, examplesString, scriptDetails] =
+    const [memories, examplesString, scriptDetails] =
       await Promise.all([
-        getModelPreferencesFromFirestore(userID),
         fetchMemories(userID, userPromptEmbedding),
         getRelevantExamples(userPromptEmbedding, 5),
         fetchScriptDetails(),
@@ -115,7 +114,7 @@ export const sendPrompt = async (
 
     console.log("%c" + constructedPrompt, "color: green");
 
-    let mainAgentModel = modelPreferences.mainModel;
+    let mainAgentModel = preferences.mainModel;
     // Disable Claude until our rate limits are increased
     if (mainAgentModel === "claude-3-5-sonnet") {
       mainAgentModel = "gemini-1.5-pro";
@@ -647,7 +646,7 @@ const handleScriptGeneration = async (
       systemTemplateFunction(),
       "gemini-1.5-flash",
       image,
-      () => {}, // Prevent streaming updates
+      () => { }, // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {

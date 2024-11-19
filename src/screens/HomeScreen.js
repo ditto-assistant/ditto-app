@@ -63,11 +63,11 @@ export default function HomeScreen() {
     return savedConversation
       ? JSON.parse(savedConversation)
       : {
-          messages: [
-            { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-          ],
-          is_typing: false,
-        };
+        messages: [
+          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
+        ],
+        is_typing: false,
+      };
   };
 
   const [conversation, setConversation] = useState(
@@ -404,6 +404,10 @@ export default function HomeScreen() {
     setShowStatusBar((prev) => !prev);
   };
 
+  /**
+   * Enlarges an image to a full screen view
+   * @param {string} imageUrl - The URL of the image to enlarge
+   */
   const handleImageEnlarge = (imageUrl) => {
     setEnlargedImage(imageUrl);
   };

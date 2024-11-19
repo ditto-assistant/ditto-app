@@ -15,6 +15,7 @@ import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
+import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -46,23 +47,25 @@ const router = createBrowserRouter(
           <Route path="success" element={<CheckoutSuccess />} />
         </Route>
       </Route>
-    </Route>,
-  ),
+    </Route>
+  )
 );
 
 export default function App() {
   return (
     <AuthProvider>
       <BalanceProvider>
-        <MemoryCountProvider>
-          <IntentRecognitionProvider>
-            <DittoActivationProvider>
-              <PresignedUrlProvider>
-                <RouterProvider router={router} />
-              </PresignedUrlProvider>
-            </DittoActivationProvider>
-          </IntentRecognitionProvider>
-        </MemoryCountProvider>
+        <ModelPreferencesProvider>
+          <MemoryCountProvider>
+            <IntentRecognitionProvider>
+              <DittoActivationProvider>
+                <PresignedUrlProvider>
+                  <RouterProvider router={router} />
+                </PresignedUrlProvider>
+              </DittoActivationProvider>
+            </IntentRecognitionProvider>
+          </MemoryCountProvider>
+        </ModelPreferencesProvider>
       </BalanceProvider>
     </AuthProvider>
   );

@@ -16,9 +16,24 @@ import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { useIntentRecognition } from "@/hooks/useIntentRecognition";
 import { textEmbed } from "../api/LLM";
 import { motion, AnimatePresence } from "framer-motion";
+import { useModelPreferences } from "@/hooks/useModelPreferences";
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
+/**
+ * A component that allows the user to send a message to the agent
+ * @param {Object} props - The component props
+ * @param {function(imageUrl: string): void} props.onImageEnlarge - A function that enlarges an image
+ * @param {function(): void} props.onCameraOpen - A function that opens the camera
+ * @param {string} props.capturedImage - The URL of the captured image
+ * @param {function(): void} props.onClearCapturedImage - A function that clears the captured image
+ * @param {boolean} props.showMediaOptions - Whether the media options are shown
+ * @param {function(): void} props.onOpenMediaOptions - A function that opens the media options
+ * @param {function(): void} props.onCloseMediaOptions - A function that closes the media options
+ * @param {function} props.updateConversation - A function that updates the conversation
+ * @param {function} props.onFocus - A function that handles the focus event
+ * @param {function} props.onBlur - A function that handles the blur event
+ */
 export default function SendMessage({
   onImageEnlarge,
   onCameraOpen,
@@ -50,6 +65,7 @@ export default function SendMessage({
   const [isImageEnlarged, setIsImageEnlarged] = useState(false);
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const { preferences } = useModelPreferences();
 
   useEffect(() => {
     isMobile.current = checkIfMobile();
@@ -274,6 +290,7 @@ export default function SendMessage({
           imageURI,
           userPromptEmbedding,
           updateConversation,
+          preferences,
         );
       } catch (error) {
         console.error("Error sending message:", error);

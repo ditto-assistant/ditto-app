@@ -25,7 +25,7 @@ registerRoute(
     request.destination === "script" && request.url.includes("assets/"),
   new StaleWhileRevalidate({
     cacheName: "lazy-chunks",
-  }),
+  })
 );
 
 // Set up App Shell-style routing
@@ -48,7 +48,7 @@ registerRoute(
   ({ url }) => url.origin === "https://fonts.googleapis.com",
   new StaleWhileRevalidate({
     cacheName: "google-fonts-stylesheets",
-  }),
+  })
 );
 
 // Cache the underlying font files with a cache-first strategy for 1 year.
@@ -62,7 +62,7 @@ registerRoute(
         maxEntries: 30,
       }),
     ],
-  }),
+  })
 );
 
 // Cache images
@@ -76,7 +76,7 @@ registerRoute(
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
       }),
     ],
-  }),
+  })
 );
 
 // Cache CSS files
@@ -84,7 +84,7 @@ registerRoute(
   ({ request }) => request.destination === "style",
   new StaleWhileRevalidate({
     cacheName: "styles",
-  }),
+  })
 );
 
 self.addEventListener("message", (event) => {

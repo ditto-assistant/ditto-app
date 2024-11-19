@@ -21,20 +21,12 @@ import { Button, useMediaQuery, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "./Toast";
 import DOMTreeViewer from "./DOMTreeViewer";
-import { parseHTML, stringifyHTML } from "../utils/htmlParser";
 import {
-  saveScriptToFirestore,
   syncLocalScriptsWithFirestore,
-  getModelPreferencesFromFirestore,
-  saveModelPreferencesToFirestore,
 } from "../control/firebase"; // Changed from '../control/agent'
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { textEmbed } from "../api/LLM";
-import {
-  htmlTemplate,
-  htmlSystemTemplate,
-} from "../ditto/templates/htmlTemplate";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -43,6 +35,7 @@ import FullScreenSpinner from "./LoadingSpinner";
 import updaterAgent from "../control/updaterAgent";
 import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
+import { useModelPreferences } from "@/hooks/useModelPreferences";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -187,11 +180,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const [scriptChatMessages, setScriptChatMessages] = useState([]);
   const [scriptChatInput, setScriptChatInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const { preferences, updatePreferences } = useModelPreferences();
   const scriptChatMessagesEndRef = useRef(null);
-  const [modelPreferences, setModelPreferences] = useState({
-    programmerModel: "claude-3-5-sonnet",
-  });
-  const userID = localStorage.getItem("userID");
   const isMobileRef = useRef(false);
   const [scriptChatSize, setScriptChatSize] = useState({
     width: isMobile ? window.innerWidth * 0.9 : 400,
@@ -239,13 +229,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const { balance } = useBalance();
   const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
   const isBalanceInBillions = balance?.includes("B");
-
-  useEffect(() => {
-    // Fetch user's preferred programmer model
-    getModelPreferencesFromFirestore(userID).then((prefs) => {
-      setModelPreferences(prefs);
-    });
-  }, [userID]);
 
   useEffect(() => {
     isMobileRef.current = checkIfMobile();
@@ -296,13 +279,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
       const historyText =
         scriptChatHistory.length > 0
           ? "\nPrevious commands:\n" +
-            scriptChatHistory
-              .slice(-20)
-              .map(
-                (h) =>
-                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
-              )
-              .join("\n")
+          scriptChatHistory
+            .slice(-20)
+            .map(
+              (h) =>
+                `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
+            )
+            .join("\n")
           : "";
 
       const messageContent = selectedCodeAttachment
@@ -345,7 +328,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
       const response = await updaterAgent(
         usersPrompt,
         code,
-        modelPreferences.programmerModel,
+        preferences.programmerModel,
         true,
       );
 
@@ -943,7 +926,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             const response = await updaterAgent(
               usersPrompt,
               code,
-              modelPreferences.programmerModel,
+              preferences.programmerModel,
               false,
             );
 
@@ -1005,25 +988,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     scriptChatInput,
     selectedCodeAttachment,
     code,
-    modelPreferences.programmerModel,
+    preferences.programmerModel,
     editHistory,
     historyIndex,
   ]);
-
-  // Add handler for model change
-  const handleModelChange = async (newModel) => {
-    const userID = localStorage.getItem("userID");
-    const newPreferences = {
-      ...modelPreferences,
-      programmerModel: newModel,
-    };
-    setModelPreferences(newPreferences);
-    await saveModelPreferencesToFirestore(
-      userID,
-      newPreferences.mainModel,
-      newPreferences.programmerModel,
-    );
-  };
 
   // Add handler for history reset
   const handleResetHistory = () => {
@@ -1528,8 +1496,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           Model
                         </h4>
                         <ModelDropdown
-                          value={modelPreferences.programmerModel}
-                          onChange={handleModelChange}
+                          value={preferences.programmerModel}
+                          onChange={(newModel) => { updatePreferences({ programmerModel: newModel }); }}
                           hasEnoughBalance={
                             balanceNum >= 1.0 && isBalanceInBillions
                           }
@@ -1871,7 +1839,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                         const response = await updaterAgent(
                           usersPrompt,
                           code,
-                          modelPreferences.programmerModel,
+                          preferences.programmerModel,
                           false,
                         );
 

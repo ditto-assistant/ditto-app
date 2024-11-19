@@ -2,20 +2,14 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
-import { useState, useEffect } from "react";
-import {
-  getModelPreferencesFromFirestore,
-  saveModelPreferencesToFirestore,
-} from "../control/firebase";
+import { useEffect } from "react";
 import ModelDropdown from "../components/ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
+import { useModelPreferences } from "@/hooks/useModelPreferences";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
-  const [modelPreferences, setModelPreferences] = useState({
-    mainModel: "gemini-1.5-flash",
-    programmerModel: "gemini-1.5-flash",
-  });
+  const { preferences, updatePreferences } = useModelPreferences();
   const { balance } = useBalance();
   const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
   const isBalanceInBillions = balance?.includes("B");
@@ -23,48 +17,17 @@ const CheckoutSuccess = () => {
 
   useEffect(() => {
     const initializeModels = async () => {
-      const userID = localStorage.getItem("userID");
-      const prefs = await getModelPreferencesFromFirestore(userID);
-
       // If user has enough balance and was using flash, automatically upgrade to pro
       if (hasEnoughBalance) {
-        const updatedPrefs = {
-          mainModel:
-            prefs.mainModel === "gemini-1.5-flash"
-              ? "gemini-1.5-pro"
-              : prefs.mainModel,
-          programmerModel:
-            prefs.programmerModel === "gemini-1.5-flash"
-              ? "gemini-1.5-pro"
-              : prefs.programmerModel,
-        };
-        await saveModelPreferencesToFirestore(
-          userID,
-          updatedPrefs.mainModel,
-          updatedPrefs.programmerModel,
-        );
-        setModelPreferences(updatedPrefs);
-      } else {
-        setModelPreferences(prefs);
+        updatePreferences({
+          mainModel: preferences.mainModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : preferences.mainModel,
+          programmerModel: preferences.programmerModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : preferences.programmerModel,
+        });
       }
     };
 
     initializeModels();
   }, [hasEnoughBalance]);
-
-  const handleModelChange = async (type, value) => {
-    const userID = localStorage.getItem("userID");
-    const newPreferences = {
-      ...modelPreferences,
-      [type]: value,
-    };
-    setModelPreferences(newPreferences);
-    await saveModelPreferencesToFirestore(
-      userID,
-      newPreferences.mainModel,
-      newPreferences.programmerModel,
-    );
-  };
 
   return (
     <div style={styles.overlay}>
@@ -113,17 +76,23 @@ const CheckoutSuccess = () => {
             <div style={styles.modelSelector}>
               <label style={styles.modelLabel}>Main Agent Model</label>
               <ModelDropdown
-                value={modelPreferences.mainModel}
-                onChange={(value) => handleModelChange("mainModel", value)}
+                value={preferences.mainModel}
+                onChange={(value) =>
+                  updatePreferences({
+                    mainModel: value,
+                  })
+                }
                 hasEnoughBalance={hasEnoughBalance}
               />
             </div>
             <div style={styles.modelSelector}>
               <label style={styles.modelLabel}>Programmer Model</label>
               <ModelDropdown
-                value={modelPreferences.programmerModel}
+                value={preferences.programmerModel}
                 onChange={(value) =>
-                  handleModelChange("programmerModel", value)
+                  updatePreferences({
+                    programmerModel: value,
+                  })
                 }
                 hasEnoughBalance={hasEnoughBalance}
               />

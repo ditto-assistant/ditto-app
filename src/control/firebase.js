@@ -18,7 +18,6 @@ import {
   where,
   getCountFromServer,
 } from "firebase/firestore";
-
 import {
   getStorage,
   ref,
@@ -28,6 +27,7 @@ import {
   listAll,
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
+import { DEFAULT_PREFERENCES } from "../constants";
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
@@ -846,10 +846,17 @@ export const uploadGeneratedImageToFirebaseStorage = async (
   // return await getDownloadURL(snapshot.ref);
 };
 
+/** @typedef {import('../constants').Model} Model */
+/**
+ * Saves model preferences to Firestore.
+ * @param {string} userID - The user's ID.
+ * @param {Model} mainModel - The main model.
+ * @param {Model} programmerModel - The programmer model.
+ * @param {Model} imageGenerationModel - The image generation model.
+ */
 export const saveModelPreferencesToFirestore = async (
   userID,
-  mainModel,
-  programmerModel,
+  preferences,
 ) => {
   try {
     const querySnapshot = await getDocs(
@@ -858,18 +865,14 @@ export const saveModelPreferencesToFirestore = async (
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
         updateDoc(doc.ref, {
-          mainModel,
-          programmerModel,
-          timestamp: new Date(),
-          timestampString: new Date().toISOString(),
+          preferences,
+          timestamp: Date.now(),
         });
       });
     } else {
       await addDoc(collection(db, "users", userID, "preferences"), {
-        mainModel,
-        programmerModel,
-        timestamp: new Date(),
-        timestampString: new Date().toISOString(),
+        preferences,
+        timestamp: Date.now(),
       });
     }
   } catch (e) {
@@ -877,12 +880,12 @@ export const saveModelPreferencesToFirestore = async (
   }
 };
 
-/** @typedef {import('../constants').Model} Model */
+/** @typedef {import('../types').ModelPreferences} ModelPreferences */
 
 /**
  * Gets model preferences from Firestore.
  * @param {string} userID - The user's ID.
- * @returns {Promise<{mainModel: Model, programmerModel: Model}>}
+ * @returns {Promise<ModelPreferences>}
  */
 export const getModelPreferencesFromFirestore = async (userID) => {
   try {
@@ -891,23 +894,14 @@ export const getModelPreferencesFromFirestore = async (userID) => {
     );
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
-      return {
-        mainModel: doc.data().mainModel || "llama-3-2",
-        programmerModel: doc.data().programmerModel || "llama-3-2",
-      };
+      return doc.data().preferences ?? DEFAULT_PREFERENCES;
     }
     // Return default preferences for new users
-    return {
-      mainModel: "llama-3-2",
-      programmerModel: "llama-3-2",
-    };
+    return DEFAULT_PREFERENCES;
   } catch (e) {
     console.error("Error getting model preferences from Firestore: ", e);
     // Return default preferences if there's an error
-    return {
-      mainModel: "llama-3-2",
-      programmerModel: "llama-3-2",
-    };
+    return DEFAULT_PREFERENCES;
   }
 };
 
