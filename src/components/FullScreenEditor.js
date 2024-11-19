@@ -31,16 +31,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { textEmbed } from "../api/LLM";
-import {
-  htmlTemplate,
-  htmlSystemTemplate,
-} from "../ditto/templates/htmlTemplate";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useIntentRecognition } from "../hooks/useIntentRecognition";
 import FullScreenSpinner from "./LoadingSpinner";
-import updaterAgent from "../control/updaterAgent";
+import updaterAgent from "../control/agentflows/updaterAgentFlow";
 import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 
