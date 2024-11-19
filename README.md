@@ -27,9 +27,3 @@ Just head over to [heyditto.ai](https://heyditto.ai) and experience the future o
 ### Running the App Locally
 
 - `bun run start`
-
-### Demo Videos
-
-[![Ditto Assistant Demo 1](https://img.youtube.com/vi/Jqu3rMI3hVQ/0.jpg)](https://www.youtube.com/watch?v=Jqu3rMI3hVQ)
-
-[![Ditto Assistant Demo 2](https://img.youtube.com/vi/VeMF4ZXAabM/0.jpg)](https://www.youtube.com/watch?v=VeMF4ZXAabM)
