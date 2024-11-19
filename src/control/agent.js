@@ -161,6 +161,7 @@ export const sendPrompt = async (
                 image,
                 memories,
                 updateConversation,
+                preferences,
               );
               return;
             }
@@ -401,6 +402,7 @@ export const processResponse = async (
   image,
   memories,
   updateConversation,
+  preferences,
 ) => {
   toolTriggered = true; // Set this flag to stop streaming
 
@@ -552,7 +554,7 @@ export const processResponse = async (
   } else if (response.includes("<IMAGE_GENERATION>") && isValidResponse) {
     const query = response.split("<IMAGE_GENERATION>")[1];
     await updateMessageWithToolStatus("Generating Image", "image");
-    const imageURL = await openaiImageGeneration(query);
+    const imageURL = await openaiImageGeneration(query, preferences.imageGeneration);
     const finalResponse = `Image Task: ${query}\n![DittoImage](${imageURL})`;
     await updateMessageWithToolStatus("complete", "image", finalResponse);
     return finalResponse;

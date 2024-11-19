@@ -96,11 +96,10 @@ export async function promptLLM(
  * @async
  * @function openaiImageGeneration
  * @param {string} prompt - The prompt for image generation.
- * @param {string} [model='dall-e-3'] - The model to use for image generation.
  * @returns {Promise<string>} A promise that resolves to the generated image URL.
  * @throws {Error} If there's an error during the image generation process.
  */
-export async function openaiImageGeneration(prompt, model = "dall-e-3") {
+export async function openaiImageGeneration(prompt, preferences = { model: "dall-e-3", size: "1024x1024" }) {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
@@ -115,7 +114,8 @@ export async function openaiImageGeneration(prompt, model = "dall-e-3") {
     body: JSON.stringify({
       userID: tok.ok.userID,
       prompt,
-      model,
+      model: preferences.model,
+      size: preferences.size,
     }),
   });
   return await response.text();
