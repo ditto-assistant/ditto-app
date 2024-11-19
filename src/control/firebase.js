@@ -854,10 +854,7 @@ export const uploadGeneratedImageToFirebaseStorage = async (
  * @param {Model} programmerModel - The programmer model.
  * @param {Model} imageGenerationModel - The image generation model.
  */
-export const saveModelPreferencesToFirestore = async (
-  userID,
-  preferences,
-) => {
+export const saveModelPreferencesToFirestore = async (userID, preferences) => {
   try {
     const querySnapshot = await getDocs(
       collection(db, "users", userID, "preferences"),

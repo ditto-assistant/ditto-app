@@ -12,7 +12,11 @@ import { useBalance } from "../hooks/useBalance";
 import ModelDropdown from "./ModelDropdown";
 import ModelDropdownImage from "./ModelDropdownImage";
 import { useModelPreferences } from "../hooks/useModelPreferences";
-import { IMAGE_GENERATION_MODELS, isPremiumModel, DEFAULT_PREFERENCES } from "../constants";
+import {
+  IMAGE_GENERATION_MODELS,
+  isPremiumModel,
+  DEFAULT_PREFERENCES,
+} from "../constants";
 import FullScreenSpinner from "./LoadingSpinner";
 const darkModeColors = {
   primary: "#7289DA",
@@ -28,7 +32,12 @@ const darkModeColors = {
 function MemoryOverlay({ closeOverlay }) {
   const overlayContentRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  const { preferences, loading: prefsLoading, error: prefsError, updatePreferences } = useModelPreferences();
+  const {
+    preferences,
+    loading: prefsLoading,
+    error: prefsError,
+    updatePreferences,
+  } = useModelPreferences();
   const [memoryStatus, setMemoryStatus] = useState({
     longTerm:
       JSON.parse(localStorage.getItem("deactivateLongTermMemory")) || false,
@@ -74,7 +83,9 @@ function MemoryOverlay({ closeOverlay }) {
         updatePreferences("programmerModel", "llama-3-2");
       }
       if (mainSwitch || programmerSwitch) {
-        alert("Your balance is too low for premium models. Switching to Llama 3.2.");
+        alert(
+          "Your balance is too low for premium models. Switching to Llama 3.2.",
+        );
       }
     }
   }, [hasEnoughBalance, preferences.mainModel, preferences.programmerModel]);
@@ -213,7 +224,9 @@ function MemoryOverlay({ closeOverlay }) {
                 <label style={styles.modelLabel}>Programmer Model</label>
                 <ModelDropdown
                   value={preferences.programmerModel}
-                  onChange={(value) => updatePreferences({ programmerModel: value })}
+                  onChange={(value) =>
+                    updatePreferences({ programmerModel: value })
+                  }
                   hasEnoughBalance={hasEnoughBalance}
                   inMemoryOverlay={true}
                 />
@@ -222,7 +235,9 @@ function MemoryOverlay({ closeOverlay }) {
                 <label style={styles.modelLabel}>Image Generation Model</label>
                 <ModelDropdownImage
                   value={preferences.imageGeneration}
-                  onChange={(model, size) => updatePreferences({ imageGeneration: { model, size } })}
+                  onChange={(model, size) =>
+                    updatePreferences({ imageGeneration: { model, size } })
+                  }
                   hasEnoughBalance={hasEnoughBalance}
                   inMemoryOverlay={true}
                   models={IMAGE_GENERATION_MODELS}
@@ -423,24 +438,24 @@ const styles = {
     fontStyle: "italic",
   },
   loadingContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100px',  // Adjust as needed
-    width: '100%',
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100px", // Adjust as needed
+    width: "100%",
   },
   errorContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    gap: '16px',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "20px",
+    gap: "16px",
   },
   errorText: {
     color: darkModeColors.dangerRed,
-    textAlign: 'center',
+    textAlign: "center",
     margin: 0,
-    fontSize: '14px',
+    fontSize: "14px",
   },
 };
 

@@ -313,9 +313,9 @@ export default function ChatFeed({
         const isNearBottom =
           feedElement &&
           feedElement.scrollHeight -
-          feedElement.scrollTop -
-          feedElement.clientHeight <
-          100;
+            feedElement.scrollTop -
+            feedElement.clientHeight <
+            100;
 
         if (isNearBottom) {
           bottomRef.current.scrollIntoView({
@@ -747,8 +747,9 @@ export default function ChatFeed({
           <img
             src={dittoAvatar}
             alt="Ditto"
-            className={`avatar ditto-avatar ${isGenerating ? "animating" : "spinning"
-              }`}
+            className={`avatar ditto-avatar ${
+              isGenerating ? "animating" : "spinning"
+            }`}
           />
         )}
         {showTypingIndicator ? (
@@ -761,8 +762,9 @@ export default function ChatFeed({
           </div>
         ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${actionOverlay && actionOverlay.index === index ? "blurred" : ""
-              } ${isSmallMessage ? "small-message" : ""}`}
+            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
+              actionOverlay && actionOverlay.index === index ? "blurred" : ""
+            } ${isSmallMessage ? "small-message" : ""}`}
             style={bubbleStyles.chatbubble}
             onClick={(e) => handleBubbleInteraction(e, index)}
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
@@ -782,12 +784,13 @@ export default function ChatFeed({
                 <>
                   {renderMessageText(message.text, index, message.sender)}
                   <div
-                    className={`tool-status ${message.toolStatus === "complete"
-                      ? "complete"
-                      : message.toolStatus === "failed"
-                        ? "failed"
-                        : ""
-                      }`}
+                    className={`tool-status ${
+                      message.toolStatus === "complete"
+                        ? "complete"
+                        : message.toolStatus === "failed"
+                          ? "failed"
+                          : ""
+                    }`}
                   >
                     {message.toolStatus}
                     {message.showTypingDots && (

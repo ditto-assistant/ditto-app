@@ -10,7 +10,7 @@ self.addEventListener("activate", function (event) {
         return Promise.all(
           cacheNames.map(function (cacheName) {
             return caches.delete(cacheName);
-          })
+          }),
         );
       })
       .then(function () {
@@ -20,11 +20,11 @@ self.addEventListener("activate", function (event) {
         return Promise.all(
           clients.map(function (client) {
             return client.navigate(client.url);
-          })
+          }),
         );
       })
       .then(function () {
         return self.registration.unregister();
-      })
+      }),
   );
 });

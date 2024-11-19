@@ -4,12 +4,7 @@ import { DataSet } from "vis-data";
 import AceEditor from "react-ace";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconButton } from "@mui/material";
-import {
-  FaTimes,
-  FaCheck,
-  FaComments,
-  FaAlignLeft,
-} from "react-icons/fa";
+import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 const darkModeColors = {

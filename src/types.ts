@@ -18,8 +18,11 @@ export type Model =
   | "dall-e-3"
   | "dall-e-3-hd";
 
-export type ImageGenerationSize = { wh: string; description: string; supportedModels: Model[] };
-
+export type ImageGenerationSize = {
+  wh: string;
+  description: string;
+  supportedModels: Model[];
+};
 
 export interface ModelOption {
   id: Model;

@@ -20,8 +20,14 @@ const CheckoutSuccess = () => {
       // If user has enough balance and was using flash, automatically upgrade to pro
       if (hasEnoughBalance) {
         updatePreferences({
-          mainModel: preferences.mainModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : preferences.mainModel,
-          programmerModel: preferences.programmerModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : preferences.programmerModel,
+          mainModel:
+            preferences.mainModel === "gemini-1.5-flash"
+              ? "gemini-1.5-pro"
+              : preferences.mainModel,
+          programmerModel:
+            preferences.programmerModel === "gemini-1.5-flash"
+              ? "gemini-1.5-pro"
+              : preferences.programmerModel,
         });
       }
     };

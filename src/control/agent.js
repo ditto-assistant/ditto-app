@@ -86,12 +86,11 @@ export const sendPrompt = async (
       is_typing: true,
     }));
 
-    const [memories, examplesString, scriptDetails] =
-      await Promise.all([
-        fetchMemories(userID, userPromptEmbedding),
-        getRelevantExamples(userPromptEmbedding, 5),
-        fetchScriptDetails(),
-      ]);
+    const [memories, examplesString, scriptDetails] = await Promise.all([
+      fetchMemories(userID, userPromptEmbedding),
+      getRelevantExamples(userPromptEmbedding, 5),
+      fetchScriptDetails(),
+    ]);
 
     const { shortTermMemory, longTermMemory } = memories;
     const { scriptName, scriptType, scriptContents } = scriptDetails;
