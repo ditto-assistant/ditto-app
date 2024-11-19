@@ -47,8 +47,8 @@ const router = createBrowserRouter(
           <Route path="success" element={<CheckoutSuccess />} />
         </Route>
       </Route>
-    </Route>,
-  ),
+    </Route>
+  )
 );
 
 export default function App() {

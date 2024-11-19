@@ -39,7 +39,7 @@ wss.on("connection", (ws) => {
           JSON.stringify({
             transcript: data.results[0].alternatives[0].transcript,
             isFinal: data.results[0].isFinal,
-          }),
+          })
         );
       }
     });

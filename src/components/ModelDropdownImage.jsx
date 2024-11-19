@@ -29,7 +29,7 @@ const ModelDropdownImage = ({
   const dropdownRef = useRef(null);
 
   const selectedModel = IMAGE_GENERATION_MODELS.find(
-    (model) => model.id === value.model,
+    (model) => model.id === value.model
   );
 
   useEffect(() => {
@@ -136,7 +136,7 @@ const ModelDropdownImage = ({
                   onClick={() => {
                     if (!(model.isPremium && !hasEnoughBalance)) {
                       setExpandedModel(
-                        expandedModel === model.id ? null : model.id,
+                        expandedModel === model.id ? null : model.id
                       );
                     }
                   }}
