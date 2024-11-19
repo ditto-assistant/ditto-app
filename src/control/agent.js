@@ -1,12 +1,11 @@
 import { collection, addDoc, vector } from "firebase/firestore";
-import {
-  promptLLM,
-  textEmbed,
-  getRelevantExamples,
-} from "../api/LLM";
+import { promptLLM, textEmbed, getRelevantExamples } from "../api/LLM";
 
 // import { huggingFaceEmbed } from "../control/modules/huggingFaceChat";
-import { mainTemplate, systemTemplate } from "../control/templates/mainTemplate";
+import {
+  mainTemplate,
+  systemTemplate,
+} from "../control/templates/mainTemplate";
 import {
   openscadTemplate,
   openscadSystemTemplate,
@@ -18,10 +17,7 @@ import {
 
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import {
-  db,
-  getModelPreferencesFromFirestore,
-} from "./firebase";
+import { db, getModelPreferencesFromFirestore } from "./firebase";
 
 import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
@@ -349,22 +345,27 @@ export const processResponse = async (
   toolTriggered = true;
 
   console.log("%c" + response, "color: yellow");
-  
+
   // Handle payment/error cases
   if (response.includes("402") || response.includes("Payment Required")) {
-    const errorMessage = "Error: Payment Required. Please check your token balance.";
+    const errorMessage =
+      "Error: Payment Required. Please check your token balance.";
     updateConversation((prevState) => ({
       ...prevState,
-      messages: prevState.messages.map((msg, i) => 
-        i === prevState.messages.length - 1 
+      messages: prevState.messages.map((msg, i) =>
+        i === prevState.messages.length - 1
           ? { ...msg, text: errorMessage, isTyping: false, isError: true }
-          : msg
+          : msg,
       ),
     }));
     return errorMessage;
   }
 
-  const updateMessageWithToolStatus = async (status, type, finalResponse = null) => {
+  const updateMessageWithToolStatus = async (
+    status,
+    type,
+    finalResponse = null,
+  ) => {
     try {
       if (status === "complete" && finalResponse) {
         // Generate a new embedding for the final response
@@ -433,7 +434,10 @@ export const processResponse = async (
   try {
     // Handle OpenSCAD script generation
     if (response.includes("<OPENSCAD>")) {
-      await updateMessageWithToolStatus("Generating OpenSCAD Script...", "openscad");
+      await updateMessageWithToolStatus(
+        "Generating OpenSCAD Script...",
+        "openscad",
+      );
       const finalResponse = await handleScriptGeneration({
         response,
         tag: "<OPENSCAD>",
@@ -495,19 +499,21 @@ export const processResponse = async (
 
     // Handle Home Assistant tasks
     if (response.includes("<GOOGLE_HOME>")) {
-      await updateMessageWithToolStatus("Executing Home Assistant Task", "home");
+      await updateMessageWithToolStatus(
+        "Executing Home Assistant Task",
+        "home",
+      );
       const finalResponse = await handleHomeAssistant(response);
       await updateMessageWithToolStatus(
         finalResponse.includes("failed") ? "failed" : "complete",
         "home",
-        finalResponse
+        finalResponse,
       );
       return finalResponse;
     }
 
     toolTriggered = false;
     return response;
-    
   } catch (error) {
     console.error("Error in processResponse:", error);
     const errorMessage = "An error occurred while processing your request.";

@@ -76,7 +76,7 @@ export const handleScriptGeneration = async ({
 export const generateScriptName = async (script, query) => {
   const scriptToNameConstructedPrompt = scriptToNameTemplate(script, query);
   console.log("%c" + scriptToNameConstructedPrompt, "color: green");
-  
+
   let scriptToNameResponse = await promptLLM(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
@@ -129,7 +129,7 @@ const cleanScriptResponse = (response) => {
 export const handleWorkingOnScript = (cleanedScript, filename, scriptType) => {
   console.log("Handling working on script state...");
   const workingOnScriptJSONString = localStorage.getItem("workingOnScript");
-  
+
   if (workingOnScriptJSONString) {
     const scriptName = JSON.parse(workingOnScriptJSONString).script;
     updateScriptInLocalStorage(scriptName, cleanedScript, scriptType);
@@ -170,7 +170,7 @@ const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
   const scriptIndex = scriptTypeObject.findIndex(
     (script) => script.name === filename,
   );
-  
+
   if (scriptIndex !== -1) {
     scriptTypeObject[scriptIndex].content = cleanedScript;
   } else {
@@ -181,6 +181,6 @@ const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
       scriptType: scriptType,
     });
   }
-  
+
   localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
-}; 
+};
