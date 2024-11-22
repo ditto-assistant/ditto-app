@@ -60,28 +60,23 @@ const ModelDropdownImage = ({
 
   useEffect(() => {
     if (isOpen && dropdownRef.current) {
-      const rect = dropdownRef.current.getBoundingClientRect();
       const dropdown = dropdownRef.current.querySelector(".model-dropdown");
       if (dropdown) {
-        if (inMemoryOverlay) {
-          dropdown.style.position = "absolute";
-          dropdown.style.top = "100%";
-          dropdown.style.left = "0";
-        } else {
-          dropdown.style.position = "fixed";
-          dropdown.style.top = `${rect.bottom + 4}px`;
-          dropdown.style.left = `${rect.left}px`;
-
-          const dropdownRect = dropdown.getBoundingClientRect();
-          const viewportHeight = window.innerHeight;
-          if (dropdownRect.bottom > viewportHeight) {
-            dropdown.style.top = `${rect.top - dropdownRect.height - 4}px`;
-          }
+        dropdown.style.position = "absolute";
+        dropdown.style.top = "100%";
+        dropdown.style.left = "0";
+        dropdown.style.width = "100%";
+        
+        const dropdownRect = dropdown.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        
+        if (dropdownRect.bottom > viewportHeight) {
+          dropdown.style.top = "auto";
+          dropdown.style.bottom = "100%";
         }
-        dropdown.style.width = `${rect.width}px`;
       }
     }
-  }, [isOpen, inMemoryOverlay]);
+  }, [isOpen]);
 
   return (
     <div ref={dropdownRef} style={styles.container}>

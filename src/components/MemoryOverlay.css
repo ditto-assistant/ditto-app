@@ -222,3 +222,416 @@ select option:disabled .premium-badge {
 select option:not(:disabled) .premium-badge {
   text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
 }
+
+/* Add these new styles */
+.settings-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: #2f3136;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-button:hover {
+  background-color: #36393f;
+  transform: translateY(-1px);
+}
+
+.button-icon {
+  font-size: 20px;
+  color: #7289da;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 9100;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tool-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tool-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tool-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+/* Update/add these styles */
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.overlay-header h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.close-icon {
+  font-size: 24px;
+  cursor: pointer;
+  color: #fff;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.close-icon:hover {
+  opacity: 1;
+}
+
+.settings-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: #2f3136;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.settings-button:hover {
+  background-color: #36393f;
+  transform: translateY(-1px);
+}
+
+.button-icon {
+  font-size: 20px;
+  color: #7289da;
+  min-width: 20px;
+}
+
+.memory-manager {
+  background-color: #2f3136;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.card-icon {
+  font-size: 20px;
+  color: #ed4245;
+}
+
+.danger-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(180deg, #ED4245 0%, #A12D2F 100%);
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.danger-button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* Modal styles */
+/* .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  backdrop-filter: blur(4px);
+} */
+
+/* .modal-content {
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  position: relative;
+} */
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Tool toggles */
+.tool-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tool-toggle {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: #2f3136;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.tool-toggle:hover {
+  background-color: #36393f;
+}
+
+.tool-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  width: 100%;
+  color: #fff;
+  font-weight: 500;
+}
+
+.tool-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #7289da;
+}
+
+/* Memory controls */
+.memory-control {
+  background-color: #2f3136;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.memory-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.memory-control-header span {
+  color: #fff;
+  font-weight: 500;
+}
+
+.control-button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #7289da;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  background-color: #5b6eae;
+  transform: translateY(-1px);
+}
+
+.active {
+  color: #43b581;
+  background-color: rgba(67, 181, 129, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.inactive {
+  color: #ed4245;
+  background-color: rgba(237, 66, 69, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Add to HomeScreen.css */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 0;
+}
+
+.icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Update dropdown styles */
+.model-selector select {
+  max-height: 200px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.model-selector {
+  position: relative;
+  z-index: 1;
+}
+
+/* Add/update these styles */
+
+/* Model selector styles */
+.model-selector-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 9200;
+}
+
+.model-selector {
+  position: relative;
+  z-index: 9300;
+}
+
+.model-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.model-dropdown {
+  background-color: #2f3136;
+  border: 1px solid #202225;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Style for dropdown items */
+.model-option {
+  padding: 12px;
+  background-color: #2f3136;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.model-option:hover {
+  background-color: #36393f;
+}
+
+/* Remove position-related styles from these classes as they're now handled in JS */
+.model-selector-container,
+.model-selector {
+  position: relative;
+}

@@ -808,7 +808,7 @@ export default function HomeScreen() {
           </motion.div>
         )}
         <motion.div
-          className="settings-button"
+          className="icon-button settings-button"
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate("/settings")}
         >

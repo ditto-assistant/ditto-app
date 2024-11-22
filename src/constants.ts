@@ -3,6 +3,7 @@ import {
   Model,
   ModelPreferences,
   ImageGenerationSize,
+  ToolPreferences,
 } from "./types";
 
 // TODO: The backend should return the list of available models
@@ -81,11 +82,54 @@ export function isPremiumModel(model: Model): boolean {
   );
 }
 
+export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
+  openScad: false,
+  htmlScript: true,
+  imageGeneration: true,
+  googleSearch: true,
+  googleHome: false
+};
+
 export const DEFAULT_PREFERENCES: ModelPreferences = {
-  mainModel: "llama-3-2",
-  programmerModel: "llama-3-2",
+  mainModel: "gemini-1.5-pro",
+  programmerModel: "gemini-1.5-pro",
   imageGeneration: {
     model: "dall-e-3",
-    size: IMAGE_GENERATION_SIZES["1024x1024"],
+    size: "1024x1024"
   },
+  tools: DEFAULT_TOOL_PREFERENCES
+};
+
+export const TOOLS = {
+  imageGeneration: {
+    name: 'Image Generation',
+    description: 'Generate images based on text descriptions',
+    trigger: '<IMAGE_GENERATION>'
+  },
+  googleSearch: {
+    name: 'Google Search',
+    description: 'Search the web for information',
+    trigger: '<GOOGLE_SEARCH>'
+  },
+  googleHome: {
+    name: 'Google Home',
+    description: 'Control smart home devices',
+    trigger: '<GOOGLE_HOME>'
+  },
+  webApps: {
+    name: 'Web Apps',
+    description: 'Generate web applications using HTML, CSS, and JavaScript',
+    trigger: '<HTML_SCRIPT>'
+  },
+  openScad: {
+    name: 'OpenSCAD',
+    description: 'Generate 3D modeling scripts using OpenSCAD',
+    trigger: '<OPENSCAD>'
+  }
+} as const;
+
+export type Tool = {
+  name: string;
+  description: string;
+  trigger: string;
 };

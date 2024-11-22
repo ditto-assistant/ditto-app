@@ -5,6 +5,7 @@ export type ModelPreferences = {
     model: Model;
     size: ImageGenerationSize;
   };
+  tools: ToolPreferences;
 };
 
 export type Model =
@@ -31,4 +32,12 @@ export interface ModelOption {
   isFree?: boolean;
   isMaintenance?: boolean;
   sizeOptions?: ImageGenerationSize[];
+}
+
+export interface ToolPreferences {
+  openScad: boolean;
+  htmlScript: boolean;
+  imageGeneration: boolean;
+  googleSearch: boolean;
+  googleHome: boolean;
 }
