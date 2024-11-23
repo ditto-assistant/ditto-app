@@ -29,6 +29,7 @@ import {
   getScriptTimestamps,
   saveScriptToFirestore,
 } from "../control/firebase";
+import MemoryOverlay from "../components/MemoryOverlay";
 
 const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
 
@@ -57,6 +58,7 @@ export default function HomeScreen() {
   const [showTOS, setShowTOS] = useState(() => {
     return !localStorage.getItem("hasSeenTOS");
   });
+  const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
 
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
@@ -830,7 +832,7 @@ export default function HomeScreen() {
                 <div className="loading-placeholder">Loading status...</div>
               }
             >
-              <StatusBar />
+              <StatusBar onMemoryClick={() => setIsMemoryOverlayOpen(true)} />
             </Suspense>
           </motion.div>
         )}
@@ -1007,6 +1009,19 @@ export default function HomeScreen() {
             onDeselect={handleDeselectScript}
             onClose={() => setShowScriptActions(false)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isMemoryOverlayOpen && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <MemoryOverlay closeOverlay={() => setIsMemoryOverlayOpen(false)} />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -16,6 +16,8 @@ import { createPortal } from 'react-dom';
  * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {readonly ModelOption[]} [props.models=DEFAULT_MODELS] - Array of available models
+ * @param {boolean} props.isOpen - Whether the dropdown is open
+ * @param {(isOpen: boolean) => void} props.onOpenChange - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdown component
  */
 const ModelDropdown = ({
@@ -24,8 +26,9 @@ const ModelDropdown = ({
   hasEnoughBalance,
   inMemoryOverlay = false,
   models = DEFAULT_MODELS,
+  isOpen,
+  onOpenChange
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const selectedModel = models.find((model) => model.id === value);
@@ -33,7 +36,7 @@ const ModelDropdown = ({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
+        onOpenChange?.(false);
       }
     };
 
@@ -62,12 +65,12 @@ const ModelDropdown = ({
     }
     
     onChange(modelId);
-    setIsOpen(false);
+    onOpenChange?.(false);
   };
 
   const handleClick = (e) => {
     e.stopPropagation();
-    setIsOpen(!isOpen);
+    onOpenChange?.(!isOpen);
   };
 
   return (
@@ -112,6 +115,8 @@ const ModelDropdown = ({
               boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
               zIndex: 999999,
               overflow: "hidden",
+              maxHeight: "200px",
+              overflowY: "auto",
             }}
             onClick={(e) => {
               e.preventDefault();
@@ -121,6 +126,7 @@ const ModelDropdown = ({
             {models.map((model) => (
               <div
                 key={model.id}
+                className="dropdown-option"
                 style={{
                   padding: "12px",
                   cursor: "pointer",
@@ -138,13 +144,6 @@ const ModelDropdown = ({
                     (model.isPremium && !hasEnoughBalance) || model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
-                  ":hover": {
-                    backgroundColor:
-                      !(model.isPremium && !hasEnoughBalance) &&
-                      !model.isMaintenance
-                        ? "rgba(88, 101, 242, 0.1)"
-                        : undefined,
-                  },
                 }}
                 onClick={(e) => {
                   handleSelect(model.id, e);

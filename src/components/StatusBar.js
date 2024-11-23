@@ -10,7 +10,7 @@ import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
 
-function StatusBar() {
+function StatusBar({ onMemoryClick }) {
   const navigate = useNavigate();
   const balance = useBalance();
   const memoryCount = useMemoryCount();
@@ -59,11 +59,7 @@ function StatusBar() {
   };
 
   const handleMemoryClick = () => {
-    setIsMemoryOverlayOpen(true);
-  };
-
-  const closeMemoryOverlay = () => {
-    setIsMemoryOverlayOpen(false);
+    onMemoryClick();
   };
 
   const syncLocalScripts = async () => {
@@ -154,10 +150,6 @@ function StatusBar() {
           )}
         </p>
       </div>
-
-      {isMemoryOverlayOpen && (
-        <MemoryOverlay closeOverlay={closeMemoryOverlay} />
-      )}
     </div>
   );
 }
@@ -169,9 +161,11 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "4px 12px",
-    background: "rgba(32, 34, 37, 0.6)", // Updated to the specified semi-transparent color
+    background: "rgba(32, 34, 37, 0.6)",
     borderRadius: "12px",
     margin: "3px 8px",
+    position: "relative",
+    zIndex: 100,
   },
   status: {
     display: "flex",

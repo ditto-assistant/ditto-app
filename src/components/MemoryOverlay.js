@@ -138,23 +138,25 @@ function MemoryOverlay({ closeOverlay }) {
         const userID = localStorage.getItem("userID");
         localStorage.removeItem("prompts");
         localStorage.removeItem("responses");
+        localStorage.removeItem("timestamps");
+        localStorage.removeItem("pairIDs");
         localStorage.removeItem("histCount");
         await resetConversation(userID);
         await deleteAllUserImagesFromFirebaseStorageBucket(userID);
 
         // Dispatch a custom event to notify other components
-        const event = new CustomEvent("memoryDeleted");
+        const event = new CustomEvent("memoryDeleted", {
+          detail: { newHistCount: 0 }
+        });
         window.dispatchEvent(event);
 
+        // Close the overlay after deletion
+        closeOverlay();
         resolve(true);
       };
 
-      dialog
-        .querySelector(".cancel-button")
-        .addEventListener("click", handleCancel);
-      dialog
-        .querySelector(".confirm-button")
-        .addEventListener("click", handleConfirm);
+      dialog.querySelector(".cancel-button").addEventListener("click", handleCancel);
+      dialog.querySelector(".confirm-button").addEventListener("click", handleConfirm);
       dialog.addEventListener("click", (e) => {
         if (e.target === dialog) handleCancel();
       });
@@ -195,46 +197,51 @@ function MemoryOverlay({ closeOverlay }) {
   };
 
   return (
-    <div className={`MemoryOverlay ${isVisible ? "visible" : ""}`} onClick={handleOverlayClick}>
-      <div ref={overlayContentRef} className="MemoryContent" onClick={handleContentClick}>
-        <div className="overlay-header">
+    <div className="modal-overlay" onClick={closeOverlay}>
+      <div className="modal-content memory-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
           <h3>Agent Settings</h3>
-          <MdClose className="close-icon" onClick={handleClose} />
+          <MdClose className="close-icon" onClick={closeOverlay} />
         </div>
-
-        <div className="settings-buttons">
-          <button 
-            className="settings-button" 
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowModelPrefs(true);
-            }}
-          >
-            <IoSettingsSharp className="button-icon" />
-            <span>Model Preferences</span>
-          </button>
-
-          <button className="settings-button" onClick={() => setShowMemoryControls(true)}>
-            <FaBrain className="button-icon" />
-            <span>Memory Controls</span>
-          </button>
-
-          <button className="settings-button" onClick={() => setShowAgentTools(true)}>
-            <IoExtensionPuzzle className="button-icon" />
-            <span>Agent Tools</span>
-          </button>
-
-          <div className="memory-manager">
-            <div className="card-header">
-              <FaTrash className="card-icon" />
-              <h4>Memory Manager</h4>
-            </div>
-            <button
-              className="danger-button"
-              onClick={deleteAllMemory}
+        
+        <div className="modal-body">
+          <div className="settings-buttons">
+            <button 
+              className="settings-button" 
+              onClick={() => setShowModelPrefs(true)}
             >
-              Delete All Memory
+              <IoSettingsSharp className="button-icon" />
+              <span>Model Preferences</span>
             </button>
+
+            <button 
+              className="settings-button" 
+              onClick={() => setShowMemoryControls(true)}
+            >
+              <FaBrain className="button-icon" />
+              <span>Memory Controls</span>
+            </button>
+
+            <button 
+              className="settings-button" 
+              onClick={() => setShowAgentTools(true)}
+            >
+              <IoExtensionPuzzle className="button-icon" />
+              <span>Agent Tools</span>
+            </button>
+
+            <div className="memory-manager">
+              <div className="card-header">
+                <FaTrash className="card-icon" />
+                <h4>Memory Manager</h4>
+              </div>
+              <button
+                className="danger-button"
+                onClick={deleteAllMemory}
+              >
+                Delete All Memory
+              </button>
+            </div>
           </div>
         </div>
 

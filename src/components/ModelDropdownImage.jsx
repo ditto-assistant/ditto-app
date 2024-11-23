@@ -4,6 +4,7 @@ import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { IMAGE_GENERATION_MODELS } from "../constants";
 import { styles as modelDropdownStyles } from "./ModelDropdown";
+import { createPortal } from 'react-dom';
 
 /** @typedef {import('../types').Model} Model */
 /** @typedef {import('../types').ModelOption} ModelOption */
@@ -16,6 +17,8 @@ import { styles as modelDropdownStyles } from "./ModelDropdown";
  * @param {(model: Model, size: ImageGenerationSize) => void} props.onChange - Callback when selection changes
  * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
+ * @param {boolean} [props.isOpen=false] - Whether the dropdown is open
+ * @param {(isOpen: boolean) => void} props.onOpenChange - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdownImage component
  */
 const ModelDropdownImage = ({
@@ -23,8 +26,9 @@ const ModelDropdownImage = ({
   onChange,
   hasEnoughBalance,
   inMemoryOverlay = false,
+  isOpen,
+  onOpenChange
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const [expandedModel, setExpandedModel] = useState(null);
   const dropdownRef = useRef(null);
 
@@ -32,17 +36,10 @@ const ModelDropdownImage = ({
     (model) => model.id === value.model
   );
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-        setExpandedModel(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleClick = (e) => {
+    e.stopPropagation();
+    onOpenChange?.(!isOpen);
+  };
 
   /**
    * Handles the selection of a model and size option
@@ -54,7 +51,7 @@ const ModelDropdownImage = ({
     if (modelOption.isPremium && !hasEnoughBalance) return;
     if (modelOption.isMaintenance) return;
     onChange(model, size);
-    setIsOpen(false);
+    onOpenChange?.(false);
     setExpandedModel(null);
   };
 
@@ -82,7 +79,7 @@ const ModelDropdownImage = ({
     <div ref={dropdownRef} style={styles.container}>
       <motion.div
         style={styles.selectedValue}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleClick}
         whileHover={{ backgroundColor: "#292B2F" }}
         whileTap={{ scale: 0.99 }}
       >
@@ -104,8 +101,8 @@ const ModelDropdownImage = ({
         </motion.div>
       </motion.div>
 
-      <AnimatePresence>
-        {isOpen && (
+      {isOpen &&
+        createPortal(
           <motion.div
             className="model-dropdown"
             initial={{ opacity: 0, y: -10 }}
@@ -114,11 +111,15 @@ const ModelDropdownImage = ({
             transition={{ duration: 0.2 }}
             style={{
               ...styles.dropdown,
-              position: inMemoryOverlay ? "absolute" : "fixed",
+              position: "fixed",
+              top: dropdownRef.current?.getBoundingClientRect().bottom + 4,
+              left: dropdownRef.current?.getBoundingClientRect().left,
+              width: dropdownRef.current?.getBoundingClientRect().width,
+              zIndex: 999999,
             }}
           >
             {IMAGE_GENERATION_MODELS.map((model) => (
-              <div key={model.id}>
+              <div key={model.id} className="dropdown-option">
                 <motion.div
                   style={{
                     ...styles.option,
@@ -199,9 +200,9 @@ const ModelDropdownImage = ({
                 </AnimatePresence>
               </div>
             ))}
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 };
