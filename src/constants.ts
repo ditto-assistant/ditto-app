@@ -102,30 +102,30 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
 
 export const TOOLS = {
   imageGeneration: {
-    name: 'Image Generation',
-    description: 'Generate images based on text descriptions',
-    trigger: '<IMAGE_GENERATION>'
+    name: "Image Generation",
+    description: "Generate images based on text descriptions",
+    trigger: "<IMAGE_GENERATION>",
   },
   googleSearch: {
-    name: 'Web Search',
-    description: 'Search the web for information',
-    trigger: '<GOOGLE_SEARCH>'
+    name: "Web Search",
+    description: "Search the web for information",
+    trigger: "<GOOGLE_SEARCH>",
   },
   googleHome: {
-    name: 'Home Assistant',
-    description: 'Control smart home devices',
-    trigger: '<GOOGLE_HOME>'
+    name: "Home Assistant",
+    description: "Control smart home devices",
+    trigger: "<GOOGLE_HOME>",
   },
   webApps: {
-    name: 'Web Apps',
-    description: 'Generate web applications using HTML, CSS, and JavaScript',
-    trigger: '<HTML_SCRIPT>'
+    name: "Web Apps",
+    description: "Generate web applications using HTML, CSS, and JavaScript",
+    trigger: "<HTML_SCRIPT>",
   },
   openScad: {
-    name: 'OpenSCAD',
-    description: 'Generate 3D modeling scripts using OpenSCAD',
-    trigger: '<OPENSCAD>'
-  }
+    name: "OpenSCAD",
+    description: "Generate 3D modeling scripts using OpenSCAD",
+    trigger: "<OPENSCAD>",
+  },
 } as const;
 
 export type Tool = {
