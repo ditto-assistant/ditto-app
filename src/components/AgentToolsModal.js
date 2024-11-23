@@ -1,4 +1,3 @@
-import React from "react";
 import { MdClose } from "react-icons/md";
 import { DEFAULT_PREFERENCES, TOOLS } from "../constants";
 

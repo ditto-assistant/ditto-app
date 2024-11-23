@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import AceEditor from "react-ace";
 import {
   FaArrowLeft,
@@ -14,7 +14,6 @@ import {
   FaComments,
   FaTimes,
   FaChevronDown,
-  FaCopy,
   FaBrain,
 } from "react-icons/fa";
 import { Button, useMediaQuery, IconButton, Tooltip } from "@mui/material";

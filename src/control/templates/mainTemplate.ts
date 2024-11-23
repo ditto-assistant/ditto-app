@@ -1,6 +1,5 @@
 import { TOOLS } from "../../constants";
-import type { Tool } from "../../constants";
-import type { ToolPreferences } from "../../types";
+import type { Tool, ToolPreferences } from "../../types/llm";
 
 const getToolsModule = (
   scriptType: string | null,

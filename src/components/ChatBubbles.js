@@ -1,4 +1,3 @@
-import React from "react";
 import ChatFeed from "./ChatFeed";
 
 const bubblefontSize = 14;

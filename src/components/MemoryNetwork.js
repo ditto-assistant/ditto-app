@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Network } from "vis-network";
 import { DataSet } from "vis-data";
 import ReactMarkdown from "react-markdown";
@@ -6,11 +6,7 @@ import { FaTable, FaProjectDiagram, FaTimes, FaTrash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import {
-  IoMdArrowBack,
-  IoMdArrowDropdown,
-  IoMdArrowDropup,
-} from "react-icons/io";
+import { IoMdArrowBack, IoMdArrowDropdown } from "react-icons/io";
 import { FiDownload, FiCopy } from "react-icons/fi";
 import { auth } from "../control/firebase";
 import { deleteConversation } from "../control/memory";

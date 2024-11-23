@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
-import { FaBrain, FaTrash } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { IoSettingsSharp } from "react-icons/io5";
 import "./MemoryOverlay.css";
 

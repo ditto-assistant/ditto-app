@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -6,13 +6,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
 import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiCopy,
-  FiDownload,
-  FiClock,
-  FiBarChart2,
-  FiChevronDown,
-} from "react-icons/fi";
+import { FiCopy, FiDownload } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";

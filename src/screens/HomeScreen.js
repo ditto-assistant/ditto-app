@@ -1,11 +1,8 @@
 import "./HomeScreen.css";
-import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
-import { MdSettings } from "react-icons/md";
-import { FaEarListen, FaEarDeaf } from "react-icons/fa6";
 import FullScreenSpinner from "../components/LoadingSpinner";
-import { Divider } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";

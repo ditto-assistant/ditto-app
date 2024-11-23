@@ -1,5 +1,5 @@
 import "./SendMessage.css";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FaMicrophone,
   FaPlus,

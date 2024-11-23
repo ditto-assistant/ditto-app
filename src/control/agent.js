@@ -23,6 +23,7 @@ import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
 import { handleHomeAssistant } from "./agentflows/homeFlow";
+import { ModelPreferences } from "../types/llm";
 
 const mode = import.meta.env.MODE;
 
@@ -30,7 +31,6 @@ const mode = import.meta.env.MODE;
 let toolTriggered = false;
 
 /**
- * @typedef {import("../types").ModelPreferences} ModelPreferences
  * Sends a prompt to Ditto.
  * @param {string} userID - The user's ID.
  * @param {string} firstName - The user's first name.

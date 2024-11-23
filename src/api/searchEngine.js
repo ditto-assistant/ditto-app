@@ -1,4 +1,3 @@
-import { auth } from "../control/firebase";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
 

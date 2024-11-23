@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ModelDropdown from "./ModelDropdown";
 import ModelDropdownImage from "./ModelDropdownImage";
-import { IMAGE_GENERATION_MODELS } from "../constants";
 import { MdClose } from "react-icons/md";
 
 function ModelPreferencesModal({

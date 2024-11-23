@@ -34,6 +34,12 @@ export interface ModelOption {
   sizeOptions?: ImageGenerationSize[];
 }
 
+export type Tool = {
+  name: string;
+  description: string;
+  trigger: string;
+};
+
 export interface ToolPreferences {
   openScad: boolean;
   htmlScript: boolean;
