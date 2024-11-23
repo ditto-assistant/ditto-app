@@ -1,3 +1,45 @@
+import { TOOLS } from "../../constants";
+import type { Tool } from "../../constants";
+import type { ToolPreferences } from "../../types";
+
+const getToolsModule = (
+  scriptType: string | null,
+  toolPreferences: ToolPreferences
+): Tool[] => {
+  const enabledTools = [];
+
+  if (toolPreferences.imageGeneration) {
+    enabledTools.push(TOOLS.imageGeneration);
+  }
+  if (toolPreferences.googleSearch) {
+    enabledTools.push(TOOLS.googleSearch);
+  }
+  if (toolPreferences.googleHome) {
+    enabledTools.push(TOOLS.googleHome);
+  }
+  if (toolPreferences.htmlScript) {
+    enabledTools.push(TOOLS.webApps);
+  }
+  if (toolPreferences.openScad) {
+    enabledTools.push(TOOLS.openScad);
+  }
+
+  if (!scriptType) return enabledTools;
+
+  switch (scriptType.toLowerCase()) {
+    case "webapps":
+      return toolPreferences.htmlScript
+        ? [TOOLS.webApps, ...enabledTools.filter((t) => t !== TOOLS.webApps)]
+        : enabledTools;
+    case "openscad":
+      return toolPreferences.openScad
+        ? [TOOLS.openScad, ...enabledTools.filter((t) => t !== TOOLS.openScad)]
+        : enabledTools;
+    default:
+      return enabledTools;
+  }
+};
+
 export const systemTemplate = () => {
   return "You are a friendly AI named Ditto here to help the user who is your best friend.";
 };
@@ -36,37 +78,60 @@ export const mainTemplate = (
   firstName: string,
   timestamp: string,
   usersPrompt: string,
-  workingOnScriptName: string,
-  workingOnScriptType: string
+  workingOnScriptName: string | null = null,
+  workingOnScriptType: string | null = null,
+  toolPreferences: ToolPreferences
 ) => {
-  let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
+  const tools = getToolsModule(workingOnScriptType, toolPreferences);
 
-## Tools
-1. OpenSCAD:
-- If the user asks you to create a 3D model, respond with the following keyword followed by a query that another agent can use to generate the code or 3D model.
-- Feel free to include more details to the query without assuming the user's intent but only if it helps the other agent to generate the code or 3D model better.
-- Keyword: <OPENSCAD> query
-2. HTML Script:
-- If the user asks you to create a web design, website, or app, respond with the following keyword followed by a query that another agent can use to generate the code or design.
-- Again, feel free to include more details to the query without assuming the user's intent but only if it helps the other agent to generate the code or design better.
-- Keyword: <HTML_SCRIPT> query
-3. Image Generation:
-- If the user asks you to generate an image, respond with the following keyword followed by a query that another agent can use to generate the image.
-- Feel free to include more details to the query without assuming the user's intent but only if it helps the other agent to generate the image better.
-- Keyword: <IMAGE_GENERATION> query
-4. Google Search:
-- If the user asks you to search for information or if the user asks a question that requires a search, respond with the following keyword followed by a google search query.
-- Make sure the query is clear and concise to get the best search results.
-- Keyword: <GOOGLE_SEARCH> query
-5. Google Home:
-- If the user asks you to perform a task that requires a Google Home device, such as setting lights, start/stopping vacuum, setting house temperature, etc., respond with the following keyword followed by the task.
-- Make sure the task is clear and concise, and something that can be done with a Google Home device.
-- Keyword: <GOOGLE_HOME> task
+  const toolsSection =
+    tools.length > 0
+      ? `
+## Available Tools
+${tools
+  .map(
+    (tool, index) =>
+      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+  )
+  .join("\n")}`
+      : "";
+
+  const filteredExamples = examples
+    .split("\n\n")
+    .filter((example) => {
+      if (!example.trim()) return false;
+
+      return tools.some((tool) => {
+        const triggerBase = tool.trigger.split(" ")[0];
+        return example.includes(triggerBase);
+      });
+    })
+    .map((example, index) => {
+      const cleanExample = example
+        .replace(/Example \d+\s*Example \d+/g, "")
+        .replace(/Example \d+/g, "")
+        .trim();
+
+      const [userPrompt, response] = cleanExample
+        .split("User's Prompt:")
+        .map((s) => s.trim());
+
+      return `Example ${index + 1}\nUser's Prompt: ${response}`;
+    })
+    .join("\n\n");
+
+  const examplesSection =
+    tools.length > 0 && filteredExamples
+      ? `
 
 ## Examples of User Prompts that need tools:
 -- Begin Examples --
-<!examples>
--- End Examples --
+${filteredExamples}
+-- End Examples --`
+      : "";
+
+  let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
+${toolsSection}${examplesSection}
 
 ## Long Term Memory
 - Relevant prompt/response pairs from the user's prompt history are indexed using cosine similarity and are shown below as Long Term Memory. 
@@ -88,8 +153,8 @@ User's Name: <!users_name>
 Current Timestamp: <!timestamp>
 Current Time in User's Timezone: <!time>
 User's Prompt: <!users_prompt>
-Ditto:
-`;
+Ditto:`;
+
   prompt = prompt.replace(
     "<!time>",
     getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
@@ -99,7 +164,7 @@ Ditto:
   prompt = prompt.replace("<!examples>", examples);
   prompt = prompt.replace(
     "<!working_on_script_module>",
-    workingOnScriptModule(workingOnScriptName, workingOnScriptType)
+    workingOnScriptModule(workingOnScriptName || "", workingOnScriptType || "")
   );
   prompt = prompt.replace("<!users_name>", firstName);
   prompt = prompt.replace("<!timestamp>", timestamp);

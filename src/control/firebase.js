@@ -862,13 +862,19 @@ export const saveModelPreferencesToFirestore = async (userID, preferences) => {
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
         updateDoc(doc.ref, {
-          preferences,
+          preferences: {
+            ...preferences,
+            tools: preferences.tools || DEFAULT_PREFERENCES.tools,
+          },
           timestamp: Date.now(),
         });
       });
     } else {
       await addDoc(collection(db, "users", userID, "preferences"), {
-        preferences,
+        preferences: {
+          ...preferences,
+          tools: preferences.tools || DEFAULT_PREFERENCES.tools,
+        },
         timestamp: Date.now(),
       });
     }

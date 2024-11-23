@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
-import { FaBrain, FaTrash } from "react-icons/fa";
-import { IoSettingsSharp } from "react-icons/io5";
+import { FaBrain, FaTrash, FaTools } from "react-icons/fa";
+import { IoSettingsSharp, IoExtensionPuzzle } from "react-icons/io5";
 import "./MemoryOverlay.css";
 
 import {
@@ -18,6 +18,9 @@ import {
   DEFAULT_PREFERENCES,
 } from "../constants";
 import FullScreenSpinner from "./LoadingSpinner";
+import ModelPreferencesModal from "./ModelPreferencesModal";
+import MemoryControlsModal from "./MemoryControlsModal";
+import AgentToolsModal from "./AgentToolsModal";
 const darkModeColors = {
   primary: "#7289DA",
   text: "#FFFFFF",
@@ -45,12 +48,16 @@ function MemoryOverlay({ closeOverlay }) {
       JSON.parse(localStorage.getItem("deactivateShortTermMemory")) || false,
   });
 
-  const { balance, usd } = useBalance();
+  const { balance } = useBalance();
 
   // Convert balance string to number (removing 'M' or 'B' and converting to float)
   const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
   const isBalanceInBillions = balance?.includes("B");
-  const hasEnoughBalance = isBalanceInBillions && balanceNum >= 5.0;
+  const hasEnoughBalance = isBalanceInBillions && balanceNum >= 1.0;
+
+  const [showModelPrefs, setShowModelPrefs] = useState(false);
+  const [showMemoryControls, setShowMemoryControls] = useState(false);
+  const [showAgentTools, setShowAgentTools] = useState(false);
 
   useEffect(() => {
     // Trigger the animation after component mount
@@ -70,17 +77,16 @@ function MemoryOverlay({ closeOverlay }) {
   }, []);
 
   useEffect(() => {
-    // Automatically switch models if balance decreases below 5.00B
     if (!hasEnoughBalance) {
       let mainSwitch = false;
       let programmerSwitch = false;
       if (isPremiumModel(preferences.mainModel)) {
         mainSwitch = true;
-        updatePreferences("mainModel", "llama-3-2");
+        updatePreferences({ mainModel: "llama-3-2" });
       }
       if (isPremiumModel(preferences.programmerModel)) {
         programmerSwitch = true;
-        updatePreferences("programmerModel", "llama-3-2");
+        updatePreferences({ programmerModel: "llama-3-2" });
       }
       if (mainSwitch || programmerSwitch) {
         alert(
@@ -88,7 +94,7 @@ function MemoryOverlay({ closeOverlay }) {
         );
       }
     }
-  }, [hasEnoughBalance, preferences.mainModel, preferences.programmerModel]);
+  }, [hasEnoughBalance, preferences, updatePreferences]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -132,14 +138,20 @@ function MemoryOverlay({ closeOverlay }) {
         const userID = localStorage.getItem("userID");
         localStorage.removeItem("prompts");
         localStorage.removeItem("responses");
+        localStorage.removeItem("timestamps");
+        localStorage.removeItem("pairIDs");
         localStorage.removeItem("histCount");
         await resetConversation(userID);
         await deleteAllUserImagesFromFirebaseStorageBucket(userID);
 
         // Dispatch a custom event to notify other components
-        const event = new CustomEvent("memoryDeleted");
+        const event = new CustomEvent("memoryDeleted", {
+          detail: { newHistCount: 0 },
+        });
         window.dispatchEvent(event);
 
+        // Close the overlay after deletion
+        closeOverlay();
         resolve(true);
       };
 
@@ -176,153 +188,96 @@ function MemoryOverlay({ closeOverlay }) {
     });
   };
 
+  const handleOverlayClick = (e) => {
+    // Only close if clicking the main overlay background
+    if (e.target.className === "MemoryOverlay") {
+      handleClose();
+    }
+  };
+
+  const handleContentClick = (e) => {
+    // Prevent clicks inside content from reaching overlay
+    e.stopPropagation();
+  };
+
   return (
-    <div className={`MemoryOverlay ${isVisible ? "visible" : ""}`}>
-      <div ref={overlayContentRef} className="MemoryContent">
-        <div style={styles.overlayHeader}>
-          <h3 style={styles.overlayHeaderText}>Agent Settings</h3>
-          <MdClose style={styles.closeIcon} onClick={handleClose} />
+    <div className="modal-overlay" onClick={closeOverlay}>
+      <div
+        className="modal-content memory-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h3>Agent Settings</h3>
+          <MdClose className="close-icon" onClick={closeOverlay} />
         </div>
 
-        {/* Model Preferences Card */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <IoSettingsSharp style={styles.cardIcon} />
-            <h4 style={styles.cardTitle}>Model Preferences</h4>
-          </div>
-          {prefsError ? (
-            <div style={styles.errorContainer}>
-              <p style={styles.errorText}>
-                Error loading preferences: {prefsError}
-              </p>
-              <button
-                style={{
-                  ...styles.button,
-                  backgroundColor: darkModeColors.dangerRed,
-                }}
-                onClick={() => window.location.reload()}
-              >
-                Retry
-              </button>
-            </div>
-          ) : prefsLoading ? (
-            <div style={styles.loadingContainer}>
-              <FullScreenSpinner text="Loading preferences..." />
-            </div>
-          ) : (
-            <div style={styles.cardContent}>
-              <div style={styles.modelSelector}>
-                <label style={styles.modelLabel}>Main Agent Model</label>
-                <ModelDropdown
-                  value={preferences.mainModel}
-                  onChange={(value) => updatePreferences({ mainModel: value })}
-                  hasEnoughBalance={hasEnoughBalance}
-                  inMemoryOverlay={true}
-                />
-              </div>
-              <div style={styles.modelSelector}>
-                <label style={styles.modelLabel}>Programmer Model</label>
-                <ModelDropdown
-                  value={preferences.programmerModel}
-                  onChange={(value) =>
-                    updatePreferences({ programmerModel: value })
-                  }
-                  hasEnoughBalance={hasEnoughBalance}
-                  inMemoryOverlay={true}
-                />
-              </div>
-              <div style={styles.modelSelector}>
-                <label style={styles.modelLabel}>Image Generation Model</label>
-                <ModelDropdownImage
-                  value={preferences.imageGeneration}
-                  onChange={(model, size) =>
-                    updatePreferences({ imageGeneration: { model, size } })
-                  }
-                  hasEnoughBalance={hasEnoughBalance}
-                  inMemoryOverlay={true}
-                  models={IMAGE_GENERATION_MODELS}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Memory Controls Card */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <FaBrain style={styles.cardIcon} />
-            <h4 style={styles.cardTitle}>Memory Controls</h4>
-          </div>
-          <div style={styles.cardContent}>
-            <div style={styles.memoryControl}>
-              <div style={styles.memoryControlHeader}>
-                <span style={styles.memoryControlTitle}>Long Term Memory</span>
-                <span
-                  style={
-                    memoryStatus.longTerm
-                      ? styles.inactiveIndicator
-                      : styles.activeIndicator
-                  }
-                >
-                  {memoryStatus.longTerm ? "Inactive" : "Active"}
-                </span>
-              </div>
-              <button
-                style={{
-                  ...styles.button,
-                  backgroundColor: darkModeColors.primary,
-                }}
-                onClick={() => toggleMemoryActivation("longTerm")}
-              >
-                {memoryStatus.longTerm ? "Activate" : "Deactivate"}
-              </button>
-            </div>
-
-            <div style={styles.memoryControl}>
-              <div style={styles.memoryControlHeader}>
-                <span style={styles.memoryControlTitle}>Short Term Memory</span>
-                <span
-                  style={
-                    memoryStatus.shortTerm
-                      ? styles.inactiveIndicator
-                      : styles.activeIndicator
-                  }
-                >
-                  {memoryStatus.shortTerm ? "Inactive" : "Active"}
-                </span>
-              </div>
-              <button
-                style={{
-                  ...styles.button,
-                  backgroundColor: darkModeColors.primary,
-                }}
-                onClick={() => toggleMemoryActivation("shortTerm")}
-              >
-                {memoryStatus.shortTerm ? "Activate" : "Deactivate"}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Memory Manager Card */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <FaTrash style={styles.cardIcon} />
-            <h4 style={styles.cardTitle}>Memory Manager</h4>
-          </div>
-          <div style={styles.cardContent}>
+        <div className="modal-body">
+          <div className="settings-buttons">
             <button
-              style={{
-                ...styles.button,
-                background: darkModeColors.dangerGradient,
-                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              }}
-              onClick={deleteAllMemory}
+              className="settings-button"
+              onClick={() => setShowModelPrefs(true)}
             >
-              Delete All Memory
+              <IoSettingsSharp className="button-icon" />
+              <span>Model Preferences</span>
             </button>
+
+            <button
+              className="settings-button"
+              onClick={() => setShowMemoryControls(true)}
+            >
+              <FaBrain className="button-icon" />
+              <span>Memory Controls</span>
+            </button>
+
+            <button
+              className="settings-button"
+              onClick={() => setShowAgentTools(true)}
+            >
+              <IoExtensionPuzzle className="button-icon" />
+              <span>Agent Tools</span>
+            </button>
+
+            <div className="memory-manager">
+              <div className="card-header">
+                <FaTrash className="card-icon" />
+                <h4>Memory Manager</h4>
+              </div>
+              <button className="danger-button" onClick={deleteAllMemory}>
+                Delete All Memory
+              </button>
+            </div>
           </div>
         </div>
+
+        {showModelPrefs && (
+          <ModelPreferencesModal
+            preferences={preferences}
+            updatePreferences={updatePreferences}
+            onClose={(e) => {
+              if (e) {
+                e.stopPropagation();
+              }
+              setShowModelPrefs(false);
+            }}
+            hasEnoughBalance={hasEnoughBalance}
+          />
+        )}
+
+        {showMemoryControls && (
+          <MemoryControlsModal
+            memoryStatus={memoryStatus}
+            toggleMemoryActivation={toggleMemoryActivation}
+            onClose={() => setShowMemoryControls(false)}
+          />
+        )}
+
+        {showAgentTools && (
+          <AgentToolsModal
+            preferences={preferences}
+            updatePreferences={updatePreferences}
+            onClose={() => setShowAgentTools(false)}
+          />
+        )}
       </div>
     </div>
   );

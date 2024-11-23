@@ -103,7 +103,8 @@ export const sendPrompt = async (
       new Date().toISOString(),
       prompt,
       scriptName,
-      scriptType
+      scriptType,
+      preferences.tools
     );
 
     console.log("%c" + constructedPrompt, "color: green");

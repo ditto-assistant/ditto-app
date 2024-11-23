@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { DEFAULT_MODELS } from "../constants";
+import { createPortal } from "react-dom";
 
 /** @typedef {import('../types').Model} Model */
 /** @typedef {import('../types').ModelOption} ModelOption */
@@ -15,6 +16,8 @@ import { DEFAULT_MODELS } from "../constants";
  * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {readonly ModelOption[]} [props.models=DEFAULT_MODELS] - Array of available models
+ * @param {boolean} props.isOpen - Whether the dropdown is open
+ * @param {(isOpen: boolean) => void} props.onOpenChange - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdown component
  */
 const ModelDropdown = ({
@@ -23,8 +26,9 @@ const ModelDropdown = ({
   hasEnoughBalance,
   inMemoryOverlay = false,
   models = DEFAULT_MODELS,
+  isOpen,
+  onOpenChange,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const selectedModel = models.find((model) => model.id === value);
@@ -32,7 +36,7 @@ const ModelDropdown = ({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
+        onOpenChange?.(false);
       }
     };
 
@@ -46,48 +50,34 @@ const ModelDropdown = ({
     }
   }, [hasEnoughBalance, selectedModel, onChange]);
 
-  /**
-   * Handles the selection of a model from the dropdown
-   * @param {Model} modelId - The ID of the selected model
-   */
-  const handleSelect = (modelId) => {
+  const handleSelect = (modelId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     const model = models.find((m) => m.id === modelId);
-    if (model.isPremium && !hasEnoughBalance) return;
-    if (model.isMaintenance) return;
+    if (model.isPremium && !hasEnoughBalance) {
+      console.log("Premium model requires sufficient balance");
+      return;
+    }
+    if (model.isMaintenance) {
+      console.log("Model is in maintenance");
+      return;
+    }
+
     onChange(modelId);
-    setIsOpen(false);
+    onOpenChange?.(false);
   };
 
-  useEffect(() => {
-    if (isOpen && dropdownRef.current) {
-      const rect = dropdownRef.current.getBoundingClientRect();
-      const dropdown = dropdownRef.current.querySelector(".model-dropdown");
-      if (dropdown) {
-        if (inMemoryOverlay) {
-          dropdown.style.position = "absolute";
-          dropdown.style.top = "100%";
-          dropdown.style.left = "0";
-        } else {
-          dropdown.style.position = "fixed";
-          dropdown.style.top = `${rect.bottom + 4}px`;
-          dropdown.style.left = `${rect.left}px`;
-
-          const dropdownRect = dropdown.getBoundingClientRect();
-          const viewportHeight = window.innerHeight;
-          if (dropdownRect.bottom > viewportHeight) {
-            dropdown.style.top = `${rect.top - dropdownRect.height - 4}px`;
-          }
-        }
-        dropdown.style.width = `${rect.width}px`;
-      }
-    }
-  }, [isOpen, inMemoryOverlay]);
+  const handleClick = (e) => {
+    e.stopPropagation();
+    onOpenChange?.(!isOpen);
+  };
 
   return (
     <div ref={dropdownRef} style={styles.container}>
       <motion.div
         style={styles.selectedValue}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleClick}
         whileHover={{ backgroundColor: "#292B2F" }}
         whileTap={{ scale: 0.99 }}
       >
@@ -112,44 +102,66 @@ const ModelDropdown = ({
         </motion.div>
       </motion.div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="model-dropdown"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+      {isOpen &&
+        createPortal(
+          <div
             style={{
-              ...styles.dropdown,
-              position: inMemoryOverlay ? "absolute" : "fixed",
+              position: "fixed",
+              top: dropdownRef.current?.getBoundingClientRect().bottom + 4,
+              left: dropdownRef.current?.getBoundingClientRect().left,
+              width: dropdownRef.current?.getBoundingClientRect().width,
+              backgroundColor: "#2f3136",
+              borderRadius: "8px",
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+              zIndex: 999999,
+              overflow: "hidden",
+              maxHeight: "200px",
+              overflowY: "auto",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             {models.map((model) => (
-              <motion.div
+              <div
                 key={model.id}
+                className="dropdown-option"
                 style={{
-                  ...styles.option,
+                  padding: "12px",
+                  cursor: "pointer",
                   opacity:
                     (model.isPremium && !hasEnoughBalance) ||
                     model.isMaintenance
                       ? 0.5
                       : 1,
+                  backgroundColor: "#2f3136",
+                  color: "#ffffff",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  transition: "background-color 0.2s ease",
                   cursor:
                     (model.isPremium && !hasEnoughBalance) ||
                     model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
                 }}
-                whileHover={
-                  !(model.isPremium && !hasEnoughBalance) &&
-                  !model.isMaintenance
-                    ? {
-                        backgroundColor: "rgba(88, 101, 242, 0.1)",
-                      }
-                    : {}
-                }
-                onClick={() => handleSelect(model.id)}
+                onClick={(e) => {
+                  handleSelect(model.id, e);
+                }}
+                onMouseEnter={(e) => {
+                  if (
+                    !(model.isPremium && !hasEnoughBalance) &&
+                    !model.isMaintenance
+                  ) {
+                    e.currentTarget.style.backgroundColor =
+                      "rgba(88, 101, 242, 0.1)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#2f3136";
+                }}
               >
                 <span>{model.name}</span>
                 <div style={styles.badges}>
@@ -171,11 +183,11 @@ const ModelDropdown = ({
                     <span style={styles.maintenanceBadge}>MAINTENANCE</span>
                   )}
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 };
