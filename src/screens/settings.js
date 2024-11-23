@@ -124,10 +124,6 @@ const Settings = () => {
     setDeleteDialogOpen(false);
   };
 
-  // Remove the balance calculation from localStorage
-  const tokensLeftInput = balance ? (balance / 0.6) * 1000000 : 0;
-  const tokensLeftOutput = balance ? (balance / 2.4) * 1000000 : 0;
-
   return (
     <div style={styles.overlay}>
       <div
@@ -155,15 +151,15 @@ const Settings = () => {
               <>
                 <p style={styles.balanceItem}>
                   Ditto Tokens:{" "}
-                  <span style={styles.highlightText}>{balance.balance}</span>
+                  <span style={styles.highlightText}>{balance.ok?.balance}</span>
                 </p>
                 <p style={styles.balanceItem}>
                   Images:{" "}
-                  <span style={styles.highlightText}>{balance.images}</span>
+                  <span style={styles.highlightText}>{balance.ok?.images}</span>
                 </p>
                 <p style={styles.balanceItem}>
                   Searches:{" "}
-                  <span style={styles.highlightText}>{balance.searches}</span>
+                  <span style={styles.highlightText}> {balance.ok?.searches} </span>
                 </p>
               </>
             ) : (

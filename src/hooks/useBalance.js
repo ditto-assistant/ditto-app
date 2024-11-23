@@ -1,20 +1,15 @@
 import { useState, useEffect, useContext, createContext } from "react";
 import { getBalance } from "../api/getBalance";
 import { useAuth } from "./useAuth";
+import { FetchHook } from "../types/common";
+import { Balance } from "../types/api";
+
+// TODO: Make this server-side
+export const PREMIUM_BALANCE_THRESHOLD = 3_000_000_000;
 
 /**
  * Access the user's balance context.
- *
- * @returns {{
- *   balance: string,
- *   usd: string,
- *   images: string,
- *   searches: string,
- *   loading: boolean,
- *   error: string,
- *   refetch: (() => void)
- * }} The balance object containing the user's balance and available images,
- *    and a function to refetch the balance.
+ * @returns {FetchHook<Balance & {hasPremium: boolean}>}
  * @throws {Error} Throws an error if used outside of a BalanceProvider.
  */
 export function useBalance() {
@@ -28,16 +23,13 @@ export function useBalance() {
 const BalanceContext = createContext();
 
 export function BalanceProvider({ children }) {
-  const { ok, error, loading, refetch } = useBal();
+  const { ok, err, loading, refetch } = useBal();
   return (
     <BalanceContext.Provider
       value={{
-        balance: ok?.balance,
-        usd: ok?.usd,
-        images: ok?.images,
-        searches: ok?.searches,
+        ok,
         loading,
-        error,
+        err,
         refetch,
       }}
     >
@@ -54,7 +46,7 @@ export function BalanceProvider({ children }) {
 function useBal() {
   const { user } = useAuth();
   const [ok, setOk] = useState(null);
-  const [error, setError] = useState(null);
+  const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refetch, setRefetch] = useState(false);
 
@@ -66,12 +58,16 @@ function useBal() {
       try {
         const result = await getBalance();
         if (result.ok) {
-          setOk(result.ok);
+          if (result.ok.balanceRaw >= PREMIUM_BALANCE_THRESHOLD) {
+            setOk({ ...result.ok, hasPremium: true });
+          } else {
+            setOk(result.ok);
+          }
         } else {
-          setError(result.err);
+          setErr(result.err);
         }
       } catch (err) {
-        setError(err.message);
+        setErr(err.message);
       } finally {
         setLoading(false);
       }
@@ -80,5 +76,5 @@ function useBal() {
     fetchBalance().then(() => setRefetch(false));
   }, [refetch, user]);
 
-  return { ok, error, loading, refetch: () => setRefetch(true) };
+  return { ok, err, loading, refetch: () => setRefetch(true) };
 }

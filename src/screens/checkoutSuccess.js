@@ -10,15 +10,12 @@ import { useModelPreferences } from "@/hooks/useModelPreferences";
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const { preferences, updatePreferences } = useModelPreferences();
-  const { balance } = useBalance();
-  const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
-  const isBalanceInBillions = balance?.includes("B");
-  const hasEnoughBalance = isBalanceInBillions && balanceNum >= 1.0;
+  const balance = useBalance();
 
   useEffect(() => {
     const initializeModels = async () => {
       // If user has enough balance and was using flash, automatically upgrade to pro
-      if (hasEnoughBalance) {
+      if (balance.ok?.hasPremium) {
         updatePreferences({
           mainModel:
             preferences.mainModel === "gemini-1.5-flash"
@@ -33,7 +30,7 @@ const CheckoutSuccess = () => {
     };
 
     initializeModels();
-  }, [hasEnoughBalance]);
+  }, [balance.ok?.hasPremium]);
 
   return (
     <div style={styles.overlay}>
