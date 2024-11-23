@@ -1,13 +1,7 @@
 import React, { useState, useRef, useEffect, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdAdd, MdSort } from "react-icons/md";
-import {
-  FaPlay,
-  FaArrowLeft,
-  FaTrash,
-  FaUndo,
-  FaCog,
-} from "react-icons/fa"; // Add FaTrash and FaDownload import
+import { FaPlay, FaArrowLeft, FaTrash, FaUndo, FaCog } from "react-icons/fa"; // Add FaTrash and FaDownload import
 import {
   deleteScriptFromFirestore,
   saveScriptToFirestore,
@@ -1418,13 +1412,13 @@ const ScriptsScreen = () => {
         onConfirm={() =>
           deleteConfirmation.isDeleteAll
             ? handleDeleteAllVersions(
-              deleteConfirmation.category,
-              deleteConfirmation.script
-            )
+                deleteConfirmation.category,
+                deleteConfirmation.script
+              )
             : handleDeleteScript(
-              deleteConfirmation.category,
-              deleteConfirmation.script
-            )
+                deleteConfirmation.category,
+                deleteConfirmation.script
+              )
         }
         scriptName={deleteConfirmation.script?.name}
         isDeleteAll={deleteConfirmation.isDeleteAll}

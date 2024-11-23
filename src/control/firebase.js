@@ -28,7 +28,7 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { DEFAULT_PREFERENCES } from "../constants";
-import { Model, ModelPreferences } from "../types/llm"
+import { Model, ModelPreferences } from "../types/llm";
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);

@@ -276,13 +276,13 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
       const historyText =
         scriptChatHistory.length > 0
           ? "\nPrevious commands:\n" +
-          scriptChatHistory
-            .slice(-20)
-            .map(
-              (h) =>
-                `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
-            )
-            .join("\n")
+            scriptChatHistory
+              .slice(-20)
+              .map(
+                (h) =>
+                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
+              )
+              .join("\n")
           : "";
 
       const messageContent = selectedCodeAttachment

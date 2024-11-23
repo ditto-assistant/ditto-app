@@ -131,5 +131,3 @@ export const TOOLS = {
     trigger: "<OPENSCAD>",
   },
 } as const;
-
-

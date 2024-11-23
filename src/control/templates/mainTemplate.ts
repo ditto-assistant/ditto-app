@@ -88,11 +88,11 @@ export const mainTemplate = (
       ? `
 ## Available Tools
 ${tools
-        .map(
-          (tool, index) =>
-            `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
-        )
-        .join("\n")}`
+  .map(
+    (tool, index) =>
+      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+  )
+  .join("\n")}`
       : "";
 
   const filteredExamples = examples

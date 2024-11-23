@@ -1,49 +1,49 @@
 export type ModelPreferences = {
-    mainModel: Model;
-    programmerModel: Model;
-    imageGeneration: {
-        model: Model;
-        size: ImageGenerationSize;
-    };
-    tools: ToolPreferences;
+  mainModel: Model;
+  programmerModel: Model;
+  imageGeneration: {
+    model: Model;
+    size: ImageGenerationSize;
+  };
+  tools: ToolPreferences;
 };
 
 export type Model =
-    | "gemini-1.5-pro"
-    | "gemini-1.5-flash"
-    | "claude-3-5-sonnet"
-    | "mistral-nemo"
-    | "mistral-large"
-    | "llama-3-2"
-    | "dall-e-2"
-    | "dall-e-3"
-    | "dall-e-3-hd";
+  | "gemini-1.5-pro"
+  | "gemini-1.5-flash"
+  | "claude-3-5-sonnet"
+  | "mistral-nemo"
+  | "mistral-large"
+  | "llama-3-2"
+  | "dall-e-2"
+  | "dall-e-3"
+  | "dall-e-3-hd";
 
 export type ImageGenerationSize = {
-    wh: string;
-    description: string;
-    supportedModels: Model[];
+  wh: string;
+  description: string;
+  supportedModels: Model[];
 };
 
 export interface ModelOption {
-    id: Model;
-    name: string;
-    isPremium: boolean;
-    isFree?: boolean;
-    isMaintenance?: boolean;
-    sizeOptions?: ImageGenerationSize[];
+  id: Model;
+  name: string;
+  isPremium: boolean;
+  isFree?: boolean;
+  isMaintenance?: boolean;
+  sizeOptions?: ImageGenerationSize[];
 }
 
 export type Tool = {
-    name: string;
-    description: string;
-    trigger: string;
+  name: string;
+  description: string;
+  trigger: string;
 };
 
 export interface ToolPreferences {
-    openScad: boolean;
-    htmlScript: boolean;
-    imageGeneration: boolean;
-    googleSearch: boolean;
-    googleHome: boolean;
+  openScad: boolean;
+  htmlScript: boolean;
+  imageGeneration: boolean;
+  googleSearch: boolean;
+  googleHome: boolean;
 }

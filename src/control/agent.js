@@ -23,7 +23,7 @@ import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
 import { handleHomeAssistant } from "./agentflows/homeFlow";
-import { ModelPreferences } from "../types/llm"
+import { ModelPreferences } from "../types/llm";
 
 const mode = import.meta.env.MODE;
 

@@ -5,7 +5,7 @@ import {
   getModelPreferencesFromFirestore,
 } from "../control/firebase";
 import { DEFAULT_PREFERENCES } from "@/constants";
-import { ModelPreferences } from "../types/llm"
+import { ModelPreferences } from "../types/llm";
 
 const ModelPreferencesContext = createContext();
 
