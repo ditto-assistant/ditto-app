@@ -5,7 +5,7 @@ import { FetchHook } from "../types/common";
 import { Balance } from "../types/api";
 
 // TODO: Make this server-side
-export const PREMIUM_BALANCE_THRESHOLD = 3_000_000_000;
+export const PREMIUM_BALANCE_THRESHOLD = 1_000_000_000;
 
 /**
  * Access the user's balance context.
