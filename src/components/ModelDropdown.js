@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { DEFAULT_MODELS } from "../constants";
-import { createPortal } from 'react-dom';
+import { createPortal } from "react-dom";
 
 /** @typedef {import('../types').Model} Model */
 /** @typedef {import('../types').ModelOption} ModelOption */
@@ -27,7 +27,7 @@ const ModelDropdown = ({
   inMemoryOverlay = false,
   models = DEFAULT_MODELS,
   isOpen,
-  onOpenChange
+  onOpenChange,
 }) => {
   const dropdownRef = useRef(null);
 
@@ -53,7 +53,7 @@ const ModelDropdown = ({
   const handleSelect = (modelId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const model = models.find((m) => m.id === modelId);
     if (model.isPremium && !hasEnoughBalance) {
       console.log("Premium model requires sufficient balance");
@@ -63,7 +63,7 @@ const ModelDropdown = ({
       console.log("Model is in maintenance");
       return;
     }
-    
+
     onChange(modelId);
     onOpenChange?.(false);
   };
@@ -131,7 +131,8 @@ const ModelDropdown = ({
                   padding: "12px",
                   cursor: "pointer",
                   opacity:
-                    (model.isPremium && !hasEnoughBalance) || model.isMaintenance
+                    (model.isPremium && !hasEnoughBalance) ||
+                    model.isMaintenance
                       ? 0.5
                       : 1,
                   backgroundColor: "#2f3136",
@@ -141,7 +142,8 @@ const ModelDropdown = ({
                   alignItems: "center",
                   transition: "background-color 0.2s ease",
                   cursor:
-                    (model.isPremium && !hasEnoughBalance) || model.isMaintenance
+                    (model.isPremium && !hasEnoughBalance) ||
+                    model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
                 }}
@@ -170,7 +172,9 @@ const ModelDropdown = ({
                         Premium
                       </span>
                       {!hasEnoughBalance && (
-                        <span style={styles.requirementBadge}>Requires 1.00B</span>
+                        <span style={styles.requirementBadge}>
+                          Requires 1.00B
+                        </span>
                       )}
                     </>
                   )}

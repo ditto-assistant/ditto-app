@@ -1,29 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import ModelDropdown from './ModelDropdown';
-import ModelDropdownImage from './ModelDropdownImage';
-import { IMAGE_GENERATION_MODELS } from '../constants';
-import { MdClose } from 'react-icons/md';
+import React, { useState, useEffect } from "react";
+import ModelDropdown from "./ModelDropdown";
+import ModelDropdownImage from "./ModelDropdownImage";
+import { IMAGE_GENERATION_MODELS } from "../constants";
+import { MdClose } from "react-icons/md";
 
-function ModelPreferencesModal({ preferences, updatePreferences, onClose, hasEnoughBalance }) {
+function ModelPreferencesModal({
+  preferences,
+  updatePreferences,
+  onClose,
+  hasEnoughBalance,
+}) {
   const [openDropdown, setOpenDropdown] = useState(null);
-  
+
   // Handle clicking outside of any dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
       // Don't handle clicks inside dropdowns, their options, or the selectors
-      if (e.target.closest('.model-dropdown') || 
-          e.target.closest('.dropdown-option') ||
-          e.target.closest('.model-selector') ||
-          e.target.closest('.selected-value')) {
+      if (
+        e.target.closest(".model-dropdown") ||
+        e.target.closest(".dropdown-option") ||
+        e.target.closest(".model-selector") ||
+        e.target.closest(".selected-value")
+      ) {
         return;
       }
-      
+
       // Close dropdown if clicking outside
       setOpenDropdown(null);
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleModalClick = (e) => {
@@ -40,7 +47,7 @@ function ModelPreferencesModal({ preferences, updatePreferences, onClose, hasEno
 
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Model Preferences</h3>
           <MdClose className="close-icon" onClick={onClose} />
@@ -51,13 +58,13 @@ function ModelPreferencesModal({ preferences, updatePreferences, onClose, hasEno
               <label className="model-label">Main Agent Model</label>
               <ModelDropdown
                 value={preferences.mainModel}
-                onChange={(value) => handleModelChange('mainModel', value)}
+                onChange={(value) => handleModelChange("mainModel", value)}
                 hasEnoughBalance={hasEnoughBalance}
-                isOpen={openDropdown === 'main'}
+                isOpen={openDropdown === "main"}
                 onOpenChange={(isOpen) => {
                   if (isOpen) {
-                    setOpenDropdown('main');
-                  } else if (openDropdown === 'main') {
+                    setOpenDropdown("main");
+                  } else if (openDropdown === "main") {
                     setOpenDropdown(null);
                   }
                 }}
@@ -67,13 +74,15 @@ function ModelPreferencesModal({ preferences, updatePreferences, onClose, hasEno
               <label className="model-label">Programmer Model</label>
               <ModelDropdown
                 value={preferences.programmerModel}
-                onChange={(value) => handleModelChange('programmerModel', value)}
+                onChange={(value) =>
+                  handleModelChange("programmerModel", value)
+                }
                 hasEnoughBalance={hasEnoughBalance}
-                isOpen={openDropdown === 'programmer'}
+                isOpen={openDropdown === "programmer"}
                 onOpenChange={(isOpen) => {
                   if (isOpen) {
-                    setOpenDropdown('programmer');
-                  } else if (openDropdown === 'programmer') {
+                    setOpenDropdown("programmer");
+                  } else if (openDropdown === "programmer") {
                     setOpenDropdown(null);
                   }
                 }}
@@ -83,13 +92,15 @@ function ModelPreferencesModal({ preferences, updatePreferences, onClose, hasEno
               <label className="model-label">Image Generation Model</label>
               <ModelDropdownImage
                 value={preferences.imageGeneration}
-                onChange={(model, size) => handleModelChange('imageGeneration', { model, size })}
+                onChange={(model, size) =>
+                  handleModelChange("imageGeneration", { model, size })
+                }
                 hasEnoughBalance={hasEnoughBalance}
-                isOpen={openDropdown === 'image'}
+                isOpen={openDropdown === "image"}
                 onOpenChange={(isOpen) => {
                   if (isOpen) {
-                    setOpenDropdown('image');
-                  } else if (openDropdown === 'image') {
+                    setOpenDropdown("image");
+                  } else if (openDropdown === "image") {
                     setOpenDropdown(null);
                   }
                 }}
@@ -102,4 +113,4 @@ function ModelPreferencesModal({ preferences, updatePreferences, onClose, hasEno
   );
 }
 
-export default ModelPreferencesModal; 
+export default ModelPreferencesModal;

@@ -1,7 +1,11 @@
-import React from 'react';
-import { MdClose } from 'react-icons/md';
+import React from "react";
+import { MdClose } from "react-icons/md";
 
-function MemoryControlsModal({ memoryStatus, toggleMemoryActivation, onClose }) {
+function MemoryControlsModal({
+  memoryStatus,
+  toggleMemoryActivation,
+  onClose,
+}) {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -44,4 +48,4 @@ function MemoryControlsModal({ memoryStatus, toggleMemoryActivation, onClose }) 
   );
 }
 
-export default MemoryControlsModal; 
+export default MemoryControlsModal;

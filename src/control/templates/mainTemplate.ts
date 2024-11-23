@@ -1,10 +1,13 @@
-import { TOOLS } from '../../constants';
-import type { Tool } from '../../constants';
-import type { ToolPreferences } from '../../types';
+import { TOOLS } from "../../constants";
+import type { Tool } from "../../constants";
+import type { ToolPreferences } from "../../types";
 
-const getToolsModule = (scriptType: string | null, toolPreferences: ToolPreferences): Tool[] => {
+const getToolsModule = (
+  scriptType: string | null,
+  toolPreferences: ToolPreferences
+): Tool[] => {
   const enabledTools = [];
-  
+
   if (toolPreferences.imageGeneration) {
     enabledTools.push(TOOLS.imageGeneration);
   }
@@ -24,13 +27,13 @@ const getToolsModule = (scriptType: string | null, toolPreferences: ToolPreferen
   if (!scriptType) return enabledTools;
 
   switch (scriptType.toLowerCase()) {
-    case 'webapps':
-      return toolPreferences.htmlScript 
-        ? [TOOLS.webApps, ...enabledTools.filter(t => t !== TOOLS.webApps)]
+    case "webapps":
+      return toolPreferences.htmlScript
+        ? [TOOLS.webApps, ...enabledTools.filter((t) => t !== TOOLS.webApps)]
         : enabledTools;
-    case 'openscad':
+    case "openscad":
       return toolPreferences.openScad
-        ? [TOOLS.openScad, ...enabledTools.filter(t => t !== TOOLS.openScad)]
+        ? [TOOLS.openScad, ...enabledTools.filter((t) => t !== TOOLS.openScad)]
         : enabledTools;
     default:
       return enabledTools;
@@ -80,40 +83,52 @@ export const mainTemplate = (
   toolPreferences: ToolPreferences
 ) => {
   const tools = getToolsModule(workingOnScriptType, toolPreferences);
-  
-  const toolsSection = tools.length > 0 ? `
-## Available Tools
-${tools.map((tool, index) => 
-    `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
-  ).join('\n')}` : '';
 
-  const filteredExamples = examples.split('\n\n')
-    .filter(example => {
+  const toolsSection =
+    tools.length > 0
+      ? `
+## Available Tools
+${tools
+  .map(
+    (tool, index) =>
+      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+  )
+  .join("\n")}`
+      : "";
+
+  const filteredExamples = examples
+    .split("\n\n")
+    .filter((example) => {
       if (!example.trim()) return false;
-      
-      return tools.some(tool => {
-        const triggerBase = tool.trigger.split(' ')[0];
+
+      return tools.some((tool) => {
+        const triggerBase = tool.trigger.split(" ")[0];
         return example.includes(triggerBase);
       });
     })
     .map((example, index) => {
       const cleanExample = example
-        .replace(/Example \d+\s*Example \d+/g, '')
-        .replace(/Example \d+/g, '')
+        .replace(/Example \d+\s*Example \d+/g, "")
+        .replace(/Example \d+/g, "")
         .trim();
-      
-      const [userPrompt, response] = cleanExample.split('User\'s Prompt:').map(s => s.trim());
-      
+
+      const [userPrompt, response] = cleanExample
+        .split("User's Prompt:")
+        .map((s) => s.trim());
+
       return `Example ${index + 1}\nUser's Prompt: ${response}`;
     })
-    .join('\n\n');
+    .join("\n\n");
 
-  const examplesSection = tools.length > 0 && filteredExamples ? `
+  const examplesSection =
+    tools.length > 0 && filteredExamples
+      ? `
 
 ## Examples of User Prompts that need tools:
 -- Begin Examples --
 ${filteredExamples}
--- End Examples --` : '';
+-- End Examples --`
+      : "";
 
   let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
 ${toolsSection}${examplesSection}
