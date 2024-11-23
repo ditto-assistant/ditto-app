@@ -87,7 +87,7 @@ export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   htmlScript: true,
   imageGeneration: true,
   googleSearch: true,
-  googleHome: false
+  googleHome: false,
 };
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
@@ -95,37 +95,37 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   programmerModel: "gemini-1.5-pro",
   imageGeneration: {
     model: "dall-e-3",
-    size: "1024x1024"
+    size: "1024x1024",
   },
-  tools: DEFAULT_TOOL_PREFERENCES
+  tools: DEFAULT_TOOL_PREFERENCES,
 };
 
 export const TOOLS = {
   imageGeneration: {
-    name: 'Image Generation',
-    description: 'Generate images based on text descriptions',
-    trigger: '<IMAGE_GENERATION> query'
+    name: "Image Generation",
+    description: "Generate images based on text descriptions",
+    trigger: "<IMAGE_GENERATION> query",
   },
   googleSearch: {
-    name: 'Google Search',
-    description: 'Search the web for information',
-    trigger: '<GOOGLE_SEARCH> query'
+    name: "Google Search",
+    description: "Search the web for information",
+    trigger: "<GOOGLE_SEARCH> query",
   },
   googleHome: {
-    name: 'Google Home',
-    description: 'Control smart home devices',
-    trigger: '<GOOGLE_HOME> query'
+    name: "Google Home",
+    description: "Control smart home devices",
+    trigger: "<GOOGLE_HOME> query",
   },
   webApps: {
-    name: 'Web Apps',
-    description: 'Generate web applications using HTML, CSS, and JavaScript',
-    trigger: '<HTML_SCRIPT> query'
+    name: "Web Apps",
+    description: "Generate web applications using HTML, CSS, and JavaScript",
+    trigger: "<HTML_SCRIPT> query",
   },
   openScad: {
-    name: 'OpenSCAD',
-    description: 'Generate 3D modeling scripts using OpenSCAD',
-    trigger: '<OPENSCAD> query'
-  }
+    name: "OpenSCAD",
+    description: "Generate 3D modeling scripts using OpenSCAD",
+    trigger: "<OPENSCAD> query",
+  },
 } as const;
 
 export type Tool = {

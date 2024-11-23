@@ -864,7 +864,7 @@ export const saveModelPreferencesToFirestore = async (userID, preferences) => {
         updateDoc(doc.ref, {
           preferences: {
             ...preferences,
-            tools: preferences.tools || DEFAULT_PREFERENCES.tools
+            tools: preferences.tools || DEFAULT_PREFERENCES.tools,
           },
           timestamp: Date.now(),
         });
@@ -873,7 +873,7 @@ export const saveModelPreferencesToFirestore = async (userID, preferences) => {
       await addDoc(collection(db, "users", userID, "preferences"), {
         preferences: {
           ...preferences,
-          tools: preferences.tools || DEFAULT_PREFERENCES.tools
+          tools: preferences.tools || DEFAULT_PREFERENCES.tools,
         },
         timestamp: Date.now(),
       });

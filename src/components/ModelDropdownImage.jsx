@@ -4,7 +4,7 @@ import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { IMAGE_GENERATION_MODELS } from "../constants";
 import { styles as modelDropdownStyles } from "./ModelDropdown";
-import { createPortal } from 'react-dom';
+import { createPortal } from "react-dom";
 
 /** @typedef {import('../types').Model} Model */
 /** @typedef {import('../types').ModelOption} ModelOption */
@@ -27,7 +27,7 @@ const ModelDropdownImage = ({
   hasEnoughBalance,
   inMemoryOverlay = false,
   isOpen,
-  onOpenChange
+  onOpenChange,
 }) => {
   const [expandedModel, setExpandedModel] = useState(null);
   const dropdownRef = useRef(null);
@@ -63,10 +63,10 @@ const ModelDropdownImage = ({
         dropdown.style.top = "100%";
         dropdown.style.left = "0";
         dropdown.style.width = "100%";
-        
+
         const dropdownRect = dropdown.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
-        
+
         if (dropdownRect.bottom > viewportHeight) {
           dropdown.style.top = "auto";
           dropdown.style.bottom = "100%";

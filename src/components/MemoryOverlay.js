@@ -18,9 +18,9 @@ import {
   DEFAULT_PREFERENCES,
 } from "../constants";
 import FullScreenSpinner from "./LoadingSpinner";
-import ModelPreferencesModal from './ModelPreferencesModal';
-import MemoryControlsModal from './MemoryControlsModal';
-import AgentToolsModal from './AgentToolsModal';
+import ModelPreferencesModal from "./ModelPreferencesModal";
+import MemoryControlsModal from "./MemoryControlsModal";
+import AgentToolsModal from "./AgentToolsModal";
 const darkModeColors = {
   primary: "#7289DA",
   text: "#FFFFFF",
@@ -146,7 +146,7 @@ function MemoryOverlay({ closeOverlay }) {
 
         // Dispatch a custom event to notify other components
         const event = new CustomEvent("memoryDeleted", {
-          detail: { newHistCount: 0 }
+          detail: { newHistCount: 0 },
         });
         window.dispatchEvent(event);
 
@@ -155,8 +155,12 @@ function MemoryOverlay({ closeOverlay }) {
         resolve(true);
       };
 
-      dialog.querySelector(".cancel-button").addEventListener("click", handleCancel);
-      dialog.querySelector(".confirm-button").addEventListener("click", handleConfirm);
+      dialog
+        .querySelector(".cancel-button")
+        .addEventListener("click", handleCancel);
+      dialog
+        .querySelector(".confirm-button")
+        .addEventListener("click", handleConfirm);
       dialog.addEventListener("click", (e) => {
         if (e.target === dialog) handleCancel();
       });
@@ -186,7 +190,7 @@ function MemoryOverlay({ closeOverlay }) {
 
   const handleOverlayClick = (e) => {
     // Only close if clicking the main overlay background
-    if (e.target.className === 'MemoryOverlay') {
+    if (e.target.className === "MemoryOverlay") {
       handleClose();
     }
   };
@@ -198,32 +202,35 @@ function MemoryOverlay({ closeOverlay }) {
 
   return (
     <div className="modal-overlay" onClick={closeOverlay}>
-      <div className="modal-content memory-modal" onClick={e => e.stopPropagation()}>
+      <div
+        className="modal-content memory-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h3>Agent Settings</h3>
           <MdClose className="close-icon" onClick={closeOverlay} />
         </div>
-        
+
         <div className="modal-body">
           <div className="settings-buttons">
-            <button 
-              className="settings-button" 
+            <button
+              className="settings-button"
               onClick={() => setShowModelPrefs(true)}
             >
               <IoSettingsSharp className="button-icon" />
               <span>Model Preferences</span>
             </button>
 
-            <button 
-              className="settings-button" 
+            <button
+              className="settings-button"
               onClick={() => setShowMemoryControls(true)}
             >
               <FaBrain className="button-icon" />
               <span>Memory Controls</span>
             </button>
 
-            <button 
-              className="settings-button" 
+            <button
+              className="settings-button"
               onClick={() => setShowAgentTools(true)}
             >
               <IoExtensionPuzzle className="button-icon" />
@@ -235,10 +242,7 @@ function MemoryOverlay({ closeOverlay }) {
                 <FaTrash className="card-icon" />
                 <h4>Memory Manager</h4>
               </div>
-              <button
-                className="danger-button"
-                onClick={deleteAllMemory}
-              >
+              <button className="danger-button" onClick={deleteAllMemory}>
                 Delete All Memory
               </button>
             </div>
