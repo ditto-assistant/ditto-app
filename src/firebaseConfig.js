@@ -37,9 +37,10 @@ export const routes = {
    * Generates the URL for retrieving the user's balance.
    *
    * @param {string} userID - The unique identifier of the user.
+   * @param {string | null} email - The email of the user.
    * @returns {string} The complete URL for the balance endpoint.
    */
-  balance: (userID) => `${BASE_URL}/v1/balance?userID=${userID}`,
+  balance: (userID, email) => `${BASE_URL}/v1/balance?userID=${userID}&email=${email ?? ""}`,
   memories: getMemoriesURL(MODE),
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",

@@ -26,7 +26,7 @@ export async function getBalance() {
     console.error(tok.err);
     return { err: `getBalance: Unable to get auth token: ${tok.err}` };
   }
-  const response = await fetch(routes.balance(tok.ok.userID), {
+  const response = await fetch(routes.balance(tok.ok.userID, tok.ok.email), {
     method: "GET",
     headers: {
       Authorization: `Bearer ${tok.ok.token}`,
