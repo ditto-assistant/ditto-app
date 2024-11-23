@@ -67,7 +67,8 @@ export const getShortTermMemory = async (userID, k) => {
         return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
       } else if (pair.response.includes("Home Assistant Task:")) {
         const splitResponse = pair.response.split("Home Assistant Task:");
-        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME>${splitResponse[1]}\n`;
+        const cleanedResponse = splitResponse[1].replace(/Task completed successfully\.|Task failed\./, '').trim();
+        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME> ${cleanedResponse}\n`;
       } else {
         return `User (${pair.timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
       }
@@ -168,7 +169,8 @@ export const getLongTermMemory = async (userID, embedding, k) => {
           return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
         } else if (pair.response.includes("Home Assistant Task:")) {
           const splitResponse = pair.response.split("Home Assistant Task:");
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME>${splitResponse[1]}\n`;
+          const cleanedResponse = splitResponse[1].replace(/Task (completed successfully|failed)\.$/, '');
+          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME> ${cleanedResponse}\n`;
         } else {
           return `User (${pair.timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
         }

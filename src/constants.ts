@@ -104,27 +104,27 @@ export const TOOLS = {
   imageGeneration: {
     name: 'Image Generation',
     description: 'Generate images based on text descriptions',
-    trigger: '<IMAGE_GENERATION> query'
+    trigger: '<IMAGE_GENERATION>'
   },
   googleSearch: {
-    name: 'Google Search',
+    name: 'Web Search',
     description: 'Search the web for information',
-    trigger: '<GOOGLE_SEARCH> query'
+    trigger: '<GOOGLE_SEARCH>'
   },
   googleHome: {
-    name: 'Google Home',
+    name: 'Home Assistant',
     description: 'Control smart home devices',
-    trigger: '<GOOGLE_HOME> query'
+    trigger: '<GOOGLE_HOME>'
   },
   webApps: {
     name: 'Web Apps',
     description: 'Generate web applications using HTML, CSS, and JavaScript',
-    trigger: '<HTML_SCRIPT> query'
+    trigger: '<HTML_SCRIPT>'
   },
   openScad: {
     name: 'OpenSCAD',
     description: 'Generate 3D modeling scripts using OpenSCAD',
-    trigger: '<OPENSCAD> query'
+    trigger: '<OPENSCAD>'
   }
 } as const;
 
