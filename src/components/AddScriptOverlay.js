@@ -1,4 +1,3 @@
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@mui/material";
 import { MdClose } from "react-icons/md";

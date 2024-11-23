@@ -8,7 +8,7 @@ import {
 
 /**
  * Handles script generation flow (OpenSCAD or HTML)
- * @typedef {import("../../types").ModelPreferences} ModelPreferences
+ * @typedef {import("../../types/llm").ModelPreferences} ModelPreferences
  * @param {Object} params - The parameters for script generation.
  * @param {string} params.response - The user's response to the script generation prompt.
  * @param {string} params.tag - The tag used to identify the script generation prompt.
@@ -57,7 +57,7 @@ export const handleScriptGeneration = async ({
       systemTemplateFunction(),
       preferences.programmerModel,
       image,
-      () => {} // Prevent streaming updates
+      () => { } // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {

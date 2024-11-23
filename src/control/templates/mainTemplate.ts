@@ -1,6 +1,5 @@
 import { TOOLS } from "../../constants";
-import type { Tool } from "../../constants";
-import type { ToolPreferences } from "../../types";
+import type { Tool, ToolPreferences } from "../../types/llm";
 
 const getToolsModule = (
   scriptType: string | null,
@@ -89,11 +88,11 @@ export const mainTemplate = (
       ? `
 ## Available Tools
 ${tools
-  .map(
-    (tool, index) =>
-      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
-  )
-  .join("\n")}`
+        .map(
+          (tool, index) =>
+            `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+        )
+        .join("\n")}`
       : "";
 
   const filteredExamples = examples

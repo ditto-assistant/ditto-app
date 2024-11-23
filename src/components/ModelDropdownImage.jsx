@@ -1,14 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { IMAGE_GENERATION_MODELS } from "../constants";
 import { styles as modelDropdownStyles } from "./ModelDropdown";
 import { createPortal } from "react-dom";
-
-/** @typedef {import('../types').Model} Model */
-/** @typedef {import('../types').ModelOption} ModelOption */
-/** @typedef {import('../types').ImageGenerationSize} ImageGenerationSize */
+import { Model, ImageGenerationSize } from "../types/llm";
 
 /**
  * A dropdown component for selecting AI image generation models with size options

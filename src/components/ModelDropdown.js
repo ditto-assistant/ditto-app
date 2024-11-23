@@ -1,12 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { DEFAULT_MODELS } from "../constants";
 import { createPortal } from "react-dom";
-
-/** @typedef {import('../types').Model} Model */
-/** @typedef {import('../types').ModelOption} ModelOption */
+import { Model, ModelOption } from "../types/llm";
 
 /**
  * A dropdown component for selecting AI models
@@ -132,7 +130,7 @@ const ModelDropdown = ({
                   cursor: "pointer",
                   opacity:
                     (model.isPremium && !hasEnoughBalance) ||
-                    model.isMaintenance
+                      model.isMaintenance
                       ? 0.5
                       : 1,
                   backgroundColor: "#2f3136",
@@ -143,7 +141,7 @@ const ModelDropdown = ({
                   transition: "background-color 0.2s ease",
                   cursor:
                     (model.isPremium && !hasEnoughBalance) ||
-                    model.isMaintenance
+                      model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
                 }}

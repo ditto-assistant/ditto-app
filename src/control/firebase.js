@@ -28,6 +28,7 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { DEFAULT_PREFERENCES } from "../constants";
+import { Model, ModelPreferences } from "../types/llm"
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
@@ -846,7 +847,6 @@ export const uploadGeneratedImageToFirebaseStorage = async (
   // return await getDownloadURL(snapshot.ref);
 };
 
-/** @typedef {import('../constants').Model} Model */
 /**
  * Saves model preferences to Firestore.
  * @param {string} userID - The user's ID.
@@ -882,8 +882,6 @@ export const saveModelPreferencesToFirestore = async (userID, preferences) => {
     console.error("Error saving model preferences to Firestore: ", e);
   }
 };
-
-/** @typedef {import('../types').ModelPreferences} ModelPreferences */
 
 /**
  * Gets model preferences from Firestore.

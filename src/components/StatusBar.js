@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusIcons from "./StatusIcons";
-import MemoryOverlay from "./MemoryOverlay";
 import {
   syncLocalScriptsWithFirestore,
-  grabConversationHistoryCount,
 } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";

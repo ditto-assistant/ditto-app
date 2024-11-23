@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
+import React, { useState, useRef, useEffect, lazy } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdAdd, MdMoreVert, MdSort } from "react-icons/md";
+import { MdAdd, MdSort } from "react-icons/md";
 import {
   FaPlay,
   FaArrowLeft,
   FaTrash,
-  FaDownload,
   FaUndo,
   FaCog,
 } from "react-icons/fa"; // Add FaTrash and FaDownload import
@@ -19,7 +18,6 @@ import {
 } from "../control/firebase";
 import { downloadOpenscadScript } from "../control/agentTools";
 import { Button } from "@mui/material";
-import FullScreenSpinner from "../components/LoadingSpinner";
 import FullScreenEditor from "../components/FullScreenEditor";
 import CardMenu from "../components/CardMenu";
 import VersionOverlay from "../components/VersionOverlay";
@@ -29,7 +27,6 @@ import SearchBar from "../components/SearchBar";
 import AddScriptOverlay from "../components/AddScriptOverlay";
 import OpenSCADViewer from "../components/OpenSCADViewer";
 import RevertConfirmationOverlay from "../components/RevertConfirmationOverlay";
-import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -1421,13 +1418,13 @@ const ScriptsScreen = () => {
         onConfirm={() =>
           deleteConfirmation.isDeleteAll
             ? handleDeleteAllVersions(
-                deleteConfirmation.category,
-                deleteConfirmation.script
-              )
+              deleteConfirmation.category,
+              deleteConfirmation.script
+            )
             : handleDeleteScript(
-                deleteConfirmation.category,
-                deleteConfirmation.script
-              )
+              deleteConfirmation.category,
+              deleteConfirmation.script
+            )
         }
         scriptName={deleteConfirmation.script?.name}
         isDeleteAll={deleteConfirmation.isDeleteAll}

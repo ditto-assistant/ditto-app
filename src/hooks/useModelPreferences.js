@@ -5,10 +5,9 @@ import {
   getModelPreferencesFromFirestore,
 } from "../control/firebase";
 import { DEFAULT_PREFERENCES } from "@/constants";
+import { ModelPreferences } from "../types/llm"
 
 const ModelPreferencesContext = createContext();
-
-/** @typedef {import('../types').ModelPreferences} ModelPreferences */
 
 /**
  * Access the model preferences context.

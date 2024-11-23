@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import { getBalance } from "../api/get-balance";
+import { getBalance } from "../api/getBalance";
 import { useAuth } from "./useAuth";
+
 /**
  * Access the user's balance context.
  *

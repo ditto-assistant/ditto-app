@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -9,9 +9,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FiCopy,
   FiDownload,
-  FiClock,
-  FiBarChart2,
-  FiChevronDown,
 } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
@@ -313,9 +310,9 @@ export default function ChatFeed({
         const isNearBottom =
           feedElement &&
           feedElement.scrollHeight -
-            feedElement.scrollTop -
-            feedElement.clientHeight <
-            100;
+          feedElement.scrollTop -
+          feedElement.clientHeight <
+          100;
 
         if (isNearBottom) {
           bottomRef.current.scrollIntoView({
@@ -747,9 +744,8 @@ export default function ChatFeed({
           <img
             src={dittoAvatar}
             alt="Ditto"
-            className={`avatar ditto-avatar ${
-              isGenerating ? "animating" : "spinning"
-            }`}
+            className={`avatar ditto-avatar ${isGenerating ? "animating" : "spinning"
+              }`}
           />
         )}
         {showTypingIndicator ? (
@@ -762,9 +758,8 @@ export default function ChatFeed({
           </div>
         ) : (
           <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
-              actionOverlay && actionOverlay.index === index ? "blurred" : ""
-            } ${isSmallMessage ? "small-message" : ""}`}
+            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${actionOverlay && actionOverlay.index === index ? "blurred" : ""
+              } ${isSmallMessage ? "small-message" : ""}`}
             style={bubbleStyles.chatbubble}
             onClick={(e) => handleBubbleInteraction(e, index)}
             onContextMenu={(e) => handleBubbleInteraction(e, index)}
@@ -784,13 +779,12 @@ export default function ChatFeed({
                 <>
                   {renderMessageText(message.text, index, message.sender)}
                   <div
-                    className={`tool-status ${
-                      message.toolStatus === "complete"
-                        ? "complete"
-                        : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
-                    }`}
+                    className={`tool-status ${message.toolStatus === "complete"
+                      ? "complete"
+                      : message.toolStatus === "failed"
+                        ? "failed"
+                        : ""
+                      }`}
                   >
                     {message.toolStatus}
                     {message.showTypingDots && (
