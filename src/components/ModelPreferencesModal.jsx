@@ -39,6 +39,11 @@ function ModelPreferencesModal({
     }
   };
 
+  /**
+   *
+   * @param {"mainModel" | "programmerModel" | "imageGeneration"} key
+   * @param {any} value
+   */
   const handleModelChange = (key, value) => {
     updatePreferences({ [key]: value });
     setOpenDropdown(null);
@@ -62,6 +67,7 @@ function ModelPreferencesModal({
                 isOpen={openDropdown === "main"}
                 onOpenChange={(isOpen) => {
                   if (isOpen) {
+                    console.log("hasPremium", hasEnoughBalance);
                     setOpenDropdown("main");
                   } else if (openDropdown === "main") {
                     setOpenDropdown(null);

@@ -32,7 +32,8 @@ const INACTIVITY_TIMEOUT = 2000; // 2 seconds
  * @param {function(): void} props.onCloseMediaOptions - A function that closes the media options
  * @param {function} props.updateConversation - A function that updates the conversation
  * @param {function} props.onFocus - A function that handles the focus event
- * @param {function} props.onBlur - A function that handles the blur event
+ * @param {function(): void} props.onBlur - A function that handles the blur event
+ * @param {function(): void} props.onStop - A function that handles the stop event
  */
 export default function SendMessage({
   onImageEnlarge,
@@ -45,6 +46,7 @@ export default function SendMessage({
   updateConversation,
   onFocus,
   onBlur,
+  onStop,
 }) {
   const [message, setMessage] = useState("");
   const [image, setImage] = useState("");
@@ -296,6 +298,7 @@ export default function SendMessage({
         console.error("Error sending message:", error);
       } finally {
         setIsWaitingForResponse(false);
+        onStop();
       }
     }
   };

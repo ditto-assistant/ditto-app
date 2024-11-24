@@ -5,7 +5,8 @@ import { FaCrown } from "react-icons/fa";
 import { IMAGE_GENERATION_MODELS } from "../constants";
 import { styles as modelDropdownStyles } from "./ModelDropdown";
 import { createPortal } from "react-dom";
-import { Model, ImageGenerationSize } from "../types/llm";
+/**@typedef {import("@/types/llm").Model} Model */
+/**@typedef {import("@/types/llm").ImageGenerationSize} ImageGenerationSize */
 
 /**
  * A dropdown component for selecting AI image generation models with size options

@@ -10,7 +10,6 @@ function StatusBar({ onMemoryClick }) {
   const navigate = useNavigate();
   const balance = useBalance();
   const memoryCount = useMemoryCount();
-  const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
   const [workingScript, setWorkingScript] = useState(() => {
     const storedScript = localStorage.getItem("workingOnScript");
     return storedScript ? JSON.parse(storedScript).script : null;
@@ -140,9 +139,9 @@ function StatusBar({ onMemoryClick }) {
           ) : showMemories ? (
             `${memoryCount.count} Memories`
           ) : showUSD ? (
-            balance.usd
+            balance.ok?.usd
           ) : (
-            balance.balance
+            balance.ok?.balance
           )}
         </p>
       </div>

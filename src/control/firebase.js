@@ -1,11 +1,9 @@
 // docs: https://modularfirebase.web.app/common-use-cases/firestore/
 
-import { firebaseConfig } from "../firebaseConfig";
+import { firebaseConfig } from "@/firebaseConfig";
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import {
   getFirestore,
-  connectFirestoreEmulator,
   query,
   collection,
   addDoc,
@@ -27,21 +25,16 @@ import {
   listAll,
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
-import { DEFAULT_PREFERENCES } from "../constants";
-import { Model, ModelPreferences } from "../types/llm";
+import { DEFAULT_PREFERENCES } from "@/constants";
+/**@typedef {import("@/types/llm").Model} Model */
+/**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
-
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 const mode = import.meta.env.MODE;
-
-// if (mode === 'development') {
-//   connectFirestoreEmulator(db, '[::1]', 8275);
-// }
 
 export const saveBalanceToFirestore = async (userID, balance) => {
   try {

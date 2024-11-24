@@ -223,9 +223,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
 
   // Add these state variables near the top of the component with other state declarations
-  const { balance } = useBalance();
-  const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
-  const isBalanceInBillions = balance?.includes("B");
+  const balance = useBalance();
 
   useEffect(() => {
     isMobileRef.current = checkIfMobile();
@@ -1497,9 +1495,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           onChange={(newModel) => {
                             updatePreferences({ programmerModel: newModel });
                           }}
-                          hasEnoughBalance={
-                            balanceNum >= 1.0 && isBalanceInBillions
-                          }
+                          hasEnoughBalance={balance.ok?.hasPremium}
                         />
                       </div>
 

@@ -9,10 +9,14 @@ build:
 serve:
 	bun run serve
 
-bs: build serve
+build-dev:
+	bun run build:dev
+
+# build and serve the development version
+bs: build-dev serve
 
 format:
-	prettier --write **/*.{ts,js,jsx,md,json,css}
+	prettier --write **/*.{ts,tsx,js,jsx,md,json,css}
 
 # push a new tag to the remote repository
 tag-latest:

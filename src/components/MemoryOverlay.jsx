@@ -47,14 +47,7 @@ function MemoryOverlay({ closeOverlay }) {
     shortTerm:
       JSON.parse(localStorage.getItem("deactivateShortTermMemory")) || false,
   });
-
-  const { balance } = useBalance();
-
-  // Convert balance string to number (removing 'M' or 'B' and converting to float)
-  const balanceNum = parseFloat(balance?.replace(/[MB]/, "") || "0");
-  const isBalanceInBillions = balance?.includes("B");
-  const hasEnoughBalance = isBalanceInBillions && balanceNum >= 1.0;
-
+  const balance = useBalance();
   const [showModelPrefs, setShowModelPrefs] = useState(false);
   const [showMemoryControls, setShowMemoryControls] = useState(false);
   const [showAgentTools, setShowAgentTools] = useState(false);
@@ -77,14 +70,16 @@ function MemoryOverlay({ closeOverlay }) {
   }, []);
 
   useEffect(() => {
-    if (!hasEnoughBalance) {
+    if (!balance.loading && !balance.ok?.hasPremium) {
       let mainSwitch = false;
       let programmerSwitch = false;
       if (isPremiumModel(preferences.mainModel)) {
+        console.log("mainSwitch", preferences.mainModel);
         mainSwitch = true;
         updatePreferences({ mainModel: "llama-3-2" });
       }
       if (isPremiumModel(preferences.programmerModel)) {
+        console.log("programmerSwitch", preferences.programmerModel);
         programmerSwitch = true;
         updatePreferences({ programmerModel: "llama-3-2" });
       }
@@ -94,7 +89,7 @@ function MemoryOverlay({ closeOverlay }) {
         );
       }
     }
-  }, [hasEnoughBalance, preferences, updatePreferences]);
+  }, [balance, preferences, updatePreferences]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -259,7 +254,7 @@ function MemoryOverlay({ closeOverlay }) {
               }
               setShowModelPrefs(false);
             }}
-            hasEnoughBalance={hasEnoughBalance}
+            hasEnoughBalance={balance.ok?.hasPremium}
           />
         )}
 

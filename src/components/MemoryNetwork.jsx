@@ -1453,18 +1453,6 @@ const styles = {
     justifyContent: "center",
     transition: "all 0.2s ease",
   },
-  closeButton: {
-    background: "transparent",
-    border: "none",
-    color: "#ffffff",
-    padding: "8px",
-    borderRadius: "4px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease",
-  },
   content: {
     flex: 1,
     overflow: "hidden",
@@ -1516,12 +1504,6 @@ const styles = {
   pathNode: {
     marginBottom: "24px",
   },
-  pathNodeTitle: {
-    color: "#72767d",
-    fontSize: "14px",
-    marginBottom: "8px",
-    fontWeight: 500,
-  },
   pathNodeContent: {
     backgroundColor: "transparent",
     marginTop: "12px",
@@ -1538,14 +1520,6 @@ const styles = {
     borderTop: "1px solid rgba(255, 255, 255, 0.1)",
     paddingTop: "12px",
     marginTop: "12px",
-  },
-  pathNodeChild: {
-    marginTop: "16px",
-    backgroundColor: "#40444b",
-    borderRadius: "12px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    overflow: "hidden",
-    padding: "16px",
   },
   pathNodeChildHeader: {
     display: "flex",
@@ -1742,23 +1716,6 @@ const styles = {
     padding: "20px",
     boxSizing: "border-box",
   },
-  memoryActions: {
-    display: "flex",
-    gap: "8px",
-    alignItems: "center",
-  },
-  deleteButton: {
-    background: "none",
-    border: "none",
-    color: "#ff4444",
-    cursor: "pointer",
-    padding: "8px",
-    borderRadius: "4px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease",
-  },
   pathNodeHeader: {
     display: "flex",
     justifyContent: "space-between",
@@ -1821,13 +1778,6 @@ const styles = {
     opacity: 1,
   },
 
-  timestamp: {
-    color: "rgba(255, 255, 255, 0.5)",
-    fontSize: "0.8em",
-    marginLeft: "8px",
-    fontFamily: "monospace",
-  },
-
   memoryHeaderLeft: {
     display: "flex",
     alignItems: "center",
@@ -1844,14 +1794,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-  },
-
-  timestamp: {
-    color: "rgba(255, 255, 255, 0.5)",
-    fontSize: "0.8em",
-    marginLeft: "8px",
-    fontFamily: "monospace",
-    whiteSpace: "nowrap",
   },
 
   promptHeader: {
@@ -1893,26 +1835,6 @@ const styles = {
     color: "#ffffff",
   },
 
-  // Update memoryActions to better align the buttons
-  memoryActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-    "& > *:not(:last-child)": {
-      marginRight: "4px",
-    },
-  },
-
-  // Update pathNodeChild for animation
-  pathNodeChild: {
-    marginTop: "16px",
-    padding: "12px",
-    backgroundColor: "#40444b",
-    borderRadius: "8px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    overflow: "hidden",
-  },
-
   relatedButton: {
     display: "flex",
     alignItems: "center",
@@ -1950,7 +1872,6 @@ const styles = {
     fontSize: "16px",
   },
 
-  // Update memoryActions
   memoryActions: {
     display: "flex",
     alignItems: "center",
@@ -1983,7 +1904,6 @@ const styles = {
     },
   },
 
-  // Update pathNodeChild animation
   pathNodeChild: {
     marginTop: "16px",
     padding: "12px",
@@ -2151,16 +2071,6 @@ const styles = {
     marginTop: "16px",
     display: "flex",
     justifyContent: "flex-end",
-  },
-  deleteButton: {
-    background: "#ed4245",
-    color: "#ffffff",
-    border: "none",
-    padding: "10px 16px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-    transition: "background-color 0.2s ease",
   },
 };
 
