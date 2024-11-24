@@ -546,7 +546,9 @@ export default function ChatFeed({
             }
             const cachedUrl = getCachedUrl(src);
             if (cachedUrl.err) {
-              console.error(`Image Load from cache error: ${cachedUrl.err}; src: ${src}`);
+              console.error(
+                `Image Load from cache error: ${cachedUrl.err}; src: ${src}`
+              );
               return <span className="invalid-image">Invalid URI</span>;
             }
             if (cachedUrl.ok) {
@@ -566,7 +568,9 @@ export default function ChatFeed({
                   getPresignedUrl(src).then(
                     (url) => {
                       if (url.err) {
-                        console.error(`Image Load error: ${url.err}; src: ${src}`);
+                        console.error(
+                          `Image Load error: ${url.err}; src: ${src}`
+                        );
                       } else if (url.ok) {
                         e.target.src = url.ok;
                       }

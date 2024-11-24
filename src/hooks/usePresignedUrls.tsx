@@ -29,7 +29,11 @@ export function usePresignedUrls(): PresignedUrlContext {
 /**
  * Provider component for managing presigned URLs.
  */
-export function PresignedUrlProvider({ children }: { children: React.ReactNode }) {
+export function PresignedUrlProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [urlCache, setUrlCache] = useState(new Map());
   const [failedUrls, setFailedUrls] = useState(new Set());
 
@@ -40,7 +44,9 @@ export function PresignedUrlProvider({ children }: { children: React.ReactNode }
     }
 
     function makeError(err: string) {
-      return { err: `Failed to get presigned URL: ${err}; originalUrl: ${originalUrl}` };
+      return {
+        err: `Failed to get presigned URL: ${err}; originalUrl: ${originalUrl}`,
+      };
     }
     try {
       const presignedUrl = await presignURL(originalUrl);
@@ -55,9 +61,11 @@ export function PresignedUrlProvider({ children }: { children: React.ReactNode }
       return makeError("no result");
     } catch (error) {
       console.error("Error getting presigned URL:", error);
-      return makeError(error instanceof Error ? error.message : "unknown error");
+      return makeError(
+        error instanceof Error ? error.message : "unknown error"
+      );
     }
-  };
+  }
 
   function getCachedUrl(originalUrl: string): Result<string | undefined> {
     if (failedUrls.has(originalUrl)) {
@@ -76,7 +84,7 @@ export function PresignedUrlProvider({ children }: { children: React.ReactNode }
 
   function clearCache() {
     setUrlCache(new Map());
-  };
+  }
 
   const value = {
     getPresignedUrl,
