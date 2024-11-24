@@ -23,9 +23,7 @@ const BalanceContext = createContext<BalanceHook | undefined>(undefined);
 export function BalanceProvider({ children }: { children: React.ReactNode }) {
   const value = useBal();
   return (
-    <BalanceContext.Provider value={value}>
-      {children}
-    </BalanceContext.Provider>
+    <BalanceContext.Provider value={value}>{children}</BalanceContext.Provider>
   );
 }
 
@@ -53,7 +51,9 @@ function useBal(): BalanceHook {
           setErr(result.err);
         }
       } catch (err) {
-        setErr(err instanceof Error ? err.message : 'An unknown error occurred');
+        setErr(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }

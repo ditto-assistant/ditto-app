@@ -151,7 +151,9 @@ const Settings = () => {
               <>
                 <p style={styles.balanceItem}>
                   Ditto Tokens:{" "}
-                  <span style={styles.highlightText}>{balance.ok?.balance}</span>
+                  <span style={styles.highlightText}>
+                    {balance.ok?.balance}
+                  </span>
                 </p>
                 <p style={styles.balanceItem}>
                   Images:{" "}
@@ -159,7 +161,10 @@ const Settings = () => {
                 </p>
                 <p style={styles.balanceItem}>
                   Searches:{" "}
-                  <span style={styles.highlightText}> {balance.ok?.searches} </span>
+                  <span style={styles.highlightText}>
+                    {" "}
+                    {balance.ok?.searches}{" "}
+                  </span>
                 </p>
               </>
             ) : (

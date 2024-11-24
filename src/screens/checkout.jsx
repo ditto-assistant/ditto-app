@@ -46,8 +46,11 @@ const Checkout = () => {
             <div style={styles.balanceGrid}>
               {!balance.loading ? (
                 <p style={styles.balanceItem}>
-                  USD: <span style={styles.highlightText}>{balance.ok?.usd}</span> (
-                  <span style={styles.highlightText}>{balance.ok?.balance}</span>{" "}
+                  USD:{" "}
+                  <span style={styles.highlightText}>{balance.ok?.usd}</span> (
+                  <span style={styles.highlightText}>
+                    {balance.ok?.balance}
+                  </span>{" "}
                   tokens)
                 </p>
               ) : (
