@@ -57,7 +57,7 @@ export const handleScriptGeneration = async ({
       systemTemplateFunction(),
       preferences.programmerModel,
       image,
-      () => {} // Prevent streaming updates
+      () => { } // Prevent streaming updates
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
@@ -94,7 +94,7 @@ export const generateScriptName = async (script, query) => {
   let scriptToNameResponse = await promptLLM(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
-    "gemini-1.5-flash"
+    "mistral-nemo"
   );
 
   // Handle errors and retries
@@ -103,7 +103,7 @@ export const generateScriptName = async (script, query) => {
     scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gemini-1.5-flash"
+      "mistral-nemo"
     );
     if (scriptToNameResponse.includes("error sending request")) {
       console.log("Second attempt failed, defaulting to 'App Name Here'");

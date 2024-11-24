@@ -23,10 +23,6 @@ import { useModelPreferences } from "../hooks/useModelPreferences";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
-const MEMORY_CACHE_KEY = "memoryCache";
-const MEMORY_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
-const INTERACTION_DELAY = 300; // 300ms delay to prevent accidental closures
 const AVATAR_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const AVATAR_FETCH_COOLDOWN = 60 * 1000; // 1 minute cooldown between fetch attempts
 
@@ -34,67 +30,6 @@ const AVATAR_FETCH_COOLDOWN = 60 * 1000; // 1 minute cooldown between fetch atte
 const triggerHapticFeedback = () => {
   if (navigator.vibrate) {
     navigator.vibrate(50); // 50ms subtle vibration
-  }
-};
-
-// Add these helper functions for cache management
-const getMemoryCache = () => {
-  try {
-    const cache = localStorage.getItem(MEMORY_CACHE_KEY);
-    if (!cache) return {};
-    return JSON.parse(cache);
-  } catch (e) {
-    console.error("Error reading memory cache:", e);
-    return {};
-  }
-};
-
-const setMemoryCache = (promptId, memories) => {
-  try {
-    const cache = getMemoryCache();
-    cache[promptId] = {
-      memories,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
-  } catch (e) {
-    console.error("Error setting memory cache:", e);
-  }
-};
-
-const getCachedMemories = (promptId) => {
-  try {
-    const cache = getMemoryCache();
-    const entry = cache[promptId];
-    if (!entry) return null;
-
-    // Check if cache is expired
-    if (Date.now() - entry.timestamp > MEMORY_CACHE_EXPIRY) {
-      // Remove expired entry
-      delete cache[promptId];
-      localStorage.setItem(MEMORY_CACHE_KEY, JSON.stringify(cache));
-      return null;
-    }
-
-    return entry.memories;
-  } catch (e) {
-    console.error("Error getting cached memories:", e);
-    return null;
-  }
-};
-
-// Add this helper function near the top of the file
-const validateImageUrl = async (url) => {
-  try {
-    const response = await fetch(url, {
-      method: "HEAD",
-      mode: "cors",
-      credentials: "omit",
-    });
-    return response.ok;
-  } catch (error) {
-    console.error("Error validating image URL:", error);
-    return false;
   }
 };
 
@@ -233,7 +168,6 @@ export default function ChatFeed({
   },
 }) {
   const [copied, setCopied] = useState(false);
-  const [selectedReaction, setSelectedReaction] = useState({});
   const [actionOverlay, setActionOverlay] = useState(null);
   const [reactionOverlay, setReactionOverlay] = useState(null);
   const feedRef = useRef(null);
@@ -253,15 +187,7 @@ export default function ChatFeed({
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [failedImages, setFailedImages] = useState(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
-  const [longPressTimer, setLongPressTimer] = useState(null);
-  const [showScores, setShowScores] = useState(false);
-  const [sortBy, setSortBy] = useState("relevance"); // 'relevance' or 'timestamp'
-  const [sortDirection, setSortDirection] = useState("desc");
-  const [streamingResponses, setStreamingResponses] = useState({});
-  const [animatingWord, setAnimatingWord] = useState({ index: null, word: "" });
-  const streamTimeoutRef = useRef(null);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
   const {
@@ -568,7 +494,7 @@ export default function ChatFeed({
 
   const handleImageClick = (src) => {
     const cachedUrl = getCachedUrl(src);
-    setImageOverlay(cachedUrl || src);
+    setImageOverlay(cachedUrl.ok ?? src);
   };
 
   const handleImageDownload = (src) => {
@@ -615,12 +541,16 @@ export default function ChatFeed({
             </a>
           ),
           img: ({ src, alt, ...props }) => {
-            if (failedImages.has(src)) {
+            if (!src) {
               return <span className="invalid-image">Invalid URI</span>;
             }
             const cachedUrl = getCachedUrl(src);
-            if (cachedUrl) {
-              src = cachedUrl;
+            if (cachedUrl.err) {
+              console.error(`Image Load from cache error: ${cachedUrl.err}; src: ${src}`);
+              return <span className="invalid-image">Invalid URI</span>;
+            }
+            if (cachedUrl.ok) {
+              src = cachedUrl.ok;
             }
             return (
               <img
@@ -635,12 +565,13 @@ export default function ChatFeed({
                 onError={(e) => {
                   getPresignedUrl(src).then(
                     (url) => {
-                      if (url) {
-                        e.target.src = url;
+                      if (url.err) {
+                        console.error(`Image Load error: ${url.err}; src: ${src}`);
+                      } else if (url.ok) {
+                        e.target.src = url.ok;
                       }
                     },
                     (err) => {
-                      setFailedImages((prev) => prev.add(src));
                       console.error(`Image Load error: ${err}; src: ${src}`);
                     }
                   );
@@ -1266,134 +1197,6 @@ export default function ChatFeed({
       window.removeEventListener("memoryDeleted", handleMemoryDeleted);
     };
   }, [updateConversation]);
-
-  // Update the memory-list rendering in the return statement
-  const renderMemoryContent = (content) => {
-    return (
-      <ReactMarkdown
-        children={content}
-        components={{
-          img: ({ src, alt }) => {
-            if (failedImages.has(src)) {
-              return <span className="invalid-image">Invalid URI</span>;
-            }
-
-            return (
-              <div className="memory-image-container">
-                <img
-                  src={src}
-                  alt={alt}
-                  className="memory-image"
-                  onClick={() => handleImageClick(src)}
-                  onError={(e) => {
-                    console.error("Memory image failed to load:", src);
-                    setFailedImages((prev) => new Set([...prev, src]));
-                  }}
-                />
-              </div>
-            );
-          },
-          code: ({ node, inline, className, children, ...props }) => {
-            const match = /language-(\w+)/.exec(className || "");
-            const codeContent = String(children).replace(/\n$/, "");
-
-            // Check if this is a code block
-            const isCodeBlock =
-              !inline &&
-              (match ||
-                (content.includes("```") && content.split("```").length > 1));
-
-            const handleCodeCopy = (e, text) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(text);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            };
-
-            if (isCodeBlock) {
-              const language = match ? match[1] : "text";
-              return (
-                <div
-                  className="code-container memory-code-container"
-                  data-language={language}
-                >
-                  <SyntaxHighlighter
-                    children={codeContent}
-                    style={vscDarkPlus}
-                    language={language}
-                    PreTag="div"
-                    {...props}
-                    className="code-block"
-                  />
-                  <button
-                    className="copy-button code-block-button"
-                    onClick={(e) => handleCodeCopy(e, codeContent)}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            }
-
-            // Inline code
-            return (
-              <div className="inline-code-container memory-inline-code">
-                <code className="inline-code" {...props}>
-                  {codeContent}
-                </code>
-                <button
-                  className="copy-button inline-code-button"
-                  onClick={(e) => handleCodeCopy(e, codeContent)}
-                  title="Copy code"
-                >
-                  <FiCopy />
-                </button>
-              </div>
-            );
-          },
-        }}
-      />
-    );
-  };
-
-  const formatFullTimestamp = (timestamp) => {
-    if (!timestamp) return "";
-    const date = new Date(timestamp);
-    return new Intl.DateTimeFormat("default", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZoneName: "short",
-    }).format(date);
-  };
-
-  const handleSort = (type) => {
-    if (sortBy === type) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(type);
-      setSortDirection("desc");
-    }
-  };
-
-  const getSortedMemories = () => {
-    if (!relatedMemories) return [];
-
-    return [...relatedMemories].sort((a, b) => {
-      if (sortBy === "relevance") {
-        const comparison = b.score - a.score;
-        return sortDirection === "asc" ? -comparison : comparison;
-      } else {
-        const comparison =
-          new Date(b.timestampString) - new Date(a.timestampString);
-        return sortDirection === "asc" ? -comparison : comparison;
-      }
-    });
-  };
 
   // Add a new useEffect to handle window resize events
   useEffect(() => {
