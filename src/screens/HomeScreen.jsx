@@ -877,7 +877,9 @@ export default function HomeScreen() {
             onOpenMediaOptions={handleOpenMediaOptions}
             onCloseMediaOptions={handleCloseMediaOptions}
             updateConversation={updateConversation}
-            onStop={balance.refetch}
+            onStop={() => {
+              balance.refetch();
+            }}
           />
         </Suspense>
       </footer>
