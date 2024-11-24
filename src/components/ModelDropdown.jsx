@@ -130,7 +130,7 @@ const ModelDropdown = ({
                   padding: "12px",
                   opacity:
                     (model.isPremium && !hasEnoughBalance) ||
-                      model.isMaintenance
+                    model.isMaintenance
                       ? 0.5
                       : 1,
                   backgroundColor: "#2f3136",
@@ -141,7 +141,7 @@ const ModelDropdown = ({
                   transition: "background-color 0.2s ease",
                   cursor:
                     (model.isPremium && !hasEnoughBalance) ||
-                      model.isMaintenance
+                    model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
                 }}

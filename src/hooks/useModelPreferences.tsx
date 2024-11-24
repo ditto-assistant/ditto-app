@@ -13,7 +13,9 @@ export type ModelPreferencesHook = {
   error: string | null;
   updatePreferences: (preferences: Partial<ModelPreferences>) => Promise<void>;
 };
-const ModelPreferencesContext = createContext<ModelPreferencesHook | undefined>(undefined);
+const ModelPreferencesContext = createContext<ModelPreferencesHook | undefined>(
+  undefined
+);
 
 export function useModelPreferences(): ModelPreferencesHook {
   const context = useContext(ModelPreferencesContext);
@@ -25,7 +27,11 @@ export function useModelPreferences(): ModelPreferencesHook {
   return context;
 }
 
-export function ModelPreferencesProvider({ children }: { children: React.ReactNode }) {
+export function ModelPreferencesProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { preferences, loading, error, updatePreferences } = useModels();
   return (
     <ModelPreferencesContext.Provider
@@ -58,7 +64,9 @@ function useModels() {
           console.log("loadedPrefs", prefs);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -76,10 +84,12 @@ function useModels() {
         return updated;
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
       throw err;
     }
-  };
+  }
 
   return { preferences, loading, error, updatePreferences };
 }
