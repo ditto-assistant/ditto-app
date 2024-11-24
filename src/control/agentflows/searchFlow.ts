@@ -4,11 +4,15 @@ import {
   googleSearchTemplate,
   googleSearchSystemTemplate,
 } from "../templates/googleSearchTemplate";
-
+import { ModelPreferences } from "@/types/llm";
 /**
  * Handles Google search flow
  */
-export const handleGoogleSearch = async (response, prompt) => {
+export const handleGoogleSearch = async (
+  response: string,
+  prompt: string,
+  preferences: ModelPreferences
+) => {
   const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
   const googleSearchResponse = await googleSearch(query);
 
@@ -21,7 +25,7 @@ export const handleGoogleSearch = async (response, prompt) => {
   const googleSearchAgentResponse = await promptLLM(
     googleSearchAgentTemplate,
     googleSearchSystemTemplate(),
-    "gemini-1.5-flash"
+    preferences.mainModel
   );
 
   console.log("%c" + googleSearchAgentResponse, "color: yellow");

@@ -496,7 +496,7 @@ export const processResponse = async (
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
       await updateMessageWithToolStatus("Generating Image", "image");
-      const finalResponse = await handleImageGeneration(response);
+      const finalResponse = await handleImageGeneration(response, preferences);
       await updateMessageWithToolStatus("complete", "image", finalResponse);
       return finalResponse;
     }
