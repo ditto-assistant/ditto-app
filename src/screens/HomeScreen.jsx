@@ -318,7 +318,6 @@ export default function HomeScreen() {
   // Add this to your existing useEffect that runs on mount
   useEffect(() => {
     syncScripts();
-    balance.refetch();
     checkAndResyncPairIDs(); // Add this line
 
     const handleStatus = async () => {
@@ -878,6 +877,7 @@ export default function HomeScreen() {
             onOpenMediaOptions={handleOpenMediaOptions}
             onCloseMediaOptions={handleCloseMediaOptions}
             updateConversation={updateConversation}
+            onStop={balance.refetch}
           />
         </Suspense>
       </footer>

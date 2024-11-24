@@ -48,7 +48,9 @@
     "start": "vite",
     "build": "vite build",
     "build:staging": "vite build --mode staging",
-    "serve": "vite preview"
+    "build:dev": "vite build --mode development",
+    "serve": "vite preview",
+    "clean": "rm -rf build"
   },
   "eslintConfig": {
     "extends": [

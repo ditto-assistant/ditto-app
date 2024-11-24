@@ -74,10 +74,12 @@ function MemoryOverlay({ closeOverlay }) {
       let mainSwitch = false;
       let programmerSwitch = false;
       if (isPremiumModel(preferences.mainModel)) {
+        console.log("mainSwitch", preferences.mainModel);
         mainSwitch = true;
         updatePreferences({ mainModel: "llama-3-2" });
       }
       if (isPremiumModel(preferences.programmerModel)) {
+        console.log("programmerSwitch", preferences.programmerModel);
         programmerSwitch = true;
         updatePreferences({ programmerModel: "llama-3-2" });
       }

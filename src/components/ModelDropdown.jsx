@@ -4,7 +4,8 @@ import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
 import { DEFAULT_MODELS } from "../constants";
 import { createPortal } from "react-dom";
-import { Model, ModelOption } from "../types/llm";
+/**@typedef {import("@/types/llm").Model} Model */
+/**@typedef {import("@/types/llm").ModelOption} ModelOption */
 
 /**
  * A dropdown component for selecting AI models
@@ -127,7 +128,6 @@ const ModelDropdown = ({
                 className="dropdown-option"
                 style={{
                   padding: "12px",
-                  cursor: "pointer",
                   opacity:
                     (model.isPremium && !hasEnoughBalance) ||
                       model.isMaintenance

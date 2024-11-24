@@ -91,8 +91,8 @@ export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
 };
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
-  mainModel: "gemini-1.5-pro",
-  programmerModel: "gemini-1.5-pro",
+  mainModel: "llama-3-2",
+  programmerModel: "mistral-nemo",
   imageGeneration: {
     model: "dall-e-3",
     size: {

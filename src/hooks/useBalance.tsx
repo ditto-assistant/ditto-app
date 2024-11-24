@@ -1,18 +1,16 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import { getBalance } from "../api/getBalance";
-import { useAuth } from "./useAuth";
-import { FetchHook } from "../types/common";
-import { Balance } from "../types/api";
+import { getBalance } from "@/api/getBalance";
+import { useAuth } from "@/hooks/useAuth";
+import { FetchHook } from "@/types/common";
+import { Balance } from "@/types/api";
 
 // TODO: Make this server-side
 export const PREMIUM_BALANCE_THRESHOLD = 1_000_000_000;
 
-/**
- * Access the user's balance context.
- * @returns {FetchHook<Balance & {hasPremium: boolean}>}
- * @throws {Error} Throws an error if used outside of a BalanceProvider.
- */
-export function useBalance() {
+type BalanceWithPremium = Balance & { hasPremium: boolean };
+type BalanceHook = FetchHook<BalanceWithPremium>;
+
+export function useBalance(): BalanceHook {
   const context = useContext(BalanceContext);
   if (context === undefined) {
     throw new Error("useBalance must be used within a BalanceProvider");
@@ -20,33 +18,21 @@ export function useBalance() {
   return context;
 }
 
-const BalanceContext = createContext();
+const BalanceContext = createContext<BalanceHook | undefined>(undefined);
 
-export function BalanceProvider({ children }) {
-  const { ok, err, loading, refetch } = useBal();
+export function BalanceProvider({ children }: { children: React.ReactNode }) {
+  const value = useBal();
   return (
-    <BalanceContext.Provider
-      value={{
-        ok,
-        loading,
-        err,
-        refetch,
-      }}
-    >
+    <BalanceContext.Provider value={value}>
       {children}
     </BalanceContext.Provider>
   );
 }
 
-/**
- * Custom hook to fetch and manage the user's balance.
- *
- * @returns {{ok?: {balance: string, usd: string, images: string, searches: string}, error?: string, loading?: boolean, refetch: (() => void)}} An object containing the balance, any error that occurred, a loading state, and a function to refetch the balance.
- */
-function useBal() {
+function useBal(): BalanceHook {
   const { user } = useAuth();
-  const [ok, setOk] = useState(null);
-  const [err, setErr] = useState(null);
+  const [ok, setOk] = useState<BalanceWithPremium | undefined>(undefined);
+  const [err, setErr] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [refetch, setRefetch] = useState(false);
 
@@ -61,13 +47,13 @@ function useBal() {
           if (result.ok.balanceRaw >= PREMIUM_BALANCE_THRESHOLD) {
             setOk({ ...result.ok, hasPremium: true });
           } else {
-            setOk(result.ok);
+            setOk({ ...result.ok, hasPremium: false });
           }
         } else {
           setErr(result.err);
         }
       } catch (err) {
-        setErr(err.message);
+        setErr(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
         setLoading(false);
       }
