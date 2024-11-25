@@ -55,7 +55,12 @@ export function PresignedUrlProvider({
         setFailedUrls((prev) => prev.add(originalUrl));
         return makeError(presignedUrl.err);
       }
-      setUrlCache((prev) => new Map(prev).set(originalUrl, presignedUrl.ok ?? IMAGE_PLACEHOLDER_IMAGE));
+      setUrlCache((prev) =>
+        new Map(prev).set(
+          originalUrl,
+          presignedUrl.ok ?? IMAGE_PLACEHOLDER_IMAGE
+        )
+      );
       return presignedUrl;
     } catch (error) {
       console.error("Error getting presigned URL:", error);

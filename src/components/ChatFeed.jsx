@@ -542,17 +542,26 @@ export default function ChatFeed({
             </a>
           ),
           img: ({ src, alt, ...props }) => {
-            const [imgSrc, setImgSrc] = useState(IMAGE_PLACEHOLDER_IMAGE)
+            const [imgSrc, setImgSrc] = useState(IMAGE_PLACEHOLDER_IMAGE);
             if (!src) {
               // return <span className="invalid-image">Invalid URI</span>;
-              return <img {...props} src={NOT_FOUND_IMAGE} alt={alt} className="chat-image" />;
+              return (
+                <img
+                  {...props}
+                  src={NOT_FOUND_IMAGE}
+                  alt={alt}
+                  className="chat-image"
+                />
+              );
             }
             getPresignedUrl(src).then(
-              (url) => { 
+              (url) => {
                 console.log("url", url);
-                setImgSrc(url.ok ?? IMAGE_PLACEHOLDER_IMAGE); 
+                setImgSrc(url.ok ?? IMAGE_PLACEHOLDER_IMAGE);
               },
-              (err) => { console.error(`Image Load error: ${err}; src: ${src}`); }
+              (err) => {
+                console.error(`Image Load error: ${err}; src: ${src}`);
+              }
             );
             return (
               <img
