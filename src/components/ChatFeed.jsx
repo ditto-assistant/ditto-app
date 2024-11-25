@@ -20,6 +20,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
+import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -541,44 +542,27 @@ export default function ChatFeed({
             </a>
           ),
           img: ({ src, alt, ...props }) => {
+            const [imgSrc, setImgSrc] = useState(IMAGE_PLACEHOLDER_IMAGE)
             if (!src) {
-              return <span className="invalid-image">Invalid URI</span>;
+              // return <span className="invalid-image">Invalid URI</span>;
+              return <img {...props} src={NOT_FOUND_IMAGE} alt={alt} className="chat-image" />;
             }
-            const cachedUrl = getCachedUrl(src);
-            if (cachedUrl.err) {
-              console.error(
-                `Image Load from cache error: ${cachedUrl.err}; src: ${src}`
-              );
-              return <span className="invalid-image">Invalid URI</span>;
-            }
-            if (cachedUrl.ok) {
-              src = cachedUrl.ok;
-            }
+            getPresignedUrl(src).then(
+              (url) => { 
+                console.log("url", url);
+                setImgSrc(url.ok ?? IMAGE_PLACEHOLDER_IMAGE); 
+              },
+              (err) => { console.error(`Image Load error: ${err}; src: ${src}`); }
+            );
             return (
               <img
                 {...props}
-                src={src}
+                src={imgSrc}
                 alt={alt}
                 className="chat-image"
                 onClick={(e) => {
                   e.stopPropagation(); // Stop bubble interaction
                   handleImageClick(src);
-                }}
-                onError={(e) => {
-                  getPresignedUrl(src).then(
-                    (url) => {
-                      if (url.err) {
-                        console.error(
-                          `Image Load error: ${url.err}; src: ${src}`
-                        );
-                      } else if (url.ok) {
-                        e.target.src = url.ok;
-                      }
-                    },
-                    (err) => {
-                      console.error(`Image Load error: ${err}; src: ${src}`);
-                    }
-                  );
                 }}
               />
             );

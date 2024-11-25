@@ -6,6 +6,9 @@ import { Result } from "@/types/common";
  * Presigns a URL for a given user.
  */
 export async function presignURL(url: string): Promise<Result<string>> {
+  if (url === "") {
+    return { err: "No URL provided" };
+  }
   const tok = await getToken();
   if (tok.err) {
     return { err: tok.err?.message ?? "No token" };

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
-import { presignURL } from "../api/bucket";
+import { presignURL } from "@/api/bucket";
 import { Result } from "@/types/common";
+import { IMAGE_PLACEHOLDER_IMAGE } from "@/constants";
 
 export type PresignedUrlContext = {
   getPresignedUrl: (originalUrl: string) => Promise<Result<string>>;
@@ -34,7 +35,7 @@ export function PresignedUrlProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [urlCache, setUrlCache] = useState(new Map());
+  const [urlCache, setUrlCache] = useState(new Map<string, string>());
   const [failedUrls, setFailedUrls] = useState(new Set());
 
   // Get a presigned URL for an image, using cache if available.
@@ -54,11 +55,8 @@ export function PresignedUrlProvider({
         setFailedUrls((prev) => prev.add(originalUrl));
         return makeError(presignedUrl.err);
       }
-      if (presignedUrl.ok) {
-        setUrlCache((prev) => new Map(prev).set(originalUrl, presignedUrl));
-        return presignedUrl;
-      }
-      return makeError("no result");
+      setUrlCache((prev) => new Map(prev).set(originalUrl, presignedUrl.ok ?? IMAGE_PLACEHOLDER_IMAGE));
+      return presignedUrl;
     } catch (error) {
       console.error("Error getting presigned URL:", error);
       return makeError(

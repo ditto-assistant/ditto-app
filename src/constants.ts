@@ -6,6 +6,10 @@ import {
   ToolPreferences,
 } from "./types/llm";
 
+export const USER_PLACEHOLDER_IMAGE = "user_placeholder.png";
+export const IMAGE_PLACEHOLDER_IMAGE = "image-placeholder.png";
+export const NOT_FOUND_IMAGE = "not-found.png";
+
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
   { id: "llama-3-2", name: "Llama 3.2", isPremium: false, isFree: true },
