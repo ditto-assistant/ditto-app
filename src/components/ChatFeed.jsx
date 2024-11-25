@@ -541,8 +541,24 @@ export default function ChatFeed({
               {children}
             </a>
           ),
-          img: ({ src, alt, ...props }) => {
+          img: ({ node, src, alt, ...props }) => {
             const [imgSrc, setImgSrc] = useState(src);
+            const cachedUrl = getCachedUrl(src);
+            function onClick(e) {
+              e.stopPropagation();
+              handleImageClick(src);
+            }
+            if (cachedUrl.ok) {
+              return (
+                <img
+                  {...props}
+                  src={cachedUrl.ok}
+                  alt={alt}
+                  className="chat-image"
+                  onClick={onClick}
+                />
+              );
+            }
             if (!src) {
               return (
                 <img
@@ -553,29 +569,12 @@ export default function ChatFeed({
                 />
               );
             }
-            if (!src.startsWith('https://firebasestorage.googleapis.com/')) {
+            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
               getPresignedUrl(src).then(
                 (url) => {
                   if (url.ok) {
-                    // Check if URL is valid by making a HEAD request
-                    fetch(url.ok, { method: 'HEAD' })
-                      .then(response => {
-                        if (response.ok) {
-                          setImgSrc(url.ok);
-                        } else {
-                          setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
-                          console.error(`Image not found: ${url.ok}`);
-                        }
-                      })
-                      .catch(err => {
-                        setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
-                        console.error(`Failed to validate image URL: ${err}`);
-                      });
-                  } else {
-                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                    setImgSrc(url.ok);
                   }
-                  console.log("url", url);
-                  setImgSrc(url.ok ?? IMAGE_PLACEHOLDER_IMAGE);
                 },
                 (err) => {
                   console.error(`Image Load error: ${err}; src: ${src}`);
@@ -593,8 +592,19 @@ export default function ChatFeed({
                   handleImageClick(src);
                 }}
                 onError={(e) => {
-                  console.error(`Image load error: ${e}; src: ${src}`);
-                  setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                  const errSrc = e.target.src;
+                  console.error(`Image load error: ${e}; src: ${errSrc}`);
+                  if (errSrc === src) {
+                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                  } else {
+                    setImgSrc(src);
+                  }
+                  if (errSrc.startsWith("https://ditto-content")) {
+                    // give the image a chance to load
+                    setTimeout(() => {
+                      setImgSrc(errSrc);
+                    }, 5_000);
+                  }
                 }}
               />
             );
@@ -733,8 +743,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
+                        ? "failed"
+                        : ""
                     }`}
                   >
                     {message.toolStatus}
@@ -1449,7 +1459,9 @@ export default function ChatFeed({
               ) : (
                 <>
                   <div
-                    className={`delete-confirmation-docid ${!deleteConfirmation.docId ? "not-found" : ""}`}
+                    className={`delete-confirmation-docid ${
+                      !deleteConfirmation.docId ? "not-found" : ""
+                    }`}
                   >
                     Document ID: {deleteConfirmation.docId || "Not found"}
                   </div>
