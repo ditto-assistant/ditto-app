@@ -553,13 +553,13 @@ export default function ChatFeed({
                 />
               );
             }
-            if (!src.startsWith('https://firebasestorage.googleapis.com/')) {
+            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
               getPresignedUrl(src).then(
                 (url) => {
                   if (url.ok) {
                     // Check if URL is valid by making a HEAD request
-                    fetch(url.ok, { method: 'HEAD' })
-                      .then(response => {
+                    fetch(url.ok, { method: "HEAD" })
+                      .then((response) => {
                         if (response.ok) {
                           setImgSrc(url.ok);
                         } else {
@@ -567,7 +567,7 @@ export default function ChatFeed({
                           console.error(`Image not found: ${url.ok}`);
                         }
                       })
-                      .catch(err => {
+                      .catch((err) => {
                         setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
                         console.error(`Failed to validate image URL: ${err}`);
                       });
