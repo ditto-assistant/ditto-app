@@ -542,9 +542,8 @@ export default function ChatFeed({
             </a>
           ),
           img: ({ src, alt, ...props }) => {
-            const [imgSrc, setImgSrc] = useState(IMAGE_PLACEHOLDER_IMAGE);
+            const [imgSrc, setImgSrc] = useState(src);
             if (!src) {
-              // return <span className="invalid-image">Invalid URI</span>;
               return (
                 <img
                   {...props}
@@ -554,15 +553,35 @@ export default function ChatFeed({
                 />
               );
             }
-            getPresignedUrl(src).then(
-              (url) => {
-                console.log("url", url);
-                setImgSrc(url.ok ?? IMAGE_PLACEHOLDER_IMAGE);
-              },
-              (err) => {
-                console.error(`Image Load error: ${err}; src: ${src}`);
-              }
-            );
+            if (!src.startsWith('https://firebasestorage.googleapis.com/')) {
+              getPresignedUrl(src).then(
+                (url) => {
+                  if (url.ok) {
+                    // Check if URL is valid by making a HEAD request
+                    fetch(url.ok, { method: 'HEAD' })
+                      .then(response => {
+                        if (response.ok) {
+                          setImgSrc(url.ok);
+                        } else {
+                          setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                          console.error(`Image not found: ${url.ok}`);
+                        }
+                      })
+                      .catch(err => {
+                        setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                        console.error(`Failed to validate image URL: ${err}`);
+                      });
+                  } else {
+                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                  }
+                  console.log("url", url);
+                  setImgSrc(url.ok ?? IMAGE_PLACEHOLDER_IMAGE);
+                },
+                (err) => {
+                  console.error(`Image Load error: ${err}; src: ${src}`);
+                }
+              );
+            }
             return (
               <img
                 {...props}
@@ -572,6 +591,10 @@ export default function ChatFeed({
                 onClick={(e) => {
                   e.stopPropagation(); // Stop bubble interaction
                   handleImageClick(src);
+                }}
+                onError={(e) => {
+                  console.error(`Image load error: ${e}; src: ${src}`);
+                  setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
                 }}
               />
             );
