@@ -20,6 +20,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
+import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -540,24 +541,50 @@ export default function ChatFeed({
               {children}
             </a>
           ),
-          img: ({ src, alt, ...props }) => {
-            if (!src) {
-              return <span className="invalid-image">Invalid URI</span>;
-            }
+          img: ({ node, src, alt, ...props }) => {
+            const [imgSrc, setImgSrc] = useState(src);
             const cachedUrl = getCachedUrl(src);
-            if (cachedUrl.err) {
-              console.error(
-                `Image Load from cache error: ${cachedUrl.err}; src: ${src}`
-              );
-              return <span className="invalid-image">Invalid URI</span>;
+            function onClick(e) {
+              e.stopPropagation();
+              handleImageClick(src);
             }
             if (cachedUrl.ok) {
-              src = cachedUrl.ok;
+              return (
+                <img
+                  {...props}
+                  src={cachedUrl.ok}
+                  alt={alt}
+                  className="chat-image"
+                  onClick={onClick}
+                />
+              );
+            }
+            if (!src) {
+              return (
+                <img
+                  {...props}
+                  src={NOT_FOUND_IMAGE}
+                  alt={alt}
+                  className="chat-image"
+                />
+              );
+            }
+            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
+              getPresignedUrl(src).then(
+                (url) => {
+                  if (url.ok) {
+                    setImgSrc(url.ok);
+                  }
+                },
+                (err) => {
+                  console.error(`Image Load error: ${err}; src: ${src}`);
+                }
+              );
             }
             return (
               <img
                 {...props}
-                src={src}
+                src={imgSrc}
                 alt={alt}
                 className="chat-image"
                 onClick={(e) => {
@@ -565,20 +592,19 @@ export default function ChatFeed({
                   handleImageClick(src);
                 }}
                 onError={(e) => {
-                  getPresignedUrl(src).then(
-                    (url) => {
-                      if (url.err) {
-                        console.error(
-                          `Image Load error: ${url.err}; src: ${src}`
-                        );
-                      } else if (url.ok) {
-                        e.target.src = url.ok;
-                      }
-                    },
-                    (err) => {
-                      console.error(`Image Load error: ${err}; src: ${src}`);
-                    }
-                  );
+                  const errSrc = e.target.src;
+                  console.error(`Image load error: ${e}; src: ${errSrc}`);
+                  if (errSrc === src) {
+                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                  } else {
+                    setImgSrc(src);
+                  }
+                  if (errSrc.startsWith("https://ditto-content")) {
+                    // give the image a chance to load
+                    setTimeout(() => {
+                      setImgSrc(errSrc);
+                    }, 5_000);
+                  }
                 }}
               />
             );
@@ -1433,7 +1459,9 @@ export default function ChatFeed({
               ) : (
                 <>
                   <div
-                    className={`delete-confirmation-docid ${!deleteConfirmation.docId ? "not-found" : ""}`}
+                    className={`delete-confirmation-docid ${
+                      !deleteConfirmation.docId ? "not-found" : ""
+                    }`}
                   >
                     Document ID: {deleteConfirmation.docId || "Not found"}
                   </div>
