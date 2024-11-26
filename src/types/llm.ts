@@ -47,7 +47,7 @@ export type ModelOption = {
     imageAttachments?: boolean;
     imageGeneration?: boolean;
     tools?: boolean;
-  }
+  };
 };
 
 export type Tool = {
@@ -62,4 +62,4 @@ export type ToolPreferences = {
   imageGeneration: boolean;
   googleSearch: boolean;
   googleHome: boolean;
-}
+};
