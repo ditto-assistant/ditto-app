@@ -8,7 +8,7 @@ import {
 
 /**
  * Handles script generation flow (OpenSCAD or HTML)
- * @typedef {import("../../types").ModelPreferences} ModelPreferences
+ * @typedef {import("../../types/llm").ModelPreferences} ModelPreferences
  * @param {Object} params - The parameters for script generation.
  * @param {string} params.response - The user's response to the script generation prompt.
  * @param {string} params.tag - The tag used to identify the script generation prompt.
@@ -94,7 +94,7 @@ export const generateScriptName = async (script, query) => {
   let scriptToNameResponse = await promptLLM(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
-    "gemini-1.5-flash"
+    "mistral-nemo"
   );
 
   // Handle errors and retries
@@ -103,7 +103,7 @@ export const generateScriptName = async (script, query) => {
     scriptToNameResponse = await promptLLM(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
-      "gemini-1.5-flash"
+      "mistral-nemo"
     );
     if (scriptToNameResponse.includes("error sending request")) {
       console.log("Second attempt failed, defaulting to 'App Name Here'");

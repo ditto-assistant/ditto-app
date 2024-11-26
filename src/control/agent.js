@@ -23,6 +23,7 @@ import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
 import { handleHomeAssistant } from "./agentflows/homeFlow";
+/**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
 const mode = import.meta.env.MODE;
 
@@ -30,7 +31,6 @@ const mode = import.meta.env.MODE;
 let toolTriggered = false;
 
 /**
- * @typedef {import("../types").ModelPreferences} ModelPreferences
  * Sends a prompt to Ditto.
  * @param {string} userID - The user's ID.
  * @param {string} firstName - The user's first name.
@@ -496,7 +496,7 @@ export const processResponse = async (
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
       await updateMessageWithToolStatus("Generating Image", "image");
-      const finalResponse = await handleImageGeneration(response);
+      const finalResponse = await handleImageGeneration(response, preferences);
       await updateMessageWithToolStatus("complete", "image", finalResponse);
       return finalResponse;
     }

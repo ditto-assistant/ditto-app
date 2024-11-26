@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -66,15 +67,15 @@
         console.log('New app version detected. Skipping manual SW registration.');
       } else {
         // Old version: unregister old SW and register the cleanup worker
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          for (let registration of registrations) {
             registration.unregister();
           }
-        }).then(function() {
+        }).then(function () {
           return navigator.serviceWorker.register('/worker.js');
-        }).then(function(reg) {
+        }).then(function (reg) {
           console.log('Cleanup worker registered:', reg);
-        }).catch(function(err) {
+        }).catch(function (err) {
           console.log('SW registration failed:', err);
         });
       }
@@ -82,10 +83,10 @@
   </script>
   <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
   <!-- Add preload tags for critical JS files -->
-  <link rel="preload" href="/src/index.js" as="script">
-  <link rel="preload" href="/src/components/AuthenticatedRoute.js" as="script">
-  <link rel="preload" href="/src/components/LoadingSpinner.js" as="script">
-  <link rel="preload" href="/src/App.js" as="script">
+  <link rel="preload" href="/src/index.jsx" as="script">
+  <link rel="preload" href="/src/components/AuthenticatedRoute.jsx" as="script">
+  <link rel="preload" href="/src/components/LoadingSpinner.jsx" as="script">
+  <link rel="preload" href="/src/App.jsx" as="script">
 </head>
 
 <body>
@@ -93,7 +94,7 @@
   <div id="root">
     <p class="page-info"></p>
   </div>
-  <script type="module" src="/src/index.js"></script>
+  <script type="module" src="/src/index.jsx"></script>
 </body>
 
 </html>

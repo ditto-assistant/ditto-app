@@ -1,11 +1,9 @@
 // docs: https://modularfirebase.web.app/common-use-cases/firestore/
 
-import { firebaseConfig } from "../firebaseConfig";
+import { firebaseConfig } from "@/firebaseConfig";
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import {
   getFirestore,
-  connectFirestoreEmulator,
   query,
   collection,
   addDoc,
@@ -27,20 +25,16 @@ import {
   listAll,
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
-import { DEFAULT_PREFERENCES } from "../constants";
+import { DEFAULT_PREFERENCES } from "@/constants";
+/**@typedef {import("@/types/llm").Model} Model */
+/**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
-
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 const mode = import.meta.env.MODE;
-
-// if (mode === 'development') {
-//   connectFirestoreEmulator(db, '[::1]', 8275);
-// }
 
 export const saveBalanceToFirestore = async (userID, balance) => {
   try {
@@ -846,7 +840,6 @@ export const uploadGeneratedImageToFirebaseStorage = async (
   // return await getDownloadURL(snapshot.ref);
 };
 
-/** @typedef {import('../constants').Model} Model */
 /**
  * Saves model preferences to Firestore.
  * @param {string} userID - The user's ID.
@@ -882,8 +875,6 @@ export const saveModelPreferencesToFirestore = async (userID, preferences) => {
     console.error("Error saving model preferences to Firestore: ", e);
   }
 };
-
-/** @typedef {import('../types').ModelPreferences} ModelPreferences */
 
 /**
  * Gets model preferences from Firestore.

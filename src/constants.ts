@@ -4,7 +4,11 @@ import {
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
-} from "./types";
+} from "./types/llm";
+
+export const USER_PLACEHOLDER_IMAGE = "user_placeholder.png";
+export const IMAGE_PLACEHOLDER_IMAGE = "image-placeholder.png";
+export const NOT_FOUND_IMAGE = "not-found.png";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
@@ -91,11 +95,15 @@ export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
 };
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
-  mainModel: "gemini-1.5-pro",
-  programmerModel: "gemini-1.5-pro",
+  mainModel: "llama-3-2",
+  programmerModel: "mistral-nemo",
   imageGeneration: {
     model: "dall-e-3",
-    size: "1024x1024",
+    size: {
+      wh: "1024x1024",
+      description: "Square (1024x1024)",
+      supportedModels: ["dall-e-2", "dall-e-3"],
+    },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
 };
@@ -127,9 +135,3 @@ export const TOOLS = {
     trigger: "<OPENSCAD>",
   },
 } as const;
-
-export type Tool = {
-  name: string;
-  description: string;
-  trigger: string;
-};
