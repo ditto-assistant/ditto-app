@@ -830,6 +830,22 @@ export default function HomeScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleScriptSelected = () => {
+      const storedScript = localStorage.getItem("workingOnScript");
+      if (storedScript) {
+        const { script } = JSON.parse(storedScript);
+        setWorkingScript(script);
+      }
+    };
+
+    window.addEventListener("scriptSelected", handleScriptSelected);
+
+    return () => {
+      window.removeEventListener("scriptSelected", handleScriptSelected);
+    };
+  }, []);
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
