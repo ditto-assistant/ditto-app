@@ -10,7 +10,7 @@ import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
 
-function StatusBar({ onMemoryClick }) {
+function StatusBar({ onMemoryClick, onScriptsClick }) {
   const navigate = useNavigate();
   const balance = useBalance();
   const memoryCount = useMemoryCount();
@@ -42,20 +42,10 @@ function StatusBar({ onMemoryClick }) {
     setIsOnline(navigator.onLine);
   };
 
-  const handleBookmarkClick = async () => {
-    let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
-    let openSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
-    // sort them
-    webApps.sort((a, b) => a.name.localeCompare(b.name));
-    openSCAD.sort((a, b) => a.name.localeCompare(b.name));
-    let scriptsLocal = { webApps, openSCAD };
-    setScripts(scriptsLocal);
-    navigate("/scripts", {
-      state: {
-        scripts: scripts,
-        selectedScript: workingScript,
-      },
-    });
+  const handleBookmarkClick = () => {
+    if (onScriptsClick) {
+      onScriptsClick();
+    }
   };
 
   const handleMemoryClick = () => {

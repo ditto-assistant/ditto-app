@@ -19,7 +19,6 @@ import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
-const ScriptsScreen = lazy(() => import("./screens/ScriptsScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
@@ -40,7 +39,6 @@ const router = createBrowserRouter(
       >
         <Route index element={<HomeScreen />} />
         <Route path="settings" element={<Settings />} />
-        <Route path="scripts" element={<ScriptsScreen />} />
         <Route path="canvas" element={<DittoCanvas />} />
         <Route path="checkout">
           <Route index element={<Checkout />} />

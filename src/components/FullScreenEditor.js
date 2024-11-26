@@ -630,22 +630,21 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     return walk(doc.documentElement);
   };
 
-  const handleClose = async () => {
-    // Only show unsaved changes dialog if there are actual changes
-    // and we're not in a post-save state (where history was just cleared)
-    const hasUnsavedChanges = historyIndex > 0 && code !== script.content;
+  const handleClose = () => {
+    // Check if content has changed
+    const hasUnsavedChanges = code !== script.content;
 
     if (hasUnsavedChanges) {
       setShowUnsavedChanges(true);
       return;
     }
 
-    if (script.onSaveCallback) {
-      // If launched from HomeScreen, just close the editor
-      setFullScreenEdit(null);
+    // If launched from mini overlay (has onClose callback)
+    if (onClose) {
+      onClose();
     } else {
-      // If launched from ScriptsScreen, do the cleanup
-      await closeEditor();
+      // If launched from scripts overlay
+      window.dispatchEvent(new Event('closeFullScreenEditor'));
     }
   };
 
