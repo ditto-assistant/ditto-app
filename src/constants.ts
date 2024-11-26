@@ -15,16 +15,34 @@ export const DEFAULT_MODELS: ModelOption[] = [
   { id: "llama-3-2", name: "Llama 3.2", isFree: true, vendor: "meta" },
 
   { id: "gpt-4o-mini", name: "GPT-4o Mini", vendor: "openai" },
-  { id: "gpt-4o-mini-2024-07-18", name: "GPT-4o Mini 2024-07-18", vendor: "openai" },
+  {
+    id: "gpt-4o-mini-2024-07-18",
+    name: "GPT-4o Mini 2024-07-18",
+    vendor: "openai",
+  },
   { id: "gpt-4o", name: "GPT-4o", isPremium: true, vendor: "openai" },
-  { id: "gpt-4o-2024-11-20", name: "GPT-4o 2024-11-20", isPremium: true, vendor: "openai" },
+  {
+    id: "gpt-4o-2024-11-20",
+    name: "GPT-4o 2024-11-20",
+    isPremium: true,
+    vendor: "openai",
+  },
   { id: "o1-mini", name: "O1 Mini", vendor: "openai" },
   { id: "o1-mini-2024-09-12", name: "O1 Mini 2024-09-12", vendor: "openai" },
   { id: "o1-preview", name: "O1 Preview", vendor: "openai" },
-  { id: "o1-preview-2024-09-12", name: "O1 Preview 2024-09-12", vendor: "openai" },
+  {
+    id: "o1-preview-2024-09-12",
+    name: "O1 Preview 2024-09-12",
+    vendor: "openai",
+  },
 
   { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", vendor: "google" },
-  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro", isPremium: true, vendor: "google" },
+  {
+    id: "gemini-1.5-pro",
+    name: "Gemini 1.5 Pro",
+    isPremium: true,
+    vendor: "google",
+  },
   {
     id: "claude-3-5-sonnet",
     name: "Claude 3.5 Sonnet",
@@ -33,7 +51,12 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "anthropic",
   },
   { id: "mistral-nemo", name: "Mistral Nemo", vendor: "mistral" },
-  { id: "mistral-large", name: "Mistral Large", isPremium: true, vendor: "mistral" },
+  {
+    id: "mistral-large",
+    name: "Mistral Large",
+    isPremium: true,
+    vendor: "mistral",
+  },
 ] as const;
 
 export const IMAGE_GENERATION_SIZES: Record<string, ImageGenerationSize> = {
