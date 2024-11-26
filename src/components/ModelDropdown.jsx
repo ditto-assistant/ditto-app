@@ -19,7 +19,7 @@ import { createPortal } from "react-dom";
  * @param {(isOpen: boolean) => void} props.onOpenChange - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdown component
  */
-export const ModelDropdown = ({
+const ModelDropdown = ({
   value,
   onChange,
   hasEnoughBalance,
