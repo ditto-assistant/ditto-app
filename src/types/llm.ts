@@ -17,7 +17,17 @@ export type Model =
   | "llama-3-2"
   | "dall-e-2"
   | "dall-e-3"
-  | "dall-e-3-hd";
+  | "dall-e-3-hd"
+  | "gpt-4o"
+  | "gpt-4o-2024-11-20"
+  | "gpt-4o-mini"
+  | "gpt-4o-mini-2024-07-18"
+  | "o1-preview"
+  | "o1-preview-2024-09-12"
+  | "o1-mini"
+  | "o1-mini-2024-09-12";
+
+export type Vendor = "openai" | "anthropic" | "google" | "mistral" | "meta";
 
 export type ImageGenerationSize = {
   wh: string;
@@ -25,14 +35,20 @@ export type ImageGenerationSize = {
   supportedModels: Model[];
 };
 
-export interface ModelOption {
+export type ModelOption = {
   id: Model;
   name: string;
-  isPremium: boolean;
+  isPremium?: boolean;
   isFree?: boolean;
   isMaintenance?: boolean;
   sizeOptions?: ImageGenerationSize[];
-}
+  vendor?: Vendor;
+  supports?: {
+    imageAttachments?: boolean;
+    imageGeneration?: boolean;
+    tools?: boolean;
+  }
+};
 
 export type Tool = {
   name: string;
@@ -40,7 +56,7 @@ export type Tool = {
   trigger: string;
 };
 
-export interface ToolPreferences {
+export type ToolPreferences = {
   openScad: boolean;
   htmlScript: boolean;
   imageGeneration: boolean;
