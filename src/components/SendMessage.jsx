@@ -48,7 +48,6 @@ export default function SendMessage({
   onBlur,
   onStop,
 }) {
-  const [message, setMessage] = useState("");
   const [image, setImage] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -106,7 +105,7 @@ export default function SendMessage({
     } else {
       try {
         finalTranscriptRef.current = "";
-        setMessage("");
+        textAreaRef.current.value = "";
 
         const stream = await sharedMic.getMicStream();
         wsRef.current = new WebSocket(firebaseConfig.webSocketURL);
@@ -142,9 +141,9 @@ export default function SendMessage({
           const receivedText = JSON.parse(event.data);
           if (receivedText.isFinal) {
             finalTranscriptRef.current += receivedText.transcript + " ";
-            setMessage(finalTranscriptRef.current);
+            textAreaRef.current.value += receivedText.transcript + " ";
           } else {
-            setMessage(finalTranscriptRef.current + receivedText.transcript);
+            textAreaRef.current.value += receivedText.transcript;
           }
           resizeTextArea();
 
@@ -266,51 +265,67 @@ export default function SendMessage({
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
+      console.log("handleSubmit called");
 
       const thinkingObjectString = localStorage.getItem("thinking");
       const isThinking = thinkingObjectString !== null;
 
-      if (isWaitingForResponse) return;
-
-      if ((message !== "" || finalTranscriptRef.current) && !isThinking) {
-        setIsWaitingForResponse(true);
-        try {
-          const userID = auth.currentUser.uid;
-          const firstName = localStorage.getItem("firstName");
-          let messageToSend = finalTranscriptRef.current || message;
-          let imageURI = "";
-          if (image) {
-            imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
-            messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
-          }
-          setMessage("");
-          setImage("");
-          finalTranscriptRef.current = "";
-          resizeTextArea();
-          if (isListening) {
-            stopRecording();
-          }
-
-          let userPromptEmbedding = await textEmbed(messageToSend);
-
-          await sendPrompt(
-            userID,
-            firstName,
-            messageToSend,
-            imageURI,
-            userPromptEmbedding,
-            updateConversation,
-            preferences
-          );
-        } catch (error) {
-          console.error("Error sending message:", error);
-        } finally {
-          setIsWaitingForResponse(false);
-          onStop();
+      if (isWaitingForResponse) {
+        console.log("isWaitingForResponse is true");
+        return;
+      }
+      if (isThinking) {
+        console.log("isThinking is true");
+        return;
+      }
+      if (
+        textAreaRef.current.value === "" &&
+        finalTranscriptRef.current === ""
+      ) {
+        console.log(
+          `textAreaRef.current: ${textAreaRef.current.value}, finalTranscriptRef.current: ${finalTranscriptRef.current}`
+        );
+        return;
+      }
+      setIsWaitingForResponse(true);
+      try {
+        const userID = auth.currentUser.uid;
+        const firstName = localStorage.getItem("firstName");
+        let messageToSend =
+          finalTranscriptRef.current || textAreaRef.current.value;
+        let imageURI = "";
+        if (image) {
+          imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
+          messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
         }
+        textAreaRef.current.value = "";
+        setImage("");
+        finalTranscriptRef.current = "";
+        resizeTextArea();
+        if (isListening) {
+          stopRecording();
+        }
+
+        let userPromptEmbedding = await textEmbed(messageToSend);
+
+        await sendPrompt(
+          userID,
+          firstName,
+          messageToSend,
+          imageURI,
+          userPromptEmbedding,
+          updateConversation,
+          preferences
+        );
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        console.log("Setting isWaitingForResponse to false");
+        setIsWaitingForResponse(false);
+        onStop();
       }
     },
-    [isWaitingForResponse, onStop]
+    [isWaitingForResponse, onStop, finalTranscriptRef, textAreaRef]
   );
 
   const handleKeyDown = useCallback(
@@ -319,20 +334,19 @@ export default function SendMessage({
         // On mobile, Enter always creates a new line
         if (e.key === "Enter") {
           e.preventDefault();
-          setMessage((prevMessage) => prevMessage + "\n");
+          textAreaRef.current.value += "\n";
           resizeTextArea();
         }
       } else {
         // On web
         if (e.key === "Enter") {
-          if (e.ctrlKey || e.metaKey) {
-            // Ctrl+Enter or Cmd+Enter adds a new line
-            e.preventDefault();
-            setMessage((prevMessage) => prevMessage + "\n");
+          e.preventDefault();
+          if (e.ctrlKey || e.metaKey || e.shiftKey) {
+            // Shift+Enter or Ctrl+Enter or Cmd+Enter adds a new line
+            textAreaRef.current.value += "\n";
             resizeTextArea();
-          } else if (!e.shiftKey) {
+          } else {
             // Enter (without Shift) submits the form
-            e.preventDefault();
             handleSubmit(e);
           }
         }
@@ -366,9 +380,6 @@ export default function SendMessage({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => resizeTextArea(), [message, image]);
-
-  // Add this new function to handle pasted data
   const handlePaste = useCallback((event) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
@@ -434,13 +445,6 @@ export default function SendMessage({
     [onCameraOpen, onCloseMediaOptions]
   );
 
-  const onTextAreaChange = useCallback((e) => {
-    setMessage(e.target.value);
-    if (e.target.value.trim() === "") {
-      finalTranscriptRef.current = "";
-    }
-  }, []);
-
   return (
     <form className="Form" onSubmit={handleSubmit}>
       <div className="InputWrapper">
@@ -451,8 +455,6 @@ export default function SendMessage({
           onPaste={handlePaste}
           className="TextArea"
           type="text"
-          value={message}
-          onChange={onTextAreaChange}
           rows={1}
           style={{
             overflowY: "hidden",

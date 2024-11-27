@@ -83,13 +83,16 @@ export default function HomeScreen() {
     loadConversationFromLocalStorage
   );
 
-  const updateConversation = (updateFn) => {
-    setConversation((prevState) => {
-      const newState = updateFn(prevState);
-      localStorage.setItem("conversation", JSON.stringify(newState));
-      return newState;
-    });
-  };
+  const updateConversation = useCallback(
+    (updateFn) => {
+      setConversation((prevState) => {
+        const newState = updateFn(prevState);
+        localStorage.setItem("conversation", JSON.stringify(newState));
+        return newState;
+      });
+    },
+    [setConversation]
+  );
 
   const [workingScript, setWorkingScript] = useState(() => {
     const storedScript = localStorage.getItem("workingOnScript");
@@ -590,7 +593,6 @@ export default function HomeScreen() {
 
     loadScriptVersions();
   }, [workingScript]);
-
   const [statusBarLoaded, setStatusBarLoaded] = useState(false);
 
   return (
@@ -654,7 +656,7 @@ export default function HomeScreen() {
                 <div className="loading-placeholder">Loading status...</div>
               }
             >
-              <StatusBar onMemoryClick={() => setIsMemoryOverlayOpen(true)} />
+              <StatusBar onMemoryClick={toggleMemoryOverlay} />
             </Suspense>
           </motion.div>
         )}
