@@ -133,7 +133,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     show: false,
     script: null,
     category: null,
-    isDeleteAll: false
   });
   const [versionOverlay, setVersionOverlay] = useState(null);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
@@ -148,7 +147,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
   const [revertConfirmation, setRevertConfirmation] = useState({
     show: false,
     script: null,
-    category: null
+    category: null,
   });
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -189,6 +188,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
 
   // Add these handlers:
   const handleSelectScript = (script) => {
+    // Update localStorage
     localStorage.setItem(
       "workingOnScript",
       JSON.stringify({
@@ -197,14 +197,30 @@ const ScriptsOverlay = ({ closeOverlay }) => {
         scriptType: script.scriptType,
       })
     );
+    
+    // Update local state
     setSelectedScript(script.name);
+    
+    // Dispatch events
     window.dispatchEvent(new Event("scriptSelected"));
+    window.dispatchEvent(new Event("scriptsUpdated"));
   };
 
   const handleDeselectScript = () => {
+    // Clear localStorage first
     localStorage.removeItem("workingOnScript");
+    
+    // Update local state
     setSelectedScript(null);
+    
+    // Dispatch events in the correct order
+    window.dispatchEvent(new Event("scriptSelected"));
     window.dispatchEvent(new Event("scriptsUpdated"));
+    
+    // Close any open menus/overlays
+    setActiveCard(null);
+    setMenuPosition(null);
+    setVersionOverlay(null);
   };
 
   const handleDeleteScript = async (category, currentScript) => {
@@ -355,14 +371,15 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                 {renameScriptId === currentScript.id ? (
                   <input
                     type="text"
-                    defaultValue={currentScript.name}
-                    onBlur={async (e) =>
-                      await handleRenameScript(
-                        category,
-                        currentScript.id,
-                        e.target.value
-                      )
-                    }
+                    defaultValue={scriptBaseName}
+                    onBlur={(e) => handleRenameScript(currentScript.id, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleRenameScript(currentScript.id, e.target.value);
+                      } else if (e.key === 'Escape') {
+                        setRenameScriptId(null);
+                      }
+                    }}
                     style={styles.renameInput}
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
@@ -375,43 +392,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     )}
                   </p>
                 )}
-                <div style={styles.actions} onClick={(e) => e.stopPropagation()}>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={styles.editButton}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditScript(currentScript);
-                    }}
-                  >
-                    Edit
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={styles.selectButton}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectScript(currentScript);
-                    }}
-                  >
-                    Select
-                  </motion.button>
-                  <FaCog
-                    className="more-icon"
-                    style={styles.moreIcon}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setMenuPosition({
-                        top: rect.bottom + 8,
-                        left: rect.left,
-                      });
-                      setActiveCard(currentScript.id);
-                    }}
-                  />
-                </div>
               </div>
 
               <div style={styles.timestampContainer}>
@@ -422,6 +402,44 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     category
                   )}
                 </span>
+              </div>
+
+              <div style={styles.actions}>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={styles.editButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditScript(currentScript);
+                  }}
+                >
+                  Edit
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={styles.selectButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectScript(currentScript);
+                  }}
+                >
+                  Select
+                </motion.button>
+                <FaCog
+                  className="more-icon"
+                  style={styles.moreIcon}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setMenuPosition({
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                    });
+                    setActiveCard(currentScript.id);
+                  }}
+                />
               </div>
 
               {activeCard === currentScript.id && menuPosition && (
@@ -682,36 +700,60 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleRenameScript = async (category, id, newName) => {
-    const userID = localStorage.getItem("userID");
-    const script = scripts[category].find((s) => s.id === id);
+  const handleRenameScript = async (scriptId, newName) => {
+    const category = activeTab;
+    const script = scripts[category].find((s) => s.id === scriptId);
     
     if (script) {
-      await renameScriptInFirestore(
-        userID,
-        script.timestampString,
-        category,
-        script.name,
-        newName
-      );
+      const userID = localStorage.getItem("userID");
+      try {
+        // Get the timestamp string from the script
+        const timestamps = getLocalScriptTimestamps(category);
+        const timestampString = timestamps[script.name]?.timestampString;
 
-      setScripts((prevState) => ({
-        ...prevState,
-        [category]: prevState[category].map((s) =>
-          s.id === id ? { ...s, name: newName } : s
-        ),
-      }));
-
-      // Update workingOnScript in localStorage if this script was selected
-      const workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
-      if (workingOnScript && workingOnScript.script === script.name) {
-        localStorage.setItem(
-          "workingOnScript",
-          JSON.stringify({
-            ...workingOnScript,
-            script: newName,
-          })
+        await renameScriptInFirestore(
+          userID,
+          timestampString,
+          category,
+          script.name,
+          newName
         );
+
+        // Update workingOnScript in localStorage if this script was selected
+        const workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
+        if (workingOnScript && workingOnScript.script === script.name) {
+          localStorage.setItem(
+            "workingOnScript",
+            JSON.stringify({
+              ...workingOnScript,
+              script: newName,
+            })
+          );
+          setSelectedScript(newName);
+        }
+
+        // Refresh timestamps
+        await getScriptTimestamps(userID, category);
+
+        // Refresh all scripts from Firestore
+        await syncLocalScriptsWithFirestore(userID, category);
+
+        // Immediately update local scripts state
+        const freshScripts = JSON.parse(localStorage.getItem(category)) || [];
+        setScripts(prevScripts => ({
+          ...prevScripts,
+          [category]: freshScripts
+        }));
+
+        // Force a re-render by updating refreshTrigger
+        setRefreshTrigger(prev => prev + 1);
+
+        // Dispatch events to update UI
+        window.dispatchEvent(new Event("scriptsUpdated"));
+        window.dispatchEvent(new Event("scriptSelected"));
+
+      } catch (error) {
+        console.error("Error renaming script:", error);
       }
     }
     setRenameScriptId(null);
@@ -879,6 +921,31 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     return () => window.removeEventListener("scriptsUpdated", handleScriptsUpdate);
   }, []);
 
+  // Add this effect to close overlays when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuPosition &&
+        !event.target.closest(".card-menu") &&
+        !event.target.closest(".more-icon")
+      ) {
+        setActiveCard(null);
+        setMenuPosition(null);
+      }
+      if (
+        versionOverlay &&
+        !event.target.closest(".card-menu")
+      ) {
+        setVersionOverlay(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuPosition, versionOverlay]);
+
   return (
     <div className="modal-overlay" onClick={closeOverlay}>
       <div 
@@ -938,12 +1005,10 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                   </motion.button>
                   <motion.button
                     style={styles.deselectButton}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      localStorage.removeItem("workingOnScript");
-                      setSelectedScript(null);
-                      window.dispatchEvent(new Event("scriptsUpdated"));
+                      handleDeselectScript();
                     }}
                   >
                     Deselect
@@ -1031,113 +1096,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             scriptName={deleteConfirmation.script?.name}
             isDeleteAll={deleteConfirmation.isDeleteAll}
           />
-        )}
-      </AnimatePresence>
-
-      {/* Add other overlays as needed */}
-      <AnimatePresence>
-        {showScriptActions && selectedScript && (
-          <ScriptActionsOverlay
-            scriptName={selectedScript}
-            script={{
-              name: selectedScript,
-              content: (() => {
-                const stored = localStorage.getItem("workingOnScript");
-                if (!stored) return "";
-                try {
-                  const parsed = JSON.parse(stored);
-                  return parsed.contents || "";
-                } catch (e) {
-                  console.error("Error parsing script contents:", e);
-                  return "";
-                }
-              })(),
-              scriptType: (() => {
-                const stored = localStorage.getItem("workingOnScript");
-                if (!stored) return "";
-                try {
-                  const parsed = JSON.parse(stored);
-                  return parsed.scriptType || "";
-                } catch (e) {
-                  console.error("Error parsing script type:", e);
-                  return "";
-                }
-              })(),
-            }}
-            onPlay={handlePlayScript}
-            onEdit={handleEditScript}
-            onDeselect={() => {
-              localStorage.removeItem("workingOnScript");
-              setSelectedScript(null);
-              window.dispatchEvent(new Event("scriptsUpdated"));
-            }}
-            onClose={() => setShowScriptActions(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Update the AddScriptOverlay sections */}
-      <AnimatePresence>
-        {showAddForm.webApps && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 10003,
-            }}
-          >
-            <AddScriptOverlay
-              isOpen={showAddForm.webApps}
-              onClose={() => setShowAddForm(prev => ({ ...prev, webApps: false }))}
-              onSave={(e) => {
-                e.preventDefault(); // Prevent default form submission
-                const nameInput = document.getElementById('webApps-name-input');
-                const contentInput = document.getElementById('webApps-content-input');
-                if (nameInput && contentInput) {
-                  handleSaveScript("webApps", nameInput.value, contentInput.value);
-                }
-              }}
-              category="webApps"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showAddForm.openSCAD && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 10003,
-            }}
-          >
-            <AddScriptOverlay
-              isOpen={showAddForm.openSCAD}
-              onClose={() => setShowAddForm(prev => ({ ...prev, openSCAD: false }))}
-              onSave={(e) => {
-                e.preventDefault(); // Prevent default form submission
-                const nameInput = document.getElementById('openSCAD-name-input');
-                const contentInput = document.getElementById('openSCAD-content-input');
-                if (nameInput && contentInput) {
-                  handleSaveScript("openSCAD", nameInput.value, contentInput.value);
-                }
-              }}
-              category="openSCAD"
-            />
-          </motion.div>
         )}
       </AnimatePresence>
 
@@ -1234,13 +1192,15 @@ const styles = {
     padding: "20px",
     display: "flex",
     flexDirection: "column",
+    justifyContent: "space-between",
     position: "relative",
     cursor: "pointer",
     minHeight: "140px",
+    boxSizing: "border-box",
   },
   scriptCardHeader: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "flex-start",
     marginBottom: "12px",
     width: "100%",
@@ -1265,6 +1225,9 @@ const styles = {
     justifyContent: "flex-end",
     alignItems: "center",
     gap: "8px",
+    position: "absolute",
+    bottom: "12px",
+    right: "12px",
   },
   editButton: {
     padding: "6px 12px",
@@ -1276,9 +1239,22 @@ const styles = {
     fontSize: "13px",
     fontWeight: "600",
     transition: "all 0.2s ease",
-    marginRight: "8px",
     "&:hover": {
       backgroundColor: "#5d6269",
+    },
+  },
+  selectButton: {
+    padding: "6px 12px",
+    backgroundColor: darkModeColors.primary,
+    color: darkModeColors.text,
+    borderRadius: "4px",
+    cursor: "pointer",
+    border: "none",
+    fontSize: "13px",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: darkModeColors.secondary,
     },
   },
   moreIcon: {
@@ -1401,20 +1377,6 @@ const styles = {
     flexDirection: "column",
     boxSizing: "border-box",
   },
-  selectButton: {
-    padding: "6px 12px",
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    borderRadius: "4px",
-    cursor: "pointer",
-    border: "none",
-    fontSize: "13px",
-    fontWeight: "600",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-    },
-  },
   versionBadge: {
     backgroundColor: "#5865F2",
     color: "#FFFFFF",
@@ -1428,12 +1390,18 @@ const styles = {
     height: "16px",
   },
   renameInput: {
-    border: "1px solid #444",
-    borderRadius: "5px",
+    border: `1px solid ${darkModeColors.border}`,
+    borderRadius: "4px",
     backgroundColor: darkModeColors.foreground,
     color: darkModeColors.text,
-    padding: "5px",
+    padding: "8px 12px",
+    fontSize: "14px",
+    fontWeight: "500",
+    width: "100%",
     outline: "none",
+    "&:focus": {
+      borderColor: darkModeColors.primary,
+    },
   },
   cardMenuItem: {
     padding: "8px 16px",

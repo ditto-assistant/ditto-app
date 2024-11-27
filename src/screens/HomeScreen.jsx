@@ -831,18 +831,31 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    const handleScriptSelected = () => {
+    const handleScriptUpdate = () => {
       const storedScript = localStorage.getItem("workingOnScript");
       if (storedScript) {
-        const { script } = JSON.parse(storedScript);
-        setWorkingScript(script);
+        try {
+          const parsed = JSON.parse(storedScript);
+          setWorkingScript(parsed.script);
+        } catch (e) {
+          console.error("Error parsing workingOnScript:", e);
+          setWorkingScript(null);
+        }
+      } else {
+        setWorkingScript(null);
       }
     };
 
-    window.addEventListener("scriptSelected", handleScriptSelected);
+    // Listen for both events
+    window.addEventListener("scriptSelected", handleScriptUpdate);
+    window.addEventListener("scriptsUpdated", handleScriptUpdate);
+    
+    // Initial check
+    handleScriptUpdate();
 
     return () => {
-      window.removeEventListener("scriptSelected", handleScriptSelected);
+      window.removeEventListener("scriptSelected", handleScriptUpdate);
+      window.removeEventListener("scriptsUpdated", handleScriptUpdate);
     };
   }, []);
 
