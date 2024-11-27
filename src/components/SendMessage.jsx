@@ -1,5 +1,5 @@
 import "./SendMessage.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   FaMicrophone,
   FaPlus,
@@ -100,7 +100,7 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
-  const handleMicClick = async () => {
+  const handleMicClick = useCallback(async () => {
     if (isListening) {
       stopRecording();
     } else {
@@ -165,9 +165,9 @@ export default function SendMessage({
         console.error("Error accessing microphone:", error);
       }
     }
-  };
+  }, []);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state !== "inactive"
@@ -185,9 +185,9 @@ export default function SendMessage({
     wsRef.current = null;
     setIsListening(false);
     localStorage.removeItem("transcribingFromDitto");
-  };
+  }, []);
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = useCallback((event) => {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -195,30 +195,33 @@ export default function SendMessage({
       setImage(reader.result);
     };
     reader.readAsDataURL(file);
-  };
+  }, []);
 
-  const handleCameraOpen = () => {
+  const handleCameraOpen = useCallback(() => {
     setIsCameraOpen(true);
     startCamera(isFrontCamera);
     document.body.style.overflow = "hidden"; // Prevent scrolling when camera is open
-  };
+  }, [isFrontCamera]);
 
-  const startCamera = (useFrontCamera) => {
-    navigator.mediaDevices
-      .getUserMedia({
-        video: { facingMode: useFrontCamera ? "user" : "environment" },
-      })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => {
-        console.error("Error accessing the camera: ", err);
-      });
-  };
+  const startCamera = useCallback(
+    (useFrontCamera) => {
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { facingMode: useFrontCamera ? "user" : "environment" },
+        })
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => {
+          console.error("Error accessing the camera: ", err);
+        });
+    },
+    [isFrontCamera]
+  );
 
-  const handleSnap = () => {
+  const handleSnap = useCallback(() => {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext("2d");
       canvasRef.current.width = videoRef.current.videoWidth;
@@ -228,107 +231,117 @@ export default function SendMessage({
       setImage(imageDataURL);
       handleCameraClose();
     }
-  };
+  }, []);
 
-  const handleCameraClose = () => {
+  const handleCameraClose = useCallback(() => {
     setIsCameraOpen(false);
     stopCameraFeed();
     document.body.style.overflow = ""; // Restore scrolling
-  };
+  }, []);
 
-  const stopCameraFeed = () => {
+  const stopCameraFeed = useCallback(() => {
     const stream = videoRef.current?.srcObject;
     if (stream) {
       const tracks = stream.getTracks();
       tracks.forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
-  };
+  }, []);
 
-  const handleClearImage = () => {
-    setImage("");
-    onClearCapturedImage();
-  };
+  const handleClearImage = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setImage("");
+      onClearCapturedImage();
+    },
+    [onClearCapturedImage]
+  );
 
-  const toggleCamera = () => {
+  const toggleCamera = useCallback(() => {
     setIsFrontCamera(!isFrontCamera);
     stopCameraFeed();
     startCamera(!isFrontCamera);
-  };
+  }, [isFrontCamera, stopCameraFeed, startCamera]);
 
-  const handleSubmit = async (event) => {
-    if (event) event.preventDefault();
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
 
-    const thinkingObjectString = localStorage.getItem("thinking");
-    const isThinking = thinkingObjectString !== null;
+      const thinkingObjectString = localStorage.getItem("thinking");
+      const isThinking = thinkingObjectString !== null;
 
-    if (isWaitingForResponse) return;
+      if (isWaitingForResponse) return;
 
-    if ((message !== "" || finalTranscriptRef.current) && !isThinking) {
-      setIsWaitingForResponse(true);
-      try {
-        const userID = auth.currentUser.uid;
-        const firstName = localStorage.getItem("firstName");
-        let messageToSend = finalTranscriptRef.current || message;
-        let imageURI = "";
-        if (image) {
-          imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
-          messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+      if ((message !== "" || finalTranscriptRef.current) && !isThinking) {
+        setIsWaitingForResponse(true);
+        try {
+          const userID = auth.currentUser.uid;
+          const firstName = localStorage.getItem("firstName");
+          let messageToSend = finalTranscriptRef.current || message;
+          let imageURI = "";
+          if (image) {
+            imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
+            messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+          }
+          setMessage("");
+          setImage("");
+          finalTranscriptRef.current = "";
+          resizeTextArea();
+          if (isListening) {
+            stopRecording();
+          }
+
+          let userPromptEmbedding = await textEmbed(messageToSend);
+
+          await sendPrompt(
+            userID,
+            firstName,
+            messageToSend,
+            imageURI,
+            userPromptEmbedding,
+            updateConversation,
+            preferences
+          );
+        } catch (error) {
+          console.error("Error sending message:", error);
+        } finally {
+          setIsWaitingForResponse(false);
+          onStop();
         }
-        setMessage("");
-        setImage("");
-        finalTranscriptRef.current = "";
-        resizeTextArea();
-        if (isListening) {
-          stopRecording();
-        }
-
-        let userPromptEmbedding = await textEmbed(messageToSend);
-
-        await sendPrompt(
-          userID,
-          firstName,
-          messageToSend,
-          imageURI,
-          userPromptEmbedding,
-          updateConversation,
-          preferences
-        );
-      } catch (error) {
-        console.error("Error sending message:", error);
-      } finally {
-        setIsWaitingForResponse(false);
-        onStop();
       }
-    }
-  };
+    },
+    [isWaitingForResponse, onStop]
+  );
 
-  const handleKeyDown = (e) => {
-    if (isMobile.current) {
-      // On mobile, Enter always creates a new line
-      if (e.key === "Enter") {
-        e.preventDefault();
-        setMessage((prevMessage) => prevMessage + "\n");
-        resizeTextArea();
-      }
-    } else {
-      // On web
-      if (e.key === "Enter") {
-        if (e.ctrlKey || e.metaKey) {
-          // Ctrl+Enter or Cmd+Enter adds a new line
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (isMobile.current) {
+        // On mobile, Enter always creates a new line
+        if (e.key === "Enter") {
           e.preventDefault();
           setMessage((prevMessage) => prevMessage + "\n");
           resizeTextArea();
-        } else if (!e.shiftKey) {
-          // Enter (without Shift) submits the form
-          e.preventDefault();
-          handleSubmit();
+        }
+      } else {
+        // On web
+        if (e.key === "Enter") {
+          if (e.ctrlKey || e.metaKey) {
+            // Ctrl+Enter or Cmd+Enter adds a new line
+            e.preventDefault();
+            setMessage((prevMessage) => prevMessage + "\n");
+            resizeTextArea();
+          } else if (!e.shiftKey) {
+            // Enter (without Shift) submits the form
+            e.preventDefault();
+            handleSubmit(e);
+          }
         }
       }
-    }
-  };
+    },
+    [isMobile.current]
+  );
 
-  const resizeTextArea = () => {
+  const resizeTextArea = useCallback(() => {
     const textArea = textAreaRef.current;
     if (textArea) {
       textArea.style.height = "auto";
@@ -345,7 +358,7 @@ export default function SendMessage({
         imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
       }
     }
-  };
+  }, [textAreaRef]);
 
   useEffect(() => {
     const handleResize = () => resizeTextArea();
@@ -356,7 +369,7 @@ export default function SendMessage({
   useEffect(() => resizeTextArea(), [message, image]);
 
   // Add this new function to handle pasted data
-  const handlePaste = (event) => {
+  const handlePaste = useCallback((event) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
@@ -370,23 +383,21 @@ export default function SendMessage({
         break;
       }
     }
-  };
+  }, []);
 
-  const toggleImageEnlarge = (e) => {
-    e.stopPropagation();
-    onImageEnlarge(image);
-  };
+  const toggleImageEnlarge = useCallback(
+    (e) => {
+      e.stopPropagation();
+      onImageEnlarge(image);
+    },
+    [onImageEnlarge]
+  );
 
-  const toggleImageFullscreen = (e) => {
-    e.stopPropagation();
-    setIsImageFullscreen(!isImageFullscreen);
-  };
-
-  const handleClickOutside = () => {
+  const handleClickOutside = useCallback(() => {
     if (isImageFullscreen) {
       setIsImageFullscreen(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
@@ -395,24 +406,40 @@ export default function SendMessage({
     };
   }, [isImageFullscreen]);
 
-  const handlePlusClick = (e) => {
-    e.stopPropagation();
-    onOpenMediaOptions();
-  };
+  const handlePlusClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      onOpenMediaOptions();
+    },
+    [onOpenMediaOptions]
+  );
 
-  const handleGalleryClick = (e) => {
-    e.preventDefault(); // Add this line
-    e.stopPropagation();
-    document.getElementById("image-upload").click();
-    onCloseMediaOptions();
-  };
+  const handleGalleryClick = useCallback(
+    (e) => {
+      e.preventDefault(); // Add this line
+      e.stopPropagation();
+      document.getElementById("image-upload").click();
+      onCloseMediaOptions();
+    },
+    [onCloseMediaOptions]
+  );
 
-  const handleCameraClick = (e) => {
-    e.preventDefault(); // Add this line
-    e.stopPropagation();
-    onCameraOpen();
-    onCloseMediaOptions();
-  };
+  const handleCameraClick = useCallback(
+    (e) => {
+      e.preventDefault(); // Add this line
+      e.stopPropagation();
+      onCameraOpen();
+      onCloseMediaOptions();
+    },
+    [onCameraOpen, onCloseMediaOptions]
+  );
+
+  const onTextAreaChange = useCallback((e) => {
+    setMessage(e.target.value);
+    if (e.target.value.trim() === "") {
+      finalTranscriptRef.current = "";
+    }
+  }, []);
 
   return (
     <form className="Form" onSubmit={handleSubmit}>
@@ -425,12 +452,7 @@ export default function SendMessage({
           className="TextArea"
           type="text"
           value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-            if (e.target.value.trim() === "") {
-              finalTranscriptRef.current = "";
-            }
-          }}
+          onChange={onTextAreaChange}
           rows={1}
           style={{
             overflowY: "hidden",
@@ -463,13 +485,7 @@ export default function SendMessage({
       {image && (
         <div className="ImagePreview" onClick={toggleImageEnlarge}>
           <img src={image} alt="Preview" />
-          <FaTimes
-            className="RemoveImage"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClearImage();
-            }}
-          />
+          <FaTimes className="RemoveImage" onClick={handleClearImage} />
         </div>
       )}
 

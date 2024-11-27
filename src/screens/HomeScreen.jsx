@@ -1,5 +1,12 @@
 import "./HomeScreen.css";
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  lazy,
+  Suspense,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
@@ -56,6 +63,9 @@ export default function HomeScreen() {
     return !localStorage.getItem("hasSeenTOS");
   });
   const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
+  const toggleMemoryOverlay = useCallback(() => {
+    setIsMemoryOverlayOpen((prev) => !prev);
+  }, []);
 
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
@@ -410,45 +420,48 @@ export default function HomeScreen() {
     setEnlargedImage(imageUrl);
   };
 
-  const closeEnlargedImage = () => {
+  const closeEnlargedImage = useCallback(() => {
     setEnlargedImage(null);
-  };
+  }, []);
 
-  const handleCameraOpen = () => {
+  const handleCameraOpen = useCallback(() => {
     setIsCameraOpen(true);
     startCamera(isFrontCamera);
-  };
+  }, [isFrontCamera]);
 
-  const handleCameraClose = () => {
+  const handleCameraClose = useCallback(() => {
     setIsCameraOpen(false);
     stopCameraFeed();
-  };
+  }, []);
 
-  const startCamera = (useFrontCamera) => {
-    navigator.mediaDevices
-      .getUserMedia({
-        video: { facingMode: useFrontCamera ? "user" : "environment" },
-      })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => {
-        console.error("Error accessing the camera: ", err);
-      });
-  };
+  const startCamera = useCallback(
+    (useFrontCamera) => {
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { facingMode: useFrontCamera ? "user" : "environment" },
+        })
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => {
+          console.error("Error accessing the camera: ", err);
+        });
+    },
+    [isFrontCamera, videoRef]
+  );
 
-  const stopCameraFeed = () => {
+  const stopCameraFeed = useCallback(() => {
     const stream = videoRef.current?.srcObject;
     if (stream) {
       const tracks = stream.getTracks();
       tracks.forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
-  };
+  }, [videoRef]);
 
-  const handleSnap = () => {
+  const handleSnap = useCallback(() => {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext("2d");
       canvasRef.current.width = videoRef.current.videoWidth;
@@ -458,21 +471,21 @@ export default function HomeScreen() {
       setCapturedImage(imageDataURL);
       handleCameraClose();
     }
-  };
+  }, [canvasRef, videoRef, handleCameraClose]);
 
-  const toggleCamera = () => {
+  const toggleCamera = useCallback(() => {
     setIsFrontCamera(!isFrontCamera);
     stopCameraFeed();
     startCamera(!isFrontCamera);
-  };
+  }, [isFrontCamera, stopCameraFeed, startCamera]);
 
-  const handleCloseMediaOptions = () => {
+  const handleCloseMediaOptions = useCallback(() => {
     setShowMediaOptions(false);
-  };
+  }, []);
 
-  const handleOpenMediaOptions = () => {
+  const handleOpenMediaOptions = useCallback(() => {
     setShowMediaOptions(true);
-  };
+  }, []);
 
   // Update the useEffect that listens for memory deletion events
   useEffect(() => {
@@ -528,7 +541,7 @@ export default function HomeScreen() {
   };
 
   // Functions for play, edit, and deselect actions
-  const handlePlayScript = () => {
+  const handlePlayScript = useCallback(() => {
     try {
       let workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
       let scriptType = workingOnScript.scriptType;
@@ -542,72 +555,18 @@ export default function HomeScreen() {
     } catch (error) {
       console.error("Error playing script:", error);
     }
-  };
+  }, []);
 
-  const handleEditScript = (script) => {
-    // If script is passed directly, use it, otherwise try to find the selected script
-    const scriptToEdit =
-      script ||
-      (selectedScript &&
-        (scripts.webApps.find((s) => s.name === selectedScript) ||
-          scripts.openSCAD.find((s) => s.name === selectedScript)));
-
-    if (scriptToEdit) {
-      if (scriptToEdit.scriptType === "webApps") {
-        setFullScreenEdit({
-          ...scriptToEdit,
-          onSaveCallback: async (newContent) => {
-            const userID = localStorage.getItem("userID");
-            try {
-              setShowLoadingSpinner(true);
-              await saveScriptToFirestore(
-                userID,
-                newContent,
-                scriptToEdit.scriptType,
-                scriptToEdit.name
-              );
-
-              // Update local scripts
-              await syncLocalScriptsWithFirestore(
-                userID,
-                scriptToEdit.scriptType
-              );
-
-              // Update workingOnScript in localStorage
-              const workingOnScript = {
-                script: scriptToEdit.name,
-                contents: newContent,
-                scriptType: scriptToEdit.scriptType,
-              };
-              localStorage.setItem(
-                "workingOnScript",
-                JSON.stringify(workingOnScript)
-              );
-
-              setShowLoadingSpinner(false);
-              setFullScreenEdit(null);
-            } catch (error) {
-              console.error("Error saving:", error);
-              setShowLoadingSpinner(false);
-            }
-          },
-        });
-      } else {
-        setOpenScadViewer(scriptToEdit);
-      }
-    }
-  };
-
-  const handleDeselectScript = () => {
+  const handleDeselectScript = useCallback(() => {
     localStorage.removeItem("workingOnScript");
     setWorkingScript(null);
-  };
+  }, []);
 
   const [showScriptActions, setShowScriptActions] = useState(false);
 
-  const handleScriptNameClick = () => {
+  const handleScriptNameClick = useCallback(() => {
     setShowScriptActions(true);
-  };
+  }, []);
 
   const [scriptVersions, setScriptVersions] = useState([]);
 
@@ -631,139 +590,6 @@ export default function HomeScreen() {
 
     loadScriptVersions();
   }, [workingScript]);
-
-  const handleScriptDelete = async (isDeleteAll) => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      if (isDeleteAll) {
-        // Delete base version and all versioned copies
-        const baseScriptName = storedScript.script.split("-v")[0];
-        const versions = await getVersionsOfScriptFromFirestore(
-          userID,
-          storedScript.scriptType,
-          baseScriptName
-        );
-
-        // Delete each version
-        for (const version of versions) {
-          const versionName =
-            version.versionNumber === 0
-              ? baseScriptName
-              : `${baseScriptName}-v${version.versionNumber}`;
-          await deleteScriptFromFirestore(
-            userID,
-            storedScript.scriptType,
-            versionName
-          );
-        }
-      } else {
-        // Delete just the current version
-        await deleteScriptFromFirestore(
-          userID,
-          storedScript.scriptType,
-          storedScript.script
-        );
-      }
-
-      // Update local storage and state
-      handleDeselectScript();
-
-      // Refresh timestamps
-      await getScriptTimestamps(userID, storedScript.scriptType);
-
-      // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event("scriptsUpdated"));
-    }
-  };
-
-  const handleScriptRename = async (newName) => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      await renameScriptInFirestore(
-        userID,
-        storedScript.timestampString,
-        storedScript.scriptType,
-        storedScript.script,
-        newName
-      );
-
-      // Update local storage
-      const updatedScript = {
-        ...storedScript,
-        script: newName,
-      };
-      localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
-
-      // Update state
-      setWorkingScript(newName);
-
-      // Refresh timestamps
-      await getScriptTimestamps(userID, storedScript.scriptType);
-
-      // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event("scriptsUpdated"));
-    }
-  };
-
-  const handleVersionSelect = async (version) => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript && version) {
-      const baseScriptName = storedScript.script.split("-v")[0];
-      const versionName =
-        version.versionNumber === 0
-          ? baseScriptName
-          : `${baseScriptName}-v${version.versionNumber}`;
-
-      // Update working script to selected version
-      const updatedScript = {
-        ...storedScript,
-        script: versionName,
-        contents: version.script,
-      };
-      localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
-
-      // Update state
-      setWorkingScript(versionName);
-
-      // Refresh timestamps
-      await getScriptTimestamps(userID, storedScript.scriptType);
-
-      // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event("scriptsUpdated"));
-    }
-  };
-
-  const handleRevert = async () => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      const baseScriptName = storedScript.script.split("-v")[0];
-      const versions = await getVersionsOfScriptFromFirestore(
-        userID,
-        storedScript.scriptType,
-        baseScriptName
-      );
-
-      if (versions.length > 1) {
-        // Get the highest version number
-        const latestVersion = versions.reduce(
-          (max, version) => Math.max(max, version.versionNumber),
-          0
-        );
-
-        // Select that version
-        const version = versions.find((v) => v.versionNumber === latestVersion);
-        await handleVersionSelect(version);
-      }
-    }
-  };
 
   const [statusBarLoaded, setStatusBarLoaded] = useState(false);
 
@@ -1019,7 +845,7 @@ export default function HomeScreen() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <MemoryOverlay closeOverlay={() => setIsMemoryOverlayOpen(false)} />
+            <MemoryOverlay closeOverlay={toggleMemoryOverlay} />
           </motion.div>
         )}
       </AnimatePresence>
