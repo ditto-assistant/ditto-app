@@ -15,12 +15,12 @@ import { textEmbed } from "../api/LLM"; // Add this import
 import MemoryNetwork from "./MemoryNetwork";
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
-import Toast from "./Toast";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
+import { toast } from "react-hot-toast";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -199,8 +199,6 @@ export default function ChatFeed({
     reset,
     isComplete,
   } = useTokenStreaming();
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
@@ -1164,18 +1162,14 @@ export default function ChatFeed({
             setMemoryOverlay(null);
           }
         }
-
-        // Show success toast
-        setToastMessage("Message deleted successfully");
-        setShowToast(true);
+        toast.success("Message deleted successfully");
 
         // Dispatch memoryUpdated event
         window.dispatchEvent(new Event("memoryUpdated"));
       }
     } catch (error) {
       console.error("Error deleting:", error);
-      setToastMessage("Failed to delete message");
-      setShowToast(true);
+      toast.error("Failed to delete message");
     } finally {
       setIsDeletingMessage(false);
       setDeletingMemories((prev) => {
@@ -1486,11 +1480,6 @@ export default function ChatFeed({
           </motion.div>
         )}
       </AnimatePresence>
-      <Toast
-        message={toastMessage}
-        isVisible={showToast}
-        onHide={() => setShowToast(false)}
-      />
     </div>
   );
 }
