@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MdExpandMore } from "react-icons/md";
 import { FaCrown } from "react-icons/fa";
@@ -30,23 +30,18 @@ const ModelDropdown = ({
 }) => {
   const dropdownRef = useRef(null);
 
-  const selectedModel = useMemo(() => {
-    return models.find((model) => model.id === value);
-  }, [models, value]);
+  const selectedModel = models.find((model) => model.id === value);
 
-  const handleClickOutside = useCallback(
-    (event) => {
+  useEffect(() => {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         onOpenChange?.(false);
       }
-    },
-    [onOpenChange]
-  );
+    };
 
-  useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [handleClickOutside]);
+  }, []);
 
   useEffect(() => {
     if (!hasEnoughBalance && selectedModel?.isPremium) {
@@ -54,75 +49,36 @@ const ModelDropdown = ({
     }
   }, [hasEnoughBalance, selectedModel, onChange]);
 
-  const handleSelect = useCallback(
-    (modelId, e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleSelect = (modelId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      const model = models.find((m) => m.id === modelId);
-      if (model.isPremium && !hasEnoughBalance) {
-        console.log("Premium model requires sufficient balance");
-        return;
-      }
-      if (model.isMaintenance) {
-        console.log("Model is in maintenance");
-        return;
-      }
+    const model = models.find((m) => m.id === modelId);
+    if (model.isPremium && !hasEnoughBalance) {
+      console.log("Premium model requires sufficient balance");
+      return;
+    }
+    if (model.isMaintenance) {
+      console.log("Model is in maintenance");
+      return;
+    }
 
-      onChange(modelId);
-      onOpenChange?.(false);
-    },
-    [models, hasEnoughBalance, onChange, onOpenChange]
-  );
+    onChange(modelId);
+    onOpenChange?.(false);
+  };
 
-  const handleClick = useCallback(
-    (e) => {
-      e.stopPropagation();
-      onOpenChange?.(!isOpen);
-    },
-    [onOpenChange, isOpen]
-  );
-
-  const animateIcon = useMemo(() => {
-    return { rotate: isOpen ? 180 : 0 };
-  }, [isOpen]);
-
-  const transitionIcon = useMemo(() => {
-    return { duration: 0.2 };
-  }, []);
-
-  const whileHoverEffect = useMemo(() => {
-    return { backgroundColor: "#292B2F" };
-  }, []);
-
-  const whileTapEffect = useMemo(() => {
-    return { scale: 0.99 };
-  }, []);
-
-  const dropdownPortalStyle = useMemo(() => {
-    const rect = dropdownRef.current?.getBoundingClientRect();
-    return {
-      position: "fixed",
-      top: rect ? rect.bottom + 4 : 0,
-      left: rect ? rect.left : 0,
-      width: rect ? rect.width : "100%",
-      backgroundColor: "#2f3136",
-      borderRadius: "8px",
-      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
-      zIndex: 999999,
-      overflow: "hidden",
-      maxHeight: "200px",
-      overflowY: "auto",
-    };
-  }, [isOpen]);
+  const handleClick = (e) => {
+    e.stopPropagation();
+    onOpenChange?.(!isOpen);
+  };
 
   return (
     <div ref={dropdownRef} style={styles.container}>
       <motion.div
         style={styles.selectedValue}
         onClick={handleClick}
-        whileHover={whileHoverEffect}
-        whileTap={whileTapEffect}
+        whileHover={{ backgroundColor: "#292B2F" }}
+        whileTap={{ scale: 0.99 }}
       >
         <div style={styles.selectedContent}>
           <span>{selectedModel?.name}</span>
@@ -137,7 +93,10 @@ const ModelDropdown = ({
             <span style={styles.maintenanceBadge}>MAINTENANCE</span>
           )}
         </div>
-        <motion.div animate={animateIcon} transition={transitionIcon}>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
           <MdExpandMore style={styles.expandIcon} />
         </motion.div>
       </motion.div>
@@ -145,7 +104,19 @@ const ModelDropdown = ({
       {isOpen &&
         createPortal(
           <div
-            style={dropdownPortalStyle}
+            style={{
+              position: "fixed",
+              top: dropdownRef.current?.getBoundingClientRect().bottom + 4,
+              left: dropdownRef.current?.getBoundingClientRect().left,
+              width: dropdownRef.current?.getBoundingClientRect().width,
+              backgroundColor: "#2f3136",
+              borderRadius: "8px",
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+              zIndex: 999999,
+              overflow: "hidden",
+              maxHeight: "200px",
+              overflowY: "auto",
+            }}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -156,12 +127,18 @@ const ModelDropdown = ({
                 key={model.id}
                 className="dropdown-option"
                 style={{
-                  ...styles.option,
+                  padding: "12px",
                   opacity:
                     (model.isPremium && !hasEnoughBalance) ||
                     model.isMaintenance
                       ? 0.5
                       : 1,
+                  backgroundColor: "#2f3136",
+                  color: "#ffffff",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  transition: "background-color 0.2s ease",
                   cursor:
                     (model.isPremium && !hasEnoughBalance) ||
                     model.isMaintenance
@@ -181,8 +158,7 @@ const ModelDropdown = ({
                   }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    styles.option.backgroundColor;
+                  e.currentTarget.style.backgroundColor = "#2f3136";
                 }}
               >
                 <span>{model.name}</span>
@@ -260,7 +236,7 @@ export const styles = {
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
   },
   option: {
-    padding: "12px", // Updated padding to match inline styles
+    padding: "10px 12px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -268,7 +244,9 @@ export const styles = {
     fontSize: "14px",
     backgroundColor: darkModeColors.cardBg,
     color: darkModeColors.text,
-    cursor: "pointer", // Default cursor, overridden in component
+    "&:hover": {
+      backgroundColor: "rgba(88, 101, 242, 0.1)",
+    },
   },
   badges: {
     display: "flex",
