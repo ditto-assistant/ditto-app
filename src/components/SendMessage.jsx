@@ -1,5 +1,5 @@
 import "./SendMessage.css";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FaMicrophone,
   FaPlus,
@@ -48,6 +48,7 @@ export default function SendMessage({
   onBlur,
   onStop,
 }) {
+  const [message, setMessage] = useState("");
   const [image, setImage] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -99,13 +100,13 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
-  const handleMicClick = useCallback(async () => {
+  const handleMicClick = async () => {
     if (isListening) {
       stopRecording();
     } else {
       try {
         finalTranscriptRef.current = "";
-        textAreaRef.current.value = "";
+        setMessage("");
 
         const stream = await sharedMic.getMicStream();
         wsRef.current = new WebSocket(firebaseConfig.webSocketURL);
@@ -141,9 +142,9 @@ export default function SendMessage({
           const receivedText = JSON.parse(event.data);
           if (receivedText.isFinal) {
             finalTranscriptRef.current += receivedText.transcript + " ";
-            textAreaRef.current.value += receivedText.transcript + " ";
+            setMessage(finalTranscriptRef.current);
           } else {
-            textAreaRef.current.value += receivedText.transcript;
+            setMessage(finalTranscriptRef.current + receivedText.transcript);
           }
           resizeTextArea();
 
@@ -164,9 +165,9 @@ export default function SendMessage({
         console.error("Error accessing microphone:", error);
       }
     }
-  }, []);
+  };
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = () => {
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state !== "inactive"
@@ -184,9 +185,9 @@ export default function SendMessage({
     wsRef.current = null;
     setIsListening(false);
     localStorage.removeItem("transcribingFromDitto");
-  }, []);
+  };
 
-  const handleImageUpload = useCallback((event) => {
+  const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -194,33 +195,30 @@ export default function SendMessage({
       setImage(reader.result);
     };
     reader.readAsDataURL(file);
-  }, []);
+  };
 
-  const handleCameraOpen = useCallback(() => {
+  const handleCameraOpen = () => {
     setIsCameraOpen(true);
     startCamera(isFrontCamera);
     document.body.style.overflow = "hidden"; // Prevent scrolling when camera is open
-  }, [isFrontCamera]);
+  };
 
-  const startCamera = useCallback(
-    (useFrontCamera) => {
-      navigator.mediaDevices
-        .getUserMedia({
-          video: { facingMode: useFrontCamera ? "user" : "environment" },
-        })
-        .then((stream) => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        })
-        .catch((err) => {
-          console.error("Error accessing the camera: ", err);
-        });
-    },
-    [isFrontCamera]
-  );
+  const startCamera = (useFrontCamera) => {
+    navigator.mediaDevices
+      .getUserMedia({
+        video: { facingMode: useFrontCamera ? "user" : "environment" },
+      })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch((err) => {
+        console.error("Error accessing the camera: ", err);
+      });
+  };
 
-  const handleSnap = useCallback(() => {
+  const handleSnap = () => {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext("2d");
       canvasRef.current.width = videoRef.current.videoWidth;
@@ -230,75 +228,54 @@ export default function SendMessage({
       setImage(imageDataURL);
       handleCameraClose();
     }
-  }, []);
+  };
 
-  const handleCameraClose = useCallback(() => {
+  const handleCameraClose = () => {
     setIsCameraOpen(false);
     stopCameraFeed();
     document.body.style.overflow = ""; // Restore scrolling
-  }, []);
+  };
 
-  const stopCameraFeed = useCallback(() => {
+  const stopCameraFeed = () => {
     const stream = videoRef.current?.srcObject;
     if (stream) {
       const tracks = stream.getTracks();
       tracks.forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
-  }, []);
+  };
 
-  const handleClearImage = useCallback(
-    (e) => {
-      e.stopPropagation();
-      setImage("");
-      onClearCapturedImage();
-    },
-    [onClearCapturedImage]
-  );
+  const handleClearImage = () => {
+    setImage("");
+    onClearCapturedImage();
+  };
 
-  const toggleCamera = useCallback(() => {
+  const toggleCamera = () => {
     setIsFrontCamera(!isFrontCamera);
     stopCameraFeed();
     startCamera(!isFrontCamera);
-  }, [isFrontCamera, stopCameraFeed, startCamera]);
+  };
 
-  const handleSubmit = useCallback(
-    async (event) => {
-      event.preventDefault();
-      console.log("handleSubmit called");
+  const handleSubmit = async (event) => {
+    if (event) event.preventDefault();
 
-      const thinkingObjectString = localStorage.getItem("thinking");
-      const isThinking = thinkingObjectString !== null;
+    const thinkingObjectString = localStorage.getItem("thinking");
+    const isThinking = thinkingObjectString !== null;
 
-      if (isWaitingForResponse) {
-        console.log("isWaitingForResponse is true");
-        return;
-      }
-      if (isThinking) {
-        console.log("isThinking is true");
-        return;
-      }
-      if (
-        textAreaRef.current.value === "" &&
-        finalTranscriptRef.current === ""
-      ) {
-        console.log(
-          `textAreaRef.current: ${textAreaRef.current.value}, finalTranscriptRef.current: ${finalTranscriptRef.current}`
-        );
-        return;
-      }
+    if (isWaitingForResponse) return;
+
+    if ((message !== "" || finalTranscriptRef.current) && !isThinking) {
       setIsWaitingForResponse(true);
       try {
         const userID = auth.currentUser.uid;
         const firstName = localStorage.getItem("firstName");
-        let messageToSend =
-          finalTranscriptRef.current || textAreaRef.current.value;
+        let messageToSend = finalTranscriptRef.current || message;
         let imageURI = "";
         if (image) {
           imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
           messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
         }
-        textAreaRef.current.value = "";
+        setMessage("");
         setImage("");
         finalTranscriptRef.current = "";
         resizeTextArea();
@@ -320,42 +297,38 @@ export default function SendMessage({
       } catch (error) {
         console.error("Error sending message:", error);
       } finally {
-        console.log("Setting isWaitingForResponse to false");
         setIsWaitingForResponse(false);
         onStop();
       }
-    },
-    [isWaitingForResponse, onStop, finalTranscriptRef, textAreaRef]
-  );
+    }
+  };
 
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (isMobile.current) {
-        // On mobile, Enter always creates a new line
-        if (e.key === "Enter") {
+  const handleKeyDown = (e) => {
+    if (isMobile.current) {
+      // On mobile, Enter always creates a new line
+      if (e.key === "Enter") {
+        e.preventDefault();
+        setMessage((prevMessage) => prevMessage + "\n");
+        resizeTextArea();
+      }
+    } else {
+      // On web
+      if (e.key === "Enter") {
+        if (e.ctrlKey || e.metaKey) {
+          // Ctrl+Enter or Cmd+Enter adds a new line
           e.preventDefault();
-          textAreaRef.current.value += "\n";
+          setMessage((prevMessage) => prevMessage + "\n");
           resizeTextArea();
-        }
-      } else {
-        // On web
-        if (e.key === "Enter") {
+        } else if (!e.shiftKey) {
+          // Enter (without Shift) submits the form
           e.preventDefault();
-          if (e.ctrlKey || e.metaKey || e.shiftKey) {
-            // Shift+Enter or Ctrl+Enter or Cmd+Enter adds a new line
-            textAreaRef.current.value += "\n";
-            resizeTextArea();
-          } else {
-            // Enter (without Shift) submits the form
-            handleSubmit(e);
-          }
+          handleSubmit();
         }
       }
-    },
-    [isMobile.current]
-  );
+    }
+  };
 
-  const resizeTextArea = useCallback(() => {
+  const resizeTextArea = () => {
     const textArea = textAreaRef.current;
     if (textArea) {
       textArea.style.height = "auto";
@@ -372,7 +345,7 @@ export default function SendMessage({
         imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
       }
     }
-  }, [textAreaRef]);
+  };
 
   useEffect(() => {
     const handleResize = () => resizeTextArea();
@@ -380,7 +353,10 @@ export default function SendMessage({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handlePaste = useCallback((event) => {
+  useEffect(() => resizeTextArea(), [message, image]);
+
+  // Add this new function to handle pasted data
+  const handlePaste = (event) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
@@ -394,21 +370,23 @@ export default function SendMessage({
         break;
       }
     }
-  }, []);
+  };
 
-  const toggleImageEnlarge = useCallback(
-    (e) => {
-      e.stopPropagation();
-      onImageEnlarge(image);
-    },
-    [onImageEnlarge]
-  );
+  const toggleImageEnlarge = (e) => {
+    e.stopPropagation();
+    onImageEnlarge(image);
+  };
 
-  const handleClickOutside = useCallback(() => {
+  const toggleImageFullscreen = (e) => {
+    e.stopPropagation();
+    setIsImageFullscreen(!isImageFullscreen);
+  };
+
+  const handleClickOutside = () => {
     if (isImageFullscreen) {
       setIsImageFullscreen(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
@@ -417,33 +395,24 @@ export default function SendMessage({
     };
   }, [isImageFullscreen]);
 
-  const handlePlusClick = useCallback(
-    (e) => {
-      e.stopPropagation();
-      onOpenMediaOptions();
-    },
-    [onOpenMediaOptions]
-  );
+  const handlePlusClick = (e) => {
+    e.stopPropagation();
+    onOpenMediaOptions();
+  };
 
-  const handleGalleryClick = useCallback(
-    (e) => {
-      e.preventDefault(); // Add this line
-      e.stopPropagation();
-      document.getElementById("image-upload").click();
-      onCloseMediaOptions();
-    },
-    [onCloseMediaOptions]
-  );
+  const handleGalleryClick = (e) => {
+    e.preventDefault(); // Add this line
+    e.stopPropagation();
+    document.getElementById("image-upload").click();
+    onCloseMediaOptions();
+  };
 
-  const handleCameraClick = useCallback(
-    (e) => {
-      e.preventDefault(); // Add this line
-      e.stopPropagation();
-      onCameraOpen();
-      onCloseMediaOptions();
-    },
-    [onCameraOpen, onCloseMediaOptions]
-  );
+  const handleCameraClick = (e) => {
+    e.preventDefault(); // Add this line
+    e.stopPropagation();
+    onCameraOpen();
+    onCloseMediaOptions();
+  };
 
   return (
     <form className="Form" onSubmit={handleSubmit}>
@@ -455,6 +424,13 @@ export default function SendMessage({
           onPaste={handlePaste}
           className="TextArea"
           type="text"
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            if (e.target.value.trim() === "") {
+              finalTranscriptRef.current = "";
+            }
+          }}
           rows={1}
           style={{
             overflowY: "hidden",
@@ -487,7 +463,13 @@ export default function SendMessage({
       {image && (
         <div className="ImagePreview" onClick={toggleImageEnlarge}>
           <img src={image} alt="Preview" />
-          <FaTimes className="RemoveImage" onClick={handleClearImage} />
+          <FaTimes
+            className="RemoveImage"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClearImage();
+            }}
+          />
         </div>
       )}
 
