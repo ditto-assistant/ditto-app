@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -15,12 +15,12 @@ import { textEmbed } from "../api/LLM"; // Add this import
 import MemoryNetwork from "./MemoryNetwork";
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
+import Toast from "./Toast";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
-import { toast } from "react-hot-toast";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -199,31 +199,12 @@ export default function ChatFeed({
     reset,
     isComplete,
   } = useTokenStreaming();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
-  const debounce = useMemo(
-    () => (func, wait) => {
-      let timeout;
-      return function executedFunction(...args) {
-        const later = () => {
-          clearTimeout(timeout);
-          func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-      };
-    },
-    []
-  );
-  const handleScroll = useCallback(() => {
-    // Close overlays immediately when scrolling starts
-    if (actionOverlay || reactionOverlay) {
-      setActionOverlay(null);
-      setReactionOverlay(null);
-    }
-  }, [actionOverlay, reactionOverlay]);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -292,7 +273,7 @@ export default function ChatFeed({
     return () => reset();
   }, [reset]);
 
-  const scrollToBottomOfFeed = useCallback((quick = false) => {
+  const scrollToBottomOfFeed = (quick = false) => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({
         behavior: "auto", // Always use instant scrolling
@@ -300,7 +281,7 @@ export default function ChatFeed({
         inline: "nearest",
       });
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (messages.length > 0 && (startAtBottom || scrollToBottom)) {
@@ -310,7 +291,7 @@ export default function ChatFeed({
         scrollToBottomOfFeed(true);
       });
     }
-  }, [messages, scrollToBottom, startAtBottom, scrollToBottomOfFeed]);
+  }, [messages, scrollToBottom, startAtBottom]);
 
   useEffect(() => {
     // Cache Ditto avatar - update the path to the new image
@@ -340,7 +321,7 @@ export default function ChatFeed({
     } else {
       setProfilePic("/user_placeholder.png");
     }
-  }, [getAvatarWithCooldown, auth.currentUser]);
+  }, []);
 
   useEffect(() => {
     let touchStartX = 0;
@@ -454,233 +435,81 @@ export default function ChatFeed({
       setAbortController(null);
       setLoadingMemories(false);
     }
-  }, [actionOverlay, abortController]);
+  }, [actionOverlay]);
 
-  const handleCopy = useCallback((text) => {
+  const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setActionOverlay(null);
     setTimeout(() => setCopied(false), 2000);
-  }, []);
+  };
 
-  const handleReaction = useCallback((index, emoji) => {
+  const handleReaction = (index, emoji) => {
     setReactions((prevReactions) => ({
       ...prevReactions,
       [index]: [...(prevReactions[index] || []), emoji],
     }));
     setReactionOverlay(null);
     setActionOverlay(null);
-  }, []);
+  };
 
-  const handleBubbleInteraction = useCallback(
-    (e, index) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleBubbleInteraction = (e, index) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      // Don't show action overlay if user is selecting text
-      if (window.getSelection().toString() || isSelecting) {
-        return;
-      }
+    // Don't show action overlay if user is selecting text
+    if (window.getSelection().toString() || isSelecting) {
+      return;
+    }
 
-      // Don't show action overlay if click was on an image
-      if (e.target.classList.contains("chat-image")) {
-        return;
-      }
+    // Don't show action overlay if click was on an image
+    if (e.target.classList.contains("chat-image")) {
+      return;
+    }
 
-      // Trigger haptic feedback
-      triggerHapticFeedback();
+    // Trigger haptic feedback
+    triggerHapticFeedback();
 
-      // If clicking the same bubble that has an open overlay, close it
-      if (actionOverlay && actionOverlay.index === index) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
-        return;
-      }
-
-      // Calculate position for the overlay
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX || rect.left + rect.width / 2;
-      const y = e.clientY || rect.top + rect.height / 2;
-
-      setActionOverlay({
-        index,
-        clientX: x,
-        clientY: y,
-        type: "text",
-      });
-
-      // Close any open reaction overlay
+    // If clicking the same bubble that has an open overlay, close it
+    if (actionOverlay && actionOverlay.index === index) {
+      setActionOverlay(null);
       setReactionOverlay(null);
-    },
-    [actionOverlay, isSelecting]
-  );
+      return;
+    }
 
-  const handleImageClick = useCallback(
-    (src) => {
-      const cachedUrl = getCachedUrl(src);
-      setImageOverlay(cachedUrl.ok ?? src);
-    },
-    [getCachedUrl]
-  );
+    // Calculate position for the overlay
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX || rect.left + rect.width / 2;
+    const y = e.clientY || rect.top + rect.height / 2;
 
-  const handleImageDownload = useCallback((src) => {
+    setActionOverlay({
+      index,
+      clientX: x,
+      clientY: y,
+      type: "text",
+    });
+
+    // Close any open reaction overlay
+    setReactionOverlay(null);
+  };
+
+  const handleImageClick = (src) => {
+    const cachedUrl = getCachedUrl(src);
+    setImageOverlay(cachedUrl.ok ?? src);
+  };
+
+  const handleImageDownload = (src) => {
     window.open(src, "_blank");
-  }, []);
+  };
 
-  const closeImageOverlay = useCallback(() => {
+  const closeImageOverlay = () => {
     setImageOverlay(null);
-  }, []);
+  };
 
-  const toggleImageControls = useCallback(
-    (e) => {
-      e.stopPropagation();
-      setImageControlsVisible((prev) => !prev);
-    },
-    [imageControlsVisible]
-  );
-  const components = useMemo(() => ({
-    a: ({ node, href, children, ...props }) => (
-      <a
-        {...props}
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => {
-          e.stopPropagation(); // Prevent bubble interaction
-        }}
-        style={{
-          color: "#3941b8",
-          textDecoration: "none",
-          textShadow: "0 0 1px #7787d7",
-          cursor: "pointer",
-          pointerEvents: "auto",
-        }}
-      >
-        {children}
-      </a>
-    ),
-    img: ({ node, src, alt, ...props }) => {
-      const [imgSrc, setImgSrc] = useState(src);
-      const cachedUrl = getCachedUrl(src);
-      function onClick(e) {
-        e.stopPropagation();
-        handleImageClick(src);
-      }
-      if (cachedUrl.ok) {
-        return (
-          <img
-            {...props}
-            src={cachedUrl.ok}
-            alt={alt}
-            className="chat-image"
-            onClick={onClick}
-          />
-        );
-      }
-      if (!src) {
-        return (
-          <img
-            {...props}
-            src={NOT_FOUND_IMAGE}
-            alt={alt}
-            className="chat-image"
-          />
-        );
-      }
-      if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
-        getPresignedUrl(src).then(
-          (url) => {
-            if (url.ok) {
-              setImgSrc(url.ok);
-            }
-          },
-          (err) => {
-            console.error(`Image Load error: ${err}; src: ${src}`);
-          }
-        );
-      }
-      return (
-        <img
-          {...props}
-          src={imgSrc}
-          alt={alt}
-          className="chat-image"
-          onClick={(e) => {
-            e.stopPropagation(); // Stop bubble interaction
-            handleImageClick(src);
-          }}
-          onError={(e) => {
-            const errSrc = e.target.src;
-            console.error(`Image load error: ${e}; src: ${errSrc}`);
-            if (errSrc === src) {
-              setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
-            } else {
-              setImgSrc(src);
-            }
-            if (errSrc.startsWith("https://ditto-content")) {
-              // give the image a chance to load
-              setTimeout(() => {
-                setImgSrc(errSrc);
-              }, 5_000);
-            }
-          }}
-        />
-      );
-    },
-    code({ node, inline, className, children, ...props }) {
-      let match = /language-(\w+)/.exec(className || "");
-      let hasCodeBlock;
-      if (String(children).match(/```/g)) {
-        hasCodeBlock = String(children).match(/```/g).length % 2 === 0;
-      }
-      if (match === null && hasCodeBlock) {
-        match = ["language-txt", "txt"];
-      }
-      if (!inline && match) {
-        return (
-          <div className="code-container">
-            <SyntaxHighlighter
-              children={String(children).replace(/\n$/, "")}
-              style={vscDarkPlus}
-              language={match[1]}
-              PreTag="div"
-              {...props}
-              className="code-block"
-            />
-            <button
-              className="copy-button code-block-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopy(String(children).replace(/\n$/, ""));
-              }}
-              title="Copy code"
-            >
-              <FiCopy />
-            </button>
-          </div>
-        );
-      } else {
-        const inlineText = String(children).replace(/\n$/, "");
-        return (
-          <div className="inline-code-container">
-            <code className="inline-code" {...props}>
-              {children}
-            </code>
-            <button
-              className="copy-button inline-code-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopy(inlineText);
-              }}
-              title="Copy code"
-            >
-              <FiCopy />
-            </button>
-          </div>
-        );
-      }
-    },
-  }));
+  const toggleImageControls = (e) => {
+    e.stopPropagation();
+    setImageControlsVisible(!imageControlsVisible);
+  };
 
   // Update the renderMessageText function
   const renderMessageText = (text, index, sender) => {
@@ -688,7 +517,154 @@ export default function ChatFeed({
     let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     displayText = displayText.replace(/```\./g, "```\n");
 
-    return <ReactMarkdown children={displayText} components={components} />;
+    return (
+      <ReactMarkdown
+        children={displayText}
+        components={{
+          a: ({ node, href, children, ...props }) => (
+            <a
+              {...props}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent bubble interaction
+              }}
+              style={{
+                color: "#3941b8",
+                textDecoration: "none",
+                textShadow: "0 0 1px #7787d7",
+                cursor: "pointer",
+                pointerEvents: "auto",
+              }}
+            >
+              {children}
+            </a>
+          ),
+          img: ({ node, src, alt, ...props }) => {
+            const [imgSrc, setImgSrc] = useState(src);
+            const cachedUrl = getCachedUrl(src);
+            function onClick(e) {
+              e.stopPropagation();
+              handleImageClick(src);
+            }
+            if (cachedUrl.ok) {
+              return (
+                <img
+                  {...props}
+                  src={cachedUrl.ok}
+                  alt={alt}
+                  className="chat-image"
+                  onClick={onClick}
+                />
+              );
+            }
+            if (!src) {
+              return (
+                <img
+                  {...props}
+                  src={NOT_FOUND_IMAGE}
+                  alt={alt}
+                  className="chat-image"
+                />
+              );
+            }
+            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
+              getPresignedUrl(src).then(
+                (url) => {
+                  if (url.ok) {
+                    setImgSrc(url.ok);
+                  }
+                },
+                (err) => {
+                  console.error(`Image Load error: ${err}; src: ${src}`);
+                }
+              );
+            }
+            return (
+              <img
+                {...props}
+                src={imgSrc}
+                alt={alt}
+                className="chat-image"
+                onClick={(e) => {
+                  e.stopPropagation(); // Stop bubble interaction
+                  handleImageClick(src);
+                }}
+                onError={(e) => {
+                  const errSrc = e.target.src;
+                  console.error(`Image load error: ${e}; src: ${errSrc}`);
+                  if (errSrc === src) {
+                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                  } else {
+                    setImgSrc(src);
+                  }
+                  if (errSrc.startsWith("https://ditto-content")) {
+                    // give the image a chance to load
+                    setTimeout(() => {
+                      setImgSrc(errSrc);
+                    }, 5_000);
+                  }
+                }}
+              />
+            );
+          },
+          code({ node, inline, className, children, ...props }) {
+            let match = /language-(\w+)/.exec(className || "");
+            let hasCodeBlock;
+            if (displayText.match(/```/g)) {
+              hasCodeBlock = displayText.match(/```/g).length % 2 === 0;
+            }
+            if (match === null && hasCodeBlock) {
+              match = ["language-txt", "txt"];
+            }
+            if (!inline && match) {
+              return (
+                <div className="code-container">
+                  <SyntaxHighlighter
+                    children={String(children).replace(/\n$/, "")}
+                    style={vscDarkPlus}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                    className="code-block"
+                  />
+                  <button
+                    className="copy-button code-block-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(String(children).replace(/\n$/, ""));
+                    }}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
+                </div>
+              );
+            } else {
+              const inlineText = String(children).replace(/\n$/, "");
+              return (
+                <div className="inline-code-container">
+                  <code className="inline-code" {...props}>
+                    {children}
+                  </code>
+                  <button
+                    className="copy-button inline-code-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(inlineText);
+                    }}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
+                </div>
+              );
+            }
+          },
+        }}
+      />
+    );
   };
 
   const formatTimestamp = (timestamp) => {
@@ -745,8 +721,8 @@ export default function ChatFeed({
               actionOverlay && actionOverlay.index === index ? "blurred" : ""
             } ${isSmallMessage ? "small-message" : ""}`}
             style={bubbleStyles.chatbubble}
-            onClick={handleBubbleInteraction}
-            onContextMenu={handleBubbleInteraction}
+            onClick={(e) => handleBubbleInteraction(e, index)}
+            onContextMenu={(e) => handleBubbleInteraction(e, index)}
             data-index={index}
           >
             {toolType && (
@@ -767,8 +743,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
+                        ? "failed"
+                        : ""
                     }`}
                   >
                     {message.toolStatus}
@@ -1188,12 +1164,18 @@ export default function ChatFeed({
             setMemoryOverlay(null);
           }
         }
-        toast.success("Message deleted successfully");
+
+        // Show success toast
+        setToastMessage("Message deleted successfully");
+        setShowToast(true);
+
+        // Dispatch memoryUpdated event
         window.dispatchEvent(new Event("memoryUpdated"));
       }
     } catch (error) {
       console.error("Error deleting:", error);
-      toast.error("Failed to delete message");
+      setToastMessage("Failed to delete message");
+      setShowToast(true);
     } finally {
       setIsDeletingMessage(false);
       setDeletingMemories((prev) => {
@@ -1259,6 +1241,19 @@ export default function ChatFeed({
     window.addEventListener("resize", debouncedResize);
     return () => window.removeEventListener("resize", debouncedResize);
   }, [messages]);
+
+  // Add debounce utility function
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
 
   // Add effect to handle new messages
   useEffect(() => {
@@ -1491,6 +1486,11 @@ export default function ChatFeed({
           </motion.div>
         )}
       </AnimatePresence>
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onHide={() => setShowToast(false)}
+      />
     </div>
   );
 }
