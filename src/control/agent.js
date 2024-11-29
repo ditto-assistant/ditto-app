@@ -504,7 +504,7 @@ export const processResponse = async (
     // Handle Google search
     if (response.includes("<GOOGLE_SEARCH>")) {
       await updateMessageWithToolStatus("Searching Google", "search");
-      const finalResponse = await handleGoogleSearch(response, prompt);
+      const finalResponse = await handleGoogleSearch(response, prompt, preferences);
       await updateMessageWithToolStatus("complete", "search", finalResponse);
       return finalResponse;
     }
