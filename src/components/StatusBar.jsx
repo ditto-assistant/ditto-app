@@ -5,8 +5,9 @@ import { syncLocalScriptsWithFirestore } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
+import { toast } from "react-hot-toast";
 
-function StatusBar({ onMemoryClick }) {
+export default function StatusBar({ onMemoryClick }) {
   const navigate = useNavigate();
   const balance = useBalance();
   const memoryCount = useMemoryCount();
@@ -26,8 +27,8 @@ function StatusBar({ onMemoryClick }) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const [scripts, setScripts] = useState(() => {
-    let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
-    let openSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+    let webApps = JSON.parse(localStorage.getItem("webApps") ?? "[]");
+    let openSCAD = JSON.parse(localStorage.getItem("openSCAD") ?? "[]");
     webApps.sort((a, b) => a.name.localeCompare(b.name));
     openSCAD.sort((a, b) => a.name.localeCompare(b.name));
     return { webApps, openSCAD };
@@ -38,8 +39,8 @@ function StatusBar({ onMemoryClick }) {
   };
 
   const handleBookmarkClick = async () => {
-    let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
-    let openSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+    let webApps = JSON.parse(localStorage.getItem("webApps") ?? "[]");
+    let openSCAD = JSON.parse(localStorage.getItem("openSCAD") ?? "[]");
     // sort them
     webApps.sort((a, b) => a.name.localeCompare(b.name));
     openSCAD.sort((a, b) => a.name.localeCompare(b.name));
@@ -61,8 +62,8 @@ function StatusBar({ onMemoryClick }) {
     let userID = localStorage.getItem("userID");
     await syncLocalScriptsWithFirestore(userID, "webApps");
     await syncLocalScriptsWithFirestore(userID, "openScad");
-    let webApps = JSON.parse(localStorage.getItem("webApps")) || [];
-    let openSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+    let webApps = JSON.parse(localStorage.getItem("webApps") ?? "[]");
+    let openSCAD = JSON.parse(localStorage.getItem("openSCAD") ?? "[]");
     webApps.sort((a, b) => a.name.localeCompare(b.name));
     openSCAD.sort((a, b) => a.name.localeCompare(b.name));
     setScripts({ webApps, openSCAD });
@@ -110,6 +111,12 @@ function StatusBar({ onMemoryClick }) {
     }
   };
 
+  useEffect(() => {
+    if (balance.ok?.dropAmount) {
+      toast.success(`${balance.ok.dropAmount} dropped!`);
+    }
+  }, [balance.ok?.dropAmount]);
+
   return (
     <div style={styles.statusBar}>
       <div style={styles.status}>
@@ -129,7 +136,6 @@ function StatusBar({ onMemoryClick }) {
       <StatusIcons
         handleBookmarkClick={handleBookmarkClick}
         handleMemoryClick={handleMemoryClick}
-        selectedScript={workingScript}
       />
 
       <div style={styles.balanceContainer} onClick={toggleBalanceDisplay}>
@@ -191,5 +197,3 @@ const styles = {
     fontWeight: "bold",
   },
 };
-
-export default StatusBar;
