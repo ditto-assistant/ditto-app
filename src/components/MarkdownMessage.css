@@ -1,0 +1,121 @@
+.markdown-link {
+  color: #3941b8;
+  text-decoration: none;
+  text-shadow: 0 0 1px #7787d7;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
+}
+
+.markdown-link:hover {
+  opacity: 0.8;
+}
+
+.markdown-image {
+  max-width: 100%;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  padding: 0.5em;
+  margin: 0.5em;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.markdown-image:hover {
+  transform: scale(1.01);
+  opacity: 0.9;
+}
+
+.markdown-code-container {
+  position: relative;
+  margin: 8px 0;
+}
+
+.markdown-code-block {
+  border-radius: 8px;
+  padding: 12px;
+  background: #282c34;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.markdown-inline-code-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  background: #282c34;
+  border-radius: 6px;
+  padding-left: 8px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.markdown-inline-code {
+  color: #ffffff;
+  font-family: "Courier New", Courier, monospace;
+  margin-right: 4px;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.markdown-copy-button {
+  background-color: rgba(71, 82, 196, 0.9);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.markdown-copy-button:hover {
+  background-color: rgba(71, 82, 196, 1);
+  transform: translateY(-1px);
+}
+
+.markdown-copy-button:active {
+  transform: translateY(0);
+}
+
+.markdown-copy-button.code-block-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 1;
+}
+
+.markdown-copy-button.inline-code-button {
+  position: static;
+  margin-left: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+}
+
+@media screen and (max-width: 768px) {
+  .markdown-image {
+    max-height: 300px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .markdown-image {
+    max-height: 500px;
+  }
+}

@@ -11,7 +11,7 @@ import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
 import { routes } from "../firebaseConfig";
-import { textEmbed } from "../api/LLM"; // Add this import
+import { textEmbed } from "../api/LLM";
 import MemoryNetwork from "./MemoryNetwork";
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
@@ -19,8 +19,10 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
+import { useChatHistory } from "../hooks/useChatHistory";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
+import { MarkdownMessage } from "./MarkdownMessage";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -148,16 +150,18 @@ const getAvatarWithCooldown = async (photoURL) => {
   }
 };
 
+const extractImageUrls = (markdown) => {
+  const imageRegex = /!\[.*?\]\((.*?)\)/g;
+  const matches = [...markdown.matchAll(imageRegex)];
+  return matches.map((match) => match[1]);
+};
+
+// - MARK: ChatFeed
+
 export default function ChatFeed({
-  messages,
-  histCount,
-  isTyping = false,
   hasInputField = false,
   showSenderName = false,
   bubblesCentered = false,
-  scrollToBottom = false,
-  startAtBottom = false,
-  updateConversation,
   bubbleStyles = {
     text: {
       fontSize: 14,
@@ -168,6 +172,9 @@ export default function ChatFeed({
     },
   },
 }) {
+  const { conversation, histCount, updateConversation, startAtBottom } =
+    useChatHistory();
+  const { messages, is_typing: isTyping } = conversation;
   const [copied, setCopied] = useState(false);
   const [actionOverlay, setActionOverlay] = useState(null);
   const [reactionOverlay, setReactionOverlay] = useState(null);
@@ -200,9 +207,50 @@ export default function ChatFeed({
     isComplete,
   } = useTokenStreaming();
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
-  const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
+  const { getCachedUrl, getPresignedUrl, addToCache } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [processedMessages, setProcessedMessages] = useState([]);
+
+  useEffect(() => {
+    const processAllMessages = async () => {
+      const newMessages = await Promise.all(
+        messages.map(async (msg) => {
+          // Extract image URLs
+          const imageUrls = extractImageUrls(msg.text);
+          let newText = msg.text;
+
+          for (const url of imageUrls) {
+            const cached = getCachedUrl(url);
+            if (cached.ok) {
+              newText = newText.replace(url, cached.ok);
+              continue;
+            }
+
+            if (!url.startsWith("https://firebasestorage.googleapis.com/")) {
+              const presigned = await getPresignedUrl(url);
+              if (presigned.ok) {
+                newText = newText.replace(url, presigned.ok);
+                addToCache(url, presigned.ok);
+              } else {
+                newText = newText.replace(url, IMAGE_PLACEHOLDER_IMAGE);
+              }
+            }
+          }
+
+          return { ...msg, text: newText };
+        })
+      );
+
+      setProcessedMessages(newMessages);
+      setIsLoading(false);
+    };
+
+    setIsLoading(true);
+    processAllMessages();
+  }, [messages, getPresignedUrl, getCachedUrl, addToCache]);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -227,22 +275,22 @@ export default function ChatFeed({
       processChunk(chunk, isNewMessage);
 
       // Only scroll if user is near bottom
-      if (bottomRef.current) {
-        const feedElement = feedRef.current;
-        const isNearBottom =
-          feedElement &&
-          feedElement.scrollHeight -
-            feedElement.scrollTop -
-            feedElement.clientHeight <
-            100;
+      // if (bottomRef.current) {
+      //   const feedElement = feedRef.current;
+      //   const isNearBottom =
+      //     feedElement &&
+      //     feedElement.scrollHeight -
+      //       feedElement.scrollTop -
+      //       feedElement.clientHeight <
+      //       100;
 
-        if (isNearBottom) {
-          bottomRef.current.scrollIntoView({
-            behavior: "auto",
-            block: "end",
-          });
-        }
-      }
+      //   if (isNearBottom) {
+      //     bottomRef.current.scrollIntoView({
+      //       behavior: "auto",
+      //       block: "end",
+      //     });
+      //   }
+      // }
     };
 
     window.addEventListener("responseStreamUpdate", handleStreamUpdate);
@@ -282,14 +330,14 @@ export default function ChatFeed({
   };
 
   useEffect(() => {
-    if (messages.length > 0 && (startAtBottom || scrollToBottom)) {
+    if (messages.length > 0 && startAtBottom) {
       // Use requestAnimationFrame to ensure DOM has updated
       requestAnimationFrame(() => {
         // Scroll immediately without smooth behavior
         scrollToBottomOfFeed(true);
       });
     }
-  }, [messages, scrollToBottom, startAtBottom]);
+  }, [messages, startAtBottom]);
 
   useEffect(() => {
     // Cache Ditto avatar - update the path to the new image
@@ -509,158 +557,16 @@ export default function ChatFeed({
     setImageControlsVisible(!imageControlsVisible);
   };
 
-  // Update the renderMessageText function
+  // Replace the renderMessageText function with:
   const renderMessageText = (text, index, sender) => {
-    // First replace code block markers
     let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     displayText = displayText.replace(/```\./g, "```\n");
 
     return (
-      <ReactMarkdown
-        children={displayText}
-        components={{
-          a: ({ node, href, children, ...props }) => (
-            <a
-              {...props}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent bubble interaction
-              }}
-              style={{
-                color: "#3941b8",
-                textDecoration: "none",
-                textShadow: "0 0 1px #7787d7",
-                cursor: "pointer",
-                pointerEvents: "auto",
-              }}
-            >
-              {children}
-            </a>
-          ),
-          img: ({ node, src, alt, ...props }) => {
-            const [imgSrc, setImgSrc] = useState(src);
-            const cachedUrl = getCachedUrl(src);
-            function onClick(e) {
-              e.stopPropagation();
-              handleImageClick(src);
-            }
-            if (cachedUrl.ok) {
-              return (
-                <img
-                  {...props}
-                  src={cachedUrl.ok}
-                  alt={alt}
-                  className="chat-image"
-                  onClick={onClick}
-                />
-              );
-            }
-            if (!src) {
-              return (
-                <img
-                  {...props}
-                  src={NOT_FOUND_IMAGE}
-                  alt={alt}
-                  className="chat-image"
-                />
-              );
-            }
-            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
-              getPresignedUrl(src).then(
-                (url) => {
-                  if (url.ok) {
-                    setImgSrc(url.ok);
-                  }
-                },
-                (err) => {
-                  console.error(`Image Load error: ${err}; src: ${src}`);
-                }
-              );
-            }
-            return (
-              <img
-                {...props}
-                src={imgSrc}
-                alt={alt}
-                className="chat-image"
-                onClick={(e) => {
-                  e.stopPropagation(); // Stop bubble interaction
-                  handleImageClick(src);
-                }}
-                onError={(e) => {
-                  const errSrc = e.target.src;
-                  console.error(`Image load error: ${e}; src: ${errSrc}`);
-                  if (errSrc === src) {
-                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
-                  } else {
-                    setImgSrc(src);
-                  }
-                  if (errSrc.startsWith("https://ditto-content")) {
-                    // give the image a chance to load
-                    setTimeout(() => {
-                      setImgSrc(errSrc);
-                    }, 5_000);
-                  }
-                }}
-              />
-            );
-          },
-          code({ node, inline, className, children, ...props }) {
-            let match = /language-(\w+)/.exec(className || "");
-            let hasCodeBlock;
-            if (displayText.match(/```/g)) {
-              hasCodeBlock = displayText.match(/```/g).length % 2 === 0;
-            }
-            if (match === null && hasCodeBlock) {
-              match = ["language-txt", "txt"];
-            }
-            if (!inline && match) {
-              return (
-                <div className="code-container">
-                  <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, "")}
-                    style={vscDarkPlus}
-                    language={match[1]}
-                    PreTag="div"
-                    {...props}
-                    className="code-block"
-                  />
-                  <button
-                    className="copy-button code-block-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(String(children).replace(/\n$/, ""));
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            } else {
-              const inlineText = String(children).replace(/\n$/, "");
-              return (
-                <div className="inline-code-container">
-                  <code className="inline-code" {...props}>
-                    {children}
-                  </code>
-                  <button
-                    className="copy-button inline-code-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(inlineText);
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            }
-          },
-        }}
+      <MarkdownMessage
+        displayText={displayText}
+        handleCopy={handleCopy}
+        handleImageClick={handleImageClick}
       />
     );
   };
@@ -741,8 +647,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
+                        ? "failed"
+                        : ""
                     }`}
                   >
                     {message.toolStatus}
@@ -1306,13 +1212,19 @@ export default function ChatFeed({
     }
   }, [isComplete, streamedText]);
 
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // - MARK: Render
+
   return (
-    <div
-      className="chat-feed"
-      ref={feedRef}
-      style={{ scrollBehavior: "auto" }} // Override any smooth scrolling
-    >
-      {messages.map(renderMessageWithAvatar)}
+    <div className="chat-feed" ref={feedRef} style={{ scrollBehavior: "auto" }}>
+      {processedMessages.map(renderMessageWithAvatar)}
       {hasInputField && <input type="text" className="chat-input-field" />}
       {copied && <div className="copied-notification">Copied!</div>}
       <div ref={bottomRef} />
@@ -1485,18 +1397,9 @@ export default function ChatFeed({
 }
 
 ChatFeed.propTypes = {
-  messages: PropTypes.arrayOf(
-    PropTypes.shape({
-      sender: PropTypes.string,
-      text: PropTypes.string.isRequired,
-      timestamp: PropTypes.number, // Add this line to include timestamp in PropTypes
-    })
-  ).isRequired,
-  isTyping: PropTypes.bool,
   hasInputField: PropTypes.bool,
   showSenderName: PropTypes.bool,
   bubblesCentered: PropTypes.bool,
-  scrollToBottom: PropTypes.bool,
   bubbleStyles: PropTypes.shape({
     text: PropTypes.object,
     chatbubble: PropTypes.object,

@@ -17,6 +17,7 @@ import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
+import { ChatHistoryProvider } from "./hooks/useChatHistory";
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -61,17 +62,19 @@ export default function App() {
             <IntentRecognitionProvider>
               <DittoActivationProvider>
                 <PresignedUrlProvider>
-                  <RouterProvider router={router} />
-                  <Toaster
-                    position="bottom-center"
-                    toastOptions={{
-                      duration: 4000,
-                      style: {
-                        background: "#333",
-                        color: "#fff",
-                      },
-                    }}
-                  />
+                  <ChatHistoryProvider>
+                    <RouterProvider router={router} />
+                    <Toaster
+                      position="bottom-center"
+                      toastOptions={{
+                        duration: 4000,
+                        style: {
+                          background: "#333",
+                          color: "#fff",
+                        },
+                      }}
+                    />
+                  </ChatHistoryProvider>
                 </PresignedUrlProvider>
               </DittoActivationProvider>
             </IntentRecognitionProvider>
