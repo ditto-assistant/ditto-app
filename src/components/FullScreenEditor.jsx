@@ -18,7 +18,6 @@ import {
 } from "react-icons/fa";
 import { Button, useMediaQuery, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import Toast from "./Toast";
 import DOMTreeViewer from "./DOMTreeViewer";
 import { syncLocalScriptsWithFirestore } from "../control/firebase"; // Changed from '../control/agent'
 import { useNavigate } from "react-router-dom";
@@ -33,7 +32,7 @@ import updaterAgent from "../control/agentflows/updaterAgentFlow";
 import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
-
+import { toast } from "react-hot-toast";
 const darkModeColors = {
   background: "#1E1F22",
   foreground: "#2B2D31",
@@ -166,12 +165,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const [searchVisible, setSearchVisible] = useState(false);
   const editorRef = useRef(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [showToast, setShowToast] = useState(false);
   const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
   const [viewMode, setViewMode] = useState("code"); // Changed from 'tree' to 'code'
   const [selectedNode, setSelectedNode] = useState(null);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState("success"); // 'success' or 'warning'
   const [isSaving, setIsSaving] = useState(false);
   const [showScriptChat, setShowScriptChat] = useState(false);
   const [scriptChatMessages, setScriptChatMessages] = useState([]);
@@ -426,9 +422,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     try {
       // Check if content has changed
       if (code === script.content) {
-        setToastMessage("No Changes to Save!");
-        setToastType("warning");
-        setShowToast(true);
+        toast.warning("No Changes to Save!");
         return;
       }
 
@@ -442,9 +436,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setEditHistory([{ content: code }]);
         setHistoryIndex(0);
 
-        setToastMessage("Changes saved successfully!");
-        setToastType("success");
-        setShowToast(true);
+        toast.success("Changes saved successfully!");
       } else {
         // This is being called from ScriptsScreen
         await onSave(code);
@@ -453,18 +445,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         setEditHistory([{ content: code }]);
         setHistoryIndex(0);
 
-        setToastMessage("Changes saved successfully!");
-        setToastType("success");
-        setShowToast(true);
+        toast.success("Changes saved successfully!");
       }
 
       setIsSaving(false);
     } catch (error) {
       console.error("Error saving:", error);
       setIsSaving(false);
-      setToastMessage("Error saving changes");
-      setToastType("error");
-      setShowToast(true);
+      toast.error("Error saving changes");
     }
   };
 
@@ -1410,13 +1398,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <Toast
-        message={toastMessage}
-        isVisible={showToast}
-        onHide={() => setShowToast(false)}
-        type={toastType}
-      />
 
       <AnimatePresence>
         {showScriptChat && (

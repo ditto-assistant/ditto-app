@@ -6,6 +6,7 @@ import {
   createRoutesFromElements,
   Outlet,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import FullScreenSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import { AuthProvider } from "./hooks/useAuth";
@@ -59,6 +60,16 @@ export default function App() {
               <DittoActivationProvider>
                 <PresignedUrlProvider>
                   <RouterProvider router={router} />
+                  <Toaster
+                    position="bottom-center"
+                    toastOptions={{
+                      duration: 4000,
+                      style: {
+                        background: "#333",
+                        color: "#fff",
+                      },
+                    }}
+                  />
                 </PresignedUrlProvider>
               </DittoActivationProvider>
             </IntentRecognitionProvider>

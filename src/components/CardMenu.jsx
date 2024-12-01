@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMediaQuery } from "@mui/material";
 
-const CardMenu = ({ children, style }) => {
+const CardMenu = ({ children, style, onDelete }) => {
   const { transformOrigin, ...restStyle } = style;
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -84,6 +84,14 @@ const CardMenu = ({ children, style }) => {
                   marginTop: "0",
                   marginBottom: "0",
                 }),
+              }}
+              onClick={() => {
+                if (child.props.onClick) {
+                  child.props.onClick();
+                }
+                if (child.props.children === "Delete" && onDelete) {
+                  onDelete();
+                }
               }}
             >
               {child}

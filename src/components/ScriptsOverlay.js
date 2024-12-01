@@ -73,6 +73,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
   const [activeTab, setActiveTab] = useState("webApps");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("recent");
+  const [showAddForm, setShowAddForm] = useState({ webApps: false, openSCAD: false });
   // ... copy other state variables
 
   // Copy all the helper functions from ScriptsScreen
@@ -133,6 +134,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     show: false,
     script: null,
     category: null,
+    isDeleteAll: false,
   });
   const [versionOverlay, setVersionOverlay] = useState(null);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
@@ -140,10 +142,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
   const cardRefs = useRef({});
 
   // Add these state variables at the top with the others:
-  const [showAddForm, setShowAddForm] = useState({
-    webApps: false,
-    openSCAD: false,
-  });
   const [revertConfirmation, setRevertConfirmation] = useState({
     show: false,
     script: null,
@@ -229,31 +227,34 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     const userID = localStorage.getItem("userID");
     const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
 
-    // Find all versions of this script
-    const relatedScripts = scripts[category].filter(
-      (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
-    );
+    try {
+      // Find all versions of this script
+      const relatedScripts = scripts[category].filter(
+        (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
+      );
 
-    // Delete all versions from Firestore
-    for (const script of relatedScripts) {
-      await deleteScriptFromFirestore(userID, category, script.name);
+      // Delete all versions from Firestore
+      for (const script of relatedScripts) {
+        await deleteScriptFromFirestore(userID, category, script.name);
+      }
+
+      // Update local state
+      setScripts((prevState) => ({
+        ...prevState,
+        [category]: prevState[category].filter(
+          (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
+        ),
+      }));
+
+      // If any version was selected, clear selection
+      if (relatedScripts.some((script) => script.name === selectedScript)) {
+        localStorage.removeItem("workingOnScript");
+        setSelectedScript(null);
+        window.dispatchEvent(new Event("scriptsUpdated"));
+      }
+    } catch (error) {
+      console.error("Error deleting script:", error);
     }
-
-    // Update local state
-    setScripts((prevState) => ({
-      ...prevState,
-      [category]: prevState[category].filter(
-        (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
-      ),
-    }));
-
-    // If any version was selected, clear selection
-    if (relatedScripts.some((script) => script.name === selectedScript)) {
-      localStorage.removeItem("workingOnScript");
-      setSelectedScript(null);
-    }
-
-    setActiveCard(null);
   };
 
   const handleVersionButtonClick = (script, rect) => {
@@ -448,12 +449,11 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     top: menuPosition.top,
                     left: menuPosition.left,
                     transformOrigin: menuPosition.openUpward ? "bottom" : "top",
-                    minWidth: "180px",
-                    maxWidth: "220px",
                   }}
                 >
-                  <p
+                  <motion.div
                     style={styles.cardMenuItem}
+                    whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -463,9 +463,10 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     }}
                   >
                     Rename
-                  </p>
-                  <p
+                  </motion.div>
+                  <motion.div
                     style={styles.cardMenuItem}
+                    whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDownloadScript(currentScript);
@@ -474,47 +475,28 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     }}
                   >
                     Download
-                  </p>
+                  </motion.div>
                   {hasMultipleVersions && (
-                    <>
-                      <p
-                        style={styles.cardMenuItem}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const rect = cardRefs.current[currentScript.id].current.getBoundingClientRect();
-                          handleVersionButtonClick(currentScript, rect);
-                        }}
-                      >
-                        Versions
-                      </p>
-                      <div style={styles.menuDivider} />
-                      <p
-                        style={{
-                          ...styles.cardMenuItem,
-                          color: darkModeColors.primary,
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRevertConfirmation({
-                            show: true,
-                            script: currentScript,
-                            category: category,
-                          });
-                          setActiveCard(null);
-                          setMenuPosition(null);
-                        }}
-                      >
-                        <FaUndo style={{ marginRight: "8px" }} />
-                        Revert
-                      </p>
-                    </>
+                    <motion.div
+                      style={styles.cardMenuItem}
+                      whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVersionButtonClick(baseName);
+                        setActiveCard(null);
+                        setMenuPosition(null);
+                      }}
+                    >
+                      Version
+                    </motion.div>
                   )}
                   <div style={styles.menuDivider} />
-                  <p
+                  <motion.div
                     style={{
                       ...styles.cardMenuItem,
                       color: darkModeColors.danger,
                     }}
+                    whileHover={{ backgroundColor: "rgba(218, 55, 60, 0.1)" }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setDeleteConfirmation({
@@ -529,7 +511,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                   >
                     <FaTrash style={{ marginRight: "8px" }} />
                     Delete
-                  </p>
+                  </motion.div>
                 </CardMenu>
               )}
               {versionOverlay && versionOverlay.baseScriptName === getBaseNameAndVersion(currentScript.name).baseName && (
@@ -948,11 +930,8 @@ const ScriptsOverlay = ({ closeOverlay }) => {
 
   return (
     <div className="modal-overlay" onClick={closeOverlay}>
-      <div 
-        className="modal-content scripts-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Add selected script overlay at the top */}
+      <div className="scripts-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Selected script section */}
         {selectedScript && (
           <motion.div
             style={styles.selectedScriptContainer}
@@ -961,61 +940,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <motion.div
-              style={styles.selectedScript}
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div style={styles.selectedScriptHeader}>
-                <div>
-                  <motion.p
-                    style={styles.selectedScriptLabel}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.8 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    Currently Selected
-                  </motion.p>
-                  <motion.p
-                    style={styles.selectedScriptName}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    {getBaseNameAndVersion(selectedScript).baseName}
-                    {getBaseNameAndVersion(selectedScript).version && (
-                      <span style={styles.versionBadge}>
-                        v{getBaseNameAndVersion(selectedScript).version}
-                      </span>
-                    )}
-                  </motion.p>
-                </div>
-                <div style={styles.selectedScriptActions}>
-                  <motion.button
-                    style={styles.editSelectedButton}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleEditScript(
-                      scripts[activeTab].find(s => s.name === selectedScript)
-                    )}
-                  >
-                    Edit
-                  </motion.button>
-                  <motion.button
-                    style={styles.deselectButton}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      handleDeselectScript();
-                    }}
-                  >
-                    Deselect
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
+            {/* ... selected script content ... */}
           </motion.div>
         )}
 
@@ -1077,87 +1002,47 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Add overlays */}
-      <AnimatePresence>
+        {/* Overlays */}
+        <AnimatePresence>
+          {showAddForm[activeTab] && (
+            <AddScriptOverlay
+              isOpen={showAddForm[activeTab]}
+              onClose={() => setShowAddForm((prev) => ({ ...prev, [activeTab]: false }))}
+              onSave={() => {
+                const nameInput = document.getElementById(`${activeTab}-name-input`).value;
+                const contentInput = document.getElementById(`${activeTab}-content-input`).value;
+                handleSaveScript(activeTab, nameInput, contentInput);
+              }}
+              category={activeTab}
+            />
+          )}
+        </AnimatePresence>
+
         {deleteConfirmation.show && (
           <DeleteConfirmationOverlay
             isOpen={deleteConfirmation.show}
-            onClose={() => setDeleteConfirmation({ 
-              show: false, 
-              script: null, 
-              category: null 
-            })}
-            onConfirm={() => handleDeleteScript(
-              deleteConfirmation.category,
-              deleteConfirmation.script
-            )}
+            onClose={() =>
+              setDeleteConfirmation({ show: false, script: null, category: null })
+            }
+            onConfirm={() =>
+              handleDeleteScript(
+                deleteConfirmation.category,
+                deleteConfirmation.script
+              )
+            }
             scriptName={deleteConfirmation.script?.name}
             isDeleteAll={deleteConfirmation.isDeleteAll}
           />
         )}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {revertConfirmation.show && (
-          <RevertConfirmationOverlay
-            isOpen={revertConfirmation.show}
-            onClose={() => setRevertConfirmation({ 
-              show: false, 
-              script: null, 
-              category: null 
-            })}
-            onConfirm={() => {
-              handleDeleteScript(
-                revertConfirmation.category,
-                revertConfirmation.script
-              );
-              setRevertConfirmation({ 
-                show: false, 
-                script: null, 
-                category: null 
-              });
-            }}
-            scriptName={getBaseNameAndVersion(
-              revertConfirmation.script?.name || ""
-            ).baseName}
-            version={(() => {
-              if (!revertConfirmation.script) return "";
-              const baseScriptName = getBaseNameAndVersion(
-                revertConfirmation.script.name
-              ).baseName;
-              const relatedScripts = scripts[revertConfirmation.category]?.filter(
-                (script) =>
-                  getBaseNameAndVersion(script.name).baseName === baseScriptName
-              ) || [];
-              let highestVersion = 0;
-              relatedScripts.forEach((script) => {
-                const { version } = getBaseNameAndVersion(script.name);
-                if (version && parseInt(version) > highestVersion) {
-                  highestVersion = parseInt(version);
-                }
-              });
-              return highestVersion.toString();
-            })()}
+        {openScadViewer && (
+          <OpenSCADViewer
+            script={openScadViewer}
+            onClose={() => setOpenScadViewer(null)}
           />
         )}
-      </AnimatePresence>
-
-      {fullScreenEdit && (
-        <FullScreenEditor
-          script={fullScreenEdit}
-          onClose={() => setFullScreenEdit(null)}
-          onSave={handleSaveFullScreenEdit}
-        />
-      )}
-
-      {openScadViewer && (
-        <OpenSCADViewer
-          script={openScadViewer}
-          onClose={() => setOpenScadViewer(null)}
-        />
-      )}
+      </div>
     </div>
   );
 };
@@ -1415,18 +1300,11 @@ const styles = {
     gap: "8px",
     width: "100%",
     boxSizing: "border-box",
-    borderRadius: "4px",
-    margin: "2px 0",
-    "&:hover": {
-      backgroundColor: `${darkModeColors.primary}15`,
-      color: darkModeColors.text,
-    },
   },
   menuDivider: {
     height: "1px",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: darkModeColors.border,
     margin: "4px 0",
-    width: "100%",
   },
   selectedScriptContainer: {
     width: "100%",

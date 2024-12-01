@@ -33,3 +33,5 @@ ditto-app.code-workspace
 functions/modules/models/
 functions/modules/tfjs_models/
 functions/modules/plots/
+# Million Lint
+.million
