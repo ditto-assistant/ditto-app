@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { MdClose, MdAdd, MdSort } from "react-icons/md";
 import { FaPlay, FaTrash, FaDownload, FaUndo, FaCog } from "react-icons/fa";
 import {
@@ -27,6 +28,9 @@ import ScriptActionsOverlay from "./ScriptActionsOverlay";
 
 // Add import
 import { useScripts } from '../hooks/useScripts';
+
+// Add import for VersionsOverlay
+import VersionsOverlay from "./VersionsOverlay";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -257,46 +261,54 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     }
   };
 
-  const handleVersionButtonClick = (script, rect) => {
-    const baseName = getBaseName(script.name.replace(/ /g, ""));
-    const scriptsList = scripts[script.scriptType].filter(
-      (s) => getBaseName(s.name.replace(/ /g, "")) === baseName
+  const handleVersionButtonClick = async (baseName, event) => {
+    event.stopPropagation();
+    console.log("Version button clicked for:", baseName);
+
+    // Get all versions of this script
+    const versions = scripts[activeTab].filter(
+      script => getBaseName(script.name.replace(/ /g, "")) === baseName
     );
+    console.log("Found versions:", versions);
 
-    // Sort versions with latest first
-    const sortedVersions = scriptsList.sort((a, b) => {
-      const aMatch = a.name.match(/v(\d+)/);
-      const bMatch = b.name.match(/v(\d+)/);
-      if (!aMatch && !bMatch) return 0;
-      if (!aMatch) return -1;
-      if (!bMatch) return 1;
-      return parseInt(bMatch[1]) - parseInt(aMatch[1]);
-    });
+    if (versions.length > 0) {
+      const menuRect = event.currentTarget.closest('.card-menu').getBoundingClientRect();
+      
+      setMenuPosition({
+        top: menuRect.top,
+        left: menuRect.right + 8,
+        openUpward: false,
+      });
 
-    // Calculate position
-    const menuHeight = sortedVersions.length * 40 + 16;
-    const windowHeight = window.innerHeight;
-    const spaceBelow = windowHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    const openUpward = spaceBelow < menuHeight && spaceAbove > menuHeight;
-
-    setMenuPosition({
-      top: openUpward ? rect.top - menuHeight - 8 : rect.bottom + 8,
-      left: rect.left,
-      openUpward,
-    });
-
-    setVersionOverlay({
-      baseScriptName: baseName,
-      versions: sortedVersions,
-    });
+      setVersionOverlay({
+        baseScriptName: baseName,
+        versions: versions,
+      });
+    }
   };
 
-  const handleSelectVersion = (versionedScript) => {
-    handleSelectScript(versionedScript);
+  const handleSelectVersion = (script) => {
+    // Update localStorage
+    localStorage.setItem(
+      "workingOnScript",
+      JSON.stringify({
+        script: script.name,
+        contents: script.content,
+        scriptType: activeTab,
+      })
+    );
+    
+    // Update local state
+    setSelectedScript(script.name);
+    
+    // Close overlays
     setVersionOverlay(null);
-    setMenuPosition(null);
     setActiveCard(null);
+    setMenuPosition(null);
+    
+    // Dispatch events to update UI
+    window.dispatchEvent(new Event("scriptSelected"));
+    window.dispatchEvent(new Event("scriptsUpdated"));
   };
 
   // Add the renderScripts function
@@ -445,6 +457,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
 
               {activeCard === currentScript.id && menuPosition && (
                 <CardMenu
+                  className="card-menu"
                   style={{
                     top: menuPosition.top,
                     left: menuPosition.left,
@@ -477,20 +490,89 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     Download
                   </motion.div>
                   {hasMultipleVersions && (
+                    <div style={{ position: 'relative' }}>
+                      <motion.div
+                        style={styles.cardMenuItem}
+                        whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                        onClick={(e) => handleVersionButtonClick(baseName, e)}
+                      >
+                        Version
+                      </motion.div>
+                      {versionOverlay && versionOverlay.baseScriptName === baseName && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            backgroundColor: "#2B2D31",
+                            borderRadius: "8px",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                            border: "1px solid #1E1F22",
+                            width: "100%",
+                            zIndex: 999999,
+                          }}
+                        >
+                          {versionOverlay.versions.map((script, index) => {
+                            const versionMatch = script.name.match(/-v(\d+)$/);
+                            const version = versionMatch ? versionMatch[1] : null;
+                            const baseName = script.name.replace(/-v\d+$/, "");
+                            const isLatest = !version;
+
+                            return (
+                              <motion.div
+                                key={index}
+                                style={styles.cardMenuItem}
+                                whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectVersion(script);
+                                }}
+                              >
+                                <span style={{ flex: 1 }}>{baseName}</span>
+                                {version && (
+                                  <span style={styles.versionBadge}>v{version}</span>
+                                )}
+                                {isLatest && (
+                                  <span style={styles.latestBadge}>Latest</span>
+                                )}
+                                <FaTrash
+                                  style={{ ...styles.deleteIcon, marginLeft: "8px" }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteScript(activeTab, script);
+                                    setVersionOverlay(null);
+                                  }}
+                                />
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div style={styles.menuDivider} />
+                  {hasMultipleVersions && (
                     <motion.div
-                      style={styles.cardMenuItem}
+                      style={{
+                        ...styles.cardMenuItem,
+                        color: darkModeColors.primary,
+                      }}
                       whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleVersionButtonClick(baseName);
+                        setRevertConfirmation({
+                          show: true,
+                          script: currentScript,
+                          category: category,
+                        });
                         setActiveCard(null);
                         setMenuPosition(null);
                       }}
                     >
-                      Version
+                      <FaUndo style={{ marginRight: "8px" }} />
+                      Revert
                     </motion.div>
                   )}
-                  <div style={styles.menuDivider} />
                   <motion.div
                     style={{
                       ...styles.cardMenuItem,
@@ -512,43 +594,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     <FaTrash style={{ marginRight: "8px" }} />
                     Delete
                   </motion.div>
-                </CardMenu>
-              )}
-              {versionOverlay && versionOverlay.baseScriptName === getBaseNameAndVersion(currentScript.name).baseName && (
-                <CardMenu
-                  style={{
-                    top: menuPosition.top,
-                    left: menuPosition.left,
-                    transformOrigin: menuPosition.openUpward ? "bottom" : "top",
-                    minWidth: "200px",
-                    maxWidth: "240px",
-                  }}
-                >
-                  {versionOverlay.versions.map((version) => {
-                    const { baseName, version: versionNumber } = getBaseNameAndVersion(version.name);
-                    const isLatest = !versionNumber;
-                    
-                    return (
-                      <motion.div
-                        key={version.name}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={styles.cardMenuItem}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectVersion(version);
-                        }}
-                      >
-                        <span style={{ flex: 1 }}>{baseName}</span>
-                        {versionNumber && (
-                          <span style={styles.versionBadge}>v{versionNumber}</span>
-                        )}
-                        {isLatest && <span style={styles.latestBadge}>Latest</span>}
-                      </motion.div>
-                    );
-                  })}
                 </CardMenu>
               )}
             </motion.div>
@@ -582,30 +627,33 @@ const ScriptsOverlay = ({ closeOverlay }) => {
   const getScriptsByBaseName = (scripts) => {
     const grouped = {};
     scripts.forEach((script) => {
-      // Remove -v{number} from the name to get the base name
       const baseName = getBaseName(script.name.replace(/ /g, ""));
       if (!grouped[baseName]) grouped[baseName] = [];
       grouped[baseName].push(script);
     });
 
-    // Sort versions with the latest (no -v tag) at the top, followed by other versions in descending order
+    // Sort versions with the selected version at the top, followed by latest (no -v tag),
+    // then other versions in descending order
     Object.keys(grouped).forEach((baseName) => {
       grouped[baseName].sort((a, b) => {
+        // If one is selected, it should be first
+        if (a.name === selectedScript) return -1;
+        if (b.name === selectedScript) return 1;
+
+        // Then check for version numbers
         const aMatch = a.name.match(/v(\d+)/);
         const bMatch = b.name.match(/v(\d+)/);
+        
+        // If neither has a version, maintain current order
         if (!aMatch && !bMatch) return 0;
+        
+        // If only one has a version, the one without version (latest) should be first
         if (!aMatch) return -1;
         if (!bMatch) return 1;
+        
+        // Otherwise sort by version number in descending order
         return parseInt(bMatch[1]) - parseInt(aMatch[1]);
       });
-      
-      // If a version is selected, move it to the top
-      const selected = grouped[baseName].find((s) => s.name === selectedScript);
-      if (selected) {
-        const idx = grouped[baseName].indexOf(selected);
-        grouped[baseName].splice(idx, 1);
-        grouped[baseName].unshift(selected);
-      }
     });
     
     return grouped;
@@ -928,6 +976,34 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     };
   }, [menuPosition, versionOverlay]);
 
+  // Add handleRevertScript function
+  const handleRevertScript = async (category, currentScript) => {
+    setRevertConfirmation({ show: false, script: null, category: null });
+
+    const userID = localStorage.getItem("userID");
+    try {
+      // Delete the current version (which will become the new version)
+      await deleteScriptFromFirestore(userID, category, currentScript.name);
+
+      // Update local state
+      setScripts((prevState) => ({
+        ...prevState,
+        [category]: prevState[category].filter(
+          (script) => script.name !== currentScript.name
+        ),
+      }));
+
+      // If this was the selected script, clear selection
+      if (currentScript.name === selectedScript) {
+        localStorage.removeItem("workingOnScript");
+        setSelectedScript(null);
+        window.dispatchEvent(new Event("scriptsUpdated"));
+      }
+    } catch (error) {
+      console.error("Error reverting script:", error);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={closeOverlay}>
       <div className="scripts-modal" onClick={(e) => e.stopPropagation()}>
@@ -1040,6 +1116,44 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           <OpenSCADViewer
             script={openScadViewer}
             onClose={() => setOpenScadViewer(null)}
+          />
+        )}
+
+        {revertConfirmation.show && (
+          <RevertConfirmationOverlay
+            isOpen={revertConfirmation.show}
+            onClose={() => setRevertConfirmation({ show: false, script: null, category: null })}
+            onConfirm={() => handleRevertScript(revertConfirmation.category, revertConfirmation.script)}
+            scriptName={getBaseNameAndVersion(revertConfirmation.script?.name || "").baseName}
+            version={(() => {
+              if (!revertConfirmation.script) return "";
+              const baseScriptName = getBaseNameAndVersion(revertConfirmation.script.name).baseName;
+              const relatedScripts = scripts[revertConfirmation.category]?.filter(
+                (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
+              ) || [];
+              let highestVersion = 0;
+              relatedScripts.forEach((script) => {
+                const { version } = getBaseNameAndVersion(script.name);
+                if (version && parseInt(version) > highestVersion) {
+                  highestVersion = parseInt(version);
+                }
+              });
+              return highestVersion.toString();
+            })()}
+          />
+        )}
+
+        {versionOverlay && (
+          <VersionsOverlay
+            isOpen={!!versionOverlay}
+            onClose={() => setVersionOverlay(null)}
+            onSelect={handleSelectVersion}
+            onDelete={async (index) => {
+              const script = versionOverlay.versions[index];
+              await handleDeleteScript(activeTab, script);
+              setVersionOverlay(null);
+            }}
+            versions={versionOverlay.versions}
           />
         )}
       </div>
