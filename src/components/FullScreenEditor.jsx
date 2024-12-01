@@ -1476,7 +1476,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           onChange={(newModel) => {
                             updatePreferences({ programmerModel: newModel });
                           }}
-                          hasEnoughBalance={balance.ok?.hasPremium}
+                          hasEnoughBalance={balance.data?.hasPremium}
                         />
                       </div>
 

@@ -15,7 +15,7 @@ const CheckoutSuccess = () => {
   useEffect(() => {
     const initializeModels = async () => {
       // If user has enough balance and was using flash, automatically upgrade to pro
-      if (balance.ok?.hasPremium) {
+      if (balance.data?.hasPremium) {
         updatePreferences({
           mainModel:
             preferences.mainModel === "gemini-1.5-flash"
@@ -30,7 +30,7 @@ const CheckoutSuccess = () => {
     };
 
     initializeModels();
-  }, [balance.ok?.hasPremium]);
+  }, [balance.data?.hasPremium]);
 
   return (
     <div style={styles.overlay}>

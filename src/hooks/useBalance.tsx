@@ -1,16 +1,12 @@
-import { useState, useEffect, useContext, createContext } from "react";
+import { useContext, createContext } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getBalance } from "@/api/getBalance";
 import { useAuth } from "@/hooks/useAuth";
-import { FetchHook } from "@/types/common";
-import { Balance } from "@/types/api";
 
 // TODO: Make this server-side
 export const PREMIUM_BALANCE_THRESHOLD = 1_000_000_000;
 
-type BalanceWithPremium = Balance & { hasPremium: boolean };
-type BalanceHook = FetchHook<BalanceWithPremium>;
-
-export function useBalance(): BalanceHook {
+export function useBalance() {
   const context = useContext(BalanceContext);
   if (context === undefined) {
     throw new Error("useBalance must be used within a BalanceProvider");
@@ -18,7 +14,9 @@ export function useBalance(): BalanceHook {
   return context;
 }
 
-const BalanceContext = createContext<BalanceHook | undefined>(undefined);
+const BalanceContext = createContext<ReturnType<typeof useBal> | undefined>(
+  undefined
+);
 
 export function BalanceProvider({ children }: { children: React.ReactNode }) {
   const value = useBal();
@@ -27,40 +25,20 @@ export function BalanceProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-function useBal(): BalanceHook {
+function useBal() {
   const { user } = useAuth();
-  const [ok, setOk] = useState<BalanceWithPremium | undefined>(undefined);
-  const [err, setErr] = useState<string | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [refetch, setRefetch] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-    async function fetchBalance() {
-      try {
-        const result = await getBalance();
-        if (result.ok) {
-          if (result.ok.balanceRaw >= PREMIUM_BALANCE_THRESHOLD) {
-            setOk({ ...result.ok, hasPremium: true });
-          } else {
-            setOk({ ...result.ok, hasPremium: false });
-          }
-        } else {
-          setErr(result.err);
-        }
-      } catch (err) {
-        setErr(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setLoading(false);
+  return useQuery({
+    queryKey: ["balance", user?.uid],
+    queryFn: async () => {
+      const result = await getBalance();
+      if (result.ok) {
+        return {
+          ...result.ok,
+          hasPremium: result.ok.balanceRaw >= PREMIUM_BALANCE_THRESHOLD,
+        };
       }
-    }
-
-    fetchBalance().then(() => setRefetch(false));
-  }, [refetch, user]);
-
-  return { ok, err, loading, refetch: () => setRefetch(true) };
+      throw new Error(result.err);
+    },
+    enabled: !!user,
+  });
 }
