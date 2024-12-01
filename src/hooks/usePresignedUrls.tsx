@@ -37,7 +37,9 @@ export function PresignedUrlProvider({
 }) {
   const queryClient = useQueryClient();
 
-  async function fetchPresignedUrl(originalUrl: string): Promise<Result<string>> {
+  async function fetchPresignedUrl(
+    originalUrl: string
+  ): Promise<Result<string>> {
     try {
       const presignedUrl = await presignURL(originalUrl);
       if (presignedUrl.err) {
@@ -47,8 +49,9 @@ export function PresignedUrlProvider({
     } catch (error) {
       console.error("Error getting presigned URL:", error);
       return {
-        err: `Failed to get presigned URL: ${error instanceof Error ? error.message : "unknown error"
-          }`,
+        err: `Failed to get presigned URL: ${
+          error instanceof Error ? error.message : "unknown error"
+        }`,
       };
     }
   }
@@ -61,7 +64,10 @@ export function PresignedUrlProvider({
   }
 
   function getCachedUrl(originalUrl: string): Result<string | undefined> {
-    const cachedData = queryClient.getQueryData<Result<string>>(["presignedUrl", originalUrl]);
+    const cachedData = queryClient.getQueryData<Result<string>>([
+      "presignedUrl",
+      originalUrl,
+    ]);
     return cachedData ?? { ok: undefined };
   }
 

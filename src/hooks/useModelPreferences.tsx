@@ -1,23 +1,17 @@
-import { useState, useEffect, useContext, createContext } from "react";
+import { useContext, createContext } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import {
   saveModelPreferencesToFirestore,
   getModelPreferencesFromFirestore,
 } from "@/control/firebase";
 import { DEFAULT_PREFERENCES } from "@/constants";
-import { ModelPreferences } from "@/types/llm";
 
-export type ModelPreferencesHook = {
-  preferences: ModelPreferences;
-  loading: boolean;
-  error: string | null;
-  updatePreferences: (preferences: Partial<ModelPreferences>) => Promise<void>;
-};
-const ModelPreferencesContext = createContext<ModelPreferencesHook | undefined>(
-  undefined
-);
+const ModelPreferencesContext = createContext<
+  ReturnType<typeof useModels> | undefined
+>(undefined);
 
-export function useModelPreferences(): ModelPreferencesHook {
+export function useModelPreferences() {
   const context = useContext(ModelPreferencesContext);
   if (context === undefined) {
     throw new Error(
@@ -32,16 +26,9 @@ export function ModelPreferencesProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { preferences, loading, error, updatePreferences } = useModels();
+  const value = useModels();
   return (
-    <ModelPreferencesContext.Provider
-      value={{
-        preferences,
-        loading,
-        error,
-        updatePreferences,
-      }}
-    >
+    <ModelPreferencesContext.Provider value={value}>
       {children}
     </ModelPreferencesContext.Provider>
   );
@@ -49,47 +36,36 @@ export function ModelPreferencesProvider({
 
 function useModels() {
   const { user } = useAuth();
-  const [preferences, setPreferences] = useState(DEFAULT_PREFERENCES);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!user) return;
-    async function loadPreferences() {
-      try {
-        if (!user) return;
-        const prefs = await getModelPreferencesFromFirestore(user.uid);
-        if (prefs) {
-          setPreferences(prefs);
-          console.log("loadedPrefs", prefs);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadPreferences();
-  }, [user]);
+  const query = useQuery({
+    queryKey: ["modelPreferences", user?.uid],
+    queryFn: async () => {
+      if (!user) throw new Error("No user");
+      const prefs = await getModelPreferencesFromFirestore(user.uid);
+      return prefs || DEFAULT_PREFERENCES;
+    },
+    enabled: !!user,
+  });
 
-  async function updatePreferences(newPreferences: Partial<ModelPreferences>) {
-    try {
-      setPreferences((prev) => {
-        if (!user) return prev;
-        const updated = { ...prev, ...newPreferences };
-        console.log("updatedPrefs", updated);
-        saveModelPreferencesToFirestore(user.uid, updated);
-        return updated;
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      throw err;
-    }
-  }
+  const mutation = useMutation({
+    mutationFn: async (newPreferences: Partial<typeof DEFAULT_PREFERENCES>) => {
+      if (!user) throw new Error("No user");
+      const updatedPreferences = {
+        ...(query.data || DEFAULT_PREFERENCES),
+        ...newPreferences,
+      };
+      await saveModelPreferencesToFirestore(user.uid, updatedPreferences);
+      return updatedPreferences;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["modelPreferences", user?.uid], data);
+    },
+  });
 
-  return { preferences, loading, error, updatePreferences };
+  return {
+    ...query,
+    preferences: query.data,
+    updatePreferences: mutation.mutate,
+  };
 }
