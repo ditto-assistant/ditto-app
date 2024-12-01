@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { presignURL } from "@/api/bucket";
 import { Result } from "@/types/common";
 import { IMAGE_PLACEHOLDER_IMAGE } from "@/constants";
@@ -6,7 +7,6 @@ import { IMAGE_PLACEHOLDER_IMAGE } from "@/constants";
 export type PresignedUrlContext = {
   getPresignedUrl: (originalUrl: string) => Promise<Result<string>>;
   getCachedUrl: (originalUrl: string) => Result<string | undefined>;
-  addToCache: (originalUrl: string, presignedUrl: string) => void;
   clearCache: () => void;
 };
 
@@ -35,64 +35,43 @@ export function PresignedUrlProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [urlCache, setUrlCache] = useState(new Map<string, string>());
-  const [failedUrls, setFailedUrls] = useState(new Set());
+  const queryClient = useQueryClient();
 
-  // Get a presigned URL for an image, using cache if available.
-  async function getPresignedUrl(originalUrl: string): Promise<Result<string>> {
-    if (urlCache.has(originalUrl)) {
-      return { ok: urlCache.get(originalUrl) };
-    }
-
-    function makeError(err: string) {
-      return {
-        err: `Failed to get presigned URL: ${err}; originalUrl: ${originalUrl}`,
-      };
-    }
+  async function fetchPresignedUrl(originalUrl: string): Promise<Result<string>> {
     try {
       const presignedUrl = await presignURL(originalUrl);
       if (presignedUrl.err) {
-        setFailedUrls((prev) => prev.add(originalUrl));
-        return makeError(presignedUrl.err);
+        return { err: `Failed to get presigned URL: ${presignedUrl.err}` };
       }
-      setUrlCache((prev) =>
-        new Map(prev).set(
-          originalUrl,
-          presignedUrl.ok ?? IMAGE_PLACEHOLDER_IMAGE
-        )
-      );
-      return presignedUrl;
+      return { ok: presignedUrl.ok ?? IMAGE_PLACEHOLDER_IMAGE };
     } catch (error) {
       console.error("Error getting presigned URL:", error);
-      return makeError(
-        error instanceof Error ? error.message : "unknown error"
-      );
+      return {
+        err: `Failed to get presigned URL: ${error instanceof Error ? error.message : "unknown error"
+          }`,
+      };
     }
+  }
+
+  function getPresignedUrl(originalUrl: string): Promise<Result<string>> {
+    return queryClient.fetchQuery({
+      queryKey: ["presignedUrl", originalUrl],
+      queryFn: () => fetchPresignedUrl(originalUrl),
+    });
   }
 
   function getCachedUrl(originalUrl: string): Result<string | undefined> {
-    if (failedUrls.has(originalUrl)) {
-      return { err: "Failed to get presigned URL" };
-    }
-    const cachedUrl = urlCache.get(originalUrl);
-    if (cachedUrl) {
-      return { ok: cachedUrl };
-    }
-    return { ok: undefined };
-  }
-
-  function addToCache(originalUrl: string, presignedUrl: string) {
-    setUrlCache((prev) => new Map(prev).set(originalUrl, presignedUrl));
+    const cachedData = queryClient.getQueryData<Result<string>>(["presignedUrl", originalUrl]);
+    return cachedData ?? { ok: undefined };
   }
 
   function clearCache() {
-    setUrlCache(new Map());
+    queryClient.removeQueries({ queryKey: ["presignedUrl"] });
   }
 
   const value = {
     getPresignedUrl,
     getCachedUrl,
-    addToCache,
     clearCache,
   };
 
