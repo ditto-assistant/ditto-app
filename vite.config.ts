@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "path";
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 
 export default defineConfig({
   plugins: [
@@ -10,6 +11,7 @@ export default defineConfig({
       enabled: true,
     }),
     react(),
+    TanStackRouterVite(),
     VitePWA({
       srcDir: "src",
       filename: "sw.js",
@@ -61,37 +63,6 @@ export default defineConfig({
             ? "worker.js"
             : "assets/[name]-[hash].js";
         },
-        manualChunks: (id) => {
-          if (id.includes("node_modules")) {
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-router-dom") ||
-              id.includes("@emotion") ||
-              id.includes("scheduler") ||
-              id.includes("object-assign") ||
-              id.includes("framer-motion")
-            ) {
-              return "react-vendor";
-            }
-            if (id.includes("firebase")) return "firebase";
-            if (id.includes("@tensorflow")) return "tensorflow";
-            if (id.includes("@paypal")) return "paypal";
-            if (id.includes("@huggingface")) return "huggingface";
-            if (id.includes("@mui")) return "mui";
-            if (id.includes("ace-builds") || id.includes("react-ace"))
-              return "ace";
-            if (id.includes("workbox")) return "workbox";
-            if (id.includes("react-icons")) return "icons";
-            return "vendor"; // all other node_modules
-          }
-          if (id.includes("src/screens")) {
-            return "screens";
-          }
-          if (id.includes("src/components")) {
-            return "components";
-          }
-        },
       },
     },
     chunkSizeWarningLimit: 1000,
@@ -105,7 +76,6 @@ export default defineConfig({
     include: [
       "react",
       "react-dom",
-      "react-router-dom",
       "firebase/app",
       "firebase/auth",
       "firebase/firestore",

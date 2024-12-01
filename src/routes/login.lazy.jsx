@@ -16,6 +16,13 @@ import {
 import { auth } from "../control/firebase";
 import "./Login.css";
 import TermsOfService from "../components/TermsOfService";
+import { createLazyFileRoute, Navigate } from "@tanstack/react-router";
+import { FullScreenSpinner } from "@/components/LoadingSpinner";
+
+export const Route = createLazyFileRoute("/login")({
+  component: Login,
+  pendingComponent: <FullScreenSpinner text="Loading login..." />,
+});
 
 const PasswordInput = ({
   value,
@@ -53,7 +60,7 @@ const Login = () => {
   const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
   const [showTOS, setShowTOS] = useState(false);
   if (user) {
-    navigate("/");
+    return <Navigate to="/" />;
   }
 
   useEffect(() => {
@@ -209,7 +216,7 @@ const Login = () => {
         return; // Don't navigate yet
       }
 
-      navigate("/");
+      navigate({ to: "/" });
     } catch (error) {
       console.error("Error signing in with Google:", error.message);
       alert("Error signing in with Google. Please try again.");

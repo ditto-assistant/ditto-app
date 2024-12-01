@@ -1,16 +1,19 @@
-import "./HomeScreen.css";
+import "./index.lazy.css";
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
-import FullScreenSpinner from "../components/LoadingSpinner";
+import { FullScreenSpinner } from "@/components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
 // Lazy load components
-const ChatFeed = lazy(() => import("@/components/ChatFeed"));
-const SendMessage = lazy(() => import("@/components/SendMessage"));
-const StatusBar = lazy(() => import("@/components/StatusBar"));
+// const ChatFeed = lazy(() => import("@/components/ChatFeed"));
+// const SendMessage = lazy(() => import("@/components/SendMessage"));
+// const StatusBar = lazy(() => import("@/components/StatusBar"));
+import ChatFeed from "@/components/ChatFeed";
+import SendMessage from "@/components/SendMessage";
+import StatusBar from "@/components/StatusBar";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear2.png";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -27,6 +30,12 @@ import {
   saveScriptToFirestore,
 } from "../control/firebase";
 import MemoryOverlay from "../components/MemoryOverlay";
+import { createLazyFileRoute } from "@tanstack/react-router";
+
+export const Route = createLazyFileRoute("/")({
+  component: HomeScreen,
+  pendingComponent: FullScreenSpinner,
+});
 
 const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
 
@@ -808,7 +817,7 @@ export default function HomeScreen() {
         <motion.div
           className="icon-button settings-button"
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/settings")}
+          onClick={() => navigate({ to: "/settings" })}
         >
           <IoSettingsOutline className="icon" />
         </motion.div>

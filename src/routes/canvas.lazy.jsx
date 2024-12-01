@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import {
   AppBar,
   Toolbar,
@@ -10,6 +10,13 @@ import {
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { FullScreenSpinner } from "@/components/LoadingSpinner";
+
+export const Route = createLazyFileRoute("/canvas")({
+  component: DittoCanvas,
+  pendingComponent: <FullScreenSpinner text="Loading canvas..." />,
+});
 
 const styles = {
   container: {

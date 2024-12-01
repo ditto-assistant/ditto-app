@@ -10,6 +10,7 @@
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^6.1.8",
     "@paypal/react-paypal-js": "^8.7.0",
+    "@tanstack/react-router": "^1.85.0",
     "@tensorflow/tfjs": "^4.22.0",
     "ace-builds": "^1.36.5",
     "firebase": "~11.0.2",
@@ -22,7 +23,6 @@
     "react-hot-toast": "^2.4.1",
     "react-icons": "^5.3.0",
     "react-markdown": "^9.0.1",
-    "react-router-dom": "^7.0.1",
     "react-syntax-highlighter": "^15.6.1",
     "resize-observer-polyfill": "^1.5.1",
     "vis-data": "^7.1.9",
@@ -35,6 +35,8 @@
     "workbox-strategies": "^7.3.0"
   },
   "devDependencies": {
+    "@tanstack/router-devtools": "^1.85.0",
+    "@tanstack/router-plugin": "^1.84.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",

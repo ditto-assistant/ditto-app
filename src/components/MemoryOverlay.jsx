@@ -17,7 +17,6 @@ import {
   isPremiumModel,
   DEFAULT_PREFERENCES,
 } from "../constants";
-import FullScreenSpinner from "./LoadingSpinner";
 import ModelPreferencesModal from "./ModelPreferencesModal";
 import MemoryControlsModal from "./MemoryControlsModal";
 import AgentToolsModal from "./AgentToolsModal";

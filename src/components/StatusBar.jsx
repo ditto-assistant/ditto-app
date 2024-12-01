@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import StatusIcons from "./StatusIcons";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";

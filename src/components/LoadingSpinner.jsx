@@ -1,4 +1,4 @@
-export default function FullScreenSpinner({ text }) {
+export function FullScreenSpinner({ text }) {
   return (
     <div
       style={{

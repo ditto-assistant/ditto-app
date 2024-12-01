@@ -14,51 +14,7 @@
   <link rel="apple-touch-icon" href="/logo192.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <title>Ditto</title>
-  <style type="text/css">
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-        'Helvetica Neue', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
 
-    code {
-      font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-        monospace;
-    }
-
-    .navbar {
-      background-color: #00a5d0;
-      padding: 12px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    h3 {
-      margin: 0px 0px;
-      font-size: 24px;
-    }
-
-    a {
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0px 0px 0px 12px;
-    }
-
-    p,
-    li {
-      padding: 0px 0px 0px 8px;
-    }
-
-    p {
-      font-weight: 600;
-    }
-  </style>
   <script>
     if ('serviceWorker' in navigator) {
       const appVersion = document.documentElement.getAttribute('data-app-version');
@@ -82,19 +38,12 @@
     }
   </script>
   <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
-  <!-- Add preload tags for critical JS files -->
-  <link rel="preload" href="/src/index.jsx" as="script">
-  <link rel="preload" href="/src/components/AuthenticatedRoute.jsx" as="script">
-  <link rel="preload" href="/src/components/LoadingSpinner.jsx" as="script">
-  <link rel="preload" href="/src/App.jsx" as="script">
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root">
-    <p class="page-info"></p>
-  </div>
-  <script type="module" src="/src/index.jsx"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 
 </html>

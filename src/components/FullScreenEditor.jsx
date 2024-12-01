@@ -20,14 +20,14 @@ import { Button, useMediaQuery, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import DOMTreeViewer from "./DOMTreeViewer";
 import { syncLocalScriptsWithFirestore } from "../control/firebase"; // Changed from '../control/agent'
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { textEmbed } from "../api/LLM";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useIntentRecognition } from "../hooks/useIntentRecognition";
-import FullScreenSpinner from "./LoadingSpinner";
+import { FullScreenSpinner } from "./LoadingSpinner";
 import updaterAgent from "../control/agentflows/updaterAgentFlow";
 import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";

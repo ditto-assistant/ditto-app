@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Divider,
   Button,
@@ -17,11 +17,17 @@ import { deleteUser, getAuth } from "firebase/auth";
 import {
   removeUserFromFirestore,
   deleteAllUserScriptsFromFirestore,
-} from "../control/firebase";
+} from "@/control/firebase";
 import packageJson from "../../package.json";
-import { useBalance } from "../hooks/useBalance";
+import { useBalance } from "@/hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { createLazyFileRoute } from "@tanstack/react-router";
+
+export const Route = createLazyFileRoute("/settings")({
+  component: Settings,
+  pendingComponent: <FullScreenSpinner text="Loading settings..." />,
+});
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -52,7 +58,7 @@ const Settings = () => {
       localStorage.setItem("hasSeenTOS", hasSeenTOS);
     }
     signOut();
-    navigate("/login");
+    navigate({ to: "/login" });
   };
 
   const handleDeleteAccount = async () => {
@@ -85,7 +91,7 @@ const Settings = () => {
       await removeUserFromFirestore(currentUser.uid);
       await deleteAllUserScriptsFromFirestore(currentUser.uid);
       localStorage.clear();
-      navigate("/login");
+      navigate({ to: "/login" });
     } catch (error) {
       console.error("Error deleting account: ", error);
       if (error.code === "auth/requires-recent-login") {
@@ -137,7 +143,7 @@ const Settings = () => {
         <header style={styles.header}>
           <Button
             variant="text"
-            onClick={() => navigate("/")}
+            onClick={() => navigate({ to: "/" })}
             style={styles.backButton}
             startIcon={<FaArrowLeft />}
           >
@@ -176,7 +182,7 @@ const Settings = () => {
           <div style={styles.settingsOptions}>
             <Button
               variant="contained"
-              onClick={() => navigate("/checkout")}
+              onClick={() => navigate({ to: "/checkout" })}
               style={styles.button}
             >
               ADD TOKENS

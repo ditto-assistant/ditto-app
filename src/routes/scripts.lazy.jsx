@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, lazy } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { MdAdd, MdSort } from "react-icons/md";
 import { FaPlay, FaArrowLeft, FaTrash, FaUndo, FaCog } from "react-icons/fa"; // Add FaTrash and FaDownload import
 import {
@@ -21,6 +21,13 @@ import SearchBar from "../components/SearchBar";
 import AddScriptOverlay from "../components/AddScriptOverlay";
 import OpenSCADViewer from "../components/OpenSCADViewer";
 import RevertConfirmationOverlay from "../components/RevertConfirmationOverlay";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { FullScreenSpinner } from "@/components/LoadingSpinner";
+
+export const Route = createLazyFileRoute("/scripts")({
+  component: ScriptsScreen,
+  pendingComponent: <FullScreenSpinner text="Loading scripts..." />,
+});
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -1188,7 +1195,7 @@ const ScriptsScreen = () => {
         <header style={styles.header}>
           <Button
             variant="text"
-            onClick={() => navigate("/")}
+            onClick={() => navigate({ to: "/" })}
             style={styles.backButton}
             startIcon={
               <motion.div
