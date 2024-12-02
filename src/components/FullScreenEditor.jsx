@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import AceEditor from "react-ace";
+import ace from "ace-builds";
+import "ace-builds/src-min-noconflict/ace";
 import "ace-builds/src-min-noconflict/mode-html";
 import "ace-builds/src-min-noconflict/mode-javascript";
 import "ace-builds/src-min-noconflict/theme-tomorrow_night";
@@ -38,6 +40,22 @@ import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
+
+// Initialize ace for production
+if (import.meta.env.PROD) {
+  ace.config.set(
+    "basePath",
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/"
+  );
+  ace.config.setModuleUrl(
+    "ace/mode/html_worker",
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js"
+  );
+  ace.config.setModuleUrl(
+    "ace/mode/javascript_worker",
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
+  );
+}
 
 const darkModeColors = {
   background: "#1E1F22",
