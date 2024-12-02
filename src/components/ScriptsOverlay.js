@@ -410,244 +410,252 @@ const ScriptsOverlay = ({ closeOverlay }) => {
       }
     }
 
-    return (
-      <div style={styles.scriptsGrid}>
-        {Object.keys(groupedScripts).map((baseName) => {
-          const scriptsList = groupedScripts[baseName];
-          const currentScript =
-            scriptsList.find((s) => s.name === selectedScript) ||
-            scriptsList.find((s) => !s.name.includes("-v")) ||
-            scriptsList[0];
+    return Object.keys(groupedScripts).map((baseName) => {
+      const scriptsList = groupedScripts[baseName];
+      const currentScript =
+        scriptsList.find((s) => s.name === selectedScript) ||
+        scriptsList.find((s) => !s.name.includes("-v")) ||
+        scriptsList[0];
 
-          // Check for multiple versions by looking at the base name
-          const hasMultipleVersions =
-            scripts[category].filter(
-              (script) =>
-                getBaseName(script.name.replace(/ /g, "")) === baseName
-            ).length > 1;
+      // Check for multiple versions by looking at the base name
+      const hasMultipleVersions =
+        scripts[category].filter(
+          (script) => getBaseName(script.name.replace(/ /g, "")) === baseName
+        ).length > 1;
 
-          if (!cardRefs.current[currentScript.id]) {
-            cardRefs.current[currentScript.id] = React.createRef();
+      if (!cardRefs.current[currentScript.id]) {
+        cardRefs.current[currentScript.id] = React.createRef();
+      }
+
+      const { baseName: scriptBaseName, version } = getBaseNameAndVersion(
+        currentScript.name
+      );
+
+      return (
+        <motion.div
+          ref={cardRefs.current[currentScript.id]}
+          key={currentScript.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{
+            y: -4,
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+            borderColor: darkModeColors.primary,
+          }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() =>
+            category === "webApps"
+              ? handlePlayScript(currentScript)
+              : handleDownloadScript(currentScript)
           }
+          style={{
+            ...styles.scriptCard,
+            borderColor:
+              selectedScript === currentScript.name
+                ? darkModeColors.primary
+                : darkModeColors.border,
+          }}
+        >
+          <div style={styles.scriptCardHeader}>
+            {renameScriptId === currentScript.id ? (
+              <input
+                type="text"
+                defaultValue={scriptBaseName}
+                onBlur={(e) =>
+                  handleRenameScript(currentScript.id, e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleRenameScript(currentScript.id, e.target.value);
+                  } else if (e.key === "Escape") {
+                    setRenameScriptId(null);
+                  }
+                }}
+                style={styles.renameInput}
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <p style={styles.scriptName}>
+                {scriptBaseName}
+                {version && <span style={styles.versionBadge}>v{version}</span>}
+              </p>
+            )}
+          </div>
 
-          const { baseName: scriptBaseName, version } = getBaseNameAndVersion(
-            currentScript.name
-          );
+          <div style={styles.timestampContainer}>
+            <span style={styles.timestamp}>
+              {formatTimestamp(
+                getLocalScriptTimestamps(category)[currentScript.name]
+                  ?.timestamp,
+                currentScript,
+                category
+              )}
+            </span>
+          </div>
 
-          return (
-            <motion.div
-              ref={cardRefs.current[currentScript.id]}
-              key={currentScript.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{
-                y: -4,
-                boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
-                borderColor: darkModeColors.primary,
-              }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() =>
-                category === "webApps"
-                  ? handlePlayScript(currentScript)
-                  : handleDownloadScript(currentScript)
-              }
-              style={{
-                ...styles.scriptCard,
-                borderColor:
-                  selectedScript === currentScript.name
-                    ? darkModeColors.primary
-                    : darkModeColors.border,
+          <div style={styles.actions}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={styles.editButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditScript(currentScript);
               }}
             >
-              <div style={styles.scriptCardHeader}>
-                {renameScriptId === currentScript.id ? (
-                  <input
-                    type="text"
-                    defaultValue={scriptBaseName}
-                    onBlur={(e) =>
-                      handleRenameScript(currentScript.id, e.target.value)
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleRenameScript(currentScript.id, e.target.value);
-                      } else if (e.key === "Escape") {
-                        setRenameScriptId(null);
-                      }
-                    }}
-                    style={styles.renameInput}
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <p style={styles.scriptName}>
-                    {scriptBaseName}
-                    {version && (
-                      <span style={styles.versionBadge}>v{version}</span>
-                    )}
-                  </p>
-                )}
-              </div>
+              Edit
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={styles.selectButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectScript(currentScript);
+              }}
+            >
+              Select
+            </motion.button>
+            <FaCog
+              className="more-icon"
+              style={styles.moreIcon}
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = e.currentTarget.getBoundingClientRect();
+                setMenuPosition({
+                  top: rect.bottom + 8,
+                  left: rect.left,
+                });
+                setActiveCard(currentScript.id);
+              }}
+            />
+          </div>
 
-              <div style={styles.timestampContainer}>
-                <span style={styles.timestamp}>
-                  {formatTimestamp(
-                    getLocalScriptTimestamps(category)[currentScript.name]
-                      ?.timestamp,
-                    currentScript,
-                    category
-                  )}
-                </span>
-              </div>
-
-              <div style={styles.actions}>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={styles.editButton}
-                  onClick={(e) => {
+          {activeCard === currentScript.id && menuPosition && (
+            <CardMenu
+              className="card-menu"
+              style={{
+                top: menuPosition.top,
+                left: menuPosition.left,
+                transformOrigin: menuPosition.openUpward ? "bottom" : "top",
+              }}
+            >
+              <motion.div
+                style={styles.cardMenuItem}
+                whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                onClick={(e) => {
+                  if (e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    handleEditScript(currentScript);
-                  }}
-                >
-                  Edit
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={styles.selectButton}
-                  onClick={(e) => {
+                  }
+                  setRenameScriptId(currentScript.id);
+                  setActiveCard(null);
+                  setMenuPosition(null);
+                }}
+              >
+                Rename
+              </motion.div>
+              <motion.div
+                style={styles.cardMenuItem}
+                whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                onClick={(e) => {
+                  if (e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    handleSelectScript(currentScript);
+                  }
+                  handleDownloadScript(currentScript);
+                  setActiveCard(null);
+                  setMenuPosition(null);
+                }}
+              >
+                Download
+              </motion.div>
+              {hasMultipleVersions && (
+                <motion.div
+                  style={styles.cardMenuItem}
+                  whileHover={{
+                    backgroundColor: "rgba(88, 101, 242, 0.1)",
                   }}
-                >
-                  Select
-                </motion.button>
-                <FaCog
-                  className="more-icon"
-                  style={styles.moreIcon}
                   onClick={(e) => {
-                    e.stopPropagation();
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    setMenuPosition({
-                      top: rect.bottom + 8,
-                      left: rect.left,
-                    });
-                    setActiveCard(currentScript.id);
-                  }}
-                />
-              </div>
-
-              {activeCard === currentScript.id && menuPosition && (
-                <CardMenu
-                  className="card-menu"
-                  style={{
-                    top: menuPosition.top,
-                    left: menuPosition.left,
-                    transformOrigin: menuPosition.openUpward ? "bottom" : "top",
-                  }}
-                >
-                  <motion.div
-                    style={styles.cardMenuItem}
-                    whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
-                    onClick={(e) => {
+                    if (e) {
                       e.preventDefault();
                       e.stopPropagation();
-                      setRenameScriptId(currentScript.id);
-                      setActiveCard(null);
-                      setMenuPosition(null);
-                    }}
-                  >
-                    Rename
-                  </motion.div>
-                  <motion.div
-                    style={styles.cardMenuItem}
-                    whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownloadScript(currentScript);
-                      setActiveCard(null);
-                      setMenuPosition(null);
-                    }}
-                  >
-                    Download
-                  </motion.div>
-                  {hasMultipleVersions && (
-                    <motion.div
-                      style={styles.cardMenuItem}
-                      whileHover={{
-                        backgroundColor: "rgba(88, 101, 242, 0.1)",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const versions = scripts[activeTab].filter(
-                          (script) =>
-                            getBaseName(script.name.replace(/ /g, "")) ===
-                            baseName
-                        );
-                        setVersionOverlay({
-                          baseScriptName: baseName,
-                          versions: versions,
-                        });
-                        setActiveCard(null);
-                        setMenuPosition(null);
-                      }}
-                    >
-                      Version
-                    </motion.div>
-                  )}
+                    }
+                    const versions = scripts[activeTab].filter(
+                      (script) =>
+                        getBaseName(script.name.replace(/ /g, "")) === baseName
+                    );
+                    setVersionOverlay({
+                      baseScriptName: baseName,
+                      versions: versions,
+                    });
+                    setActiveCard(null);
+                    setMenuPosition(null);
+                  }}
+                >
+                  Version
+                </motion.div>
+              )}
+              {hasMultipleVersions && (
+                <>
                   <div style={styles.menuDivider} />
-                  {hasMultipleVersions && (
-                    <motion.div
-                      style={{
-                        ...styles.cardMenuItem,
-                        color: darkModeColors.primary,
-                      }}
-                      whileHover={{
-                        backgroundColor: "rgba(88, 101, 242, 0.1)",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRevertConfirmation({
-                          show: true,
-                          script: currentScript,
-                          category: category,
-                        });
-                        setActiveCard(null);
-                        setMenuPosition(null);
-                      }}
-                    >
-                      <FaUndo style={{ marginRight: "8px" }} />
-                      Revert
-                    </motion.div>
-                  )}
                   <motion.div
                     style={{
                       ...styles.cardMenuItem,
-                      color: darkModeColors.danger,
+                      color: darkModeColors.primary,
                     }}
-                    whileHover={{ backgroundColor: "rgba(218, 55, 60, 0.1)" }}
+                    whileHover={{
+                      backgroundColor: "rgba(88, 101, 242, 0.1)",
+                    }}
                     onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteConfirmation({
+                      if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                      setRevertConfirmation({
                         show: true,
                         script: currentScript,
                         category: category,
-                        isDeleteAll: true,
                       });
                       setActiveCard(null);
                       setMenuPosition(null);
                     }}
                   >
-                    <FaTrash style={{ marginRight: "8px" }} />
-                    Delete
+                    <FaUndo style={{ marginRight: "8px" }} />
+                    Revert
                   </motion.div>
-                </CardMenu>
+                </>
               )}
-            </motion.div>
-          );
-        })}
-      </div>
-    );
+              <motion.div
+                style={{
+                  ...styles.cardMenuItem,
+                  color: darkModeColors.danger,
+                }}
+                whileHover={{ backgroundColor: "rgba(218, 55, 60, 0.1)" }}
+                onClick={(e) => {
+                  if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                  setDeleteConfirmation({
+                    show: true,
+                    script: currentScript,
+                    category: category,
+                    isDeleteAll: true,
+                  });
+                  setActiveCard(null);
+                  setMenuPosition(null);
+                }}
+              >
+                <FaTrash style={{ marginRight: "8px" }} />
+                Delete
+              </motion.div>
+            </CardMenu>
+          )}
+        </motion.div>
+      );
+    });
   };
 
   // Add these helper functions after the existing ones:
@@ -1065,7 +1073,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           <MdClose className="close-icon" onClick={closeOverlay} />
         </div>
 
-        {/* Selected script section with enhanced animations */}
         {selectedScript && (
           <motion.div
             style={styles.selectedScriptContainer}
@@ -1174,55 +1181,64 @@ const ScriptsOverlay = ({ closeOverlay }) => {
         )}
 
         <div className="modal-body">
-          <div style={styles.tabContainer}>
-            <div
-              style={{
-                ...styles.tab,
-                ...(activeTab === "webApps" ? styles.activeTab : {}),
-              }}
-              onClick={() => setActiveTab("webApps")}
-            >
-              Web Apps
-            </div>
-            <div
-              style={{
-                ...styles.tab,
-                ...(activeTab === "openSCAD" ? styles.activeTab : {}),
-              }}
-              onClick={() => setActiveTab("openSCAD")}
-            >
-              OpenSCAD
-            </div>
-          </div>
-
-          <div style={styles.searchSortContainer}>
-            <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-            <SortButton />
-          </div>
-
-          <div style={styles.content}>
-            {activeTab === "webApps" && (
-              <div style={styles.category}>
-                <div style={styles.addScript}>
-                  <MdAdd
-                    style={styles.addScriptIcon}
-                    onClick={() => handleAddScriptClick("webApps")}
-                  />
-                </div>
-                {renderScripts("webApps")}
+          <div className="fixed-header">
+            <div style={styles.tabContainer}>
+              <div
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === "webApps" ? styles.activeTab : {}),
+                }}
+                onClick={() => setActiveTab("webApps")}
+              >
+                Web Apps
               </div>
+              <div
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === "openSCAD" ? styles.activeTab : {}),
+                }}
+                onClick={() => setActiveTab("openSCAD")}
+              >
+                Open SCAD
+              </div>
+            </div>
+
+            <div style={styles.searchSortContainer}>
+              <SearchBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+              <SortButton />
+            </div>
+          </div>
+
+          <div className="scrollable-content">
+            {activeTab === "webApps" && (
+              <>
+                <div className="add-script-container">
+                  <div
+                    className="add-script-button"
+                    onClick={() => handleAddScriptClick("webApps")}
+                  >
+                    <MdAdd style={{ fontSize: "24px", color: "#7289da" }} />
+                  </div>
+                </div>
+                <div className="scripts-grid">{renderScripts("webApps")}</div>
+              </>
             )}
 
             {activeTab === "openSCAD" && (
-              <div style={styles.category}>
-                <div style={styles.addScript}>
-                  <MdAdd
-                    style={styles.addScriptIcon}
+              <>
+                <div className="add-script-container">
+                  <div
+                    className="add-script-button"
                     onClick={() => handleAddScriptClick("openSCAD")}
-                  />
+                  >
+                    <MdAdd style={{ fontSize: "24px", color: "#7289da" }} />
+                  </div>
                 </div>
-                {renderScripts("openSCAD")}
-              </div>
+                <div className="scripts-grid">{renderScripts("openSCAD")}</div>
+              </>
             )}
           </div>
         </div>
@@ -1337,263 +1353,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
 
 // Update the styles object with more precise styling
 const styles = {
-  content: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    overflow: "auto",
-    flexGrow: 1,
-    width: "100%",
-    padding: "20px",
-    boxSizing: "border-box",
-  },
-  scriptsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "16px",
-    width: "100%",
-    padding: "16px",
-    overflowY: "auto",
-    overflowX: "hidden",
-    flex: 1,
-    boxSizing: "border-box",
-  },
-  scriptCard: {
-    backgroundColor: darkModeColors.cardBackground,
-    border: `1px solid ${darkModeColors.border}`,
-    borderRadius: "16px",
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    position: "relative",
-    cursor: "pointer",
-    minHeight: "140px",
-    boxSizing: "border-box",
-  },
-  scriptCardHeader: {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    marginBottom: "12px",
-    width: "100%",
-  },
-  scriptName: {
-    color: darkModeColors.text,
-    fontWeight: "600",
-    margin: "0",
-    width: "100%",
-    paddingRight: "16px",
-    boxSizing: "border-box",
-    wordWrap: "break-word",
-    whiteSpace: "normal",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-    lineHeight: "1.2",
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    gap: "8px",
-    position: "absolute",
-    bottom: "12px",
-    right: "12px",
-  },
-  editButton: {
-    padding: "6px 12px",
-    backgroundColor: "#4F545C",
-    color: darkModeColors.text,
-    borderRadius: "4px",
-    cursor: "pointer",
-    border: "none",
-    fontSize: "13px",
-    fontWeight: "600",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: "#5d6269",
-    },
-  },
-  selectButton: {
-    padding: "6px 12px",
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    borderRadius: "4px",
-    cursor: "pointer",
-    border: "none",
-    fontSize: "13px",
-    fontWeight: "600",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-    },
-  },
-  moreIcon: {
-    fontSize: "18px",
-    cursor: "pointer",
-    color: darkModeColors.textSecondary,
-    transition: "all 0.2s ease",
-    padding: "8px",
-    borderRadius: "50%",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
-      color: darkModeColors.text,
-    },
-  },
-  tabContainer: {
-    display: "flex",
-    padding: "0 20px",
-    borderBottom: `1px solid ${darkModeColors.border}`,
-    backgroundColor: darkModeColors.headerBackground,
-    position: "sticky",
-    top: 0,
-    zIndex: 1000,
-    justifyContent: "center",
-  },
-  tab: {
-    padding: "16px 32px",
-    color: darkModeColors.textSecondary,
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "500",
-    transition: "all 0.2s ease",
-    position: "relative",
-    userSelect: "none",
-  },
-  activeTab: {
-    color: darkModeColors.primary,
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      bottom: "-1px",
-      left: 0,
-      width: "100%",
-      height: "2px",
-      backgroundColor: darkModeColors.primary,
-    },
-  },
-  searchSortContainer: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    padding: "0 20px",
-    marginTop: "16px",
-  },
-  sortButton: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    padding: "8px 16px",
-    backgroundColor: darkModeColors.cardBackground,
-    border: `1px solid ${darkModeColors.border}`,
-    borderRadius: "8px",
-    cursor: "pointer",
-    color: darkModeColors.textSecondary,
-    fontSize: "14px",
-    transition: "all 0.2s ease",
-    width: "140px",
-    flexShrink: 0,
-  },
-  sortIcon: {
-    fontSize: "20px",
-  },
-  sortText: {
-    fontWeight: "500",
-  },
-  addScript: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "10px",
-    position: "relative",
-    zIndex: 10002,
-  },
-  addScriptIcon: {
-    fontSize: "24px",
-    cursor: "pointer",
-    color: darkModeColors.textSecondary,
-    transition: "all 0.2s ease",
-    padding: "8px",
-    borderRadius: "50%",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-      transform: "scale(1.1)",
-      color: darkModeColors.primary,
-    },
-  },
-  noResults: {
-    color: darkModeColors.textSecondary,
-    textAlign: "center",
-    padding: "32px 16px",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "200px",
-  },
-  noResultsText: {
-    fontSize: "16px",
-    maxWidth: "300px",
-    margin: "0 auto",
-    lineHeight: "1.5",
-    wordWrap: "break-word",
-  },
-  category: {
-    width: "100%",
-    margin: "0",
-    overflow: "hidden",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    boxSizing: "border-box",
-  },
-  versionBadge: {
-    backgroundColor: "#5865F2",
-    color: "#FFFFFF",
-    borderRadius: "4px",
-    padding: "2px 6px",
-    fontSize: "10px",
-    marginLeft: "8px",
-    fontWeight: "600",
-    display: "inline-flex",
-    alignItems: "center",
-    height: "16px",
-  },
-  renameInput: {
-    border: `1px solid ${darkModeColors.border}`,
-    borderRadius: "4px",
-    backgroundColor: darkModeColors.foreground,
-    color: darkModeColors.text,
-    padding: "8px 12px",
-    fontSize: "14px",
-    fontWeight: "500",
-    width: "100%",
-    outline: "none",
-    "&:focus": {
-      borderColor: darkModeColors.primary,
-    },
-  },
-  cardMenuItem: {
-    padding: "8px 16px",
-    cursor: "pointer",
-    color: darkModeColors.textSecondary,
-    fontSize: "14px",
-    fontWeight: "500",
-    transition: "all 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  menuDivider: {
-    height: "1px",
-    backgroundColor: darkModeColors.border,
-    margin: "4px 0",
-  },
   selectedScriptContainer: {
     width: "100%",
     padding: "20px",
@@ -1664,6 +1423,128 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.2s ease",
   },
+  tabContainer: {
+    display: "flex",
+    padding: "0 20px",
+    marginBottom: "16px",
+    justifyContent: "center",
+  },
+  tab: {
+    padding: "16px 32px",
+    color: darkModeColors.textSecondary,
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "500",
+    transition: "all 0.2s ease",
+    position: "relative",
+    userSelect: "none",
+  },
+  activeTab: {
+    color: darkModeColors.primary,
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: "-1px",
+      left: 0,
+      width: "100%",
+      height: "2px",
+      backgroundColor: darkModeColors.primary,
+    },
+  },
+  searchSortContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    padding: "0 20px",
+  },
+  addScript: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "12px",
+    backgroundColor: "rgba(88, 101, 242, 0.1)",
+    borderRadius: "12px",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    marginBottom: "16px",
+    "&:hover": {
+      backgroundColor: "rgba(88, 101, 242, 0.2)",
+    },
+  },
+  addScriptIcon: {
+    fontSize: "24px",
+    color: darkModeColors.primary,
+  },
+  scriptCard: {
+    backgroundColor: darkModeColors.cardBackground,
+    border: `1px solid ${darkModeColors.border}`,
+    borderRadius: "16px",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    position: "relative",
+    cursor: "pointer",
+    minHeight: "140px",
+    boxSizing: "border-box",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+      borderColor: darkModeColors.primary,
+    },
+  },
+  scriptCardHeader: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    marginBottom: "12px",
+    width: "100%",
+  },
+  scriptName: {
+    color: darkModeColors.text,
+    fontWeight: "600",
+    margin: "0",
+    width: "100%",
+    paddingRight: "16px",
+    boxSizing: "border-box",
+    wordWrap: "break-word",
+    whiteSpace: "normal",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+    lineHeight: "1.2",
+  },
+  actions: {
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: "auto",
+  },
+  editButton: {
+    padding: "6px 12px",
+    backgroundColor: "#4F545C",
+    color: darkModeColors.text,
+    borderRadius: "4px",
+    cursor: "pointer",
+    border: "none",
+    fontSize: "13px",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+  },
+  selectButton: {
+    padding: "6px 12px",
+    backgroundColor: darkModeColors.primary,
+    color: darkModeColors.text,
+    borderRadius: "4px",
+    cursor: "pointer",
+    border: "none",
+    fontSize: "13px",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+  },
   timestampContainer: {
     position: "absolute",
     bottom: "12px",
@@ -1677,18 +1558,6 @@ const styles = {
     color: darkModeColors.textSecondary,
     opacity: 0.8,
     fontWeight: "500",
-  },
-  latestBadge: {
-    backgroundColor: "#28A745",
-    color: "#FFFFFF",
-    borderRadius: "4px",
-    padding: "2px 6px",
-    fontSize: "10px",
-    marginLeft: "8px",
-    fontWeight: "600",
-    display: "inline-flex",
-    alignItems: "center",
-    height: "16px",
   },
 };
 
