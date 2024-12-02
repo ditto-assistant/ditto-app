@@ -225,37 +225,72 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     setVersionOverlay(null);
   };
 
-  const handleDeleteScript = async (category, currentScript) => {
+  const handleDeleteScript = async (category, currentScript, deleteAllVersions = false) => {
     setDeleteConfirmation({ show: false, script: null, category: null });
 
     const userID = localStorage.getItem("userID");
     const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
 
     try {
-      // Find all versions of this script
-      const relatedScripts = scripts[category].filter(
-        (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
-      );
+      if (deleteAllVersions) {
+        // Find all versions of this script
+        const relatedScripts = scripts[category].filter(
+          (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
+        );
 
-      // Delete all versions from Firestore
-      for (const script of relatedScripts) {
-        await deleteScriptFromFirestore(userID, category, script.name);
+        // Delete all versions from Firestore
+        for (const script of relatedScripts) {
+          await deleteScriptFromFirestore(userID, category, script.name);
+        }
+
+        // If any version was selected, clear selection
+        if (relatedScripts.some((script) => script.name === selectedScript)) {
+          localStorage.removeItem("workingOnScript");
+          setSelectedScript(null);
+        }
+
+        // Close version overlay since all versions are deleted
+        setVersionOverlay(null);
+      } else {
+        // Delete only the specific version
+        await deleteScriptFromFirestore(userID, category, currentScript.name);
+
+        // If this version was selected, clear selection
+        if (currentScript.name === selectedScript) {
+          localStorage.removeItem("workingOnScript");
+          setSelectedScript(null);
+        }
+
+        // Update version overlay if it's open
+        if (versionOverlay) {
+          const remainingVersions = versionOverlay.versions.filter(
+            (script) => script.name !== currentScript.name
+          );
+
+          if (remainingVersions.length === 0) {
+            // If no versions left, close the overlay
+            setVersionOverlay(null);
+          } else {
+            // Update versions in the overlay
+            setVersionOverlay({
+              ...versionOverlay,
+              versions: remainingVersions,
+            });
+          }
+        }
       }
 
-      // Update local state
-      setScripts((prevState) => ({
+      // Resync with Firestore and update local state
+      await syncLocalScriptsWithFirestore(userID, category);
+      
+      // Update scripts state from localStorage after sync
+      setScripts(prevState => ({
         ...prevState,
-        [category]: prevState[category].filter(
-          (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
-        ),
+        [category]: JSON.parse(localStorage.getItem(category)) || []
       }));
 
-      // If any version was selected, clear selection
-      if (relatedScripts.some((script) => script.name === selectedScript)) {
-        localStorage.removeItem("workingOnScript");
-        setSelectedScript(null);
-        window.dispatchEvent(new Event("scriptsUpdated"));
-      }
+      // Dispatch event to update UI
+      window.dispatchEvent(new Event("scriptsUpdated"));
     } catch (error) {
       console.error("Error deleting script:", error);
     }
@@ -490,65 +525,24 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     Download
                   </motion.div>
                   {hasMultipleVersions && (
-                    <div style={{ position: 'relative' }}>
-                      <motion.div
-                        style={styles.cardMenuItem}
-                        whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
-                        onClick={(e) => handleVersionButtonClick(baseName, e)}
-                      >
-                        Version
-                      </motion.div>
-                      {versionOverlay && versionOverlay.baseScriptName === baseName && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            backgroundColor: "#2B2D31",
-                            borderRadius: "8px",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-                            border: "1px solid #1E1F22",
-                            width: "100%",
-                            zIndex: 999999,
-                          }}
-                        >
-                          {versionOverlay.versions.map((script, index) => {
-                            const versionMatch = script.name.match(/-v(\d+)$/);
-                            const version = versionMatch ? versionMatch[1] : null;
-                            const baseName = script.name.replace(/-v\d+$/, "");
-                            const isLatest = !version;
-
-                            return (
-                              <motion.div
-                                key={index}
-                                style={styles.cardMenuItem}
-                                whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSelectVersion(script);
-                                }}
-                              >
-                                <span style={{ flex: 1 }}>{baseName}</span>
-                                {version && (
-                                  <span style={styles.versionBadge}>v{version}</span>
-                                )}
-                                {isLatest && (
-                                  <span style={styles.latestBadge}>Latest</span>
-                                )}
-                                <FaTrash
-                                  style={{ ...styles.deleteIcon, marginLeft: "8px" }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteScript(activeTab, script);
-                                    setVersionOverlay(null);
-                                  }}
-                                />
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <motion.div
+                      style={styles.cardMenuItem}
+                      whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const versions = scripts[activeTab].filter(
+                          script => getBaseName(script.name.replace(/ /g, "")) === baseName
+                        );
+                        setVersionOverlay({
+                          baseScriptName: baseName,
+                          versions: versions,
+                        });
+                        setActiveCard(null);
+                        setMenuPosition(null);
+                      }}
+                    >
+                      Version
+                    </motion.div>
                   )}
                   <div style={styles.menuDivider} />
                   {hasMultipleVersions && (
@@ -1007,23 +1001,116 @@ const ScriptsOverlay = ({ closeOverlay }) => {
   return (
     <div className="modal-overlay" onClick={closeOverlay}>
       <div className="scripts-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Selected script section */}
-        {selectedScript && (
-          <motion.div
-            style={styles.selectedScriptContainer}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* ... selected script content ... */}
-          </motion.div>
-        )}
-
         <div className="modal-header">
           <h3>Scripts</h3>
           <MdClose className="close-icon" onClick={closeOverlay} />
         </div>
+
+        {/* Selected script section with enhanced animations */}
+        {selectedScript && (
+          <motion.div
+            style={styles.selectedScriptContainer}
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ 
+              opacity: 1, 
+              height: "auto",
+              y: 0,
+              transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 25,
+                mass: 0.5
+              }
+            }}
+            exit={{ 
+              opacity: 0,
+              height: 0,
+              y: -20,
+              transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 25,
+                mass: 0.5,
+                opacity: { duration: 0.2 }
+              }
+            }}
+          >
+            <motion.div 
+              style={styles.selectedScript}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1,
+                transition: {
+                  delay: 0.1,
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 25,
+                  mass: 0.5
+                }
+              }}
+              exit={{ 
+                scale: 0.95, 
+                opacity: 0,
+                transition: {
+                  duration: 0.2
+                }
+              }}
+            >
+              <motion.div 
+                style={styles.selectedScriptHeader}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                  transition: {
+                    delay: 0.2,
+                    duration: 0.3
+                  }
+                }}
+              >
+                <p style={styles.selectedScriptLabel}>Currently Selected</p>
+                <div style={styles.selectedScriptActions}>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={styles.editSelectedButton}
+                    onClick={() => {
+                      const script = scripts[activeTab].find(s => s.name === selectedScript);
+                      if (script) handleEditScript(script);
+                    }}
+                  >
+                    Edit
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={styles.deselectButton}
+                    onClick={handleDeselectScript}
+                  >
+                    Deselect
+                  </motion.button>
+                </div>
+              </motion.div>
+              <motion.h2 
+                style={styles.selectedScriptName}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ 
+                  opacity: 1, 
+                  x: 0,
+                  transition: {
+                    delay: 0.3,
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 30
+                  }
+                }}
+              >
+                {selectedScript}
+              </motion.h2>
+            </motion.div>
+          </motion.div>
+        )}
 
         <div className="modal-body">
           <div style={styles.tabContainer}>
@@ -1101,12 +1188,21 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             onClose={() =>
               setDeleteConfirmation({ show: false, script: null, category: null })
             }
-            onConfirm={() =>
-              handleDeleteScript(
+            onConfirm={async () => {
+              await handleDeleteScript(
                 deleteConfirmation.category,
-                deleteConfirmation.script
-              )
-            }
+                deleteConfirmation.script,
+                deleteConfirmation.isDeleteAll
+              );
+
+              // Close any open overlays
+              setVersionOverlay(null);
+              setActiveCard(null);
+              setMenuPosition(null);
+
+              // Force a refresh of the scripts list
+              await refreshScripts();
+            }}
             scriptName={deleteConfirmation.script?.name}
             isDeleteAll={deleteConfirmation.isDeleteAll}
           />
@@ -1148,12 +1244,9 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             isOpen={!!versionOverlay}
             onClose={() => setVersionOverlay(null)}
             onSelect={handleSelectVersion}
-            onDelete={async (index) => {
-              const script = versionOverlay.versions[index];
-              await handleDeleteScript(activeTab, script);
-              setVersionOverlay(null);
-            }}
+            onDelete={handleDeleteScript}
             versions={versionOverlay.versions}
+            category={activeTab}
           />
         )}
       </div>
@@ -1424,23 +1517,23 @@ const styles = {
     width: "100%",
     padding: "20px",
     boxSizing: "border-box",
-    background: `linear-gradient(180deg, ${darkModeColors.headerBackground} 0%, transparent 100%)`,
+    background: "transparent",
     display: "flex",
     justifyContent: "center",
+    borderBottom: `1px solid ${darkModeColors.border}`,
   },
   selectedScript: {
-    backgroundColor: darkModeColors.cardBackground,
+    backgroundColor: "#2B2D31",
     border: `1px solid ${darkModeColors.border}`,
-    padding: "24px",
-    borderRadius: "16px",
+    padding: "16px 20px",
+    borderRadius: "12px",
     maxWidth: "800px",
     width: "100%",
     margin: "0 auto",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
-    backdropFilter: "blur(10px)",
+    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
+    gap: "8px",
   },
   selectedScriptHeader: {
     display: "flex",
@@ -1449,44 +1542,43 @@ const styles = {
     width: "100%",
   },
   selectedScriptLabel: {
-    color: darkModeColors.textSecondary,
+    color: "#99AAB5",
     margin: 0,
-    fontSize: "14px",
-    fontWeight: "500",
+    fontSize: "12px",
+    fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: "0.05em",
   },
   selectedScriptName: {
-    color: darkModeColors.primary,
+    color: "#7289DA",
     fontWeight: "600",
-    fontSize: "24px",
+    fontSize: "18px",
     margin: 0,
     wordBreak: "break-word",
-    textAlign: "center",
   },
   selectedScriptActions: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
+    gap: "8px",
   },
   editSelectedButton: {
-    backgroundColor: darkModeColors.cardBackground,
-    border: `1px solid ${darkModeColors.border}`,
-    color: darkModeColors.text,
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontSize: "14px",
+    backgroundColor: "#4F545C",
+    border: "none",
+    color: "#FFFFFF",
+    padding: "6px 12px",
+    borderRadius: "4px",
+    fontSize: "13px",
     fontWeight: "500",
     cursor: "pointer",
     transition: "all 0.2s ease",
   },
   deselectButton: {
     backgroundColor: "transparent",
-    border: `2px solid ${darkModeColors.danger}`,
-    color: darkModeColors.danger,
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontSize: "14px",
+    border: "1px solid #DA373C",
+    color: "#DA373C",
+    padding: "6px 12px",
+    borderRadius: "4px",
+    fontSize: "13px",
     fontWeight: "500",
     cursor: "pointer",
     transition: "all 0.2s ease",

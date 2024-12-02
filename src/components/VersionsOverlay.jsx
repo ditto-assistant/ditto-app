@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { FaCodeBranch, FaTrash } from "react-icons/fa";
+import { useState } from "react";
+import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
 
 const VersionsOverlay = ({
   isOpen,
@@ -7,7 +9,10 @@ const VersionsOverlay = ({
   onSelect,
   onDelete,
   versions,
+  category,
 }) => {
+  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null });
+
   if (!isOpen) return null;
 
   // Sort versions: latest first, then descending order
@@ -26,97 +31,124 @@ const VersionsOverlay = ({
     return parseInt(bMatch[1]) - parseInt(aMatch[1]);
   });
 
-  return (
-    <div className="modal-container" style={styles.modalContainer}>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="versions-overlay-backdrop"
-        style={styles.overlay}
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className="versions-overlay-content"
-          style={styles.modal}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <FaCodeBranch style={styles.icon} />
-          <h3 style={styles.title}>Script Versions</h3>
-          <div style={styles.versionsContainer}>
-            {sortedVersions.map((script, index) => {
-              const versionMatch = script.name.match(/-v(\d+)$/);
-              const version = versionMatch ? versionMatch[1] : null;
-              const baseName = script.name.replace(/-v\d+$/, "");
-              const isLatest = !version;
+  const handleModalClick = (e) => {
+    if (deleteConfirmation.show) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
-              return (
+  const handleDelete = (script) => {
+    setDeleteConfirmation({ show: true, script });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirmation.script) {
+      onDelete(category, deleteConfirmation.script, false);
+      setDeleteConfirmation({ show: false, script: null });
+    }
+  };
+
+  const handleOverlayClick = (e) => {
+    if (deleteConfirmation.show) return;
+    onClose();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={styles.overlay}
+      onClick={handleOverlayClick}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        style={styles.modal}
+        onClick={handleModalClick}
+        onMouseDown={handleModalClick}
+      >
+        <FaCodeBranch style={styles.icon} />
+        <h3 style={styles.title}>Script Versions</h3>
+        <div 
+          style={styles.versionsContainer}
+          onClick={handleModalClick}
+          onMouseDown={handleModalClick}
+        >
+          {sortedVersions.map((script, index) => {
+            const versionMatch = script.name.match(/-v(\d+)$/);
+            const version = versionMatch ? versionMatch[1] : null;
+            const baseName = script.name.replace(/-v\d+$/, "");
+            const isLatest = !version;
+
+            return (
+              <motion.div
+                key={index}
+                style={styles.versionItem}
+                whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSelect(script);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <span style={styles.versionName}>{baseName}</span>
+                {version && <span style={styles.versionBadge}>v{version}</span>}
+                {isLatest && <span style={styles.latestBadge}>Latest</span>}
                 <motion.div
-                  key={index}
-                  className="version-item"
-                  style={styles.versionItem}
-                  whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    onSelect(script);
+                    handleDelete(script);
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                   }}
                 >
-                  <span style={styles.versionName}>{baseName}</span>
-                  {version && <span style={styles.versionBadge}>v{version}</span>}
-                  {isLatest && <span style={styles.latestBadge}>Latest</span>}
-                  <motion.div
-                    className="delete-button"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onDelete(index);
-                    }}
-                  >
-                    <FaTrash style={styles.deleteIcon} />
-                  </motion.div>
+                  <FaTrash style={styles.deleteIcon} />
                 </motion.div>
-              );
-            })}
-          </div>
-          <div style={styles.buttons}>
-            <motion.button
-              className="cancel-button"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              style={styles.cancelButton}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClose();
-              }}
-            >
-              Cancel
-            </motion.button>
-          </div>
-        </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          style={styles.cancelButton}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          Cancel
+        </motion.button>
       </motion.div>
-    </div>
+
+      <DeleteConfirmationOverlay
+        isOpen={deleteConfirmation.show}
+        onClose={() => setDeleteConfirmation({ show: false, script: null })}
+        onConfirm={handleConfirmDelete}
+        scriptName={deleteConfirmation.script?.name}
+        isDeleteAll={false}
+      />
+    </motion.div>
   );
 };
 
 const styles = {
-  modalContainer: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 100000, // Higher than ScriptsOverlay
-  },
   overlay: {
     position: "fixed",
     top: 0,
@@ -144,6 +176,14 @@ const styles = {
     textAlign: "center",
     border: "1px solid rgba(255, 255, 255, 0.1)",
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+  },
+  deleteConfirmationWrapper: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100003,
   },
   icon: {
     color: "#5865F2",
@@ -202,21 +242,18 @@ const styles = {
     fontSize: "14px",
     marginLeft: "12px",
   },
-  buttons: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "16px",
-  },
   cancelButton: {
-    padding: "10px 20px",
-    borderRadius: "8px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "#4F545C",
+    border: "none",
     color: "#FFFFFF",
-    cursor: "pointer",
+    padding: "8px 16px",
+    borderRadius: "4px",
     fontSize: "14px",
     fontWeight: "500",
+    cursor: "pointer",
     transition: "all 0.2s ease",
+    marginTop: "8px",
+    width: "100%",
   },
 };
 

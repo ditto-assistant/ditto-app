@@ -10,20 +10,33 @@ const DeleteConfirmationOverlay = ({
 }) => {
   if (!isOpen) return null;
 
+  const handleOverlayClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+  };
+
+  const handleModalClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={styles.overlay}
-      onClick={onClose}
+      onClick={handleOverlayClick}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         style={styles.modal}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleModalClick}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <FaExclamationTriangle style={styles.warningIcon} />
         <h3 style={styles.title}>Confirm Delete</h3>
@@ -37,7 +50,12 @@ const DeleteConfirmationOverlay = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             style={styles.cancelButton}
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             Cancel
           </motion.button>
@@ -45,7 +63,12 @@ const DeleteConfirmationOverlay = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             style={styles.deleteButton}
-            onClick={onConfirm}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onConfirm();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             Delete {isDeleteAll ? "All" : ""}
           </motion.button>
@@ -69,7 +92,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 99999,
+    zIndex: 100003,
   },
   modal: {
     backgroundColor: "#2f3136",
