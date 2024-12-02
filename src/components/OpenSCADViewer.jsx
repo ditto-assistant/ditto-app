@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaSave } from "react-icons/fa";
 import { IconButton } from "@mui/material";
+import { useState } from "react";
+import { saveScriptToFirestore } from "../control/firebase";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -13,6 +15,48 @@ const darkModeColors = {
 };
 
 const OpenSCADViewer = ({ script, onClose }) => {
+  const [content, setContent] = useState(script.content);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const userID = localStorage.getItem("userID");
+      await saveScriptToFirestore(userID, content, "openSCAD", script.name);
+
+      // Update localStorage
+      const openSCADScripts = JSON.parse(
+        localStorage.getItem("openSCAD") || "[]"
+      );
+      const updatedScripts = openSCADScripts.map((s) =>
+        s.name === script.name ? { ...s, content } : s
+      );
+      localStorage.setItem("openSCAD", JSON.stringify(updatedScripts));
+
+      // Update workingOnScript if this is the current script
+      const workingOnScript = JSON.parse(
+        localStorage.getItem("workingOnScript")
+      );
+      if (workingOnScript && workingOnScript.script === script.name) {
+        localStorage.setItem(
+          "workingOnScript",
+          JSON.stringify({
+            script: script.name,
+            contents: content,
+            scriptType: "openSCAD",
+          })
+        );
+      }
+
+      // Trigger UI updates
+      window.dispatchEvent(new Event("scriptsUpdated"));
+    } catch (error) {
+      console.error("Error saving script:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -31,17 +75,30 @@ const OpenSCADViewer = ({ script, onClose }) => {
         >
           <div style={styles.header}>
             <h3 style={styles.title}>{script.name}</h3>
-            <IconButton
-              size="small"
-              onClick={onClose}
-              style={styles.closeButton}
-            >
-              <FaTimes size={16} color={darkModeColors.textSecondary} />
-            </IconButton>
+            <div style={styles.headerButtons}>
+              <IconButton
+                size="small"
+                onClick={handleSave}
+                disabled={isSaving}
+                style={styles.saveButton}
+              >
+                <FaSave size={16} color={darkModeColors.textSecondary} />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={onClose}
+                style={styles.closeButton}
+              >
+                <FaTimes size={16} color={darkModeColors.textSecondary} />
+              </IconButton>
+            </div>
           </div>
-          <pre style={styles.codeContainer}>
-            <code style={styles.code}>{script.content}</code>
-          </pre>
+          <textarea
+            style={styles.editor}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            spellCheck={false}
+          />
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -59,7 +116,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000,
+    zIndex: 100002,
     backdropFilter: "blur(4px)",
   },
   container: {
@@ -72,6 +129,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     border: `1px solid ${darkModeColors.border}`,
+    position: "relative",
+    zIndex: 100003,
   },
   header: {
     padding: "16px 24px",
@@ -86,12 +145,21 @@ const styles = {
     fontSize: "18px",
     fontWeight: 600,
   },
+  headerButtons: {
+    display: "flex",
+    gap: "8px",
+  },
+  saveButton: {
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+  },
   closeButton: {
     "&:hover": {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
   },
-  codeContainer: {
+  editor: {
     padding: "24px",
     margin: 0,
     overflow: "auto",
@@ -99,13 +167,15 @@ const styles = {
     borderBottomLeftRadius: "12px",
     borderBottomRightRadius: "12px",
     maxHeight: "calc(80vh - 70px)", // Subtract header height
-  },
-  code: {
+    width: "100%",
+    boxSizing: "border-box",
+    border: "none",
+    outline: "none",
+    resize: "none",
     fontFamily: "monospace",
     fontSize: "14px",
     color: darkModeColors.text,
-    whiteSpace: "pre-wrap",
-    wordBreak: "break-word",
+    lineHeight: "1.5",
   },
 };
 
