@@ -28,7 +28,7 @@
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
     "vite-plugin-pwa": "^0.21.1",
-    "web-vitals": "^2.1.4",
+    "web-vitals": "^4.2.4",
     "workbox-expiration": "^7.3.0",
     "workbox-precaching": "^7.3.0",
     "workbox-routing": "^7.3.0",
