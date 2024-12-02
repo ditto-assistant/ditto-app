@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import AceEditor from "react-ace";
+import ace from "ace-builds";
+import "ace-builds/src-min-noconflict/ace";
+import "ace-builds/src-min-noconflict/mode-html";
+import "ace-builds/src-min-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/theme-tomorrow_night";
+import "ace-builds/src-min-noconflict/ext-language_tools";
+import "ace-builds/src-min-noconflict/ext-searchbox";
 import {
   FaArrowLeft,
   FaPlay,
@@ -33,6 +40,23 @@ import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
+
+// Initialize ace for production
+if (import.meta.env.PROD) {
+  ace.config.set(
+    "basePath",
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/"
+  );
+  ace.config.setModuleUrl(
+    "ace/mode/html_worker",
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js"
+  );
+  ace.config.setModuleUrl(
+    "ace/mode/javascript_worker",
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
+  );
+}
+
 const darkModeColors = {
   background: "#1E1F22",
   foreground: "#2B2D31",
@@ -1251,7 +1275,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               <AceEditor
                 ref={editorRef}
                 mode="javascript"
-                theme="monokai"
+                theme="tomorrow_night"
                 onChange={setCode}
                 value={code}
                 name="full-screen-editor"
@@ -1271,8 +1295,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                   tabSize: 2,
                   useWorker: false,
                   wrap: wrapEnabled,
+                  fontFamily: "JetBrains Mono, monospace",
+                  theme: "tomorrow_night",
                 }}
                 onSelectionChange={handleEditorSelection}
+                style={{
+                  backgroundColor: darkModeColors.background,
+                  borderRadius: "4px",
+                }}
               />
             ) : (
               <DOMTreeViewer
