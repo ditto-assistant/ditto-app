@@ -228,11 +228,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     setVersionOverlay(null);
   };
 
-  const handleDeleteScript = async (
-    category,
-    currentScript,
-    deleteAllVersions = true
-  ) => {
+  const handleDeleteScript = async (category, currentScript, deleteAllVersions = false) => {
     setDeleteConfirmation({ show: false, script: null, category: null });
 
     const userID = localStorage.getItem("userID");
@@ -242,8 +238,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
       if (deleteAllVersions) {
         // Find all versions of this script
         const relatedScripts = scripts[category].filter(
-          (script) =>
-            getBaseNameAndVersion(script.name).baseName === baseScriptName
+          (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
         );
 
         // Delete all versions from Firestore
@@ -259,26 +254,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
 
         // Close version overlay since all versions are deleted
         setVersionOverlay(null);
-
-        // 🛠️ Update scripts state to remove deleted scripts
-        setScripts((prevScripts) => ({
-          ...prevScripts,
-          [category]: prevScripts[category].filter(
-            (script) =>
-              getBaseNameAndVersion(script.name).baseName !== baseScriptName
-          ),
-        }));
-
-        // 🛠️ Update localStorage
-        localStorage.setItem(
-          category,
-          JSON.stringify(
-            scripts[category].filter(
-              (script) =>
-                getBaseNameAndVersion(script.name).baseName !== baseScriptName
-            )
-          )
-        );
       } else {
         // Delete only the specific version
         await deleteScriptFromFirestore(userID, category, currentScript.name);
@@ -288,24 +263,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           localStorage.removeItem("workingOnScript");
           setSelectedScript(null);
         }
-
-        // 🛠️ Update scripts state to remove the deleted script
-        setScripts((prevScripts) => ({
-          ...prevScripts,
-          [category]: prevScripts[category].filter(
-            (script) => script.name !== currentScript.name
-          ),
-        }));
-
-        // 🛠️ Update localStorage
-        localStorage.setItem(
-          category,
-          JSON.stringify(
-            scripts[category].filter(
-              (script) => script.name !== currentScript.name
-            )
-          )
-        );
 
         // Update version overlay if it's open
         if (versionOverlay) {
@@ -325,6 +282,15 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           }
         }
       }
+
+      // Resync with Firestore and update local state
+      await syncLocalScriptsWithFirestore(userID, category);
+      
+      // Update scripts state from localStorage after sync
+      setScripts(prevState => ({
+        ...prevState,
+        [category]: JSON.parse(localStorage.getItem(category)) || []
+      }));
 
       // Dispatch event to update UI
       window.dispatchEvent(new Event("scriptsUpdated"));
@@ -574,15 +540,11 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                   {hasMultipleVersions && (
                     <motion.div
                       style={styles.cardMenuItem}
-                      whileHover={{
-                        backgroundColor: "rgba(88, 101, 242, 0.1)",
-                      }}
+                      whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                       onClick={(e) => {
                         e.stopPropagation();
                         const versions = scripts[activeTab].filter(
-                          (script) =>
-                            getBaseName(script.name.replace(/ /g, "")) ===
-                            baseName
+                          script => getBaseName(script.name.replace(/ /g, "")) === baseName
                         );
                         setVersionOverlay({
                           baseScriptName: baseName,
@@ -1066,22 +1028,28 @@ const ScriptsOverlay = ({ closeOverlay }) => {
         </div>
 
         {/* Selected script section with enhanced animations */}
+        <div className="modal-header">
+          <h3>Scripts</h3>
+          <MdClose className="close-icon" onClick={closeOverlay} />
+        </div>
+
+        {/* Selected script section with enhanced animations */}
         {selectedScript && (
           <motion.div
             style={styles.selectedScriptContainer}
             initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{
-              opacity: 1,
+            animate={{ 
+              opacity: 1, 
               height: "auto",
               y: 0,
               transition: {
                 type: "spring",
                 stiffness: 300,
                 damping: 25,
-                mass: 0.5,
-              },
+                mass: 0.5
+              }
             }}
-            exit={{
+            exit={{ 
               opacity: 0,
               height: 0,
               y: -20,
@@ -1090,42 +1058,42 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                 stiffness: 300,
                 damping: 25,
                 mass: 0.5,
-                opacity: { duration: 0.2 },
-              },
+                opacity: { duration: 0.2 }
+              }
             }}
           >
-            <motion.div
+            <motion.div 
               style={styles.selectedScript}
               initial={{ scale: 0.95, opacity: 0 }}
-              animate={{
-                scale: 1,
+              animate={{ 
+                scale: 1, 
                 opacity: 1,
                 transition: {
                   delay: 0.1,
                   type: "spring",
                   stiffness: 400,
                   damping: 25,
-                  mass: 0.5,
-                },
+                  mass: 0.5
+                }
               }}
-              exit={{
-                scale: 0.95,
+              exit={{ 
+                scale: 0.95, 
                 opacity: 0,
                 transition: {
-                  duration: 0.2,
-                },
+                  duration: 0.2
+                }
               }}
             >
-              <motion.div
+              <motion.div 
                 style={styles.selectedScriptHeader}
                 initial={{ opacity: 0, y: -10 }}
-                animate={{
-                  opacity: 1,
+                animate={{ 
+                  opacity: 1, 
                   y: 0,
                   transition: {
                     delay: 0.2,
-                    duration: 0.3,
-                  },
+                    duration: 0.3
+                  }
                 }}
               >
                 <p style={styles.selectedScriptLabel}>Currently Selected</p>
@@ -1135,9 +1103,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     whileTap={{ scale: 0.95 }}
                     style={styles.editSelectedButton}
                     onClick={() => {
-                      const script = scripts[activeTab].find(
-                        (s) => s.name === selectedScript
-                      );
+                      const script = scripts[activeTab].find(s => s.name === selectedScript);
                       if (script) handleEditScript(script);
                     }}
                   >
@@ -1153,18 +1119,18 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                   </motion.button>
                 </div>
               </motion.div>
-              <motion.h2
+              <motion.h2 
                 style={styles.selectedScriptName}
                 initial={{ opacity: 0, x: -20 }}
-                animate={{
-                  opacity: 1,
+                animate={{ 
+                  opacity: 1, 
                   x: 0,
                   transition: {
                     delay: 0.3,
                     type: "spring",
                     stiffness: 400,
-                    damping: 30,
-                  },
+                    damping: 30
+                  }
                 }}
               >
                 {selectedScript}
@@ -1259,12 +1225,21 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                 category: null,
               })
             }
-            onConfirm={() =>
-              handleDeleteScript(
+            onConfirm={async () => {
+              await handleDeleteScript(
                 deleteConfirmation.category,
-                deleteConfirmation.script
-              )
-            }
+                deleteConfirmation.script,
+                deleteConfirmation.isDeleteAll
+              );
+
+              // Close any open overlays
+              setVersionOverlay(null);
+              setActiveCard(null);
+              setMenuPosition(null);
+
+              // Force a refresh of the scripts list
+              await refreshScripts();
+            }}
             scriptName={deleteConfirmation.script?.name}
             isDeleteAll={deleteConfirmation.isDeleteAll}
           />
@@ -1326,7 +1301,9 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             onClose={() => setVersionOverlay(null)}
             onSelect={handleSelectVersion}
             onDelete={handleDeleteScript}
+            onDelete={handleDeleteScript}
             versions={versionOverlay.versions}
+            category={activeTab}
             category={activeTab}
           />
         )}
@@ -1599,21 +1576,28 @@ const styles = {
     padding: "20px",
     boxSizing: "border-box",
     background: "transparent",
+    background: "transparent",
     display: "flex",
     justifyContent: "center",
+    borderBottom: `1px solid ${darkModeColors.border}`,
     borderBottom: `1px solid ${darkModeColors.border}`,
   },
   selectedScript: {
     backgroundColor: "#2B2D31",
+    backgroundColor: "#2B2D31",
     border: `1px solid ${darkModeColors.border}`,
+    padding: "16px 20px",
+    borderRadius: "12px",
     padding: "16px 20px",
     borderRadius: "12px",
     maxWidth: "800px",
     width: "100%",
     margin: "0 auto",
     boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
     display: "flex",
     flexDirection: "column",
+    gap: "8px",
     gap: "8px",
   },
   selectedScriptHeader: {
@@ -1624,7 +1608,10 @@ const styles = {
   },
   selectedScriptLabel: {
     color: "#99AAB5",
+    color: "#99AAB5",
     margin: 0,
+    fontSize: "12px",
+    fontWeight: "600",
     fontSize: "12px",
     fontWeight: "600",
     textTransform: "uppercase",
@@ -1632,7 +1619,9 @@ const styles = {
   },
   selectedScriptName: {
     color: "#7289DA",
+    color: "#7289DA",
     fontWeight: "600",
+    fontSize: "18px",
     fontSize: "18px",
     margin: 0,
     wordBreak: "break-word",
@@ -1641,8 +1630,15 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "8px",
+    gap: "8px",
   },
   editSelectedButton: {
+    backgroundColor: "#4F545C",
+    border: "none",
+    color: "#FFFFFF",
+    padding: "6px 12px",
+    borderRadius: "4px",
+    fontSize: "13px",
     backgroundColor: "#4F545C",
     border: "none",
     color: "#FFFFFF",
@@ -1655,6 +1651,11 @@ const styles = {
   },
   deselectButton: {
     backgroundColor: "transparent",
+    border: "1px solid #DA373C",
+    color: "#DA373C",
+    padding: "6px 12px",
+    borderRadius: "4px",
+    fontSize: "13px",
     border: "1px solid #DA373C",
     color: "#DA373C",
     padding: "6px 12px",

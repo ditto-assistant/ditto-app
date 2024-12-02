@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { FaCodeBranch, FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
+import { useState } from "react";
+import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
 
 const VersionsOverlay = ({
   isOpen,
@@ -10,11 +12,9 @@ const VersionsOverlay = ({
   onDelete,
   versions,
   category,
+  category,
 }) => {
-  const [deleteConfirmation, setDeleteConfirmation] = useState({
-    show: false,
-    script: null,
-  });
+  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null });
 
   if (!isOpen) return null;
 
@@ -56,6 +56,28 @@ const VersionsOverlay = ({
     onClose();
   };
 
+  const handleModalClick = (e) => {
+    if (deleteConfirmation.show) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDelete = (script) => {
+    setDeleteConfirmation({ show: true, script });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirmation.script) {
+      onDelete(category, deleteConfirmation.script, false);
+      setDeleteConfirmation({ show: false, script: null });
+    }
+  };
+
+  const handleOverlayClick = (e) => {
+    if (deleteConfirmation.show) return;
+    onClose();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -74,7 +96,7 @@ const VersionsOverlay = ({
       >
         <FaCodeBranch style={styles.icon} />
         <h3 style={styles.title}>Script Versions</h3>
-        <div
+        <div 
           style={styles.versionsContainer}
           onClick={handleModalClick}
           onMouseDown={handleModalClick}
@@ -138,7 +160,69 @@ const VersionsOverlay = ({
         >
           Cancel
         </motion.button>
+            return (
+              <motion.div
+                key={index}
+                style={styles.versionItem}
+                whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSelect(script);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <span style={styles.versionName}>{baseName}</span>
+                {version && <span style={styles.versionBadge}>v{version}</span>}
+                {isLatest && <span style={styles.latestBadge}>Latest</span>}
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDelete(script);
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <FaTrash style={styles.deleteIcon} />
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          style={styles.cancelButton}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          Cancel
+        </motion.button>
       </motion.div>
+
+      <DeleteConfirmationOverlay
+        isOpen={deleteConfirmation.show}
+        onClose={() => setDeleteConfirmation({ show: false, script: null })}
+        onConfirm={handleConfirmDelete}
+        scriptName={deleteConfirmation.script?.name}
+        isDeleteAll={false}
+      />
+    </motion.div>
 
       <DeleteConfirmationOverlay
         isOpen={deleteConfirmation.show}
@@ -181,7 +265,7 @@ const styles = {
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
   deleteConfirmationWrapper: {
-    position: "fixed",
+    position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
@@ -248,13 +332,20 @@ const styles = {
   cancelButton: {
     backgroundColor: "#4F545C",
     border: "none",
+    backgroundColor: "#4F545C",
+    border: "none",
     color: "#FFFFFF",
+    padding: "8px 16px",
+    borderRadius: "4px",
     padding: "8px 16px",
     borderRadius: "4px",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
+    cursor: "pointer",
     transition: "all 0.2s ease",
+    marginTop: "8px",
+    width: "100%",
     marginTop: "8px",
     width: "100%",
   },

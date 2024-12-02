@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMediaQuery } from "@mui/material";
@@ -15,7 +16,7 @@ const CardMenu = ({ children, style, onDelete }) => {
   }, [style.top]);
 
   const menuItems = React.Children.toArray(children).filter(Boolean);
-  const orderedItems = menuItems;
+  const orderedItems = shouldOpenUpward ? [...menuItems].reverse() : menuItems;
 
   const menuWidth = isMobile ? 160 : 140;
   const leftPosition = style.left - menuWidth - 8;
@@ -28,17 +29,21 @@ const CardMenu = ({ children, style, onDelete }) => {
           opacity: 0,
           scale: 0.95,
           y: shouldOpenUpward ? 10 : -10,
+          y: shouldOpenUpward ? 10 : -10,
         }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{
           opacity: 0,
           scale: 0.95,
           y: shouldOpenUpward ? 10 : -10,
+          y: shouldOpenUpward ? 10 : -10,
         }}
         transition={{ duration: 0.2 }}
         style={{
           ...restStyle,
           position: "fixed",
+          left: leftPosition,
+          zIndex: 99990,
           left: leftPosition,
           zIndex: 99990,
           backgroundColor: "#2B2D31",
@@ -48,7 +53,12 @@ const CardMenu = ({ children, style, onDelete }) => {
           overflow: "hidden",
           minWidth: isMobile ? "160px" : "140px",
           transformOrigin: shouldOpenUpward ? "bottom" : "top",
+          transformOrigin: shouldOpenUpward ? "bottom" : "top",
           padding: isMobile ? "6px" : "4px",
+          ...(shouldOpenUpward && {
+            top: "auto",
+            bottom: window.innerHeight - style.top + 8,
+          }),
           ...(shouldOpenUpward && {
             top: "auto",
             bottom: window.innerHeight - style.top + 8,
@@ -59,6 +69,7 @@ const CardMenu = ({ children, style, onDelete }) => {
         }}
       >
         {orderedItems.map((child, index) => {
+        {orderedItems.map((child, index) => {
           if (!child) return null;
 
           if (
@@ -68,6 +79,7 @@ const CardMenu = ({ children, style, onDelete }) => {
           ) {
             return (
               <div
+                key={`divider-${index}`}
                 key={`divider-${index}`}
                 style={{
                   height: "1px",
@@ -80,6 +92,7 @@ const CardMenu = ({ children, style, onDelete }) => {
 
           return (
             <motion.div
+              key={index}
               key={index}
               whileHover={{
                 backgroundColor: "rgba(88, 101, 242, 0.1)",
@@ -99,6 +112,7 @@ const CardMenu = ({ children, style, onDelete }) => {
                 borderRadius: "4px",
                 height: isMobile ? "40px" : "28px",
                 marginBottom: isMobile ? "3px" : "2px",
+                ...(index === orderedItems.length - 1 && {
                 ...(index === orderedItems.length - 1 && {
                   marginTop: "0",
                   marginBottom: "0",
