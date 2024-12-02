@@ -2,14 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Network } from "vis-network";
 import { DataSet } from "vis-data";
 import AceEditor from "react-ace";
+import "ace-builds/src-min-noconflict/mode-html";
+import "ace-builds/src-min-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/theme-tomorrow_night";
+import "ace-builds/src-min-noconflict/ext-language_tools";
+import "ace-builds/src-min-noconflict/ext-searchbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconButton } from "@mui/material";
 import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa";
 import { LoadingSpinner } from "./LoadingSpinner";
-import "ace-builds/src-noconflict/mode-html";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-tomorrow_night";
-import "ace-builds/src-noconflict/ext-language_tools";
 
 const darkModeColors = {
   background: "#1E1F22",

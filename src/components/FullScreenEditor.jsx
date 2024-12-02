@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import AceEditor from "react-ace";
+import "ace-builds/src-min-noconflict/mode-html";
+import "ace-builds/src-min-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/theme-tomorrow_night";
+import "ace-builds/src-min-noconflict/ext-language_tools";
+import "ace-builds/src-min-noconflict/ext-searchbox";
 import {
   FaArrowLeft,
   FaPlay,
@@ -33,10 +38,6 @@ import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
-import "ace-builds/src-noconflict/mode-html";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-tomorrow_night";
-import "ace-builds/src-noconflict/ext-language_tools";
 
 const darkModeColors = {
   background: "#1E1F22",
