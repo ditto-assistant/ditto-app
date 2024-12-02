@@ -420,8 +420,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
       // Check for multiple versions by looking at the base name
       const hasMultipleVersions =
         scripts[category].filter(
-          (script) =>
-            getBaseName(script.name.replace(/ /g, "")) === baseName
+          (script) => getBaseName(script.name.replace(/ /g, "")) === baseName
         ).length > 1;
 
       if (!cardRefs.current[currentScript.id]) {
@@ -479,9 +478,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             ) : (
               <p style={styles.scriptName}>
                 {scriptBaseName}
-                {version && (
-                  <span style={styles.versionBadge}>v{version}</span>
-                )}
+                {version && <span style={styles.versionBadge}>v{version}</span>}
               </p>
             )}
           </div>
@@ -587,8 +584,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     }
                     const versions = scripts[activeTab].filter(
                       (script) =>
-                        getBaseName(script.name.replace(/ /g, "")) ===
-                        baseName
+                        getBaseName(script.name.replace(/ /g, "")) === baseName
                     );
                     setVersionOverlay({
                       baseScriptName: baseName,
@@ -1208,7 +1204,10 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             </div>
 
             <div style={styles.searchSortContainer}>
-              <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+              <SearchBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
               <SortButton />
             </div>
           </div>
@@ -1217,32 +1216,28 @@ const ScriptsOverlay = ({ closeOverlay }) => {
             {activeTab === "webApps" && (
               <>
                 <div className="add-script-container">
-                  <div 
+                  <div
                     className="add-script-button"
                     onClick={() => handleAddScriptClick("webApps")}
                   >
-                    <MdAdd style={{ fontSize: '24px', color: '#7289da' }} />
+                    <MdAdd style={{ fontSize: "24px", color: "#7289da" }} />
                   </div>
                 </div>
-                <div className="scripts-grid">
-                  {renderScripts("webApps")}
-                </div>
+                <div className="scripts-grid">{renderScripts("webApps")}</div>
               </>
             )}
 
             {activeTab === "openSCAD" && (
               <>
                 <div className="add-script-container">
-                  <div 
+                  <div
                     className="add-script-button"
                     onClick={() => handleAddScriptClick("openSCAD")}
                   >
-                    <MdAdd style={{ fontSize: '24px', color: '#7289da' }} />
+                    <MdAdd style={{ fontSize: "24px", color: "#7289da" }} />
                   </div>
                 </div>
-                <div className="scripts-grid">
-                  {renderScripts("openSCAD")}
-                </div>
+                <div className="scripts-grid">{renderScripts("openSCAD")}</div>
               </>
             )}
           </div>
