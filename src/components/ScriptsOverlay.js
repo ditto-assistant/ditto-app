@@ -730,8 +730,10 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           scriptName: script.name,
         })
       );
+      closeOverlay(); // Close overlay before navigating
     } else if (script.scriptType === "openSCAD") {
       downloadOpenscadScript(script.content, script.name);
+      closeOverlay(); // Close overlay after initiating download
     }
   };
 

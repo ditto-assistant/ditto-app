@@ -15,7 +15,7 @@ const CardMenu = ({ children, style, onDelete }) => {
   }, [style.top]);
 
   const menuItems = React.Children.toArray(children).filter(Boolean);
-  const orderedItems = shouldOpenUpward ? [...menuItems].reverse() : menuItems;
+  const orderedItems = menuItems;
 
   const menuWidth = isMobile ? 160 : 140;
   const leftPosition = style.left - menuWidth - 8;
