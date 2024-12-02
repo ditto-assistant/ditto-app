@@ -629,7 +629,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
       onClose();
     } else {
       // If launched from scripts overlay
-      window.dispatchEvent(new Event('closeFullScreenEditor'));
+      window.dispatchEvent(new Event("closeFullScreenEditor"));
     }
   };
 

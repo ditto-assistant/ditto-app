@@ -27,8 +27,8 @@ import {
   saveScriptToFirestore,
 } from "../control/firebase";
 import MemoryOverlay from "../components/MemoryOverlay";
-import ScriptsOverlay from '../components/ScriptsOverlay';
-import FullScreenEditor from '../components/FullScreenEditor';
+import ScriptsOverlay from "../components/ScriptsOverlay";
+import FullScreenEditor from "../components/FullScreenEditor";
 
 const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
 
@@ -813,9 +813,9 @@ export default function HomeScreen() {
       });
     };
 
-    window.addEventListener('editScript', handleEditScript);
+    window.addEventListener("editScript", handleEditScript);
     return () => {
-      window.removeEventListener('editScript', handleEditScript);
+      window.removeEventListener("editScript", handleEditScript);
     };
   }, []);
 
@@ -824,9 +824,15 @@ export default function HomeScreen() {
       setFullScreenEdit(null);
     };
 
-    window.addEventListener('closeFullScreenEditor', handleCloseFullScreenEditor);
+    window.addEventListener(
+      "closeFullScreenEditor",
+      handleCloseFullScreenEditor
+    );
     return () => {
-      window.removeEventListener('closeFullScreenEditor', handleCloseFullScreenEditor);
+      window.removeEventListener(
+        "closeFullScreenEditor",
+        handleCloseFullScreenEditor
+      );
     };
   }, []);
 
@@ -849,7 +855,7 @@ export default function HomeScreen() {
     // Listen for both events
     window.addEventListener("scriptSelected", handleScriptUpdate);
     window.addEventListener("scriptsUpdated", handleScriptUpdate);
-    
+
     // Initial check
     handleScriptUpdate();
 
@@ -920,7 +926,7 @@ export default function HomeScreen() {
                 <div className="loading-placeholder">Loading status...</div>
               }
             >
-              <StatusBar 
+              <StatusBar
                 onMemoryClick={() => setIsMemoryOverlayOpen(true)}
                 onScriptsClick={() => setIsScriptsOverlayOpen(true)}
               />
@@ -1127,8 +1133,8 @@ export default function HomeScreen() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <ScriptsOverlay 
-              closeOverlay={() => setIsScriptsOverlayOpen(false)} 
+            <ScriptsOverlay
+              closeOverlay={() => setIsScriptsOverlayOpen(false)}
             />
           </motion.div>
         )}

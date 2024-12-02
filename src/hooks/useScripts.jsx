@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { syncLocalScriptsWithFirestore } from '../control/firebase';
+import { useState, useEffect } from "react";
+import { syncLocalScriptsWithFirestore } from "../control/firebase";
 
 export const useScripts = () => {
   const [scripts, setScripts] = useState({
@@ -12,7 +12,7 @@ export const useScripts = () => {
     if (userID) {
       await syncLocalScriptsWithFirestore(userID, "webApps");
       await syncLocalScriptsWithFirestore(userID, "openSCAD");
-      
+
       setScripts({
         webApps: JSON.parse(localStorage.getItem("webApps")) || [],
         openSCAD: JSON.parse(localStorage.getItem("openSCAD")) || [],

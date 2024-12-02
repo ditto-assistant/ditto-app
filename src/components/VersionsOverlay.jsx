@@ -11,7 +11,10 @@ const VersionsOverlay = ({
   versions,
   category,
 }) => {
-  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null });
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    show: false,
+    script: null,
+  });
 
   if (!isOpen) return null;
 
@@ -19,14 +22,14 @@ const VersionsOverlay = ({
   const sortedVersions = [...versions].sort((a, b) => {
     const aMatch = a.name.match(/-v(\d+)$/);
     const bMatch = b.name.match(/-v(\d+)$/);
-    
+
     // If neither has a version number (latest), maintain current order
     if (!aMatch && !bMatch) return 0;
-    
+
     // If one doesn't have a version number, it's latest and should be first
     if (!aMatch) return -1;
     if (!bMatch) return 1;
-    
+
     // Otherwise sort by version number in descending order
     return parseInt(bMatch[1]) - parseInt(aMatch[1]);
   });
@@ -71,7 +74,7 @@ const VersionsOverlay = ({
       >
         <FaCodeBranch style={styles.icon} />
         <h3 style={styles.title}>Script Versions</h3>
-        <div 
+        <div
           style={styles.versionsContainer}
           onClick={handleModalClick}
           onMouseDown={handleModalClick}
@@ -165,7 +168,7 @@ const styles = {
     zIndex: 100001,
   },
   modal: {
-    position: 'relative',
+    position: "relative",
     zIndex: 100002,
     backgroundColor: "#2f3136",
     background: "linear-gradient(180deg, #2f3136 0%, #36393f 100%)",
@@ -178,7 +181,7 @@ const styles = {
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
   deleteConfirmationWrapper: {
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     left: 0,
     right: 0,
@@ -257,4 +260,4 @@ const styles = {
   },
 };
 
-export default VersionsOverlay; 
+export default VersionsOverlay;
