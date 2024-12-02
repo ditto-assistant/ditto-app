@@ -228,7 +228,11 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     setVersionOverlay(null);
   };
 
-  const handleDeleteScript = async (category, currentScript, deleteAllVersions = true) => {
+  const handleDeleteScript = async (
+    category,
+    currentScript,
+    deleteAllVersions = true
+  ) => {
     setDeleteConfirmation({ show: false, script: null, category: null });
 
     const userID = localStorage.getItem("userID");
@@ -238,7 +242,8 @@ const ScriptsOverlay = ({ closeOverlay }) => {
       if (deleteAllVersions) {
         // Find all versions of this script
         const relatedScripts = scripts[category].filter(
-          (script) => getBaseNameAndVersion(script.name).baseName === baseScriptName
+          (script) =>
+            getBaseNameAndVersion(script.name).baseName === baseScriptName
         );
 
         // Delete all versions from Firestore
@@ -259,7 +264,8 @@ const ScriptsOverlay = ({ closeOverlay }) => {
         setScripts((prevScripts) => ({
           ...prevScripts,
           [category]: prevScripts[category].filter(
-            (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
+            (script) =>
+              getBaseNameAndVersion(script.name).baseName !== baseScriptName
           ),
         }));
 
@@ -268,7 +274,8 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           category,
           JSON.stringify(
             scripts[category].filter(
-              (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
+              (script) =>
+                getBaseNameAndVersion(script.name).baseName !== baseScriptName
             )
           )
         );
@@ -294,7 +301,9 @@ const ScriptsOverlay = ({ closeOverlay }) => {
         localStorage.setItem(
           category,
           JSON.stringify(
-            scripts[category].filter((script) => script.name !== currentScript.name)
+            scripts[category].filter(
+              (script) => script.name !== currentScript.name
+            )
           )
         );
 
@@ -565,11 +574,15 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                   {hasMultipleVersions && (
                     <motion.div
                       style={styles.cardMenuItem}
-                      whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
+                      whileHover={{
+                        backgroundColor: "rgba(88, 101, 242, 0.1)",
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         const versions = scripts[activeTab].filter(
-                          script => getBaseName(script.name.replace(/ /g, "")) === baseName
+                          (script) =>
+                            getBaseName(script.name.replace(/ /g, "")) ===
+                            baseName
                         );
                         setVersionOverlay({
                           baseScriptName: baseName,
@@ -1063,18 +1076,18 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           <motion.div
             style={styles.selectedScriptContainer}
             initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{ 
-              opacity: 1, 
+            animate={{
+              opacity: 1,
               height: "auto",
               y: 0,
               transition: {
                 type: "spring",
                 stiffness: 300,
                 damping: 25,
-                mass: 0.5
-              }
+                mass: 0.5,
+              },
             }}
-            exit={{ 
+            exit={{
               opacity: 0,
               height: 0,
               y: -20,
@@ -1083,42 +1096,42 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                 stiffness: 300,
                 damping: 25,
                 mass: 0.5,
-                opacity: { duration: 0.2 }
-              }
+                opacity: { duration: 0.2 },
+              },
             }}
           >
-            <motion.div 
+            <motion.div
               style={styles.selectedScript}
               initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ 
-                scale: 1, 
+              animate={{
+                scale: 1,
                 opacity: 1,
                 transition: {
                   delay: 0.1,
                   type: "spring",
                   stiffness: 400,
                   damping: 25,
-                  mass: 0.5
-                }
+                  mass: 0.5,
+                },
               }}
-              exit={{ 
-                scale: 0.95, 
+              exit={{
+                scale: 0.95,
                 opacity: 0,
                 transition: {
-                  duration: 0.2
-                }
+                  duration: 0.2,
+                },
               }}
             >
-              <motion.div 
+              <motion.div
                 style={styles.selectedScriptHeader}
                 initial={{ opacity: 0, y: -10 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   y: 0,
                   transition: {
                     delay: 0.2,
-                    duration: 0.3
-                  }
+                    duration: 0.3,
+                  },
                 }}
               >
                 <p style={styles.selectedScriptLabel}>Currently Selected</p>
@@ -1128,7 +1141,9 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                     whileTap={{ scale: 0.95 }}
                     style={styles.editSelectedButton}
                     onClick={() => {
-                      const script = scripts[activeTab].find(s => s.name === selectedScript);
+                      const script = scripts[activeTab].find(
+                        (s) => s.name === selectedScript
+                      );
                       if (script) handleEditScript(script);
                     }}
                   >
@@ -1144,18 +1159,18 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                   </motion.button>
                 </div>
               </motion.div>
-              <motion.h2 
+              <motion.h2
                 style={styles.selectedScriptName}
                 initial={{ opacity: 0, x: -20 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   x: 0,
                   transition: {
                     delay: 0.3,
                     type: "spring",
                     stiffness: 400,
-                    damping: 30
-                  }
+                    damping: 30,
+                  },
                 }}
               >
                 {selectedScript}

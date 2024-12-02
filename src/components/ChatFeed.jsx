@@ -685,8 +685,10 @@ export default function ChatFeed({
     const isGenerating = message.sender === "Ditto" && message.isTyping;
 
     // Add this to determine if this is the most recent Ditto message
-    const isLastDittoMessage = message.sender === "Ditto" && 
-      messages.findIndex((msg, i) => i > index && msg.sender === "Ditto") === -1;
+    const isLastDittoMessage =
+      message.sender === "Ditto" &&
+      messages.findIndex((msg, i) => i > index && msg.sender === "Ditto") ===
+        -1;
 
     // Detect tool type from message content if not already set
     const toolType = message.toolType || detectToolType(message.text);
@@ -705,8 +707,11 @@ export default function ChatFeed({
             src={dittoAvatar}
             alt="Ditto"
             className={`avatar ditto-avatar ${
-              isLastDittoMessage && isGenerating ? "animating" : 
-              isLastDittoMessage && !isGenerating ? "spinning" : ""
+              isLastDittoMessage && isGenerating
+                ? "animating"
+                : isLastDittoMessage && !isGenerating
+                  ? "spinning"
+                  : ""
             }`}
           />
         )}

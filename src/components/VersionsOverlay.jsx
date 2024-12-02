@@ -14,7 +14,10 @@ const VersionsOverlay = ({
   category,
   category,
 }) => {
-  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, script: null });
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    show: false,
+    script: null,
+  });
 
   if (!isOpen) return null;
 
@@ -96,7 +99,7 @@ const VersionsOverlay = ({
       >
         <FaCodeBranch style={styles.icon} />
         <h3 style={styles.title}>Script Versions</h3>
-        <div 
+        <div
           style={styles.versionsContainer}
           onClick={handleModalClick}
           onMouseDown={handleModalClick}
@@ -265,7 +268,7 @@ const styles = {
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
   deleteConfirmationWrapper: {
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     left: 0,
     right: 0,
