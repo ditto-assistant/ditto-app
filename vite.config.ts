@@ -7,7 +7,7 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [
     MillionLint.vite({
-      enabled: false,
+      enabled: true,
     }),
     react(),
     VitePWA({
