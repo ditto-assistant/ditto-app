@@ -2,36 +2,17 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
-import { useEffect } from "react";
 import ModelDropdown from "../components/ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
-  const { preferences, updatePreferences } = useModelPreferences();
+  const { preferences, updatePreferences, isLoading } = useModelPreferences();
   const balance = useBalance();
-
-  useEffect(() => {
-    const initializeModels = async () => {
-      // If user has enough balance and was using flash, automatically upgrade to pro
-      if (balance.data?.hasPremium) {
-        updatePreferences({
-          mainModel:
-            preferences.mainModel === "gemini-1.5-flash"
-              ? "gemini-1.5-pro"
-              : preferences.mainModel,
-          programmerModel:
-            preferences.programmerModel === "gemini-1.5-flash"
-              ? "gemini-1.5-pro"
-              : preferences.programmerModel,
-        });
-      }
-    };
-
-    initializeModels();
-  }, [balance.data?.hasPremium]);
-
+  const hasEnoughBalance = balance.data?.hasPremium ?? false;
+  if (balance.isLoading || isLoading) return null;
+  if (!preferences) return null;
   return (
     <div style={styles.overlay}>
       <motion.div
