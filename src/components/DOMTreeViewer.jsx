@@ -6,6 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IconButton } from "@mui/material";
 import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa";
 import { LoadingSpinner } from "./LoadingSpinner";
+import "ace-builds/src-noconflict/mode-html";
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-tomorrow_night";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -122,7 +126,7 @@ const NodeEditor = ({
       <div style={styles.editorContainer}>
         <AceEditor
           mode="html"
-          theme="monokai"
+          theme="tomorrow_night"
           onChange={(newCode) => {
             setCode(newCode);
           }}
@@ -142,6 +146,12 @@ const NodeEditor = ({
             showLineNumbers: true,
             tabSize: 2,
             wrap: wrapEnabled,
+            fontFamily: "JetBrains Mono, monospace",
+            theme: "tomorrow_night",
+          }}
+          style={{
+            backgroundColor: darkModeColors.background,
+            borderRadius: "4px",
           }}
         />
       </div>

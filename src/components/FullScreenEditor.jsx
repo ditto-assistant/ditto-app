@@ -33,6 +33,11 @@ import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
+import "ace-builds/src-noconflict/mode-html";
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-tomorrow_night";
+import "ace-builds/src-noconflict/ext-language_tools";
+
 const darkModeColors = {
   background: "#1E1F22",
   foreground: "#2B2D31",
@@ -1251,7 +1256,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               <AceEditor
                 ref={editorRef}
                 mode="javascript"
-                theme="monokai"
+                theme="tomorrow_night"
                 onChange={setCode}
                 value={code}
                 name="full-screen-editor"
@@ -1271,8 +1276,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                   tabSize: 2,
                   useWorker: false,
                   wrap: wrapEnabled,
+                  fontFamily: "JetBrains Mono, monospace",
+                  theme: "tomorrow_night",
                 }}
                 onSelectionChange={handleEditorSelection}
+                style={{
+                  backgroundColor: darkModeColors.background,
+                  borderRadius: "4px",
+                }}
               />
             ) : (
               <DOMTreeViewer
