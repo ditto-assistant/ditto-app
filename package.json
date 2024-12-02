@@ -8,7 +8,7 @@
     "@huggingface/inference": "^2.8.1",
     "@million/lint": "^1.0.13",
     "@mui/icons-material": "^6.1.9",
-    "@mui/material": "^6.1.8",
+    "@mui/material": "^6.1.9",
     "@paypal/react-paypal-js": "^8.7.0",
     "@tensorflow/tfjs": "^4.22.0",
     "ace-builds": "^1.36.5",
@@ -39,12 +39,12 @@
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.10.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.7.2",
-    "vite": "^6.0.1"
+    "vite": "^6.0.2"
   },
   "scripts": {
     "start": "vite",
