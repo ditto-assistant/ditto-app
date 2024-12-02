@@ -595,38 +595,49 @@ export const getVersionsOfScriptFromFirestore = async (
   }
 };
 
-export const updateFirestoreScript = async (
-  userID,
-  scriptType,
-  filename,
-  script
-) => {
-  // find the script with the filename and update it
+export const updateFirestoreScript = async (userID, scriptType, filename, script) => {
   try {
-    const querySnapshot = await getDocs(
-      collection(db, "scripts", userID, scriptType)
-    );
+    const querySnapshot = await getDocs(collection(db, "scripts", userID, scriptType));
     if (querySnapshot.empty) {
+      // If no document exists, create a new one
+      await addDoc(collection(db, "scripts", userID, scriptType), {
+        script: script,
+        filename: filename,
+        timestamp: new Date(),
+        timestampString: new Date().toISOString(),
+      });
       return;
     }
+
+    let updated = false;
     querySnapshot.forEach((doc) => {
-      let docDataFilename = doc.data().filename;
-      // strip the filename of any spaces
-      docDataFilename = docDataFilename.replace(/\s/g, "");
-      // strip filename of any spaces
-      filename = filename.replace(/\s/g, "");
-      if (docDataFilename === filename) {
+      let docDataFilename = doc.data().filename.replace(/\s/g, "");
+      let cleanFilename = filename.replace(/\s/g, "");
+      
+      // Match the base filename (without version)
+      if (docDataFilename === cleanFilename) {
         const docRef = doc.ref;
         updateDoc(docRef, {
           script: script,
+          timestamp: new Date(),
+          timestampString: new Date().toISOString(),
         });
+        updated = true;
       }
     });
+
+    // If no matching document was found, create a new one
+    if (!updated) {
+      await addDoc(collection(db, "scripts", userID, scriptType), {
+        script: script,
+        filename: filename,
+        timestamp: new Date(),
+        timestampString: new Date().toISOString(),
+      });
+    }
   } catch (e) {
-    console.error(
-      "Error updating document in Firestore scripts collection: ",
-      e
-    );
+    console.error("Error updating document in Firestore scripts collection: ", e);
+    throw e;
   }
 };
 
@@ -989,5 +1000,37 @@ export const deleteImageFromFirebaseStorage = async (imagePath) => {
   } catch (error) {
     console.error("Error deleting image:", error);
     return false;
+  }
+};
+
+export const revertScriptToVersion = async (userID, scriptType, filename, versionNumber) => {
+  try {
+    // Get all versions of the script
+    const versions = await getVersionsOfScriptFromFirestore(userID, scriptType, filename);
+    
+    // Find the version we want to revert to
+    const targetVersion = versions.find(v => v.versionNumber === versionNumber);
+    if (!targetVersion) {
+      throw new Error(`Version ${versionNumber} not found`);
+    }
+
+    // Get the base filename (remove any existing version suffix)
+    const baseFilename = filename.split('-v')[0];
+
+    // First backup the current version
+    await backupOldScriptMakeVersion(userID, scriptType, baseFilename);
+
+    // Update the main script with the reverted version's content
+    await updateFirestoreScript(userID, scriptType, baseFilename, targetVersion.script);
+
+    if (mode === "development") {
+      console.log(`Reverted ${baseFilename} to version ${versionNumber}`);
+    }
+
+    // Return the updated script content
+    return targetVersion.script;
+  } catch (e) {
+    console.error("Error reverting script version:", e);
+    throw e;
   }
 };
