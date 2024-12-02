@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMediaQuery } from "@mui/material";
 
-const CardMenu = ({ children, style }) => {
+const CardMenu = ({ children, style, onDelete }) => {
   const { transformOrigin, ...restStyle } = style;
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [shouldOpenUpward, setShouldOpenUpward] = useState(false);
+
+  useEffect(() => {
+    const viewportMidpoint = window.innerHeight / 2;
+    const triggerPosition = style.top;
+    setShouldOpenUpward(triggerPosition > viewportMidpoint);
+  }, [style.top]);
+
+  const menuItems = React.Children.toArray(children).filter(Boolean);
+  const orderedItems = menuItems;
+
+  const menuWidth = isMobile ? 160 : 140;
+  const leftPosition = style.left - menuWidth - 8;
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -14,36 +27,40 @@ const CardMenu = ({ children, style }) => {
         initial={{
           opacity: 0,
           scale: 0.95,
-          y: transformOrigin === "bottom" ? 10 : -10,
+          y: shouldOpenUpward ? 10 : -10,
         }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{
           opacity: 0,
           scale: 0.95,
-          y: transformOrigin === "bottom" ? 10 : -10,
+          y: shouldOpenUpward ? 10 : -10,
         }}
         transition={{ duration: 0.2 }}
         style={{
           ...restStyle,
           position: "fixed",
-          zIndex: 99999,
+          left: leftPosition,
+          zIndex: 99990,
           backgroundColor: "#2B2D31",
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
           border: "1px solid #1E1F22",
           overflow: "hidden",
           minWidth: isMobile ? "160px" : "140px",
-          transformOrigin: transformOrigin || "top",
+          transformOrigin: shouldOpenUpward ? "bottom" : "top",
           padding: isMobile ? "6px" : "4px",
+          ...(shouldOpenUpward && {
+            top: "auto",
+            bottom: window.innerHeight - style.top + 8,
+          }),
         }}
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
-        {React.Children.map(children, (child, index) => {
+        {orderedItems.map((child, index) => {
           if (!child) return null;
 
-          // Check if this is the divider
           if (
             React.isValidElement(child) &&
             child.type === "div" &&
@@ -51,6 +68,7 @@ const CardMenu = ({ children, style }) => {
           ) {
             return (
               <div
+                key={`divider-${index}`}
                 style={{
                   height: "1px",
                   backgroundColor: "#1E1F22",
@@ -62,6 +80,7 @@ const CardMenu = ({ children, style }) => {
 
           return (
             <motion.div
+              key={index}
               whileHover={{
                 backgroundColor: "rgba(88, 101, 242, 0.1)",
                 paddingLeft: isMobile ? "14px" : "12px",
@@ -80,10 +99,18 @@ const CardMenu = ({ children, style }) => {
                 borderRadius: "4px",
                 height: isMobile ? "40px" : "28px",
                 marginBottom: isMobile ? "3px" : "2px",
-                ...(index === React.Children.count(children) - 1 && {
+                ...(index === orderedItems.length - 1 && {
                   marginTop: "0",
                   marginBottom: "0",
                 }),
+              }}
+              onClick={() => {
+                if (child.props.onClick) {
+                  child.props.onClick();
+                }
+                if (child.props.children === "Delete" && onDelete) {
+                  onDelete();
+                }
               }}
             >
               {child}

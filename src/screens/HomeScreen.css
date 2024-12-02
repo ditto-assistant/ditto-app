@@ -80,6 +80,8 @@ body:not(.login-page) {
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   padding: 0;
+  border: none;
+  background-image: none;
 }
 
 .microphone-button:hover,
@@ -94,14 +96,17 @@ body:not(.login-page) {
   color: var(--text-color);
   width: 20px;
   height: 20px;
+  background: none;
 }
 
 .icon.active {
   color: #43b581;
+  background: none;
 }
 
 .icon.inactive {
   color: #f04747;
+  background: none;
 }
 
 .title-container {

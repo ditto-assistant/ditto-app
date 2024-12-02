@@ -27,6 +27,8 @@ import {
   saveScriptToFirestore,
 } from "../control/firebase";
 import MemoryOverlay from "../components/MemoryOverlay";
+import ScriptsOverlay from "../components/ScriptsOverlay";
+import FullScreenEditor from "../components/FullScreenEditor";
 
 const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
 
@@ -56,6 +58,8 @@ export default function HomeScreen() {
     return !localStorage.getItem("hasSeenTOS");
   });
   const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
+  const [isScriptsOverlayOpen, setIsScriptsOverlayOpen] = useState(false);
+  const [fullScreenEdit, setFullScreenEdit] = useState(null);
 
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
@@ -767,6 +771,100 @@ export default function HomeScreen() {
 
   const [statusBarLoaded, setStatusBarLoaded] = useState(false);
 
+  const handleBookmarkClick = () => {
+    setIsScriptsOverlayOpen(true);
+  };
+
+  useEffect(() => {
+    const handleEditScript = (event) => {
+      const { script } = event.detail;
+      setFullScreenEdit({
+        ...script,
+        onSaveCallback: async (newContent) => {
+          const userID = localStorage.getItem("userID");
+          try {
+            await saveScriptToFirestore(
+              userID,
+              newContent,
+              script.scriptType,
+              script.name
+            );
+
+            // Update local scripts
+            await syncLocalScriptsWithFirestore(userID, script.scriptType);
+
+            // Update workingOnScript in localStorage
+            const workingOnScript = {
+              script: script.name,
+              contents: newContent,
+              scriptType: script.scriptType,
+            };
+            localStorage.setItem(
+              "workingOnScript",
+              JSON.stringify(workingOnScript)
+            );
+
+            setFullScreenEdit(null);
+            window.dispatchEvent(new Event("scriptsUpdated"));
+          } catch (error) {
+            console.error("Error saving:", error);
+          }
+        },
+      });
+    };
+
+    window.addEventListener("editScript", handleEditScript);
+    return () => {
+      window.removeEventListener("editScript", handleEditScript);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleCloseFullScreenEditor = () => {
+      setFullScreenEdit(null);
+    };
+
+    window.addEventListener(
+      "closeFullScreenEditor",
+      handleCloseFullScreenEditor
+    );
+    return () => {
+      window.removeEventListener(
+        "closeFullScreenEditor",
+        handleCloseFullScreenEditor
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleScriptUpdate = () => {
+      const storedScript = localStorage.getItem("workingOnScript");
+      if (storedScript) {
+        try {
+          const parsed = JSON.parse(storedScript);
+          setWorkingScript(parsed.script);
+        } catch (e) {
+          console.error("Error parsing workingOnScript:", e);
+          setWorkingScript(null);
+        }
+      } else {
+        setWorkingScript(null);
+      }
+    };
+
+    // Listen for both events
+    window.addEventListener("scriptSelected", handleScriptUpdate);
+    window.addEventListener("scriptsUpdated", handleScriptUpdate);
+
+    // Initial check
+    handleScriptUpdate();
+
+    return () => {
+      window.removeEventListener("scriptSelected", handleScriptUpdate);
+      window.removeEventListener("scriptsUpdated", handleScriptUpdate);
+    };
+  }, []);
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
@@ -828,7 +926,10 @@ export default function HomeScreen() {
                 <div className="loading-placeholder">Loading status...</div>
               }
             >
-              <StatusBar onMemoryClick={() => setIsMemoryOverlayOpen(true)} />
+              <StatusBar
+                onMemoryClick={() => setIsMemoryOverlayOpen(true)}
+                onScriptsClick={() => setIsScriptsOverlayOpen(true)}
+              />
             </Suspense>
           </motion.div>
         )}
@@ -1023,6 +1124,29 @@ export default function HomeScreen() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {isScriptsOverlayOpen && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ScriptsOverlay
+              closeOverlay={() => setIsScriptsOverlayOpen(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {fullScreenEdit && (
+        <FullScreenEditor
+          script={fullScreenEdit}
+          onClose={() => setFullScreenEdit(null)}
+          onSave={fullScreenEdit.onSaveCallback}
+        />
+      )}
     </div>
   );
 }
