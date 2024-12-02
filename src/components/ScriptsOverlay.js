@@ -228,7 +228,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     setVersionOverlay(null);
   };
 
-  const handleDeleteScript = async (category, currentScript, deleteAllVersions = false) => {
+  const handleDeleteScript = async (category, currentScript, deleteAllVersions = true) => {
     setDeleteConfirmation({ show: false, script: null, category: null });
 
     const userID = localStorage.getItem("userID");
@@ -254,6 +254,24 @@ const ScriptsOverlay = ({ closeOverlay }) => {
 
         // Close version overlay since all versions are deleted
         setVersionOverlay(null);
+
+        // 🛠️ Update scripts state to remove deleted scripts
+        setScripts((prevScripts) => ({
+          ...prevScripts,
+          [category]: prevScripts[category].filter(
+            (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
+          ),
+        }));
+
+        // 🛠️ Update localStorage
+        localStorage.setItem(
+          category,
+          JSON.stringify(
+            scripts[category].filter(
+              (script) => getBaseNameAndVersion(script.name).baseName !== baseScriptName
+            )
+          )
+        );
       } else {
         // Delete only the specific version
         await deleteScriptFromFirestore(userID, category, currentScript.name);
@@ -263,6 +281,22 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           localStorage.removeItem("workingOnScript");
           setSelectedScript(null);
         }
+
+        // 🛠️ Update scripts state to remove the deleted script
+        setScripts((prevScripts) => ({
+          ...prevScripts,
+          [category]: prevScripts[category].filter(
+            (script) => script.name !== currentScript.name
+          ),
+        }));
+
+        // 🛠️ Update localStorage
+        localStorage.setItem(
+          category,
+          JSON.stringify(
+            scripts[category].filter((script) => script.name !== currentScript.name)
+          )
+        );
 
         // Update version overlay if it's open
         if (versionOverlay) {
@@ -282,15 +316,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
           }
         }
       }
-
-      // Resync with Firestore and update local state
-      await syncLocalScriptsWithFirestore(userID, category);
-      
-      // Update scripts state from localStorage after sync
-      setScripts(prevState => ({
-        ...prevState,
-        [category]: JSON.parse(localStorage.getItem(category)) || []
-      }));
 
       // Dispatch event to update UI
       window.dispatchEvent(new Event("scriptsUpdated"));
@@ -1225,21 +1250,12 @@ const ScriptsOverlay = ({ closeOverlay }) => {
                 category: null,
               })
             }
-            onConfirm={async () => {
-              await handleDeleteScript(
+            onConfirm={() =>
+              handleDeleteScript(
                 deleteConfirmation.category,
-                deleteConfirmation.script,
-                deleteConfirmation.isDeleteAll
-              );
-
-              // Close any open overlays
-              setVersionOverlay(null);
-              setActiveCard(null);
-              setMenuPosition(null);
-
-              // Force a refresh of the scripts list
-              await refreshScripts();
-            }}
+                deleteConfirmation.script
+              )
+            }
             scriptName={deleteConfirmation.script?.name}
             isDeleteAll={deleteConfirmation.isDeleteAll}
           />
