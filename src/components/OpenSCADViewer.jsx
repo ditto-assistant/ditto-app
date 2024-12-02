@@ -1,6 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaSave } from "react-icons/fa";
+import { FaTimes, FaSave } from "react-icons/fa";
 import { IconButton } from "@mui/material";
+import { useState } from "react";
+import { saveScriptToFirestore } from "../control/firebase";
 import { useState } from "react";
 import { saveScriptToFirestore } from "../control/firebase";
 
@@ -23,29 +26,22 @@ const OpenSCADViewer = ({ script, onClose }) => {
     try {
       const userID = localStorage.getItem("userID");
       await saveScriptToFirestore(userID, content, "openSCAD", script.name);
-
+      
       // Update localStorage
-      const openSCADScripts = JSON.parse(
-        localStorage.getItem("openSCAD") || "[]"
-      );
-      const updatedScripts = openSCADScripts.map((s) =>
+      const openSCADScripts = JSON.parse(localStorage.getItem("openSCAD") || "[]");
+      const updatedScripts = openSCADScripts.map(s => 
         s.name === script.name ? { ...s, content } : s
       );
       localStorage.setItem("openSCAD", JSON.stringify(updatedScripts));
-
+      
       // Update workingOnScript if this is the current script
-      const workingOnScript = JSON.parse(
-        localStorage.getItem("workingOnScript")
-      );
+      const workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
       if (workingOnScript && workingOnScript.script === script.name) {
-        localStorage.setItem(
-          "workingOnScript",
-          JSON.stringify({
-            script: script.name,
-            contents: content,
-            scriptType: "openSCAD",
-          })
-        );
+        localStorage.setItem("workingOnScript", JSON.stringify({
+          script: script.name,
+          contents: content,
+          scriptType: "openSCAD"
+        }));
       }
 
       // Trigger UI updates
@@ -99,6 +95,30 @@ const OpenSCADViewer = ({ script, onClose }) => {
             onChange={(e) => setContent(e.target.value)}
             spellCheck={false}
           />
+            <div style={styles.headerButtons}>
+              <IconButton
+                size="small"
+                onClick={handleSave}
+                disabled={isSaving}
+                style={styles.saveButton}
+              >
+                <FaSave size={16} color={darkModeColors.textSecondary} />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={onClose}
+                style={styles.closeButton}
+              >
+                <FaTimes size={16} color={darkModeColors.textSecondary} />
+              </IconButton>
+            </div>
+          </div>
+          <textarea
+            style={styles.editor}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            spellCheck={false}
+          />
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -117,6 +137,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 100002,
+    zIndex: 100002,
     backdropFilter: "blur(4px)",
   },
   container: {
@@ -129,6 +150,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     border: `1px solid ${darkModeColors.border}`,
+    position: "relative",
+    zIndex: 100003,
     position: "relative",
     zIndex: 100003,
   },
@@ -154,11 +177,21 @@ const styles = {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
   },
+  headerButtons: {
+    display: "flex",
+    gap: "8px",
+  },
+  saveButton: {
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+  },
   closeButton: {
     "&:hover": {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
   },
+  editor: {
   editor: {
     padding: "24px",
     margin: 0,
@@ -172,9 +205,15 @@ const styles = {
     border: "none",
     outline: "none",
     resize: "none",
+    width: "100%",
+    boxSizing: "border-box",
+    border: "none",
+    outline: "none",
+    resize: "none",
     fontFamily: "monospace",
     fontSize: "14px",
     color: darkModeColors.text,
+    lineHeight: "1.5",
     lineHeight: "1.5",
   },
 };
