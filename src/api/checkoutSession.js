@@ -72,7 +72,7 @@ export function CheckoutForm({ usd, successURL, cancelURL }) {
   const auth = useAuth();
   const token = useAuthToken();
 
-  if (auth.loading || token.isPending) {
+  if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
   if (auth.error) {
