@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {readonly ModelOption[]} [props.models=DEFAULT_MODELS] - Array of available models
  * @param {boolean} props.isOpen - Whether the dropdown is open
- * @param {(isOpen: boolean) => void} props.onOpenChange - Callback when the dropdown state changes
+ * @param {(isOpen: boolean) => void} [props.onOpenChange] - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdown component
  */
 const ModelDropdown = ({

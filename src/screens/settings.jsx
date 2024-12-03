@@ -147,23 +147,25 @@ const Settings = () => {
         </header>
         <div style={styles.settingsContent}>
           <div style={styles.tokensInfo}>
-            {!balance.loading ? (
+            {!balance.isLoading ? (
               <>
                 <p style={styles.balanceItem}>
                   Ditto Tokens:{" "}
                   <span style={styles.highlightText}>
-                    {balance.ok?.balance}
+                    {balance.data?.balance}
                   </span>
                 </p>
                 <p style={styles.balanceItem}>
                   Images:{" "}
-                  <span style={styles.highlightText}>{balance.ok?.images}</span>
+                  <span style={styles.highlightText}>
+                    {balance.data?.images}
+                  </span>
                 </p>
                 <p style={styles.balanceItem}>
                   Searches:{" "}
                   <span style={styles.highlightText}>
                     {" "}
-                    {balance.ok?.searches}{" "}
+                    {balance.data?.searches}{" "}
                   </span>
                 </p>
               </>

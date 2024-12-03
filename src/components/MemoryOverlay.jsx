@@ -70,7 +70,7 @@ function MemoryOverlay({ closeOverlay }) {
   }, []);
 
   useEffect(() => {
-    if (!balance.loading && !balance.ok?.hasPremium) {
+    if (!balance.isLoading && !balance.data?.hasPremium) {
       let mainSwitch = false;
       let programmerSwitch = false;
       if (isPremiumModel(preferences.mainModel)) {
@@ -254,7 +254,7 @@ function MemoryOverlay({ closeOverlay }) {
               }
               setShowModelPrefs(false);
             }}
-            hasEnoughBalance={balance.ok?.hasPremium}
+            hasEnoughBalance={balance.data?.hasPremium}
           />
         )}
 

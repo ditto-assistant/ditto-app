@@ -17,6 +17,8 @@ import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -24,6 +26,9 @@ const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
+
+// Create a QueryClient instance
+const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -52,30 +57,33 @@ const router = createBrowserRouter(
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BalanceProvider>
-        <ModelPreferencesProvider>
-          <MemoryCountProvider>
-            <IntentRecognitionProvider>
-              <DittoActivationProvider>
-                <PresignedUrlProvider>
-                  <RouterProvider router={router} />
-                  <Toaster
-                    position="bottom-center"
-                    toastOptions={{
-                      duration: 4000,
-                      style: {
-                        background: "#333",
-                        color: "#fff",
-                      },
-                    }}
-                  />
-                </PresignedUrlProvider>
-              </DittoActivationProvider>
-            </IntentRecognitionProvider>
-          </MemoryCountProvider>
-        </ModelPreferencesProvider>
-      </BalanceProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BalanceProvider>
+          <ModelPreferencesProvider>
+            <MemoryCountProvider>
+              <IntentRecognitionProvider>
+                <DittoActivationProvider>
+                  <PresignedUrlProvider>
+                    <RouterProvider router={router} />
+                    <Toaster
+                      position="bottom-center"
+                      toastOptions={{
+                        duration: 4000,
+                        style: {
+                          background: "#333",
+                          color: "#fff",
+                        },
+                      }}
+                    />
+                  </PresignedUrlProvider>
+                </DittoActivationProvider>
+              </IntentRecognitionProvider>
+            </MemoryCountProvider>
+          </ModelPreferencesProvider>
+        </BalanceProvider>
+      </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }

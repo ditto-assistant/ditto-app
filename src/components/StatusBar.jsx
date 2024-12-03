@@ -103,10 +103,10 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
   };
 
   useEffect(() => {
-    if (balance.ok?.dropAmount) {
-      toast.success(`${balance.ok.dropAmount} dropped!`);
+    if (balance.data?.dropAmount) {
+      toast.success(`${balance.data.dropAmount} dropped!`);
     }
-  }, [balance.ok?.dropAmount]);
+  }, [balance.data?.dropAmount]);
 
   return (
     <div style={styles.statusBar}>
@@ -131,14 +131,14 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
 
       <div style={styles.balanceContainer} onClick={toggleBalanceDisplay}>
         <p style={styles.balanceIndicator}>
-          {balance.loading ? (
+          {balance.isLoading ? (
             <LoadingSpinner size={14} inline={true} />
           ) : showMemories ? (
             `${memoryCount.count} Memories`
           ) : showUSD ? (
-            balance.ok?.usd
+            balance.data?.usd
           ) : (
-            balance.ok?.balance
+            balance.data?.balance
           )}
         </p>
       </div>

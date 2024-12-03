@@ -72,7 +72,7 @@ export function CheckoutForm({ usd, successURL, cancelURL }) {
   const auth = useAuth();
   const token = useAuthToken();
 
-  if (auth.loading) {
+  if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
   if (auth.error) {
@@ -92,7 +92,7 @@ export function CheckoutForm({ usd, successURL, cancelURL }) {
       <input
         type="hidden"
         name="authorization"
-        value={`Bearer ${token.token}`}
+        value={`Bearer ${token.data}`}
       />
       <Button
         type="submit"
