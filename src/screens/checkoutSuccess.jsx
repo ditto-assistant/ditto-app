@@ -2,17 +2,19 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
-import ModelDropdown from "../components/ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
+import ModelPreferencesSelectors from "../components/ModelPreferencesSelectors";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const { preferences, updatePreferences, isLoading } = useModelPreferences();
   const balance = useBalance();
   const hasEnoughBalance = balance.data?.hasPremium ?? false;
+
   if (balance.isLoading || isLoading) return null;
   if (!preferences) return null;
+
   return (
     <div style={styles.overlay}>
       <motion.div
@@ -52,41 +54,23 @@ const CheckoutSuccess = () => {
           </motion.p>
 
           <motion.div
-            style={styles.modelSelectors}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
+            style={styles.selectorsContainer}
           >
-            <div style={styles.modelSelector}>
-              <label style={styles.modelLabel}>Main Agent Model</label>
-              <ModelDropdown
-                value={preferences.mainModel}
-                onChange={(value) =>
-                  updatePreferences({
-                    mainModel: value,
-                  })
-                }
-                hasEnoughBalance={hasEnoughBalance}
-              />
-            </div>
-            <div style={styles.modelSelector}>
-              <label style={styles.modelLabel}>Programmer Model</label>
-              <ModelDropdown
-                value={preferences.programmerModel}
-                onChange={(value) =>
-                  updatePreferences({
-                    programmerModel: value,
-                  })
-                }
-                hasEnoughBalance={hasEnoughBalance}
-              />
-            </div>
+            <ModelPreferencesSelectors
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+              hasEnoughBalance={hasEnoughBalance}
+            />
           </motion.div>
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
+            style={styles.buttonContainer}
           >
             <Button
               variant="contained"
@@ -146,33 +130,23 @@ const styles = {
     fontSize: "1.1em",
     margin: "0 0 32px 0",
   },
+  selectorsContainer: {
+    width: "100%",
+    maxWidth: "360px",
+    marginBottom: "32px",
+  },
+  buttonContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
   button: {
     backgroundColor: "#7289da",
     padding: "10px 24px",
     fontSize: "1.1em",
-    marginTop: "32px",
     "&:hover": {
       backgroundColor: "#677bc4",
     },
-  },
-  modelSelectors: {
-    width: "100%",
-    maxWidth: "360px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px",
-    marginTop: "16px",
-  },
-  modelSelector: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  },
-  modelLabel: {
-    color: "#b9bbbe",
-    fontSize: "14px",
-    textAlign: "left",
-    fontWeight: "500",
   },
 };
 

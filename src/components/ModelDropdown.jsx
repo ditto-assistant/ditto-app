@@ -15,7 +15,7 @@ import { createPortal } from "react-dom";
  * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {readonly ModelOption[]} [props.models=DEFAULT_MODELS] - Array of available models
- * @param {boolean} [props.isOpen=false] - Whether the dropdown is open
+ * @param {boolean} props.isOpen - Whether the dropdown is open
  * @param {(isOpen: boolean) => void} [props.onOpenChange] - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdown component
  */
@@ -25,7 +25,7 @@ const ModelDropdown = ({
   hasEnoughBalance,
   inMemoryOverlay = false,
   models = DEFAULT_MODELS,
-  isOpen = false,
+  isOpen,
   onOpenChange,
 }) => {
   const dropdownRef = useRef(null);
