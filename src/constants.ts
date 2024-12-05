@@ -47,7 +47,6 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-5-sonnet",
     name: "Claude 3.5 Sonnet",
     isPremium: true,
-    isMaintenance: true,
     vendor: "anthropic",
   },
   { id: "mistral-nemo", name: "Mistral Nemo", vendor: "mistral" },
