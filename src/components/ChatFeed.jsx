@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -21,6 +21,7 @@ import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
+import { ImageOverlay } from "./overlays/ImageOverlay";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -500,9 +501,9 @@ export default function ChatFeed({
     window.open(src, "_blank");
   };
 
-  const closeImageOverlay = () => {
+  const closeImageOverlay = useCallback(() => {
     setImageOverlay(null);
-  };
+  }, []);
 
   const toggleImageControls = (e) => {
     e.stopPropagation();
@@ -1350,58 +1351,7 @@ export default function ChatFeed({
           ))}
         </div>
       )}
-      {imageOverlay && (
-        <AnimatePresence>
-          <motion.div
-            className="image-overlay"
-            onClick={closeImageOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="image-overlay-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            >
-              <img
-                src={imageOverlay}
-                alt="Full size"
-                onClick={toggleImageControls}
-              />
-              <AnimatePresence>
-                {imageControlsVisible && (
-                  <motion.div
-                    className="image-overlay-controls"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button
-                      className="image-control-button back"
-                      onClick={closeImageOverlay}
-                      title="Back"
-                    >
-                      <IoMdArrowBack />
-                    </button>
-                    <button
-                      className="image-control-button download"
-                      onClick={() => handleImageDownload(imageOverlay)}
-                      title="Download"
-                    >
-                      <FiDownload />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
-      )}
+      <ImageOverlay imageUrl={imageOverlay} onClose={closeImageOverlay} />
       <AnimatePresence>
         {memoryOverlay && (
           <motion.div
