@@ -1072,17 +1072,6 @@ export default function ChatFeed({
     }
   };
 
-  const handleDeleteMemory = async (memory, idx) => {
-    const userID = auth.currentUser.uid;
-
-    // Show confirmation overlay with docId that came from get-memories
-    setDeleteConfirmation({
-      memory,
-      idx,
-      docId: memory.id, // Use the id that came from get-memories
-    });
-  };
-
   // Update handleMessageDelete to use pairID directly
   const handleMessageDelete = async (index) => {
     const message = messages[index];
