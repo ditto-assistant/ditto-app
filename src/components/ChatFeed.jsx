@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -11,7 +11,7 @@ import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
 import { routes } from "../firebaseConfig";
-import { textEmbed } from "../api/LLM"; // Add this import
+import { textEmbed } from "../api/LLM";
 import MemoryNetwork from "./MemoryNetwork";
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
@@ -21,6 +21,8 @@ import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
+import { MarkdownMessage } from "./MarkdownMessage";
+import { ImageOverlay } from "./overlays/ImageOverlay";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -168,7 +170,6 @@ export default function ChatFeed({
     },
   },
 }) {
-  const [copied, setCopied] = useState(false);
   const [actionOverlay, setActionOverlay] = useState(null);
   const [reactionOverlay, setReactionOverlay] = useState(null);
   const feedRef = useRef(null);
@@ -181,7 +182,7 @@ export default function ChatFeed({
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
-  const [imageControlsVisible, setImageControlsVisible] = useState(true);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [memoryOverlay, setMemoryOverlay] = useState(null);
   const [relatedMemories, setRelatedMemories] = useState([]);
   const [loadingMemories, setLoadingMemories] = useState(false);
@@ -435,12 +436,14 @@ export default function ChatFeed({
     }
   }, [actionOverlay]);
 
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setActionOverlay(null);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const handleCopy = useCallback(
+    (text) => {
+      navigator.clipboard.writeText(text);
+      setActionOverlay(null);
+      toast.success("Copied!");
+    },
+    [text]
+  );
 
   const handleReaction = (index, emoji) => {
     setReactions((prevReactions) => ({
@@ -491,176 +494,33 @@ export default function ChatFeed({
     setReactionOverlay(null);
   };
 
-  const handleImageClick = (src) => {
-    const cachedUrl = getCachedUrl(src);
-    setImageOverlay(cachedUrl.ok ?? src);
-  };
+  const handleImageClick = useCallback(
+    (src) => {
+      setImageOverlay(src);
+    },
+    [src]
+  );
 
   const handleImageDownload = (src) => {
     window.open(src, "_blank");
   };
 
-  const closeImageOverlay = () => {
+  const closeImageOverlay = useCallback(() => {
     setImageOverlay(null);
-  };
+  }, []);
 
   const toggleImageControls = (e) => {
     e.stopPropagation();
-    setImageControlsVisible(!imageControlsVisible);
+    setControlsVisible(!controlsVisible);
   };
 
   // Update the renderMessageText function
-  const renderMessageText = (text, index, sender) => {
-    // First replace code block markers
-    let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
-    displayText = displayText.replace(/```\./g, "```\n");
-
+  const renderMessageText = ({ displayText, isComplete }) => {
     return (
-      <ReactMarkdown
-        children={displayText}
-        components={{
-          a: ({ node, href, children, ...props }) => (
-            <a
-              {...props}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent bubble interaction
-              }}
-              style={{
-                color: "#3941b8",
-                textDecoration: "none",
-                textShadow: "0 0 1px #7787d7",
-                cursor: "pointer",
-                pointerEvents: "auto",
-              }}
-            >
-              {children}
-            </a>
-          ),
-          img: ({ node, src, alt, ...props }) => {
-            const [imgSrc, setImgSrc] = useState(src);
-            const cachedUrl = getCachedUrl(src);
-            function onClick(e) {
-              e.stopPropagation();
-              handleImageClick(src);
-            }
-            if (cachedUrl.ok) {
-              return (
-                <img
-                  {...props}
-                  src={cachedUrl.ok}
-                  alt={alt}
-                  className="chat-image"
-                  onClick={onClick}
-                />
-              );
-            }
-            if (!src) {
-              return (
-                <img
-                  {...props}
-                  src={NOT_FOUND_IMAGE}
-                  alt={alt}
-                  className="chat-image"
-                />
-              );
-            }
-            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
-              getPresignedUrl(src).then(
-                (url) => {
-                  if (url.ok) {
-                    setImgSrc(url.ok);
-                  }
-                },
-                (err) => {
-                  console.error(`Image Load error: ${err}; src: ${src}`);
-                }
-              );
-            }
-            return (
-              <img
-                {...props}
-                src={imgSrc}
-                alt={alt}
-                className="chat-image"
-                onClick={(e) => {
-                  e.stopPropagation(); // Stop bubble interaction
-                  handleImageClick(src);
-                }}
-                onError={(e) => {
-                  const errSrc = e.target.src;
-                  console.error(`Image load error: ${e}; src: ${errSrc}`);
-                  if (errSrc === src) {
-                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
-                  } else {
-                    setImgSrc(src);
-                  }
-                  if (errSrc.startsWith("https://ditto-content")) {
-                    // give the image a chance to load
-                    setTimeout(() => {
-                      setImgSrc(errSrc);
-                    }, 5_000);
-                  }
-                }}
-              />
-            );
-          },
-          code({ node, inline, className, children, ...props }) {
-            let match = /language-(\w+)/.exec(className || "");
-            let hasCodeBlock;
-            if (displayText.match(/```/g)) {
-              hasCodeBlock = displayText.match(/```/g).length % 2 === 0;
-            }
-            if (match === null && hasCodeBlock) {
-              match = ["language-txt", "txt"];
-            }
-            if (!inline && match) {
-              return (
-                <div className="code-container">
-                  <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, "")}
-                    style={vscDarkPlus}
-                    language={match[1]}
-                    PreTag="div"
-                    {...props}
-                    className="code-block"
-                  />
-                  <button
-                    className="copy-button code-block-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(String(children).replace(/\n$/, ""));
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            } else {
-              const inlineText = String(children).replace(/\n$/, "");
-              return (
-                <div className="inline-code-container">
-                  <code className="inline-code" {...props}>
-                    {children}
-                  </code>
-                  <button
-                    className="copy-button inline-code-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(inlineText);
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            }
-          },
-        }}
+      <MarkdownMessage
+        content={displayText}
+        handleImageClick={handleImageClick}
+        handleCopy={handleCopy}
       />
     );
   };
@@ -678,113 +538,49 @@ export default function ChatFeed({
 
   // Update the renderMessageWithAvatar function
   const renderMessageWithAvatar = (message, index) => {
-    const isLastMessage = index === messages.length - 1;
-    const isSmallMessage = message.text.length <= 5;
-    const isUserMessage = message.sender === "User";
-    const showTypingIndicator = message.isTyping && message.text === "";
-    const isGenerating = message.sender === "Ditto" && message.isTyping;
-
-    // Add this to determine if this is the most recent Ditto message
-    const isLastDittoMessage =
-      message.sender === "Ditto" &&
-      messages.findIndex((msg, i) => i > index && msg.sender === "Ditto") ===
-        -1;
-
-    // Detect tool type from message content if not already set
-    const toolType = message.toolType || detectToolType(message.text);
-    const hasToolStatus = message.toolStatus && toolType;
+    const isTypingMessage = index === messages.length - 1 && isTyping;
+    const displayText = isTypingMessage
+      ? streamedText + (isComplete ? "" : currentWord)
+      : message.text;
 
     return (
-      <motion.div
-        key={`${message.pairID}-${index}`}
-        className={`message-container ${isUserMessage ? "User" : "Ditto"}`}
-        initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
+      <div
+        key={index}
+        className={`message-container ${
+          message.sender === "User" ? "user" : "ditto"
+        } ${bubblesCentered ? "centered" : ""}`}
+        data-index={index}
       >
         {message.sender === "Ditto" && (
-          <img
-            src={dittoAvatar}
-            alt="Ditto"
-            className={`avatar ditto-avatar ${
-              isLastDittoMessage && isGenerating
-                ? "animating"
-                : isLastDittoMessage && !isGenerating
-                  ? "spinning"
-                  : ""
-            }`}
-          />
+          <img src={dittoAvatar} alt="Ditto" className="avatar ditto-avatar" />
         )}
-        {showTypingIndicator ? (
-          <div className="typing-indicator-container">
-            <div className="typing-indicator">
-              <div className="typing-dot" style={{ "--i": 0 }} />
-              <div className="typing-dot" style={{ "--i": 1 }} />
-              <div className="typing-dot" style={{ "--i": 2 }} />
+        {showSenderName && <div className="sender-name">{message.sender}</div>}
+        <div
+          className={`chat-bubble ${
+            message.sender === "User" ? "user" : "ditto"
+          } ${isTypingMessage ? "typing" : ""}`}
+          onClick={(e) => handleBubbleInteraction(e, index)}
+          style={bubbleStyles.chatbubble}
+        >
+          {renderMessageText({
+            displayText,
+            isComplete: !isTypingMessage || isComplete,
+          })}
+          <div className="message-footer">
+            <div className="message-timestamp">
+              {formatTimestamp(message.timestamp)}
             </div>
           </div>
-        ) : (
-          <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
-              actionOverlay && actionOverlay.index === index ? "blurred" : ""
-            } ${isSmallMessage ? "small-message" : ""}`}
-            style={bubbleStyles.chatbubble}
-            onClick={(e) => handleBubbleInteraction(e, index)}
-            onContextMenu={(e) => handleBubbleInteraction(e, index)}
-            data-index={index}
-          >
-            {toolType && (
-              <div className={`tool-badge ${toolType.toLowerCase()}`}>
-                {toolType.toUpperCase()}
-              </div>
-            )}
-
-            {showSenderName && message.sender && (
-              <div className="sender-name">{message.sender}</div>
-            )}
-            <div className="message-text" style={bubbleStyles.text}>
-              {message.toolStatus && toolType ? (
-                <>
-                  {renderMessageText(message.text, index, message.sender)}
-                  <div
-                    className={`tool-status ${
-                      message.toolStatus === "complete"
-                        ? "complete"
-                        : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
-                    }`}
-                  >
-                    {message.toolStatus}
-                    {message.showTypingDots && (
-                      <div className="typing-dots">
-                        <div className="dot"></div>
-                        <div className="dot"></div>
-                        <div className="dot"></div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                renderMessageText(message.text, index, message.sender)
-              )}
+          {reactions[index] && reactions[index].length > 0 && (
+            <div className="message-reactions">
+              {reactions[index].map((emoji, emojiIndex) => (
+                <span key={emojiIndex} className="reaction">
+                  {emoji}
+                </span>
+              ))}
             </div>
-            <div className="message-footer">
-              <div className="message-timestamp">
-                {formatTimestamp(message.timestamp)}
-              </div>
-            </div>
-            {reactions[index] && reactions[index].length > 0 && (
-              <div className="message-reactions">
-                {reactions[index].map((emoji, emojiIndex) => (
-                  <span key={emojiIndex} className="reaction">
-                    {emoji}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
         {message.sender === "User" && (
           <img src={profilePic} alt="User" className="avatar user-avatar" />
         )}
@@ -834,15 +630,23 @@ export default function ChatFeed({
             </button>
           </div>
         )}
-        {reactionOverlay === index && (
+        {reactionOverlay && reactionOverlay.index === index && (
           <div
             className="reaction-overlay"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "fixed",
+              ...adjustOverlayPosition(
+                reactionOverlay.clientX,
+                reactionOverlay.clientY
+              ),
+              transform: "translate(-50%, -50%)",
+            }}
           >
             {emojis.map((emoji) => (
               <button
                 key={emoji}
-                onClick={() => handleReaction(index, emoji)}
+                onClick={() => handleReaction(reactionOverlay.index, emoji)}
                 className="emoji-button"
               >
                 {emoji}
@@ -850,7 +654,7 @@ export default function ChatFeed({
             ))}
           </div>
         )}
-      </motion.div>
+      </div>
     );
   };
 
@@ -1317,15 +1121,11 @@ export default function ChatFeed({
   }, [isComplete, streamedText]);
 
   return (
-    <div
-      className="chat-feed"
-      ref={feedRef}
-      style={{ scrollBehavior: "auto" }} // Override any smooth scrolling
-    >
+    <div className="chat-feed" ref={feedRef} style={{ scrollBehavior: "auto" }}>
       {messages.map(renderMessageWithAvatar)}
       {hasInputField && <input type="text" className="chat-input-field" />}
-      {copied && <div className="copied-notification">Copied!</div>}
       <div ref={bottomRef} />
+      <ImageOverlay imageUrl={imageOverlay} onClose={closeImageOverlay} />
       {reactionOverlay && (
         <div
           className="reaction-overlay"
@@ -1349,58 +1149,6 @@ export default function ChatFeed({
             </button>
           ))}
         </div>
-      )}
-      {imageOverlay && (
-        <AnimatePresence>
-          <motion.div
-            className="image-overlay"
-            onClick={closeImageOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="image-overlay-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            >
-              <img
-                src={imageOverlay}
-                alt="Full size"
-                onClick={toggleImageControls}
-              />
-              <AnimatePresence>
-                {imageControlsVisible && (
-                  <motion.div
-                    className="image-overlay-controls"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button
-                      className="image-control-button back"
-                      onClick={closeImageOverlay}
-                      title="Back"
-                    >
-                      <IoMdArrowBack />
-                    </button>
-                    <button
-                      className="image-control-button download"
-                      onClick={() => handleImageDownload(imageOverlay)}
-                      title="Download"
-                    >
-                      <FiDownload />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
       )}
       <AnimatePresence>
         {memoryOverlay && (
