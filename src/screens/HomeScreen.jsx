@@ -1,5 +1,5 @@
 import "./HomeScreen.css";
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
@@ -7,10 +7,9 @@ import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
-// Lazy load components
-const ChatFeed = lazy(() => import("@/components/ChatFeed"));
-const SendMessage = lazy(() => import("@/components/SendMessage"));
-const StatusBar = lazy(() => import("@/components/StatusBar"));
+import ChatFeed from "../components/ChatFeed";
+import StatusBar from "../components/StatusBar";
+import SendMessage from "../components/SendMessage";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear2.png";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -20,17 +19,13 @@ import { MdFlipCameraIos } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
 import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
 import {
-  deleteScriptFromFirestore,
-  renameScriptInFirestore,
   getVersionsOfScriptFromFirestore,
-  getScriptTimestamps,
   saveScriptToFirestore,
 } from "../control/firebase";
 import MemoryOverlay from "../components/MemoryOverlay";
 import ScriptsOverlay from "../components/ScriptsOverlay";
 import FullScreenEditor from "../components/FullScreenEditor";
-
-const MEMORY_DELETED_EVENT = "memoryDeleted"; // Add this line
+const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -163,16 +158,11 @@ export default function HomeScreen() {
     return { prompts, responses, timestamps, pairIDs };
   };
 
-  let convo = getSavedConversation();
-  let previousConversation = createConversation(convo, false, true);
-
   const localStorageMicrophoneStatus =
     localStorage.getItem("microphoneStatus") === "true";
   const [microphoneStatus, setMicrophoneStatus] = useState(
     localStorageMicrophoneStatus
   );
-
-  let buttonSize = 25;
 
   function handleMicPress() {
     console.log("handling mic press...");
@@ -526,11 +516,6 @@ export default function HomeScreen() {
     };
   }, []);
 
-  const handleTOSClose = () => {
-    localStorage.setItem("hasSeenTOS", "true");
-    setShowTOS(false);
-  };
-
   // Functions for play, edit, and deselect actions
   const handlePlayScript = () => {
     try {
@@ -545,60 +530,6 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error("Error playing script:", error);
-    }
-  };
-
-  const handleEditScript = (script) => {
-    // If script is passed directly, use it, otherwise try to find the selected script
-    const scriptToEdit =
-      script ||
-      (selectedScript &&
-        (scripts.webApps.find((s) => s.name === selectedScript) ||
-          scripts.openSCAD.find((s) => s.name === selectedScript)));
-
-    if (scriptToEdit) {
-      if (scriptToEdit.scriptType === "webApps") {
-        setFullScreenEdit({
-          ...scriptToEdit,
-          onSaveCallback: async (newContent) => {
-            const userID = localStorage.getItem("userID");
-            try {
-              setShowLoadingSpinner(true);
-              await saveScriptToFirestore(
-                userID,
-                newContent,
-                scriptToEdit.scriptType,
-                scriptToEdit.name
-              );
-
-              // Update local scripts
-              await syncLocalScriptsWithFirestore(
-                userID,
-                scriptToEdit.scriptType
-              );
-
-              // Update workingOnScript in localStorage
-              const workingOnScript = {
-                script: scriptToEdit.name,
-                contents: newContent,
-                scriptType: scriptToEdit.scriptType,
-              };
-              localStorage.setItem(
-                "workingOnScript",
-                JSON.stringify(workingOnScript)
-              );
-
-              setShowLoadingSpinner(false);
-              setFullScreenEdit(null);
-            } catch (error) {
-              console.error("Error saving:", error);
-              setShowLoadingSpinner(false);
-            }
-          },
-        });
-      } else {
-        setOpenScadViewer(scriptToEdit);
-      }
     }
   };
 
@@ -636,144 +567,7 @@ export default function HomeScreen() {
     loadScriptVersions();
   }, [workingScript]);
 
-  const handleScriptDelete = async (isDeleteAll) => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      if (isDeleteAll) {
-        // Delete base version and all versioned copies
-        const baseScriptName = storedScript.script.split("-v")[0];
-        const versions = await getVersionsOfScriptFromFirestore(
-          userID,
-          storedScript.scriptType,
-          baseScriptName
-        );
-
-        // Delete each version
-        for (const version of versions) {
-          const versionName =
-            version.versionNumber === 0
-              ? baseScriptName
-              : `${baseScriptName}-v${version.versionNumber}`;
-          await deleteScriptFromFirestore(
-            userID,
-            storedScript.scriptType,
-            versionName
-          );
-        }
-      } else {
-        // Delete just the current version
-        await deleteScriptFromFirestore(
-          userID,
-          storedScript.scriptType,
-          storedScript.script
-        );
-      }
-
-      // Update local storage and state
-      handleDeselectScript();
-
-      // Refresh timestamps
-      await getScriptTimestamps(userID, storedScript.scriptType);
-
-      // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event("scriptsUpdated"));
-    }
-  };
-
-  const handleScriptRename = async (newName) => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      await renameScriptInFirestore(
-        userID,
-        storedScript.timestampString,
-        storedScript.scriptType,
-        storedScript.script,
-        newName
-      );
-
-      // Update local storage
-      const updatedScript = {
-        ...storedScript,
-        script: newName,
-      };
-      localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
-
-      // Update state
-      setWorkingScript(newName);
-
-      // Refresh timestamps
-      await getScriptTimestamps(userID, storedScript.scriptType);
-
-      // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event("scriptsUpdated"));
-    }
-  };
-
-  const handleVersionSelect = async (version) => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript && version) {
-      const baseScriptName = storedScript.script.split("-v")[0];
-      const versionName =
-        version.versionNumber === 0
-          ? baseScriptName
-          : `${baseScriptName}-v${version.versionNumber}`;
-
-      // Update working script to selected version
-      const updatedScript = {
-        ...storedScript,
-        script: versionName,
-        contents: version.script,
-      };
-      localStorage.setItem("workingOnScript", JSON.stringify(updatedScript));
-
-      // Update state
-      setWorkingScript(versionName);
-
-      // Refresh timestamps
-      await getScriptTimestamps(userID, storedScript.scriptType);
-
-      // Dispatch event to refresh scripts list
-      window.dispatchEvent(new Event("scriptsUpdated"));
-    }
-  };
-
-  const handleRevert = async () => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      const baseScriptName = storedScript.script.split("-v")[0];
-      const versions = await getVersionsOfScriptFromFirestore(
-        userID,
-        storedScript.scriptType,
-        baseScriptName
-      );
-
-      if (versions.length > 1) {
-        // Get the highest version number
-        const latestVersion = versions.reduce(
-          (max, version) => Math.max(max, version.versionNumber),
-          0
-        );
-
-        // Select that version
-        const version = versions.find((v) => v.versionNumber === latestVersion);
-        await handleVersionSelect(version);
-      }
-    }
-  };
-
   const [statusBarLoaded, setStatusBarLoaded] = useState(false);
-
-  const handleBookmarkClick = () => {
-    setIsScriptsOverlayOpen(true);
-  };
 
   useEffect(() => {
     const handleEditScript = (event) => {
