@@ -165,7 +165,7 @@ export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   imageGeneration: true,
   googleSearch: true,
   googleHome: false,
-};
+} as const;
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
   mainModel: "llama-3-2",
@@ -179,7 +179,7 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
-};
+} as const;
 
 export const TOOLS = {
   imageGeneration: {
