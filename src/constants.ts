@@ -28,14 +28,6 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "openai",
   },
 
-  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", vendor: "google" },
-  {
-    id: "gemini-1.5-pro",
-    name: "Gemini 1.5 Pro",
-    isPremium: true,
-    vendor: "google",
-  },
-
   // {
   //   id: "claude-3-haiku",
   //   name: "Claude 3 Haiku",
@@ -79,6 +71,14 @@ export const DEFAULT_MODELS: ModelOption[] = [
     name: "Claude 3.5 Sonnet V2 (2024-10-22)",
     isPremium: true,
     vendor: "anthropic",
+  },
+
+  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", vendor: "google" },
+  {
+    id: "gemini-1.5-pro",
+    name: "Gemini 1.5 Pro",
+    isPremium: true,
+    vendor: "google",
   },
 
   { id: "mistral-nemo", name: "Mistral Nemo", vendor: "mistral" },
