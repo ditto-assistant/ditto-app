@@ -160,12 +160,6 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   },
 ] as const;
 
-export function isPremiumModel(model: Model): boolean {
-  return ["claude-3-5-sonnet", "gemini-1.5-pro", "mistral-large"].includes(
-    model
-  );
-}
-
 export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   openScad: false,
   htmlScript: true,
