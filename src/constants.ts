@@ -89,17 +89,17 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "mistral",
   },
 
-  { id: "o1-mini", name: "O1 Mini", vendor: "openai", isPremium: true },
+  { id: "o1-mini", name: "o1 Mini", vendor: "openai", isPremium: true },
   {
     id: "o1-mini-2024-09-12",
-    name: "O1 Mini (2024-09-12)",
+    name: "o1 Mini (2024-09-12)",
     vendor: "openai",
     isPremium: true,
   },
-  { id: "o1-preview", name: "O1 Preview", vendor: "openai", isPremium: true },
+  { id: "o1-preview", name: "o1 Preview", vendor: "openai", isPremium: true },
   {
     id: "o1-preview-2024-09-12",
-    name: "O1 Preview (2024-09-12)",
+    name: "o1 Preview (2024-09-12)",
     vendor: "openai",
     isPremium: true,
   },
