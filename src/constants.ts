@@ -17,22 +17,14 @@ export const DEFAULT_MODELS: ModelOption[] = [
   { id: "gpt-4o-mini", name: "GPT-4o Mini", vendor: "openai" },
   {
     id: "gpt-4o-mini-2024-07-18",
-    name: "GPT-4o Mini 2024-07-18",
+    name: "GPT-4o Mini (2024-07-18)",
     vendor: "openai",
   },
   { id: "gpt-4o", name: "GPT-4o", isPremium: true, vendor: "openai" },
   {
     id: "gpt-4o-2024-11-20",
-    name: "GPT-4o 2024-11-20",
+    name: "GPT-4o (2024-11-20)",
     isPremium: true,
-    vendor: "openai",
-  },
-  { id: "o1-mini", name: "O1 Mini", vendor: "openai" },
-  { id: "o1-mini-2024-09-12", name: "O1 Mini 2024-09-12", vendor: "openai" },
-  { id: "o1-preview", name: "O1 Preview", vendor: "openai" },
-  {
-    id: "o1-preview-2024-09-12",
-    name: "O1 Preview 2024-09-12",
     vendor: "openai",
   },
 
@@ -61,7 +53,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "claude-3-5-haiku@20241022",
-    name: "Claude 3.5 Haiku 2024-10-22",
+    name: "Claude 3.5 Haiku (2024-10-22)",
     vendor: "anthropic",
   },
   {
@@ -72,7 +64,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "claude-3-5-sonnet@20240620",
-    name: "Claude 3.5 Sonnet 2024-06-20",
+    name: "Claude 3.5 Sonnet (2024-06-20)",
     isPremium: true,
     vendor: "anthropic",
   },
@@ -84,7 +76,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "claude-3-5-sonnet-v2@20241022",
-    name: "Claude 3.5 Sonnet V2 2024-10-22",
+    name: "Claude 3.5 Sonnet V2 (2024-10-22)",
     isPremium: true,
     vendor: "anthropic",
   },
@@ -95,6 +87,21 @@ export const DEFAULT_MODELS: ModelOption[] = [
     name: "Mistral Large",
     isPremium: true,
     vendor: "mistral",
+  },
+
+  { id: "o1-mini", name: "O1 Mini", vendor: "openai", isPremium: true },
+  {
+    id: "o1-mini-2024-09-12",
+    name: "O1 Mini (2024-09-12)",
+    vendor: "openai",
+    isPremium: true,
+  },
+  { id: "o1-preview", name: "O1 Preview", vendor: "openai", isPremium: true },
+  {
+    id: "o1-preview-2024-09-12",
+    name: "O1 Preview (2024-09-12)",
+    vendor: "openai",
+    isPremium: true,
   },
 ] as const;
 
