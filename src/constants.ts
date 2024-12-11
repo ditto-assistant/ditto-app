@@ -44,16 +44,16 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "google",
   },
 
-  {
-    id: "claude-3-haiku",
-    name: "Claude 3 Haiku",
-    vendor: "anthropic",
-  },
-  {
-    id: "claude-3-haiku@20240307",
-    name: "Claude 3 Haiku 2024-03-07",
-    vendor: "anthropic",
-  },
+  // {
+  //   id: "claude-3-haiku",
+  //   name: "Claude 3 Haiku",
+  //   vendor: "anthropic",
+  // },
+  // {
+  //   id: "claude-3-haiku@20240307",
+  //   name: "Claude 3 Haiku 2024-03-07",
+  //   vendor: "anthropic",
+  // },
   {
     id: "claude-3-5-haiku",
     name: "Claude 3.5 Haiku",
