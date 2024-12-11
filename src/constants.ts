@@ -43,12 +43,52 @@ export const DEFAULT_MODELS: ModelOption[] = [
     isPremium: true,
     vendor: "google",
   },
+
+  {
+    id: "claude-3-haiku",
+    name: "Claude 3 Haiku",
+    vendor: "anthropic",
+  },
+  {
+    id: "claude-3-haiku@20240307",
+    name: "Claude 3 Haiku 2024-03-07",
+    vendor: "anthropic",
+  },
+  {
+    id: "claude-3-5-haiku",
+    name: "Claude 3.5 Haiku",
+    vendor: "anthropic",
+  },
+  {
+    id: "claude-3-5-haiku@20241022",
+    name: "Claude 3.5 Haiku 2024-10-22",
+    vendor: "anthropic",
+  },
   {
     id: "claude-3-5-sonnet",
     name: "Claude 3.5 Sonnet",
     isPremium: true,
     vendor: "anthropic",
   },
+  {
+    id: "claude-3-5-sonnet@20240620",
+    name: "Claude 3.5 Sonnet 2024-06-20",
+    isPremium: true,
+    vendor: "anthropic",
+  },
+  {
+    id: "claude-3-5-sonnet-v2",
+    name: "Claude 3.5 Sonnet V2",
+    isPremium: true,
+    vendor: "anthropic",
+  },
+  {
+    id: "claude-3-5-sonnet-v2@20241022",
+    name: "Claude 3.5 Sonnet V2 2024-10-22",
+    isPremium: true,
+    vendor: "anthropic",
+  },
+
   { id: "mistral-nemo", name: "Mistral Nemo", vendor: "mistral" },
   {
     id: "mistral-large",
