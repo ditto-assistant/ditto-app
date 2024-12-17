@@ -6,7 +6,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@huggingface/inference": "^2.8.1",
-    "@million/lint": "^1.0.13",
+    "@million/lint": "^1.0.14",
     "@mui/icons-material": "6.1.10",
     "@mui/material": "6.1.10",
     "@paypal/react-paypal-js": "^8.7.0",
