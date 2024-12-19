@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { auth } from "../control/firebase";
+import { auth, saveFeedback } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
@@ -442,14 +442,20 @@ export default function ChatFeed({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleReaction = (index, emoji) => {
-    setReactions((prevReactions) => ({
-      ...prevReactions,
-      [index]: [...(prevReactions[index] || []), emoji],
-    }));
-    setReactionOverlay(null);
-    setActionOverlay(null);
-  };
+  const handleReaction = useCallback(
+    (index, pairID, emoji, feedback) => {
+      setReactions((prevReactions) => ({
+        ...prevReactions,
+        [index]: [...(prevReactions[index] || []), emoji],
+      }));
+      setReactionOverlay(null);
+      setActionOverlay(null);
+      if (auth.currentUser) {
+        saveFeedback(auth.currentUser.uid, pairID, emoji, feedback);
+      }
+    },
+    [auth.currentUser]
+  );
 
   const handleBubbleInteraction = (e, index) => {
     e.preventDefault();
@@ -842,7 +848,9 @@ export default function ChatFeed({
             {emojis.map((emoji) => (
               <button
                 key={emoji}
-                onClick={() => handleReaction(index, emoji)}
+                onClick={() =>
+                  handleReaction(index, messages[index].pairID, emoji)
+                }
                 className="emoji-button"
               >
                 {emoji}
@@ -1331,7 +1339,13 @@ export default function ChatFeed({
           {emojis.map((emoji) => (
             <button
               key={emoji}
-              onClick={() => handleReaction(reactionOverlay.index, emoji)}
+              onClick={() =>
+                handleReaction(
+                  reactionOverlay.index,
+                  messages[reactionOverlay.index].pairID,
+                  emoji
+                )
+              }
               className="emoji-button"
             >
               {emoji}
