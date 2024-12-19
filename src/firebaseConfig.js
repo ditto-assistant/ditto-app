@@ -1,6 +1,6 @@
 // Your web app's Firebase configuration
-// const MODE = import.meta.env.MODE;
-const MODE = "production";
+const MODE = import.meta.env.MODE;
+// const MODE = "production";
 
 function getBaseURL(dittoEnv) {
   switch (dittoEnv) {
@@ -17,16 +17,6 @@ function getBaseURL(dittoEnv) {
 
 export const BASE_URL = getBaseURL(MODE);
 
-function getMemoriesURL(dittoEnv) {
-  switch (dittoEnv) {
-    // case "development":
-    // return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
-    default:
-      return "https://us-central1-ditto-app-dev.cloudfunctions.net/api/get-memories";
-    // return "http://127.0.0.1:5001/ditto-app-dev/us-central1/api/get-memories";
-  }
-}
-
 export const routes = {
   prompt: BASE_URL + "/v1/prompt",
   embed: BASE_URL + "/v1/embed",
@@ -42,7 +32,7 @@ export const routes = {
    */
   balance: (userID, email) =>
     `${BASE_URL}/v1/balance?userID=${userID}&email=${email ?? ""}`,
-  memories: getMemoriesURL(MODE),
+  memories: BASE_URL + "/v1/get-memories",
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",
   createUploadURL: BASE_URL + "/v1/create-upload-url",
