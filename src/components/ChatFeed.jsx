@@ -849,7 +849,7 @@ export default function ChatFeed({
               <button
                 key={emoji}
                 onClick={() =>
-                  handleReaction(index, messages[index].pairID, emoji)
+                  handleReaction(index, messages[index].pairID, emoji, "")
                 }
                 className="emoji-button"
               >
@@ -1343,7 +1343,8 @@ export default function ChatFeed({
                 handleReaction(
                   reactionOverlay.index,
                   messages[reactionOverlay.index].pairID,
-                  emoji
+                  emoji,
+                  ""
                 )
               }
               className="emoji-button"
