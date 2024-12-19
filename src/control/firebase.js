@@ -279,6 +279,24 @@ export const grabConversationHistory = async (userID) => {
   }
 };
 
+export function saveFeedback(userID, pairID, emoji, feedback) {
+  if (!feedback) {
+    feedback = "";
+  }
+  addDoc(collection(db, "memory", userID, "feedback"), {
+    pairID: pairID,
+    emoji: emoji,
+    feedback: feedback,
+    timestamp: new Date(),
+  })
+    .then((docRef) => {
+      console.log("Feedback saved to Firestore with ID: ", docRef.id);
+    })
+    .catch((e) => {
+      console.error("Error saving feedback: ", e);
+    });
+}
+
 /**
  * grabs conversation history total count from the database.
  * @returns
@@ -833,32 +851,6 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
     console.error("Error getting documents from scripts collection: ", e);
     return [];
   }
-};
-
-export const uploadGeneratedImageToFirebaseStorage = async (
-  imageURL,
-  userID
-) => {
-  // first, fetch the image from the imageURL to get the blob
-  // console.log("fetching image from URL: ", imageURL);
-  // // const response = await fetch(imageURL);
-  // // fetch with no-cors mode
-  // const response = await fetch(imageURL, {
-  //   mode: 'no-cors'
-  // });
-  // console.log("Getting blob from response...");
-  // const blob = await response.blob();
-  // console.log("Uploading image to Firebase Storage...");
-  // const storage = getStorage(app);
-  // console.log("Creating storage reference...");
-  // // Create a storage reference from our storage service
-  // const storageRef = ref(storage, `images/${userID}/${Date.now()}.jpg`);
-  // console.log("Uploading bytes...");
-  // const file = new Blob([blob], { type: 'image/jpeg' });
-  // const snapshot = await uploadBytes(storageRef, file);
-  // console.log('Uploaded a blob or file!');
-  // // return URI of the image
-  // return await getDownloadURL(snapshot.ref);
 };
 
 /**
