@@ -288,11 +288,13 @@ export function saveFeedback(userID, pairID, emoji, feedback) {
     emoji: emoji,
     feedback: feedback,
     timestamp: new Date(),
-  }).then((docRef) => {
-    console.log("Feedback saved to Firestore with ID: ", docRef.id);
-  }).catch((e) => {
-    console.error("Error saving feedback: ", e);
-  });
+  })
+    .then((docRef) => {
+      console.log("Feedback saved to Firestore with ID: ", docRef.id);
+    })
+    .catch((e) => {
+      console.error("Error saving feedback: ", e);
+    });
 }
 
 /**
