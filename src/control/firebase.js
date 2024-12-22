@@ -7,6 +7,7 @@ import {
   query,
   collection,
   addDoc,
+  vector,
   orderBy,
   updateDoc,
   limit,
@@ -26,6 +27,8 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { DEFAULT_PREFERENCES } from "@/constants";
+import { getDeviceId } from "@/utils/deviceId";
+
 /**@typedef {import("@/types/llm").Model} Model */
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
@@ -35,61 +38,6 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 const mode = import.meta.env.MODE;
-
-export const saveBalanceToFirestore = async (userID, balance) => {
-  try {
-    // find the user's balance document and update it
-    const querySnapshot = await getDocs(
-      collection(db, "users", userID, "balance")
-    );
-    let docRef;
-    if (querySnapshot.empty) {
-      docRef = await addDoc(collection(db, "users", userID, "balance"), {
-        balance: balance,
-        timestamp: new Date(),
-        timestampString: new Date().toISOString(),
-      });
-    } else {
-      querySnapshot.forEach((doc) => {
-        docRef = doc.ref;
-        updateDoc(docRef, {
-          balance: balance,
-        });
-      });
-    }
-    if (mode === "development") {
-      console.log(
-        "Balance written to Firestore collection with ID: ",
-        docRef.id
-      );
-    }
-  } catch (e) {
-    console.error("Error adding document to Firestore users collection: ", e);
-  }
-};
-
-export const getBalanceFromFirestore = async (userID) => {
-  try {
-    const userDocs = await getDocs(collection(db, "users", userID, "balance"));
-    // return False if user doesn't exist
-    if (userDocs.empty) {
-      return false;
-    }
-    const userDoc = userDocs.docs[0];
-    const userObject = userDoc.data();
-    let userBalance = userObject.balance;
-    // only return if the balance exists
-    if (userBalance) {
-      return userBalance;
-    }
-  } catch (e) {
-    console.error(
-      "Error getting document from Firestore users collection: ",
-      e
-    );
-    return false;
-  }
-};
 
 export const uploadImageToFirebaseStorageBucket = async (
   base64Image,
@@ -145,7 +93,6 @@ export const saveUserToFirestore = async (
       firstName: firstName,
       lastName: lastName,
       timestamp: new Date(),
-      timestampString: new Date().toISOString(),
     });
     if (mode === "development") {
       console.log("User written to Firestore collection with ID: ", docRef.id);
@@ -1050,5 +997,36 @@ export const revertScriptToVersion = async (
   } catch (e) {
     console.error("Error reverting script version:", e);
     throw e;
+  }
+};
+
+export const saveMessagePairToMemory = async (userID, prompt, response, embedding) => {
+  try {
+    if (mode === "development") {
+      console.log("Creating memory collection with userID: ", userID);
+    }
+    const memoryRef = collection(db, "memory", userID, "conversations");
+    if (mode === "development") {
+      console.log("Memory collection reference: ", memoryRef);
+    }
+    const docRef = await addDoc(memoryRef, {
+      prompt: prompt,
+      response: response,
+      embedding_vector: vector(embedding),
+      timestamp: new Date(),
+      device_id: getDeviceId(),
+    });
+    if (mode === "development") {
+      console.log(
+        "Memory written to Firestore collection with ID: ",
+        docRef.id
+      );
+    }
+    // Dispatch event when memory is created
+    window.dispatchEvent(new Event("memoryUpdated"));
+    return docRef.id;
+  } catch (e) {
+    console.error("Error adding document to Firestore memory collection: ", e);
+    return null;
   }
 };
