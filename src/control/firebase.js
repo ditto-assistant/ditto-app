@@ -1000,7 +1000,12 @@ export const revertScriptToVersion = async (
   }
 };
 
-export const saveMessagePairToMemory = async (userID, prompt, response, embedding) => {
+export const saveMessagePairToMemory = async (
+  userID,
+  prompt,
+  response,
+  embedding
+) => {
   try {
     if (mode === "development") {
       console.log("Creating memory collection with userID: ", userID);
