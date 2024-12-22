@@ -2,6 +2,7 @@ import { getToken } from "@/api/auth";
 import { routes } from "@/firebaseConfig";
 import { Balance } from "@/types/api";
 import { Result } from "@/types/common";
+import { getDeviceId, APP_VERSION } from "@/utils/deviceId";
 
 /**
  * Retrieves the user's balance from the server.
@@ -15,12 +16,18 @@ export async function getBalance(): Promise<Result<Balance>> {
   if (!tok.ok) {
     return { err: "getBalance: No token" };
   }
-  const response = await fetch(routes.balance(tok.ok.userID, tok.ok.email), {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${tok.ok?.token}`,
-    },
-  });
+
+  const deviceId = getDeviceId();
+  const response = await fetch(
+    routes.balance(tok.ok.userID, tok.ok.email, APP_VERSION, deviceId),
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${tok.ok?.token}`,
+      },
+    }
+  );
+
   if (response.ok) {
     const data = await response.json();
     return { ok: data };

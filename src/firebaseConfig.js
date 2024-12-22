@@ -28,10 +28,18 @@ export const routes = {
    *
    * @param {string} userID - The unique identifier of the user.
    * @param {string | null} email - The email of the user.
+   * @param {string} version - The version of the app.
+   * @param {string} deviceId - The device ID.
    * @returns {string} The complete URL for the balance endpoint.
    */
-  balance: (userID, email) =>
-    `${BASE_URL}/v1/balance?userID=${userID}&email=${email ?? ""}`,
+  balance: (userID, email, version, deviceId) => {
+    const url = new URL(`${BASE_URL}/v1/balance`);
+    url.searchParams.append("userID", userID);
+    url.searchParams.append("email", email ?? "");
+    url.searchParams.append("version", version);
+    url.searchParams.append("deviceId", deviceId);
+    return url.toString();
+  },
   memories: BASE_URL + "/v1/get-memories",
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",

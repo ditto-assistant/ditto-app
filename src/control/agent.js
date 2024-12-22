@@ -1,7 +1,4 @@
-import { collection, addDoc, vector } from "firebase/firestore";
 import { promptLLM, textEmbed, getRelevantExamples } from "../api/LLM";
-
-// import { huggingFaceEmbed } from "../control/modules/huggingFaceChat";
 import {
   mainTemplate,
   systemTemplate,
@@ -14,18 +11,15 @@ import {
   htmlTemplate,
   htmlSystemTemplate,
 } from "../control/templates/htmlTemplate";
-
 import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
-import { db } from "./firebase";
-
 import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
 import { handleHomeAssistant } from "./agentflows/homeFlow";
+import { modelSupportsImageAttachments } from "@/types/llm";
+import { saveMessagePairToMemory } from "./firebase";
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
-
-const mode = import.meta.env.MODE;
 
 // Add this near the top of the file with other constants
 let toolTriggered = false;
@@ -110,13 +104,9 @@ export const sendPrompt = async (
     console.log("%c" + constructedPrompt, "color: green");
 
     let mainAgentModel = preferences.mainModel;
-    // Disable Claude until our rate limits are increased
-    if (mainAgentModel === "claude-3-5-sonnet") {
-      mainAgentModel = "gemini-1.5-pro";
-    }
-    // nemo doesn't support images
-    if (image && mainAgentModel === "mistral-nemo") {
-      mainAgentModel = "gemini-1.5-flash";
+    // Use Llama if the model doesn't support image attachments
+    if (image && !modelSupportsImageAttachments(mainAgentModel)) {
+      mainAgentModel = "llama-3-2";
     }
 
     // Prepare to update the assistant's message as the response streams in
@@ -196,7 +186,7 @@ export const sendPrompt = async (
     };
 
     const finalizeResponse = async (responseText) => {
-      const docId = await saveToMemory(
+      const docId = await saveMessagePairToMemory(
         userID,
         prompt,
         responseText,
@@ -278,7 +268,7 @@ export const sendPrompt = async (
 
     // Only save to memory if no tool trigger is found
     if (!hasTrigger && response) {
-      const docId = await saveToMemory(
+      const docId = await saveMessagePairToMemory(
         userID,
         prompt,
         response,
@@ -382,7 +372,7 @@ export const processResponse = async (
         const responseEmbedding = await textEmbed(finalResponse);
 
         // Save the final processed response to memory with the embedding
-        const docId = await saveToMemory(
+        const docId = await saveMessagePairToMemory(
           userID,
           prompt,
           finalResponse,
@@ -535,38 +525,6 @@ export const processResponse = async (
     const errorMessage = "An error occurred while processing your request.";
     await updateMessageWithToolStatus("failed", null, errorMessage);
     return errorMessage;
-  }
-};
-
-export const saveToMemory = async (userID, prompt, response, embedding) => {
-  try {
-    if (mode === "development") {
-      console.log("Creating memory collection with userID: ", userID);
-    }
-    const memoryRef = collection(db, "memory", userID, "conversations");
-    if (mode === "development") {
-      console.log("Memory collection reference: ", memoryRef);
-    }
-    const docRef = await addDoc(memoryRef, {
-      prompt: prompt,
-      response: response,
-      embedding_vector: vector(embedding),
-      embedding: embedding,
-      timestamp: new Date(),
-      timestampString: new Date().toISOString(),
-    });
-    if (mode === "development") {
-      console.log(
-        "Memory written to Firestore collection with ID: ",
-        docRef.id
-      );
-    }
-    // Dispatch event when memory is created
-    window.dispatchEvent(new Event("memoryUpdated"));
-    return docRef.id;
-  } catch (e) {
-    console.error("Error adding document to Firestore memory collection: ", e);
-    return null;
   }
 };
 
