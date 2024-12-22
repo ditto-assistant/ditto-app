@@ -8,6 +8,24 @@ export type ModelPreferences = {
   tools: ToolPreferences;
 };
 
+export function modelSupportsImageAttachments(model: Model): boolean {
+  return (
+    model === "gemini-1.5-pro" ||
+    model === "gemini-1.5-flash" ||
+    model === "claude-3-haiku" ||
+    model === "claude-3-haiku@20240307" ||
+    model === "claude-3-5-sonnet" ||
+    model === "claude-3-5-sonnet@20240620" ||
+    model === "claude-3-5-sonnet-v2" ||
+    model === "claude-3-5-sonnet-v2@20241022" ||
+    model === "llama-3-2" ||
+    model === "gpt-4o" ||
+    model === "gpt-4o-2024-11-20" ||
+    model === "gpt-4o-mini" ||
+    model === "gpt-4o-mini-2024-07-18"
+  );
+}
+
 export type Model =
   | "gemini-1.5-pro"
   | "gemini-1.5-flash"
