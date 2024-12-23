@@ -13,7 +13,7 @@
     "@tanstack/react-query": "^5.62.8",
     "@tensorflow/tfjs": "^4.22.0",
     "ace-builds": "^1.37.0",
-    "firebase": "~11.0.2",
+    "firebase": "~11.1.0",
     "framer-motion": "^11.15.0",
     "hammerjs": "^2.0.8",
     "js-tiktoken": "^1.0.15",
