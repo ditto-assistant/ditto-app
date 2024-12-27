@@ -4,7 +4,7 @@ This repository is dual-licensed under:
 
 ## 1. Apache License 2.0 (for Individual and Small Business Use)
 
-For individuals and companies with annual revenue less than $10 million USD, this software is licensed under the Apache License, Version 2.0. See [LICENSE-APACHE.md](LICENSE-APACHE.md) for the full license text.
+For individuals and companies with annual revenue less than $1 million USD, this software is licensed under the Apache License, Version 2.0. See [LICENSE-APACHE](LICENSE-APACHE) for the full license text.
 
 ## 2. Commercial License (for Large Organizations)
 
