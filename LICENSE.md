@@ -8,7 +8,7 @@ For individuals and companies with annual revenue less than $1 million USD, this
 
 ## 2. Commercial License (for Large Organizations)
 
-For organizations with annual revenue exceeding $1 million USD, a commercial license is required. Please contact licensing@omniaura.com to obtain appropriate licensing for your organization.
+For organizations with annual revenue exceeding $1 million USD, a commercial license is required. Please contact peyton@omniaura.co to obtain appropriate licensing for your organization.
 
 # Usage Terms
 
