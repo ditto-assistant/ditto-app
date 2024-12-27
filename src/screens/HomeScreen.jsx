@@ -691,7 +691,7 @@ export default function HomeScreen() {
             whileTap={{ scale: 0.98 }}
           >
             <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
-            <h1 className="App-title">Ditto</h1>
+            <h1 className="App-title">Hey Ditto</h1>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
               {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
             </motion.div>
