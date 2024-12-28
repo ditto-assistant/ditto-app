@@ -52,7 +52,7 @@ export const getShortTermMemory = async (userID, k) => {
       // split by that substring and check if [0] has webApps or openSCAD
       // if webApps, change the response to <HTML_SCRIPT> [-1] of the split response
       // if openSCAD, change the response to <OPENSCAD> [-1] od the split response
-      const timestampString = pair.timestamp.toDate().toISOString();
+      const timestampString = pair.timestamp.toDate().toLocaleString();
       if (pair.response.includes("Script Generated and Downloaded.**")) {
         const splitResponse = pair.response.split("- Task:");
         if (splitResponse[0].includes("HTML")) {
@@ -146,7 +146,8 @@ export const getLongTermMemory = async (userID, embedding, k) => {
           console.log("Skipping invalid memory entry");
           return "";
         }
-        const timestampString = pair.timestamp.toDate().toISOString();
+        // convert timestamp string to ISO string
+        const timestampString = new Date(pair.timestamp).toLocaleString();
         if (pair.response.includes("Script Generated and Downloaded.**")) {
           const splitResponse = pair.response.split("- Task:");
           if (splitResponse[0].includes("HTML")) {
