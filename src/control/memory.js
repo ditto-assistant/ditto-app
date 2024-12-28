@@ -52,27 +52,28 @@ export const getShortTermMemory = async (userID, k) => {
       // split by that substring and check if [0] has webApps or openSCAD
       // if webApps, change the response to <HTML_SCRIPT> [-1] of the split response
       // if openSCAD, change the response to <OPENSCAD> [-1] od the split response
+      const timestampString = pair.timestamp.toDate().toLocaleString();
       if (pair.response.includes("Script Generated and Downloaded.**")) {
         const splitResponse = pair.response.split("- Task:");
         if (splitResponse[0].includes("HTML")) {
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <HTML_SCRIPT>${splitResponse[1]}\n`;
+          return `User (${timestampString}): ${pair.prompt}\nDitto: <HTML_SCRIPT>${splitResponse[1]}\n`;
         } else if (splitResponse[0].includes("OpenSCAD")) {
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <OPENSCAD>${splitResponse[1]}\n`;
+          return `User (${timestampString}): ${pair.prompt}\nDitto: <OPENSCAD>${splitResponse[1]}\n`;
         }
       } else if (pair.response.includes("Image Task:")) {
         const splitResponse = pair.response.split("Image Task:");
-        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <IMAGE_GENERATION>${splitResponse[1]}\n`;
+        return `User (${timestampString}): ${pair.prompt}\nDitto: <IMAGE_GENERATION>${splitResponse[1]}\n`;
       } else if (pair.response.includes("Google Search Query:")) {
         const splitResponse = pair.response.split("Google Search Query:");
-        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
+        return `User (${timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
       } else if (pair.response.includes("Home Assistant Task:")) {
         const splitResponse = pair.response.split("Home Assistant Task:");
         const cleanedResponse = splitResponse[1]
           .replace(/Task completed successfully\.|Task failed\./, "")
           .trim();
-        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME> ${cleanedResponse}\n`;
+        return `User (${timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME> ${cleanedResponse}\n`;
       } else {
-        return `User (${pair.timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
+        return `User (${timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
       }
     });
     // remove the last newline character from the last element by joining the array and removing the last character or newline
@@ -145,39 +146,30 @@ export const getLongTermMemory = async (userID, embedding, k) => {
           console.log("Skipping invalid memory entry");
           return "";
         }
-
-        // Log the type of response we're processing
-        // console.log("Processing response type:",
-        //   pair.response.includes("Script Generated") ? "Script" :
-        //   pair.response.includes("Image Task") ? "Image" :
-        //   pair.response.includes("Google Search") ? "Search" :
-        //   pair.response.includes("Home Assistant") ? "Home" :
-        //   "Normal"
-        // );
-
-        // Rest of the formatting logic remains the same
+        // convert timestamp string to ISO string
+        const timestampString = new Date(pair.timestamp).toLocaleString();
         if (pair.response.includes("Script Generated and Downloaded.**")) {
           const splitResponse = pair.response.split("- Task:");
           if (splitResponse[0].includes("HTML")) {
-            return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <HTML_SCRIPT>${splitResponse[1]}\n`;
+            return `User (${timestampString}): ${pair.prompt}\nDitto: <HTML_SCRIPT>${splitResponse[1]}\n`;
           } else if (splitResponse[0].includes("OpenSCAD")) {
-            return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <OPENSCAD>${splitResponse[1]}\n`;
+            return `User (${timestampString}): ${pair.prompt}\nDitto: <OPENSCAD>${splitResponse[1]}\n`;
           }
         } else if (pair.response.includes("Image Task:")) {
           const splitResponse = pair.response.split("Image Task:");
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <IMAGE_GENERATION>${splitResponse[1]}\n`;
+          return `User (${timestampString}): ${pair.prompt}\nDitto: <IMAGE_GENERATION>${splitResponse[1]}\n`;
         } else if (pair.response.includes("Google Search Query:")) {
           const splitResponse = pair.response.split("Google Search Query:");
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
+          return `User (${timestampString}): ${pair.prompt}\nDitto: <GOOGLE_SEARCH>${splitResponse[1]}\n`;
         } else if (pair.response.includes("Home Assistant Task:")) {
           const splitResponse = pair.response.split("Home Assistant Task:");
           const cleanedResponse = splitResponse[1].replace(
             /Task (completed successfully|failed)\.$/,
             ""
           );
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME> ${cleanedResponse}\n`;
+          return `User (${timestampString}): ${pair.prompt}\nDitto: <GOOGLE_HOME> ${cleanedResponse}\n`;
         } else {
-          return `User (${pair.timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
+          return `User (${timestampString}): ${pair.prompt}\nDitto: ${pair.response}\n`;
         }
       })
       .filter(Boolean);
