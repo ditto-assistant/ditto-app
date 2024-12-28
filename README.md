@@ -27,3 +27,12 @@ Just head over to [heyditto.ai](https://heyditto.ai) and experience the future o
 ### Running the App Locally
 
 - `bun run start`
+
+## 📜 Licensing
+
+This project uses dual licensing:
+
+- **Apache 2.0**: Free for individuals and organizations with annual revenue under $1M USD
+- **Commercial License**: Required for organizations with annual revenue over $1M USD
+
+[See LICENSE.md for details](LICENSE.md)
