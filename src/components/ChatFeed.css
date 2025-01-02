@@ -18,7 +18,7 @@
 }
 
 /* Ensure smooth animation for the bottom ref */
-.chat-feed > div:last-child {
+.chat-feed>div:last-child {
   transition: margin-top 0.3s ease-out;
 }
 
@@ -55,29 +55,25 @@
   display: flex;
   flex-direction: column;
   padding: 10px 14px;
-  /* Slightly tighter padding */
   border-radius: 20px;
   word-wrap: break-word;
   max-width: 80%;
+  min-width: 0;
+  overflow-wrap: break-word;
   position: relative;
   transition: all 0.15s ease;
-  /* Faster transition */
-  min-width: 80px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   margin-top: 16px;
-  /* Increased to make room for reactions */
   user-select: text;
-  /* Default to allowing text selection */
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
-  width: fit-content;
+  width: auto;
   gap: 4px;
-  /* Add gap between image and text content */
 }
 
 .blurred {
@@ -127,15 +123,19 @@
 .message-text {
   font-size: 14px;
   line-height: 1.4;
-  color: #000000;
   padding-bottom: 0.5em;
   padding-top: 0.5em;
-  /* Reduced from 20px */
   min-height: 20px;
   user-select: text;
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
+  max-width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  overflow: hidden;
 }
 
 .chat-image {
@@ -234,6 +234,7 @@
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -553,11 +554,9 @@
   padding: 16px;
   display: flex;
   justify-content: space-between;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.5) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
   /* This allows clicks to pass through to the image */
 }
@@ -662,7 +661,6 @@
 @media screen and (min-width: 1200px) {
   .chat-bubble {
     max-width: 60%;
-    max-height: 80vh;
   }
 
   .chat-bubble:has(.chat-image) {
@@ -1276,11 +1274,11 @@
   border-radius: 50%;
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: #4752c4;
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -1335,7 +1333,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Make sure text nodes in the response wrap properly */
-.memory-response p > :not(.memory-image-container) {
+.memory-response p> :not(.memory-image-container) {
   flex: 1 1 100%;
 }
 
@@ -1660,7 +1658,7 @@ input:checked + .toggle-slider:before {
     bottom: 2px;
   }
 
-  input:checked + .toggle-slider:before {
+  input:checked+.toggle-slider:before {
     transform: translateX(18px);
   }
 
@@ -2147,6 +2145,7 @@ input:checked + .toggle-slider:before {
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
