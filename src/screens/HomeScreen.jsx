@@ -7,7 +7,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
-import ChatFeed from "../components/ChatFeed";
+import ChatFeed from "../components/chat/ChatFeed";
 import StatusBar from "../components/StatusBar";
 import SendMessage from "../components/SendMessage";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";

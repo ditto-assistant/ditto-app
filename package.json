@@ -25,6 +25,7 @@
     "react-markdown": "^9.0.1",
     "react-router-dom": "^7.1.1",
     "react-syntax-highlighter": "^15.6.1",
+    "react-virtuoso": "^4.12.3",
     "resize-observer-polyfill": "^1.5.1",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
