@@ -1,8 +1,4 @@
-import {
-  deleteDoc,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { deleteDoc, doc, getDoc } from "firebase/firestore";
 import {
   db,
   extractFirebaseImageUrls,

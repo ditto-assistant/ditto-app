@@ -81,17 +81,20 @@ export const sendPrompt = async (
     }));
 
     const [memories, examplesString, scriptDetails] = await Promise.all([
-      getMemories({
-        userID,
-        longTerm: {
-          nodeCounts: [10],
-          vector: userPromptEmbedding,
+      getMemories(
+        {
+          userID,
+          longTerm: {
+            nodeCounts: [10],
+            vector: userPromptEmbedding,
+          },
+          shortTerm: {
+            k: 10,
+          },
+          stripImages: true,
         },
-        shortTerm: {
-          k: 10
-        },
-        stripImages: true,
-      }, "text/plain"),
+        "text/plain"
+      ),
       getRelevantExamples(userPromptEmbedding, 5),
       fetchScriptDetails(),
     ]);
