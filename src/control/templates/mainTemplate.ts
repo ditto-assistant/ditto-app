@@ -71,8 +71,7 @@ export const workingOnScriptModule = (scriptName: string, type: string) => {
 };
 
 export const mainTemplate = (
-  longTermMemory: string,
-  shortTermMemory: string,
+  memories: string,
   examples: string,
   firstName: string,
   timestamp: string,
@@ -132,19 +131,7 @@ ${filteredExamples}
   let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
 ${toolsSection}${examplesSection}
 
-## Long Term Memory
-- Relevant prompt/response pairs from the user's prompt history are indexed using cosine similarity and are shown below as Long Term Memory. 
-Long Term Memory Buffer (most relevant prompt/response pairs):
--- Begin Long Term Memory --
-<!long_term_memory>
--- End Long Term Memory --
-
-## Short Term Memory
-- The most recent prompt/response pairs are shown below as Short Term Memory. This is usually 5-10 most recent prompt/response pairs.
-Short Term Memory Buffer (most recent prompt/response pairs):
--- Begin Short Term Memory --
-<!short_term_memory>
--- End Short Term Memory --
+<!memories>
 
 <!working_on_script_module>
 
@@ -158,8 +145,7 @@ Ditto:`;
     "<!time>",
     getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
   );
-  prompt = prompt.replace("<!long_term_memory>", longTermMemory);
-  prompt = prompt.replace("<!short_term_memory>", shortTermMemory);
+  prompt = prompt.replace("<!memories>", memories);
   prompt = prompt.replace("<!examples>", examples);
   prompt = prompt.replace(
     "<!working_on_script_module>",

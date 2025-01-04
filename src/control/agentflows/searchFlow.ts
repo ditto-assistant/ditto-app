@@ -1,4 +1,4 @@
-import { googleSearch } from "../../api/searchEngine";
+import { webSearch } from "../../api/webSearch";
 import { promptLLM } from "../../api/LLM";
 import {
   googleSearchTemplate,
@@ -14,21 +14,18 @@ export const handleGoogleSearch = async (
   preferences: ModelPreferences
 ) => {
   const query = response.split("<GOOGLE_SEARCH>")[1].split("\n")[0].trim();
-  const googleSearchResponse = await googleSearch(query);
-
-  let searchResults =
-    "Google Search Query: " + query + "\n" + googleSearchResponse;
+  const { ok, err } = await webSearch(query);
+  if (err) {
+    return { err };
+  }
+  let searchResults = "Google Search Query: " + query + "\n" + ok;
   const googleSearchAgentTemplate = googleSearchTemplate(prompt, searchResults);
-
   console.log("%c" + googleSearchAgentTemplate, "color: green");
-
   const googleSearchAgentResponse = await promptLLM(
     googleSearchAgentTemplate,
     googleSearchSystemTemplate(),
     preferences.mainModel
   );
-
   console.log("%c" + googleSearchAgentResponse, "color: yellow");
-
   return "Google Search Query: " + query + "\n\n" + googleSearchAgentResponse;
 };

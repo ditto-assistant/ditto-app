@@ -1,18 +1,18 @@
+import { Result } from "@/types/common";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
 
-/**
- * Performs a Google search with the given query.
- *
- * @param {string} query - The search query.
- * @param {number} [numResults=5] - The number of results to return.
- * @returns {Promise<string>} A promise that resolves to the search results as a string.
- */
-export async function googleSearch(query, numResults = 5) {
+export async function webSearch(
+  query: string,
+  numResults = 5
+): Promise<Result<string>> {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
-    return "Error: Unable to retrieve search results";
+    return { err: "Unable to get token" };
+  }
+  if (!tok.ok) {
+    return { err: "No token" };
   }
   try {
     const response = await fetch(routes.search, {
@@ -27,9 +27,15 @@ export async function googleSearch(query, numResults = 5) {
         userID: tok.ok.userID,
       }),
     });
-    return await response.text();
+    if (response.ok) {
+      return { ok: await response.text() };
+    } else {
+      return {
+        err: `Unable to retrieve search results. Error: ${response.status}`,
+      };
+    }
   } catch (error) {
     console.error(error);
-    return `Unable to retrieve search results. Error: ${error}`;
+    return { err: `Unable to retrieve search results. Error: ${error}` };
   }
 }
