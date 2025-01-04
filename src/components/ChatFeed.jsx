@@ -21,6 +21,7 @@ import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
+import { getMemories } from "@/api/getMemories";
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -971,68 +972,53 @@ export default function ChatFeed({
           return;
         }
       }
-
-      // Get embedding for the prompt
       const embedding = await textEmbed(promptToUse);
       if (!embedding) {
         console.error("Could not generate embedding for prompt");
         setLoadingMemories(false);
         return;
       }
-
-      // Fetch top 6 memories
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch(routes.memories, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          Origin: window.location.origin,
+      const memoriesResponse = await getMemories(
+        {
+          userID,
+          longTerm: {
+            vector: embedding,
+            nodeCounts: [6],
+          },
         },
-        body: JSON.stringify({
-          userId: userID,
-          vector: embedding,
-          k: 6,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
+        "application/json"
+      );
+      if (memoriesResponse.err) {
+        throw new Error(memoriesResponse.err);
+      }
+      if (!memoriesResponse.ok) {
         throw new Error("Failed to fetch memories");
       }
-
-      const data = await response.json();
-      let topMemories = data.memories || [];
-
-      // Discard the top-1 memory
-      topMemories = topMemories.slice(1, 6);
-
+      const topMemories = memoriesResponse.ok.longTerm.slice(1, 6);
       // For each of the top 5 memories, fetch their 2 most related memories
       const memoriesWithRelated = await Promise.all(
         topMemories.map(async (memory) => {
           const relatedEmbedding = await textEmbed(memory.prompt);
-          const relatedResponse = await fetch(routes.memories, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-              Origin: window.location.origin,
+          const relatedResponse = await getMemories(
+            {
+              userID,
+              longTerm: {
+                vector: relatedEmbedding,
+                nodeCounts: [3],
+              },
             },
-            body: JSON.stringify({
-              userId: userID,
-              vector: relatedEmbedding,
-              k: 3,
-            }),
-          });
-
-          const relatedData = await relatedResponse.json();
-          // Filter out the memory itself and take top 2
-          const relatedMemories = relatedData.memories
-            .filter((m) => m.id !== memory.id)
-            .slice(0, 2);
-
+            "application/json"
+          );
+          if (relatedResponse.err) {
+            throw new Error(relatedResponse.err);
+          }
+          if (!relatedResponse.ok) {
+            throw new Error("Failed to fetch related memories");
+          }
+          // Filter out the memory itself
+          const relatedMemories = relatedResponse.ok.longTerm.filter(
+            (m) => m.id !== memory.id
+          );
           return {
             ...memory,
             related: relatedMemories,

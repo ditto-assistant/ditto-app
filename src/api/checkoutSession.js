@@ -1,7 +1,6 @@
 import { useAuth, useAuthToken } from "@/hooks/useAuth";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
-import { useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@mui/material";
 

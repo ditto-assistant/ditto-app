@@ -24,6 +24,7 @@ export async function getBalance(): Promise<Result<Balance>> {
       method: "GET",
       headers: {
         Authorization: `Bearer ${tok.ok?.token}`,
+        Accept: "application/json",
       },
     }
   );

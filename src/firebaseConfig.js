@@ -18,6 +18,8 @@ function getBaseURL(dittoEnv) {
 export const BASE_URL = getBaseURL(MODE);
 
 export const routes = {
+  // v1 API
+
   prompt: BASE_URL + "/v1/prompt",
   embed: BASE_URL + "/v1/embed",
   search: BASE_URL + "/v1/google-search",
@@ -40,10 +42,13 @@ export const routes = {
     url.searchParams.append("deviceId", deviceId);
     return url.toString();
   },
-  memories: BASE_URL + "/v1/get-memories",
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",
   createUploadURL: BASE_URL + "/v1/create-upload-url",
+
+  // v2 API
+
+  memories: BASE_URL + "/api/v2/get-memories",
 };
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

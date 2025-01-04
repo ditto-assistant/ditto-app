@@ -11,7 +11,6 @@ import {
   htmlTemplate,
   htmlSystemTemplate,
 } from "../control/templates/htmlTemplate";
-import { getShortTermMemory, getLongTermMemory } from "./memory";
 import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
 import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
@@ -19,6 +18,7 @@ import { handleGoogleSearch } from "./agentflows/searchFlow";
 import { handleHomeAssistant } from "./agentflows/homeFlow";
 import { modelSupportsImageAttachments } from "@/types/llm";
 import { saveMessagePairToMemory } from "./firebase";
+import { getMemories } from "@/api/getMemories";
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
 // Add this near the top of the file with other constants
@@ -81,17 +81,31 @@ export const sendPrompt = async (
     }));
 
     const [memories, examplesString, scriptDetails] = await Promise.all([
-      fetchMemories(userID, userPromptEmbedding),
+      getMemories(
+        {
+          userID,
+          longTerm: {
+            nodeCounts: [10],
+            vector: userPromptEmbedding,
+          },
+          shortTerm: {
+            k: 10,
+          },
+          stripImages: true,
+        },
+        "text/plain"
+      ),
       getRelevantExamples(userPromptEmbedding, 5),
       fetchScriptDetails(),
     ]);
+    if (memories.err) {
+      throw new Error(memories.err);
+    }
 
-    const { shortTermMemory, longTermMemory } = memories;
     const { scriptName, scriptType, scriptContents } = scriptDetails;
 
     const constructedPrompt = mainTemplate(
-      longTermMemory,
-      shortTermMemory,
+      memories.ok,
       examplesString,
       firstName,
       new Date().toISOString(),
@@ -302,17 +316,6 @@ export const sendPrompt = async (
     updateConversation((prevState) => ({ ...prevState, is_typing: false }));
     return "An error occurred while processing your request. Please try again.";
   }
-};
-
-const fetchMemories = async (userID, embedding) => {
-  // if embedding is ""
-  if (embedding === "") {
-    return { embedding: "", shortTermMemory: "", longTermMemory: "" };
-  }
-  // const embedding = await huggingFaceEmbed(prompt); // TODO: use bert embeddings locally instead of OpenAI or huggingface API
-  const shortTermMemory = await getShortTermMemory(userID, 5);
-  const longTermMemory = await getLongTermMemory(userID, embedding, 5);
-  return { shortTermMemory, longTermMemory };
 };
 
 const fetchScriptDetails = () => {
