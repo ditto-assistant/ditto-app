@@ -36,7 +36,7 @@
     "workbox-strategies": "^7.3.0"
   },
   "devDependencies": {
-    "@tanstack/react-query-devtools": "^5.62.11",
+    "@tanstack/react-query-devtools": "^5.62.15",
     "@tanstack/eslint-plugin-query": "^5.62.9",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
