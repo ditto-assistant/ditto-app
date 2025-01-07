@@ -170,6 +170,7 @@ const Login = () => {
 
       // Get conversation history
       const conversationHistory = await loadConversationHistoryFromFirestore(userID);
+      const conversationHistory = await loadConversationHistoryFromFirestore(userID);
       if (conversationHistory) {
         localStorage.setItem("prompts", JSON.stringify(conversationHistory.prompts));
         localStorage.setItem("responses", JSON.stringify(conversationHistory.responses));
@@ -177,7 +178,16 @@ const Login = () => {
         localStorage.setItem("pairIDs", JSON.stringify(conversationHistory.pairIDs));
         localStorage.setItem("memoryIDs", JSON.stringify(conversationHistory.memoryIDs));
         localStorage.setItem("histCount", conversationHistory.prompts.length.toString());
+        localStorage.setItem("prompts", JSON.stringify(conversationHistory.prompts));
+        localStorage.setItem("responses", JSON.stringify(conversationHistory.responses));
+        localStorage.setItem("timestamps", JSON.stringify(conversationHistory.timestamps));
+        localStorage.setItem("pairIDs", JSON.stringify(conversationHistory.pairIDs));
+        localStorage.setItem("memoryIDs", JSON.stringify(conversationHistory.memoryIDs));
+        localStorage.setItem("histCount", conversationHistory.prompts.length.toString());
         localStorage.setItem("status_bar_fiat_balance", "m");
+        
+        // Dispatch event to update memory count
+        window.dispatchEvent(new Event("memoryUpdated"));
         
         // Dispatch event to update memory count
         window.dispatchEvent(new Event("memoryUpdated"));
