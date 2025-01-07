@@ -546,6 +546,7 @@ export default function ChatFeed({
               {children}
             </a>
           ),
+          p: ({ node, ...props }) => <p {...props} style={{ margin: '0.5em 0' }} />,
           img: ({ node, src, alt, ...props }) => {
             const [imgSrc, setImgSrc] = useState(src);
             const cachedUrl = getCachedUrl(src);
