@@ -162,14 +162,6 @@ const Login = () => {
       const userID = user.uid;
       const email = user.email;
 
-      // You can add more fields according to your Firestore rules
-      await saveUserToFirestore(
-        userID,
-        email,
-        user.displayName?.split(" ")[0],
-        user.displayName?.split(" ")[1]
-      );
-
       // Save user info to local storage
       localStorage.setItem("userID", user.uid);
       localStorage.setItem("email", email);
@@ -177,36 +169,34 @@ const Login = () => {
       localStorage.setItem("lastName", user.displayName?.split(" ")[1]);
 
       // Get conversation history
-      const conversationHistory =
-        await loadConversationHistoryFromFirestore(userID);
+      const conversationHistory = await loadConversationHistoryFromFirestore(userID);
       if (conversationHistory) {
-        localStorage.setItem(
-          "prompts",
-          JSON.stringify(conversationHistory.prompts)
-        );
-        localStorage.setItem(
-          "responses",
-          JSON.stringify(conversationHistory.responses)
-        );
-        localStorage.setItem(
-          "timestamps",
-          JSON.stringify(conversationHistory.timestamps)
-        );
-        localStorage.setItem(
-          "pairIDs",
-          JSON.stringify(conversationHistory.pairIDs)
-        );
-        localStorage.setItem(
-          "memoryIDs",
-          JSON.stringify(conversationHistory.memoryIDs)
-        );
-        localStorage.setItem("histCount", conversationHistory.prompts.length);
+        localStorage.setItem("prompts", JSON.stringify(conversationHistory.prompts));
+        localStorage.setItem("responses", JSON.stringify(conversationHistory.responses));
+        localStorage.setItem("timestamps", JSON.stringify(conversationHistory.timestamps));
+        localStorage.setItem("pairIDs", JSON.stringify(conversationHistory.pairIDs));
+        localStorage.setItem("memoryIDs", JSON.stringify(conversationHistory.memoryIDs));
+        
+        // Set histCount to the actual number of memories
+        const memoryCount = conversationHistory.prompts.length;
+        localStorage.setItem("histCount", memoryCount.toString());
+        
+        // Set the initial status bar mode to show memories
+        localStorage.setItem("status_bar_fiat_balance", "m");
       }
+
+      // Save user to Firestore
+      await saveUserToFirestore(
+        userID,
+        email,
+        user.displayName?.split(" ")[0],
+        user.displayName?.split(" ")[1]
+      );
 
       // If it's a new user, show TOS before proceeding
       if (isNewUser) {
         setShowTOS(true);
-        return; // Don't navigate yet
+        return;
       }
 
       navigate("/");
