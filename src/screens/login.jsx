@@ -199,6 +199,9 @@ const Login = () => {
 
         // Set the initial status bar mode to show memories
         localStorage.setItem("status_bar_fiat_balance", "m");
+
+        // Dispatch a custom event to trigger memory count update
+        window.dispatchEvent(new Event('memoryCountUpdated'));
       }
 
       // Save user to Firestore
