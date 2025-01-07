@@ -169,39 +169,24 @@ const Login = () => {
       localStorage.setItem("lastName", user.displayName?.split(" ")[1]);
 
       // Get conversation history
-      const conversationHistory =
-        await loadConversationHistoryFromFirestore(userID);
+      const conversationHistory = await loadConversationHistoryFromFirestore(userID);
       if (conversationHistory) {
-        localStorage.setItem(
-          "prompts",
-          JSON.stringify(conversationHistory.prompts)
-        );
-        localStorage.setItem(
-          "responses",
-          JSON.stringify(conversationHistory.responses)
-        );
-        localStorage.setItem(
-          "timestamps",
-          JSON.stringify(conversationHistory.timestamps)
-        );
-        localStorage.setItem(
-          "pairIDs",
-          JSON.stringify(conversationHistory.pairIDs)
-        );
-        localStorage.setItem(
-          "memoryIDs",
-          JSON.stringify(conversationHistory.memoryIDs)
-        );
-
-        // Set histCount to the actual number of memories
-        const memoryCount = conversationHistory.prompts.length;
-        localStorage.setItem("histCount", memoryCount.toString());
-
-        // Set the initial status bar mode to show memories
+        localStorage.setItem("prompts", JSON.stringify(conversationHistory.prompts));
+        localStorage.setItem("responses", JSON.stringify(conversationHistory.responses));
+        localStorage.setItem("timestamps", JSON.stringify(conversationHistory.timestamps));
+        localStorage.setItem("pairIDs", JSON.stringify(conversationHistory.pairIDs));
+        localStorage.setItem("memoryIDs", JSON.stringify(conversationHistory.memoryIDs));
+        localStorage.setItem("histCount", conversationHistory.prompts.length.toString());
         localStorage.setItem("status_bar_fiat_balance", "m");
+<<<<<<< HEAD
 
         // Dispatch a custom event to trigger memory count update
         window.dispatchEvent(new Event("memoryCountUpdated"));
+=======
+        
+        // Dispatch event to update memory count
+        window.dispatchEvent(new Event("memoryUpdated"));
+>>>>>>> 8b3ed6a (fetches memory count upon first time loggin in on new client, now working I hope pt2)
       }
 
       // Save user to Firestore
