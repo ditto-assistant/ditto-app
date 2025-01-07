@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function useMemoryCount() {
   const [count, setCount] = useState(() => {
@@ -12,14 +12,14 @@ export function useMemoryCount() {
     };
 
     // Listen for both storage changes and our custom event
-    window.addEventListener('storage', updateCount);
-    window.addEventListener('memoryCountUpdated', updateCount);
+    window.addEventListener("storage", updateCount);
+    window.addEventListener("memoryCountUpdated", updateCount);
 
     return () => {
-      window.removeEventListener('storage', updateCount);
-      window.removeEventListener('memoryCountUpdated', updateCount);
+      window.removeEventListener("storage", updateCount);
+      window.removeEventListener("memoryCountUpdated", updateCount);
     };
   }, []);
 
   return { count };
-} 
+}

@@ -201,7 +201,7 @@ const Login = () => {
         localStorage.setItem("status_bar_fiat_balance", "m");
 
         // Dispatch a custom event to trigger memory count update
-        window.dispatchEvent(new Event('memoryCountUpdated'));
+        window.dispatchEvent(new Event("memoryCountUpdated"));
       }
 
       // Save user to Firestore
