@@ -19,12 +19,15 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
   const [showUSD, setShowUSD] = useState(() => {
     let savedMode = localStorage.getItem("status_bar_fiat_balance");
     if (savedMode == null) {
-      savedMode = "f";
+      savedMode = "m";
       localStorage.setItem("status_bar_fiat_balance", savedMode);
     }
     return savedMode === "t";
   });
-  const [showMemories, setShowMemories] = useState(false);
+  const [showMemories, setShowMemories] = useState(() => {
+    let savedMode = localStorage.getItem("status_bar_fiat_balance");
+    return savedMode === "m";
+  });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const [scripts, setScripts] = useState(() => {

@@ -162,14 +162,6 @@ const Login = () => {
       const userID = user.uid;
       const email = user.email;
 
-      // You can add more fields according to your Firestore rules
-      await saveUserToFirestore(
-        userID,
-        email,
-        user.displayName?.split(" ")[0],
-        user.displayName?.split(" ")[1]
-      );
-
       // Save user info to local storage
       localStorage.setItem("userID", user.uid);
       localStorage.setItem("email", email);
@@ -200,13 +192,28 @@ const Login = () => {
           "memoryIDs",
           JSON.stringify(conversationHistory.memoryIDs)
         );
-        localStorage.setItem("histCount", conversationHistory.prompts.length);
+        localStorage.setItem(
+          "histCount",
+          conversationHistory.prompts.length.toString()
+        );
+        localStorage.setItem("status_bar_fiat_balance", "m");
+
+        // Dispatch event to update memory count
+        window.dispatchEvent(new Event("memoryUpdated"));
       }
+
+      // Save user to Firestore
+      await saveUserToFirestore(
+        userID,
+        email,
+        user.displayName?.split(" ")[0],
+        user.displayName?.split(" ")[1]
+      );
 
       // If it's a new user, show TOS before proceeding
       if (isNewUser) {
         setShowTOS(true);
-        return; // Don't navigate yet
+        return;
       }
 
       navigate("/");

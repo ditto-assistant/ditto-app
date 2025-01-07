@@ -2367,3 +2367,21 @@ input:checked + .toggle-slider:before {
   backface-visibility: hidden;
   transform: translateZ(0);
 }
+
+/* Add this to reduce the margin between paragraphs in markdown */
+.chat-bubble p {
+  margin: 0.5em 0; /* Adjust the margin as needed */
+}
+
+/* Add this to style list items in markdown */
+.chat-bubble ul,
+.chat-bubble ol {
+  padding-left: 1.2em; /* Adjust padding as needed */
+  margin: 0; /* Remove default margin */
+}
+
+.chat-bubble li {
+  margin: 0.3em 0; /* Adjust margin for better spacing */
+  list-style-position: inside; /* Ensure bullets are inside the list item */
+  padding-left: 0.5em; /* Add padding to align text with bullet */
+}
