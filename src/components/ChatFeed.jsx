@@ -494,8 +494,12 @@ export default function ChatFeed({
 
     // Calculate position for the overlay
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX || (e.touches ? e.touches[0].clientX : rect.left + rect.width / 2);
-    const y = e.clientY || (e.touches ? e.touches[0].clientY : rect.top + rect.height / 2);
+    const x =
+      e.clientX ||
+      (e.touches ? e.touches[0].clientX : rect.left + rect.width / 2);
+    const y =
+      e.clientY ||
+      (e.touches ? e.touches[0].clientY : rect.top + rect.height / 2);
 
     setActionOverlay({
       index,
