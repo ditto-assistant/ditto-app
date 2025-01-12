@@ -425,15 +425,18 @@
 /* Add media query for small screens */
 @media screen and (max-width: 380px) {
   .Form {
-    padding: 5px 8px; /* Reduce padding on small screens */
+    padding: 5px 70px; /* Reduce padding on small screens */
+    margin-left: -10px; /* Remove negative margin on small screens */
+    margin-right: -10px; /* Remove negative margin on small screens */
   }
 
   .Submit {
-    padding: 8px 12px; /* Further reduce padding on small screens */
+    padding: 8px 15px; /* Further reduce padding on small screens */
     font-size: 14px; /* Slightly smaller font size */
   }
 
   .TextArea {
-    padding-right: 80px; /* Reduce padding to prevent overlap with icons */
+    padding-right: 70px; /* Reduce padding to prevent overlap with icons */
+    margin-left: -65px;
   }
 }

@@ -312,7 +312,7 @@ export default function HomeScreen() {
   // Add this to your existing useEffect that runs on mount
   useEffect(() => {
     syncScripts();
-    checkAndResyncPairIDs(); // Add this line
+    checkAndResyncPairIDs();
 
     const handleStatus = async () => {
       var statusDb = await grabStatus();
@@ -328,7 +328,7 @@ export default function HomeScreen() {
       } catch (e) {
         console.log(e);
       }
-    }, 500);
+    }, 10000);
 
     return () => clearInterval(syncInterval);
   }, [conversation]);

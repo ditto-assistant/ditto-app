@@ -218,79 +218,88 @@ export default function ChatFeed({
     }
   }, []); // Empty dependency array means this runs once on mount
 
-  useEffect(() => {
-    const handleStreamUpdate = (event) => {
+  const handleStreamUpdate = useCallback(
+    (event) => {
       const { chunk, isNewMessage } = event.detail;
-
       if (!chunk) return;
 
-      // Process the incoming chunk, passing isNewMessage flag
+      // Process chunk through useTokenStreaming
       processChunk(chunk, isNewMessage);
 
-      // Only scroll if user is near bottom
-      if (bottomRef.current) {
-        const feedElement = feedRef.current;
-        const isNearBottom =
-          feedElement &&
-          feedElement.scrollHeight -
-            feedElement.scrollTop -
-            feedElement.clientHeight <
-            100;
+      // Scroll handling in a separate effect to avoid state update conflicts
+      requestAnimationFrame(() => {
+        if (bottomRef.current) {
+          const feedElement = feedRef.current;
+          const isNearBottom =
+            feedElement &&
+            feedElement.scrollHeight -
+              feedElement.scrollTop -
+              feedElement.clientHeight <
+              100;
 
-        if (isNearBottom) {
-          bottomRef.current.scrollIntoView({
-            behavior: "auto",
-            block: "end",
-          });
+          if (isNearBottom) {
+            bottomRef.current.scrollIntoView({
+              behavior: "auto",
+              block: "end",
+            });
+          }
         }
-      }
-    };
+      });
+    },
+    [processChunk]
+  );
 
+  useEffect(() => {
     window.addEventListener("responseStreamUpdate", handleStreamUpdate);
     return () => {
       window.removeEventListener("responseStreamUpdate", handleStreamUpdate);
     };
-  }, [processChunk]);
+  }, [handleStreamUpdate]);
 
-  useEffect(() => {
-    if (messages.length > 0 && isStreaming) {
+  // Separate effect for updating conversation with streamed text
+  const updateStreamedText = useCallback(() => {
+    if (messages.length > 0 && isStreaming && streamedText) {
       updateConversation((prevState) => {
-        const messages = [...prevState.messages];
-        const lastMessage = messages[messages.length - 1];
-
-        if (lastMessage.sender === "Ditto") {
-          lastMessage.text = streamedText;
-          lastMessage.currentWord = currentWord;
+        const newMessages = [...prevState.messages];
+        const lastMsg = newMessages[newMessages.length - 1];
+        if (lastMsg.sender === "Ditto") {
+          lastMsg.text = streamedText;
         }
-
-        return { ...prevState, messages };
+        return { ...prevState, messages: newMessages };
       });
     }
-  }, [streamedText, currentWord, isStreaming]);
+  }, [streamedText, isStreaming, messages, updateConversation]);
 
   useEffect(() => {
-    return () => reset();
+    const timeoutId = setTimeout(updateStreamedText, 50); // Debounce updates
+    return () => clearTimeout(timeoutId);
+  }, [updateStreamedText]);
+
+  // Cleanup streaming on unmount
+  useEffect(() => {
+    return () => {
+      reset();
+    };
   }, [reset]);
 
-  const scrollToBottomOfFeed = (quick = false) => {
+  const scrollToBottomOfFeed = useCallback((quick = false) => {
     if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({
-        behavior: "auto", // Always use instant scrolling
-        block: "end",
-        inline: "nearest",
+      requestAnimationFrame(() => {
+        bottomRef.current.scrollIntoView({
+          behavior: quick ? "auto" : "smooth",
+          block: "end",
+          inline: "nearest",
+        });
       });
     }
-  };
+  }, []);
 
+  // Scroll handling in a separate effect
   useEffect(() => {
     if (messages.length > 0 && (startAtBottom || scrollToBottom)) {
-      // Use requestAnimationFrame to ensure DOM has updated
-      requestAnimationFrame(() => {
-        // Scroll immediately without smooth behavior
-        scrollToBottomOfFeed(true);
-      });
+      scrollToBottomOfFeed(true);
     }
-  }, [messages, scrollToBottom, startAtBottom]);
+  }, [messages, scrollToBottom, startAtBottom, scrollToBottomOfFeed]);
 
   useEffect(() => {
     // Cache Ditto avatar - update the path to the new image
@@ -459,11 +468,8 @@ export default function ChatFeed({
   );
 
   const handleBubbleInteraction = (e, index) => {
-    e.preventDefault();
-    e.stopPropagation();
-
     // Don't show action overlay if user is selecting text
-    if (window.getSelection().toString() || isSelecting) {
+    if (window.getSelection().toString()) {
       return;
     }
 
@@ -471,6 +477,10 @@ export default function ChatFeed({
     if (e.target.classList.contains("chat-image")) {
       return;
     }
+
+    // Prevent default behavior
+    e.preventDefault();
+    e.stopPropagation();
 
     // Trigger haptic feedback
     triggerHapticFeedback();
@@ -484,8 +494,12 @@ export default function ChatFeed({
 
     // Calculate position for the overlay
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX || rect.left + rect.width / 2;
-    const y = e.clientY || rect.top + rect.height / 2;
+    const x =
+      e.clientX ||
+      (e.touches ? e.touches[0].clientX : rect.left + rect.width / 2);
+    const y =
+      e.clientY ||
+      (e.touches ? e.touches[0].clientY : rect.top + rect.height / 2);
 
     setActionOverlay({
       index,
