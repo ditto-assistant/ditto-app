@@ -486,7 +486,8 @@ export default function ChatFeed({
       // Check if user has moved their finger (indicating they're trying to select)
       const currentX = e.touches ? e.touches[0].clientX : e.clientX;
       const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-      const hasMoved = Math.abs(startX - currentX) > 5 || Math.abs(startY - currentY) > 5;
+      const hasMoved =
+        Math.abs(startX - currentX) > 5 || Math.abs(startY - currentY) > 5;
 
       if (hasMoved) {
         return; // User is trying to select text
