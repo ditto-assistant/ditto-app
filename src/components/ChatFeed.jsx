@@ -497,36 +497,39 @@ export default function ChatFeed({
       e.preventDefault();
       e.stopPropagation();
 
-      // Don't show action overlay if click was on an image
-      if (e.target.classList.contains("chat-image")) {
-        return;
-      }
+    // Don't show action overlay if click was on an image
+    if (e.target.classList.contains("chat-image")) {
+      return;
+    }
 
-      // Trigger haptic feedback
-      triggerHapticFeedback();
+    // Prevent default behavior
+    e.preventDefault();
+    e.stopPropagation();
 
-      // If clicking the same bubble that has an open overlay, close it
-      if (actionOverlay && actionOverlay.index === index) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
-        return;
-      }
+    // Trigger haptic feedback
+    triggerHapticFeedback();
 
-      // Calculate position for the overlay
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX || rect.left + rect.width / 2;
-      const y = e.clientY || rect.top + rect.height / 2;
-
-      setActionOverlay({
-        index,
-        clientX: x,
-        clientY: y,
-        type: "text",
-      });
-
-      // Close any open reaction overlay
+    // If clicking the same bubble that has an open overlay, close it
+    if (actionOverlay && actionOverlay.index === index) {
+      setActionOverlay(null);
       setReactionOverlay(null);
-    }, 200); // Small delay to check for text selection
+      return;
+    }
+
+    // Calculate position for the overlay
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX || (e.touches ? e.touches[0].clientX : rect.left + rect.width / 2);
+    const y = e.clientY || (e.touches ? e.touches[0].clientY : rect.top + rect.height / 2);
+
+    setActionOverlay({
+      index,
+      clientX: x,
+      clientY: y,
+      type: "text",
+    });
+
+    // Close any open reaction overlay
+    setReactionOverlay(null);
   };
 
   const handleImageClick = (src) => {
