@@ -123,128 +123,55 @@ export const sendPrompt = async (
       mainAgentModel = "llama-3-2";
     }
 
-    // Prepare to update the assistant's message as the response streams in
     let updatedText = "";
 
     // Streaming callback
-    let buffer = "";
-    let wordQueue = [];
-    let isProcessing = false;
-
-    const WORD_DELAY_MS = 12;
-
-    const processNextWord = async () => {
-      if (wordQueue.length === 0) {
-        isProcessing = false;
-
-        // Check for tool triggers in the complete response when streaming is done
-        if (!toolTriggered && updatedText) {
-          const toolTriggers = [
-            "<OPENSCAD>",
-            "<HTML_SCRIPT>",
-            "<IMAGE_GENERATION>",
-            "<GOOGLE_SEARCH>",
-            "<GOOGLE_HOME>",
-          ];
-
-          for (const trigger of toolTriggers) {
-            if (updatedText.includes(trigger) && !toolTriggered) {
-              toolTriggered = true;
-              await processResponse(
-                updatedText,
-                prompt,
-                userPromptEmbedding,
-                userID,
-                scriptContents,
-                scriptName,
-                image,
-                memories,
-                updateConversation,
-                preferences
-              );
-              return;
-            }
-          }
-
-          // Only update the UI state here, don't save to memory yet
-          updateConversation((prevState) => {
-            const messages = [...prevState.messages];
-            messages[messages.length - 1] = {
-              ...messages[messages.length - 1],
-              text: updatedText,
-              isTyping: false,
-            };
-            return { ...prevState, messages };
-          });
-        }
-        return;
-      }
-      isProcessing = true;
-
-      const word = wordQueue.shift();
-      updatedText += word;
-
-      // Update the assistant's message in the conversation without saving to Firestore
-      updateConversation((prevState) => {
-        const messages = [...prevState.messages];
-        messages[messages.length - 1] = {
-          ...messages[messages.length - 1],
-          text: updatedText,
-          isTyping: false,
-        };
-        return { ...prevState, messages };
-      });
-
-      // Schedule the next word
-      setTimeout(processNextWord, WORD_DELAY_MS);
-    };
-
-    const finalizeResponse = async (responseText) => {
-      const docId = await saveMessagePairToMemory(
-        userID,
-        prompt,
-        responseText,
-        userPromptEmbedding
-      );
-
-      // Update conversation with docId and pairID
-      updateConversation((prevState) => {
-        const messages = [...prevState.messages];
-        messages[messages.length - 2] = {
-          ...messages[messages.length - 2],
-          pairID: docId,
-        };
-        messages[messages.length - 1] = {
-          ...messages[messages.length - 1],
-          text: responseText,
-          isTyping: false,
-          docId: docId,
-          pairID: docId,
-        };
-        return { ...prevState, messages };
-      });
-
-      saveToLocalStorage(prompt, responseText, Date.now(), docId);
-    };
-
     const streamingCallback = (chunk) => {
-      // Check if this is the first chunk of a new message
-      const isNewMessage = !buffer && !wordQueue.length;
+      if (toolTriggered) return; // Skip if tool already triggered
+      
+      // Append to updatedText
+      updatedText += chunk;
+      
+      // Check for tool triggers early
+      const toolTriggers = [
+        "<OPENSCAD>",
+        "<HTML_SCRIPT>",
+        "<IMAGE_GENERATION>",
+        "<GOOGLE_SEARCH>",
+        "<GOOGLE_HOME>",
+      ];
 
-      // Don't stream if we've detected a tool trigger
-      if (toolTriggered) return;
+      // Early tool detection
+      for (const trigger of toolTriggers) {
+        if (updatedText.includes(trigger)) {
+          toolTriggered = true;
+          processResponse(
+            updatedText,
+            prompt,
+            userPromptEmbedding,
+            userID,
+            scriptContents,
+            scriptName,
+            image,
+            memories,
+            updateConversation,
+            preferences
+          );
+          return;
+        }
+      }
 
-      // Dispatch the streaming event with the chunk and isNewMessage flag
+      // Dispatch chunk for streaming UI
       const event = new CustomEvent("responseStreamUpdate", {
         detail: {
           chunk,
-          isNewMessage,
+          isNewMessage: !updatedText || updatedText === chunk,
         },
       });
       window.dispatchEvent(event);
     };
 
-    // Call the LLM with the streaming callback
+    // LLM call with streaming
     const response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
@@ -253,35 +180,8 @@ export const sendPrompt = async (
       streamingCallback
     );
 
-    // Process any remaining text
-    if (buffer.length > 0) {
-      wordQueue.push(buffer);
-      buffer = "";
-      if (!isProcessing) {
-        processNextWord();
-      }
-    }
-
-    // Wait for all words to be processed
-    while (wordQueue.length > 0 || isProcessing) {
-      await new Promise((resolve) => setTimeout(resolve, WORD_DELAY_MS));
-    }
-
-    // Check for tool triggers before saving
-    const toolTriggers = [
-      "<OPENSCAD>",
-      "<HTML_SCRIPT>",
-      "<IMAGE_GENERATION>",
-      "<GOOGLE_SEARCH>",
-      "<GOOGLE_HOME>",
-    ];
-
-    const hasTrigger = toolTriggers.some((trigger) =>
-      response.includes(trigger)
-    );
-
-    // Only save to memory if no tool trigger is found
-    if (!hasTrigger && response) {
+    // If no tool was triggered, handle the complete response
+    if (!toolTriggered) {
       const docId = await saveMessagePairToMemory(
         userID,
         prompt,
