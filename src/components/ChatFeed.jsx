@@ -473,30 +473,6 @@ export default function ChatFeed({
       return;
     }
 
-    // Add a small delay to check if user is trying to select text
-    const startX = e.touches ? e.touches[0].clientX : e.clientX;
-    const startY = e.touches ? e.touches[0].clientY : e.clientY;
-
-    setTimeout(() => {
-      const selection = window.getSelection().toString();
-      if (selection) {
-        return; // User is selecting text, don't show overlay
-      }
-
-      // Check if user has moved their finger (indicating they're trying to select)
-      const currentX = e.touches ? e.touches[0].clientX : e.clientX;
-      const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-      const hasMoved =
-        Math.abs(startX - currentX) > 5 || Math.abs(startY - currentY) > 5;
-
-      if (hasMoved) {
-        return; // User is trying to select text
-      }
-
-      // Continue with normal bubble interaction
-      e.preventDefault();
-      e.stopPropagation();
-
     // Don't show action overlay if click was on an image
     if (e.target.classList.contains("chat-image")) {
       return;

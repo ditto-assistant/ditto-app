@@ -168,7 +168,7 @@
   object-fit: contain;
   border-radius: 10px;
   padding: 1em;
-  margin: 1em 0;
+  margin: 1em 0; /* Add margin to top and bottom */
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
@@ -1754,7 +1754,7 @@ input:checked + .toggle-slider:before {
   width: 100%;
   height: auto;
   object-fit: contain;
-  margin: 1em 0;
+  margin: 1em 0; /* Add margin to top and bottom */
   padding: 0;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
