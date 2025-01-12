@@ -8,7 +8,7 @@ export const useTokenStreaming = (initialText = "") => {
   const timeoutIdsRef = useRef([]);
   const accumulatedTextRef = useRef("");
   const batchQueueRef = useRef([]);
-  
+
   const clearTimeouts = useCallback(() => {
     timeoutIdsRef.current.forEach(clearTimeout);
     timeoutIdsRef.current = [];
@@ -24,7 +24,7 @@ export const useTokenStreaming = (initialText = "") => {
     const batch = batchQueueRef.current.shift();
     const timeoutId = setTimeout(() => {
       setCurrentWord(batch);
-      setStreamedText(prev => {
+      setStreamedText((prev) => {
         const newText = prev + batch;
         accumulatedTextRef.current = newText;
         return newText;
@@ -35,32 +35,35 @@ export const useTokenStreaming = (initialText = "") => {
     timeoutIdsRef.current.push(timeoutId);
   }, []);
 
-  const processChunk = useCallback((chunk, isNewMessage = false) => {
-    if (isNewMessage) {
-      clearTimeouts();
-      setStreamedText("");
-      setIsComplete(false);
-      accumulatedTextRef.current = "";
-      batchQueueRef.current = [];
-    }
+  const processChunk = useCallback(
+    (chunk, isNewMessage = false) => {
+      if (isNewMessage) {
+        clearTimeouts();
+        setStreamedText("");
+        setIsComplete(false);
+        accumulatedTextRef.current = "";
+        batchQueueRef.current = [];
+      }
 
-    setIsStreaming(true);
-    
-    // Split chunk into words while preserving whitespace
-    const words = chunk.split(/(\s+)/);
-    const batchSize = 3;
-    
-    // Create batches
-    for (let i = 0; i < words.length; i += batchSize) {
-      const batch = words.slice(i, i + batchSize).join("");
-      batchQueueRef.current.push(batch);
-    }
+      setIsStreaming(true);
 
-    // Start processing if not already processing
-    if (batchQueueRef.current.length === words.length / batchSize) {
-      processBatchQueue();
-    }
-  }, [clearTimeouts, processBatchQueue]);
+      // Split chunk into words while preserving whitespace
+      const words = chunk.split(/(\s+)/);
+      const batchSize = 3;
+
+      // Create batches
+      for (let i = 0; i < words.length; i += batchSize) {
+        const batch = words.slice(i, i + batchSize).join("");
+        batchQueueRef.current.push(batch);
+      }
+
+      // Start processing if not already processing
+      if (batchQueueRef.current.length === words.length / batchSize) {
+        processBatchQueue();
+      }
+    },
+    [clearTimeouts, processBatchQueue]
+  );
 
   const reset = useCallback(() => {
     clearTimeouts();

@@ -218,33 +218,36 @@ export default function ChatFeed({
     }
   }, []); // Empty dependency array means this runs once on mount
 
-  const handleStreamUpdate = useCallback((event) => {
-    const { chunk, isNewMessage } = event.detail;
-    if (!chunk) return;
+  const handleStreamUpdate = useCallback(
+    (event) => {
+      const { chunk, isNewMessage } = event.detail;
+      if (!chunk) return;
 
-    // Process chunk through useTokenStreaming
-    processChunk(chunk, isNewMessage);
+      // Process chunk through useTokenStreaming
+      processChunk(chunk, isNewMessage);
 
-    // Scroll handling in a separate effect to avoid state update conflicts
-    requestAnimationFrame(() => {
-      if (bottomRef.current) {
-        const feedElement = feedRef.current;
-        const isNearBottom =
-          feedElement &&
-          feedElement.scrollHeight -
-            feedElement.scrollTop -
-            feedElement.clientHeight <
-            100;
+      // Scroll handling in a separate effect to avoid state update conflicts
+      requestAnimationFrame(() => {
+        if (bottomRef.current) {
+          const feedElement = feedRef.current;
+          const isNearBottom =
+            feedElement &&
+            feedElement.scrollHeight -
+              feedElement.scrollTop -
+              feedElement.clientHeight <
+              100;
 
-        if (isNearBottom) {
-          bottomRef.current.scrollIntoView({
-            behavior: "auto",
-            block: "end",
-          });
+          if (isNearBottom) {
+            bottomRef.current.scrollIntoView({
+              behavior: "auto",
+              block: "end",
+            });
+          }
         }
-      }
-    });
-  }, [processChunk]);
+      });
+    },
+    [processChunk]
+  );
 
   useEffect(() => {
     window.addEventListener("responseStreamUpdate", handleStreamUpdate);

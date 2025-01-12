@@ -128,10 +128,10 @@ export const sendPrompt = async (
     // Streaming callback
     const streamingCallback = (chunk) => {
       if (toolTriggered) return; // Skip if tool already triggered
-      
+
       // Append to updatedText
       updatedText += chunk;
-      
+
       // Check for tool triggers early
       const toolTriggers = [
         "<OPENSCAD>",

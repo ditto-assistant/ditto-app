@@ -426,8 +426,8 @@
 @media screen and (max-width: 380px) {
   .Form {
     padding: 5px 70px; /* Reduce padding on small screens */
-    margin-left: -10px;   /* Remove negative margin on small screens */
-    margin-right: -10px;  /* Remove negative margin on small screens */
+    margin-left: -10px; /* Remove negative margin on small screens */
+    margin-right: -10px; /* Remove negative margin on small screens */
   }
 
   .Submit {
