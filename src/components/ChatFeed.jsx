@@ -468,43 +468,64 @@ export default function ChatFeed({
   );
 
   const handleBubbleInteraction = (e, index) => {
-    e.preventDefault();
-    e.stopPropagation();
-
     // Don't show action overlay if user is selecting text
-    if (window.getSelection().toString() || isSelecting) {
+    if (window.getSelection().toString()) {
       return;
     }
 
-    // Don't show action overlay if click was on an image
-    if (e.target.classList.contains("chat-image")) {
-      return;
-    }
+    // Add a small delay to check if user is trying to select text
+    const startX = e.touches ? e.touches[0].clientX : e.clientX;
+    const startY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    // Trigger haptic feedback
-    triggerHapticFeedback();
+    setTimeout(() => {
+      const selection = window.getSelection().toString();
+      if (selection) {
+        return; // User is selecting text, don't show overlay
+      }
 
-    // If clicking the same bubble that has an open overlay, close it
-    if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
+      // Check if user has moved their finger (indicating they're trying to select)
+      const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+      const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+      const hasMoved = Math.abs(startX - currentX) > 5 || Math.abs(startY - currentY) > 5;
+
+      if (hasMoved) {
+        return; // User is trying to select text
+      }
+
+      // Continue with normal bubble interaction
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Don't show action overlay if click was on an image
+      if (e.target.classList.contains("chat-image")) {
+        return;
+      }
+
+      // Trigger haptic feedback
+      triggerHapticFeedback();
+
+      // If clicking the same bubble that has an open overlay, close it
+      if (actionOverlay && actionOverlay.index === index) {
+        setActionOverlay(null);
+        setReactionOverlay(null);
+        return;
+      }
+
+      // Calculate position for the overlay
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX || rect.left + rect.width / 2;
+      const y = e.clientY || rect.top + rect.height / 2;
+
+      setActionOverlay({
+        index,
+        clientX: x,
+        clientY: y,
+        type: "text",
+      });
+
+      // Close any open reaction overlay
       setReactionOverlay(null);
-      return;
-    }
-
-    // Calculate position for the overlay
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX || rect.left + rect.width / 2;
-    const y = e.clientY || rect.top + rect.height / 2;
-
-    setActionOverlay({
-      index,
-      clientX: x,
-      clientY: y,
-      type: "text",
-    });
-
-    // Close any open reaction overlay
-    setReactionOverlay(null);
+    }, 200); // Small delay to check for text selection
   };
 
   const handleImageClick = (src) => {

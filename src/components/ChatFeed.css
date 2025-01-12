@@ -52,28 +52,49 @@
 }
 
 .chat-bubble {
+  position: relative;
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin: 5px 0;
+  max-width: 80%;
+  transition: background-color 0.2s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
   display: flex;
   flex-direction: column;
-  padding: 10px 14px;
-  border-radius: 20px;
-  word-wrap: break-word;
-  max-width: 80%;
   min-width: 0;
-  overflow-wrap: break-word;
-  position: relative;
-  transition: all 0.15s ease;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  margin-top: 16px;
   user-select: text;
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
   width: auto;
   gap: 4px;
+  margin-top: 16px;
+  touch-action: pan-y;
+}
+
+@media (hover: hover) {
+  .chat-bubble:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .chat-bubble.User:hover {
+    background-color: rgba(114, 137, 218, 0.15);
+  }
+
+  .chat-bubble.Ditto:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.chat-bubble:active {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .blurred {
@@ -136,6 +157,7 @@
   overflow-wrap: break-word;
   white-space: pre-wrap;
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .chat-image {
@@ -379,10 +401,7 @@
 /* Disable text selection for touch devices (usually mobile) */
 @media (pointer: coarse) {
   .chat-bubble {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    touch-action: pan-y;
   }
 }
 
@@ -765,8 +784,7 @@
 /* Add styles for better touch interaction */
 @media (pointer: coarse) {
   .chat-bubble {
-    user-select: none;
-    touch-action: manipulation;
+    touch-action: pan-y;
   }
 
   .chat-bubble:active {
@@ -1504,6 +1522,7 @@ input:checked + .toggle-slider:before {
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
+  touch-action: pan-y;
 }
 
 /* Add styles for hyperlinks */
