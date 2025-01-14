@@ -395,22 +395,62 @@ export default function ChatFeed({
           // First try to get from cache immediately
           const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
           const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
+          const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
+          const now = Date.now();
 
-          if (cachedAvatar && cachedPhotoURL === auth.currentUser.photoURL) {
+          // Use cached avatar if it's valid and not expired
+          if (
+            cachedAvatar &&
+            cachedPhotoURL === auth.currentUser.photoURL &&
+            cacheTimestamp &&
+            now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
+          ) {
             setProfilePic(cachedAvatar);
-          } else {
-            // Set placeholder while we fetch
-            setProfilePic("/user_placeholder.png");
+            return; // Exit early if we have valid cache
           }
 
-          // Then attempt to fetch/update in background
-          const avatarData = await getAvatarWithCooldown(
-            auth.currentUser.photoURL
-          );
-          setProfilePic(avatarData);
-        } catch (error) {
-          console.error("Error loading user avatar:", error);
+          // Set placeholder while we fetch
           setProfilePic("/user_placeholder.png");
+
+          // Attempt to fetch with retries
+          let retryCount = 0;
+          const maxRetries = 3;
+
+          while (retryCount < maxRetries) {
+            try {
+              const avatarData = await getAvatarWithCooldown(
+                auth.currentUser.photoURL
+              );
+              setProfilePic(avatarData);
+              break; // Success, exit retry loop
+            } catch (error) {
+              console.error(
+                `Avatar fetch attempt ${retryCount + 1} failed:`,
+                error
+              );
+              retryCount++;
+
+              if (retryCount === maxRetries) {
+                // If all retries failed but we have a cached avatar, use it
+                if (cachedAvatar) {
+                  console.log(
+                    "Using expired cached avatar after all retries failed"
+                  );
+                  setProfilePic(cachedAvatar);
+                }
+              } else {
+                // Wait before retrying (exponential backoff)
+                await new Promise((resolve) =>
+                  setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error in avatar loading process:", error);
+          // Final fallback - use cached avatar if available, otherwise placeholder
+          const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+          setProfilePic(cachedAvatar || "/user_placeholder.png");
         }
       } else {
         setProfilePic("/user_placeholder.png");
