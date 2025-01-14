@@ -95,7 +95,7 @@ const uploadAvatarToFirebaseStorage = async (photoURL, userID) => {
     const response = await fetch(photoURL);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const blob = await response.blob();
-    
+
     const storage = getStorage();
     const avatarRef = ref(storage, `avatars/${userID}/profile.jpg`);
     await uploadBytes(avatarRef, blob);
@@ -162,7 +162,8 @@ const getAvatarWithCooldown = async (photoURL) => {
 
       // Fetch the avatar from Firebase Storage
       const response = await fetch(downloadURL);
-      if (!response.ok) throw new Error(`Failed to fetch from storage: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`Failed to fetch from storage: ${response.status}`);
 
       const blob = await response.blob();
       const reader = new FileReader();
@@ -394,7 +395,7 @@ export default function ChatFeed({
           // First try to get from cache immediately
           const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
           const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
-          
+
           if (cachedAvatar && cachedPhotoURL === auth.currentUser.photoURL) {
             setProfilePic(cachedAvatar);
           } else {
@@ -403,7 +404,9 @@ export default function ChatFeed({
           }
 
           // Then attempt to fetch/update in background
-          const avatarData = await getAvatarWithCooldown(auth.currentUser.photoURL);
+          const avatarData = await getAvatarWithCooldown(
+            auth.currentUser.photoURL
+          );
           setProfilePic(avatarData);
         } catch (error) {
           console.error("Error loading user avatar:", error);
