@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { auth, saveFeedback } from "../control/firebase";
+import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
@@ -11,7 +11,7 @@ import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
 import { routes } from "../firebaseConfig";
-import { textEmbed } from "../api/LLM"; // Add this import
+import { textEmbed } from "../api/LLM";
 import MemoryNetwork from "./MemoryNetwork";
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
@@ -22,6 +22,8 @@ import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
 import { getMemories } from "@/api/getMemories";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
@@ -87,65 +89,134 @@ const detectToolType = (text) => {
   return null;
 };
 
-// Add this helper function
+// Add this helper function at the top
+const uploadAvatarToFirebaseStorage = async (photoURL, userID) => {
+  try {
+    const response = await fetch(photoURL);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const blob = await response.blob();
+    
+    const storage = getStorage();
+    const avatarRef = ref(storage, `avatars/${userID}/profile.jpg`);
+    await uploadBytes(avatarRef, blob);
+    return await getDownloadURL(avatarRef);
+  } catch (error) {
+    console.error("Error uploading avatar:", error);
+    throw error;
+  }
+};
+
 const getAvatarWithCooldown = async (photoURL) => {
   try {
     const now = Date.now();
     const lastFetchAttempt = localStorage.getItem("lastAvatarFetchAttempt");
     const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
     const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
+    const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
 
-    // If we have a cached avatar and it's not expired, use it
+    // If we have a cached avatar and it's not expired and the URL hasn't changed
     if (
       cachedAvatar &&
       cacheTimestamp &&
+      cachedPhotoURL === photoURL &&
       now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
     ) {
       return cachedAvatar;
     }
 
-    // If we're within the cooldown period, use fallback or cached avatar
+    // If URL has changed, clear the cache
+    if (cachedPhotoURL !== photoURL) {
+      localStorage.removeItem(USER_AVATAR_KEY);
+      localStorage.removeItem("avatarCacheTimestamp");
+      localStorage.removeItem("cachedPhotoURL");
+    }
+
+    // If we're within the cooldown period and have a cached avatar, use it
     if (
       lastFetchAttempt &&
-      now - parseInt(lastFetchAttempt) < AVATAR_FETCH_COOLDOWN
+      now - parseInt(lastFetchAttempt) < AVATAR_FETCH_COOLDOWN &&
+      cachedAvatar
     ) {
-      return cachedAvatar || "/user_placeholder.png";
+      return cachedAvatar;
     }
 
     // Update last fetch attempt timestamp
     localStorage.setItem("lastAvatarFetchAttempt", now.toString());
 
-    // Fetch the avatar with proper options
-    const response = await fetch(photoURL, {
-      mode: "cors",
-      credentials: "omit",
-      headers: {
-        Accept: "image/*",
-      },
-      cache: "force-cache",
-    });
+    // Try to get/upload to Firebase Storage first
+    try {
+      const userID = auth.currentUser?.uid;
+      if (!userID) throw new Error("No user ID");
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch photo: ${response.status}`);
+      // Try to get existing avatar from Firebase Storage
+      const storage = getStorage();
+      const avatarRef = ref(storage, `avatars/${userID}/profile.jpg`);
+      let downloadURL;
+
+      try {
+        downloadURL = await getDownloadURL(avatarRef);
+      } catch (storageError) {
+        // If avatar doesn't exist in storage, upload it
+        downloadURL = await uploadAvatarToFirebaseStorage(photoURL, userID);
+      }
+
+      // Fetch the avatar from Firebase Storage
+      const response = await fetch(downloadURL);
+      if (!response.ok) throw new Error(`Failed to fetch from storage: ${response.status}`);
+
+      const blob = await response.blob();
+      const reader = new FileReader();
+
+      return new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64data = reader.result;
+          localStorage.setItem(USER_AVATAR_KEY, base64data);
+          localStorage.setItem("avatarCacheTimestamp", now.toString());
+          localStorage.setItem("cachedPhotoURL", photoURL);
+          resolve(base64data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Firebase Storage error:", error);
+      // If Firebase Storage fails, try direct fetch as fallback
+      const response = await fetch(photoURL, {
+        mode: "cors",
+        credentials: "omit",
+        headers: {
+          Accept: "image/*",
+        },
+        cache: "force-cache",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch photo: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const reader = new FileReader();
+
+      return new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64data = reader.result;
+          localStorage.setItem(USER_AVATAR_KEY, base64data);
+          localStorage.setItem("avatarCacheTimestamp", now.toString());
+          localStorage.setItem("cachedPhotoURL", photoURL);
+          resolve(base64data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
     }
-
-    const blob = await response.blob();
-    const reader = new FileReader();
-
-    return new Promise((resolve, reject) => {
-      reader.onloadend = () => {
-        const base64data = reader.result;
-        // Cache the successful result
-        localStorage.setItem(USER_AVATAR_KEY, base64data);
-        localStorage.setItem("avatarCacheTimestamp", now.toString());
-        resolve(base64data);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   } catch (error) {
     console.log("Avatar fetch error:", error.message);
-    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
+    // If we have a cached avatar, use it even if expired
+    const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+    if (cachedAvatar) {
+      return cachedAvatar;
+    }
+    return "/user_placeholder.png";
   }
 };
 
@@ -303,7 +374,7 @@ export default function ChatFeed({
 
   useEffect(() => {
     // Cache Ditto avatar - update the path to the new image
-    fetch("/icons/fancy-ditto.png") // Updated path
+    fetch("/icons/fancy-ditto.png")
       .then((response) => response.blob())
       .then((blob) => {
         const reader = new FileReader();
@@ -317,18 +388,33 @@ export default function ChatFeed({
       .catch((error) => console.error("Error caching Ditto avatar:", error));
 
     // Load user avatar with cooldown and caching
-    if (auth.currentUser?.photoURL) {
-      getAvatarWithCooldown(auth.currentUser.photoURL)
-        .then((avatarData) => {
+    const loadUserAvatar = async () => {
+      if (auth.currentUser?.photoURL) {
+        try {
+          // First try to get from cache immediately
+          const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+          const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
+          
+          if (cachedAvatar && cachedPhotoURL === auth.currentUser.photoURL) {
+            setProfilePic(cachedAvatar);
+          } else {
+            // Set placeholder while we fetch
+            setProfilePic("/user_placeholder.png");
+          }
+
+          // Then attempt to fetch/update in background
+          const avatarData = await getAvatarWithCooldown(auth.currentUser.photoURL);
           setProfilePic(avatarData);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Error loading user avatar:", error);
           setProfilePic("/user_placeholder.png");
-        });
-    } else {
-      setProfilePic("/user_placeholder.png");
-    }
+        }
+      } else {
+        setProfilePic("/user_placeholder.png");
+      }
+    };
+
+    loadUserAvatar();
   }, []);
 
   useEffect(() => {
