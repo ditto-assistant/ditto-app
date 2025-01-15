@@ -94,31 +94,31 @@ const uploadAvatarToFirebaseStorage = async (photoURL, userID) => {
   try {
     // First try to fetch directly from Google
     const response = await fetch(photoURL, {
-      mode: 'cors',
-      credentials: 'omit',
+      mode: "cors",
+      credentials: "omit",
       headers: {
-        'Accept': 'image/*'
-      }
+        Accept: "image/*",
+      },
     });
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const blob = await response.blob();
     const storage = getStorage();
     const avatarRef = ref(storage, `avatars/${userID}/profile.jpg`);
-    
+
     // Upload with metadata to help with caching
     const metadata = {
-      contentType: 'image/jpeg',
-      cacheControl: 'public,max-age=86400',
+      contentType: "image/jpeg",
+      cacheControl: "public,max-age=86400",
       customMetadata: {
         originalURL: photoURL,
-        timestamp: Date.now().toString()
-      }
+        timestamp: Date.now().toString(),
+      },
     };
-    
+
     await uploadBytes(avatarRef, blob, metadata);
     return { url: await getDownloadURL(avatarRef), blob };
   } catch (error) {
@@ -133,25 +133,27 @@ const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
     try {
       const response = await fetch(url, {
         ...options,
-        mode: 'cors',
-        credentials: 'omit',
+        mode: "cors",
+        credentials: "omit",
         headers: {
-          'Accept': 'image/*',
-          'Origin': window.location.origin,
+          Accept: "image/*",
+          Origin: window.location.origin,
           ...options.headers,
-        }
+        },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return response;
     } catch (error) {
       console.error(`Fetch attempt ${i + 1} failed:`, error);
       lastError = error;
       if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, i) * 1000)
+        );
       }
     }
   }
@@ -203,15 +205,15 @@ const getAvatarWithCooldown = async (photoURL) => {
     try {
       // Try to get existing avatar from Firebase Storage
       const downloadURL = await getDownloadURL(avatarRef);
-      
+
       // Configure fetch options for CORS
       const fetchOptions = {
-        mode: 'cors',
-        credentials: 'omit',
+        mode: "cors",
+        credentials: "omit",
         headers: {
-          'Accept': 'image/*',
-          'Origin': window.location.origin
-        }
+          Accept: "image/*",
+          Origin: window.location.origin,
+        },
       };
 
       // Try to fetch the existing avatar
@@ -234,18 +236,18 @@ const getAvatarWithCooldown = async (photoURL) => {
       return base64data;
     } catch (storageError) {
       console.error("Firebase Storage error:", storageError);
-      
+
       // Try direct fetch from original URL as fallback
       try {
         const response = await fetchWithRetry(photoURL, {
-          mode: 'cors',
-          credentials: 'omit',
+          mode: "cors",
+          credentials: "omit",
           headers: {
-            'Accept': 'image/*',
-            'Origin': window.location.origin
-          }
+            Accept: "image/*",
+            Origin: window.location.origin,
+          },
         });
-        
+
         const blob = await response.blob();
         const base64data = await new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -257,14 +259,14 @@ const getAvatarWithCooldown = async (photoURL) => {
         // Try to upload to Firebase Storage
         try {
           const metadata = {
-            contentType: 'image/jpeg',
-            cacheControl: 'public,max-age=86400',
+            contentType: "image/jpeg",
+            cacheControl: "public,max-age=86400",
             customMetadata: {
               originalURL: photoURL,
-              timestamp: now.toString()
-            }
+              timestamp: now.toString(),
+            },
           };
-          
+
           await uploadBytes(avatarRef, blob, metadata);
         } catch (uploadError) {
           console.error("Failed to upload to Firebase Storage:", uploadError);
