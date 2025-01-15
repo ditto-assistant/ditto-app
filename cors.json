@@ -1,0 +1,18 @@
+[
+  {
+    "origin": [
+      "http://localhost:4173",
+      "http://localhost:3000",
+      "https://ditto-app-dev.web.app",
+      "https://ditto-app-dev.firebaseapp.com",
+      "https://assistant.heyditto.ai"
+    ],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Access-Control-Allow-Origin",
+      "Authorization"
+    ]
+  }
+]
