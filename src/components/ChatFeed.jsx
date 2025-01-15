@@ -299,7 +299,7 @@ export default function ChatFeed({
 
       // Use cached avatar if it's valid and not expired
       if (
-        cachedAvatar && 
+        cachedAvatar &&
         cachedPhotoURL === photoURL &&
         cacheTimestamp &&
         now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
@@ -314,25 +314,32 @@ export default function ChatFeed({
       // Attempt to fetch with retries
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           const avatarData = await getAvatarWithCooldown(photoURL);
           setProfilePic(avatarData);
           break; // Success, exit retry loop
         } catch (error) {
-          console.error(`Avatar fetch attempt ${retryCount + 1} failed:`, error);
+          console.error(
+            `Avatar fetch attempt ${retryCount + 1} failed:`,
+            error
+          );
           retryCount++;
-          
+
           if (retryCount === maxRetries) {
             // If all retries failed but we have a cached avatar, use it
             if (cachedAvatar) {
-              console.log("Using expired cached avatar after all retries failed");
+              console.log(
+                "Using expired cached avatar after all retries failed"
+              );
               setProfilePic(cachedAvatar);
             }
           } else {
             // Wait before retrying (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+            );
           }
         }
       }
