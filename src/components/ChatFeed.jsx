@@ -276,6 +276,90 @@ export default function ChatFeed({
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setAuthInitialized(true);
+      if (user?.photoURL) {
+        loadUserAvatar(user.photoURL);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const loadUserAvatar = async (photoURL) => {
+    try {
+      // First try to get from cache immediately
+      const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+      const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
+      const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
+      const now = Date.now();
+
+      // Use cached avatar if it's valid and not expired
+      if (
+        cachedAvatar && 
+        cachedPhotoURL === photoURL &&
+        cacheTimestamp &&
+        now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
+      ) {
+        setProfilePic(cachedAvatar);
+        return; // Exit early if we have valid cache
+      }
+
+      // Set placeholder while we fetch
+      setProfilePic("/user_placeholder.png");
+
+      // Attempt to fetch with retries
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          const avatarData = await getAvatarWithCooldown(photoURL);
+          setProfilePic(avatarData);
+          break; // Success, exit retry loop
+        } catch (error) {
+          console.error(`Avatar fetch attempt ${retryCount + 1} failed:`, error);
+          retryCount++;
+          
+          if (retryCount === maxRetries) {
+            // If all retries failed but we have a cached avatar, use it
+            if (cachedAvatar) {
+              console.log("Using expired cached avatar after all retries failed");
+              setProfilePic(cachedAvatar);
+            }
+          } else {
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in avatar loading process:", error);
+      // Final fallback - use cached avatar if available, otherwise placeholder
+      const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
+      setProfilePic(cachedAvatar || "/user_placeholder.png");
+    }
+  };
+
+  // Ditto avatar caching effect
+  useEffect(() => {
+    // Cache Ditto avatar - update the path to the new image
+    fetch("/icons/fancy-ditto.png")
+      .then((response) => response.blob())
+      .then((blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result;
+          localStorage.setItem(DITTO_AVATAR_KEY, base64data);
+          setDittoAvatar(base64data);
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch((error) => console.error("Error caching Ditto avatar:", error));
+  }, []);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
