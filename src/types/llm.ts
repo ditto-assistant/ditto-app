@@ -50,9 +50,17 @@ export type Model =
   | "o1-preview"
   | "o1-preview-2024-09-12"
   | "o1-mini"
-  | "o1-mini-2024-09-12";
+  | "o1-mini-2024-09-12"
+  | "llama3.1-8b"
+  | "llama-3.3-70b";
 
-export type Vendor = "openai" | "anthropic" | "google" | "mistral" | "meta";
+export type Vendor =
+  | "openai"
+  | "anthropic"
+  | "google"
+  | "mistral"
+  | "meta"
+  | "cerebras";
 
 export type ImageGenerationSize = {
   wh: string;
@@ -69,10 +77,11 @@ export type ModelOption = {
   sizeOptions?: ImageGenerationSize[];
   vendor?: Vendor;
   supports?: {
-    imageAttachments?: boolean;
+    imageAttachments?: "single" | "multiple";
     imageGeneration?: boolean;
     tools?: boolean;
   };
+  speedLevel?: 1 | 2 | 3;
 };
 
 export type Tool = {

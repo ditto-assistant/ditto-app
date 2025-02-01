@@ -12,13 +12,34 @@ export const NOT_FOUND_IMAGE = "not-found.png";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
-  { id: "llama-3-2", name: "Llama 3.2", isFree: true, vendor: "meta" },
+  {
+    id: "llama-3-2",
+    name: "Llama 3.2",
+    isFree: true,
+    vendor: "meta",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+  },
 
-  { id: "gpt-4o-mini", name: "GPT-4o Mini", vendor: "openai" },
+  {
+    id: "gpt-4o-mini",
+    name: "GPT-4o Mini",
+    vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+  },
   {
     id: "gpt-4o-mini-2024-07-18",
     name: "GPT-4o Mini (2024-07-18)",
     vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
   { id: "gpt-4o", name: "GPT-4o", isPremium: true, vendor: "openai" },
   {
@@ -26,6 +47,10 @@ export const DEFAULT_MODELS: ModelOption[] = [
     name: "GPT-4o (2024-11-20)",
     isPremium: true,
     vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
 
   // {
@@ -42,51 +67,97 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-5-haiku",
     name: "Claude 3.5 Haiku",
     vendor: "anthropic",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
   {
     id: "claude-3-5-haiku@20241022",
     name: "Claude 3.5 Haiku (2024-10-22)",
     vendor: "anthropic",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
   {
     id: "claude-3-5-sonnet",
     name: "Claude 3.5 Sonnet",
     isPremium: true,
     vendor: "anthropic",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
   {
     id: "claude-3-5-sonnet@20240620",
     name: "Claude 3.5 Sonnet (2024-06-20)",
     isPremium: true,
     vendor: "anthropic",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
   {
     id: "claude-3-5-sonnet-v2",
     name: "Claude 3.5 Sonnet V2",
     isPremium: true,
     vendor: "anthropic",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
   {
     id: "claude-3-5-sonnet-v2@20241022",
     name: "Claude 3.5 Sonnet V2 (2024-10-22)",
     isPremium: true,
     vendor: "anthropic",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
 
-  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", vendor: "google" },
+  {
+    id: "gemini-1.5-flash",
+    name: "Gemini 1.5 Flash",
+    vendor: "google",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+  },
   {
     id: "gemini-1.5-pro",
     name: "Gemini 1.5 Pro",
     isPremium: true,
     vendor: "google",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
   },
 
-  { id: "mistral-nemo", name: "Mistral Nemo", vendor: "mistral" },
+  {
+    id: "mistral-nemo",
+    name: "Mistral Nemo",
+    vendor: "mistral",
+    supports: {
+      tools: true,
+    },
+  },
   {
     id: "mistral-large",
     name: "Mistral Large",
     isPremium: true,
     vendor: "mistral",
+    supports: {
+      tools: true,
+    },
   },
 
   // { id: "o1-mini", name: "o1 Mini", vendor: "openai", isPremium: true },
@@ -103,6 +174,24 @@ export const DEFAULT_MODELS: ModelOption[] = [
   //   vendor: "openai",
   //   isPremium: true,
   // },
+  {
+    id: "llama3.1-8b",
+    name: "Llama 3.1 8B",
+    vendor: "cerebras",
+    supports: {
+      tools: true,
+    },
+    speedLevel: 3,
+  },
+  {
+    id: "llama-3.3-70b",
+    name: "Llama 3.3 70B",
+    vendor: "cerebras",
+    supports: {
+      tools: true,
+    },
+    speedLevel: 3,
+  },
 ] as const;
 
 export const IMAGE_GENERATION_SIZES: Record<string, ImageGenerationSize> = {
