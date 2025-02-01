@@ -15,23 +15,23 @@
   z-index: 9999;
 }
 
-/* Common modal content styles */
-.modal-content,
-.tools-modal {
-  width: min(90%, 480px);
-  max-height: 90vh;
-  background: #2f3136;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-/* Memory modal specific */
-.memory-modal {
+/* Modal content styles */
+.modal-content.memory-modal,
+.modal-content.memory-controls-modal,
+.modal-content.agent-tools-modal {
+  position: relative;
   background: linear-gradient(180deg, #2f3136 0%, #36393f 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  width: min(90%, 480px);
+  height: auto;
+  min-height: 200px;
+  max-height: min(600px, 85vh);
+  margin: auto;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -72,7 +72,8 @@
 .modal-body {
   padding: 24px;
   overflow-y: auto;
-  flex: 0 1 auto;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Settings buttons */
@@ -103,32 +104,6 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Header buttons (mic and settings) */
-.microphone-button,
-.App-header .settings-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  padding: 0;
-  border: none;
-}
-
-.microphone-button:hover,
-.App-header .settings-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
 /* Button icons */
 .settings-buttons .button-icon {
   font-size: 20px;
@@ -141,80 +116,12 @@
   font-weight: 500;
 }
 
-.icon {
-  font-size: 20px;
-  color: var(--text-color);
-  width: 20px;
-  height: 20px;
-}
-
-.icon.active {
-  color: #43b581;
-}
-
-.icon.inactive {
-  color: #f04747;
-}
-
-/* Memory controls */
-.memory-control {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-}
-
-.memory-control-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.memory-control-header span {
-  color: #fff;
-  font-weight: 500;
-}
-
-.control-button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #7289da;
-  color: #fff;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.control-button:hover {
-  background: #5b6eae;
-  transform: translateY(-2px);
-}
-
-/* Status indicators */
-.active {
-  color: #43b581;
-  background: rgba(67, 181, 129, 0.1);
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.inactive {
-  color: #ed4245;
-  background: rgba(237, 66, 69, 0.1);
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
 /* Memory manager */
 .memory-manager {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   padding: 20px;
+  margin-top: 16px;
 }
 
 .card-header {
@@ -253,50 +160,6 @@
   transform: translateY(-2px);
 }
 
-/* Model preferences */
-.model-selector-container {
-  position: relative;
-  z-index: 9002;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.model-selector {
-  position: relative;
-  z-index: 9003;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.model-label {
-  color: #fff;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-/* Tool toggles */
-.tool-toggles {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.tool-toggle {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.2s;
-}
-
-.tool-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-}
-
 /* Common scrollbar */
 .modal-body::-webkit-scrollbar {
   width: 6px;
@@ -313,38 +176,6 @@
 
 .modal-body::-webkit-scrollbar-thumb:hover {
   background: rgba(114, 137, 218, 0.3);
-}
-
-/* Modal z-index hierarchy */
-.modal-overlay {
-  z-index: 9000;
-}
-
-.modal-content,
-.tools-modal {
-  position: relative;
-  z-index: 9001;
-}
-
-/* Ensure modals are above status bar */
-.status-bar {
-  z-index: 100;
-}
-
-/* Fix model preferences modal */
-.model-selector-container {
-  position: relative;
-  z-index: 9002;
-}
-
-.model-selector {
-  position: relative;
-  z-index: 9003;
-}
-
-.model-dropdown {
-  position: relative;
-  z-index: 9004;
 }
 
 /* Confirmation Dialog */
@@ -430,4 +261,195 @@
 
 .confirm-button:hover {
   filter: brightness(1.1);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 480px) {
+  .modal-content,
+  .memory-modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .settings-buttons .settings-button {
+    padding: 12px;
+  }
+
+  .memory-manager {
+    padding: 16px;
+  }
+}
+
+/* Animation classes */
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.modal-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Memory Controls specific styles */
+.memory-control {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.memory-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.memory-control-header span {
+  color: #fff;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.memory-status {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.memory-status.active {
+  color: #43b581;
+  background: rgba(67, 181, 129, 0.1);
+}
+
+.memory-status.inactive {
+  color: #ed4245;
+  background: rgba(237, 66, 69, 0.1);
+}
+
+.control-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #7289da;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.control-button:hover {
+  background: #5b6eae;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Agent Tools specific styles */
+.tool-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tool-toggle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.tool-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tool-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.tool-description {
+  font-size: 14px;
+  color: #b9bbbe;
+  line-height: 1.4;
+}
+
+/* Model preferences specific styles */
+.model-selector-container {
+  position: relative;
+  z-index: 9002;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.model-selector {
+  position: relative;
+  z-index: 9003;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.model-label {
+  color: #fff;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.model-select {
+  width: 100%;
+  padding: 10px;
+  background-color: #2f3136;
+  border: 1px solid #202225;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px auto;
+  padding-right: 30px;
+}
+
+.model-select:hover {
+  border-color: #7289da;
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: #7289da;
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.3);
 }

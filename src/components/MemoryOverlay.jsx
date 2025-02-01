@@ -13,6 +13,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences";
 import ModelPreferencesModal from "@/components/ModelPreferencesModal";
 import MemoryControlsModal from "@/components/MemoryControlsModal";
 import AgentToolsModal from "@/components/AgentToolsModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 function MemoryOverlay({ closeOverlay }) {
   const overlayContentRef = useRef(null);
@@ -34,19 +35,18 @@ function MemoryOverlay({ closeOverlay }) {
   const [showAgentTools, setShowAgentTools] = useState(false);
 
   useEffect(() => {
-    // Trigger the animation after component mount
     const handleClickOutside = (event) => {
       if (
         overlayContentRef.current &&
         !overlayContentRef.current.contains(event.target)
       ) {
-        setTimeout(closeOverlay, 300); // Wait for the animation to finish before closing
+        closeOverlay();
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [closeOverlay]);
 
   const deleteAllMemory = async () => {
     // Create and show the custom confirmation dialog
@@ -138,9 +138,24 @@ function MemoryOverlay({ closeOverlay }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={closeOverlay}>
-      <div
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={closeOverlay}
+    >
+      <motion.div
+        ref={overlayContentRef}
         className="modal-content memory-modal"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -150,73 +165,91 @@ function MemoryOverlay({ closeOverlay }) {
 
         <div className="modal-body">
           <div className="settings-buttons">
-            <button
+            <motion.button
               className="settings-button"
               onClick={() => setShowModelPrefs(true)}
+              whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
+              whileTap={{ scale: 0.98 }}
             >
               <IoSettingsSharp className="button-icon" />
               <span>Model Preferences</span>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               className="settings-button"
               onClick={() => setShowMemoryControls(true)}
+              whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
+              whileTap={{ scale: 0.98 }}
             >
               <FaBrain className="button-icon" />
               <span>Memory Controls</span>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               className="settings-button"
               onClick={() => setShowAgentTools(true)}
+              whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
+              whileTap={{ scale: 0.98 }}
             >
               <IoExtensionPuzzle className="button-icon" />
               <span>Agent Tools</span>
-            </button>
+            </motion.button>
 
-            <div className="memory-manager">
+            <motion.div
+              className="memory-manager"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               <div className="card-header">
                 <FaTrash className="card-icon" />
                 <h4>Memory Manager</h4>
               </div>
-              <button className="danger-button" onClick={deleteAllMemory}>
+              <motion.button
+                className="danger-button"
+                onClick={deleteAllMemory}
+                whileHover={{ y: -2, filter: "brightness(1.1)" }}
+                whileTap={{ scale: 0.98 }}
+              >
                 Delete All Memory
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           </div>
         </div>
 
-        {showModelPrefs && (
-          <ModelPreferencesModal
-            preferences={preferences}
-            updatePreferences={updatePreferences}
-            onClose={(e) => {
-              if (e) {
-                e.stopPropagation();
-              }
-              setShowModelPrefs(false);
-            }}
-            hasEnoughBalance={balance.data?.hasPremium}
-          />
-        )}
+        <AnimatePresence>
+          {showModelPrefs && (
+            <ModelPreferencesModal
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+              onClose={(e) => {
+                if (e) {
+                  e.stopPropagation();
+                }
+                setShowModelPrefs(false);
+              }}
+              hasEnoughBalance={balance.data?.hasPremium}
+            />
+          )}
 
-        {showMemoryControls && (
-          <MemoryControlsModal
-            memoryStatus={memoryStatus}
-            toggleMemoryActivation={toggleMemoryActivation}
-            onClose={() => setShowMemoryControls(false)}
-          />
-        )}
+          {showMemoryControls && (
+            <MemoryControlsModal
+              memoryStatus={memoryStatus}
+              toggleMemoryActivation={toggleMemoryActivation}
+              onClose={() => setShowMemoryControls(false)}
+            />
+          )}
 
-        {showAgentTools && (
-          <AgentToolsModal
-            preferences={preferences}
-            updatePreferences={updatePreferences}
-            onClose={() => setShowAgentTools(false)}
-          />
-        )}
-      </div>
-    </div>
+          {showAgentTools && (
+            <AgentToolsModal
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+              onClose={() => setShowAgentTools(false)}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 }
 
