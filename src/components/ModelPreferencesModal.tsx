@@ -23,6 +23,7 @@ import {
   ImageGenerationSize,
 } from "../types/llm";
 import { useCallback, useMemo } from "react";
+import "./ModelPreferencesModal.css";
 
 interface ModelPreferencesModalProps {
   preferences: ModelPreferences;
@@ -197,23 +198,21 @@ function ModelPreferencesModal({
             model.id
           )
         }
-        style={{
-          ...styles.modelCard,
-          border:
-            model.id ===
-            preferences[
-              activeSection === "main" ? "mainModel" : "programmerModel"
-            ]
-              ? "2px solid #5865F2"
-              : "1px solid #1E1F22",
-        }}
+        className={`model-card ${
+          model.id ===
+          preferences[
+            activeSection === "main" ? "mainModel" : "programmerModel"
+          ]
+            ? "selected"
+            : ""
+        }`}
       >
-        <div style={styles.modelCardHeader}>
-          <span style={styles.modelName}>{model.name}</span>
+        <div className="model-card-header">
+          <span className="model-name">{model.name}</span>
           {model.vendor && (
             <span
+              className="vendor-badge"
               style={{
-                ...styles.vendorBadge,
                 backgroundColor: VENDOR_COLORS[model.vendor],
               }}
             >
@@ -221,11 +220,11 @@ function ModelPreferencesModal({
             </span>
           )}
         </div>
-        <div style={styles.modelBadges}>
+        <div className="model-badges">
           {model.speedLevel && (
             <span
+              className="badge"
               style={{
-                ...styles.badge,
                 background: SPEED_COLORS[model.speedLevel],
               }}
             >
@@ -236,8 +235,8 @@ function ModelPreferencesModal({
           )}
           {model.isFree ? (
             <span
+              className="badge"
               style={{
-                ...styles.badge,
                 backgroundColor: "#43B581",
               }}
             >
@@ -245,8 +244,8 @@ function ModelPreferencesModal({
             </span>
           ) : model.isPremium ? (
             <span
+              className="badge"
               style={{
-                ...styles.badge,
                 backgroundColor: "#5865F2",
               }}
             >
@@ -255,8 +254,8 @@ function ModelPreferencesModal({
           ) : null}
           {model.supports?.imageAttachments && (
             <span
+              className="badge"
               style={{
-                ...styles.badge,
                 backgroundColor: "#43B581",
               }}
             >
@@ -314,26 +313,20 @@ function ModelPreferencesModal({
 
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-        style={styles.modalContent}
-      >
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Model Preferences</h3>
           <div onClick={onClose}>{MemoizedMdClose}</div>
         </div>
 
-        <div style={styles.sectionTabs}>
+        <div className="section-tabs">
           {["main", "programmer", "image"].map((section) => (
             <button
               key={section}
               onClick={() => setActiveSection(section as typeof activeSection)}
-              style={{
-                ...styles.sectionTab,
-                backgroundColor:
-                  activeSection === section ? "#5865F2" : "#2F3136",
-              }}
+              className={`section-tab ${
+                activeSection === section ? "active-tab" : ""
+              }`}
             >
               {section === "main"
                 ? "Main Agent"
@@ -345,21 +338,23 @@ function ModelPreferencesModal({
         </div>
 
         {activeSection !== "image" ? (
-          <div style={styles.twoColumnLayout}>
-            <div className="filter-section" style={styles.filterSection}>
-              <div style={styles.filterGroup}>
-                <span style={styles.filterLabel}>Speed</span>
-                <div style={styles.filterButtons}>
+          <div className="two-column-layout">
+            <div className="filter-section">
+              <div className="filter-group">
+                <span className="filter-label">Speed</span>
+                <div className="filter-buttons">
                   {["slow", "medium", "fast", "insane"].map((speed) => (
                     <button
                       key={speed}
                       onClick={() => toggleFilter("speed", speed)}
+                      className={`filter-button ${
+                        activeFilters.speed === speed ? "active-filter" : ""
+                      }`}
                       style={{
-                        ...styles.filterButton,
                         background:
                           activeFilters.speed === speed
                             ? SPEED_COLORS[speed as keyof typeof SPEED_COLORS]
-                            : "#2F3136",
+                            : undefined,
                       }}
                     >
                       {getSpeedIcon(speed as ActiveFilters["speed"])}
@@ -369,66 +364,57 @@ function ModelPreferencesModal({
                 </div>
               </div>
 
-              <div style={styles.filterGroup}>
-                <span style={styles.filterLabel}>Pricing</span>
-                <div style={styles.filterButtons}>
+              <div className="filter-group">
+                <span className="filter-label">Pricing</span>
+                <div className="filter-buttons">
                   <button
                     onClick={() => toggleFilter("pricing", "free")}
-                    style={{
-                      ...styles.filterButton,
-                      backgroundColor:
-                        activeFilters.pricing === "free"
-                          ? "#43B581"
-                          : "#2F3136",
-                    }}
+                    className={`filter-button ${
+                      activeFilters.pricing === "free" ? "active-filter" : ""
+                    }`}
                   >
                     {MemoizedFaCrownFree} Free
                   </button>
                   <button
                     onClick={() => toggleFilter("pricing", "premium")}
-                    style={{
-                      ...styles.filterButton,
-                      backgroundColor:
-                        activeFilters.pricing === "premium"
-                          ? "#5865F2"
-                          : "#2F3136",
-                    }}
+                    className={`filter-button ${
+                      activeFilters.pricing === "premium" ? "active-filter" : ""
+                    }`}
                   >
                     {MemoizedFaCrownPremium} Premium
                   </button>
                 </div>
               </div>
 
-              <div style={styles.filterGroup}>
-                <span style={styles.filterLabel}>Features</span>
-                <div style={styles.filterButtons}>
+              <div className="filter-group">
+                <span className="filter-label">Features</span>
+                <div className="filter-buttons">
                   <button
                     onClick={() =>
                       toggleFilter("imageSupport", !activeFilters.imageSupport)
                     }
-                    style={{
-                      ...styles.filterButton,
-                      backgroundColor: activeFilters.imageSupport
-                        ? "#5865F2"
-                        : "#2F3136",
-                    }}
+                    className={`filter-button ${
+                      activeFilters.imageSupport ? "active-filter" : ""
+                    }`}
                   >
                     {MemoizedFaImage} Image Attachment
                   </button>
                 </div>
               </div>
 
-              <div style={styles.filterGroup}>
-                <span style={styles.filterLabel}>Vendor</span>
-                <div style={styles.filterButtons}>
+              <div className="filter-group">
+                <span className="filter-label">Vendor</span>
+                <div className="filter-buttons">
                   {Object.entries(VENDOR_COLORS).map(([vendor, color]) => (
                     <button
                       key={vendor}
                       onClick={() => toggleFilter("vendor", vendor as Vendor)}
+                      className={`filter-button ${
+                        activeFilters.vendor === vendor ? "active-filter" : ""
+                      }`}
                       style={{
-                        ...styles.filterButton,
-                        backgroundColor:
-                          activeFilters.vendor === vendor ? color : "#2F3136",
+                        background:
+                          activeFilters.vendor === vendor ? color : undefined,
                       }}
                     >
                       {getVendorIcon(vendor as Vendor)}
@@ -438,18 +424,18 @@ function ModelPreferencesModal({
                 </div>
               </div>
 
-              <div style={styles.taggedModelsToggle}>
-                <label style={styles.taggedModelsLabel}>
+              <div className="tagged-models-toggle">
+                <label className="tagged-models-label">
                   <input
                     type="checkbox"
                     checked={showTaggedModels}
                     onChange={(e) => setShowTaggedModels(e.target.checked)}
-                    style={styles.checkbox}
+                    className="checkbox"
                   />
-                  <span style={styles.taggedModelsText}>
+                  <span className="tagged-models-text">
                     Show tagged models
                     {showTaggedModels && (
-                      <span style={styles.taggedModelsHint}>
+                      <span className="tagged-models-hint">
                         Showing date-tagged versions
                       </span>
                     )}
@@ -458,12 +444,12 @@ function ModelPreferencesModal({
               </div>
             </div>
 
-            <div style={styles.modelGridContainer}>
-              <div style={styles.modelGrid}>
+            <div className="model-grid-container">
+              <div className="model-grid">
                 {filteredModels.length > 0 ? (
                   filteredModels.map(renderModelCard)
                 ) : (
-                  <div style={styles.noResults}>
+                  <div className="no-results">
                     No models match the selected filters
                   </div>
                 )}
@@ -495,237 +481,5 @@ function ModelPreferencesModal({
     </div>
   );
 }
-
-const styles = {
-  modalContent: {
-    width: "90vw",
-    maxWidth: "1200px",
-    maxHeight: "90vh",
-    backgroundColor: "#2F3136",
-    borderRadius: "8px",
-    display: "flex",
-    flexDirection: "column",
-    position: "relative",
-    "@media (max-width: 768px)": {
-      width: "100%",
-      maxWidth: "100%",
-      height: "100vh",
-      maxHeight: "100vh",
-      margin: 0,
-      borderRadius: 0,
-      overflow: "hidden",
-    },
-  },
-  twoColumnLayout: {
-    display: "grid",
-    gridTemplateColumns: "300px 1fr",
-    gap: "16px",
-    height: "calc(90vh - 120px)",
-    overflow: "hidden",
-    "@media (max-width: 768px)": {
-      gridTemplateColumns: "1fr",
-      height: "calc(100vh - 120px)",
-      overflow: "auto",
-      gap: 0,
-    },
-  },
-  filterSection: {
-    padding: "16px 24px",
-    borderRight: "1px solid #1E1F22",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    overflowY: "auto",
-    "@media (max-width: 768px)": {
-      padding: "12px 16px",
-      borderRight: "none",
-      borderBottom: "1px solid #1E1F22",
-      overflowY: "visible",
-      width: "100%",
-      boxSizing: "border-box",
-    },
-  },
-  filterGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  },
-  filterLabel: {
-    color: "#B9BBBE",
-    fontSize: "12px",
-    fontWeight: "600",
-    textTransform: "uppercase",
-  },
-  filterButtons: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap",
-    "@media (max-width: 768px)": {
-      gap: "6px",
-      width: "100%",
-      justifyContent: "flex-start",
-    },
-  },
-  filterButton: {
-    padding: "8px 16px",
-    borderRadius: "20px",
-    border: "none",
-    color: "#FFFFFF",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    whiteSpace: "nowrap",
-    "&:hover": {
-      filter: "brightness(1.1)",
-    },
-    "@media (max-width: 768px)": {
-      padding: "6px 12px",
-      fontSize: "13px",
-      gap: "6px",
-      flex: "0 1 auto",
-    },
-  },
-  modelCard: {
-    padding: "16px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    "@media (max-width: 768px)": {
-      padding: "12px",
-      width: "100%",
-      boxSizing: "border-box",
-    },
-  },
-  modelCardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "8px",
-  },
-  modelName: {
-    fontSize: "16px",
-    fontWeight: "600",
-  },
-  vendorBadge: {
-    padding: "4px 8px",
-    borderRadius: "4px",
-    backgroundColor: "#2F3136",
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-  },
-  modelBadges: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap",
-    "@media (max-width: 768px)": {
-      gap: "6px",
-    },
-  },
-  badge: {
-    padding: "4px 8px",
-    borderRadius: "4px",
-    fontSize: "12px",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-  },
-  sectionTabs: {
-    display: "flex",
-    gap: "8px",
-    padding: "16px 24px",
-    borderBottom: "1px solid #1E1F22",
-    "@media (max-width: 768px)": {
-      padding: "12px 16px",
-      gap: "6px",
-      width: "100%",
-      boxSizing: "border-box",
-      justifyContent: "space-between",
-    },
-  },
-  sectionTab: {
-    padding: "8px 16px",
-    borderRadius: "8px",
-    border: "none",
-    color: "#FFFFFF",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    whiteSpace: "nowrap",
-    "&:hover": {
-      filter: "brightness(1.1)",
-    },
-    "@media (max-width: 768px)": {
-      padding: "6px 12px",
-      fontSize: "13px",
-      flex: "1 1 auto",
-      textAlign: "center",
-    },
-  },
-  modelGridContainer: {
-    overflowY: "auto",
-    padding: "16px 24px",
-    "@media (max-width: 768px)": {
-      padding: "12px 16px",
-      overflowY: "visible",
-      width: "100%",
-      boxSizing: "border-box",
-    },
-  },
-  modelGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "16px",
-    height: "fit-content",
-    "@media (max-width: 768px)": {
-      gridTemplateColumns: "1fr",
-      gap: "12px",
-      width: "100%",
-    },
-  },
-  noResults: {
-    padding: "32px",
-    textAlign: "center",
-    color: "#B9BBBE",
-    gridColumn: "1 / -1",
-  },
-  taggedModelsToggle: {
-    marginTop: "auto",
-    padding: "8px 12px",
-    borderTop: "1px solid #1E1F22",
-    display: "flex",
-    alignItems: "center",
-    "@media (max-width: 768px)": {
-      marginTop: "12px",
-      padding: "8px 0",
-    },
-  },
-  taggedModelsLabel: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    cursor: "pointer",
-    fontSize: "12px",
-    color: "#B9BBBE",
-  },
-  checkbox: {
-    width: "14px",
-    height: "14px",
-    cursor: "pointer",
-    accentColor: "#5865F2",
-  },
-  taggedModelsText: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
-  taggedModelsHint: {
-    color: "#5865F2",
-    fontSize: "10px",
-    fontStyle: "italic",
-  },
-} as const;
 
 export default ModelPreferencesModal;
