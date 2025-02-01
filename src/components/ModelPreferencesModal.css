@@ -1,339 +1,339 @@
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .modal-content {
-    width: 100%;
-    height: 100vh;
-    max-height: 100vh;
-    background-color: #2F3136;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  background-color: #2f3136;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 .modal-header {
-    padding: 16px;
-    border-bottom: 1px solid #1E1F22;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #1e1f22;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .modal-header h3 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #7289DA;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #7289da;
 }
 
 .section-tabs {
-    display: flex;
-    gap: 6px;
-    padding: 12px 16px;
-    border-bottom: 1px solid #1E1F22;
-    width: 100%;
-    box-sizing: border-box;
-    justify-content: space-between;
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e1f22;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
 }
 
 .section-tab {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: none;
-    background-color: transparent;
-    color: #FFFFFF;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    flex: 1;
-    text-align: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
 }
 
 .section-tab:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
 
 .section-tab.active-tab {
-    background-color: #5865F2;
+  background-color: #5865f2;
 }
 
 .two-column-layout {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 120px);
-    overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+  overflow: auto;
 }
 
 .filter-section {
-    padding: 12px 16px;
-    border-bottom: 1px solid #1E1F22;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-    box-sizing: border-box;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e1f22;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .filter-label {
-    color: #B9BBBE;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
+  color: #b9bbbe;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .filter-buttons {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: flex-start;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-start;
 }
 
 .filter-button {
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: none;
-    background-color: #2F3136;
-    color: #FFFFFF;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    flex: 0 1 auto;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background-color: #2f3136;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex: 0 1 auto;
 }
 
 .filter-button:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
 
 .filter-button.active-filter {
-    background-color: #5865F2;
+  background-color: #5865f2;
 }
 
 .model-grid-container {
-    padding: 12px 16px;
-    padding-bottom: 80px;
-    width: 100%;
-    box-sizing: border-box;
+  padding: 12px 16px;
+  padding-bottom: 80px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .model-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
 }
 
 .model-card {
-    padding: 12px;
-    border-radius: 8px;
-    background-color: #36393F;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid #1E1F22;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #36393f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #1e1f22;
 }
 
 .model-card.selected {
-    border: 2px solid #5865F2;
+  border: 2px solid #5865f2;
 }
 
 .model-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .model-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .model-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .vendor-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .model-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .tagged-models-toggle {
-    margin-top: 12px;
-    padding: 8px 0;
-    border-top: 1px solid #1E1F22;
-    display: flex;
-    align-items: center;
+  margin-top: 12px;
+  padding: 8px 0;
+  border-top: 1px solid #1e1f22;
+  display: flex;
+  align-items: center;
 }
 
 .tagged-models-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    color: #B9BBBE;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #b9bbbe;
 }
 
 .checkbox {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #5865F2;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #5865f2;
 }
 
 .tagged-models-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .tagged-models-hint {
-    color: #5865F2;
-    font-size: 10px;
-    font-style: italic;
+  color: #5865f2;
+  font-size: 10px;
+  font-style: italic;
 }
 
 .no-results {
-    padding: 32px;
-    text-align: center;
-    color: #B9BBBE;
-    grid-column: 1 / -1;
+  padding: 32px;
+  text-align: center;
+  color: #b9bbbe;
+  grid-column: 1 / -1;
 }
 
 .modal-body {
-    padding: 16px;
-    flex: 1;
-    overflow-y: auto;
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .model-selector {
-    width: 100%;
+  width: 100%;
 }
 
 @media (min-width: 769px) {
-    .modal-content {
-        width: 90vw;
-        max-width: 1200px;
-        height: 90vh;
-        max-height: 90vh;
-        border-radius: 8px;
-    }
+  .modal-content {
+    width: 90vw;
+    max-width: 1200px;
+    height: 90vh;
+    max-height: 90vh;
+    border-radius: 8px;
+  }
 
-    .modal-header {
-        padding: 24px;
-    }
+  .modal-header {
+    padding: 24px;
+  }
 
-    .modal-header h3 {
-        font-size: 24px;
-    }
+  .modal-header h3 {
+    font-size: 24px;
+  }
 
-    .section-tabs {
-        padding: 16px 24px;
-        gap: 8px;
-        justify-content: flex-start;
-    }
+  .section-tabs {
+    padding: 16px 24px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
 
-    .section-tab {
-        padding: 8px 16px;
-        font-size: 14px;
-        flex: 0 1 auto;
-    }
+  .section-tab {
+    padding: 8px 16px;
+    font-size: 14px;
+    flex: 0 1 auto;
+  }
 
-    .two-column-layout {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 16px;
-        height: calc(90vh - 120px);
-    }
+  .two-column-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+    height: calc(90vh - 120px);
+  }
 
-    .filter-section {
-        padding: 16px 24px;
-        border-right: 1px solid #1E1F22;
-        border-bottom: none;
-        overflow-y: auto;
-    }
+  .filter-section {
+    padding: 16px 24px;
+    border-right: 1px solid #1e1f22;
+    border-bottom: none;
+    overflow-y: auto;
+  }
 
-    .filter-buttons {
-        gap: 8px;
-    }
+  .filter-buttons {
+    gap: 8px;
+  }
 
-    .filter-button {
-        padding: 8px 16px;
-        font-size: 14px;
-        gap: 8px;
-    }
+  .filter-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    gap: 8px;
+  }
 
-    .model-grid-container {
-        padding: 16px 24px;
-        padding-bottom: 100px;
-        overflow-y: auto;
-    }
+  .model-grid-container {
+    padding: 16px 24px;
+    padding-bottom: 100px;
+    overflow-y: auto;
+  }
 
-    .model-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
-    }
+  .model-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
 
-    .model-card {
-        padding: 16px;
-    }
+  .model-card {
+    padding: 16px;
+  }
 
-    .model-badges {
-        gap: 8px;
-    }
+  .model-badges {
+    gap: 8px;
+  }
 
-    .tagged-models-toggle {
-        margin-top: auto;
-        padding: 8px 12px;
-    }
+  .tagged-models-toggle {
+    margin-top: auto;
+    padding: 8px 12px;
+  }
 }
