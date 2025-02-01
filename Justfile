@@ -34,3 +34,9 @@ tag-latest-dry:
 
 install-stripe:
 	brew install stripe/stripe-cli/stripe
+
+# create a github release for the latest tag with auto-generated release notes
+gh-release:
+	#!/bin/sh
+	VERSION=$(cat package.json | jq -r .version)
+	gh release create v$VERSION --generate-notes
