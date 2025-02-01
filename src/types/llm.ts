@@ -74,6 +74,7 @@ export type ModelOption = {
   isPremium?: boolean;
   isFree?: boolean;
   isMaintenance?: boolean;
+  isTaggedModel?: boolean;
   sizeOptions?: ImageGenerationSize[];
   vendor?: Vendor;
   supports?: {
@@ -81,7 +82,7 @@ export type ModelOption = {
     imageGeneration?: boolean;
     tools?: boolean;
   };
-  speedLevel?: 1 | 2 | 3;
+  speedLevel?: "slow" | "medium" | "fast" | "insane";
 };
 
 export type Tool = {

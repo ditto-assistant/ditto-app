@@ -21,6 +21,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "medium",
   },
 
   {
@@ -31,6 +32,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "fast",
   },
   {
     id: "gpt-4o-mini-2024-07-18",
@@ -40,8 +42,20 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    isTaggedModel: true,
+    speedLevel: "fast",
   },
-  { id: "gpt-4o", name: "GPT-4o", isPremium: true, vendor: "openai" },
+  {
+    id: "gpt-4o",
+    name: "GPT-4o",
+    isPremium: true,
+    vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+    speedLevel: "medium",
+  },
   {
     id: "gpt-4o-2024-11-20",
     name: "GPT-4o (2024-11-20)",
@@ -51,6 +65,8 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    isTaggedModel: true,
+    speedLevel: "medium",
   },
 
   // {
@@ -58,11 +74,13 @@ export const DEFAULT_MODELS: ModelOption[] = [
   //   name: "Claude 3 Haiku",
   //   vendor: "anthropic",
   // },
-  // {
-  //   id: "claude-3-haiku@20240307",
-  //   name: "Claude 3 Haiku 2024-03-07",
-  //   vendor: "anthropic",
-  // },
+  {
+    id: "claude-3-haiku@20240307",
+    name: "Claude 3 Haiku 2024-03-07",
+    vendor: "anthropic",
+    isTaggedModel: true,
+    speedLevel: "medium",
+  },
   {
     id: "claude-3-5-haiku",
     name: "Claude 3.5 Haiku",
@@ -71,6 +89,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "fast",
   },
   {
     id: "claude-3-5-haiku@20241022",
@@ -80,6 +99,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    isTaggedModel: true,
   },
   {
     id: "claude-3-5-sonnet",
@@ -90,6 +110,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-sonnet@20240620",
@@ -100,6 +121,8 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    isTaggedModel: true,
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-sonnet-v2",
@@ -120,6 +143,8 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    isTaggedModel: true,
+    speedLevel: "medium",
   },
 
   {
@@ -130,6 +155,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "fast",
   },
   {
     id: "gemini-1.5-pro",
@@ -140,6 +166,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "medium",
   },
 
   {
@@ -149,6 +176,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     supports: {
       tools: true,
     },
+    speedLevel: "fast",
   },
   {
     id: "mistral-large",
@@ -158,6 +186,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     supports: {
       tools: true,
     },
+    speedLevel: "slow",
   },
 
   // { id: "o1-mini", name: "o1 Mini", vendor: "openai", isPremium: true },
@@ -181,16 +210,17 @@ export const DEFAULT_MODELS: ModelOption[] = [
     supports: {
       tools: true,
     },
-    speedLevel: 3,
+    speedLevel: "insane",
   },
   {
     id: "llama-3.3-70b",
     name: "Llama 3.3 70B",
     vendor: "cerebras",
+    isPremium: true,
     supports: {
       tools: true,
     },
-    speedLevel: 3,
+    speedLevel: "insane",
   },
 ] as const;
 
