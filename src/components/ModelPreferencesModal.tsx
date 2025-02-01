@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, MouseEvent } from "react";
 import ModelDropdown from "./ModelDropdown";
 import ModelDropdownImage from "./ModelDropdownImage";
 import { MdClose } from "react-icons/md";
@@ -16,8 +16,29 @@ import {
 } from "react-icons/fa";
 import { SiOpenai } from "react-icons/si";
 import { TbBrandMeta } from "react-icons/tb";
+import {
+  ModelOption,
+  Model,
+  ModelPreferences,
+  Vendor,
+  ImageGenerationSize,
+} from "../types/llm";
 
-const VENDOR_COLORS = {
+interface ModelPreferencesModalProps {
+  preferences: ModelPreferences;
+  updatePreferences: (update: Partial<ModelPreferences>) => void;
+  onClose: () => void;
+  hasEnoughBalance: boolean;
+}
+
+interface ActiveFilters {
+  speed: "slow" | "medium" | "fast" | "insane" | null;
+  pricing: "free" | "premium" | null;
+  imageSupport: boolean;
+  vendor: Vendor | null;
+}
+
+const VENDOR_COLORS: Record<Vendor, string> = {
   google: "#4285F4",
   openai: "#00A67E",
   anthropic: "#5436DA",
@@ -26,7 +47,7 @@ const VENDOR_COLORS = {
   cerebras: "#FF4B4B",
 };
 
-const SPEED_COLORS = {
+const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
   slow: "#ED4245",
   medium: "#FAA61A",
   fast: "#43B581",
@@ -39,34 +60,41 @@ function ModelPreferencesModal({
   updatePreferences,
   onClose,
   hasEnoughBalance,
-}) {
-  const [activeSection, setActiveSection] = useState("main"); // "main", "programmer", or "image"
-  const [openDropdown, setOpenDropdown] = useState(null);
+}: ModelPreferencesModalProps) {
+  const [activeSection, setActiveSection] = useState<
+    "main" | "programmer" | "image"
+  >("main");
+  const [openDropdown, setOpenDropdown] = useState<
+    "main" | "programmer" | "image" | null
+  >(null);
   const [showTaggedModels, setShowTaggedModels] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     speed: null,
     pricing: null,
     imageSupport: false,
     vendor: null,
   });
-  const [filteredModels, setFilteredModels] = useState(DEFAULT_MODELS);
+  const [filteredModels, setFilteredModels] =
+    useState<ModelOption[]>(DEFAULT_MODELS);
 
   // Handle clicking outside of any dropdown
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
       if (
-        e.target.closest(".model-dropdown") ||
-        e.target.closest(".dropdown-option") ||
-        e.target.closest(".model-selector") ||
-        e.target.closest(".selected-value")
+        target.closest(".model-dropdown") ||
+        target.closest(".dropdown-option") ||
+        target.closest(".model-selector") ||
+        target.closest(".selected-value")
       ) {
         return;
       }
       setOpenDropdown(null);
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside as any);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside as any);
   }, []);
 
   // Filter models based on active filters
@@ -103,30 +131,25 @@ function ModelPreferencesModal({
     setFilteredModels(filtered);
   }, [activeFilters, showTaggedModels]);
 
-  const handleModalClick = (e) => {
+  const handleModalClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  /**
-   *
-   * @param {"mainModel" | "programmerModel" | "imageGeneration"} key
-   * @param {any} value
-   */
-  const handleModelChange = (key, value) => {
+  const handleModelChange = (key: keyof ModelPreferences, value: any) => {
     updatePreferences({ [key]: value });
     setOpenDropdown(null);
   };
 
-  const toggleFilter = (filterType, value) => {
+  const toggleFilter = (filterType: keyof ActiveFilters, value: any) => {
     setActiveFilters((prev) => ({
       ...prev,
       [filterType]: prev[filterType] === value ? null : value,
     }));
   };
 
-  const getSpeedButtonColor = (speed) => {
+  const getSpeedButtonColor = (speed: ActiveFilters["speed"]) => {
     if (activeFilters.speed !== speed) return "#2F3136";
     switch (speed) {
       case "slow":
@@ -142,7 +165,7 @@ function ModelPreferencesModal({
     }
   };
 
-  const getSpeedIcon = (speed) => {
+  const getSpeedIcon = (speed: ActiveFilters["speed"]) => {
     switch (speed) {
       case "slow":
         return <FaClock />;
@@ -157,7 +180,7 @@ function ModelPreferencesModal({
     }
   };
 
-  const getVendorIcon = (vendor) => {
+  const getVendorIcon = (vendor: Vendor) => {
     switch (vendor) {
       case "google":
         return <FaGoogle />;
@@ -176,7 +199,7 @@ function ModelPreferencesModal({
     }
   };
 
-  const renderModelCard = (model) => (
+  const renderModelCard = (model: ModelOption) => (
     <div
       key={model.id}
       onClick={() =>
@@ -271,7 +294,7 @@ function ModelPreferencesModal({
           {["main", "programmer", "image"].map((section) => (
             <button
               key={section}
-              onClick={() => setActiveSection(section)}
+              onClick={() => setActiveSection(section as typeof activeSection)}
               style={{
                 ...styles.sectionTab,
                 backgroundColor:
@@ -301,11 +324,11 @@ function ModelPreferencesModal({
                         ...styles.filterButton,
                         background:
                           activeFilters.speed === speed
-                            ? SPEED_COLORS[speed]
+                            ? SPEED_COLORS[speed as keyof typeof SPEED_COLORS]
                             : "#2F3136",
                       }}
                     >
-                      {getSpeedIcon(speed)}
+                      {getSpeedIcon(speed as ActiveFilters["speed"])}
                       {speed.charAt(0).toUpperCase() + speed.slice(1)}
                     </button>
                   ))}
@@ -367,14 +390,14 @@ function ModelPreferencesModal({
                   {Object.entries(VENDOR_COLORS).map(([vendor, color]) => (
                     <button
                       key={vendor}
-                      onClick={() => toggleFilter("vendor", vendor)}
+                      onClick={() => toggleFilter("vendor", vendor as Vendor)}
                       style={{
                         ...styles.filterButton,
                         backgroundColor:
                           activeFilters.vendor === vendor ? color : "#2F3136",
                       }}
                     >
-                      {getVendorIcon(vendor)}
+                      {getVendorIcon(vendor as Vendor)}
                       {vendor.charAt(0).toUpperCase() + vendor.slice(1)}
                     </button>
                   ))}
@@ -418,12 +441,12 @@ function ModelPreferencesModal({
             <div className="model-selector">
               <ModelDropdownImage
                 value={preferences.imageGeneration}
-                onChange={(model, size) =>
+                onChange={(model: Model, size: ImageGenerationSize) =>
                   handleModelChange("imageGeneration", { model, size })
                 }
                 hasEnoughBalance={hasEnoughBalance}
                 isOpen={openDropdown === "image"}
-                onOpenChange={(isOpen) => {
+                onOpenChange={(isOpen: boolean) => {
                   if (isOpen) {
                     setOpenDropdown("image");
                   } else if (openDropdown === "image") {
@@ -594,6 +617,6 @@ const styles = {
     fontSize: "10px",
     fontStyle: "italic",
   },
-};
+} as const;
 
 export default ModelPreferencesModal;
