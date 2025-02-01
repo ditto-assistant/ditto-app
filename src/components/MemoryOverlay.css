@@ -293,7 +293,9 @@
 .modal-enter-active {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 300ms, transform 300ms;
+  transition:
+    opacity 300ms,
+    transform 300ms;
 }
 
 .modal-exit {
@@ -304,7 +306,9 @@
 .modal-exit-active {
   opacity: 0;
   transform: scale(0.95);
-  transition: opacity 300ms, transform 300ms;
+  transition:
+    opacity 300ms,
+    transform 300ms;
 }
 
 /* Memory Controls specific styles */
