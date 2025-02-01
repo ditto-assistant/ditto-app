@@ -1,5 +1,4 @@
 import { useState, useEffect, MouseEvent } from "react";
-import ModelDropdown from "./ModelDropdown";
 import ModelDropdownImage from "./ModelDropdownImage";
 import { MdClose } from "react-icons/md";
 import { DEFAULT_MODELS } from "../constants";
@@ -23,6 +22,7 @@ import {
   Vendor,
   ImageGenerationSize,
 } from "../types/llm";
+import { useCallback, useMemo } from "react";
 
 interface ModelPreferencesModalProps {
   preferences: ModelPreferences;
@@ -74,31 +74,212 @@ function ModelPreferencesModal({
     imageSupport: false,
     vendor: null,
   });
-  const [filteredModels, setFilteredModels] =
-    useState<ModelOption[]>(DEFAULT_MODELS);
 
-  // Handle clicking outside of any dropdown
+  const faFireStyle = useMemo(() => ({ color: "#FF0000" }), []);
+  const faCrownStyle = useMemo(() => ({ opacity: 0.5 }), []);
+  const MemoizedFaImage = useMemo(() => <FaImage />, []);
+  const MemoizedMdClose = useMemo(() => <MdClose className="close-icon" />, []);
+  const MemoizedFaCrownFree = useMemo(
+    () => <FaCrown style={faCrownStyle} />,
+    []
+  );
+  const MemoizedFaCrownPremium = useMemo(() => <FaCrown />, []);
+
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest(".model-dropdown") ||
+      target.closest(".dropdown-option") ||
+      target.closest(".model-selector") ||
+      target.closest(".selected-value")
+    ) {
+      return;
+    }
+    setOpenDropdown(null);
+  }, []);
+
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target.closest(".model-dropdown") ||
-        target.closest(".dropdown-option") ||
-        target.closest(".model-selector") ||
-        target.closest(".selected-value")
-      ) {
-        return;
-      }
-      setOpenDropdown(null);
-    };
-
     document.addEventListener("mousedown", handleClickOutside as any);
     return () =>
       document.removeEventListener("mousedown", handleClickOutside as any);
+  }, [handleClickOutside]);
+
+  const handleModalClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  const handleModelChange = useCallback(
+    (key: keyof ModelPreferences, value: any) => {
+      updatePreferences({ [key]: value });
+      setOpenDropdown(null);
+    },
+    [updatePreferences]
+  );
+
+  const toggleFilter = useCallback(
+    (filterType: keyof ActiveFilters, value: any) => {
+      setActiveFilters((prev) => ({
+        ...prev,
+        [filterType]: prev[filterType] === value ? null : value,
+      }));
+    },
+    []
+  );
+
+  const getSpeedButtonColor = useCallback(
+    (speed: ActiveFilters["speed"]) => {
+      if (activeFilters.speed !== speed) return "#2F3136";
+      switch (speed) {
+        case "slow":
+          return "#ED4245"; // Red
+        case "medium":
+          return "#FAA61A"; // Orange
+        case "fast":
+          return "#43B581"; // Green
+        case "insane":
+          return "#5865F2"; // Blue
+        default:
+          return "#2F3136";
+      }
+    },
+    [activeFilters.speed]
+  );
+
+  const getSpeedIcon = useCallback(
+    (speed: ActiveFilters["speed"]) => {
+      switch (speed) {
+        case "slow":
+          return <FaClock />;
+        case "medium":
+          return <FaRobot />;
+        case "fast":
+          return <FaBolt />;
+        case "insane":
+          return <FaFire style={faFireStyle} />;
+        default:
+          return null;
+      }
+    },
+    [faFireStyle]
+  );
+
+  const getVendorIcon = useCallback((vendor: Vendor) => {
+    switch (vendor) {
+      case "google":
+        return <FaGoogle />;
+      case "openai":
+        return <SiOpenai />;
+      case "anthropic":
+        return <FaBrain />;
+      case "mistral":
+        return <FaBolt />;
+      case "meta":
+        return <TbBrandMeta />;
+      case "cerebras":
+        return <FaMicrochip />;
+      default:
+        return null;
+    }
   }, []);
 
-  // Filter models based on active filters
-  useEffect(() => {
+  const renderModelCard = useCallback(
+    (model: ModelOption) => (
+      <div
+        key={model.id}
+        onClick={() =>
+          handleModelChange(
+            activeSection === "main" ? "mainModel" : "programmerModel",
+            model.id
+          )
+        }
+        style={{
+          ...styles.modelCard,
+          border:
+            model.id ===
+            preferences[
+              activeSection === "main" ? "mainModel" : "programmerModel"
+            ]
+              ? "2px solid #5865F2"
+              : "1px solid #1E1F22",
+        }}
+      >
+        <div style={styles.modelCardHeader}>
+          <span style={styles.modelName}>{model.name}</span>
+          {model.vendor && (
+            <span
+              style={{
+                ...styles.vendorBadge,
+                backgroundColor: VENDOR_COLORS[model.vendor],
+              }}
+            >
+              {getVendorIcon(model.vendor)}
+            </span>
+          )}
+        </div>
+        <div style={styles.modelBadges}>
+          {model.speedLevel && (
+            <span
+              style={{
+                ...styles.badge,
+                background: SPEED_COLORS[model.speedLevel],
+              }}
+            >
+              {getSpeedIcon(model.speedLevel)}
+              {model.speedLevel.charAt(0).toUpperCase() +
+                model.speedLevel.slice(1)}
+            </span>
+          )}
+          {model.isFree ? (
+            <span
+              style={{
+                ...styles.badge,
+                backgroundColor: "#43B581",
+              }}
+            >
+              {MemoizedFaCrownFree} Free
+            </span>
+          ) : model.isPremium ? (
+            <span
+              style={{
+                ...styles.badge,
+                backgroundColor: "#5865F2",
+              }}
+            >
+              {MemoizedFaCrownPremium} Premium
+            </span>
+          ) : null}
+          {model.supports?.imageAttachments && (
+            <span
+              style={{
+                ...styles.badge,
+                backgroundColor: "#43B581",
+              }}
+            >
+              {MemoizedFaImage} Image
+            </span>
+          )}
+        </div>
+      </div>
+    ),
+    [
+      activeSection,
+      faCrownStyle,
+      getSpeedIcon,
+      getVendorIcon,
+      handleModelChange,
+      preferences,
+      MemoizedFaImage,
+      MemoizedFaCrownFree,
+      MemoizedFaCrownPremium,
+    ]
+  );
+
+  const filteredModels = useMemo(() => {
     let filtered = [...DEFAULT_MODELS];
 
     // Filter tagged/untagged models
@@ -128,155 +309,8 @@ function ModelPreferencesModal({
       );
     }
 
-    setFilteredModels(filtered);
+    return filtered;
   }, [activeFilters, showTaggedModels]);
-
-  const handleModalClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  const handleModelChange = (key: keyof ModelPreferences, value: any) => {
-    updatePreferences({ [key]: value });
-    setOpenDropdown(null);
-  };
-
-  const toggleFilter = (filterType: keyof ActiveFilters, value: any) => {
-    setActiveFilters((prev) => ({
-      ...prev,
-      [filterType]: prev[filterType] === value ? null : value,
-    }));
-  };
-
-  const getSpeedButtonColor = (speed: ActiveFilters["speed"]) => {
-    if (activeFilters.speed !== speed) return "#2F3136";
-    switch (speed) {
-      case "slow":
-        return "#ED4245"; // Red
-      case "medium":
-        return "#FAA61A"; // Orange
-      case "fast":
-        return "#43B581"; // Green
-      case "insane":
-        return "#5865F2"; // Blue
-      default:
-        return "#2F3136";
-    }
-  };
-
-  const getSpeedIcon = (speed: ActiveFilters["speed"]) => {
-    switch (speed) {
-      case "slow":
-        return <FaClock />;
-      case "medium":
-        return <FaRobot />;
-      case "fast":
-        return <FaBolt />;
-      case "insane":
-        return <FaFire style={{ color: "#FF0000" }} />;
-      default:
-        return null;
-    }
-  };
-
-  const getVendorIcon = (vendor: Vendor) => {
-    switch (vendor) {
-      case "google":
-        return <FaGoogle />;
-      case "openai":
-        return <SiOpenai />;
-      case "anthropic":
-        return <FaBrain />;
-      case "mistral":
-        return <FaBolt />;
-      case "meta":
-        return <TbBrandMeta />;
-      case "cerebras":
-        return <FaMicrochip />;
-      default:
-        return null;
-    }
-  };
-
-  const renderModelCard = (model: ModelOption) => (
-    <div
-      key={model.id}
-      onClick={() =>
-        handleModelChange(
-          activeSection === "main" ? "mainModel" : "programmerModel",
-          model.id
-        )
-      }
-      style={{
-        ...styles.modelCard,
-        border:
-          model.id ===
-          preferences[
-            activeSection === "main" ? "mainModel" : "programmerModel"
-          ]
-            ? "2px solid #5865F2"
-            : "1px solid #1E1F22",
-      }}
-    >
-      <div style={styles.modelCardHeader}>
-        <span style={styles.modelName}>{model.name}</span>
-        {model.vendor && (
-          <span
-            style={{
-              ...styles.vendorBadge,
-              backgroundColor: VENDOR_COLORS[model.vendor],
-            }}
-          >
-            {getVendorIcon(model.vendor)}
-          </span>
-        )}
-      </div>
-      <div style={styles.modelBadges}>
-        {model.speedLevel && (
-          <span
-            style={{
-              ...styles.badge,
-              background: SPEED_COLORS[model.speedLevel],
-            }}
-          >
-            {getSpeedIcon(model.speedLevel)}
-            {model.speedLevel.charAt(0).toUpperCase() +
-              model.speedLevel.slice(1)}
-          </span>
-        )}
-        {model.isFree ? (
-          <span
-            style={{
-              ...styles.badge,
-              backgroundColor: "#43B581",
-            }}
-          >
-            <FaCrown style={{ opacity: 0.5 }} /> Free
-          </span>
-        ) : model.isPremium ? (
-          <span
-            style={{
-              ...styles.badge,
-              backgroundColor: "#5865F2",
-            }}
-          >
-            <FaCrown /> Premium
-          </span>
-        ) : null}
-        {model.supports?.imageAttachments && (
-          <span
-            style={{
-              ...styles.badge,
-              backgroundColor: "#43B581",
-            }}
-          >
-            <FaImage /> Image
-          </span>
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
@@ -287,7 +321,7 @@ function ModelPreferencesModal({
       >
         <div className="modal-header">
           <h3>Model Preferences</h3>
-          <MdClose className="close-icon" onClick={onClose} />
+          <div onClick={onClose}>{MemoizedMdClose}</div>
         </div>
 
         <div style={styles.sectionTabs}>
@@ -348,7 +382,7 @@ function ModelPreferencesModal({
                           : "#2F3136",
                     }}
                   >
-                    <FaCrown style={{ opacity: 0.5 }} /> Free
+                    {MemoizedFaCrownFree} Free
                   </button>
                   <button
                     onClick={() => toggleFilter("pricing", "premium")}
@@ -360,7 +394,7 @@ function ModelPreferencesModal({
                           : "#2F3136",
                     }}
                   >
-                    <FaCrown /> Premium
+                    {MemoizedFaCrownPremium} Premium
                   </button>
                 </div>
               </div>
@@ -379,7 +413,7 @@ function ModelPreferencesModal({
                         : "#2F3136",
                     }}
                   >
-                    <FaImage /> Image Attachment
+                    {MemoizedFaImage} Image Attachment
                   </button>
                 </div>
               </div>
