@@ -505,13 +505,29 @@ const styles = {
     borderRadius: "8px",
     display: "flex",
     flexDirection: "column",
+    position: "relative",
+    "@media (max-width: 768px)": {
+      width: "100%",
+      maxWidth: "100%",
+      height: "100vh",
+      maxHeight: "100vh",
+      margin: 0,
+      borderRadius: 0,
+      overflow: "hidden",
+    },
   },
   twoColumnLayout: {
     display: "grid",
     gridTemplateColumns: "300px 1fr",
     gap: "16px",
-    height: "calc(90vh - 120px)", // Subtract header and tabs height
+    height: "calc(90vh - 120px)",
     overflow: "hidden",
+    "@media (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      height: "calc(100vh - 120px)",
+      overflow: "auto",
+      gap: 0,
+    },
   },
   filterSection: {
     padding: "16px 24px",
@@ -520,6 +536,14 @@ const styles = {
     flexDirection: "column",
     gap: "16px",
     overflowY: "auto",
+    "@media (max-width: 768px)": {
+      padding: "12px 16px",
+      borderRight: "none",
+      borderBottom: "1px solid #1E1F22",
+      overflowY: "visible",
+      width: "100%",
+      boxSizing: "border-box",
+    },
   },
   filterGroup: {
     display: "flex",
@@ -536,6 +560,11 @@ const styles = {
     display: "flex",
     gap: "8px",
     flexWrap: "wrap",
+    "@media (max-width: 768px)": {
+      gap: "6px",
+      width: "100%",
+      justifyContent: "flex-start",
+    },
   },
   filterButton: {
     padding: "8px 16px",
@@ -548,8 +577,15 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "8px",
+    whiteSpace: "nowrap",
     "&:hover": {
       filter: "brightness(1.1)",
+    },
+    "@media (max-width: 768px)": {
+      padding: "6px 12px",
+      fontSize: "13px",
+      gap: "6px",
+      flex: "0 1 auto",
     },
   },
   modelCard: {
@@ -557,6 +593,11 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     transition: "all 0.2s ease",
+    "@media (max-width: 768px)": {
+      padding: "12px",
+      width: "100%",
+      boxSizing: "border-box",
+    },
   },
   modelCardHeader: {
     display: "flex",
@@ -579,18 +620,30 @@ const styles = {
   modelBadges: {
     display: "flex",
     gap: "8px",
+    flexWrap: "wrap",
+    "@media (max-width: 768px)": {
+      gap: "6px",
+    },
   },
   badge: {
     padding: "4px 8px",
     borderRadius: "4px",
     fontSize: "12px",
     fontWeight: "600",
+    whiteSpace: "nowrap",
   },
   sectionTabs: {
     display: "flex",
     gap: "8px",
     padding: "16px 24px",
     borderBottom: "1px solid #1E1F22",
+    "@media (max-width: 768px)": {
+      padding: "12px 16px",
+      gap: "6px",
+      width: "100%",
+      boxSizing: "border-box",
+      justifyContent: "space-between",
+    },
   },
   sectionTab: {
     padding: "8px 16px",
@@ -600,19 +653,37 @@ const styles = {
     fontSize: "14px",
     cursor: "pointer",
     transition: "all 0.2s ease",
+    whiteSpace: "nowrap",
     "&:hover": {
       filter: "brightness(1.1)",
+    },
+    "@media (max-width: 768px)": {
+      padding: "6px 12px",
+      fontSize: "13px",
+      flex: "1 1 auto",
+      textAlign: "center",
     },
   },
   modelGridContainer: {
     overflowY: "auto",
     padding: "16px 24px",
+    "@media (max-width: 768px)": {
+      padding: "12px 16px",
+      overflowY: "visible",
+      width: "100%",
+      boxSizing: "border-box",
+    },
   },
   modelGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
     gap: "16px",
     height: "fit-content",
+    "@media (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "12px",
+      width: "100%",
+    },
   },
   noResults: {
     padding: "32px",
@@ -621,11 +692,15 @@ const styles = {
     gridColumn: "1 / -1",
   },
   taggedModelsToggle: {
-    marginTop: "auto", // Push to bottom of filter section
+    marginTop: "auto",
     padding: "8px 12px",
     borderTop: "1px solid #1E1F22",
     display: "flex",
     alignItems: "center",
+    "@media (max-width: 768px)": {
+      marginTop: "12px",
+      padding: "8px 0",
+    },
   },
   taggedModelsLabel: {
     display: "flex",
