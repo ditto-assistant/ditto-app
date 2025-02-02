@@ -863,11 +863,8 @@ export default function ChatFeed({
                   // Parse dates and ensure we're using UTC
                   const expiryDate = new Date(decodeURIComponent(expiryParam));
                   const now = new Date();
-                  const nowUTC = new Date(
-                    now.getTime() + now.getTimezoneOffset() * 60000
-                  );
-                  if (nowUTC < expiryDate) {
-                    console.log("DALL-E URL is within valid time window", src);
+                  if (now < expiryDate) {
+                    // console.log("DALL-E URL is within valid time window", src);
                     return (
                       <img
                         {...props}
