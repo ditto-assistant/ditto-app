@@ -866,7 +866,6 @@ export default function ChatFeed({
                   const nowUTC = new Date(
                     now.getTime() + now.getTimezoneOffset() * 60000
                   );
-                  // Check if current UTC time is within valid window
                   if (nowUTC < expiryDate) {
                     console.log("DALL-E URL is within valid time window", src);
                     return (
@@ -881,11 +880,6 @@ export default function ChatFeed({
                         }}
                       />
                     );
-                  } else {
-                    // console.log("DALL-E URL is outside valid time window", {
-                    //   expiry: expiryDate.toISOString(),
-                    //   now: nowUTC.toISOString(),
-                    // });
                   }
                 }
               } catch (e) {
@@ -898,8 +892,6 @@ export default function ChatFeed({
               handleImageClick(src);
             }
             if (cachedUrl.ok) {
-              // holy heck this rerenders a lot
-              // console.log("cachedUrl.ok", cachedUrl.ok);
               return (
                 <img
                   {...props}
@@ -911,7 +903,6 @@ export default function ChatFeed({
               );
             }
             if (!src) {
-              // console.log("NOT_FOUND_IMAGE", NOT_FOUND_IMAGE);
               return (
                 <img
                   {...props}
@@ -925,7 +916,6 @@ export default function ChatFeed({
               getPresignedUrl(src).then(
                 (url) => {
                   if (url.ok) {
-                    // console.log("presigned url.ok", url.ok);
                     setImgSrc(url.ok);
                   }
                 },
@@ -953,7 +943,6 @@ export default function ChatFeed({
                     setImgSrc(src);
                   }
                   if (errSrc.startsWith("https://ditto-content")) {
-                    // console.log("giving image a chance to load", errSrc);
                     setTimeout(() => {
                       console.log("trying image again", errSrc);
                       setImgSrc(errSrc);
