@@ -854,12 +854,52 @@ export default function ChatFeed({
           ),
           img: ({ node, src, alt, ...props }) => {
             const [imgSrc, setImgSrc] = useState(src);
+            // Check if this is a DALL-E URL
+            if (src?.includes("oaidalleapiprodscus.blob.core.windows.net")) {
+              try {
+                const url = new URL(src);
+                const expiryParam = url.searchParams.get("se");
+                if (expiryParam) {
+                  // Parse dates and ensure we're using UTC
+                  const expiryDate = new Date(decodeURIComponent(expiryParam));
+                  const now = new Date();
+                  const nowUTC = new Date(
+                    now.getTime() + now.getTimezoneOffset() * 60000
+                  );
+                  // Check if current UTC time is within valid window
+                  if (nowUTC < expiryDate) {
+                    console.log("DALL-E URL is within valid time window", src);
+                    return (
+                      <img
+                        {...props}
+                        src={src}
+                        alt={alt}
+                        className="chat-image"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleImageClick(src);
+                        }}
+                      />
+                    );
+                  } else {
+                    // console.log("DALL-E URL is outside valid time window", {
+                    //   expiry: expiryDate.toISOString(),
+                    //   now: nowUTC.toISOString(),
+                    // });
+                  }
+                }
+              } catch (e) {
+                console.error("Error parsing DALL-E URL:", e);
+              }
+            }
             const cachedUrl = getCachedUrl(src);
             function onClick(e) {
               e.stopPropagation();
               handleImageClick(src);
             }
             if (cachedUrl.ok) {
+              // holy heck this rerenders a lot
+              // console.log("cachedUrl.ok", cachedUrl.ok);
               return (
                 <img
                   {...props}
@@ -871,6 +911,7 @@ export default function ChatFeed({
               );
             }
             if (!src) {
+              // console.log("NOT_FOUND_IMAGE", NOT_FOUND_IMAGE);
               return (
                 <img
                   {...props}
@@ -884,6 +925,7 @@ export default function ChatFeed({
               getPresignedUrl(src).then(
                 (url) => {
                   if (url.ok) {
+                    // console.log("presigned url.ok", url.ok);
                     setImgSrc(url.ok);
                   }
                 },
@@ -911,8 +953,9 @@ export default function ChatFeed({
                     setImgSrc(src);
                   }
                   if (errSrc.startsWith("https://ditto-content")) {
-                    // give the image a chance to load
+                    // console.log("giving image a chance to load", errSrc);
                     setTimeout(() => {
+                      console.log("trying image again", errSrc);
                       setImgSrc(errSrc);
                     }, 5_000);
                   }
