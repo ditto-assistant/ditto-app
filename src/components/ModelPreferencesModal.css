@@ -166,6 +166,18 @@
 .model-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background: rgba(88, 101, 242, 0.1);
+}
+
+.model-card:hover .dropdown-arrow {
+  color: #FFFFFF;
+}
+
+.model-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .model-card-header {
@@ -173,6 +185,16 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.model-card-header:hover {
+  background: rgba(88, 101, 242, 0.1);
+}
+
+.model-card-header:hover .dropdown-arrow {
+  color: #FFFFFF;
 }
 
 .model-name {
@@ -336,4 +358,66 @@
     margin-top: auto;
     padding: 8px 12px;
   }
+}
+
+.dimension-options {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #1E1F22;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown 0.2s ease;
+}
+
+.dimension-button {
+  background: #2F3136;
+  border: none;
+  padding: 8px 12px;
+  color: #FFFFFF;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dimension-button:hover {
+  background: rgba(88, 101, 242, 0.1);
+}
+
+.dimension-button.selected {
+  background: #5865F2;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.model-name-with-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown-arrow {
+  font-size: 20px;
+  transition: transform 0.2s ease;
+  color: #B9BBBE;
+  flex-shrink: 0;
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(90deg);
 }
