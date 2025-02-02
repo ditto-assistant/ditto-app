@@ -1,7 +1,7 @@
 import { useState, useEffect, MouseEvent } from "react";
-import ModelDropdownImage from "./ModelDropdownImage";
 import { MdClose } from "react-icons/md";
-import { DEFAULT_MODELS } from "../constants";
+import { MdKeyboardArrowRight } from "react-icons/md";
+import { DEFAULT_MODELS, IMAGE_GENERATION_MODELS } from "../constants";
 import {
   FaBolt,
   FaClock,
@@ -15,13 +15,7 @@ import {
 } from "react-icons/fa";
 import { SiOpenai } from "react-icons/si";
 import { TbBrandMeta } from "react-icons/tb";
-import {
-  ModelOption,
-  Model,
-  ModelPreferences,
-  Vendor,
-  ImageGenerationSize,
-} from "../types/llm";
+import { ModelOption, Model, ModelPreferences, Vendor } from "../types/llm";
 import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 
@@ -37,6 +31,12 @@ interface ActiveFilters {
   pricing: "free" | "premium" | null;
   imageSupport: boolean;
   vendor: Vendor | null;
+}
+
+interface ImageFilters {
+  provider: "openai" | null;
+  dimensions: "square" | "landscape" | "portrait" | null;
+  quality: "low" | "medium" | "hd" | null;
 }
 
 const VENDOR_COLORS: Record<Vendor, string> = {
@@ -75,6 +75,14 @@ function ModelPreferencesModal({
     imageSupport: false,
     vendor: null,
   });
+  const [imageFilters, setImageFilters] = useState<ImageFilters>({
+    provider: null,
+    dimensions: null,
+    quality: null,
+  });
+  const [expandedImageModel, setExpandedImageModel] = useState<Model | null>(
+    null
+  );
 
   const faFireStyle = useMemo(() => ({ color: "#FF0000" }), []);
   const faCrownStyle = useMemo(() => ({ opacity: 0.5 }), []);
@@ -311,6 +319,130 @@ function ModelPreferencesModal({
     return filtered;
   }, [activeFilters, showTaggedModels]);
 
+  const renderImageModelCard = useCallback(
+    (model: ModelOption) => (
+      <div
+        key={model.id}
+        className={`model-card ${
+          model.id === preferences.imageGeneration.model ? "selected" : ""
+        }`}
+        onClick={() => {
+          setExpandedImageModel(
+            expandedImageModel === model.id ? null : model.id
+          );
+        }}
+      >
+        <div className="model-card-content">
+          <div className="model-name-with-arrow">
+            <MdKeyboardArrowRight
+              className={`dropdown-arrow ${expandedImageModel === model.id ? "rotated" : ""}`}
+            />
+            <span className="model-name">{model.name}</span>
+          </div>
+          {model.vendor && (
+            <span
+              className="vendor-badge"
+              style={{
+                backgroundColor: VENDOR_COLORS[model.vendor],
+              }}
+            >
+              {getVendorIcon(model.vendor)}
+            </span>
+          )}
+        </div>
+        <div className="model-badges">
+          {model.isPremium && (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: "#5865F2",
+              }}
+            >
+              {MemoizedFaCrownPremium} Premium
+            </span>
+          )}
+          {model.id.includes("hd") && (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: "#FAA61A",
+              }}
+            >
+              HD Quality
+            </span>
+          )}
+        </div>
+        {expandedImageModel === model.id && model.sizeOptions && (
+          <div className="dimension-options">
+            {model.sizeOptions.map((size) => (
+              <button
+                key={size.wh}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card collapse when selecting size
+                  handleModelChange("imageGeneration", {
+                    model: model.id,
+                    size,
+                  });
+                }}
+                className={`dimension-button ${
+                  model.id === preferences.imageGeneration.model &&
+                  size.wh === preferences.imageGeneration.size.wh
+                    ? "selected"
+                    : ""
+                }`}
+              >
+                {size.description}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    ),
+    [
+      expandedImageModel,
+      getVendorIcon,
+      handleModelChange,
+      preferences.imageGeneration,
+      MemoizedFaCrownPremium,
+    ]
+  );
+
+  const filteredImageModels = useMemo(() => {
+    let filtered = [...IMAGE_GENERATION_MODELS];
+
+    if (imageFilters.provider) {
+      filtered = filtered.filter(
+        (model) => model.vendor === imageFilters.provider
+      );
+    }
+
+    if (imageFilters.quality) {
+      switch (imageFilters.quality) {
+        case "hd":
+          filtered = filtered.filter((model) => model.id.includes("hd"));
+          break;
+        case "medium":
+          filtered = filtered.filter((model) => model.id === "dall-e-3");
+          break;
+        case "low":
+          filtered = filtered.filter((model) => model.id === "dall-e-2");
+          break;
+      }
+    }
+
+    return filtered;
+  }, [imageFilters]);
+
+  const toggleImageFilter = useCallback(
+    (filterType: keyof ImageFilters, value: any) => {
+      setImageFilters((prev) => ({
+        ...prev,
+        [filterType]: prev[filterType] === value ? null : value,
+      }));
+    },
+    []
+  );
+
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -457,23 +589,65 @@ function ModelPreferencesModal({
             </div>
           </div>
         ) : (
-          <div className="modal-body">
-            <div className="model-selector">
-              <ModelDropdownImage
-                value={preferences.imageGeneration}
-                onChange={(model: Model, size: ImageGenerationSize) =>
-                  handleModelChange("imageGeneration", { model, size })
-                }
-                hasEnoughBalance={hasEnoughBalance}
-                isOpen={openDropdown === "image"}
-                onOpenChange={(isOpen: boolean) => {
-                  if (isOpen) {
-                    setOpenDropdown("image");
-                  } else if (openDropdown === "image") {
-                    setOpenDropdown(null);
-                  }
-                }}
-              />
+          <div className="two-column-layout">
+            <div className="filter-section">
+              <div className="filter-group">
+                <span className="filter-label">Provider</span>
+                <div className="filter-buttons">
+                  <button
+                    onClick={() => toggleImageFilter("provider", "openai")}
+                    className={`filter-button ${
+                      imageFilters.provider === "openai" ? "active-filter" : ""
+                    }`}
+                    style={{
+                      background:
+                        imageFilters.provider === "openai"
+                          ? VENDOR_COLORS.openai
+                          : undefined,
+                    }}
+                  >
+                    <SiOpenai /> OpenAI
+                  </button>
+                </div>
+              </div>
+
+              <div className="filter-group">
+                <span className="filter-label">Quality</span>
+                <div className="filter-buttons">
+                  {[
+                    { id: "low", label: "Basic" },
+                    { id: "medium", label: "Standard" },
+                    { id: "hd", label: "HD" },
+                  ].map(({ id, label }) => (
+                    <button
+                      key={id}
+                      onClick={() =>
+                        toggleImageFilter(
+                          "quality",
+                          id as ImageFilters["quality"]
+                        )
+                      }
+                      className={`filter-button ${
+                        imageFilters.quality === id ? "active-filter" : ""
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="model-grid-container">
+              <div className="model-grid">
+                {filteredImageModels.length > 0 ? (
+                  filteredImageModels.map(renderImageModelCard)
+                ) : (
+                  <div className="no-results">
+                    No models match the selected filters
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
