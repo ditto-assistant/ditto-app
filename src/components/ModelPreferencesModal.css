@@ -170,7 +170,7 @@
 }
 
 .model-card:hover .dropdown-arrow {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .model-card-content {
@@ -194,7 +194,7 @@
 }
 
 .model-card-header:hover .dropdown-arrow {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .model-name {
@@ -363,7 +363,7 @@
 .dimension-options {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #1E1F22;
+  border-top: 1px solid #1e1f22;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -371,10 +371,10 @@
 }
 
 .dimension-button {
-  background: #2F3136;
+  background: #2f3136;
   border: none;
   padding: 8px 12px;
-  color: #FFFFFF;
+  color: #ffffff;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -390,7 +390,7 @@
 }
 
 .dimension-button.selected {
-  background: #5865F2;
+  background: #5865f2;
 }
 
 @keyframes slideDown {
@@ -414,7 +414,7 @@
 .dropdown-arrow {
   font-size: 20px;
   transition: transform 0.2s ease;
-  color: #B9BBBE;
+  color: #b9bbbe;
   flex-shrink: 0;
 }
 
