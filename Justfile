@@ -40,3 +40,8 @@ gh-release:
 	#!/bin/sh
 	VERSION=$(cat package.json | jq -r .version)
 	gh release create v$VERSION --generate-notes
+
+# create a new release for the latest tag with auto-generated release notes
+create-release: tag-latest gh-release
+alias cr := create-release
+
