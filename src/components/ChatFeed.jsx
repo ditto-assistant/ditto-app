@@ -854,6 +854,35 @@ export default function ChatFeed({
           ),
           img: ({ node, src, alt, ...props }) => {
             const [imgSrc, setImgSrc] = useState(src);
+            // Check if this is a DALL-E URL
+            if (src?.includes("oaidalleapiprodscus.blob.core.windows.net")) {
+              try {
+                const url = new URL(src);
+                const expiryParam = url.searchParams.get("se");
+                if (expiryParam) {
+                  // Parse dates and ensure we're using UTC
+                  const expiryDate = new Date(decodeURIComponent(expiryParam));
+                  const now = new Date();
+                  if (now < expiryDate) {
+                    // console.log("DALL-E URL is within valid time window", src);
+                    return (
+                      <img
+                        {...props}
+                        src={src}
+                        alt={alt}
+                        className="chat-image"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleImageClick(src);
+                        }}
+                      />
+                    );
+                  }
+                }
+              } catch (e) {
+                console.error("Error parsing DALL-E URL:", e);
+              }
+            }
             const cachedUrl = getCachedUrl(src);
             function onClick(e) {
               e.stopPropagation();
@@ -911,8 +940,8 @@ export default function ChatFeed({
                     setImgSrc(src);
                   }
                   if (errSrc.startsWith("https://ditto-content")) {
-                    // give the image a chance to load
                     setTimeout(() => {
+                      console.log("trying image again", errSrc);
                       setImgSrc(errSrc);
                     }, 5_000);
                   }
