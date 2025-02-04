@@ -76,7 +76,6 @@ export default defineConfig({
             }
             if (id.includes("firebase")) return "firebase";
             if (id.includes("@tensorflow")) return "tensorflow";
-            if (id.includes("@paypal")) return "paypal";
             if (id.includes("@huggingface")) return "huggingface";
             if (id.includes("@mui")) return "mui";
             if (id.includes("ace-builds") || id.includes("react-ace"))
