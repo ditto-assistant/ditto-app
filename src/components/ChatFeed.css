@@ -1,3 +1,5 @@
+@import '../styles/variables.css';
+
 .chat-feed {
   background-color: transparent;
   padding: 20px;
@@ -18,7 +20,7 @@
 }
 
 /* Ensure smooth animation for the bottom ref */
-.chat-feed > div:last-child {
+.chat-feed>div:last-child {
   transition: margin-top 0.3s ease-out;
 }
 
@@ -168,7 +170,8 @@
   object-fit: contain;
   border-radius: 10px;
   padding: 1em;
-  margin: 1em 0; /* Add margin to top and bottom */
+  margin: 1em 0;
+  /* Add margin to top and bottom */
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
@@ -256,6 +259,7 @@
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -578,11 +582,9 @@
   padding: 16px;
   display: flex;
   justify-content: space-between;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.5) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
   /* This allows clicks to pass through to the image */
 }
@@ -1297,11 +1299,11 @@
   border-radius: 50%;
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: #4752c4;
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -1356,7 +1358,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Make sure text nodes in the response wrap properly */
-.memory-response p > :not(.memory-image-container) {
+.memory-response p> :not(.memory-image-container) {
   flex: 1 1 100%;
 }
 
@@ -1514,10 +1516,10 @@ input:checked + .toggle-slider:before {
 /* Ensure code blocks are selectable everywhere */
 .code-block,
 .inline-code {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* Make sure message text is selectable */
@@ -1531,10 +1533,10 @@ input:checked + .toggle-slider:before {
 
 /* Add styles for hyperlinks */
 .message-text a {
-  pointer-events: auto !important;
+  pointer-events: auto;
   position: relative;
   z-index: 1;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-normal);
 }
 
 .message-text a:hover {
@@ -1543,27 +1545,24 @@ input:checked + .toggle-slider:before {
 
 /* Ensure links are visible in both bubble types */
 .chat-bubble.User .message-text a {
-  color: #e6e6e6 !important;
-  /* Light grey for user bubbles */
-  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
-  text-decoration: underline !important;
+  color: var(--text-normal);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+  text-decoration: underline;
 }
 
 .chat-bubble.Ditto .message-text a {
-  color: #7b83e6 !important;
-  /* Lighter blue for Ditto bubbles */
-  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3) !important;
-  text-decoration: underline !important;
+  color: var(--primary-color);
+  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3);
+  text-decoration: underline;
 }
 
-/* Add hover states for better interaction feedback */
 .chat-bubble.User .message-text a:hover {
-  color: #ffffff !important;
+  color: var(--interactive-active);
   opacity: 0.9;
 }
 
 .chat-bubble.Ditto .message-text a:hover {
-  color: #8e95f5 !important;
+  color: var(--primary-hover);
   opacity: 0.9;
 }
 
@@ -1682,7 +1681,7 @@ input:checked + .toggle-slider:before {
     bottom: 2px;
   }
 
-  input:checked + .toggle-slider:before {
+  input:checked+.toggle-slider:before {
     transform: translateX(18px);
   }
 
@@ -1754,7 +1753,8 @@ input:checked + .toggle-slider:before {
   width: 100%;
   height: auto;
   object-fit: contain;
-  margin: 1em 0; /* Add margin to top and bottom */
+  margin: 1em 0;
+  /* Add margin to top and bottom */
   padding: 0;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
@@ -1869,20 +1869,20 @@ input:checked + .toggle-slider:before {
 .memory-code-container .code-block {
   margin: 0;
   padding: 12px;
-  background: #1e1f22 !important;
+  background: var(--background-tertiary);
   border-radius: 8px;
   font-size: 0.9em;
 }
 
 .memory-code-container pre {
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  background: transparent;
 }
 
 /* Memory inline code styles */
 .memory-inline-code {
-  background: #1e1f22;
+  background: var(--background-tertiary);
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 0.9em;
@@ -1892,6 +1892,8 @@ input:checked + .toggle-slider:before {
 .memory-inline-code .inline-code {
   color: #ffffff;
   font-family: "Courier New", Courier, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Update copy button styles for memory code blocks */
@@ -1927,10 +1929,10 @@ input:checked + .toggle-slider:before {
 /* Ensure code is selectable in memories */
 .memory-code-container code,
 .memory-inline-code code {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* Add styles for code block language indicator */
@@ -1955,8 +1957,8 @@ input:checked + .toggle-slider:before {
 
 /* Make sure code blocks don't overflow */
 .memory-code-container pre {
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Add responsive styles for code blocks */
@@ -2169,6 +2171,7 @@ input:checked + .toggle-slider:before {
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -2393,18 +2396,24 @@ input:checked + .toggle-slider:before {
 
 /* Add this to reduce the margin between paragraphs in markdown */
 .chat-bubble p {
-  margin: 0.5em 0; /* Adjust the margin as needed */
+  margin: 0.5em 0;
+  /* Adjust the margin as needed */
 }
 
 /* Add this to style list items in markdown */
 .chat-bubble ul,
 .chat-bubble ol {
-  padding-left: 1.2em; /* Adjust padding as needed */
-  margin: 0; /* Remove default margin */
+  padding-left: 1.2em;
+  /* Adjust padding as needed */
+  margin: 0;
+  /* Remove default margin */
 }
 
 .chat-bubble li {
-  margin: 0.3em 0; /* Adjust margin for better spacing */
-  list-style-position: inside; /* Ensure bullets are inside the list item */
-  padding-left: 0.5em; /* Add padding to align text with bullet */
+  margin: 0.3em 0;
+  /* Adjust margin for better spacing */
+  list-style-position: inside;
+  /* Ensure bullets are inside the list item */
+  padding-left: 0.5em;
+  /* Add padding to align text with bullet */
 }

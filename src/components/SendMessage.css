@@ -1,3 +1,5 @@
+@import '../styles/variables.css';
+
 .Contents {
   display: flex;
   flex-direction: column;
@@ -20,11 +22,11 @@
   max-width: 100%;
   margin-left: -10px;
   margin-right: -10px;
-  padding: 5px 10px;
-  background-color: #40444b; /* Changed to the lighter grey color */
-  border-radius: 10px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--background-input);
+  border-radius: var(--border-radius-md);
   position: relative;
-  gap: 8px; /* Add gap between textarea and button */
+  gap: var(--spacing-sm);
 }
 
 .InputWrapper {
@@ -37,27 +39,27 @@
 .TextArea {
   flex: 1;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--border-radius-md);
   resize: none;
-  background-color: #40444b;
-  color: white;
-  padding: 10px 15px;
+  background-color: var(--background-input);
+  color: var(--interactive-active);
+  padding: var(--spacing-sm) var(--spacing-md);
   line-height: 1.5;
   font-size: 16px;
   max-height: 200px;
   box-shadow: none;
-  outline: none !important;
+  outline: none;
   padding-right: 100px;
 }
 
 .TextArea:focus {
-  border: 1px solid #7289da;
-  box-shadow: 0 0 3px #7289da;
+  border: 1px solid var(--primary-color);
+  box-shadow: 0 0 3px var(--primary-color);
 }
 
 .IconsWrapper {
   position: absolute;
-  right: 10px;
+  right: var(--spacing-sm);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -67,21 +69,21 @@
 
 .Mic,
 .PlusButton {
-  color: white;
+  color: var(--interactive-active);
   cursor: pointer;
-  transition: color 0.2s ease;
-  margin-left: 15px;
+  transition: color var(--transition-normal);
+  margin-left: var(--spacing-md);
   font-size: 20px;
 }
 
 .Mic:hover,
 .PlusButton:hover {
-  color: #7289da;
+  color: var(--primary-color);
 }
 
 .Mic.listening {
   animation: pulse 1s infinite;
-  color: #ff5050;
+  color: var(--status-danger);
 }
 
 @keyframes pulse {
@@ -99,32 +101,32 @@
 }
 
 .Submit {
-  background-color: #4752c4;
+  background-color: var(--primary-active);
   border: none;
-  border-radius: 10px;
-  color: white;
-  padding: 8px 15px;
+  border-radius: var(--border-radius-md);
+  color: var(--interactive-active);
+  padding: var(--spacing-sm) var(--spacing-md);
   margin-left: 0;
   margin-right: -2px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   white-space: nowrap;
   min-width: fit-content;
 }
 
 .Submit.disabled {
-  background-color: #2f3136;
-  color: rgba(255, 255, 255, 0.5);
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
   cursor: not-allowed;
   pointer-events: none;
 }
 
 .Submit:not(.disabled):hover {
-  background-color: #3c45a5;
+  background-color: var(--primary-hover);
 }
 
 .Submit:not(.disabled):active {
-  background-color: #3941b8;
+  background-color: var(--primary-color);
 }
 
 .ImagePreview {
@@ -189,7 +191,8 @@
 .CameraFeed {
   width: 100%;
   height: auto;
-  max-height: calc(90vh - 100px); /* Adjust based on your needs */
+  max-height: calc(90vh - 100px);
+  /* Adjust based on your needs */
   object-fit: contain;
 }
 
@@ -239,6 +242,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -248,6 +252,7 @@
   from {
     transform: scale(0.8);
   }
+
   to {
     transform: scale(1);
   }
@@ -289,6 +294,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -298,6 +304,7 @@
   from {
     transform: scale(0.8);
   }
+
   to {
     transform: scale(1);
   }
@@ -329,6 +336,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -338,6 +346,7 @@
   from {
     transform: scale(0.8);
   }
+
   to {
     transform: scale(1);
   }
@@ -384,7 +393,8 @@
 }
 
 .MediaOption:last-of-type {
-  margin-bottom: 20px; /* Add space between options and cancel button */
+  margin-bottom: 20px;
+  /* Add space between options and cancel button */
 }
 
 .MediaOption:hover {
@@ -425,18 +435,24 @@
 /* Add media query for small screens */
 @media screen and (max-width: 380px) {
   .Form {
-    padding: 5px 70px; /* Reduce padding on small screens */
-    margin-left: -10px; /* Remove negative margin on small screens */
-    margin-right: -10px; /* Remove negative margin on small screens */
+    padding: 5px 70px;
+    /* Reduce padding on small screens */
+    margin-left: -10px;
+    /* Remove negative margin on small screens */
+    margin-right: -10px;
+    /* Remove negative margin on small screens */
   }
 
   .Submit {
-    padding: 8px 15px; /* Further reduce padding on small screens */
-    font-size: 14px; /* Slightly smaller font size */
+    padding: 8px 15px;
+    /* Further reduce padding on small screens */
+    font-size: 14px;
+    /* Slightly smaller font size */
   }
 
   .TextArea {
-    padding-right: 70px; /* Reduce padding to prevent overlap with icons */
+    padding-right: 70px;
+    /* Reduce padding to prevent overlap with icons */
     margin-left: -65px;
   }
 }

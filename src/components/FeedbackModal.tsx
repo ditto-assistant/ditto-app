@@ -68,14 +68,18 @@ export default function FeedbackModal({
                 <button
                   type="button"
                   onClick={() => setSelectedType("bug")}
-                  className={`filter-button ${selectedType === "bug" ? "active-filter" : ""}`}
+                  className={`filter-button ${
+                    selectedType === "bug" ? "active-filter" : ""
+                  }`}
                 >
                   Bug Report
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedType("feature-request")}
-                  className={`filter-button ${selectedType === "feature-request" ? "active-filter" : ""}`}
+                  className={`filter-button ${
+                    selectedType === "feature-request" ? "active-filter" : ""
+                  }`}
                 >
                   Feature Request
                 </button>

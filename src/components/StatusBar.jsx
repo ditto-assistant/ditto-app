@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import StatusIcons from "./StatusIcons";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
@@ -12,7 +11,6 @@ import "./FeedbackModal.css";
 import "./StatusBar.css";
 
 export default function StatusBar({ onMemoryClick, onScriptsClick }) {
-  const navigate = useNavigate();
   const balance = useBalance();
   const memoryCount = useMemoryCount();
   const [workingScript, setWorkingScript] = useState(() => {
@@ -144,7 +142,7 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
           <MdFeedback size={16} />
         </div>
         <div className="balance-container" onClick={toggleBalanceDisplay}>
-          <p className="balance-indicator">
+          <span className="balance-indicator">
             {balance.isLoading ? (
               <LoadingSpinner size={14} inline={true} />
             ) : showMemories ? (
@@ -154,7 +152,7 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
             ) : (
               balance.data?.balance
             )}
-          </p>
+          </span>
         </div>
       </div>
 
