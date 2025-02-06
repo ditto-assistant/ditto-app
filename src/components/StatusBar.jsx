@@ -6,7 +6,10 @@ import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
 import { toast } from "react-hot-toast";
-import CardMenu from "./CardMenu";
+import { MdFeedback } from "react-icons/md";
+import FeedbackModal from "./FeedbackModal";
+import "./FeedbackModal.css";
+import "./StatusBar.css";
 
 export default function StatusBar({ onMemoryClick, onScriptsClick }) {
   const navigate = useNavigate();
@@ -29,6 +32,7 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
     return savedMode === "m";
   });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const [scripts, setScripts] = useState(() => {
     let webApps = JSON.parse(localStorage.getItem("webApps") ?? "[]");
@@ -112,11 +116,10 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
   }, [balance.data?.dropAmount]);
 
   return (
-    <div style={styles.statusBar}>
-      <div style={styles.status}>
+    <div className="status-bar">
+      <div className="status">
         <div
           style={{
-            ...styles.statusIndicator,
             backgroundColor: isOnline ? "green" : "red",
             width: "8px",
             height: "8px",
@@ -124,7 +127,7 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
             marginRight: "6px",
           }}
         ></div>
-        <p style={styles.statusText}>{isOnline ? "Online" : "Offline"}</p>
+        <p className="status-text">{isOnline ? "Online" : "Offline"}</p>
       </div>
 
       <StatusIcons
@@ -132,62 +135,30 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
         handleMemoryClick={handleMemoryClick}
       />
 
-      <div style={styles.balanceContainer} onClick={toggleBalanceDisplay}>
-        <p style={styles.balanceIndicator}>
-          {balance.isLoading ? (
-            <LoadingSpinner size={14} inline={true} />
-          ) : showMemories ? (
-            `${memoryCount.count} Memories`
-          ) : showUSD ? (
-            balance.data?.usd
-          ) : (
-            balance.data?.balance
-          )}
-        </p>
+      <div className="right-section">
+        <div
+          className="feedback-button"
+          onClick={() => setShowFeedback(true)}
+          title="Send Feedback"
+        >
+          <MdFeedback size={16} />
+        </div>
+        <div className="balance-container" onClick={toggleBalanceDisplay}>
+          <p className="balance-indicator">
+            {balance.isLoading ? (
+              <LoadingSpinner size={14} inline={true} />
+            ) : showMemories ? (
+              `${memoryCount.count} Memories`
+            ) : showUSD ? (
+              balance.data?.usd
+            ) : (
+              balance.data?.balance
+            )}
+          </p>
+        </div>
       </div>
+
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </div>
   );
 }
-
-const styles = {
-  statusBar: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "4px 12px",
-    background: "rgba(32, 34, 37, 0.6)",
-    borderRadius: "12px",
-    margin: "3px 8px",
-    position: "relative",
-    zIndex: 100,
-  },
-  status: {
-    display: "flex",
-    alignItems: "center",
-    fontSize: "0.9em",
-    cursor: "pointer",
-  },
-  statusText: {
-    color: "#f0f0f0",
-    margin: 0,
-  },
-  statusIndicator: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
-  balanceContainer: {
-    display: "flex",
-    alignItems: "center",
-    cursor: "pointer",
-  },
-  balanceIndicator: {
-    backgroundColor: "#5865f2", // Discord-like blue
-    color: "#FFFFFF",
-    padding: "3px 8px",
-    borderRadius: "10px",
-    fontSize: "0.9em",
-    fontWeight: "bold",
-  },
-};

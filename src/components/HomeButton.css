@@ -1,0 +1,10 @@
+.home-button {
+    background-color: #7289da !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    font-size: 1.1em !important;
+}
+
+.home-button:hover {
+    background-color: #677bc4 !important;
+}
