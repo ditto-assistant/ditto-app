@@ -27,7 +27,7 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { DEFAULT_PREFERENCES } from "@/constants";
-import { getDeviceId } from "@/utils/deviceId";
+import { getDeviceID } from "@/utils/deviceId";
 
 /**@typedef {import("@/types/llm").Model} Model */
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
@@ -1019,7 +1019,7 @@ export const saveMessagePairToMemory = async (
       response: response,
       embedding_vector: vector(embedding),
       timestamp: new Date(),
-      device_id: getDeviceId(),
+      device_id: getDeviceID(),
     });
     if (mode === "development") {
       console.log(

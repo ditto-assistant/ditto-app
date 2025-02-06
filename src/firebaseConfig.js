@@ -34,12 +34,12 @@ export const routes = {
    * @param {string} deviceId - The device ID.
    * @returns {string} The complete URL for the balance endpoint.
    */
-  balance: (userID, email, version, deviceId) => {
+  balance: (userID, email, version, deviceID) => {
     const url = new URL(`${BASE_URL}/v1/balance`);
     url.searchParams.append("userID", userID);
     url.searchParams.append("email", email ?? "");
     url.searchParams.append("version", version);
-    url.searchParams.append("deviceId", deviceId);
+    url.searchParams.append("deviceID", deviceID);
     return url.toString();
   },
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",

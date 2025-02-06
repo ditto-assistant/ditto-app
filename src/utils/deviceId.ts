@@ -3,25 +3,25 @@ import packageJson from "../../package.json";
 const DEVICE_ID_KEY = "ditto_device_id";
 
 // Simple device ID generator using timestamp and random number
-function generateDeviceId(): string {
+function generateDeviceID(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 }
 
 export function clearStorage(): void {
-  const deviceId = getDeviceId();
+  const deviceID = getDeviceID();
   localStorage.clear();
-  localStorage.setItem(DEVICE_ID_KEY, deviceId);
+  localStorage.setItem(DEVICE_ID_KEY, deviceID);
 }
 
-export function getDeviceId(): string {
-  let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+export function getDeviceID(): string {
+  let deviceID = localStorage.getItem(DEVICE_ID_KEY);
 
-  if (!deviceId) {
-    deviceId = generateDeviceId();
-    localStorage.setItem(DEVICE_ID_KEY, deviceId);
+  if (!deviceID) {
+    deviceID = generateDeviceID();
+    localStorage.setItem(DEVICE_ID_KEY, deviceID);
   }
 
-  return deviceId;
+  return deviceID;
 }
 
 // Get app version from package.json
