@@ -1,49 +1,49 @@
 :root {
-    /* Colors */
-    --primary-color: #7289da;
-    --primary-hover: #677bc4;
-    --primary-active: #5865F2;
+  /* Colors */
+  --primary-color: #7289da;
+  --primary-hover: #677bc4;
+  --primary-active: #5865f2;
 
-    /* Discord-like colors */
-    --background-primary: #36393f;
-    --background-secondary: #2f3136;
-    --background-tertiary: #202225;
-    --background-input: #40444b;
+  /* Discord-like colors */
+  --background-primary: #36393f;
+  --background-secondary: #2f3136;
+  --background-tertiary: #202225;
+  --background-input: #40444b;
 
-    /* Text colors */
-    --text-normal: #dcddde;
-    --text-muted: #72767d;
-    --text-link: #00b0f4;
+  /* Text colors */
+  --text-normal: #dcddde;
+  --text-muted: #72767d;
+  --text-link: #00b0f4;
 
-    /* Interactive colors */
-    --interactive-normal: #b9bbbe;
-    --interactive-hover: #dcddde;
-    --interactive-active: #ffffff;
+  /* Interactive colors */
+  --interactive-normal: #b9bbbe;
+  --interactive-hover: #dcddde;
+  --interactive-active: #ffffff;
 
-    /* Status colors */
-    --status-danger: #ed4245;
-    --status-warning: #faa81a;
-    --status-success: #3ba55c;
+  /* Status colors */
+  --status-danger: #ed4245;
+  --status-warning: #faa81a;
+  --status-success: #3ba55c;
 
-    /* Spacing */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
 
-    /* Border radius */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 16px;
+  /* Border radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
 
-    /* Transitions */
-    --transition-quick: 0.1s ease;
-    --transition-normal: 0.2s ease;
-    --transition-slow: 0.3s ease;
+  /* Transitions */
+  --transition-quick: 0.1s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
 
-    /* Z-index layers */
-    --z-index-dropdown: 1000;
-    --z-index-modal: 2000;
-    --z-index-overlay: 3000;
+  /* Z-index layers */
+  --z-index-dropdown: 1000;
+  --z-index-modal: 2000;
+  --z-index-overlay: 3000;
 }
