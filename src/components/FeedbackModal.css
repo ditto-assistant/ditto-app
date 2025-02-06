@@ -1,159 +1,159 @@
 .modal-content {
-    background-color: #2F3136;
-    border-radius: 8px;
-    overflow: hidden;
+  background-color: #2f3136;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .modal-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #1E1F22;
+  padding: 20px 24px;
+  border-bottom: 1px solid #1e1f22;
 }
 
 .modal-header h3 {
-    margin: 0;
-    color: #7289DA;
-    font-size: 24px;
-    font-weight: 500;
+  margin: 0;
+  color: #7289da;
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .modal-body {
-    padding: 24px;
+  padding: 24px;
 }
 
 .feedback-type-selector {
-    margin-bottom: 32px;
+  margin-bottom: 32px;
 }
 
 .filter-label {
-    display: block;
-    text-transform: uppercase;
-    color: #B9BBBE;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    letter-spacing: 0.02em;
+  display: block;
+  text-transform: uppercase;
+  color: #b9bbbe;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
 }
 
 .filter-buttons {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .filter-button {
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    padding: 8px 16px;
-    border-radius: 16px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .filter-button:hover {
-    background-color: rgba(88, 101, 242, 0.1);
+  background-color: rgba(88, 101, 242, 0.1);
 }
 
 .filter-button.active-filter {
-    background-color: #5865F2;
+  background-color: #5865f2;
 }
 
 .feedback-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
 .feedback-textarea {
-    background-color: #2B2D31;
-    border: 1px solid #1E1F22;
-    border-radius: 8px;
-    padding: 12px;
-    color: #FFFFFF;
-    font-size: 16px;
-    width: 100%;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.2s ease;
-    resize: vertical;
-    min-height: 120px;
-    font-family: inherit;
+  background-color: #2b2d31;
+  border: 1px solid #1e1f22;
+  border-radius: 8px;
+  padding: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
 }
 
 .feedback-textarea:focus {
-    border-color: #7289DA;
+  border-color: #7289da;
 }
 
 .feedback-textarea::placeholder {
-    color: #72767D;
+  color: #72767d;
 }
 
 .error-message {
-    background-color: rgba(237, 66, 69, 0.1);
-    color: #ED4245;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    border: 1px solid rgba(237, 66, 69, 0.2);
+  background-color: rgba(237, 66, 69, 0.1);
+  color: #ed4245;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  border: 1px solid rgba(237, 66, 69, 0.2);
 }
 
 .feedback-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
 }
 
 .github-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #7289DA;
-    text-decoration: none;
-    font-size: 16px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7289da;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .github-link:hover {
-    background-color: rgba(114, 137, 218, 0.1);
-    color: #8EA1E1;
+  background-color: rgba(114, 137, 218, 0.1);
+  color: #8ea1e1;
 }
 
 .submit-button {
-    background-color: #5865F2;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 4px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    width: auto;
-    min-width: 140px;
+  background-color: #5865f2;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: auto;
+  min-width: 140px;
 }
 
 .submit-button:hover:not(:disabled) {
-    background-color: #4752C4;
+  background-color: #4752c4;
 }
 
 .submit-button:disabled {
-    background-color: #4752C4;
-    opacity: 0.7;
-    cursor: not-allowed;
+  background-color: #4752c4;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 @media (min-width: 769px) {
-    .modal-content {
-        width: 90vw;
-        max-width: 600px;
-        height: auto;
-        min-height: 400px;
-        max-height: 90vh;
-    }
+  .modal-content {
+    width: 90vw;
+    max-width: 600px;
+    height: auto;
+    min-height: 400px;
+    max-height: 90vh;
+  }
 }
