@@ -7,6 +7,12 @@ function generateDeviceId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 }
 
+export function clearStorage(): void {
+  const deviceId = getDeviceId();
+  localStorage.clear();
+  localStorage.setItem(DEVICE_ID_KEY, deviceId);
+}
+
 export function getDeviceId(): string {
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
 

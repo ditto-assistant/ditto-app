@@ -22,6 +22,7 @@ import packageJson from "../../package.json";
 import { useBalance } from "../hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingSpinner } from "../components/LoadingSpinner";
+import { clearStorage } from "@/utils/deviceId";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ const Settings = () => {
       console.log("Account deleted");
       await removeUserFromFirestore(currentUser.uid);
       await deleteAllUserScriptsFromFirestore(currentUser.uid);
-      localStorage.clear();
+      clearStorage();
       navigate("/login");
     } catch (error) {
       console.error("Error deleting account: ", error);
