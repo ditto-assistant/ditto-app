@@ -5,60 +5,6 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@mui/material";
 
 /**
- * Creates a Stripe checkout session for purchasing tokens.
- * The browser will automatically redirect to the Stripe checkout page.
- *
- * @param {Object} params - The parameters for creating the checkout session
- * @param {string} params.successURL - The URL to redirect to after successful payment
- * @param {string} params.cancelURL - The URL to redirect to if payment is cancelled
- * @param {number} params.usd - The amount in USD to charge
- * @returns {Promise<{
- *   ok?: void,
- *   err?: string
- * }>} A promise that resolves to an object:
- *   - If successful, returns {ok: undefined} and the browser will redirect to Stripe
- *   - If unsuccessful, returns {err: errorMessage} where errorMessage describes the error
- */
-export async function createCheckoutSession({ successURL, cancelURL, usd }) {
-  const tok = await getToken();
-  if (tok.err) {
-    console.error(tok.err);
-    return {
-      err: `createCheckoutSession: Unable to get auth token: ${tok.err}`,
-    };
-  }
-
-  try {
-    const response = await fetch(routes.checkoutSession, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`,
-      },
-      body: JSON.stringify({
-        userID: tok.ok.userID,
-        email: tok.ok.email,
-        successURL,
-        cancelURL,
-        usd,
-      }),
-    });
-
-    if (response.ok) {
-      const url = await response.text();
-      window.location.href = url;
-      return { ok: undefined };
-    }
-
-    const errorText = await response.text();
-    return { err: `createCheckoutSession: Server error: ${errorText}` };
-  } catch (error) {
-    console.error("Error in createCheckoutSession:", error);
-    return { err: `createCheckoutSession: Network error: ${error.message}` };
-  }
-}
-
-/**
  * A form component that handles Stripe checkout with proper authentication.
  *
  * @param {Object} props - Component props

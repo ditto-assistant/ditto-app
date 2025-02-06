@@ -335,7 +335,9 @@ function ModelPreferencesModal({
         <div className="model-card-content">
           <div className="model-name-with-arrow">
             <MdKeyboardArrowRight
-              className={`dropdown-arrow ${expandedImageModel === model.id ? "rotated" : ""}`}
+              className={`dropdown-arrow ${
+                expandedImageModel === model.id ? "rotated" : ""
+              }`}
             />
             <span className="model-name">{model.name}</span>
           </div>
