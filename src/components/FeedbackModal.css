@@ -53,7 +53,7 @@
 }
 
 .filter-button:hover {
-    background-color: rgba(88, 101, 242, 0.1);
+  background-color: rgba(88, 101, 242, 0.1);
 }
 
 .filter-button.active-filter {
@@ -151,11 +151,11 @@
 }
 
 @media (min-width: 769px) {
-    .modal-content {
-        width: 90vw;
-        max-width: 600px;
-        height: auto;
-        min-height: 400px;
-        max-height: 90vh;
-    }
+  .modal-content {
+    width: 90vw;
+    max-width: 600px;
+    height: auto;
+    min-height: 400px;
+    max-height: 90vh;
+  }
 }
