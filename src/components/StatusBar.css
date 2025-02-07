@@ -1,14 +1,21 @@
 .status-bar {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 4px 12px;
-  background: rgba(32, 34, 37, 0.6);
+  background: rgba(32, 34, 37, 0.4);
   border-radius: 12px;
   margin: 3px 8px;
   position: relative;
   z-index: 100;
+  min-height: 36px;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.status-section {
+  flex-shrink: 0;
+  min-width: 80px;
 }
 
 .status {
@@ -18,48 +25,127 @@
   cursor: pointer;
 }
 
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
 .status-text {
   color: #f0f0f0;
   margin: 0;
+  white-space: nowrap;
 }
 
-.status-indicator {
+.center-section {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7289DA;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.icon-button:hover {
+  background-color: rgba(114, 137, 218, 0.1);
+  color: #ffffff;
 }
 
 .right-section {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .feedback-button {
   color: #f0f0f0;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 6px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .feedback-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(114, 137, 218, 0.1);
+  color: #ffffff;
 }
 
 .balance-container {
   display: flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .balance-indicator {
-  background-color: #5865f2;
+  background-color: rgba(88, 101, 242, 0.2);
   color: #ffffff;
-  padding: 3px 8px;
-  border-radius: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
   font-size: 0.9em;
-  font-weight: bold;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+}
+
+.balance-container:hover .balance-indicator {
+  background-color: rgba(88, 101, 242, 0.3);
+}
+
+@media (max-width: 480px) {
+  .status-bar {
+    padding: 4px 8px;
+    gap: 8px;
+  }
+
+  .status-section {
+    display: none;
+  }
+
+  .center-section {
+    gap: 4px;
+  }
+
+  .icon-button {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .right-section {
+    gap: 8px;
+  }
+
+  .feedback-button {
+    padding: 4px;
+  }
+
+  .balance-indicator {
+    max-width: 120px;
+    font-size: 0.85em;
+    padding: 4px 8px;
+  }
 }

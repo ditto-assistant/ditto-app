@@ -1,9 +1,33 @@
 @import "../styles/variables.css";
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
 .modal-content {
+  width: 90%;
+  max-width: 600px;
+  height: auto;
+  min-height: 200px;
+  max-height: 90vh;
   background-color: var(--background-secondary);
-  border-radius: var(--border-radius-lg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
   overflow: hidden;
+  border-radius: 8px;
 }
 
 .modal-header {
@@ -36,28 +60,61 @@
   letter-spacing: 0.02em;
 }
 
-.filter-buttons {
+.feedback-buttons {
   display: flex;
   gap: var(--spacing-sm);
 }
 
-.filter-button {
-  background: transparent;
-  border: none;
-  color: var(--interactive-active);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-lg);
-  font-size: 16px;
+.feedback-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 24px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
   cursor: pointer;
-  transition: background-color var(--transition-normal);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid transparent;
 }
 
-.filter-button:hover {
-  background-color: rgba(88, 101, 242, 0.1);
+.feedback-button:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.filter-button.active-filter {
-  background-color: var(--primary-active);
+.feedback-icon {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+/* Bug button states */
+.feedback-bug-button .bug-icon {
+  color: #ff4d4d;
+}
+
+.feedback-bug-button.selected {
+  background: #8B0000;
+  color: white;
+}
+
+.feedback-bug-button.selected .bug-icon {
+  color: white;
+}
+
+/* Feature button states */
+.feedback-feature-button .feature-icon {
+  color: #ffd700;
+}
+
+.feedback-feature-button.selected {
+  background: #B8860B;
+  color: white;
+}
+
+.feedback-feature-button.selected .feature-icon {
+  color: white;
 }
 
 .feedback-form {
@@ -107,6 +164,7 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   margin-top: var(--spacing-xl);
+  flex-wrap: wrap;
 }
 
 .github-link {
@@ -115,10 +173,11 @@
   gap: var(--spacing-sm);
   color: var(--primary-color);
   text-decoration: none;
-  font-size: 16px;
+  font-size: 14px;
   padding: var(--spacing-sm) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-normal);
+  white-space: nowrap;
 }
 
 .github-link:hover {
@@ -127,35 +186,91 @@
 }
 
 .submit-button {
-  background-color: var(--primary-active);
-  color: var(--interactive-active);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 8px 16px;
   border: none;
-  border-radius: var(--border-radius-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 16px;
+  border-radius: 4px;
+  background: var(--primary-color, #7289DA);
+  color: white;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--transition-normal);
-  width: auto;
-  min-width: 140px;
+  transition: all 0.2s ease;
+  font-size: 14px;
 }
 
 .submit-button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
+  background: var(--primary-color-hover, #5865F2);
 }
 
 .submit-button:disabled {
-  background-color: var(--primary-hover);
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-@media (min-width: 769px) {
+.submit-button.loading .button-text {
+  opacity: 0.7;
+}
+
+.button-spinner {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.button-spinner .loading-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.bug-button {
+  color: #dc3545;
+}
+
+.feature-button {
+  color: #ff9f1a;
+}
+
+@media (max-width: 480px) {
   .modal-content {
-    width: 90vw;
-    max-width: 600px;
+    width: 95%;
     height: auto;
-    min-height: 400px;
-    max-height: 90vh;
+    max-height: 85vh;
+    margin: 20px;
+  }
+
+  .modal-body {
+    padding: var(--spacing-md);
+  }
+
+  .feedback-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+
+  .github-link {
+    justify-content: center;
+    order: 2;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .submit-button {
+    order: 1;
+    width: 100%;
+  }
+
+  .feedback-buttons {
+    justify-content: flex-start;
+  }
+
+  .feedback-button {
+    width: fit-content;
+    flex: 0 0 auto;
   }
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import StatusIcons from "./StatusIcons";
+import { FaBrain, FaLaptopCode } from "react-icons/fa";
 import { syncLocalScriptsWithFirestore } from "../control/firebase";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
 import { toast } from "react-hot-toast";
 import { MdFeedback } from "react-icons/md";
+import { motion } from "framer-motion";
 import FeedbackModal from "./FeedbackModal";
 import "./FeedbackModal.css";
 import "./StatusBar.css";
@@ -29,7 +30,6 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
     let savedMode = localStorage.getItem("status_bar_fiat_balance");
     return savedMode === "m";
   });
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const [scripts, setScripts] = useState(() => {
@@ -39,20 +39,6 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
     openSCAD.sort((a, b) => a.name.localeCompare(b.name));
     return { webApps, openSCAD };
   });
-
-  const checkOnlineStatus = () => {
-    setIsOnline(navigator.onLine);
-  };
-
-  const handleBookmarkClick = () => {
-    if (onScriptsClick) {
-      onScriptsClick();
-    }
-  };
-
-  const handleMemoryClick = () => {
-    onMemoryClick();
-  };
 
   const syncLocalScripts = async () => {
     let userID = localStorage.getItem("userID");
@@ -115,34 +101,41 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
 
   return (
     <div className="status-bar">
-      <div className="status">
-        <div
-          style={{
-            backgroundColor: isOnline ? "green" : "red",
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
-            marginRight: "6px",
-          }}
-        ></div>
-        <p className="status-text">{isOnline ? "Online" : "Offline"}</p>
+      <div className="center-section">
+        <motion.div
+          className="icon-button"
+          onClick={onScriptsClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaLaptopCode />
+        </motion.div>
+        <motion.div
+          className="icon-button"
+          onClick={onMemoryClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaBrain />
+        </motion.div>
       </div>
 
-      <StatusIcons
-        handleBookmarkClick={handleBookmarkClick}
-        handleMemoryClick={handleMemoryClick}
-      />
-
       <div className="right-section">
-        <div
+        <motion.div
           className="feedback-button"
           onClick={() => setShowFeedback(true)}
-          title="Send Feedback"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
         >
           <MdFeedback size={16} />
-        </div>
-        <div className="balance-container" onClick={toggleBalanceDisplay}>
-          <span className="balance-indicator">
+        </motion.div>
+        <motion.div
+          className="balance-container"
+          onClick={toggleBalanceDisplay}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="balance-indicator">
             {balance.isLoading ? (
               <LoadingSpinner size={14} inline={true} />
             ) : showMemories ? (
@@ -152,8 +145,8 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
             ) : (
               balance.data?.balance
             )}
-          </span>
-        </div>
+          </div>
+        </motion.div>
       </div>
 
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}

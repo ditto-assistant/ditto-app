@@ -26,7 +26,6 @@ const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
-const FeedbackResult = lazy(() => import("./screens/FeedbackResult"));
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -51,7 +50,6 @@ const router = createBrowserRouter(
           <Route index element={<Checkout />} />
           <Route path="success" element={<CheckoutSuccess />} />
         </Route>
-        <Route path="feedback/result" element={<FeedbackResult />} />
       </Route>
     </Route>
   )
@@ -85,7 +83,7 @@ export default function App() {
           </ModelPreferencesProvider>
         </BalanceProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }

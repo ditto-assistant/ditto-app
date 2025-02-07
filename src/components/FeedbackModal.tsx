@@ -1,15 +1,37 @@
-import { MdClose } from "react-icons/md";
+import { MdClose, MdBugReport, MdLightbulb } from "react-icons/md";
 import { useFormStatus } from "react-dom";
-import { useState } from "react";
+import { useActionState } from "react";
+import { useState, useEffect } from "react";
 import { BASE_URL } from "../firebaseConfig";
 import { getDeviceID, APP_VERSION } from "../utils/deviceId";
 import { useAuth, useAuthToken } from "../hooks/useAuth";
 import { FaGithub } from "react-icons/fa";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { toast } from "react-hot-toast";
 
 interface FeedbackModalProps {
   onClose: () => void;
   feedbackType?: "bug" | "feature-request";
+}
+
+async function submitFeedback(prevState: any, formData: FormData) {
+  try {
+    const response = await fetch(`${BASE_URL}/v1/feedback`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.status === 201) {
+      toast.success("Feedback submitted successfully!");
+      return { success: true };
+    }
+    const error = await response.text();
+    toast.error(error || "Failed to submit feedback");
+    return { success: false, error };
+  } catch (error) {
+    toast.error("Failed to submit feedback");
+    return { success: false, error: "Failed to submit feedback" };
+  }
 }
 
 export default function FeedbackModal({
@@ -21,6 +43,13 @@ export default function FeedbackModal({
   );
   const auth = useAuth();
   const token = useAuthToken();
+  const [state, formAction] = useActionState(submitFeedback, null);
+
+  useEffect(() => {
+    if (state?.success) {
+      onClose();
+    }
+  }, [state?.success, onClose]);
 
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
@@ -29,8 +58,6 @@ export default function FeedbackModal({
     return <div className="error-message">Authentication required</div>;
   }
 
-  const redirectURL = window.location.origin + "/feedback/result";
-
   return (
     <div
       className="modal-overlay"
@@ -38,7 +65,7 @@ export default function FeedbackModal({
     >
       <div className="modal-content">
         <div className="modal-header">
-          <h3>Submit Feedback</h3>
+          <h3>Feedback</h3>
           <MdClose
             className="close-icon"
             onClick={onClose}
@@ -46,11 +73,7 @@ export default function FeedbackModal({
           />
         </div>
 
-        <form
-          action={`${BASE_URL}/v1/feedback`}
-          method="POST"
-          className="modal-body"
-        >
+        <form action={formAction} className="modal-body">
           <input type="hidden" name="userID" value={auth.user?.uid || ""} />
           <input type="hidden" name="deviceID" value={getDeviceID()} />
           <input type="hidden" name="version" value={APP_VERSION} />
@@ -59,29 +82,29 @@ export default function FeedbackModal({
             name="authorization"
             value={`Bearer ${token.data}`}
           />
-          <input type="hidden" name="redirect" value={redirectURL} />
 
           {!feedbackType && (
             <div className="feedback-type-selector">
-              <label className="filter-label">Feedback Type</label>
-              <div className="filter-buttons">
+              <div className="feedback-buttons">
                 <button
                   type="button"
                   onClick={() => setSelectedType("bug")}
-                  className={`filter-button ${
-                    selectedType === "bug" ? "active-filter" : ""
+                  className={`feedback-button feedback-bug-button ${
+                    selectedType === "bug" ? "selected" : ""
                   }`}
                 >
-                  Bug Report
+                  <MdBugReport className="feedback-icon bug-icon" />
+                  Bug
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedType("feature-request")}
-                  className={`filter-button ${
-                    selectedType === "feature-request" ? "active-filter" : ""
+                  className={`feedback-button feedback-feature-button ${
+                    selectedType === "feature-request" ? "selected" : ""
                   }`}
                 >
-                  Feature Request
+                  <MdLightbulb className="feedback-icon feature-icon" />
+                  Idea
                 </button>
               </div>
               <input type="hidden" name="type" value={selectedType} />
@@ -89,14 +112,11 @@ export default function FeedbackModal({
           )}
 
           <div className="feedback-form">
-            <label className="filter-label" htmlFor="feedback">
-              Your Feedback
-            </label>
             <textarea
               id="feedback"
               name="feedback"
               className="feedback-textarea"
-              placeholder="Please describe your feedback in detail..."
+              placeholder="Write your feedback here..."
               required
               rows={6}
             />
@@ -104,12 +124,20 @@ export default function FeedbackModal({
 
           <div className="feedback-actions">
             <a
-              href="https://github.com/orgs/ditto-assistant/discussions/new"
+              href="https://github.com/orgs/ditto-assistant/discussions/new/choose"
               target="_blank"
               rel="noopener noreferrer"
               className="github-link"
             >
-              <FaGithub /> Open a GitHub Discussion
+              <FaGithub /> Open a Discussion
+            </a>
+            <a
+              href="https://github.com/ditto-assistant/ditto-app/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="github-link"
+            >
+              <FaGithub /> Create an Issue
             </a>
             <SubmitButton />
           </div>
@@ -123,8 +151,19 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button type="submit" className="submit-button" disabled={pending}>
-      {pending ? "Submitting..." : "Submit Feedback"}
+    <button
+      type="submit"
+      className={`submit-button ${pending ? "loading" : ""}`}
+      disabled={pending}
+    >
+      <span className="button-text">
+        {pending ? "Submitting..." : "Submit"}
+      </span>
+      {pending && (
+        <span className="button-spinner">
+          <LoadingSpinner />
+        </span>
+      )}
     </button>
   );
 }
