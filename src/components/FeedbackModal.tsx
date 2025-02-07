@@ -1,11 +1,11 @@
 import { MdClose, MdBugReport, MdLightbulb } from "react-icons/md";
 import { useFormStatus } from "react-dom";
 import { useActionState } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BASE_URL } from "../firebaseConfig";
 import { getDeviceID, APP_VERSION } from "../utils/deviceId";
 import { useAuth, useAuthToken } from "../hooks/useAuth";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { toast } from "react-hot-toast";
 
@@ -44,12 +44,25 @@ export default function FeedbackModal({
   const auth = useAuth();
   const token = useAuthToken();
   const [state, formAction] = useActionState(submitFeedback, null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state?.success) {
       onClose();
     }
   }, [state?.success, onClose]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
@@ -73,7 +86,7 @@ export default function FeedbackModal({
           />
         </div>
 
-        <form action={formAction} className="modal-body">
+        <form ref={formRef} action={formAction} className="modal-body">
           <input type="hidden" name="userID" value={auth.user?.uid || ""} />
           <input type="hidden" name="deviceID" value={getDeviceID()} />
           <input type="hidden" name="version" value={APP_VERSION} />
@@ -123,13 +136,14 @@ export default function FeedbackModal({
           </div>
 
           <div className="feedback-actions">
+            <SubmitButton />
             <a
               href="https://github.com/orgs/ditto-assistant/discussions/new/choose"
               target="_blank"
               rel="noopener noreferrer"
               className="github-link"
             >
-              <FaGithub /> Open a Discussion
+              <FaGithub /> Open Discussion
             </a>
             <a
               href="https://github.com/ditto-assistant/ditto-app/issues/new"
@@ -137,9 +151,32 @@ export default function FeedbackModal({
               rel="noopener noreferrer"
               className="github-link"
             >
-              <FaGithub /> Create an Issue
+              <FaGithub /> New Issue
             </a>
-            <SubmitButton />
+            <a
+              href="https://www.instagram.com/heyditto.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <FaInstagram /> Instagram
+            </a>
+            <a
+              href="https://x.com/heydittoai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <FaXTwitter /> Twitter
+            </a>
+            <a
+              href="https://www.youtube.com/@heyditto"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <FaYoutube /> YouTube
+            </a>
           </div>
         </form>
       </div>
@@ -149,6 +186,7 @@ export default function FeedbackModal({
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
   return (
     <button
@@ -159,6 +197,7 @@ function SubmitButton() {
       <span className="button-text">
         {pending ? "Submitting..." : "Submit"}
       </span>
+      {!pending && !isMobile && <span className="shortcut-hint">⌘↵</span>}
       {pending && (
         <span className="button-spinner">
           <LoadingSpinner />
