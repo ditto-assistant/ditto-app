@@ -95,7 +95,7 @@
 }
 
 .feedback-bug-button.selected {
-  background: #8B0000;
+  background: #8b0000;
   color: white;
 }
 
@@ -109,7 +109,7 @@
 }
 
 .feedback-feature-button.selected {
-  background: #B8860B;
+  background: #b8860b;
   color: white;
 }
 
@@ -194,7 +194,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  background: var(--primary-color, #7289DA);
+  background: var(--primary-color, #7289da);
   color: white;
   font-weight: 500;
   cursor: pointer;
@@ -203,7 +203,7 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background: var(--primary-color-hover, #5865F2);
+  background: var(--primary-color-hover, #5865f2);
 }
 
 .submit-button:disabled {
