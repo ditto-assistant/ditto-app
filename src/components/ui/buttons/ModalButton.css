@@ -1,88 +1,88 @@
 .modal-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .modal-button.full-width {
-    width: 100%;
+  width: 100%;
 }
 
 .modal-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Primary variant */
 .modal-button.primary {
-    background: linear-gradient(135deg, #7289da 0%, #5865f2 100%);
-    color: white;
+  background: linear-gradient(135deg, #7289da 0%, #5865f2 100%);
+  color: white;
 }
 
 .modal-button.primary:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
 
 /* Secondary variant */
 .modal-button.secondary {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .modal-button.secondary:hover {
-    background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Danger variant */
 .modal-button.danger {
-    background: linear-gradient(135deg, #ed4245 0%, #ab2123 100%);
-    color: white;
+  background: linear-gradient(135deg, #ed4245 0%, #ab2123 100%);
+  color: white;
 }
 
 .modal-button.danger:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
 
 /* Ghost variant */
 .modal-button.ghost {
-    background: transparent;
-    color: #b9bbbe;
+  background: transparent;
+  color: #b9bbbe;
 }
 
 .modal-button.ghost:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
 }
 
 /* Button icon */
 .button-icon {
-    font-size: 18px;
-    display: flex;
-    align-items: center;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
 }
 
 /* Loading spinner */
 .button-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 0.8s linear infinite;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }

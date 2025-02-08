@@ -1,30 +1,30 @@
 .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .filter-label {
-    color: #b9bbbe;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+  color: #b9bbbe;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .filter-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
-    .filter-buttons {
-        gap: 6px;
-    }
+  .filter-buttons {
+    gap: 6px;
+  }
 
-    .filter-label {
-        font-size: 11px;
-    }
+  .filter-label {
+    font-size: 11px;
+  }
 }
