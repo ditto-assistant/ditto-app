@@ -1,12 +1,19 @@
-export type ModelPreferences = {
-  mainModel: Model;
-  programmerModel: Model;
+import { MemoryPreferences } from "@/constants";
+
+export interface ModelPreferences {
+  mainModel: string;
+  programmerModel: string;
   imageGeneration: {
-    model: Model;
-    size: ImageGenerationSize;
+    model: string;
+    size: {
+      wh: string;
+      description: string;
+      supportedModels: string[];
+    };
   };
   tools: ToolPreferences;
-};
+  memory: MemoryPreferences;
+}
 
 export function modelSupportsImageAttachments(model: Model): boolean {
   return (

@@ -1,7 +1,9 @@
 import { MdClose } from "react-icons/md";
 import { DEFAULT_PREFERENCES, TOOLS } from "../constants";
+import { useModelPreferences } from "@/hooks/useModelPreferences";
 
-function AgentToolsModal({ preferences, updatePreferences, onClose }) {
+export default function AgentToolsModal({ onClose }) {
+  const { preferences, updatePreferences } = useModelPreferences();
   const tools = preferences?.tools || DEFAULT_PREFERENCES.tools;
 
   const handleToolToggle = (toolName) => {
@@ -108,5 +110,3 @@ function AgentToolsModal({ preferences, updatePreferences, onClose }) {
     </div>
   );
 }
-
-export default AgentToolsModal;

@@ -18,12 +18,9 @@ import { TbBrandMeta } from "react-icons/tb";
 import { ModelOption, Model, ModelPreferences, Vendor } from "../types/llm";
 import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
-
+import { useModelPreferences } from "@/hooks/useModelPreferences";
 interface ModelPreferencesModalProps {
-  preferences: ModelPreferences;
-  updatePreferences: (update: Partial<ModelPreferences>) => void;
   onClose: () => void;
-  hasEnoughBalance: boolean;
 }
 
 interface ActiveFilters {
@@ -56,12 +53,11 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
     "linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8F00FF)",
 };
 
-function ModelPreferencesModal({
-  preferences,
-  updatePreferences,
+export default function ModelPreferencesModal({
   onClose,
-  hasEnoughBalance,
 }: ModelPreferencesModalProps) {
+  const { preferences, updatePreferences } = useModelPreferences();
+  if (!preferences) return null;
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
@@ -657,5 +653,3 @@ function ModelPreferencesModal({
     </div>
   );
 }
-
-export default ModelPreferencesModal;

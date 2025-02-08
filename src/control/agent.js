@@ -85,11 +85,11 @@ export const sendPrompt = async (
         {
           userID,
           longTerm: {
-            nodeCounts: [10],
+            nodeCounts: preferences.memory.longTermMemoryChain,
             vector: userPromptEmbedding,
           },
           shortTerm: {
-            k: 10,
+            k: preferences.memory.shortTermMemoryCount,
           },
           stripImages: true,
         },
