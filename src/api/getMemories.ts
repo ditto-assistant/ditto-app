@@ -23,8 +23,10 @@ interface Memory {
   score: number;
   prompt: string;
   response: string;
-  timestamp: string;
+  timestamp: Date;
   vector_distance: number;
+  depth: number;
+  children?: Memory[];
 }
 
 interface MemoriesV2Response {
