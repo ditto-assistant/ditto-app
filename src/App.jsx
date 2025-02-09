@@ -19,9 +19,9 @@ import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import FeedbackModal from './components/FeedbackModal';
-import { useModal } from './hooks/useModal';
-import { ModalProvider } from './hooks/useModal';
+import FeedbackModal from "./components/FeedbackModal";
+import { useModal } from "./hooks/useModal";
+import { ModalProvider } from "./hooks/useModal";
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -96,12 +96,8 @@ export default function App() {
 
 function ModalConsumer() {
   const { currentModal, closeModal } = useModal();
-  
+
   return (
-    <>
-      {currentModal === 'feedback' && (
-        <FeedbackModal onClose={closeModal} />
-      )}
-    </>
+    <>{currentModal === "feedback" && <FeedbackModal onClose={closeModal} />}</>
   );
 }

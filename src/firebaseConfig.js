@@ -2,7 +2,6 @@
 const MODE = import.meta.env.MODE;
 // const MODE = "staging";
 
-
 function getBaseURL(dittoEnv) {
   switch (dittoEnv) {
     case "development":

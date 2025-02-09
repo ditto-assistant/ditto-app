@@ -126,7 +126,7 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
       <div className="right-section">
         <motion.div
           className="feedback-button"
-          onClick={() => openModal('feedback')}
+          onClick={() => openModal("feedback")}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
