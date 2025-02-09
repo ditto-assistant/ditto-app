@@ -1,6 +1,7 @@
 // Your web app's Firebase configuration
 const MODE = import.meta.env.MODE;
-// const MODE = "production";
+// const MODE = "staging";
+
 
 function getBaseURL(dittoEnv) {
   switch (dittoEnv) {

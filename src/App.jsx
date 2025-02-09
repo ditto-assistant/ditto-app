@@ -19,6 +19,9 @@ import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import FeedbackModal from './components/FeedbackModal';
+import { useModal } from './hooks/useModal';
+import { ModalProvider } from './hooks/useModal';
 
 // Lazy load components
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
@@ -65,17 +68,20 @@ export default function App() {
               <IntentRecognitionProvider>
                 <DittoActivationProvider>
                   <PresignedUrlProvider>
-                    <RouterProvider router={router} />
-                    <Toaster
-                      position="bottom-center"
-                      toastOptions={{
-                        duration: 4000,
-                        style: {
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      }}
-                    />
+                    <ModalProvider>
+                      <RouterProvider router={router} />
+                      <Toaster
+                        position="bottom-center"
+                        toastOptions={{
+                          duration: 4000,
+                          style: {
+                            background: "#333",
+                            color: "#fff",
+                          },
+                        }}
+                      />
+                      <ModalConsumer />
+                    </ModalProvider>
                   </PresignedUrlProvider>
                 </DittoActivationProvider>
               </IntentRecognitionProvider>
@@ -85,5 +91,17 @@ export default function App() {
       </AuthProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
+  );
+}
+
+function ModalConsumer() {
+  const { currentModal, closeModal } = useModal();
+  
+  return (
+    <>
+      {currentModal === 'feedback' && (
+        <FeedbackModal onClose={closeModal} />
+      )}
+    </>
   );
 }
