@@ -21,7 +21,9 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
 }) => {
   return (
     <motion.button
-      className={`modal-button ${variant} ${fullWidth ? "full-width" : ""} ${className}`}
+      className={`modal-button ${variant} ${
+        fullWidth ? "full-width" : ""
+      } ${className}`}
       whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
       whileTap={{ scale: 0.98 }}
       disabled={isLoading || props.disabled}

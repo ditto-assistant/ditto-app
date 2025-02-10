@@ -7,7 +7,6 @@ import { useMemoryCount } from "../hooks/useMemoryCount";
 import { toast } from "react-hot-toast";
 import { MdFeedback } from "react-icons/md";
 import { motion } from "framer-motion";
-import FeedbackModal from "./FeedbackModal";
 import "./FeedbackModal.css";
 import "./StatusBar.css";
 import { useModal } from "../hooks/useModal";
@@ -31,8 +30,6 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
     let savedMode = localStorage.getItem("status_bar_fiat_balance");
     return savedMode === "m";
   });
-  const [showFeedback, setShowFeedback] = useState(false);
-
   const [scripts, setScripts] = useState(() => {
     let webApps = JSON.parse(localStorage.getItem("webApps") ?? "[]");
     let openSCAD = JSON.parse(localStorage.getItem("openSCAD") ?? "[]");
@@ -151,8 +148,6 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
           </div>
         </motion.div>
       </div>
-
-      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </div>
   );
 }
