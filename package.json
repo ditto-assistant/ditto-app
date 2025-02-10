@@ -13,7 +13,7 @@
     "@tensorflow/tfjs": "^4.22.0",
     "ace-builds": "^1.37.1",
     "firebase": "~11.1.0",
-    "framer-motion": "^11.15.0",
+    "framer-motion": "^12.4.1",
     "hammerjs": "^2.0.8",
     "js-tiktoken": "^1.0.16",
     "react": "^19.0.0",
