@@ -9,6 +9,7 @@ import ModelPreferencesModal from "@/components/ModelPreferencesModal";
 import MemoryControlsModal from "@/components/MemoryControlsModal";
 import AgentToolsModal from "@/components/AgentToolsModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { ModalHeader } from "./ui/modals/ModalHeader";
 
 enum ActiveModal {
   NONE,
@@ -69,10 +70,7 @@ export default function MemoryOverlay({ closeOverlay }: MemoryOverlayProps) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header">
-          <h3>Agent Settings</h3>
-          <MdClose className="close-icon" onClick={closeOverlay} />
-        </div>
+        <ModalHeader title="Agent Settings" onClose={closeOverlay} />
 
         <div className="modal-body">
           <div className="settings-buttons">
