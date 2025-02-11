@@ -61,9 +61,6 @@ export default function ModelPreferencesModal({
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
-  const [openDropdown, setOpenDropdown] = useState<
-    "main" | "programmer" | "image" | null
-  >(null);
   const [showTaggedModels, setShowTaggedModels] = useState(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     speed: null,
@@ -90,25 +87,6 @@ export default function ModelPreferencesModal({
   );
   const MemoizedFaCrownPremium = useMemo(() => <FaCrown />, []);
 
-  const handleClickOutside = useCallback((e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (
-      target.closest(".model-dropdown") ||
-      target.closest(".dropdown-option") ||
-      target.closest(".model-selector") ||
-      target.closest(".selected-value")
-    ) {
-      return;
-    }
-    setOpenDropdown(null);
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside as any);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside as any);
-  }, [handleClickOutside]);
-
   const handleModalClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
@@ -121,7 +99,6 @@ export default function ModelPreferencesModal({
   const handleModelChange = useCallback(
     (key: keyof ModelPreferences, value: any) => {
       updatePreferences({ [key]: value });
-      setOpenDropdown(null);
     },
     [updatePreferences]
   );
@@ -134,25 +111,6 @@ export default function ModelPreferencesModal({
       }));
     },
     []
-  );
-
-  const getSpeedButtonColor = useCallback(
-    (speed: ActiveFilters["speed"]) => {
-      if (activeFilters.speed !== speed) return "#2F3136";
-      switch (speed) {
-        case "slow":
-          return "#ED4245"; // Red
-        case "medium":
-          return "#FAA61A"; // Orange
-        case "fast":
-          return "#43B581"; // Green
-        case "insane":
-          return "#5865F2"; // Blue
-        default:
-          return "#2F3136";
-      }
-    },
-    [activeFilters.speed]
   );
 
   const getSpeedIcon = useCallback(
