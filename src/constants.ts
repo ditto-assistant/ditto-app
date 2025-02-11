@@ -301,7 +301,7 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   tools: DEFAULT_TOOL_PREFERENCES,
   memory: {
     shortTermMemoryCount: 5,
-    longTermMemoryChain: [5],
+    longTermMemoryChain: [5, 2],
   },
 } as const;
 
@@ -332,16 +332,6 @@ export const TOOLS = {
     trigger: "<OPENSCAD>",
   },
 } as const;
-
-export interface MemoryPreferences {
-  shortTermMemoryCount: number;
-  longTermMemoryChain: number[];
-}
-
-export const DEFAULT_MEMORY_PREFERENCES: MemoryPreferences = {
-  shortTermMemoryCount: 5,
-  longTermMemoryChain: [5],
-};
 
 export const MEMORY_CONFIG = {
   shortTerm: {
