@@ -40,6 +40,7 @@ import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // Initialize ace for production
 if (import.meta.env.PROD) {
@@ -188,7 +189,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
   const editorRef = useRef(null);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
   const [viewMode, setViewMode] = useState("code"); // Changed from 'tree' to 'code'
   const [selectedNode, setSelectedNode] = useState(null);
@@ -199,7 +200,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const [isTyping, setIsTyping] = useState(false);
   const { preferences, updatePreferences } = useModelPreferences();
   const scriptChatMessagesEndRef = useRef(null);
-  const isMobileRef = useRef(false);
   const [scriptChatSize, setScriptChatSize] = useState({
     width: isMobile ? window.innerWidth * 0.9 : 400,
     height: isMobile ? window.innerHeight * 0.6 : 500,
@@ -244,18 +244,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
   // Add these state variables near the top of the component with other state declarations
   const balance = useBalance();
-
-  useEffect(() => {
-    isMobileRef.current = checkIfMobile();
-  }, []);
-
-  const checkIfMobile = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return (
-      /android/i.test(userAgent) ||
-      (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream)
-    );
-  };
 
   // Add function to track selection in AceEditor
   const handleEditorSelection = (selection) => {
@@ -1755,7 +1743,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                   adjustTextareaHeight(e.target);
                 }}
                 onKeyDown={(e) => {
-                  if (isMobileRef.current) {
+                  if (isMobile) {
                     // Mobile behavior - just add newlines
                     if (e.key === "Enter") {
                       e.preventDefault();

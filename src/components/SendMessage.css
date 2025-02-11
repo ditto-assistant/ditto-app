@@ -1,4 +1,5 @@
 @import "../styles/variables.css";
+@import "../styles/global.css";
 
 .Contents {
   display: flex;
@@ -20,11 +21,7 @@
   display: flex;
   flex: 1;
   max-width: 100%;
-  margin-left: -10px;
-  margin-right: -10px;
-  padding: var(--spacing-xs) var(--spacing-sm);
   background-color: var(--background-input);
-  border-radius: var(--border-radius-md);
   position: relative;
   gap: var(--spacing-sm);
 }
@@ -39,7 +36,6 @@
 .TextArea {
   flex: 1;
   border: none;
-  border-radius: var(--border-radius-md);
   resize: none;
   background-color: var(--background-input);
   color: var(--interactive-active);
@@ -47,9 +43,7 @@
   line-height: 1.5;
   font-size: 16px;
   max-height: 200px;
-  box-shadow: none;
-  outline: none;
-  padding-right: 100px;
+  min-height: 20px;
 }
 
 .TextArea:focus {
@@ -60,8 +54,6 @@
 .IconsWrapper {
   position: absolute;
   right: var(--spacing-sm);
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
   height: 100%;
@@ -106,12 +98,12 @@
   border-radius: var(--border-radius-md);
   color: var(--interactive-active);
   padding: var(--spacing-sm) var(--spacing-md);
-  margin-left: 0;
-  margin-right: -2px;
+  /* margin-left: 0; */
+  /* margin-right: -2px; */
   cursor: pointer;
   transition: all var(--transition-normal);
-  white-space: nowrap;
-  min-width: fit-content;
+  /* white-space: nowrap; */
+  /* min-width: fit-content; */
 }
 
 .Submit.disabled {
@@ -238,26 +230,6 @@
   background-color: #4a5899;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-  }
-
-  to {
-    transform: scale(1);
-  }
-}
-
 .EnlargedImageOverlay {
   position: fixed;
   top: 0;
@@ -290,26 +262,6 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-  }
-
-  to {
-    transform: scale(1);
-  }
-}
-
 .FullscreenImageOverlay {
   position: fixed;
   top: 0;
@@ -330,26 +282,6 @@
   object-fit: contain;
   border-radius: 8px;
   animation: scaleIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-  }
-
-  to {
-    transform: scale(1);
-  }
 }
 
 /* Updated styles for the media options overlay */
@@ -435,24 +367,31 @@
 /* Add media query for small screens */
 @media screen and (max-width: 380px) {
   .Form {
-    padding: 5px 70px;
-    /* Reduce padding on small screens */
-    margin-left: -10px;
-    /* Remove negative margin on small screens */
-    margin-right: -10px;
-    /* Remove negative margin on small screens */
-  }
-
-  .Submit {
-    padding: 8px 15px;
-    /* Further reduce padding on small screens */
-    font-size: 14px;
-    /* Slightly smaller font size */
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin: 0;
+    gap: var(--spacing-xs);
   }
 
   .TextArea {
-    padding-right: 70px;
-    /* Reduce padding to prevent overlap with icons */
-    margin-left: -65px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    padding-right: 40px;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .Submit {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 14px;
+    min-width: 60px;
+  }
+
+  .IconsWrapper {
+    right: var(--spacing-xs);
+  }
+
+  .Mic,
+  .PlusButton {
+    margin-left: var(--spacing-xs);
+    font-size: 18px;
   }
 }

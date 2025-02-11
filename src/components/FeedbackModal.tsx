@@ -1,6 +1,6 @@
 import { MdClose, MdBugReport, MdLightbulb } from "react-icons/md";
 import { useFormStatus } from "react-dom";
-import { useActionState } from "react";
+import { useActionState, useCallback } from "react";
 import { useState, useEffect, useRef } from "react";
 import { BASE_URL } from "../firebaseConfig";
 import { getDeviceID, APP_VERSION } from "../utils/deviceId";
@@ -8,10 +8,13 @@ import { useAuth, useAuthToken } from "../hooks/useAuth";
 import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { toast } from "react-hot-toast";
+import { SubmitButton } from "./ui/buttons/SubmitButton";
+import { A as A } from "./ui/links/Anchor";
 
+type FeedbackType = "bug" | "feature-request";
 interface FeedbackModalProps {
   onClose: () => void;
-  feedbackType?: "bug" | "feature-request";
+  feedbackType?: FeedbackType;
 }
 
 async function submitFeedback(prevState: any, formData: FormData) {
@@ -36,33 +39,22 @@ async function submitFeedback(prevState: any, formData: FormData) {
 
 export default function FeedbackModal({
   onClose,
-  feedbackType,
+  feedbackType = "bug",
 }: FeedbackModalProps) {
-  const [selectedType, setSelectedType] = useState<"bug" | "feature-request">(
-    feedbackType || "bug"
+  const [selectedType, setSelectedType] = useState(feedbackType);
+  const createSelectTypeCallback = useCallback(
+    (type: FeedbackType) => () => setSelectedType(type),
+    []
   );
   const auth = useAuth();
   const token = useAuthToken();
   const [state, formAction] = useActionState(submitFeedback, null);
   const formRef = useRef<HTMLFormElement>(null);
-
   useEffect(() => {
     if (state?.success) {
       onClose();
     }
   }, [state?.success, onClose]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        formRef.current?.requestSubmit();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
@@ -96,33 +88,31 @@ export default function FeedbackModal({
             value={`Bearer ${token.data}`}
           />
 
-          {!feedbackType && (
-            <div className="feedback-type-selector">
-              <div className="feedback-buttons">
-                <button
-                  type="button"
-                  onClick={() => setSelectedType("bug")}
-                  className={`feedback-button feedback-bug-button ${
-                    selectedType === "bug" ? "selected" : ""
-                  }`}
-                >
-                  <MdBugReport className="feedback-icon bug-icon" />
-                  Bug
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedType("feature-request")}
-                  className={`feedback-button feedback-feature-button ${
-                    selectedType === "feature-request" ? "selected" : ""
-                  }`}
-                >
-                  <MdLightbulb className="feedback-icon feature-icon" />
-                  Idea
-                </button>
-              </div>
-              <input type="hidden" name="type" value={selectedType} />
+          <div className="feedback-type-selector">
+            <div className="feedback-buttons">
+              <button
+                type="button"
+                onClick={createSelectTypeCallback("bug")}
+                className={`feedback-button feedback-bug-button ${
+                  selectedType === "bug" ? "selected" : ""
+                }`}
+              >
+                <MdBugReport className="feedback-icon bug-icon" />
+                Bug
+              </button>
+              <button
+                type="button"
+                onClick={createSelectTypeCallback("feature-request")}
+                className={`feedback-button feedback-feature-button ${
+                  selectedType === "feature-request" ? "selected" : ""
+                }`}
+              >
+                <MdLightbulb className="feedback-icon feature-icon" />
+                Idea
+              </button>
             </div>
-          )}
+            <input type="hidden" name="type" value={selectedType} />
+          </div>
 
           <div className="feedback-form">
             <textarea
@@ -137,72 +127,24 @@ export default function FeedbackModal({
 
           <div className="feedback-actions">
             <SubmitButton />
-            <a
-              href="https://github.com/orgs/ditto-assistant/discussions/new/choose"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="github-link"
-            >
-              <FaGithub /> Open Discussion
-            </a>
-            <a
-              href="https://github.com/ditto-assistant/ditto-app/issues/new"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="github-link"
-            >
+            <A href="https://github.com/orgs/ditto-assistant/discussions/new/choose">
+              <FaGithub /> New Discussion
+            </A>
+            <A href="https://github.com/ditto-assistant/ditto-app/issues/new">
               <FaGithub /> New Issue
-            </a>
-            <a
-              href="https://www.instagram.com/heyditto.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-link"
-            >
+            </A>
+            <A href="https://www.instagram.com/heyditto.ai">
               <FaInstagram /> Instagram
-            </a>
-            <a
-              href="https://x.com/heydittoai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-link"
-            >
+            </A>
+            <A href="https://x.com/heydittoai">
               <FaXTwitter /> Twitter
-            </a>
-            <a
-              href="https://www.youtube.com/@heyditto"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-link"
-            >
+            </A>
+            <A href="https://www.youtube.com/@heyditto">
               <FaYoutube /> YouTube
-            </a>
+            </A>
           </div>
         </form>
       </div>
     </div>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  const isMobile = window.matchMedia("(max-width: 768px)").matches;
-
-  return (
-    <button
-      type="submit"
-      className={`submit-button ${pending ? "loading" : ""}`}
-      disabled={pending}
-    >
-      <span className="button-text">
-        {pending ? "Submitting..." : "Submit"}
-      </span>
-      {!pending && !isMobile && <span className="shortcut-hint">⌘↵</span>}
-      {pending && (
-        <span className="button-spinner">
-          <LoadingSpinner />
-        </span>
-      )}
-    </button>
   );
 }

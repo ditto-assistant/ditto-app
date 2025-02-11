@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMediaQuery } from "@mui/material";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const CardMenu = ({ children, style, onDelete }) => {
   const { transformOrigin, ...restStyle } = style;
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [shouldOpenUpward, setShouldOpenUpward] = useState(false);
 
   useEffect(() => {
