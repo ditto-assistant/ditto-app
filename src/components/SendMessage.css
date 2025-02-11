@@ -1,5 +1,5 @@
 @import "../styles/variables.css";
-@import "../styles/global.css";
+@import "@/styles/animations.css";
 
 .Contents {
   display: flex;

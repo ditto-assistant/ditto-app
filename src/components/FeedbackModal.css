@@ -1,4 +1,5 @@
 @import "../styles/variables.css";
+@import "../styles/global.css";
 
 .modal-overlay {
   position: fixed;
@@ -178,113 +179,6 @@
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-}
-
-.github-link,
-.social-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0 16px;
-}
-
-.github-link:hover,
-.social-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.submit-button {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0;
-  background: linear-gradient(135deg, #7289da 0%, #5865f2 100%);
-  border: 1px solid rgba(240, 246, 252, 0.1);
-  border-radius: 12px;
-  color: white;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-  height: 40px;
-  box-sizing: border-box;
-}
-
-.submit-button:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.submit-button:active:not(:disabled) {
-  transform: scale(0.98);
-  filter: brightness(0.95);
-}
-
-.submit-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.button-text {
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-right: 1px solid rgba(240, 246, 252, 0.1);
-  flex: 1;
-}
-
-.shortcut-hint {
-  font-size: 12px;
-  opacity: 0.8;
-  font-weight: normal;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.button-spinner {
-  display: inline-flex;
-  margin-left: 8px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .bug-button {

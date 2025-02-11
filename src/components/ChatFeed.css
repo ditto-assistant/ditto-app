@@ -1,4 +1,5 @@
 @import "../styles/variables.css";
+@import "../styles/animations.css";
 
 .chat-feed {
   background-color: transparent;
@@ -20,7 +21,7 @@
 }
 
 /* Ensure smooth animation for the bottom ref */
-.chat-feed > div:last-child {
+.chat-feed>div:last-child {
   transition: margin-top 0.3s ease-out;
 }
 
@@ -259,6 +260,7 @@
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -581,11 +583,9 @@
   padding: 16px;
   display: flex;
   justify-content: space-between;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.5) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
   /* This allows clicks to pass through to the image */
 }
@@ -1300,11 +1300,11 @@
   border-radius: 50%;
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: #4752c4;
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -1359,7 +1359,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Make sure text nodes in the response wrap properly */
-.memory-response p > :not(.memory-image-container) {
+.memory-response p> :not(.memory-image-container) {
   flex: 1 1 100%;
 }
 
@@ -1486,16 +1486,6 @@ input:checked + .toggle-slider:before {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .spinner {
@@ -1682,7 +1672,7 @@ input:checked + .toggle-slider:before {
     bottom: 2px;
   }
 
-  input:checked + .toggle-slider:before {
+  input:checked+.toggle-slider:before {
     transform: translateX(18px);
   }
 
@@ -1831,13 +1821,6 @@ input:checked + .toggle-slider:before {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Add multiple image support */
 .chat-image-grid {
   display: grid;
   gap: 4px;
@@ -2172,6 +2155,7 @@ input:checked + .toggle-slider:before {
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -2230,17 +2214,6 @@ input:checked + .toggle-slider:before {
   }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Add animation classes for the avatar */
 .avatar.ditto-avatar {
   transition: all 0.3s ease;
 }
@@ -2309,6 +2282,16 @@ input:checked + .toggle-slider:before {
 /* Animation for when message is generating */
 .avatar.ditto-avatar.animating {
   animation: slowWindUp 3s ease-in-out infinite;
+}
+
+@keyframes veryFastSpin {
+  from {
+    transform: rotate(-90deg) scale(1.1);
+  }
+
+  to {
+    transform: rotate(270deg) scale(1.1);
+  }
 }
 
 /* Animation for when message is complete */
