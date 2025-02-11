@@ -1,30 +1,36 @@
 import { useAuth, useAuthToken } from "@/hooks/useAuth";
 import { routes } from "../firebaseConfig";
-import { getToken } from "./auth";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@mui/material";
+import { JSX } from "react";
 
-/**
- * A form component that handles Stripe checkout with proper authentication.
- *
- * @param {Object} props - Component props
- * @param {number} props.usd - The amount in USD to charge
- * @param {string} props.successURL - The URL to redirect to after successful payment
- * @param {string} props.cancelURL - The URL to redirect to if payment is cancelled
- * @returns {JSX.Element} The checkout form component
- */
-export function CheckoutForm({ usd, successURL, cancelURL }) {
+interface CheckoutFormProps {
+  usd: number;
+  successURL: string;
+  cancelURL: string;
+}
+
+export function CheckoutForm({
+  usd,
+  successURL,
+  cancelURL,
+}: CheckoutFormProps): JSX.Element {
   const auth = useAuth();
   const token = useAuthToken();
-
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
   if (auth.error) {
-    return <div>Auth Error: {auth.error}</div>;
+    return <div>Auth Error: {auth.error.message}</div>;
   }
   if (token.error) {
-    return <div>Token Error: {token.error}</div>;
+    return <div>Token Error: {token.error.message}</div>;
+  }
+  if (!auth.user) {
+    return <div>User not found</div>;
+  }
+  if (!auth.user.email) {
+    return <div>Email not found</div>;
   }
 
   return (
