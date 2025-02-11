@@ -10,7 +10,6 @@ import { FiCopy, FiDownload } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
-import { routes } from "../firebaseConfig";
 import { textEmbed } from "../api/LLM";
 import MemoryNetwork from "./MemoryNetwork";
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
@@ -330,7 +329,6 @@ export default function ChatFeed({
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [isSelecting, setIsSelecting] = useState(false);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
   const {
@@ -345,11 +343,9 @@ export default function ChatFeed({
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
-  const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setAuthInitialized(true);
       if (user?.photoURL) {
         loadUserAvatar(user.photoURL);
       }
