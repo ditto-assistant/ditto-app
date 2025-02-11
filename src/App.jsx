@@ -13,17 +13,17 @@ import { AuthProvider } from "./hooks/useAuth";
 import { BalanceProvider } from "./hooks/useBalance";
 import { DittoActivationProvider } from "./hooks/useDittoActivation";
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
-import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import FeedbackModal from "./components/FeedbackModal";
 import { useModal } from "./hooks/useModal";
 import { ModalProvider } from "./hooks/useModal";
 
 // Lazy load components
+const Login = lazy(() => import("./screens/login"));
+const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
