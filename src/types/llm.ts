@@ -1,19 +1,17 @@
-import { MemoryPreferences } from "@/constants";
-
-export interface ModelPreferences {
-  mainModel: string;
-  programmerModel: string;
+export type ModelPreferences = {
+  mainModel: Model;
+  programmerModel: Model;
   imageGeneration: {
-    model: string;
+    model: Model;
     size: {
       wh: string;
       description: string;
-      supportedModels: string[];
+      supportedModels: Model[];
     };
   };
   tools: ToolPreferences;
   memory: MemoryPreferences;
-}
+};
 
 export function modelSupportsImageAttachments(model: Model): boolean {
   return (
@@ -104,4 +102,9 @@ export type ToolPreferences = {
   imageGeneration: boolean;
   googleSearch: boolean;
   googleHome: boolean;
+};
+
+export type MemoryPreferences = {
+  shortTermMemoryCount: number;
+  longTermMemoryChain: number[];
 };
