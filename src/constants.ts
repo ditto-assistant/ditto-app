@@ -1,10 +1,9 @@
 import {
   ModelOption,
-  Model,
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
-} from "./types/llm";
+} from "@/types/llm";
 
 export const USER_PLACEHOLDER_IMAGE = "user_placeholder.png";
 export const IMAGE_PLACEHOLDER_IMAGE = "image-placeholder.png";
