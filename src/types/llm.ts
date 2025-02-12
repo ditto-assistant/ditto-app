@@ -6,6 +6,7 @@ export type ModelPreferences = {
     size: ImageGenerationSize;
   };
   tools: ToolPreferences;
+  memory: MemoryPreferences;
 };
 
 export function modelSupportsImageAttachments(model: Model): boolean {
@@ -97,4 +98,9 @@ export type ToolPreferences = {
   imageGeneration: boolean;
   googleSearch: boolean;
   googleHome: boolean;
+};
+
+export type MemoryPreferences = {
+  shortTermMemoryCount: number;
+  longTermMemoryChain: number[];
 };

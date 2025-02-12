@@ -17,6 +17,7 @@ import { useIntentRecognition } from "@/hooks/useIntentRecognition";
 import { textEmbed } from "../api/LLM";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const INACTIVITY_TIMEOUT = 2000; // 2 seconds
 
@@ -58,7 +59,7 @@ export default function SendMessage({
   const finalTranscriptRef = useRef("");
   const videoRef = useRef();
   const canvasRef = useRef();
-  const isMobile = useRef(false);
+  const isMobile = useIsMobile();
   const wsRef = useRef(null);
   const inactivityTimeoutRef = useRef(null);
   const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
@@ -68,31 +69,6 @@ export default function SendMessage({
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const { preferences } = useModelPreferences();
-
-  useEffect(() => {
-    isMobile.current = checkIfMobile();
-  }, []);
-
-  const checkIfMobile = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return (
-      /android/i.test(userAgent) ||
-      (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream)
-    );
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (model.activated) {
-        localStorage.setItem("transcribingFromDitto", "true");
-        model.activated = false;
-        handleMicClick();
-      }
-    }, 100);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [dittoActivationLoaded]);
 
   useEffect(() => {
     if (capturedImage) {
@@ -304,7 +280,7 @@ export default function SendMessage({
   };
 
   const handleKeyDown = (e) => {
-    if (isMobile.current) {
+    if (isMobile) {
       // On mobile, Enter always creates a new line
       if (e.key === "Enter") {
         e.preventDefault();
@@ -431,7 +407,7 @@ export default function SendMessage({
               finalTranscriptRef.current = "";
             }
           }}
-          rows={1}
+          rows={3}
           style={{
             overflowY: "hidden",
             marginRight: "-5px",

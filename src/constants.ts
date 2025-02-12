@@ -1,10 +1,9 @@
 import {
   ModelOption,
-  Model,
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
-} from "./types/llm";
+} from "@/types/llm";
 
 export const USER_PLACEHOLDER_IMAGE = "user_placeholder.png";
 export const IMAGE_PLACEHOLDER_IMAGE = "image-placeholder.png";
@@ -299,6 +298,10 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
+  memory: {
+    shortTermMemoryCount: 5,
+    longTermMemoryChain: [5, 2],
+  },
 } as const;
 
 export const TOOLS = {
@@ -326,5 +329,30 @@ export const TOOLS = {
     name: "OpenSCAD",
     description: "Generate 3D modeling scripts using OpenSCAD",
     trigger: "<OPENSCAD>",
+  },
+} as const;
+
+export const MEMORY_CONFIG = {
+  shortTerm: {
+    min: 0,
+    max: 20,
+    step: 1,
+    marks: [
+      { value: 0, label: "0" },
+      { value: 5, label: "5" },
+      { value: 10, label: "10" },
+      { value: 20, label: "20" },
+    ],
+  },
+  longTerm: {
+    min: 0,
+    max: 10,
+    step: 1,
+    marks: [
+      { value: 0, label: "0" },
+      { value: 5, label: "5" },
+      { value: 10, label: "10" },
+    ],
+    maxChainLength: 3,
   },
 } as const;

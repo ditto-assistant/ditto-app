@@ -18,12 +18,9 @@ import { TbBrandMeta } from "react-icons/tb";
 import { ModelOption, Model, ModelPreferences, Vendor } from "../types/llm";
 import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
-
+import { useModelPreferences } from "@/hooks/useModelPreferences";
 interface ModelPreferencesModalProps {
-  preferences: ModelPreferences;
-  updatePreferences: (update: Partial<ModelPreferences>) => void;
   onClose: () => void;
-  hasEnoughBalance: boolean;
 }
 
 interface ActiveFilters {
@@ -56,18 +53,14 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
     "linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8F00FF)",
 };
 
-function ModelPreferencesModal({
-  preferences,
-  updatePreferences,
+export default function ModelPreferencesModal({
   onClose,
-  hasEnoughBalance,
 }: ModelPreferencesModalProps) {
+  const { preferences, updatePreferences } = useModelPreferences();
+  if (!preferences) return null;
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
-  const [openDropdown, setOpenDropdown] = useState<
-    "main" | "programmer" | "image" | null
-  >(null);
   const [showTaggedModels, setShowTaggedModels] = useState(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     speed: null,
@@ -94,25 +87,6 @@ function ModelPreferencesModal({
   );
   const MemoizedFaCrownPremium = useMemo(() => <FaCrown />, []);
 
-  const handleClickOutside = useCallback((e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (
-      target.closest(".model-dropdown") ||
-      target.closest(".dropdown-option") ||
-      target.closest(".model-selector") ||
-      target.closest(".selected-value")
-    ) {
-      return;
-    }
-    setOpenDropdown(null);
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside as any);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside as any);
-  }, [handleClickOutside]);
-
   const handleModalClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
@@ -125,7 +99,6 @@ function ModelPreferencesModal({
   const handleModelChange = useCallback(
     (key: keyof ModelPreferences, value: any) => {
       updatePreferences({ [key]: value });
-      setOpenDropdown(null);
     },
     [updatePreferences]
   );
@@ -138,25 +111,6 @@ function ModelPreferencesModal({
       }));
     },
     []
-  );
-
-  const getSpeedButtonColor = useCallback(
-    (speed: ActiveFilters["speed"]) => {
-      if (activeFilters.speed !== speed) return "#2F3136";
-      switch (speed) {
-        case "slow":
-          return "#ED4245"; // Red
-        case "medium":
-          return "#FAA61A"; // Orange
-        case "fast":
-          return "#43B581"; // Green
-        case "insane":
-          return "#5865F2"; // Blue
-        default:
-          return "#2F3136";
-      }
-    },
-    [activeFilters.speed]
   );
 
   const getSpeedIcon = useCallback(
@@ -335,7 +289,9 @@ function ModelPreferencesModal({
         <div className="model-card-content">
           <div className="model-name-with-arrow">
             <MdKeyboardArrowRight
-              className={`dropdown-arrow ${expandedImageModel === model.id ? "rotated" : ""}`}
+              className={`dropdown-arrow ${
+                expandedImageModel === model.id ? "rotated" : ""
+              }`}
             />
             <span className="model-name">{model.name}</span>
           </div>
@@ -445,7 +401,10 @@ function ModelPreferencesModal({
 
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-content model-preferences-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h3>Model Preferences</h3>
           <div onClick={onClose}>{MemoizedMdClose}</div>
@@ -655,5 +614,3 @@ function ModelPreferencesModal({
     </div>
   );
 }
-
-export default ModelPreferencesModal;

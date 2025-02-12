@@ -14,7 +14,7 @@
   z-index: 9999;
 }
 
-.modal-content {
+.model-preferences-modal {
   width: 100%;
   height: 100vh;
   max-height: 100vh;
@@ -283,9 +283,9 @@
 }
 
 @media (min-width: 769px) {
-  .modal-content {
-    width: 90vw;
-    max-width: 1200px;
+  .modal-content.model-preferences-modal {
+    width: 95vw;
+    max-width: 1800px;
     height: 90vh;
     max-height: 90vh;
     border-radius: 8px;
@@ -311,50 +311,54 @@
     flex: 0 1 auto;
   }
 
-  .two-column-layout {
+  .model-preferences-modal .two-column-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 16px;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
     height: calc(90vh - 120px);
   }
 
-  .filter-section {
-    padding: 16px 24px;
+  .model-preferences-modal .filter-section {
+    padding: 24px;
     border-right: 1px solid #1e1f22;
     border-bottom: none;
     overflow-y: auto;
+    height: 100%;
   }
 
-  .filter-buttons {
+  .model-preferences-modal .filter-buttons {
     gap: 8px;
   }
 
-  .filter-button {
+  .model-preferences-modal .filter-button {
     padding: 8px 16px;
     font-size: 14px;
     gap: 8px;
   }
 
-  .model-grid-container {
-    padding: 16px 24px;
+  .model-preferences-modal .model-grid-container {
+    padding: 24px;
     padding-bottom: 100px;
     overflow-y: auto;
+    height: 100%;
   }
 
-  .model-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+  .model-preferences-modal .model-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
-  .model-card {
-    padding: 16px;
+  .model-preferences-modal .model-card {
+    padding: 24px;
   }
 
-  .model-badges {
+  .model-preferences-modal .model-badges {
     gap: 8px;
   }
 
-  .tagged-models-toggle {
+  .model-preferences-modal .tagged-models-toggle {
     margin-top: auto;
     padding: 8px 12px;
   }

@@ -31,6 +31,7 @@ import { useScripts } from "../hooks/useScripts";
 
 // Add import for VersionsOverlay
 import VersionsOverlay from "./VersionsOverlay";
+import { ModalHeader } from "./ui/modals/ModalHeader";
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -1068,10 +1069,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
   return (
     <div className="modal-overlay" onClick={closeOverlay}>
       <div className="scripts-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Scripts</h3>
-          <MdClose className="close-icon" onClick={closeOverlay} />
-        </div>
+        <ModalHeader title="Scripts" onClose={closeOverlay} />
 
         {selectedScript && (
           <motion.div

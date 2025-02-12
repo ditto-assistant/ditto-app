@@ -13,14 +13,17 @@ import { AuthProvider } from "./hooks/useAuth";
 import { BalanceProvider } from "./hooks/useBalance";
 import { DittoActivationProvider } from "./hooks/useDittoActivation";
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
-import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useModal } from "./hooks/useModal";
+import { ModalProvider } from "./hooks/useModal";
 
 // Lazy load components
+const Login = lazy(() => import("./screens/login"));
+const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
@@ -65,17 +68,20 @@ export default function App() {
               <IntentRecognitionProvider>
                 <DittoActivationProvider>
                   <PresignedUrlProvider>
-                    <RouterProvider router={router} />
-                    <Toaster
-                      position="bottom-center"
-                      toastOptions={{
-                        duration: 4000,
-                        style: {
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      }}
-                    />
+                    <ModalProvider>
+                      <RouterProvider router={router} />
+                      <Toaster
+                        position="bottom-center"
+                        toastOptions={{
+                          duration: 4000,
+                          style: {
+                            background: "#333",
+                            color: "#fff",
+                          },
+                        }}
+                      />
+                      <ModalConsumer />
+                    </ModalProvider>
                   </PresignedUrlProvider>
                 </DittoActivationProvider>
               </IntentRecognitionProvider>
@@ -83,7 +89,15 @@ export default function App() {
           </ModelPreferencesProvider>
         </BalanceProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
+  );
+}
+
+function ModalConsumer() {
+  const { currentModal, closeModal } = useModal();
+
+  return (
+    <>{currentModal === "feedback" && <FeedbackModal onClose={closeModal} />}</>
   );
 }

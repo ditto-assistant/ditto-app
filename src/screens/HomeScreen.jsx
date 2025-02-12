@@ -22,7 +22,7 @@ import {
   getVersionsOfScriptFromFirestore,
   saveScriptToFirestore,
 } from "../control/firebase";
-import MemoryOverlay from "../components/MemoryOverlay";
+import MemoryOverlay from "@/components/MemoryOverlay";
 import ScriptsOverlay from "../components/ScriptsOverlay";
 import FullScreenEditor from "../components/FullScreenEditor";
 const MEMORY_DELETED_EVENT = "memoryDeleted";

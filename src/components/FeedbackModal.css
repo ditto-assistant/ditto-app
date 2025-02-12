@@ -1,0 +1,171 @@
+@import "../styles/variables.css";
+@import "../styles/global.css";
+
+.filter-label {
+  display: block;
+  text-transform: uppercase;
+  color: var(--interactive-normal);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: 0.02em;
+}
+
+.feedback-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.feedback-button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feedback-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.feedback-icon {
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+/* Bug button states */
+.feedback-bug-button .bug-icon {
+  color: #ff4d4d;
+}
+
+.feedback-bug-button.selected {
+  background: linear-gradient(135deg, #8b0000 0%, #ff4d4d 100%);
+  border-color: transparent;
+}
+
+/* Feature button states */
+.feedback-feature-button .feature-icon {
+  color: #ffd700;
+}
+
+.feedback-feature-button.selected {
+  background: linear-gradient(135deg, #b8860b 0%, #ffd700 100%);
+  border-color: transparent;
+}
+
+.feedback-form {
+  margin-bottom: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.feedback-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.feedback-textarea:focus {
+  border-color: #7289da;
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.3);
+  outline: none;
+}
+
+.feedback-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.error-message {
+  background-color: rgba(237, 66, 69, 0.1);
+  color: var(--status-danger);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+  font-size: 14px;
+  border: 1px solid rgba(237, 66, 69, 0.2);
+}
+
+.feedback-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.bug-button {
+  color: #dc3545;
+}
+
+.feature-button {
+  color: #ff9f1a;
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 0;
+  }
+
+  .modal-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .feedback-actions {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+
+  .github-link,
+  .social-link {
+    font-size: 13px;
+    padding: 0 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .feedback-form {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .feedback-textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .submit-button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
