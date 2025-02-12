@@ -56,7 +56,7 @@ export const handleScriptGeneration = async ({
       constructedPrompt,
       systemTemplateFunction(),
       preferences.programmerModel,
-      image,
+      image
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {
