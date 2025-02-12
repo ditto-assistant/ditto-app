@@ -401,7 +401,7 @@ export default function ModelPreferencesModal({
 
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content model-preferences-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Model Preferences</h3>
           <div onClick={onClose}>{MemoizedMdClose}</div>
