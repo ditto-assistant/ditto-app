@@ -47,7 +47,7 @@
   border-bottom: 1px solid #1e1f22;
   width: 100%;
   box-sizing: border-box;
-  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .section-tab {
@@ -60,7 +60,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  flex: 1;
+  flex: 0 1 auto;
   text-align: center;
 }
 
@@ -303,6 +303,7 @@
     padding: 16px 24px;
     gap: 8px;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .section-tab {
