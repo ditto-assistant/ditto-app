@@ -506,10 +506,16 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
       remarkPlugins={[remarkGfm]}
       components={{
         ol: ({ node, ordered, ...props }) => (
-          <ol {...props} style={{ ...styles.chatBubbleList, ...styles.orderedList }} />
+          <ol
+            {...props}
+            style={{ ...styles.chatBubbleList, ...styles.orderedList }}
+          />
         ),
         ul: ({ node, ...props }) => (
-          <ul {...props} style={{ ...styles.chatBubbleList, ...styles.unorderedList }} />
+          <ul
+            {...props}
+            style={{ ...styles.chatBubbleList, ...styles.unorderedList }}
+          />
         ),
         li: ({ node, ordered, ...props }) => (
           <li {...props} style={styles.chatBubbleListItem} />
