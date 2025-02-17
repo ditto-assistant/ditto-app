@@ -2386,17 +2386,79 @@ input:checked + .toggle-slider:before {
 /* Add this to style list items in markdown */
 .chat-bubble ul,
 .chat-bubble ol {
-  padding-left: 1.2em;
-  /* Adjust padding as needed */
-  margin: 0;
-  /* Remove default margin */
+  padding-left: 1.5em;
+  margin: 0.8em 0;
+  list-style-position: outside;
+  width: calc(100% - 1.5em);
 }
 
 .chat-bubble li {
-  margin: 0.3em 0;
-  /* Adjust margin for better spacing */
-  list-style-position: inside;
-  /* Ensure bullets are inside the list item */
-  padding-left: 0.5em;
-  /* Add padding to align text with bullet */
+  margin: 0.4em 0;
+  line-height: 1.4;
+  display: list-item;
+  text-align: left;
+}
+
+.chat-bubble ol {
+  counter-reset: item;
+  list-style: decimal;
+}
+
+.chat-bubble ol li {
+  counter-increment: item;
+}
+
+.chat-bubble ul {
+  list-style: disc;
+}
+
+.chat-bubble ul ul,
+.chat-bubble ol ul {
+  list-style-type: circle;
+}
+
+.chat-bubble ul ul ul,
+.chat-bubble ol ul ul {
+  list-style-type: square;
+}
+
+.chat-bubble ol ol,
+.chat-bubble ul ol {
+  list-style-type: lower-alpha;
+}
+
+.chat-bubble ol ol ol,
+.chat-bubble ul ol ol {
+  list-style-type: lower-roman;
+}
+
+.chat-bubble-list {
+  padding-left: 2em;
+  margin: 0.8em 0;
+  list-style-position: outside;
+  white-space: normal;
+}
+
+.chat-bubble-list-item {
+  margin: 0.4em 0;
+  line-height: 1.4;
+  display: list-item;
+  text-align: left;
+  white-space: normal;
+}
+
+ol.chat-bubble-list {
+  list-style-type: decimal;
+}
+
+ul.chat-bubble-list {
+  list-style-type: disc;
+}
+
+.chat-bubble-list .chat-bubble-list {
+  margin: 0.4em 0;
+}
+
+.chat-bubble-list .chat-bubble-list-item {
+  margin: 0.2em 0;
 }

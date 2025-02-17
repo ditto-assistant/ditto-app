@@ -4,6 +4,7 @@ import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCopy, FiDownload } from "react-icons/fi";
@@ -820,9 +821,10 @@ export default function ChatFeed({
     // First replace code block markers
     let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     displayText = displayText.replace(/```\./g, "```\n");
-
+    
     return (
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         children={displayText}
         components={{
           a: ({ node, href, children, ...props }) => (
@@ -847,6 +849,15 @@ export default function ChatFeed({
           ),
           p: ({ node, ...props }) => (
             <p {...props} style={{ margin: "0.5em 0" }} />
+          ),
+          ol: ({ node, ordered, ...props }) => (
+            <ol {...props} className="chat-bubble-list" />
+          ),
+          ul: ({ node, ...props }) => (
+            <ul {...props} className="chat-bubble-list" />
+          ),
+          li: ({ node, ordered, ...props }) => (
+            <li {...props} className="chat-bubble-list-item" />
           ),
           img: ({ node, src, alt, ...props }) => {
             const [imgSrc, setImgSrc] = useState(src);

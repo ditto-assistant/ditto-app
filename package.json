@@ -23,6 +23,7 @@
     "react-markdown": "^9.0.1",
     "react-router-dom": "^7.1.1",
     "react-syntax-highlighter": "^15.6.1",
+    "remark-gfm": "^4.0.0",
     "resize-observer-polyfill": "^1.5.1",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",

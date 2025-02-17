@@ -11,6 +11,7 @@ import { FiDownload, FiCopy } from "react-icons/fi";
 import { auth } from "../control/firebase";
 import { deleteConversation } from "../control/memory";
 import { LoadingSpinner } from "./LoadingSpinner";
+import remarkGfm from "remark-gfm";
 
 // Update the formatDateTime function to handle both Firestore timestamps and regular dates
 const formatDateTime = (timestamp) => {
@@ -162,7 +163,20 @@ const TableView = ({ memories, onMemoryClick }) => {
 
   const renderMarkdown = (content) => (
     <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
       components={{
+        ol: ({ node, ordered, ...props }) => (
+          <ol {...props} style={{ ...styles.chatBubbleList, ...styles.orderedList }} />
+        ),
+        ul: ({ node, ...props }) => (
+          <ul {...props} style={{ ...styles.chatBubbleList, ...styles.unorderedList }} />
+        ),
+        li: ({ node, ordered, ...props }) => (
+          <li {...props} style={styles.chatBubbleListItem} />
+        ),
+        p: ({ node, ...props }) => (
+          <p {...props} style={{ margin: "0.5em 0" }} />
+        ),
         code({ node, inline, className, children, ...props }) {
           let match = /language-(\w+)/.exec(className || "");
           let hasCodeBlock;
@@ -187,9 +201,7 @@ const TableView = ({ memories, onMemoryClick }) => {
                   className="copy-button code-block-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(
-                      String(children).replace(/\n$/, "")
-                    );
+                    navigator.clipboard.writeText(String(children).replace(/\n$/, ""));
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
                     toast.textContent = "Copied!";
@@ -483,6 +495,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
   // Define renderMarkdown within the scope of MemoryNodeOverlay
   const renderMarkdown = (content) => (
     <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
       components={{
         code({ node, inline, className, children, ...props }) {
           let match = /language-(\w+)/.exec(className || "");
@@ -508,9 +521,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
                   className="copy-button code-block-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(
-                      String(children).replace(/\n$/, "")
-                    );
+                    navigator.clipboard.writeText(String(children).replace(/\n$/, ""));
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
                     toast.textContent = "Copied!";
@@ -729,19 +740,26 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
 // Update the MemoryNetwork component
 const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
   const [nodesData, setNodesData] = useState(memories);
-  const [viewMode, setViewMode] = useState("tree");
+  const [viewMode, setViewMode] = useState("table");
   const containerRef = useRef(null);
   const networkRef = useRef(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const nodeIdMapRef = useRef({});
 
+  // Add new effect to handle view mode changes
+  useEffect(() => {
+    if (viewMode === "tree") {
+      // Small delay to ensure container is ready
+      setTimeout(() => {
+        buildNetwork(nodesData);
+      }, 0);
+    }
+  }, [viewMode, nodesData]);
+
   const handleMemoryDeleted = (deletedId) => {
     // Remove the deleted memory from the nodes data
     const updatedNodes = removeMemoryById(nodesData, deletedId);
     setNodesData(updatedNodes);
-
-    // Re-build the network
-    buildNetwork(updatedNodes);
 
     if (onMemoryDeleted) {
       onMemoryDeleted(deletedId);
@@ -767,6 +785,12 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
 
   const buildNetwork = (nodesData) => {
     if (!containerRef.current) return;
+
+    // Clear existing network
+    if (networkRef.current) {
+      networkRef.current.destroy();
+      networkRef.current = null;
+    }
 
     const nodes = new DataSet();
     const edges = new DataSet();
@@ -928,10 +952,6 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
       setSelectedNode(data);
     }
   };
-
-  useEffect(() => {
-    buildNetwork(nodesData);
-  }, [nodesData]);
 
   return (
     <div style={styles.container}>
@@ -1290,7 +1310,11 @@ const styles = {
     height: "100%",
     overflowY: "auto",
     padding: "20px",
+    paddingBottom: "120px",
     boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px"
   },
   pathNodeHeader: {
     display: "flex",
@@ -1647,6 +1671,41 @@ const styles = {
     marginTop: "16px",
     display: "flex",
     justifyContent: "flex-end",
+  },
+  // Update list styles to use proper CSS-in-JS format
+  chatBubbleList: {
+    paddingLeft: '2em',
+    margin: '0.8em 0',
+    listStylePosition: 'outside',
+    whiteSpace: 'normal',
+    color: '#ffffff',
+    fontSize: '14px',
+    lineHeight: '1.4'
+  },
+
+  chatBubbleListItem: {
+    margin: '0.4em 0',
+    lineHeight: '1.4',
+    display: 'list-item',
+    textAlign: 'left',
+    whiteSpace: 'normal',
+    color: '#ffffff'
+  },
+
+  orderedList: {
+    listStyleType: 'decimal'
+  },
+
+  unorderedList: {
+    listStyleType: 'disc'
+  },
+
+  nestedList: {
+    margin: '0.4em 0'
+  },
+
+  nestedListItem: {
+    margin: '0.2em 0'
   },
 };
 
