@@ -821,7 +821,7 @@ export default function ChatFeed({
     // First replace code block markers
     let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
     displayText = displayText.replace(/```\./g, "```\n");
-    
+
     return (
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}

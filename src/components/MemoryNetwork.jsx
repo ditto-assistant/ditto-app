@@ -166,10 +166,16 @@ const TableView = ({ memories, onMemoryClick }) => {
       remarkPlugins={[remarkGfm]}
       components={{
         ol: ({ node, ordered, ...props }) => (
-          <ol {...props} style={{ ...styles.chatBubbleList, ...styles.orderedList }} />
+          <ol
+            {...props}
+            style={{ ...styles.chatBubbleList, ...styles.orderedList }}
+          />
         ),
         ul: ({ node, ...props }) => (
-          <ul {...props} style={{ ...styles.chatBubbleList, ...styles.unorderedList }} />
+          <ul
+            {...props}
+            style={{ ...styles.chatBubbleList, ...styles.unorderedList }}
+          />
         ),
         li: ({ node, ordered, ...props }) => (
           <li {...props} style={styles.chatBubbleListItem} />
@@ -201,7 +207,9 @@ const TableView = ({ memories, onMemoryClick }) => {
                   className="copy-button code-block-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(String(children).replace(/\n$/, ""));
+                    navigator.clipboard.writeText(
+                      String(children).replace(/\n$/, "")
+                    );
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
                     toast.textContent = "Copied!";
@@ -521,7 +529,9 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
                   className="copy-button code-block-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(String(children).replace(/\n$/, ""));
+                    navigator.clipboard.writeText(
+                      String(children).replace(/\n$/, "")
+                    );
                     const toast = document.createElement("div");
                     toast.className = "copied-notification";
                     toast.textContent = "Copied!";
@@ -1314,7 +1324,7 @@ const styles = {
     boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
-    gap: "16px"
+    gap: "16px",
   },
   pathNodeHeader: {
     display: "flex",
@@ -1674,38 +1684,38 @@ const styles = {
   },
   // Update list styles to use proper CSS-in-JS format
   chatBubbleList: {
-    paddingLeft: '2em',
-    margin: '0.8em 0',
-    listStylePosition: 'outside',
-    whiteSpace: 'normal',
-    color: '#ffffff',
-    fontSize: '14px',
-    lineHeight: '1.4'
+    paddingLeft: "2em",
+    margin: "0.8em 0",
+    listStylePosition: "outside",
+    whiteSpace: "normal",
+    color: "#ffffff",
+    fontSize: "14px",
+    lineHeight: "1.4",
   },
 
   chatBubbleListItem: {
-    margin: '0.4em 0',
-    lineHeight: '1.4',
-    display: 'list-item',
-    textAlign: 'left',
-    whiteSpace: 'normal',
-    color: '#ffffff'
+    margin: "0.4em 0",
+    lineHeight: "1.4",
+    display: "list-item",
+    textAlign: "left",
+    whiteSpace: "normal",
+    color: "#ffffff",
   },
 
   orderedList: {
-    listStyleType: 'decimal'
+    listStyleType: "decimal",
   },
 
   unorderedList: {
-    listStyleType: 'disc'
+    listStyleType: "disc",
   },
 
   nestedList: {
-    margin: '0.4em 0'
+    margin: "0.4em 0",
   },
 
   nestedListItem: {
-    margin: '0.2em 0'
+    margin: "0.2em 0",
   },
 };
 
