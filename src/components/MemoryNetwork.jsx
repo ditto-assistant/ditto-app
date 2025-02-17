@@ -505,6 +505,18 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
+        ol: ({ node, ordered, ...props }) => (
+          <ol {...props} style={{ ...styles.chatBubbleList, ...styles.orderedList }} />
+        ),
+        ul: ({ node, ...props }) => (
+          <ul {...props} style={{ ...styles.chatBubbleList, ...styles.unorderedList }} />
+        ),
+        li: ({ node, ordered, ...props }) => (
+          <li {...props} style={styles.chatBubbleListItem} />
+        ),
+        p: ({ node, ...props }) => (
+          <p {...props} style={{ margin: "0.5em 0" }} />
+        ),
         code({ node, inline, className, children, ...props }) {
           let match = /language-(\w+)/.exec(className || "");
           let hasCodeBlock;
