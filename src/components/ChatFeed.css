@@ -949,11 +949,14 @@
   color: white;
   padding: 6px 12px;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .action-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  padding: 4.8px 9.6px; /* 20% smaller padding */
+  transform: scale(0.96); /* Additional 4% scale reduction for visual effect */
 }
 
 .action-button:active {
@@ -977,8 +980,8 @@
     padding: 8px 12px;
   }
 
-  .action-overlay {
-    padding: 6px;
+  .action-button:hover {
+    padding: 6.4px 9.6px; /* 20% smaller padding for touch devices */
   }
 }
 
@@ -2275,75 +2278,6 @@ input:checked + .toggle-slider:before {
 }
 
 /* Update the avatar animation classes */
-.avatar.ditto-avatar {
-  transition: all 0.3s ease;
-}
-
-/* Animation for when message is generating */
-.avatar.ditto-avatar.animating {
-  animation: slowWindUp 3s ease-in-out infinite;
-}
-
-@keyframes veryFastSpin {
-  from {
-    transform: rotate(-90deg) scale(1.1);
-  }
-
-  to {
-    transform: rotate(270deg) scale(1.1);
-  }
-}
-
-/* Animation for when message is complete */
-.avatar.ditto-avatar.spinning {
-  animation: veryFastSpin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Typing indicator container animation */
-.typing-indicator-container .avatar.ditto-avatar {
-  animation: slowWindUp 3s ease-in-out infinite;
-}
-
-/* When message is complete, apply the fast spin */
-.message-container:not(.typing) .avatar.ditto-avatar {
-  animation: veryFastSpin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Counter-clockwise rotation during generation */
-@keyframes generateRotation {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-
-  100% {
-    transform: rotate(-360deg) scale(1.05);
-  }
-}
-
-/* Fast clockwise spin for completion */
-@keyframes completionSpin {
-  0% {
-    transform: rotate(-360deg) scale(1.05);
-  }
-
-  25% {
-    transform: rotate(270deg) scale(1.1);
-  }
-
-  50% {
-    transform: rotate(720deg) scale(1.05);
-  }
-
-  75% {
-    transform: rotate(990deg) scale(1.1);
-  }
-
-  100% {
-    transform: rotate(1080deg) scale(1);
-  }
-}
-
-/* Base avatar styles with smoother transition */
 .avatar.ditto-avatar {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
