@@ -1,18 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Divider,
   Button,
-  TextField,
-  IconButton,
-  InputAdornment,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 import { deleteUser, getAuth } from "firebase/auth";
 import {
   removeUserFromFirestore,
