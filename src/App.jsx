@@ -11,23 +11,22 @@ import FullScreenSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import { AuthProvider } from "./hooks/useAuth";
 import { BalanceProvider } from "./hooks/useBalance";
-import { DittoActivationProvider } from "./hooks/useDittoActivation";
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
-import Login from "./screens/login";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useModal } from "./hooks/useModal";
+import { ModalProvider } from "./hooks/useModal";
 
-// Lazy load components
+const Login = lazy(() => import("./screens/login"));
+const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
-
-// Create a QueryClient instance
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -63,8 +62,8 @@ export default function App() {
           <ModelPreferencesProvider>
             <MemoryCountProvider>
               <IntentRecognitionProvider>
-                <DittoActivationProvider>
-                  <PresignedUrlProvider>
+                <PresignedUrlProvider>
+                  <ModalProvider>
                     <RouterProvider router={router} />
                     <Toaster
                       position="bottom-center"
@@ -76,14 +75,23 @@ export default function App() {
                         },
                       }}
                     />
-                  </PresignedUrlProvider>
-                </DittoActivationProvider>
+                    <ModalConsumer />
+                  </ModalProvider>
+                </PresignedUrlProvider>
               </IntentRecognitionProvider>
             </MemoryCountProvider>
           </ModelPreferencesProvider>
         </BalanceProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
+  );
+}
+
+function ModalConsumer() {
+  const { currentModal, closeModal } = useModal();
+
+  return (
+    <>{currentModal === "feedback" && <FeedbackModal onClose={closeModal} />}</>
   );
 }

@@ -1,18 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, lazy } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCopy, FiDownload } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
-import { routes } from "../firebaseConfig";
 import { textEmbed } from "../api/LLM";
-import MemoryNetwork from "./MemoryNetwork";
+const MemoryNetwork = lazy(() => import("./MemoryNetwork"));
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -330,7 +330,6 @@ export default function ChatFeed({
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [isSelecting, setIsSelecting] = useState(false);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
   const {
@@ -345,11 +344,9 @@ export default function ChatFeed({
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
-  const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setAuthInitialized(true);
       if (user?.photoURL) {
         loadUserAvatar(user.photoURL);
       }
@@ -827,6 +824,7 @@ export default function ChatFeed({
 
     return (
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         children={displayText}
         components={{
           a: ({ node, href, children, ...props }) => (
@@ -851,6 +849,15 @@ export default function ChatFeed({
           ),
           p: ({ node, ...props }) => (
             <p {...props} style={{ margin: "0.5em 0" }} />
+          ),
+          ol: ({ node, ordered, ...props }) => (
+            <ol {...props} className="chat-bubble-list" />
+          ),
+          ul: ({ node, ...props }) => (
+            <ul {...props} className="chat-bubble-list" />
+          ),
+          li: ({ node, ordered, ...props }) => (
+            <li {...props} className="chat-bubble-list-item" />
           ),
           img: ({ node, src, alt, ...props }) => {
             const [imgSrc, setImgSrc] = useState(src);

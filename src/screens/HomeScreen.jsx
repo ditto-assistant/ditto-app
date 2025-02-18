@@ -1,19 +1,14 @@
 import "./HomeScreen.css";
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
-import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
-import ChatFeed from "../components/ChatFeed";
-import StatusBar from "../components/StatusBar";
-import SendMessage from "../components/SendMessage";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear2.png";
 import { IoSettingsOutline } from "react-icons/io5";
-import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
@@ -22,9 +17,14 @@ import {
   getVersionsOfScriptFromFirestore,
   saveScriptToFirestore,
 } from "../control/firebase";
-import MemoryOverlay from "../components/MemoryOverlay";
-import ScriptsOverlay from "../components/ScriptsOverlay";
-import FullScreenEditor from "../components/FullScreenEditor";
+
+const ChatFeed = lazy(() => import("../components/ChatFeed"));
+const StatusBar = lazy(() => import("../components/StatusBar"));
+const SendMessage = lazy(() => import("../components/SendMessage"));
+const MemoryOverlay = lazy(() => import("../components/MemoryOverlay"));
+const ScriptsOverlay = lazy(() => import("../components/ScriptsOverlay"));
+const FullScreenEditor = lazy(() => import("../components/FullScreenEditor"));
+
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
@@ -39,8 +39,6 @@ export default function HomeScreen() {
     webApps: [],
     openSCAD: [],
   });
-  const { model: DittoActivation, isLoaded: dittoActivationLoaded } =
-    useDittoActivation();
   const [showStatusBar, setShowStatusBar] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -164,18 +162,6 @@ export default function HomeScreen() {
     localStorageMicrophoneStatus
   );
 
-  function handleMicPress() {
-    console.log("handling mic press...");
-    localStorage.setItem("microphoneStatus", !microphoneStatus);
-    setMicrophoneStatus((prevStatus) => !prevStatus);
-    // if mic status is false stop listening for name
-    if (microphoneStatus) {
-      DittoActivation.stopListening();
-    } else {
-      DittoActivation.startListening();
-    }
-  }
-
   const appBodyRef = useRef(null);
 
   // check for localStorage memoryWipe being set to true and reset cound and create new conversation
@@ -189,26 +175,6 @@ export default function HomeScreen() {
       );
     }
   }, [localStorage.getItem("resetMemory")]);
-
-  const syncScripts = async () => {
-    const userID = localStorage.getItem("userID");
-    if (userID) {
-      try {
-        // start Dittos activation if microphone is on
-        if (microphoneStatus) {
-          DittoActivation.startListening();
-        }
-        const webApps = await syncLocalScriptsWithFirestore(userID, "webApps");
-        const openSCAD = await syncLocalScriptsWithFirestore(
-          userID,
-          "openSCAD"
-        );
-        setLocalScripts({ webApps, openSCAD });
-      } catch (e) {
-        console.error("Error syncing scripts:", e);
-      }
-    }
-  };
 
   const syncConversationHist = async () => {
     const localHistCount = parseInt(localStorage.getItem("histCount"));
@@ -311,7 +277,6 @@ export default function HomeScreen() {
 
   // Add this to your existing useEffect that runs on mount
   useEffect(() => {
-    syncScripts();
     checkAndResyncPairIDs();
 
     const handleStatus = async () => {
@@ -662,17 +627,6 @@ export default function HomeScreen() {
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
-        <motion.div
-          className="microphone-button"
-          whileTap={{ scale: 0.95 }}
-          onClick={handleMicPress}
-        >
-          {microphoneStatus ? (
-            <FaMicrophone className="icon active" />
-          ) : (
-            <FaMicrophoneSlash className="icon inactive" />
-          )}
-        </motion.div>
         {workingScript ? (
           <MiniFocusOverlay
             scriptName={workingScript}

@@ -56,8 +56,7 @@ export const handleScriptGeneration = async ({
       constructedPrompt,
       systemTemplateFunction(),
       preferences.programmerModel,
-      image,
-      () => {} // Prevent streaming updates
+      image
     );
     console.log("%c" + scriptResponse, "color: yellow");
   } else {

@@ -1,7 +1,7 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, lazy } from "react";
 import { motion } from "framer-motion";
 import { FaPlay, FaPen, FaTimes } from "react-icons/fa";
-import FullScreenEditor from "./FullScreenEditor";
+const FullScreenEditor = lazy(() => import("./FullScreenEditor"));
 import "./ScriptActionsOverlay.css";
 
 function ScriptActionsOverlay({

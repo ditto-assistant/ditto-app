@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  useMediaQuery,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const styles = {
   container: {
@@ -115,7 +110,7 @@ const DittoCanvas = () => {
   const scriptName = location.state?.scriptName || "Unknown Script";
   const iframeRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleFullscreenChange = () => {

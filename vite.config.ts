@@ -63,32 +63,31 @@ export default defineConfig({
         },
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-router-dom") ||
-              id.includes("@emotion") ||
-              id.includes("scheduler") ||
-              id.includes("object-assign") ||
-              id.includes("framer-motion")
-            ) {
-              return "react-vendor";
-            }
+            if (id.includes("framer-motion")) return "framer-motion";
             if (id.includes("firebase")) return "firebase";
-            if (id.includes("@tensorflow")) return "tensorflow";
+            if (id.includes("@tensorflow")) {
+              if (id.includes("tfjs-core")) return "tensorflow-core";
+              if (id.includes("tfjs-layers")) return "tensorflow-layers";
+              return "tensorflow-other";
+            }
             if (id.includes("@huggingface")) return "huggingface";
-            if (id.includes("@mui")) return "mui";
-            if (id.includes("ace-builds") || id.includes("react-ace"))
-              return "ace";
-            if (id.includes("workbox")) return "workbox";
+            if (id.includes("@mui")) {
+              if (id.includes("@mui/material")) return "mui-material";
+              if (id.includes("@mui/icons")) return "mui-icons";
+              return "mui-other";
+            }
+            if (id.includes("ace-builds")) {
+              if (id.includes("theme")) return "ace-themes";
+              if (id.includes("mode")) return "ace-modes";
+              if (id.includes("snippets")) return "ace-snippets";
+              if (id.includes("react-ace")) return "react-ace";
+              if (id.includes("ext-language_tools"))
+                return "ace-ext-language_tools";
+              if (id.includes("ext-searchbox")) return "ace-ext-searchbox";
+              return "ace-core";
+            }
+            if (id.includes("react-ace")) return "react-ace";
             if (id.includes("react-icons")) return "icons";
-            return "vendor"; // all other node_modules
-          }
-          if (id.includes("src/screens")) {
-            return "screens";
-          }
-          if (id.includes("src/components")) {
-            return "components";
           }
         },
       },

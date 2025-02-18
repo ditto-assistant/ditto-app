@@ -3,6 +3,24 @@ import { auth } from "../control/firebase";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
 
+type Model = string; // This should match the type from "../constants"
+type TextCallback = (text: string) => void;
+
+interface ImageGenerationPreferences {
+  model: string;
+  size: {
+    wh: string;
+  };
+}
+
+interface PromptRequestBody {
+  userID: string;
+  userPrompt: string;
+  systemPrompt: string;
+  model: Model;
+  imageURL: string;
+}
+
 /**
  * Sends a prompt to the LLM and returns the response.
  *
@@ -10,19 +28,19 @@ import { getToken } from "./auth";
  * @function promptLLM
  * @param {string} userPrompt - The user's prompt.
  * @param {string} systemPrompt - The system's prompt.
- * @param {import("../constants").Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
+ * @param {Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
  * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
- * @param {function} textCallback - A callback function that handles the text as it comes in.
+ * @param {TextCallback} textCallback - A callback function that handles the text as it comes in.
  * @returns {Promise<string>} A promise that resolves to the LLM's response.
  * @throws {Error} If there's an error during the LLM call.
  */
 export async function promptLLM(
-  userPrompt,
-  systemPrompt,
-  model = "gemini-1.5-flash",
-  imageURL = "",
-  textCallback = null
-) {
+  userPrompt: string,
+  systemPrompt: string,
+  model: Model = "gemini-1.5-flash",
+  imageURL: string = "",
+  textCallback: TextCallback | null = null
+): Promise<string> {
   console.log("Sending prompt to LLM: ", model);
   let responseMessage = "";
   let retries = 0;
@@ -32,9 +50,12 @@ export async function promptLLM(
     console.error(tok.err);
     return "Error: Unable to get LLM response";
   }
+  if (!tok.ok) {
+    return "Error: Unable to get LLM response";
+  }
   while (retries < maxRetries) {
     try {
-      const requestBody = {
+      const requestBody: PromptRequestBody = {
         userID: tok.ok.userID,
         userPrompt,
         systemPrompt,
@@ -61,7 +82,7 @@ export async function promptLLM(
       }
 
       // Handle the response stream
-      const reader = response.body.getReader();
+      const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       while (true) {
         const { value, done } = await reader.read();
@@ -80,8 +101,8 @@ export async function promptLLM(
 
       // If it's a payment error, return immediately
       if (
-        error.message?.includes("402") ||
-        error.message?.includes("Payment Required")
+        (error instanceof Error && error.message?.includes("402")) ||
+        (error instanceof Error && error.message?.includes("Payment Required"))
       ) {
         return "Error: Payment Required. Please check your token balance.";
       }
@@ -97,16 +118,20 @@ export async function promptLLM(
  * @async
  * @function openaiImageGeneration
  * @param {string} prompt - The prompt for image generation.
+ * @param {ImageGenerationPreferences} preferences - The preferences for image generation.
  * @returns {Promise<string>} A promise that resolves to the generated image URL.
  * @throws {Error} If there's an error during the image generation process.
  */
 export async function openaiImageGeneration(
-  prompt,
-  preferences = DEFAULT_PREFERENCES.imageGeneration
-) {
+  prompt: string,
+  preferences: ImageGenerationPreferences = DEFAULT_PREFERENCES.imageGeneration
+): Promise<string> {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
+    return "Error: Unable to get image generation";
+  }
+  if (!tok.ok) {
     return "Error: Unable to get image generation";
   }
   const response = await fetch(routes.imageGeneration, {
@@ -134,7 +159,7 @@ export async function openaiImageGeneration(
  * @returns {Promise<number[]>} A promise that resolves to an array of numbers representing the embedding.
  * @throws {Error} If there's an error during the embedding process.
  */
-export async function textEmbed(text) {
+export async function textEmbed(text: string): Promise<number[] | string> {
   try {
     if (!auth.currentUser) {
       return "You are not logged in. Please log in to use this feature.";
@@ -174,10 +199,16 @@ export async function textEmbed(text) {
  *   - An array of strings representing the relevant examples if the call is successful.
  * @throws {Error} If there's an unexpected error during the API call.
  */
-export async function getRelevantExamples(embedding, k) {
+export async function getRelevantExamples(
+  embedding: number[],
+  k: number
+): Promise<string | string[]> {
   const tok = await getToken();
   if (tok.err) {
     console.error(tok.err);
+    return "Error: Unable to get relevant examples";
+  }
+  if (!tok.ok) {
     return "Error: Unable to get relevant examples";
   }
   try {

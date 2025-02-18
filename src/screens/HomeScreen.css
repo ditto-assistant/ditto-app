@@ -11,18 +11,23 @@
   --scrollbar-track-color: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
   --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
-  --vh: 1vh; /* This will be updated via JavaScript */
+  --vh: 1vh;
+  /* This will be updated via JavaScript */
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: "Inter", sans-serif;
-  overscroll-behavior: none; /* Prevent pull to refresh */
-  overflow: hidden; /* Prevent bouncing on iOS */
-  position: fixed; /* Additional fix for iOS bounce */
+  overscroll-behavior: none;
+  /* Prevent pull to refresh */
+  overflow: hidden;
+  /* Prevent bouncing on iOS */
+  position: fixed;
+  /* Additional fix for iOS bounce */
   width: 100%;
-  touch-action: none; /* Prevent default touch behaviors */
+  touch-action: none;
+  /* Prevent default touch behaviors */
 }
 
 body:not(.login-page) {
@@ -37,16 +42,19 @@ body:not(.login-page) {
 .App {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Fallback */
+  height: 100vh;
+  /* Fallback */
   height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
   background-color: var(--background-color);
   overflow: hidden;
-  position: fixed; /* Add fixed positioning */
+  position: fixed;
+  /* Add fixed positioning */
   top: 0;
   left: 0;
   overscroll-behavior: none;
-  touch-action: pan-y pinch-zoom; /* Allow vertical scrolling and pinch zoom only */
+  touch-action: pan-y pinch-zoom;
+  /* Allow vertical scrolling and pinch zoom only */
 }
 
 .App-header {
@@ -140,18 +148,20 @@ body:not(.login-page) {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  overscroll-behavior: contain; /* Prevent pull to refresh while allowing normal scroll */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  overscroll-behavior: contain;
+  /* Prevent pull to refresh while allowing normal scroll */
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scrolling on iOS */
 }
 
 .App-footer {
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
   background-color: rgba(32, 34, 37, 0.9);
   backdrop-filter: blur(10px);
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
-  padding: 10px 20px;
-  z-index: 10;
+  /* border-top-left-radius: var(--border-radius); */
+  /* border-top-right-radius: var(--border-radius); */
+  /* padding: 10px 20px; */
+  /* z-index: 10; */
 }
 
 .loading-placeholder {
@@ -232,8 +242,10 @@ body:not(.login-page) {
 
   .App-body {
     flex: 1;
-    height: auto; /* Allow content to determine height */
-    min-height: 0; /* Enable proper flex shrinking */
+    height: auto;
+    /* Allow content to determine height */
+    min-height: 0;
+    /* Enable proper flex shrinking */
   }
 
   .App-header {
@@ -409,7 +421,8 @@ body:not(.login-page) {
 
 .model-selector select {
   position: relative;
-  z-index: 10; /* Ensure dropdowns appear above other content */
+  z-index: 10;
+  /* Ensure dropdowns appear above other content */
   width: 100%;
   padding: 10px;
   background-color: #2f3136;

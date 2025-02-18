@@ -1,3 +1,6 @@
+@import "../styles/variables.css";
+@import "../styles/animations.css";
+
 .chat-feed {
   background-color: transparent;
   padding: 20px;
@@ -168,7 +171,8 @@
   object-fit: contain;
   border-radius: 10px;
   padding: 1em;
-  margin: 1em 0; /* Add margin to top and bottom */
+  margin: 1em 0;
+  /* Add margin to top and bottom */
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
@@ -945,11 +949,14 @@
   color: white;
   padding: 6px 12px;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .action-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  padding: 4.8px 9.6px; /* 20% smaller padding */
+  transform: scale(0.96); /* Additional 4% scale reduction for visual effect */
 }
 
 .action-button:active {
@@ -973,8 +980,8 @@
     padding: 8px 12px;
   }
 
-  .action-overlay {
-    padding: 6px;
+  .action-button:hover {
+    padding: 6.4px 9.6px; /* 20% smaller padding for touch devices */
   }
 }
 
@@ -1485,16 +1492,6 @@ input:checked + .toggle-slider:before {
   gap: 12px;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .spinner {
   animation: spin 1s linear infinite;
   font-size: 24px;
@@ -1514,10 +1511,10 @@ input:checked + .toggle-slider:before {
 /* Ensure code blocks are selectable everywhere */
 .code-block,
 .inline-code {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* Make sure message text is selectable */
@@ -1531,10 +1528,10 @@ input:checked + .toggle-slider:before {
 
 /* Add styles for hyperlinks */
 .message-text a {
-  pointer-events: auto !important;
+  pointer-events: auto;
   position: relative;
   z-index: 1;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-normal);
 }
 
 .message-text a:hover {
@@ -1543,27 +1540,24 @@ input:checked + .toggle-slider:before {
 
 /* Ensure links are visible in both bubble types */
 .chat-bubble.User .message-text a {
-  color: #e6e6e6 !important;
-  /* Light grey for user bubbles */
-  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3) !important;
-  text-decoration: underline !important;
+  color: var(--text-normal);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+  text-decoration: underline;
 }
 
 .chat-bubble.Ditto .message-text a {
-  color: #7b83e6 !important;
-  /* Lighter blue for Ditto bubbles */
-  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3) !important;
-  text-decoration: underline !important;
+  color: var(--primary-color);
+  text-shadow: 0 0 1px rgba(123, 131, 230, 0.3);
+  text-decoration: underline;
 }
 
-/* Add hover states for better interaction feedback */
 .chat-bubble.User .message-text a:hover {
-  color: #ffffff !important;
+  color: var(--interactive-active);
   opacity: 0.9;
 }
 
 .chat-bubble.Ditto .message-text a:hover {
-  color: #8e95f5 !important;
+  color: var(--primary-hover);
   opacity: 0.9;
 }
 
@@ -1754,7 +1748,8 @@ input:checked + .toggle-slider:before {
   width: 100%;
   height: auto;
   object-fit: contain;
-  margin: 1em 0; /* Add margin to top and bottom */
+  margin: 1em 0;
+  /* Add margin to top and bottom */
   padding: 0;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
@@ -1830,13 +1825,6 @@ input:checked + .toggle-slider:before {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Add multiple image support */
 .chat-image-grid {
   display: grid;
   gap: 4px;
@@ -1869,20 +1857,20 @@ input:checked + .toggle-slider:before {
 .memory-code-container .code-block {
   margin: 0;
   padding: 12px;
-  background: #1e1f22 !important;
+  background: var(--background-tertiary);
   border-radius: 8px;
   font-size: 0.9em;
 }
 
 .memory-code-container pre {
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  background: transparent;
 }
 
 /* Memory inline code styles */
 .memory-inline-code {
-  background: #1e1f22;
+  background: var(--background-tertiary);
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 0.9em;
@@ -1892,6 +1880,8 @@ input:checked + .toggle-slider:before {
 .memory-inline-code .inline-code {
   color: #ffffff;
   font-family: "Courier New", Courier, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Update copy button styles for memory code blocks */
@@ -1927,10 +1917,10 @@ input:checked + .toggle-slider:before {
 /* Ensure code is selectable in memories */
 .memory-code-container code,
 .memory-inline-code code {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* Add styles for code block language indicator */
@@ -1955,8 +1945,8 @@ input:checked + .toggle-slider:before {
 
 /* Make sure code blocks don't overflow */
 .memory-code-container pre {
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Add responsive styles for code blocks */
@@ -2227,17 +2217,6 @@ input:checked + .toggle-slider:before {
   }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Add animation classes for the avatar */
 .avatar.ditto-avatar {
   transition: all 0.3s ease;
 }
@@ -2300,65 +2279,6 @@ input:checked + .toggle-slider:before {
 
 /* Update the avatar animation classes */
 .avatar.ditto-avatar {
-  transition: all 0.3s ease;
-}
-
-/* Animation for when message is generating */
-.avatar.ditto-avatar.animating {
-  animation: slowWindUp 3s ease-in-out infinite;
-}
-
-/* Animation for when message is complete */
-.avatar.ditto-avatar.spinning {
-  animation: veryFastSpin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Typing indicator container animation */
-.typing-indicator-container .avatar.ditto-avatar {
-  animation: slowWindUp 3s ease-in-out infinite;
-}
-
-/* When message is complete, apply the fast spin */
-.message-container:not(.typing) .avatar.ditto-avatar {
-  animation: veryFastSpin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Counter-clockwise rotation during generation */
-@keyframes generateRotation {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-
-  100% {
-    transform: rotate(-360deg) scale(1.05);
-  }
-}
-
-/* Fast clockwise spin for completion */
-@keyframes completionSpin {
-  0% {
-    transform: rotate(-360deg) scale(1.05);
-  }
-
-  25% {
-    transform: rotate(270deg) scale(1.1);
-  }
-
-  50% {
-    transform: rotate(720deg) scale(1.05);
-  }
-
-  75% {
-    transform: rotate(990deg) scale(1.1);
-  }
-
-  100% {
-    transform: rotate(1080deg) scale(1);
-  }
-}
-
-/* Base avatar styles with smoother transition */
-.avatar.ditto-avatar {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
   transform-origin: center center;
@@ -2393,18 +2313,86 @@ input:checked + .toggle-slider:before {
 
 /* Add this to reduce the margin between paragraphs in markdown */
 .chat-bubble p {
-  margin: 0.5em 0; /* Adjust the margin as needed */
+  margin: 0.5em 0;
+  /* Adjust the margin as needed */
 }
 
 /* Add this to style list items in markdown */
 .chat-bubble ul,
 .chat-bubble ol {
-  padding-left: 1.2em; /* Adjust padding as needed */
-  margin: 0; /* Remove default margin */
+  padding-left: 1.5em;
+  margin: 0.8em 0;
+  list-style-position: outside;
+  width: calc(100% - 1.5em);
 }
 
 .chat-bubble li {
-  margin: 0.3em 0; /* Adjust margin for better spacing */
-  list-style-position: inside; /* Ensure bullets are inside the list item */
-  padding-left: 0.5em; /* Add padding to align text with bullet */
+  margin: 0.4em 0;
+  line-height: 1.4;
+  display: list-item;
+  text-align: left;
+}
+
+.chat-bubble ol {
+  counter-reset: item;
+  list-style: decimal;
+}
+
+.chat-bubble ol li {
+  counter-increment: item;
+}
+
+.chat-bubble ul {
+  list-style: disc;
+}
+
+.chat-bubble ul ul,
+.chat-bubble ol ul {
+  list-style-type: circle;
+}
+
+.chat-bubble ul ul ul,
+.chat-bubble ol ul ul {
+  list-style-type: square;
+}
+
+.chat-bubble ol ol,
+.chat-bubble ul ol {
+  list-style-type: lower-alpha;
+}
+
+.chat-bubble ol ol ol,
+.chat-bubble ul ol ol {
+  list-style-type: lower-roman;
+}
+
+.chat-bubble-list {
+  padding-left: 2em;
+  margin: 0.8em 0;
+  list-style-position: outside;
+  white-space: normal;
+}
+
+.chat-bubble-list-item {
+  margin: 0.4em 0;
+  line-height: 1.4;
+  display: list-item;
+  text-align: left;
+  white-space: normal;
+}
+
+ol.chat-bubble-list {
+  list-style-type: decimal;
+}
+
+ul.chat-bubble-list {
+  list-style-type: disc;
+}
+
+.chat-bubble-list .chat-bubble-list {
+  margin: 0.4em 0;
+}
+
+.chat-bubble-list .chat-bubble-list-item {
+  margin: 0.2em 0;
 }

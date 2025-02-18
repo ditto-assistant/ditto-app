@@ -1,11 +1,22 @@
 import { auth } from "../control/firebase";
 
+interface TokenSuccess {
+  token: string;
+  userID: string;
+  email: string | null;
+}
+
+interface TokenResult {
+  ok?: TokenSuccess;
+  err?: Error;
+}
+
 /**
  * Retrieves the authentication token for the current user.
  *
- * @returns {Promise<{ok?: {token: string, userID: string, email: string | null}, err?: Error}>} A promise that resolves to an object:
+ * @returns {Promise<TokenResult>} A promise that resolves to an object containing either success or error data
  */
-export async function getToken() {
+export async function getToken(): Promise<TokenResult> {
   if (!auth.currentUser) {
     return { err: new Error("User not logged in") };
   }
@@ -19,7 +30,6 @@ export async function getToken() {
       },
     };
   } catch (error) {
-    console.error("Error getting token:", error);
-    return { err: error };
+    return { err: error instanceof Error ? error : new Error(String(error)) };
   }
 }

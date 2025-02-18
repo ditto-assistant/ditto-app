@@ -2,7 +2,13 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-export default function AuthenticatedRoute({ children }) {
+type AuthenticatedRouteProps = {
+  children: React.ReactNode;
+};
+
+export default function AuthenticatedRoute({
+  children,
+}: AuthenticatedRouteProps) {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
