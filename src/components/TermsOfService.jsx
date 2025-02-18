@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { removeUserFromFirestore } from "../control/firebase";
 import "./TermsOfService.css";
 

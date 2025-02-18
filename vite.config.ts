@@ -97,7 +97,7 @@ export default defineConfig({
     include: [
       "react",
       "react-dom",
-      "react-router-dom",
+      "react-router",
       "firebase/app",
       "firebase/auth",
       "firebase/firestore",

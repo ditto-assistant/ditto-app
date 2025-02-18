@@ -1,6 +1,6 @@
 import "./HomeScreen.css";
 import { useState, useEffect, useRef, Suspense, lazy } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";

@@ -3,7 +3,7 @@ import { Button, TextField, Slider } from "@mui/material";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { CheckoutForm } from "../components/CheckoutForm";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 // Update the PricingTiers array
 const PricingTiers = [

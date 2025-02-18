@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState, lazy } from "react";
-import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -1791,22 +1790,3 @@ export default function ChatFeed({
     </div>
   );
 }
-
-ChatFeed.propTypes = {
-  messages: PropTypes.arrayOf(
-    PropTypes.shape({
-      sender: PropTypes.string,
-      text: PropTypes.string.isRequired,
-      timestamp: PropTypes.number, // Add this line to include timestamp in PropTypes
-    })
-  ).isRequired,
-  isTyping: PropTypes.bool,
-  hasInputField: PropTypes.bool,
-  showSenderName: PropTypes.bool,
-  bubblesCentered: PropTypes.bool,
-  scrollToBottom: PropTypes.bool,
-  bubbleStyles: PropTypes.shape({
-    text: PropTypes.object,
-    chatbubble: PropTypes.object,
-  }),
-};

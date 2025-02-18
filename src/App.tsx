@@ -5,7 +5,7 @@ import {
   Route,
   createRoutesFromElements,
   Outlet,
-} from "react-router-dom";
+} from "react-router";
 import { Toaster } from "react-hot-toast";
 import FullScreenSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
