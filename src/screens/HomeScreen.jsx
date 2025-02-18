@@ -1,18 +1,14 @@
 import "./HomeScreen.css";
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
-import ChatFeed from "../components/ChatFeed";
-import StatusBar from "../components/StatusBar";
-import SendMessage from "../components/SendMessage";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear2.png";
 import { IoSettingsOutline } from "react-icons/io5";
-import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
@@ -21,9 +17,14 @@ import {
   getVersionsOfScriptFromFirestore,
   saveScriptToFirestore,
 } from "../control/firebase";
-import MemoryOverlay from "@/components/MemoryOverlay";
-import ScriptsOverlay from "../components/ScriptsOverlay";
-import FullScreenEditor from "../components/FullScreenEditor";
+
+const ChatFeed = lazy(() => import("../components/ChatFeed"));
+const StatusBar = lazy(() => import("../components/StatusBar"));
+const SendMessage = lazy(() => import("../components/SendMessage"));
+const MemoryOverlay = lazy(() => import("../components/MemoryOverlay"));
+const ScriptsOverlay = lazy(() => import("../components/ScriptsOverlay"));
+const FullScreenEditor = lazy(() => import("../components/FullScreenEditor"));
+
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
@@ -175,22 +176,6 @@ export default function HomeScreen() {
     }
   }, [localStorage.getItem("resetMemory")]);
 
-  const syncScripts = async () => {
-    const userID = localStorage.getItem("userID");
-    if (userID) {
-      try {
-        const webApps = await syncLocalScriptsWithFirestore(userID, "webApps");
-        const openSCAD = await syncLocalScriptsWithFirestore(
-          userID,
-          "openSCAD"
-        );
-        setLocalScripts({ webApps, openSCAD });
-      } catch (e) {
-        console.error("Error syncing scripts:", e);
-      }
-    }
-  };
-
   const syncConversationHist = async () => {
     const localHistCount = parseInt(localStorage.getItem("histCount"));
     const thinkingObjectString = localStorage.getItem("thinking");
@@ -292,7 +277,6 @@ export default function HomeScreen() {
 
   // Add this to your existing useEffect that runs on mount
   useEffect(() => {
-    syncScripts();
     checkAndResyncPairIDs();
 
     const handleStatus = async () => {

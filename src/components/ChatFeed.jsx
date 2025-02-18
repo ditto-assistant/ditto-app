@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, lazy } from "react";
 import PropTypes from "prop-types";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -12,7 +12,7 @@ import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
 import { textEmbed } from "../api/LLM";
-import MemoryNetwork from "./MemoryNetwork";
+const MemoryNetwork = lazy(() => import("./MemoryNetwork"));
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
 import { LoadingSpinner } from "./LoadingSpinner";

@@ -63,32 +63,14 @@ export default defineConfig({
         },
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-router-dom") ||
-              id.includes("@emotion") ||
-              id.includes("scheduler") ||
-              id.includes("object-assign") ||
-              id.includes("framer-motion")
-            ) {
-              return "react-vendor";
-            }
+            if (id.includes("framer-motion")) return "framer-motion";
             if (id.includes("firebase")) return "firebase";
             if (id.includes("@tensorflow")) return "tensorflow";
             if (id.includes("@huggingface")) return "huggingface";
             if (id.includes("@mui")) return "mui";
-            if (id.includes("ace-builds") || id.includes("react-ace"))
-              return "ace";
-            if (id.includes("workbox")) return "workbox";
+            if (id.includes("ace-builds")) return "ace-builds";
+            if (id.includes("react-ace")) return "react-ace";
             if (id.includes("react-icons")) return "icons";
-            return "vendor"; // all other node_modules
-          }
-          if (id.includes("src/screens")) {
-            return "screens";
-          }
-          if (id.includes("src/components")) {
-            return "components";
           }
         },
       },
