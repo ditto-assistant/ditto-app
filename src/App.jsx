@@ -25,7 +25,7 @@ const Login = lazy(() => import("./screens/login"));
 const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
-const Settings = lazy(() => import("./screens/Settings"));
+const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
 
