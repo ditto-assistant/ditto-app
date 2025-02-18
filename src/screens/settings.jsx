@@ -29,21 +29,8 @@ const Settings = () => {
   const balance = useBalance();
   const { signOut, user } = useAuth();
   const auth = getAuth();
-  const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const [haApiKey, setHaApiKey] = useState(
-    localStorage.getItem("ha_api_key") || ""
-  );
-  const [haRemoteUrl, setHaRemoteUrl] = useState(
-    localStorage.getItem("home_assistant_url") || "http://localhost:8123"
-  );
-  const [showHaApiKey, setShowHaApiKey] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const [reAuthDialogOpen, setReAuthDialogOpen] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -98,25 +85,6 @@ const Settings = () => {
     }
   };
 
-  const handleManageKeys = () => {
-    setKeyInputVisible(true);
-  };
-
-  const handleSaveKey = () => {
-    localStorage.setItem("ha_api_key", haApiKey);
-    localStorage.setItem("home_assistant_url", haRemoteUrl);
-    setKeyInputVisible(false);
-    alert("Keys saved successfully!");
-  };
-
-  const handleCancelKey = () => {
-    setKeyInputVisible(false);
-    setHaApiKey(localStorage.getItem("ha_api_key") || "");
-    setHaRemoteUrl(
-      localStorage.getItem("home_assistant_url") || "http://localhost:8123"
-    );
-  };
-
   const openDeleteDialog = () => {
     setDeleteDialogOpen(true);
   };
@@ -130,8 +98,8 @@ const Settings = () => {
       <div
         style={{
           ...styles.settingsContainer,
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? "translateY(0)" : "translateY(20px)",
+          opacity: 1,
+          transform: "translateY(0)",
           transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
         }}
       >
@@ -184,13 +152,6 @@ const Settings = () => {
             >
               ADD TOKENS
             </Button>
-            <Button
-              variant="contained"
-              onClick={handleManageKeys}
-              style={styles.button}
-            >
-              MANAGE KEYS
-            </Button>
             <div style={styles.buttonRow}>
               <Button
                 variant="contained"
@@ -207,67 +168,6 @@ const Settings = () => {
                 DELETE ACCOUNT
               </Button>
             </div>
-            {keyInputVisible && (
-              <div style={styles.keyInputContainer}>
-                <TextField
-                  variant="outlined"
-                  label="Home Assistant API Key"
-                  type={showHaApiKey ? "text" : "password"}
-                  value={haApiKey}
-                  onChange={(e) => setHaApiKey(e.target.value)}
-                  style={styles.input}
-                  InputProps={{
-                    style: { color: "white" },
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowHaApiKey(!showHaApiKey)}
-                        >
-                          {showHaApiKey ? (
-                            <FaEyeSlash color="white" />
-                          ) : (
-                            <FaEye color="white" />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  InputLabelProps={{
-                    style: { color: "#8e9297" },
-                  }}
-                />
-                <TextField
-                  variant="outlined"
-                  label="Home Assistant Remote URL"
-                  type="text"
-                  value={haRemoteUrl}
-                  onChange={(e) => setHaRemoteUrl(e.target.value)}
-                  style={styles.input}
-                  InputProps={{
-                    style: { color: "white" },
-                  }}
-                  InputLabelProps={{
-                    style: { color: "#8e9297" },
-                  }}
-                />
-                <div style={styles.buttonGroup}>
-                  <Button
-                    variant="contained"
-                    onClick={handleSaveKey}
-                    style={styles.subtleButton}
-                  >
-                    SAVE
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleCancelKey}
-                    style={styles.subtleButton}
-                  >
-                    CANCEL
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
         <footer style={styles.footer}>
@@ -278,7 +178,6 @@ const Settings = () => {
         </footer>
       </div>
 
-      {/* Re-authentication Dialog */}
       <Dialog
         open={reAuthDialogOpen}
         onClose={() => setReAuthDialogOpen(false)}
@@ -325,7 +224,6 @@ const Settings = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Existing Delete Account Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={closeDeleteDialog}

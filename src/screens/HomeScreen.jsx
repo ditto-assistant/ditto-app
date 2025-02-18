@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
-import { useDittoActivation } from "@/hooks/useDittoActivation";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
 import ChatFeed from "../components/ChatFeed";
@@ -39,8 +38,6 @@ export default function HomeScreen() {
     webApps: [],
     openSCAD: [],
   });
-  const { model: DittoActivation, isLoaded: dittoActivationLoaded } =
-    useDittoActivation();
   const [showStatusBar, setShowStatusBar] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -164,18 +161,6 @@ export default function HomeScreen() {
     localStorageMicrophoneStatus
   );
 
-  function handleMicPress() {
-    console.log("handling mic press...");
-    localStorage.setItem("microphoneStatus", !microphoneStatus);
-    setMicrophoneStatus((prevStatus) => !prevStatus);
-    // if mic status is false stop listening for name
-    if (microphoneStatus) {
-      DittoActivation.stopListening();
-    } else {
-      DittoActivation.startListening();
-    }
-  }
-
   const appBodyRef = useRef(null);
 
   // check for localStorage memoryWipe being set to true and reset cound and create new conversation
@@ -194,10 +179,6 @@ export default function HomeScreen() {
     const userID = localStorage.getItem("userID");
     if (userID) {
       try {
-        // start Dittos activation if microphone is on
-        if (microphoneStatus) {
-          DittoActivation.startListening();
-        }
         const webApps = await syncLocalScriptsWithFirestore(userID, "webApps");
         const openSCAD = await syncLocalScriptsWithFirestore(
           userID,
@@ -662,17 +643,6 @@ export default function HomeScreen() {
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
-        <motion.div
-          className="microphone-button"
-          whileTap={{ scale: 0.95 }}
-          onClick={handleMicPress}
-        >
-          {microphoneStatus ? (
-            <FaMicrophone className="icon active" />
-          ) : (
-            <FaMicrophoneSlash className="icon inactive" />
-          )}
-        </motion.div>
         {workingScript ? (
           <MiniFocusOverlay
             scriptName={workingScript}

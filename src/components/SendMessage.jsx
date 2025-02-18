@@ -1,19 +1,8 @@
 import "./SendMessage.css";
 import { useState, useEffect, useRef } from "react";
-import {
-  FaMicrophone,
-  FaPlus,
-  FaImage,
-  FaCamera,
-  FaTimes,
-} from "react-icons/fa";
-import { MdFlipCameraIos } from "react-icons/md";
+import { FaPlus, FaImage, FaCamera, FaTimes } from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
-import sharedMic from "../sharedMic";
-import { firebaseConfig } from "../firebaseConfig";
-import { useDittoActivation } from "@/hooks/useDittoActivation";
-import { useIntentRecognition } from "@/hooks/useIntentRecognition";
 import { textEmbed } from "../api/LLM";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
@@ -51,20 +40,10 @@ export default function SendMessage({
 }) {
   const [message, setMessage] = useState("");
   const [image, setImage] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isFrontCamera, setIsFrontCamera] = useState(true);
   const textAreaRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
   const finalTranscriptRef = useRef("");
-  const videoRef = useRef();
   const canvasRef = useRef();
   const isMobile = useIsMobile();
-  const wsRef = useRef(null);
-  const inactivityTimeoutRef = useRef(null);
-  const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
-  const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } =
-    useIntentRecognition();
   const [isImageEnlarged, setIsImageEnlarged] = useState(false);
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
@@ -76,93 +55,6 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
-  const handleMicClick = async () => {
-    if (isListening) {
-      stopRecording();
-    } else {
-      try {
-        finalTranscriptRef.current = "";
-        setMessage("");
-
-        const stream = await sharedMic.getMicStream();
-        wsRef.current = new WebSocket(firebaseConfig.webSocketURL);
-
-        wsRef.current.onopen = () => {
-          const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: "audio/webm;codecs=opus",
-          });
-
-          mediaRecorder.ondataavailable = (event) => {
-            if (
-              event.data.size > 0 &&
-              wsRef.current &&
-              wsRef.current.readyState === WebSocket.OPEN
-            ) {
-              wsRef.current.send(event.data);
-            }
-          };
-
-          mediaRecorder.onstop = () => {
-            console.log("Media Recording stopped");
-            stopRecording();
-          };
-
-          mediaRecorder.start(100);
-          mediaRecorderRef.current = mediaRecorder;
-          setIsListening(true);
-        };
-
-        wsRef.current.onmessage = (event) => {
-          clearTimeout(inactivityTimeoutRef.current);
-
-          const receivedText = JSON.parse(event.data);
-          if (receivedText.isFinal) {
-            finalTranscriptRef.current += receivedText.transcript + " ";
-            setMessage(finalTranscriptRef.current);
-          } else {
-            setMessage(finalTranscriptRef.current + receivedText.transcript);
-          }
-          resizeTextArea();
-
-          if (localStorage.getItem("transcribingFromDitto") === "true") {
-            inactivityTimeoutRef.current = setTimeout(() => {
-              stopRecording();
-              handleSubmit();
-            }, INACTIVITY_TIMEOUT);
-          }
-        };
-
-        wsRef.current.onclose = () => stopRecording();
-        wsRef.current.onerror = (error) => {
-          console.error("WebSocket error:", error);
-          stopRecording();
-        };
-      } catch (error) {
-        console.error("Error accessing microphone:", error);
-      }
-    }
-  };
-
-  const stopRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
-    sharedMic.stopMicStream();
-    if (model.isListening) {
-      model.startListening();
-    }
-    mediaRecorderRef.current = null;
-    wsRef.current = null;
-    setIsListening(false);
-    localStorage.removeItem("transcribingFromDitto");
-  };
-
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -173,63 +65,9 @@ export default function SendMessage({
     reader.readAsDataURL(file);
   };
 
-  const handleCameraOpen = () => {
-    setIsCameraOpen(true);
-    startCamera(isFrontCamera);
-    document.body.style.overflow = "hidden"; // Prevent scrolling when camera is open
-  };
-
-  const startCamera = (useFrontCamera) => {
-    navigator.mediaDevices
-      .getUserMedia({
-        video: { facingMode: useFrontCamera ? "user" : "environment" },
-      })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => {
-        console.error("Error accessing the camera: ", err);
-      });
-  };
-
-  const handleSnap = () => {
-    if (canvasRef.current && videoRef.current) {
-      const context = canvasRef.current.getContext("2d");
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      context.drawImage(videoRef.current, 0, 0);
-      const imageDataURL = canvasRef.current.toDataURL("image/png");
-      setImage(imageDataURL);
-      handleCameraClose();
-    }
-  };
-
-  const handleCameraClose = () => {
-    setIsCameraOpen(false);
-    stopCameraFeed();
-    document.body.style.overflow = ""; // Restore scrolling
-  };
-
-  const stopCameraFeed = () => {
-    const stream = videoRef.current?.srcObject;
-    if (stream) {
-      const tracks = stream.getTracks();
-      tracks.forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-    }
-  };
-
   const handleClearImage = () => {
     setImage("");
     onClearCapturedImage();
-  };
-
-  const toggleCamera = () => {
-    setIsFrontCamera(!isFrontCamera);
-    stopCameraFeed();
-    startCamera(!isFrontCamera);
   };
 
   const handleSubmit = async (event) => {
@@ -255,12 +93,7 @@ export default function SendMessage({
         setImage("");
         finalTranscriptRef.current = "";
         resizeTextArea();
-        if (isListening) {
-          stopRecording();
-        }
-
         let userPromptEmbedding = await textEmbed(messageToSend);
-
         await sendPrompt(
           userID,
           firstName,
@@ -415,10 +248,6 @@ export default function SendMessage({
           onFocus={() => setIsImageEnlarged(false)}
         />
         <div className="IconsWrapper">
-          <FaMicrophone
-            className={`Mic ${isListening ? "listening" : ""}`}
-            onClick={handleMicClick}
-          />
           <FaPlus className="PlusButton" onClick={handlePlusClick} />
           <input
             id="image-upload"

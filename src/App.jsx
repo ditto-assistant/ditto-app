@@ -11,7 +11,6 @@ import FullScreenSpinner from "./components/LoadingSpinner";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import { AuthProvider } from "./hooks/useAuth";
 import { BalanceProvider } from "./hooks/useBalance";
-import { DittoActivationProvider } from "./hooks/useDittoActivation";
 import { IntentRecognitionProvider } from "./hooks/useIntentRecognition";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
@@ -26,7 +25,7 @@ const Login = lazy(() => import("./screens/login"));
 const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
-const Settings = lazy(() => import("./screens/settings"));
+const Settings = lazy(() => import("./screens/Settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
 
@@ -66,24 +65,22 @@ export default function App() {
           <ModelPreferencesProvider>
             <MemoryCountProvider>
               <IntentRecognitionProvider>
-                <DittoActivationProvider>
-                  <PresignedUrlProvider>
-                    <ModalProvider>
-                      <RouterProvider router={router} />
-                      <Toaster
-                        position="bottom-center"
-                        toastOptions={{
-                          duration: 4000,
-                          style: {
-                            background: "#333",
-                            color: "#fff",
-                          },
-                        }}
-                      />
-                      <ModalConsumer />
-                    </ModalProvider>
-                  </PresignedUrlProvider>
-                </DittoActivationProvider>
+                <PresignedUrlProvider>
+                  <ModalProvider>
+                    <RouterProvider router={router} />
+                    <Toaster
+                      position="bottom-center"
+                      toastOptions={{
+                        duration: 4000,
+                        style: {
+                          background: "#333",
+                          color: "#fff",
+                        },
+                      }}
+                    />
+                    <ModalConsumer />
+                  </ModalProvider>
+                </PresignedUrlProvider>
               </IntentRecognitionProvider>
             </MemoryCountProvider>
           </ModelPreferencesProvider>
