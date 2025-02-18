@@ -23,17 +23,14 @@ import {
   FaChevronDown,
   FaBrain,
 } from "react-icons/fa";
-import { Button, useMediaQuery, IconButton, Tooltip } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import DOMTreeViewer from "./DOMTreeViewer";
 import { syncLocalScriptsWithFirestore } from "../control/firebase"; // Changed from '../control/agent'
-import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { textEmbed } from "../api/LLM";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useIntentRecognition } from "../hooks/useIntentRecognition";
 import FullScreenSpinner from "./LoadingSpinner";
 import updaterAgent from "../control/agentflows/updaterAgentFlow";
 import ModelDropdown from "./ModelDropdown";
@@ -183,7 +180,6 @@ const SearchOverlay = ({
 };
 
 const FullScreenEditor = ({ script, onClose, onSave }) => {
-  const navigate = useNavigate();
   const [code, setCode] = useState(script.content);
   const [previewKey, setPreviewKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -204,8 +200,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     width: isMobile ? window.innerWidth * 0.9 : 400,
     height: isMobile ? window.innerHeight * 0.6 : 500,
   });
-  const [messageBoxHeight, setMessageBoxHeight] = useState(40);
-  const resizingRef = useRef(null);
   const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null);
   const [scriptChatCopied, setScriptChatCopied] = useState(false);
   const [scriptChatPosition, setScriptChatPosition] = useState({
@@ -213,36 +207,12 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     y: isMobile ? (window.innerHeight - window.innerHeight * 0.6) / 2 : null,
   });
   const dragRef = useRef(null);
-
-  // Add this state to track if we're currently resizing
-  const [isResizing, setIsResizing] = useState(false);
-
-  // Add new state for selected code
   const [selectedCodeAttachment, setSelectedCodeAttachment] = useState(null);
-
-  // Add new state for code viewer overlay
   const [codeViewerOverlay, setCodeViewerOverlay] = useState(null);
-
-  // Add new state for intent warning overlay
-  const [showIntentWarning, setShowIntentWarning] = useState(false);
-  const [intentConfidence, setIntentConfidence] = useState(null);
-
-  // Use the intent recognition hook
-  const { isLoaded, models } = useIntentRecognition();
-
-  // Add new state for unsaved changes overlay
   const [showUnsavedChanges, setShowUnsavedChanges] = useState(false);
-
-  // Add state for showing the loading spinner
   const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
-
-  // Add new state for chat history
   const [scriptChatHistory, setScriptChatHistory] = useState([]);
-
-  // Add new state for memory overlay
   const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
-
-  // Add these state variables near the top of the component with other state declarations
   const balance = useBalance();
 
   // Add function to track selection in AceEditor
@@ -262,22 +232,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     const timestamp = new Date().toISOString();
 
     try {
-      // Get embedding for the user's message
-      const embedding = await textEmbed(userMessage);
-
-      // Classify intent
-      const intentPredictions = await models.classify(embedding);
-      console.log("Intent Predictions:", intentPredictions);
-
-      // Check HTMLAgent intent confidence
-      const htmlAgentConfidence = intentPredictions.HTMLAgent;
-      setIntentConfidence(htmlAgentConfidence);
-
-      if (htmlAgentConfidence < 0.4) {
-        setShowIntentWarning(true);
-        return;
-      }
-
       // Create the message content with code attachment and history
       const historyText =
         scriptChatHistory.length > 0
@@ -784,7 +738,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     if (
       e.target.tagName === "TEXTAREA" ||
       e.target.closest("button") ||
-      isResizing ||
       e.target === dragRef.current
     )
       return;
@@ -886,106 +839,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     setShowLoadingSpinner(false); // Hide the loading spinner
     onClose();
   };
-
-  // Update the intent warning keydown effect to prevent the event from propagating
-  useEffect(() => {
-    const handleIntentWarningKeyDown = (e) => {
-      if (showIntentWarning && e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        e.stopPropagation(); // Add this to stop event propagation
-
-        // Set a flag to prevent immediate reopening
-        const currentInput = scriptChatInput;
-        setShowIntentWarning(false);
-
-        const sendMessageAnyway = async () => {
-          const messageContent = selectedCodeAttachment
-            ? `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${currentInput}`
-            : currentInput;
-
-          setScriptChatMessages((prev) => [
-            ...prev,
-            { role: "user", content: messageContent },
-          ]);
-          setScriptChatInput("");
-          setSelectedCodeAttachment(null);
-          setIsTyping(true);
-
-          try {
-            // Construct the prompt
-            const usersPrompt = selectedCodeAttachment
-              ? `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${currentInput}`
-              : currentInput;
-
-            const response = await updaterAgent(
-              usersPrompt,
-              code,
-              preferences.programmerModel,
-              false
-            );
-
-            // Log the response in yellow
-            console.log("\x1b[33m%s\x1b[0m", response);
-
-            if (response) {
-              // Add current state to history before updating
-              const newHistory = editHistory.slice(0, historyIndex + 1);
-              newHistory.push({ content: response });
-              setEditHistory(newHistory);
-              setHistoryIndex(newHistory.length - 1);
-
-              // Update the code
-              setCode(response);
-              setPreviewKey((prev) => prev + 1);
-
-              // Add a message indicating task completion
-              setScriptChatMessages((prev) => [
-                ...prev,
-                {
-                  role: "assistant",
-                  content: "Task completed",
-                  fullScript: response,
-                },
-              ]);
-            } else {
-              setScriptChatMessages((prev) => [
-                ...prev,
-                {
-                  role: "assistant",
-                  content: response,
-                },
-              ]);
-            }
-          } catch (error) {
-            console.error("Error in chat:", error);
-            setScriptChatMessages((prev) => [
-              ...prev,
-              {
-                role: "assistant",
-                content: "Sorry, there was an error processing your request.",
-              },
-            ]);
-          }
-
-          setIsTyping(false);
-        };
-        sendMessageAnyway();
-      }
-    };
-
-    document.addEventListener("keydown", handleIntentWarningKeyDown, true); // Add capture phase
-    return () => {
-      document.removeEventListener("keydown", handleIntentWarningKeyDown, true);
-    };
-  }, [
-    showIntentWarning,
-    scriptChatInput,
-    selectedCodeAttachment,
-    code,
-    preferences.programmerModel,
-    editHistory,
-    historyIndex,
-  ]);
 
   // Add handler for history reset
   const handleResetHistory = () => {
@@ -1774,125 +1627,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 Send
               </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Add the intent warning overlay */}
-      <AnimatePresence>
-        {showIntentWarning && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={styles.intentWarningOverlay}
-            onClick={() => setShowIntentWarning(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              style={styles.intentWarningContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <p style={styles.intentWarningText}>
-                The Programmer Agent is designed for executing commands and
-                tasks related to your app, not for general chatting. Your intent
-                confidence is {Math.round(intentConfidence * 100)}%.
-              </p>
-              <div style={styles.intentWarningActions}>
-                <button
-                  onClick={() => setShowIntentWarning(false)}
-                  style={styles.intentWarningButton}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowIntentWarning(false);
-                    const sendMessageAnyway = async () => {
-                      const messageContent = selectedCodeAttachment
-                        ? `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${scriptChatInput}`
-                        : scriptChatInput;
-
-                      setScriptChatMessages((prev) => [
-                        ...prev,
-                        { role: "user", content: messageContent },
-                      ]);
-                      setScriptChatInput("");
-                      setSelectedCodeAttachment(null);
-                      setIsTyping(true);
-
-                      try {
-                        // Construct the prompt
-                        const usersPrompt = selectedCodeAttachment
-                          ? `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${scriptChatInput}`
-                          : scriptChatInput;
-
-                        const response = await updaterAgent(
-                          usersPrompt,
-                          code,
-                          preferences.programmerModel,
-                          false
-                        );
-
-                        // Log the response in yellow
-                        console.log("\x1b[33m%s\x1b[0m", response);
-
-                        if (response) {
-                          // Add current state to history before updating
-                          const newHistory = editHistory.slice(
-                            0,
-                            historyIndex + 1
-                          );
-                          newHistory.push({ content: response });
-                          setEditHistory(newHistory);
-                          setHistoryIndex(newHistory.length - 1);
-
-                          // Update the code
-                          setCode(response);
-                          setPreviewKey((prev) => prev + 1);
-
-                          // Add a message indicating task completion
-                          setScriptChatMessages((prev) => [
-                            ...prev,
-                            {
-                              role: "assistant",
-                              content: "Task completed",
-                              fullScript: response,
-                            },
-                          ]);
-                        } else {
-                          setScriptChatMessages((prev) => [
-                            ...prev,
-                            {
-                              role: "assistant",
-                              content: response,
-                            },
-                          ]);
-                        }
-                      } catch (error) {
-                        console.error("Error in chat:", error);
-                        setScriptChatMessages((prev) => [
-                          ...prev,
-                          {
-                            role: "assistant",
-                            content:
-                              "Sorry, there was an error processing your request.",
-                          },
-                        ]);
-                      }
-
-                      setIsTyping(false);
-                    };
-                    sendMessageAnyway();
-                  }}
-                  style={styles.intentWarningButton}
-                >
-                  Send Anyways (Enter)
-                </button>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

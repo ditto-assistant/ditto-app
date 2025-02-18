@@ -7,7 +7,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
 import TermsOfService from "../components/TermsOfService";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
-import dittoIcon from "/icons/ditto-icon-clear2.png";
+import dittoIcon from "/icons/ditto-icon-clear.png";
 import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";

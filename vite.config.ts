@@ -21,8 +21,8 @@ export default defineConfig({
         theme_color: "#000000",
         icons: [
           {
-            src: "maskable_icon.png",
-            sizes: "512x512",
+            src: "icons/ditto-icon.png",
+            sizes: "1024x1024",
             type: "image/png",
           },
         ],
@@ -65,12 +65,6 @@ export default defineConfig({
           if (id.includes("node_modules")) {
             if (id.includes("framer-motion")) return "framer-motion";
             if (id.includes("firebase")) return "firebase";
-            if (id.includes("@tensorflow")) {
-              if (id.includes("tfjs-core")) return "tensorflow-core";
-              if (id.includes("tfjs-layers")) return "tensorflow-layers";
-              return "tensorflow-other";
-            }
-            if (id.includes("@huggingface")) return "huggingface";
             if (id.includes("@mui")) {
               if (id.includes("@mui/material")) return "mui-material";
               if (id.includes("@mui/icons")) return "mui-icons";

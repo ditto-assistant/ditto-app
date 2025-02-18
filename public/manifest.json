@@ -8,8 +8,8 @@
       "type": "image/x-icon"
     },
     {
-      "src": "maskable_icon.png",
-      "sizes": "192x192",
+      "src": "icons/ditto-icon.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "maskable"
     }

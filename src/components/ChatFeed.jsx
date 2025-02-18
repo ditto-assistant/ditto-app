@@ -23,9 +23,9 @@ import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
 import { getMemories } from "@/api/getMemories";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import dittoAvatar from "/icons/ditto-icon.png";
 
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
-const DITTO_AVATAR_KEY = "dittoAvatar";
 const USER_AVATAR_KEY = "userAvatar";
 const AVATAR_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const AVATAR_FETCH_COOLDOWN = 60 * 1000; // 1 minute cooldown between fetch attempts
@@ -318,9 +318,6 @@ export default function ChatFeed({
   const [profilePic, setProfilePic] = useState(() => {
     return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png"; // Update path
   });
-  const [dittoAvatar, setDittoAvatar] = useState(() => {
-    return localStorage.getItem(DITTO_AVATAR_KEY) || "/icons/fancy-ditto.png";
-  });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
@@ -416,23 +413,6 @@ export default function ChatFeed({
       setProfilePic(cachedAvatar || "/user_placeholder.png");
     }
   };
-
-  // Ditto avatar caching effect
-  useEffect(() => {
-    // Cache Ditto avatar - update the path to the new image
-    fetch("/icons/fancy-ditto.png")
-      .then((response) => response.blob())
-      .then((blob) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64data = reader.result;
-          localStorage.setItem(DITTO_AVATAR_KEY, base64data);
-          setDittoAvatar(base64data);
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch((error) => console.error("Error caching Ditto avatar:", error));
-  }, []);
 
   useEffect(() => {
     // Only load messages if the current messages array is empty
@@ -531,20 +511,6 @@ export default function ChatFeed({
   }, [messages, scrollToBottom, startAtBottom, scrollToBottomOfFeed]);
 
   useEffect(() => {
-    // Cache Ditto avatar - update the path to the new image
-    fetch("/icons/fancy-ditto.png")
-      .then((response) => response.blob())
-      .then((blob) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64data = reader.result;
-          localStorage.setItem(DITTO_AVATAR_KEY, base64data);
-          setDittoAvatar(base64data);
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch((error) => console.error("Error caching Ditto avatar:", error));
-
     // Load user avatar with cooldown and caching
     const loadUserAvatar = async () => {
       if (auth.currentUser?.photoURL) {
