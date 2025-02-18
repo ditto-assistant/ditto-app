@@ -1,7 +1,7 @@
 import "../styles/animations.css";
 import "./LoadingSpinner.css";
 
-export default function FullScreenSpinner({ text }) {
+export default function FullScreenSpinner({ text }: { text?: string }) {
   return (
     <div className="loading-spinner-overlay">
       <LoadingSpinner size={100} />
@@ -10,7 +10,13 @@ export default function FullScreenSpinner({ text }) {
   );
 }
 
-export function LoadingSpinner({ size = 50, inline = false }) {
+export function LoadingSpinner({
+  size = 50,
+  inline = false,
+}: {
+  size?: number;
+  inline?: boolean;
+}) {
   const containerClassName = `loading-spinner-container ${inline ? "inline" : "fullscreen"}`;
 
   return (
@@ -19,7 +25,7 @@ export function LoadingSpinner({ size = 50, inline = false }) {
       style={{
         width: inline ? size : "100%",
         height: inline ? size : "100%",
-        "--spinner-size": `${size}px`,
+        ["--spinner-size" as string]: `${size}px`,
       }}
     >
       {[0, 1, 2, 3].map((i) => (

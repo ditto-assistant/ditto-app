@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from "react";
-import { MdClose } from "react-icons/md";
 import { FaBrain } from "react-icons/fa";
 import { IoSettingsSharp, IoExtensionPuzzle } from "react-icons/io5";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
