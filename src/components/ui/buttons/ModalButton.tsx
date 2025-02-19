@@ -7,8 +7,6 @@ interface ModalButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
   icon?: React.ReactNode;
   isLoading?: boolean;
   fullWidth?: boolean;
-  shortcutHint?: string;
-  hideShortcut?: boolean;
   children?: React.ReactNode;
 }
 
@@ -18,8 +16,6 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
   icon,
   isLoading,
   fullWidth,
-  shortcutHint,
-  hideShortcut = false,
   className = "",
   ...props
 }) => {
@@ -39,9 +35,6 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
         <>
           {icon && <span className="button-icon">{icon}</span>}
           <span className="button-text">{children}</span>
-          {!hideShortcut && shortcutHint && (
-            <span className="shortcut-hint">{shortcutHint}</span>
-          )}
         </>
       )}
     </motion.button>
