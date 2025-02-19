@@ -1286,7 +1286,7 @@ export default function ChatFeed({
           userID,
           longTerm: {
             pairID: currentPairID,
-            nodeCounts: [6, 3],
+            nodeCounts: preferences.memory.longTermMemoryChain,
           },
         },
         "application/json"
@@ -1294,28 +1294,16 @@ export default function ChatFeed({
       if (memoriesResponse.err) {
         throw new Error(memoriesResponse.err);
       }
-      if (!memoriesResponse.ok) {
+      if (!memoriesResponse.ok.longTerm) {
         throw new Error("Failed to fetch memories");
       }
-      const topMemories = memoriesResponse.ok.longTerm.slice(1, 6);
-      const networkData = [
-        {
-          prompt: promptToUse,
-          response: message.text,
-          timestamp: currentTimestamp,
-          timestampString: new Date(currentTimestamp).toISOString(),
-          related: topMemories.map((mem) => ({
-            ...mem,
-            timestamp: mem.timestamp,
-            timestampString: mem.timestampString,
-            related: mem.children.map((rel) => ({
-              ...rel,
-              timestamp: rel.timestamp,
-              timestampString: rel.timestampString,
-            })),
-          })),
-        },
-      ];
+      const networkData = [{
+        prompt: promptToUse,
+        response: message.text,
+        timestamp: currentTimestamp,
+        timestampString: new Date(currentTimestamp).toISOString(),
+        children: memoriesResponse.ok.longTerm,
+      }];
 
       console.log("Network Data:", networkData);
       setRelatedMemories(networkData);
@@ -1419,12 +1407,12 @@ export default function ChatFeed({
             localStorage.setItem("histCount", pairIDs.length);
           }
         } else {
-          const newMemories = relatedMemories.filter((_, i) => i !== idx);
-          setRelatedMemories(newMemories);
+          // const newMemories = relatedMemories.related.filter((_, i) => i !== idx);
+          // setRelatedMemories(newMemories);
 
-          if (newMemories.length === 0) {
-            setMemoryOverlay(null);
-          }
+          // if (newMemories.length === 0) {
+            // setMemoryOverlay(null);
+          // }
         }
         toast.success("Message deleted successfully");
 

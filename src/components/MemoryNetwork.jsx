@@ -103,6 +103,7 @@ const TableView = ({ memories, onMemoryClick }) => {
   const [imageOverlay, setImageOverlay] = useState(null);
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
 
   const handleDelete = async (memory) => {
     setDeleteConfirmation({
@@ -124,10 +125,7 @@ const TableView = ({ memories, onMemoryClick }) => {
       const success = await deleteConversation(userID, docId);
 
       if (success) {
-        // Dispatch memoryUpdated event to trigger memory count refresh
         window.dispatchEvent(new Event("memoryUpdated"));
-
-        // Close any open overlays
         setSelectedParent(null);
         setDeleteConfirmation(null);
       }
@@ -142,6 +140,114 @@ const TableView = ({ memories, onMemoryClick }) => {
       });
       setDeleteConfirmation(null);
     }
+  };
+
+  const toggleExpanded = (nodeId) => {
+    setExpandedNodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  };
+
+  // Recursive component to render memory nodes
+  const MemoryNode = ({ memory, depth = 0, index = 0, parentPath = "" }) => {
+    const isExpanded = expandedNodes.has(memory.id);
+    const hasChildren = memory.children && memory.children.length > 0;
+    const indentStyle = { marginLeft: `${depth * 20}px` };
+    const currentPath = parentPath
+      ? `${parentPath}.${index + 1}`
+      : `${index + 1}`;
+
+    // Color palette for different depths
+    const colors = [
+      "#FF5733", // Root (orange-red)
+      "#3498DB", // Level 1 (blue)
+      "#2ECC71", // Level 2 (green)
+      "#9B59B6", // Level 3 (purple)
+      "#F1C40F", // Level 4 (yellow)
+      "#E74C3C", // Level 5 (red)
+      "#1ABC9C", // Level 6 (turquoise)
+      "#D35400", // Level 7 (dark orange)
+      "#8E44AD", // Level 8 (dark purple)
+      "#27AE60", // Level 9 (dark green)
+    ];
+
+    // Get color based on depth, cycling through colors if depth exceeds array length
+    const nodeColor =
+      depth === 0 ? colors[0] : colors[(depth % (colors.length - 1)) + 1];
+
+    return (
+      <div
+        style={{
+          ...styles.memoryCard,
+          ...indentStyle,
+          borderLeft: depth > 0 ? `3px solid ${nodeColor}` : undefined,
+        }}
+      >
+        <div style={styles.memoryHeader}>
+          <div style={styles.memoryHeaderContent}>
+            <div style={styles.memoryHeaderLeft}>
+              {hasChildren && (
+                <button
+                  onClick={() => toggleExpanded(memory.id)}
+                  style={styles.expandButton}
+                >
+                  <IoMdArrowDropdown
+                    style={{
+                      ...styles.expandIcon,
+                      transform: isExpanded ? "rotate(0deg)" : "rotate(-90deg)",
+                      transition: "transform 0.2s ease",
+                      color: nodeColor,
+                    }}
+                  />
+                </button>
+              )}
+              <div style={{ ...styles.memoryLabel, color: nodeColor }}>
+                {depth === 0 ? "Your Prompt" : `Memory ${currentPath}`}
+              </div>
+            </div>
+            <div style={styles.timestamp}>
+              {formatDateTime(memory.timestampString || memory.timestamp)}
+            </div>
+          </div>
+          <div style={styles.memoryActions}>
+            <button
+              onClick={() => handleDelete(memory)}
+              style={{
+                ...styles.deleteButton,
+                "&:hover": {
+                  backgroundColor: `${nodeColor}22`,
+                },
+              }}
+              disabled={deletingMemories.has(memory.id)}
+            >
+              <FaTrash />
+            </button>
+          </div>
+        </div>
+        {renderMarkdown(memory.prompt)}
+        {memory.response !== memory.prompt && renderMarkdown(memory.response)}
+
+        {hasChildren && isExpanded && (
+          <div style={styles.childrenContainer}>
+            {memory.children.map((child, idx) => (
+              <MemoryNode
+                key={child.id}
+                memory={child}
+                depth={depth + 1}
+                index={idx}
+                parentPath={currentPath}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handleImageClick = (src) => {
@@ -268,116 +374,9 @@ const TableView = ({ memories, onMemoryClick }) => {
 
   return (
     <div style={styles.tableContainer}>
-      <div style={styles.promptSection}>
-        <div style={styles.promptHeader}>
-          <div style={styles.promptLabel}>Your Prompt</div>
-          <div style={styles.timestamp}>
-            {formatDateTime(
-              memories[0]?.timestampString || memories[0]?.timestamp
-            )}
-          </div>
-        </div>
-        {renderMarkdown(memories[0]?.prompt)}
-      </div>
-
-      <div style={styles.memoriesList}>
-        {memories[0]?.related?.map((memory, index) => (
-          <div key={memory.id} style={styles.memoryCard}>
-            <div style={styles.memoryHeader}>
-              <div style={styles.memoryHeaderContent}>
-                <div style={styles.memoryLabel}>Memory {index + 1}</div>
-                <div style={styles.timestamp}>
-                  {formatDateTime(memory.timestampString || memory.timestamp)}
-                </div>
-              </div>
-              <div style={styles.memoryActions}>
-                <button
-                  onClick={() => setSelectedParent(memory)}
-                  style={styles.viewRelatedButton}
-                >
-                  View Related
-                </button>
-                <button
-                  onClick={() => handleDelete(memory)}
-                  style={styles.deleteButton}
-                  disabled={deletingMemories.has(memory.id)}
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            </div>
-            {renderMarkdown(memory.prompt)}
-            {renderMarkdown(memory.response)}
-          </div>
-        ))}
-      </div>
-
-      {/* Related Memories Overlay */}
-      <AnimatePresence>
-        {selectedParent && (
-          <motion.div
-            style={styles.relatedOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedParent(null)}
-          >
-            <motion.div
-              style={styles.relatedContent}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={styles.relatedHeader}>
-                <h3 style={styles.relatedTitle}>Related Memories</h3>
-                <button
-                  onClick={() => setSelectedParent(null)}
-                  style={styles.closeButton}
-                >
-                  <FaTimes />
-                </button>
-              </div>
-              <div style={styles.relatedBody}>
-                <div style={styles.parentMemory}>
-                  <div style={styles.parentLabel}>Parent Memory</div>
-                  <div style={styles.memoryActions}>
-                    <button
-                      onClick={() => handleDelete(selectedParent)}
-                      style={styles.deleteButton}
-                      disabled={deletingMemories.has(selectedParent.id)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                  {renderMarkdown(selectedParent.prompt)}
-                  {renderMarkdown(selectedParent.response)}
-                </div>
-                <div style={styles.relatedList}>
-                  {selectedParent.related?.map((related, idx) => (
-                    <div key={idx} style={styles.relatedItem}>
-                      <div style={styles.relatedHeader}>
-                        <div style={styles.relatedLabel}>
-                          Related Memory {idx + 1}
-                        </div>
-                        <button
-                          onClick={() => handleDelete(related)}
-                          style={styles.deleteButton}
-                          disabled={deletingMemories.has(related.id)}
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                      {renderMarkdown(related.prompt)}
-                      {renderMarkdown(related.response)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {memories.map((memory) => (
+        <MemoryNode key={memory.id} memory={memory} />
+      ))}
 
       {/* Delete Confirmation Overlay */}
       <AnimatePresence>
@@ -400,7 +399,7 @@ const TableView = ({ memories, onMemoryClick }) => {
         )}
       </AnimatePresence>
 
-      {/* Add the Image Overlay */}
+      {/* Image Overlay */}
       <AnimatePresence>
         {imageOverlay && (
           <motion.div
@@ -801,13 +800,13 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
         if (memory.id === id) {
           return false;
         }
-        if (memory.related) {
-          memory.related = removeHelper(memory.related);
+        if (memory.children) {
+          memory.children = removeHelper(memory.children);
         }
         return true;
       });
     };
-    newNodes[0].related = removeHelper(newNodes[0].related || []);
+    newNodes[0].children = removeHelper(newNodes[0].children || []);
     return newNodes;
   };
 
@@ -825,65 +824,79 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
     let nodeId = 1;
     const nodeIdMap = {};
 
-    const centralId = nodeId++;
-    nodes.add({
-      id: centralId,
-      label: "Your Prompt",
-      title: nodesData[0].prompt,
-      color: "#FF5733",
-      size: 30,
-      font: { size: 16 },
-    });
-    nodeIdMap[centralId] = {
-      prompt: nodesData[0].prompt,
-      response: nodesData[0].response || "",
-      timestamp: nodesData[0].timestampString || nodesData[0].timestamp,
-      id: nodesData[0].id,
-    };
+    // Helper function to recursively add nodes and edges
+    const addMemoryNodes = (
+      memory,
+      parentNodeId = null,
+      depth = 0,
+      parentPath = ""
+    ) => {
+      const currentNodeId = nodeId++;
+      const currentPath = parentPath ? `${parentPath}.${nodeId}` : `${nodeId}`;
+      const label = parentNodeId === null ? "Your Prompt" : currentPath;
 
-    nodesData[0].related?.forEach((memory, index) => {
-      const parentId = nodeId++;
+      // Color palette for different depths
+      const colors = [
+        "#FF5733", // Root (orange-red)
+        "#3498DB", // Level 1 (blue)
+        "#2ECC71", // Level 2 (green)
+        "#9B59B6", // Level 3 (purple)
+        "#F1C40F", // Level 4 (yellow)
+        "#E74C3C", // Level 5 (red)
+        "#1ABC9C", // Level 6 (turquoise)
+        "#D35400", // Level 7 (dark orange)
+        "#8E44AD", // Level 8 (dark purple)
+        "#27AE60", // Level 9 (dark green)
+      ];
+
+      // Get color based on depth, cycling through colors if depth exceeds array length
+      const nodeColor =
+        depth === 0 ? colors[0] : colors[(depth % (colors.length - 1)) + 1];
+
       nodes.add({
-        id: parentId,
-        label: `Memory ${index + 1}`,
+        id: currentNodeId,
+        label: label,
         title: memory.prompt,
-        color: "#3498DB",
-        size: 25,
+        color: nodeColor,
+        size: Math.max(30 - depth * 3, 15), // Adjusted size reduction
+        font: {
+          size: Math.max(16 - depth * 1, 12), // Adjusted font size reduction
+          color: "#ffffff",
+        },
       });
-      edges.add({
-        from: centralId,
-        to: parentId,
-        length: 200,
-      });
-      nodeIdMap[parentId] = {
+
+      nodeIdMap[currentNodeId] = {
         prompt: memory.prompt,
         response: memory.response || "",
         timestamp: memory.timestampString || memory.timestamp,
         id: memory.id,
+        path: currentPath,
       };
 
-      memory.related?.forEach((relatedMemory, relatedIndex) => {
-        const childId = nodeId++;
-        nodes.add({
-          id: childId,
-          label: `Related ${index + 1}.${relatedIndex + 1}`,
-          title: relatedMemory.prompt,
-          color: "#2ECC71",
-          size: 20,
-        });
+      if (parentNodeId !== null) {
         edges.add({
-          from: parentId,
-          to: childId,
-          length: 150,
+          from: parentNodeId,
+          to: currentNodeId,
+          length: Math.max(200 - depth * 20, 80), // Adjusted length reduction
+          color: {
+            color: nodeColor,
+            opacity: 0.4,
+          },
         });
-        nodeIdMap[childId] = {
-          prompt: relatedMemory.prompt,
-          response: relatedMemory.response || "",
-          timestamp: relatedMemory.timestampString || relatedMemory.timestamp,
-          id: relatedMemory.id,
-        };
-      });
-    });
+      }
+
+      // Recursively add child nodes
+      if (memory.children && memory.children.length > 0) {
+        memory.children.forEach((childMemory, index) => {
+          addMemoryNodes(childMemory, currentNodeId, depth + 1, currentPath);
+        });
+      }
+
+      return currentNodeId;
+    };
+
+    // Start building the network from the root node
+    addMemoryNodes(nodesData[0]);
 
     // Store the nodeIdMap in the ref
     nodeIdMapRef.current = nodeIdMap;
@@ -1188,8 +1201,8 @@ const styles = {
     padding: "16px",
     borderRadius: "8px",
     border: "1px solid rgba(255, 255, 255, 0.1)",
-    overflow: "auto",
-    boxSizing: "border-box",
+    marginBottom: "16px",
+    transition: "all 0.2s ease",
   },
   memoryContent: {
     maxHeight: "calc(100vh - 200px)",
@@ -1452,7 +1465,6 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     transition: "all 0.2s ease",
-    marginRight: "4px",
     "&:hover": {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
@@ -1461,6 +1473,7 @@ const styles = {
   expandIcon: {
     fontSize: "24px",
     color: "#ffffff",
+    transition: "transform 0.2s ease",
   },
 
   relatedButton: {
@@ -1734,6 +1747,13 @@ const styles = {
 
   nestedListItem: {
     margin: "0.2em 0",
+  },
+
+  childrenContainer: {
+    marginTop: "16px",
+    marginLeft: "16px",
+    borderLeft: "2px solid rgba(255, 255, 255, 0.1)",
+    paddingLeft: "16px",
   },
 };
 
