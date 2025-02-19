@@ -1297,13 +1297,15 @@ export default function ChatFeed({
       if (!memoriesResponse.ok.longTerm) {
         throw new Error("Failed to fetch memories");
       }
-      const networkData = [{
-        prompt: promptToUse,
-        response: message.text,
-        timestamp: currentTimestamp,
-        timestampString: new Date(currentTimestamp).toISOString(),
-        children: memoriesResponse.ok.longTerm,
-      }];
+      const networkData = [
+        {
+          prompt: promptToUse,
+          response: message.text,
+          timestamp: currentTimestamp,
+          timestampString: new Date(currentTimestamp).toISOString(),
+          children: memoriesResponse.ok.longTerm,
+        },
+      ];
 
       console.log("Network Data:", networkData);
       setRelatedMemories(networkData);
@@ -1409,9 +1411,8 @@ export default function ChatFeed({
         } else {
           // const newMemories = relatedMemories.related.filter((_, i) => i !== idx);
           // setRelatedMemories(newMemories);
-
           // if (newMemories.length === 0) {
-            // setMemoryOverlay(null);
+          // setMemoryOverlay(null);
           // }
         }
         toast.success("Message deleted successfully");
