@@ -1,69 +1,64 @@
-import { useState } from "react";
 import { MdBugReport, MdLightbulb } from "react-icons/md";
-import { useAuth, useAuthToken } from "../hooks/useAuth";
-import { getDeviceID, APP_VERSION } from "../utils/deviceId";
+import { useActionState, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BASE_URL } from "../firebaseConfig";
-import { toast } from "react-hot-toast";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { ModalHeader } from "./ui/modals/ModalHeader";
-import "./FeedbackModal.css";
+import { getDeviceID, APP_VERSION } from "../utils/deviceId";
+import { useAuth, useAuthToken } from "../hooks/useAuth";
 import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { useCallback } from "react";
-import { useEffect, useRef } from "react";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { toast } from "react-hot-toast";
 import { SubmitButton } from "./ui/buttons/SubmitButton";
 import { A } from "./ui/links/Anchor";
+import { ModalHeader } from "./ui/modals/ModalHeader";
 
 type FeedbackType = "bug" | "feature-request";
-
 interface FeedbackModalProps {
   onClose: () => void;
   feedbackType?: FeedbackType;
+}
+
+async function submitFeedback(prevState: any, formData: FormData) {
+  try {
+    const response = await fetch(`${BASE_URL}/v1/feedback`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.status === 201) {
+      toast.success("Feedback submitted successfully!");
+      return { success: true };
+    }
+    const error = await response.text();
+    toast.error(error || "Failed to submit feedback");
+    return { success: false, error };
+  } catch (error) {
+    toast.error("Failed to submit feedback");
+    return { success: false, error: "Failed to submit feedback" };
+  }
 }
 
 export default function FeedbackModal({
   onClose,
   feedbackType = "bug",
 }: FeedbackModalProps) {
-  const [selectedType, setSelectedType] = useState<FeedbackType>(feedbackType);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const auth = useAuth();
-  const token = useAuthToken();
+  const [selectedType, setSelectedType] = useState(feedbackType);
   const createSelectTypeCallback = useCallback(
     (type: FeedbackType) => () => setSelectedType(type),
     []
   );
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!auth.user?.uid || !token.data) return;
-
-    setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-
-    try {
-      const response = await fetch(`${BASE_URL}/v1/feedback`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.status === 201) {
-        toast.success("Feedback submitted successfully!");
-        onClose();
-      } else {
-        const error = await response.text();
-        toast.error(error || "Failed to submit feedback");
-      }
-    } catch (error) {
-      toast.error("Failed to submit feedback");
-    } finally {
-      setIsSubmitting(false);
+  const auth = useAuth();
+  const token = useAuthToken();
+  const [state, formAction] = useActionState(submitFeedback, null);
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state?.success) {
+      onClose();
     }
-  };
+  }, [state?.success, onClose]);
 
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
-
   if (auth.error || token.error) {
     return <div className="error-message">Authentication required</div>;
   }
@@ -76,7 +71,7 @@ export default function FeedbackModal({
       <div className="modal-content">
         <ModalHeader title="Feedback" onClose={onClose} />
         <div className="modal-body">
-          <form onSubmit={handleSubmit}>
+          <form ref={formRef} action={formAction}>
             <input type="hidden" name="userID" value={auth.user?.uid || ""} />
             <input type="hidden" name="deviceID" value={getDeviceID()} />
             <input type="hidden" name="version" value={APP_VERSION} />
@@ -122,14 +117,7 @@ export default function FeedbackModal({
                 rows={6}
               />
             </div>
-
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
-            </button>
+            <SubmitButton />
 
             <div className="feedback-actions">
               <A href="https://github.com/orgs/ditto-assistant/discussions/new/choose">
