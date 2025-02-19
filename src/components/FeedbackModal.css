@@ -30,6 +30,10 @@
   overflow: hidden;
 }
 
+.modal-body {
+  padding: 20px;
+}
+
 .feedback-type-selector {
   margin-bottom: 20px;
 }
@@ -40,7 +44,7 @@
   margin-bottom: 20px;
 }
 
-.feedback-button {
+.modal-feedback-button {
   flex: 1;
   display: inline-flex;
   align-items: center;
@@ -56,7 +60,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.feedback-button:hover {
+.modal-feedback-button:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -138,6 +142,22 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.shortcut-hint {
+  font-size: 14px;
+  opacity: 0.7;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: absolute;
+  right: 12px;
 }
 
 .submit-button:hover {
@@ -151,17 +171,68 @@
   transform: none;
 }
 
+.submit-button:disabled .shortcut-hint {
+  display: none;
+}
+
+.feedback-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.feedback-actions a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feedback-actions a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.feedback-actions svg {
+  font-size: 16px;
+}
+
 @media (max-width: 480px) {
   .modal-content {
     width: 95%;
     margin: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .feedback-buttons {
     flex-direction: column;
   }
 
-  .feedback-button {
+  .modal-feedback-button {
     width: 100%;
+  }
+
+  .feedback-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .feedback-actions a {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .shortcut-hint {
+    display: none;
   }
 }

@@ -5,11 +5,8 @@ import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
 import { toast } from "react-hot-toast";
-import { MdFeedback } from "react-icons/md";
 import { motion } from "framer-motion";
-import "./FeedbackModal.css";
 import "./StatusBar.css";
-import { useModal } from "../hooks/useModal";
 
 export default function StatusBar({ onMemoryClick, onScriptsClick }) {
   const balance = useBalance();
@@ -97,8 +94,6 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
     }
   }, [balance.data?.dropAmount]);
 
-  const { openModal } = useModal();
-
   return (
     <div className="status-bar">
       <div className="center-section">
@@ -121,14 +116,6 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
       </div>
 
       <div className="right-section">
-        <motion.div
-          className="feedback-button"
-          onClick={() => openModal("feedback")}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <MdFeedback size={16} />
-        </motion.div>
         <motion.div
           className="balance-container"
           onClick={toggleBalanceDisplay}

@@ -10,7 +10,7 @@ import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear.png";
 import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdFlipCameraIos } from "react-icons/md";
+import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
 import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
 import {
@@ -23,6 +23,7 @@ import SendMessage from "../components/SendMessage";
 import MemoryOverlay from "../components/MemoryOverlay";
 import ScriptsOverlay from "../components/ScriptsOverlay";
 import FullScreenEditor from "../components/FullScreenEditor";
+import { useModal } from "../hooks/useModal";
 
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
@@ -48,6 +49,7 @@ export default function HomeScreen() {
   const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
   const [isScriptsOverlayOpen, setIsScriptsOverlayOpen] = useState(false);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
+  const { openModal } = useModal();
 
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
@@ -622,6 +624,14 @@ export default function HomeScreen() {
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="App-header">
+        <motion.div
+          className="icon-button header-feedback-button"
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.1 }}
+          onClick={() => openModal("feedback")}
+        >
+          <MdFeedback className="icon" />
+        </motion.div>
         {workingScript ? (
           <MiniFocusOverlay
             scriptName={workingScript}

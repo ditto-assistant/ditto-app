@@ -74,7 +74,8 @@ body:not(.login-page) {
 }
 
 .microphone-button,
-.settings-button {
+.settings-button,
+.header-feedback-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +94,8 @@ body:not(.login-page) {
 }
 
 .microphone-button:hover,
-.settings-button:hover {
+.settings-button:hover,
+.header-feedback-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
