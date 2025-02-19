@@ -999,39 +999,3 @@ export const revertScriptToVersion = async (
     throw e;
   }
 };
-
-export const saveMessagePairToMemory = async (
-  userID,
-  prompt,
-  response,
-  embedding
-) => {
-  try {
-    if (mode === "development") {
-      console.log("Creating memory collection with userID: ", userID);
-    }
-    const memoryRef = collection(db, "memory", userID, "conversations");
-    if (mode === "development") {
-      console.log("Memory collection reference: ", memoryRef);
-    }
-    const docRef = await addDoc(memoryRef, {
-      prompt: prompt,
-      response: response,
-      embedding_vector: vector(embedding),
-      timestamp: new Date(),
-      device_id: getDeviceID(),
-    });
-    if (mode === "development") {
-      console.log(
-        "Memory written to Firestore collection with ID: ",
-        docRef.id
-      );
-    }
-    // Dispatch event when memory is created
-    window.dispatchEvent(new Event("memoryUpdated"));
-    return docRef.id;
-  } catch (e) {
-    console.error("Error adding document to Firestore memory collection: ", e);
-    return null;
-  }
-};

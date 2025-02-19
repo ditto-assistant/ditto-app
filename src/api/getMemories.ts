@@ -2,23 +2,7 @@ import { Result } from "@/types/common";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
 
-interface ParamsLongTermMemoriesV2 {
-  vector: number[];
-  nodeCounts: number[];
-}
-
-interface ParamsShortTermMemoriesV2 {
-  k: number;
-}
-
-interface GetMemoriesV2Request {
-  userID: string;
-  longTerm?: ParamsLongTermMemoriesV2;
-  shortTerm?: ParamsShortTermMemoriesV2;
-  stripImages: boolean;
-}
-
-interface Memory {
+export interface Memory {
   id: string;
   score: number;
   prompt: string;
@@ -29,9 +13,26 @@ interface Memory {
   children?: Memory[];
 }
 
-interface MemoriesV2Response {
-  longTerm: Memory[];
-  shortTerm: Memory[];
+export interface ParamsLongTermMemoriesV2 {
+  pairID: string;
+  nodeCounts: number[];
+  nodeThresholds: number[];
+}
+
+export interface ParamsShortTermMemoriesV2 {
+  k: number;
+}
+
+export interface GetMemoriesV2Request {
+  userID: string;
+  longTerm?: ParamsLongTermMemoriesV2;
+  shortTerm?: ParamsShortTermMemoriesV2;
+  stripImages: boolean;
+}
+
+export interface MemoriesV2Response {
+  longTerm?: Memory[];
+  shortTerm?: Memory[];
 }
 
 export async function getMemories(

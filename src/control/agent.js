@@ -1,4 +1,4 @@
-import { promptLLM, textEmbed, getRelevantExamples } from "../api/LLM";
+import { promptLLM } from "../api/LLM";
 import {
   mainTemplate,
   systemTemplate,
@@ -17,8 +17,11 @@ import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
 import { handleHomeAssistant } from "./agentflows/homeFlow";
 import { modelSupportsImageAttachments } from "@/types/llm";
-import { saveMessagePairToMemory } from "./firebase";
 import { getMemories } from "@/api/getMemories";
+import { saveResponse } from "@/api/saveResponse";
+import { createPrompt } from "@/api/createPrompt";
+import { searchExamples } from "@/api/searchExamples";
+
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
 // Add this near the top of the file with other constants
@@ -30,7 +33,6 @@ let toolTriggered = false;
  * @param {string} firstName - The user's first name.
  * @param {string} prompt - The user's prompt.
  * @param {string} image - The user's image.
- * @param {string} userPromptEmbedding - The user's prompt embedding.
  * @param {function} updateConversation - A function that updates the conversation.
  * @param {ModelPreferences} preferences - The user's preferences.
  */
@@ -39,7 +41,6 @@ export const sendPrompt = async (
   firstName,
   prompt,
   image,
-  userPromptEmbedding,
   updateConversation,
   preferences
 ) => {
@@ -80,13 +81,21 @@ export const sendPrompt = async (
       is_typing: true,
     }));
 
+    const { ok: pairID, err } = await createPrompt(prompt);
+    if (err) {
+      throw new Error(err);
+    }
+    if (!pairID) {
+      throw new Error("No pairID");
+    }
+
     const [memories, examplesString, scriptDetails] = await Promise.all([
       getMemories(
         {
           userID,
           longTerm: {
             nodeCounts: preferences.memory.longTermMemoryChain,
-            vector: userPromptEmbedding,
+            pairID
           },
           shortTerm: {
             k: preferences.memory.shortTermMemoryCount,
@@ -95,18 +104,27 @@ export const sendPrompt = async (
         },
         "text/plain"
       ),
-      getRelevantExamples(userPromptEmbedding, 5),
+      searchExamples(pairID),
       fetchScriptDetails(),
     ]);
     if (memories.err) {
       throw new Error(memories.err);
+    }
+    if (!memories.ok) {
+      throw new Error("No memories found");
+    }
+    if (examplesString.err) {
+      throw new Error(examplesString.err);
+    }
+    if (!examplesString.ok) {
+      throw new Error("No examples found");
     }
 
     const { scriptName, scriptType, scriptContents } = scriptDetails;
 
     const constructedPrompt = mainTemplate(
       memories.ok,
-      examplesString,
+      examplesString.ok,
       firstName,
       new Date().toISOString(),
       prompt,
@@ -182,31 +200,25 @@ export const sendPrompt = async (
 
     // If no tool was triggered, handle the complete response
     if (!toolTriggered) {
-      const docId = await saveMessagePairToMemory(
-        userID,
-        prompt,
-        response,
-        userPromptEmbedding
-      );
-
+      await saveResponse(pairID, response);
       // Update conversation with docId and pairID
       updateConversation((prevState) => {
         const messages = [...prevState.messages];
         messages[messages.length - 2] = {
           ...messages[messages.length - 2],
-          pairID: docId,
+          pairID,
         };
         messages[messages.length - 1] = {
           ...messages[messages.length - 1],
           text: response,
           isTyping: false,
-          docId: docId,
-          pairID: docId,
+          docId: pairID,
+          pairID: pairID,
         };
         return { ...prevState, messages };
       });
 
-      saveToLocalStorage(prompt, response, Date.now(), docId);
+      saveToLocalStorage(prompt, response, Date.now(), pairID);
     }
 
     localStorage.setItem("idle", "true");
@@ -271,22 +283,13 @@ export const processResponse = async (
   ) => {
     try {
       if (status === "complete" && finalResponse) {
-        // Generate a new embedding for the final response
-        const responseEmbedding = await textEmbed(finalResponse);
-
-        // Save the final processed response to memory with the embedding
-        const docId = await saveMessagePairToMemory(
-          userID,
-          prompt,
-          finalResponse,
-          responseEmbedding || userPromptEmbedding
-        );
+        await saveResponse(pairID, finalResponse);
 
         updateConversation((prevState) => {
           const messages = [...prevState.messages];
           messages[messages.length - 2] = {
             ...messages[messages.length - 2],
-            pairID: docId,
+            pairID: pairID,
           };
           messages[messages.length - 1] = {
             ...messages[messages.length - 1],
@@ -294,15 +297,15 @@ export const processResponse = async (
             toolType: type,
             isTyping: false,
             showToolBadge: true,
-            docId: docId,
-            pairID: docId,
+            docId: pairID,
+            pairID: pairID,
             toolStatus: null,
             showTypingDots: false,
           };
           return { ...prevState, messages };
         });
 
-        saveToLocalStorage(prompt, finalResponse, Date.now(), docId);
+        saveToLocalStorage(prompt, finalResponse, Date.now(), pairID);
       } else {
         const statusText = status.endsWith("...") ? status : `${status}`;
         updateConversation((prevState) => {

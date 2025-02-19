@@ -19,12 +19,13 @@ export const BASE_URL = getBaseURL(MODE);
 
 export const routes = {
   // v1 API
-
   prompt: BASE_URL + "/v1/prompt",
   embed: BASE_URL + "/v1/embed",
   search: BASE_URL + "/v1/google-search",
   imageGeneration: BASE_URL + "/v1/generate-image",
   searchExamples: BASE_URL + "/v1/search-examples",
+  createPrompt: BASE_URL + "/v1/create-prompt",
+  saveResponse: BASE_URL + "/v1/save-response",
   /**
    * Generates the URL for retrieving the user's balance.
    *
@@ -47,7 +48,6 @@ export const routes = {
   createUploadURL: BASE_URL + "/v1/create-upload-url",
 
   // v2 API
-
   memories: BASE_URL + "/api/v2/get-memories",
 };
 

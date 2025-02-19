@@ -1,12 +1,24 @@
 import { getToken } from "@/api/auth";
 import { routes } from "@/firebaseConfig";
-import { Balance } from "@/types/api";
 import { Result } from "@/types/common";
 import { getDeviceID, APP_VERSION } from "@/utils/deviceId";
 
-/**
- * Retrieves the user's balance from the server.
- */
+export interface Balance {
+  balanceRaw: number;
+  balance: string;
+  usd: string;
+  images: string;
+  imagesRaw: number;
+  searches: string;
+  searchesRaw: number;
+  dropAmountRaw?: number;
+  dropAmount?: string;
+  totalAirdroppedRaw?: number;
+  totalAirdropped?: string;
+  lastAirdropAt?: Date;
+}
+
+// Retrieves the user's balance.
 export async function getBalance(): Promise<Result<Balance>> {
   const tok = await getToken();
   if (tok.err) {

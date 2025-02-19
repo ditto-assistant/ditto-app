@@ -8,9 +8,8 @@ import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCopy, FiDownload } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
-import { FaBrain, FaTrash, FaSpinner } from "react-icons/fa";
+import { FaBrain, FaTrash, } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
-import { textEmbed } from "../api/LLM";
 const MemoryNetwork = lazy(() => import("./MemoryNetwork"));
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
 import { processResponse } from "../control/agent";
@@ -784,8 +783,8 @@ export default function ChatFeed({
   // Update the renderMessageText function
   const renderMessageText = (text, index, sender) => {
     // First replace code block markers
-    let displayText = text.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
-    displayText = displayText.replace(/```\./g, "```\n");
+    let displayText = text?.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
+    displayText = displayText?.replace(/```\./g, "```\n");
 
     return (
       <ReactMarkdown
@@ -993,7 +992,7 @@ export default function ChatFeed({
   // Update the renderMessageWithAvatar function
   const renderMessageWithAvatar = (message, index) => {
     const isLastMessage = index === messages.length - 1;
-    const isSmallMessage = message.text.length <= 5;
+    const isSmallMessage = message.text?.length <= 5;
     const isUserMessage = message.sender === "User";
     const showTypingIndicator = message.isTyping && message.text === "";
     const isGenerating = message.sender === "Ditto" && message.isTyping;
@@ -1279,18 +1278,12 @@ export default function ChatFeed({
           return;
         }
       }
-      const embedding = await textEmbed(promptToUse);
-      if (!embedding) {
-        console.error("Could not generate embedding for prompt");
-        setLoadingMemories(false);
-        return;
-      }
       const memoriesResponse = await getMemories(
         {
           userID,
           longTerm: {
-            vector: embedding,
-            nodeCounts: [6],
+            pairID: currentPairID,
+            nodeCounts: [6, 3],
           },
         },
         "application/json"
@@ -1302,49 +1295,17 @@ export default function ChatFeed({
         throw new Error("Failed to fetch memories");
       }
       const topMemories = memoriesResponse.ok.longTerm.slice(1, 6);
-      // For each of the top 5 memories, fetch their 2 most related memories
-      const memoriesWithRelated = await Promise.all(
-        topMemories.map(async (memory) => {
-          const relatedEmbedding = await textEmbed(memory.prompt);
-          const relatedResponse = await getMemories(
-            {
-              userID,
-              longTerm: {
-                vector: relatedEmbedding,
-                nodeCounts: [3],
-              },
-            },
-            "application/json"
-          );
-          if (relatedResponse.err) {
-            throw new Error(relatedResponse.err);
-          }
-          if (!relatedResponse.ok) {
-            throw new Error("Failed to fetch related memories");
-          }
-          // Filter out the memory itself
-          const relatedMemories = relatedResponse.ok.longTerm.filter(
-            (m) => m.id !== memory.id
-          );
-          return {
-            ...memory,
-            related: relatedMemories,
-          };
-        })
-      );
-
-      // Create the central node structure
       const networkData = [
         {
           prompt: promptToUse,
           response: message.text,
           timestamp: currentTimestamp,
           timestampString: new Date(currentTimestamp).toISOString(),
-          related: memoriesWithRelated.map((mem) => ({
+          related: topMemories.map((mem) => ({
             ...mem,
             timestamp: mem.timestamp,
             timestampString: mem.timestampString,
-            related: mem.related.map((rel) => ({
+            related: mem.children.map((rel) => ({
               ...rel,
               timestamp: rel.timestamp,
               timestampString: rel.timestampString,

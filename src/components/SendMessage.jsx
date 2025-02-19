@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import { FaPlus, FaImage, FaCamera, FaTimes } from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
-import { textEmbed } from "../api/LLM";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -93,13 +92,11 @@ export default function SendMessage({
         setImage("");
         finalTranscriptRef.current = "";
         resizeTextArea();
-        let userPromptEmbedding = await textEmbed(messageToSend);
         await sendPrompt(
           userID,
           firstName,
           messageToSend,
           imageURI,
-          userPromptEmbedding,
           updateConversation,
           preferences
         );
