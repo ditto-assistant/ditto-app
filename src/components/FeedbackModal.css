@@ -156,11 +156,11 @@
     width: 95%;
     margin: 20px;
   }
-  
+
   .feedback-buttons {
     flex-direction: column;
   }
-  
+
   .feedback-button {
     width: 100%;
   }
