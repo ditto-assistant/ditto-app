@@ -1,29 +1,29 @@
 .submit-button {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    position: relative;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
 }
 
 .submit-button .shortcut-hint {
-    font-size: 14px;
-    opacity: 0.7;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
-    position: absolute;
-    right: 12px;
+  font-size: 14px;
+  opacity: 0.7;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: absolute;
+  right: 12px;
 }
