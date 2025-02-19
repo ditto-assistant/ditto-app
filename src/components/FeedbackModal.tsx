@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { MdBugReport, MdLightbulb } from 'react-icons/md';
-import { useAuth, useAuthToken } from '../hooks/useAuth';
-import { getDeviceID, APP_VERSION } from '../utils/deviceId';
-import { BASE_URL } from '../firebaseConfig';
-import { toast } from 'react-hot-toast';
-import { LoadingSpinner } from './LoadingSpinner';
-import { ModalHeader } from './ui/modals/ModalHeader';
+import { useState, useEffect, useRef } from "react";
+import { MdBugReport, MdLightbulb } from "react-icons/md";
+import { useAuth, useAuthToken } from "../hooks/useAuth";
+import { getDeviceID, APP_VERSION } from "../utils/deviceId";
+import { BASE_URL } from "../firebaseConfig";
+import { toast } from "react-hot-toast";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { ModalHeader } from "./ui/modals/ModalHeader";
 import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import './FeedbackModal.css';
+import "./FeedbackModal.css";
 
-type FeedbackType = 'bug' | 'feature-request';
+type FeedbackType = "bug" | "feature-request";
 
 interface FeedbackModalProps {
   onClose: () => void;
@@ -18,7 +18,7 @@ interface FeedbackModalProps {
 
 export default function FeedbackModal({
   onClose,
-  feedbackType = 'bug',
+  feedbackType = "bug",
 }: FeedbackModalProps) {
   const [selectedType, setSelectedType] = useState<FeedbackType>(feedbackType);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,27 +30,27 @@ export default function FeedbackModal({
     e.preventDefault();
     if (!auth.user?.uid || !token.data) return;
 
-    const textarea = formRef.current?.querySelector('textarea');
+    const textarea = formRef.current?.querySelector("textarea");
     if (!textarea?.value.trim()) return;
 
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       const response = await fetch(`${BASE_URL}/v1/feedback`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
       if (response.status === 201) {
-        toast.success('Feedback submitted successfully!');
+        toast.success("Feedback submitted successfully!");
         onClose();
       } else {
         const error = await response.text();
-        toast.error(error || 'Failed to submit feedback');
+        toast.error(error || "Failed to submit feedback");
       }
     } catch (error) {
-      toast.error('Failed to submit feedback');
+      toast.error("Failed to submit feedback");
     } finally {
       setIsSubmitting(false);
     }
@@ -58,17 +58,17 @@ export default function FeedbackModal({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        const textarea = formRef.current?.querySelector('textarea');
+        const textarea = formRef.current?.querySelector("textarea");
         if (formRef.current && textarea?.value.trim()) {
           formRef.current.requestSubmit();
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   if (auth.isLoading || token.isLoading) {
@@ -80,12 +80,15 @@ export default function FeedbackModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className="modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div className="modal-content">
         <ModalHeader title="Feedback" onClose={onClose} />
         <div className="modal-body">
           <form ref={formRef} onSubmit={handleSubmit}>
-            <input type="hidden" name="userID" value={auth.user?.uid || ''} />
+            <input type="hidden" name="userID" value={auth.user?.uid || ""} />
             <input type="hidden" name="deviceID" value={getDeviceID()} />
             <input type="hidden" name="version" value={APP_VERSION} />
             <input
@@ -98,9 +101,9 @@ export default function FeedbackModal({
               <div className="feedback-buttons">
                 <button
                   type="button"
-                  onClick={() => setSelectedType('bug')}
+                  onClick={() => setSelectedType("bug")}
                   className={`modal-feedback-button feedback-bug-button ${
-                    selectedType === 'bug' ? 'selected' : ''
+                    selectedType === "bug" ? "selected" : ""
                   }`}
                 >
                   <MdBugReport className="feedback-icon bug-icon" />
@@ -108,9 +111,9 @@ export default function FeedbackModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedType('feature-request')}
+                  onClick={() => setSelectedType("feature-request")}
                   className={`modal-feedback-button feedback-feature-button ${
-                    selectedType === 'feature-request' ? 'selected' : ''
+                    selectedType === "feature-request" ? "selected" : ""
                   }`}
                 >
                   <MdLightbulb className="feedback-icon feature-icon" />
@@ -131,12 +134,12 @@ export default function FeedbackModal({
               />
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="submit-button"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+              {isSubmitting ? "Submitting..." : "Submit Feedback"}
               <span className="shortcut-hint">⌘↵</span>
             </button>
 
