@@ -95,7 +95,7 @@ export const sendPrompt = async (
           userID,
           longTerm: {
             nodeCounts: preferences.memory.longTermMemoryChain,
-            pairID
+            pairID,
           },
           shortTerm: {
             k: preferences.memory.shortTermMemoryCount,

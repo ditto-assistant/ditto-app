@@ -8,7 +8,7 @@ import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCopy, FiDownload } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
-import { FaBrain, FaTrash, } from "react-icons/fa";
+import { FaBrain, FaTrash } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
 const MemoryNetwork = lazy(() => import("./MemoryNetwork"));
 import { useTokenStreaming } from "../hooks/useTokenStreaming";
@@ -783,7 +783,10 @@ export default function ChatFeed({
   // Update the renderMessageText function
   const renderMessageText = (text, index, sender) => {
     // First replace code block markers
-    let displayText = text?.replace(/```[a-zA-Z0-9]+/g, (match) => `\n${match}`);
+    let displayText = text?.replace(
+      /```[a-zA-Z0-9]+/g,
+      (match) => `\n${match}`
+    );
     displayText = displayText?.replace(/```\./g, "```\n");
 
     return (
