@@ -1,19 +1,43 @@
 @import "../styles/variables.css";
 @import "../styles/global.css";
 
-.filter-label {
-  display: block;
-  text-transform: uppercase;
-  color: var(--interactive-normal);
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm);
-  letter-spacing: 0.02em;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  position: relative;
+  background: linear-gradient(180deg, #2f3136 0%, #36393f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.feedback-type-selector {
+  margin-bottom: 20px;
 }
 
 .feedback-buttons {
   display: flex;
   gap: 12px;
+  margin-bottom: 20px;
 }
 
 .feedback-button {
@@ -64,12 +88,7 @@
 }
 
 .feedback-form {
-  margin-bottom: 0;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 100%;
-  box-sizing: border-box;
+  margin-bottom: 20px;
 }
 
 .feedback-textarea {
@@ -107,65 +126,42 @@
   border: 1px solid rgba(237, 66, 69, 0.2);
 }
 
-.feedback-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+.submit-button {
   width: 100%;
-  box-sizing: border-box;
-  margin: 0;
+  padding: 12px;
+  background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
 }
 
-.bug-button {
-  color: #dc3545;
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.feature-button {
-  color: #ff9f1a;
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 @media (max-width: 480px) {
-  .modal-overlay {
-    align-items: flex-start;
-    padding: 0;
+  .modal-content {
+    width: 95%;
+    margin: 20px;
   }
-
-  .modal-container {
+  
+  .feedback-buttons {
+    flex-direction: column;
+  }
+  
+  .feedback-button {
     width: 100%;
-    max-width: 100%;
-    margin: 0;
-    border-radius: 0;
-  }
-
-  .modal-header h3 {
-    font-size: 1.1rem;
-  }
-
-  .feedback-actions {
-    grid-template-columns: 1fr;
-    padding: 0;
-  }
-
-  .github-link,
-  .social-link {
-    font-size: 13px;
-    padding: 0 12px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .feedback-form {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .feedback-textarea {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .submit-button {
-    width: 100%;
-    box-sizing: border-box;
   }
 }
