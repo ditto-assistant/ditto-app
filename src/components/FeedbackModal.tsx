@@ -1,80 +1,87 @@
-import { useState, useEffect, useRef } from "react";
 import { MdBugReport, MdLightbulb } from "react-icons/md";
-import { useAuth, useAuthToken } from "../hooks/useAuth";
-import { getDeviceID, APP_VERSION } from "../utils/deviceId";
+import { useActionState, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BASE_URL } from "../firebaseConfig";
-import { toast } from "react-hot-toast";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { ModalHeader } from "./ui/modals/ModalHeader";
+import { getDeviceID, APP_VERSION } from "../utils/deviceId";
+import { useAuth, useAuthToken } from "../hooks/useAuth";
 import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { toast } from "react-hot-toast";
+import { SubmitButton } from "./ui/buttons/SubmitButton";
+import { A } from "./ui/links/Anchor";
+import { ModalHeader } from "./ui/modals/ModalHeader";
 import "./FeedbackModal.css";
 
-type FeedbackType = "bug" | "feature-request";
+function SocialLinks() {
+  return (
+    <div className="feedback-actions">
+      <A href="https://github.com/orgs/ditto-assistant/discussions/new/choose">
+        <FaGithub /> New Discussion
+      </A>
+      <A href="https://github.com/ditto-assistant/ditto-app/issues/new">
+        <FaGithub /> New Issue
+      </A>
+      <A href="https://www.instagram.com/heyditto.ai">
+        <FaInstagram /> Instagram
+      </A>
+      <A href="https://x.com/heydittoai">
+        <FaXTwitter /> Twitter
+      </A>
+      <A href="https://www.youtube.com/@heyditto">
+        <FaYoutube /> YouTube
+      </A>
+    </div>
+  );
+}
 
+type FeedbackType = "bug" | "feature-request";
 interface FeedbackModalProps {
   onClose: () => void;
   feedbackType?: FeedbackType;
+}
+
+async function submitFeedback(prevState: any, formData: FormData) {
+  try {
+    const response = await fetch(`${BASE_URL}/v1/feedback`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.status === 201) {
+      toast.success("Feedback submitted successfully!");
+      return { success: true };
+    }
+    const error = await response.text();
+    toast.error(error || "Failed to submit feedback");
+    return { success: false, error };
+  } catch (error) {
+    toast.error("Failed to submit feedback");
+    return { success: false, error: "Failed to submit feedback" };
+  }
 }
 
 export default function FeedbackModal({
   onClose,
   feedbackType = "bug",
 }: FeedbackModalProps) {
-  const [selectedType, setSelectedType] = useState<FeedbackType>(feedbackType);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedType, setSelectedType] = useState(feedbackType);
+  const createSelectTypeCallback = useCallback(
+    (type: FeedbackType) => () => setSelectedType(type),
+    []
+  );
   const auth = useAuth();
   const token = useAuthToken();
+  const [state, formAction] = useActionState(submitFeedback, null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!auth.user?.uid || !token.data) return;
-
-    const textarea = formRef.current?.querySelector("textarea");
-    if (!textarea?.value.trim()) return;
-
-    setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-
-    try {
-      const response = await fetch(`${BASE_URL}/v1/feedback`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.status === 201) {
-        toast.success("Feedback submitted successfully!");
-        onClose();
-      } else {
-        const error = await response.text();
-        toast.error(error || "Failed to submit feedback");
-      }
-    } catch (error) {
-      toast.error("Failed to submit feedback");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        const textarea = formRef.current?.querySelector("textarea");
-        if (formRef.current && textarea?.value.trim()) {
-          formRef.current.requestSubmit();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    if (state?.success) {
+      onClose();
+    }
+  }, [state?.success, onClose]);
 
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
-
   if (auth.error || token.error) {
     return <div className="error-message">Authentication required</div>;
   }
@@ -87,7 +94,7 @@ export default function FeedbackModal({
       <div className="modal-content">
         <ModalHeader title="Feedback" onClose={onClose} />
         <div className="modal-body">
-          <form ref={formRef} onSubmit={handleSubmit}>
+          <form ref={formRef} action={formAction}>
             <input type="hidden" name="userID" value={auth.user?.uid || ""} />
             <input type="hidden" name="deviceID" value={getDeviceID()} />
             <input type="hidden" name="version" value={APP_VERSION} />
@@ -101,7 +108,7 @@ export default function FeedbackModal({
               <div className="feedback-buttons">
                 <button
                   type="button"
-                  onClick={() => setSelectedType("bug")}
+                  onClick={createSelectTypeCallback("bug")}
                   className={`modal-feedback-button feedback-bug-button ${
                     selectedType === "bug" ? "selected" : ""
                   }`}
@@ -111,7 +118,7 @@ export default function FeedbackModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedType("feature-request")}
+                  onClick={createSelectTypeCallback("feature-request")}
                   className={`modal-feedback-button feedback-feature-button ${
                     selectedType === "feature-request" ? "selected" : ""
                   }`}
@@ -133,33 +140,8 @@ export default function FeedbackModal({
                 rows={6}
               />
             </div>
-
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
-              <span className="shortcut-hint">⌘↵</span>
-            </button>
-
-            <div className="feedback-actions">
-              <a href="https://github.com/orgs/ditto-assistant/discussions/new/choose">
-                <FaGithub /> New Discussion
-              </a>
-              <a href="https://github.com/ditto-assistant/ditto-app/issues/new">
-                <FaGithub /> New Issue
-              </a>
-              <a href="https://www.instagram.com/heyditto.ai">
-                <FaInstagram /> Instagram
-              </a>
-              <a href="https://x.com/heydittoai">
-                <FaXTwitter /> Twitter
-              </a>
-              <a href="https://www.youtube.com/@heyditto">
-                <FaYoutube /> YouTube
-              </a>
-            </div>
+            <SubmitButton />
+            <SocialLinks />
           </form>
         </div>
       </div>

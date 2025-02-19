@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { ModalButton } from "./ModalButton";
 import { useIsMobile } from "../../../hooks/useIsMobile";
+import "./SubmitButton.css";
 
 interface SubmitButtonProps extends React.ComponentProps<typeof ModalButton> {
   submittingText?: string;
