@@ -138,7 +138,7 @@ export const sendPrompt = async (
     let mainAgentModel = preferences.mainModel;
     // Use Llama if the model doesn't support image attachments
     if (image && !modelSupportsImageAttachments(mainAgentModel)) {
-      mainAgentModel = "llama-3-2";
+      mainAgentModel = "gpt-4o-mini";
     }
 
     let updatedText = "";
