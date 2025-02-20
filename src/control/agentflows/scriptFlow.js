@@ -31,7 +31,6 @@ export const handleScriptGeneration = async ({
   scriptType,
   scriptContents,
   scriptName,
-  userPromptEmbedding,
   prompt,
   userID,
   image,

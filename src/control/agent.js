@@ -24,9 +24,6 @@ import { searchExamples } from "@/api/searchExamples";
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
-// Add this near the top of the file with other constants
-let toolTriggered = false;
-
 /**
  * Sends a prompt to Ditto.
  * @param {string} userID - The user's ID.
@@ -45,22 +42,12 @@ export const sendPrompt = async (
   preferences
 ) => {
   try {
-    // Reset tool trigger state at the start of each prompt
-    toolTriggered = false;
-
-    // Add the user's message to the conversation
     const userMessage = {
       sender: "User",
       text: prompt,
       timestamp: Date.now(),
       pairID: null,
     };
-    updateConversation((prevState) => ({
-      ...prevState,
-      messages: [...prevState.messages, userMessage],
-    }));
-
-    // Add a placeholder for the assistant's response with typing indicator
     const assistantMessage = {
       sender: "Ditto",
       text: "",
@@ -69,16 +56,10 @@ export const sendPrompt = async (
       docId: null,
       pairID: null,
     };
-
     updateConversation((prevState) => ({
       ...prevState,
-      messages: [...prevState.messages, assistantMessage],
-    }));
-
-    // Initialize the conversation update
-    updateConversation((prevState) => ({
-      ...prevState,
-      is_typing: true,
+      messages: [...prevState.messages, userMessage, assistantMessage],
+      is_typing: true
     }));
 
     const { ok: pairID, err } = await createPrompt(prompt);
@@ -136,68 +117,33 @@ export const sendPrompt = async (
     console.log("%c" + constructedPrompt, "color: green");
 
     let mainAgentModel = preferences.mainModel;
-    // Use Llama if the model doesn't support image attachments
     if (image && !modelSupportsImageAttachments(mainAgentModel)) {
       mainAgentModel = "gpt-4o-mini";
     }
 
-    let updatedText = "";
-
-    // Streaming callback
-    const streamingCallback = (chunk) => {
-      if (toolTriggered) return; // Skip if tool already triggered
-
-      // Append to updatedText
-      updatedText += chunk;
-
-      // Check for tool triggers early
-      const toolTriggers = [
-        "<OPENSCAD>",
-        "<HTML_SCRIPT>",
-        "<IMAGE_GENERATION>",
-        "<GOOGLE_SEARCH>",
-        "<GOOGLE_HOME>",
-      ];
-
-      // Early tool detection
-      for (const trigger of toolTriggers) {
-        if (updatedText.includes(trigger)) {
-          toolTriggered = true;
-          processResponse(
-            updatedText,
-            prompt,
-            userPromptEmbedding,
-            userID,
-            scriptContents,
-            scriptName,
-            image,
-            memories,
-            updateConversation,
-            preferences
-          );
-          return;
-        }
-      }
-
-      // Dispatch chunk for streaming UI
-      const event = new CustomEvent("responseStreamUpdate", {
-        detail: {
-          chunk,
-          isNewMessage: !updatedText || updatedText === chunk,
-        },
-      });
-      window.dispatchEvent(event);
-    };
-
-    // LLM call with streaming
-    const response = await promptLLM(
+    let response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
       mainAgentModel,
-      image,
-      streamingCallback
+      image
     );
-
+    const toolTriggers = [
+      "<OPENSCAD>",
+      "<HTML_SCRIPT>",
+      "<IMAGE_GENERATION>",
+      "<GOOGLE_SEARCH>",
+      "<GOOGLE_HOME>",
+    ];
+    let toolTriggered = false;
+    for (const trigger of toolTriggers) {
+      if (response.includes(trigger)) {
+        // Remove closing tag that matches the trigger
+        response = response.replace(`</${trigger.slice(1)}`, "");
+        toolTriggered = true;
+        await processResponse(response, prompt, pairID, userID, scriptContents, scriptName, image, memories, updateConversation, preferences);
+        break;
+      }
+    }
     // If no tool was triggered, handle the complete response
     if (!toolTriggered) {
       await saveResponse(pairID, response);
@@ -217,9 +163,9 @@ export const sendPrompt = async (
         };
         return { ...prevState, messages };
       });
-
-      saveToLocalStorage(prompt, response, Date.now(), pairID);
     }
+
+    saveToLocalStorage(prompt, response, Date.now(), pairID);
 
     localStorage.setItem("idle", "true");
     return response;
@@ -248,7 +194,7 @@ const fetchScriptDetails = () => {
 export const processResponse = async (
   response,
   prompt,
-  userPromptEmbedding,
+  pairID,
   userID,
   scriptContents,
   scriptName,
@@ -257,8 +203,6 @@ export const processResponse = async (
   updateConversation,
   preferences
 ) => {
-  toolTriggered = true;
-
   console.log("%c" + response, "color: yellow");
 
   // Handle payment/error cases
@@ -277,6 +221,7 @@ export const processResponse = async (
   }
 
   const updateMessageWithToolStatus = async (
+    pairID,
     status,
     type,
     finalResponse = null
@@ -341,6 +286,7 @@ export const processResponse = async (
     // Handle OpenSCAD script generation
     if (response.includes("<OPENSCAD>")) {
       await updateMessageWithToolStatus(
+        pairID,
         "Generating OpenSCAD Script...",
         "openscad"
       );
@@ -353,7 +299,6 @@ export const processResponse = async (
         scriptType: "openSCAD",
         scriptContents,
         scriptName,
-        userPromptEmbedding,
         prompt,
         userID,
         image,
@@ -361,13 +306,13 @@ export const processResponse = async (
         updateConversation,
         preferences,
       });
-      await updateMessageWithToolStatus("complete", "openscad", finalResponse);
+      await updateMessageWithToolStatus(pairID, "complete", "openscad", finalResponse);
       return finalResponse;
     }
 
     // Handle HTML script generation
     if (response.includes("<HTML_SCRIPT>")) {
-      await updateMessageWithToolStatus("Generating HTML Script...", "html");
+      await updateMessageWithToolStatus(pairID, "Generating HTML Script...", "html");
       const finalResponse = await handleScriptGeneration({
         response,
         tag: "<HTML_SCRIPT>",
@@ -377,7 +322,6 @@ export const processResponse = async (
         scriptType: "webApps",
         scriptContents,
         scriptName,
-        userPromptEmbedding,
         prompt,
         userID,
         image,
@@ -385,38 +329,40 @@ export const processResponse = async (
         updateConversation,
         preferences,
       });
-      await updateMessageWithToolStatus("complete", "html", finalResponse);
+      await updateMessageWithToolStatus(pairID, "complete", "html", finalResponse);
       return finalResponse;
     }
 
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
-      await updateMessageWithToolStatus("Generating Image", "image");
+      await updateMessageWithToolStatus(pairID, "Generating Image", "image");
       const finalResponse = await handleImageGeneration(response, preferences);
-      await updateMessageWithToolStatus("complete", "image", finalResponse);
+      await updateMessageWithToolStatus(pairID, "complete", "image", finalResponse);
       return finalResponse;
     }
 
     // Handle Google search
     if (response.includes("<GOOGLE_SEARCH>")) {
-      await updateMessageWithToolStatus("Searching Google", "search");
+      await updateMessageWithToolStatus(pairID, "Searching Google", "search");
       const finalResponse = await handleGoogleSearch(
         response,
         prompt,
         preferences
       );
-      await updateMessageWithToolStatus("complete", "search", finalResponse);
+      await updateMessageWithToolStatus(pairID, "complete", "search", finalResponse);
       return finalResponse;
     }
 
     // Handle Home Assistant tasks
     if (response.includes("<GOOGLE_HOME>")) {
       await updateMessageWithToolStatus(
+        pairID,
         "Executing Home Assistant Task",
         "home"
       );
       const finalResponse = await handleHomeAssistant(response);
       await updateMessageWithToolStatus(
+        pairID,
         finalResponse.includes("failed") ? "failed" : "complete",
         "home",
         finalResponse
@@ -424,12 +370,11 @@ export const processResponse = async (
       return finalResponse;
     }
 
-    toolTriggered = false;
     return response;
   } catch (error) {
     console.error("Error in processResponse:", error);
     const errorMessage = "An error occurred while processing your request.";
-    await updateMessageWithToolStatus("failed", null, errorMessage);
+    await updateMessageWithToolStatus(pairID, "failed", null, errorMessage);
     return errorMessage;
   }
 };

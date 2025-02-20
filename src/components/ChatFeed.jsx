@@ -10,9 +10,7 @@ import { FiCopy, FiDownload } from "react-icons/fi";
 import { IoMdArrowBack } from "react-icons/io";
 import { FaBrain, FaTrash } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
-const MemoryNetwork = lazy(() => import("./MemoryNetwork"));
-import { useTokenStreaming } from "../hooks/useTokenStreaming";
-import { processResponse } from "../control/agent";
+import MemoryNetwork from "./MemoryNetwork";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
@@ -85,44 +83,6 @@ const detectToolType = (text) => {
   if (text.includes("Home Assistant Task:")) return "home";
 
   return null;
-};
-
-// Add this helper function at the top
-const uploadAvatarToFirebaseStorage = async (photoURL, userID) => {
-  try {
-    // First try to fetch directly from Google
-    const response = await fetch(photoURL, {
-      mode: "cors",
-      credentials: "omit",
-      headers: {
-        Accept: "image/*",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    const storage = getStorage();
-    const avatarRef = ref(storage, `avatars/${userID}/profile.jpg`);
-
-    // Upload with metadata to help with caching
-    const metadata = {
-      contentType: "image/jpeg",
-      cacheControl: "public,max-age=86400",
-      customMetadata: {
-        originalURL: photoURL,
-        timestamp: Date.now().toString(),
-      },
-    };
-
-    await uploadBytes(avatarRef, blob, metadata);
-    return { url: await getDownloadURL(avatarRef), blob };
-  } catch (error) {
-    console.error("Error uploading avatar:", error);
-    throw error;
-  }
 };
 
 const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
@@ -327,14 +287,6 @@ export default function ChatFeed({
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [newMessageAnimation, setNewMessageAnimation] = useState(false);
   const [lastMessageIndex, setLastMessageIndex] = useState(-1);
-  const {
-    streamedText,
-    currentWord,
-    isStreaming,
-    processChunk,
-    reset,
-    isComplete,
-  } = useTokenStreaming();
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
@@ -424,70 +376,6 @@ export default function ChatFeed({
       }
     }
   }, []); // Empty dependency array means this runs once on mount
-
-  const handleStreamUpdate = useCallback(
-    (event) => {
-      const { chunk, isNewMessage } = event.detail;
-      if (!chunk) return;
-
-      // Process chunk through useTokenStreaming
-      processChunk(chunk, isNewMessage);
-
-      // Scroll handling in a separate effect to avoid state update conflicts
-      requestAnimationFrame(() => {
-        if (bottomRef.current) {
-          const feedElement = feedRef.current;
-          const isNearBottom =
-            feedElement &&
-            feedElement.scrollHeight -
-              feedElement.scrollTop -
-              feedElement.clientHeight <
-              100;
-
-          if (isNearBottom) {
-            bottomRef.current.scrollIntoView({
-              behavior: "auto",
-              block: "end",
-            });
-          }
-        }
-      });
-    },
-    [processChunk]
-  );
-
-  useEffect(() => {
-    window.addEventListener("responseStreamUpdate", handleStreamUpdate);
-    return () => {
-      window.removeEventListener("responseStreamUpdate", handleStreamUpdate);
-    };
-  }, [handleStreamUpdate]);
-
-  // Separate effect for updating conversation with streamed text
-  const updateStreamedText = useCallback(() => {
-    if (messages.length > 0 && isStreaming && streamedText) {
-      updateConversation((prevState) => {
-        const newMessages = [...prevState.messages];
-        const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.sender === "Ditto") {
-          lastMsg.text = streamedText;
-        }
-        return { ...prevState, messages: newMessages };
-      });
-    }
-  }, [streamedText, isStreaming, messages, updateConversation]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(updateStreamedText, 50); // Debounce updates
-    return () => clearTimeout(timeoutId);
-  }, [updateStreamedText]);
-
-  // Cleanup streaming on unmount
-  useEffect(() => {
-    return () => {
-      reset();
-    };
-  }, [reset]);
 
   const scrollToBottomOfFeed = useCallback((quick = false) => {
     if (bottomRef.current) {
@@ -1501,63 +1389,6 @@ export default function ChatFeed({
       timeout = setTimeout(later, wait);
     };
   };
-
-  // Add effect to handle new messages
-  useEffect(() => {
-    if (messages.length > lastMessageIndex) {
-      setNewMessageAnimation(true);
-      setLastMessageIndex(messages.length);
-
-      // Scroll to bottom with animation
-      setTimeout(() => {
-        scrollToBottomOfFeed(false);
-        setNewMessageAnimation(false);
-      }, 300); // Match animation duration
-    }
-  }, [messages.length]);
-
-  // Add this effect to reset streaming state when messages change
-  useEffect(() => {
-    if (messages.length > lastMessageIndex) {
-      reset();
-      setLastMessageIndex(messages.length);
-    }
-  }, [messages.length, lastMessageIndex, reset]);
-
-  useEffect(() => {
-    if (isComplete && streamedText) {
-      const toolTriggers = [
-        "<OPENSCAD>",
-        "<HTML_SCRIPT>",
-        "<IMAGE_GENERATION>",
-        "<GOOGLE_SEARCH>",
-        "<GOOGLE_HOME>",
-      ];
-
-      for (const trigger of toolTriggers) {
-        if (streamedText.includes(trigger)) {
-          // Process the tool trigger
-          processResponse(
-            streamedText,
-            messages[messages.length - 2].text, // User's prompt
-            messages[messages.length - 2].embedding, // User's prompt embedding
-            auth.currentUser.uid,
-            localStorage.getItem("workingOnScript")
-              ? JSON.parse(localStorage.getItem("workingOnScript")).contents
-              : "",
-            localStorage.getItem("workingOnScript")
-              ? JSON.parse(localStorage.getItem("workingOnScript")).script
-              : "",
-            messages[messages.length - 2].image || "",
-            {}, // memories object - you might want to pass this properly
-            updateConversation,
-            preferences
-          );
-          return;
-        }
-      }
-    }
-  }, [isComplete, streamedText]);
 
   return (
     <div

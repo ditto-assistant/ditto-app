@@ -13,10 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
 import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
-import {
-  getVersionsOfScriptFromFirestore,
-  saveScriptToFirestore,
-} from "../control/firebase";
+import { saveScriptToFirestore, } from "../control/firebase";
 import ChatFeed from "../components/ChatFeed";
 import StatusBar from "../components/StatusBar";
 import SendMessage from "../components/SendMessage";
@@ -153,14 +150,7 @@ export default function HomeScreen() {
     return { prompts, responses, timestamps, pairIDs };
   };
 
-  const localStorageMicrophoneStatus =
-    localStorage.getItem("microphoneStatus") === "true";
-  const [microphoneStatus, setMicrophoneStatus] = useState(
-    localStorageMicrophoneStatus
-  );
-
   const appBodyRef = useRef(null);
-
   // check for localStorage memoryWipe being set to true and reset cound and create new conversation
   useEffect(() => {
     if (localStorage.getItem("resetMemory") === "true") {
@@ -505,29 +495,6 @@ export default function HomeScreen() {
   const handleScriptNameClick = () => {
     setShowScriptActions(true);
   };
-
-  const [scriptVersions, setScriptVersions] = useState([]);
-
-  useEffect(() => {
-    const loadScriptVersions = async () => {
-      if (workingScript) {
-        const storedScript = JSON.parse(
-          localStorage.getItem("workingOnScript")
-        );
-        if (storedScript) {
-          const userID = localStorage.getItem("userID");
-          const versions = await getVersionsOfScriptFromFirestore(
-            userID,
-            storedScript.scriptType,
-            storedScript.script
-          );
-          setScriptVersions(versions);
-        }
-      }
-    };
-
-    loadScriptVersions();
-  }, [workingScript]);
 
   const [statusBarLoaded, setStatusBarLoaded] = useState(false);
 
