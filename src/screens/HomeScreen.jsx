@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
 import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
-import { saveScriptToFirestore, } from "../control/firebase";
+import { saveScriptToFirestore } from "../control/firebase";
 import ChatFeed from "../components/ChatFeed";
 import StatusBar from "../components/StatusBar";
 import SendMessage from "../components/SendMessage";

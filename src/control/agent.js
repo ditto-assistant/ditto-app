@@ -59,7 +59,7 @@ export const sendPrompt = async (
     updateConversation((prevState) => ({
       ...prevState,
       messages: [...prevState.messages, userMessage, assistantMessage],
-      is_typing: true
+      is_typing: true,
     }));
 
     const { ok: pairID, err } = await createPrompt(prompt);
@@ -140,7 +140,18 @@ export const sendPrompt = async (
         // Remove closing tag that matches the trigger
         response = response.replace(`</${trigger.slice(1)}`, "");
         toolTriggered = true;
-        await processResponse(response, prompt, pairID, userID, scriptContents, scriptName, image, memories, updateConversation, preferences);
+        await processResponse(
+          response,
+          prompt,
+          pairID,
+          userID,
+          scriptContents,
+          scriptName,
+          image,
+          memories,
+          updateConversation,
+          preferences
+        );
         break;
       }
     }
@@ -306,13 +317,22 @@ export const processResponse = async (
         updateConversation,
         preferences,
       });
-      await updateMessageWithToolStatus(pairID, "complete", "openscad", finalResponse);
+      await updateMessageWithToolStatus(
+        pairID,
+        "complete",
+        "openscad",
+        finalResponse
+      );
       return finalResponse;
     }
 
     // Handle HTML script generation
     if (response.includes("<HTML_SCRIPT>")) {
-      await updateMessageWithToolStatus(pairID, "Generating HTML Script...", "html");
+      await updateMessageWithToolStatus(
+        pairID,
+        "Generating HTML Script...",
+        "html"
+      );
       const finalResponse = await handleScriptGeneration({
         response,
         tag: "<HTML_SCRIPT>",
@@ -329,7 +349,12 @@ export const processResponse = async (
         updateConversation,
         preferences,
       });
-      await updateMessageWithToolStatus(pairID, "complete", "html", finalResponse);
+      await updateMessageWithToolStatus(
+        pairID,
+        "complete",
+        "html",
+        finalResponse
+      );
       return finalResponse;
     }
 
@@ -337,7 +362,12 @@ export const processResponse = async (
     if (response.includes("<IMAGE_GENERATION>")) {
       await updateMessageWithToolStatus(pairID, "Generating Image", "image");
       const finalResponse = await handleImageGeneration(response, preferences);
-      await updateMessageWithToolStatus(pairID, "complete", "image", finalResponse);
+      await updateMessageWithToolStatus(
+        pairID,
+        "complete",
+        "image",
+        finalResponse
+      );
       return finalResponse;
     }
 
@@ -349,7 +379,12 @@ export const processResponse = async (
         prompt,
         preferences
       );
-      await updateMessageWithToolStatus(pairID, "complete", "search", finalResponse);
+      await updateMessageWithToolStatus(
+        pairID,
+        "complete",
+        "search",
+        finalResponse
+      );
       return finalResponse;
     }
 
