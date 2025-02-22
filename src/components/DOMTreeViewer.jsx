@@ -391,32 +391,6 @@ const DOMTreeViewer = ({
       }
     });
 
-    const hammer = new window.Hammer(containerRef.current);
-    hammer.get("pinch").set({ enable: true });
-
-    let lastScale = 1;
-    hammer.on("pinch", (ev) => {
-      const delta = ev.scale / lastScale;
-      lastScale = ev.scale;
-
-      const rect = containerRef.current.getBoundingClientRect();
-      const pinchCenter = {
-        x: ev.center.x - rect.left,
-        y: ev.center.y - rect.top,
-      };
-
-      const networkPosition = networkRef.current.DOMtoCanvas(pinchCenter);
-
-      networkRef.current.zoom(delta, {
-        position: networkPosition,
-        scale: networkRef.current.getScale() * delta,
-      });
-    });
-
-    hammer.on("pinchend", () => {
-      lastScale = 1;
-    });
-
     const preventDefaultTouch = (e) => {
       if (e.target.closest(".vis-network")) {
         e.stopPropagation();
@@ -454,7 +428,6 @@ const DOMTreeViewer = ({
         clearTimeout(stabilizationTimeout.current);
       }
       document.removeEventListener("touchmove", preventDefaultTouch);
-      hammer.destroy();
     };
   }, [htmlContent]);
 

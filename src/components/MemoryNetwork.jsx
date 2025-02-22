@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Network } from "vis-network";
 import { DataSet } from "vis-data";
 import ReactMarkdown from "react-markdown";
@@ -97,7 +97,6 @@ const DeleteConfirmationContent = ({
 
 // Update the TableView component
 const TableView = ({ memories, onMemoryClick }) => {
-  const [selectedParent, setSelectedParent] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -126,7 +125,6 @@ const TableView = ({ memories, onMemoryClick }) => {
 
       if (success) {
         window.dispatchEvent(new Event("memoryUpdated"));
-        setSelectedParent(null);
         setDeleteConfirmation(null);
       }
     } catch (error) {
@@ -463,11 +461,11 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
   const [imageControlsVisible, setImageControlsVisible] = useState(true);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setDeleteConfirmation(true);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     setIsDeletingMessage(true);
     const userID = auth.currentUser.uid;
 
@@ -484,125 +482,131 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
     } finally {
       setIsDeletingMessage(false);
     }
-  };
+  }, [node.id, onDelete, onClose]);
 
-  const handleImageClick = (src) => {
+  const handleImageClick = useCallback((src) => {
     setImageOverlay(src);
-  };
+  }, []);
 
-  const closeImageOverlay = () => {
+  const closeImageOverlay = useCallback(() => {
     setImageOverlay(null);
-  };
+  }, []);
 
-  const toggleImageControls = (e) => {
-    e.stopPropagation();
-    setImageControlsVisible(!imageControlsVisible);
-  };
+  const toggleImageControls = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setImageControlsVisible(!imageControlsVisible);
+    },
+    [imageControlsVisible]
+  );
 
   // Define renderMarkdown within the scope of MemoryNodeOverlay
-  const renderMarkdown = (content) => (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        ol: ({ node, ordered, ...props }) => (
-          <ol
-            {...props}
-            style={{ ...styles.chatBubbleList, ...styles.orderedList }}
-          />
-        ),
-        ul: ({ node, ...props }) => (
-          <ul
-            {...props}
-            style={{ ...styles.chatBubbleList, ...styles.unorderedList }}
-          />
-        ),
-        li: ({ node, ordered, ...props }) => (
-          <li {...props} style={styles.chatBubbleListItem} />
-        ),
-        p: ({ node, ...props }) => (
-          <p {...props} style={{ margin: "0.5em 0" }} />
-        ),
-        code({ node, inline, className, children, ...props }) {
-          let match = /language-(\w+)/.exec(className || "");
-          let hasCodeBlock;
-          if (content.match(/```/g)) {
-            hasCodeBlock = content.match(/```/g).length % 2 === 0;
-          }
-          if (!match && hasCodeBlock) {
-            match = ["language-txt", "txt"];
-          }
-          if (!inline && match) {
-            return (
-              <div className="code-container">
-                <SyntaxHighlighter
-                  children={String(children).replace(/\n$/, "")}
-                  style={vscDarkPlus}
-                  language={match[1]}
-                  PreTag="div"
-                  {...props}
-                  className="code-block"
-                />
-                <button
-                  className="copy-button code-block-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(
-                      String(children).replace(/\n$/, "")
-                    );
-                    const toast = document.createElement("div");
-                    toast.className = "copied-notification";
-                    toast.textContent = "Copied!";
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                      toast.remove();
-                    }, 2000);
-                  }}
-                  title="Copy code"
-                >
-                  <FiCopy />
-                </button>
-              </div>
-            );
-          } else {
-            const inlineText = String(children).replace(/\n$/, "");
-            return (
-              <div className="inline-code-container">
-                <code className="inline-code" {...props}>
-                  {children}
-                </code>
-                <button
-                  className="copy-button inline-code-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(inlineText);
-                    const toast = document.createElement("div");
-                    toast.className = "copied-notification";
-                    toast.textContent = "Copied!";
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                      toast.remove();
-                    }, 2000);
-                  }}
-                  title="Copy code"
-                >
-                  <FiCopy />
-                </button>
-              </div>
-            );
-          }
-        },
-        img: ({ src, alt }) => (
-          <img
-            src={src}
-            alt={alt}
-            style={styles.image}
-            onClick={() => handleImageClick(src)}
-          />
-        ),
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+  const renderMarkdown = useCallback(
+    (content) => (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          ol: ({ node, ordered, ...props }) => (
+            <ol
+              {...props}
+              style={{ ...styles.chatBubbleList, ...styles.orderedList }}
+            />
+          ),
+          ul: ({ node, ...props }) => (
+            <ul
+              {...props}
+              style={{ ...styles.chatBubbleList, ...styles.unorderedList }}
+            />
+          ),
+          li: ({ node, ordered, ...props }) => (
+            <li {...props} style={styles.chatBubbleListItem} />
+          ),
+          p: ({ node, ...props }) => (
+            <p {...props} style={{ margin: "0.5em 0" }} />
+          ),
+          code({ node, inline, className, children, ...props }) {
+            let match = /language-(\w+)/.exec(className || "");
+            let hasCodeBlock;
+            if (content.match(/```/g)) {
+              hasCodeBlock = content.match(/```/g).length % 2 === 0;
+            }
+            if (!match && hasCodeBlock) {
+              match = ["language-txt", "txt"];
+            }
+            if (!inline && match) {
+              return (
+                <div className="code-container">
+                  <SyntaxHighlighter
+                    children={String(children).replace(/\n$/, "")}
+                    style={vscDarkPlus}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                    className="code-block"
+                  />
+                  <button
+                    className="copy-button code-block-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(
+                        String(children).replace(/\n$/, "")
+                      );
+                      const toast = document.createElement("div");
+                      toast.className = "copied-notification";
+                      toast.textContent = "Copied!";
+                      document.body.appendChild(toast);
+                      setTimeout(() => {
+                        toast.remove();
+                      }, 2000);
+                    }}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
+                </div>
+              );
+            } else {
+              const inlineText = String(children).replace(/\n$/, "");
+              return (
+                <div className="inline-code-container">
+                  <code className="inline-code" {...props}>
+                    {children}
+                  </code>
+                  <button
+                    className="copy-button inline-code-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(inlineText);
+                      const toast = document.createElement("div");
+                      toast.className = "copied-notification";
+                      toast.textContent = "Copied!";
+                      document.body.appendChild(toast);
+                      setTimeout(() => {
+                        toast.remove();
+                      }, 2000);
+                    }}
+                    title="Copy code"
+                  >
+                    <FiCopy />
+                  </button>
+                </div>
+              );
+            }
+          },
+          img: ({ src, alt }) => (
+            <img
+              src={src}
+              alt={alt}
+              style={styles.image}
+              onClick={() => handleImageClick(src)}
+            />
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    ),
+    [handleImageClick]
   );
 
   // Add a check to see if this is the root node
@@ -783,17 +787,20 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
     }
   }, [viewMode, nodesData]);
 
-  const handleMemoryDeleted = (deletedId) => {
-    // Remove the deleted memory from the nodes data
-    const updatedNodes = removeMemoryById(nodesData, deletedId);
-    setNodesData(updatedNodes);
+  const handleMemoryDeleted = useCallback(
+    (deletedId) => {
+      // Remove the deleted memory from the nodes data
+      const updatedNodes = removeMemoryById(nodesData, deletedId);
+      setNodesData(updatedNodes);
 
-    if (onMemoryDeleted) {
-      onMemoryDeleted(deletedId);
-    }
-  };
+      if (onMemoryDeleted) {
+        onMemoryDeleted(deletedId);
+      }
+    },
+    [nodesData, onMemoryDeleted]
+  );
 
-  const removeMemoryById = (nodes, id) => {
+  const removeMemoryById = useCallback((nodes, id) => {
     const newNodes = JSON.parse(JSON.stringify(nodes)); // Deep copy
     const removeHelper = (memories) => {
       return memories.filter((memory) => {
@@ -808,9 +815,9 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
     };
     newNodes[0].children = removeHelper(newNodes[0].children || []);
     return newNodes;
-  };
+  }, []);
 
-  const buildNetwork = (nodesData) => {
+  const buildNetwork = useCallback((nodesData) => {
     if (!containerRef.current) return;
 
     // Clear existing network
@@ -965,34 +972,20 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
       }
     });
 
-    networkRef.current.on("selectNode", (params) => {
-      if (params.nodes.length > 0) {
-        handleNodeClick(params.nodes[0]);
-      }
-    });
-
-    const hammer = new window.Hammer(containerRef.current);
-    hammer.on("tap", (event) => {
-      const { offsetX, offsetY } = event.srcEvent;
-      const nodeId = networkRef.current.getNodeAt({ x: offsetX, y: offsetY });
-      if (nodeId) {
-        handleNodeClick(nodeId);
-      }
-    });
-
     return () => {
       networkRef.current.destroy();
-      hammer.destroy();
     };
-  };
+  }, []);
 
-  const handleNodeClick = (nodeId) => {
-    // Get the data for the clicked node from the nodeIdMap
-    const data = nodeIdMapRef.current[nodeId];
-    if (data) {
-      setSelectedNode(data);
-    }
-  };
+  const handleNodeClick = useCallback(
+    (nodeId) => {
+      const data = nodeIdMapRef.current[nodeId];
+      if (data) {
+        setSelectedNode(data);
+      }
+    },
+    [nodeIdMapRef]
+  );
 
   return (
     <div style={styles.container}>
@@ -1038,7 +1031,7 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
         <MemoryNodeOverlay
           node={selectedNode}
           onClose={() => setSelectedNode(null)}
-          onDelete={(id) => handleMemoryDeleted(id)}
+          onDelete={handleMemoryDeleted}
         />
       )}
     </div>
