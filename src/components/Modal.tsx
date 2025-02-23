@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { DEFAULT_MODAL_STATE, ModalId, useModal } from "../hooks/useModal";
+import { ModalHeader } from "./ui/modals/ModalHeader";
 
 interface ModalProps {
   id: ModalId;
@@ -202,11 +203,6 @@ export default function Modal({
 
   const modalStyle = isFullscreen
     ? {
-        position: "fixed" as const,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
         zIndex,
       }
     : {
@@ -228,28 +224,14 @@ export default function Modal({
       onTouchStart={bringToFront}
     >
       <div className="modal-content">
-        <div
-          className="modal-header"
-          onMouseDown={handleStartDrag}
-          onTouchStart={handleStartDrag}
-        >
-          <div className="modal-title">{title}</div>
-          <div className="modal-controls">
-            <button
-              className="modal-control fullscreen"
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-            >
-              {isFullscreen ? "❐" : "⤢"}
-            </button>
-            <button
-              className="modal-control close"
-              onClick={closeModal}
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
+        <div onMouseDown={handleStartDrag} onTouchStart={handleStartDrag}>
+          <ModalHeader
+            title={title}
+            onClose={closeModal}
+            className={isFullscreen ? "fullscreen" : ""}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
+          />
         </div>
         <div className="modal-body">{children}</div>
 

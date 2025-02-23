@@ -9,7 +9,6 @@ interface SubmitButtonProps
   submittingText?: string;
   submitText?: string;
   enableKeyboardShortcut?: boolean;
-  onSubmit?: () => void;
 }
 
 export const SubmitButton: React.FC<SubmitButtonProps> = ({
@@ -18,7 +17,6 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   variant = "primary",
   className = "",
   enableKeyboardShortcut = true,
-  onSubmit,
   ...props
 }) => {
   const { pending } = useFormStatus();
@@ -31,12 +29,11 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
         e.preventDefault();
         const form = (e.target as HTMLElement).closest("form");
         form?.requestSubmit();
-        onSubmit?.();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [enableKeyboardShortcut, isMobile, onSubmit]);
+  }, [enableKeyboardShortcut, isMobile]);
 
   return (
     <ModalButton

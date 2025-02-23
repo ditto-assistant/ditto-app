@@ -1,20 +1,13 @@
 .modal-container {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-  touch-action: none;
-  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-content {
-  display: flex;
+  background: #1a1a1a;
   flex-direction: column;
-  height: 100%;
-  background: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
+  position: relative;
 }
 
 .modal-header {
@@ -87,64 +80,64 @@
 }
 
 .resize-handle.n {
-  top: -4px;
+  top: 0;
   left: 0;
   right: 0;
-  height: 8px;
-  cursor: ns-resize;
+  height: 4px;
+  cursor: n-resize;
 }
 
 .resize-handle.e {
   top: 0;
-  right: -4px;
+  right: 0;
   bottom: 0;
-  width: 8px;
-  cursor: ew-resize;
+  width: 4px;
+  cursor: e-resize;
 }
 
 .resize-handle.s {
-  bottom: -4px;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: 8px;
-  cursor: ns-resize;
+  height: 4px;
+  cursor: s-resize;
 }
 
 .resize-handle.w {
   top: 0;
-  left: -4px;
+  left: 0;
   bottom: 0;
-  width: 8px;
-  cursor: ew-resize;
+  width: 4px;
+  cursor: w-resize;
 }
 
 .resize-handle.nw {
-  top: -4px;
-  left: -4px;
+  top: 0;
+  left: 0;
   width: 8px;
   height: 8px;
   cursor: nw-resize;
 }
 
 .resize-handle.ne {
-  top: -4px;
-  right: -4px;
+  top: 0;
+  right: 0;
   width: 8px;
   height: 8px;
   cursor: ne-resize;
 }
 
 .resize-handle.se {
-  bottom: -4px;
-  right: -4px;
+  bottom: 0;
+  right: 0;
   width: 8px;
   height: 8px;
   cursor: se-resize;
 }
 
 .resize-handle.sw {
-  bottom: -4px;
-  left: -4px;
+  bottom: 0;
+  left: 0;
   width: 8px;
   height: 8px;
   cursor: sw-resize;

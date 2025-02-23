@@ -21,6 +21,8 @@ import { getMemories } from "@/api/getMemories";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { saveFeedback } from "@/control/firebase";
 import dittoAvatar from "/icons/ditto-icon.png";
+import { useModal } from "../hooks/useModal";
+import { useImageViewer } from "../hooks/useImageViewer";
 
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const USER_AVATAR_KEY = "userAvatar";
@@ -274,7 +276,7 @@ export default function ChatFeed({
   const feedRef = useRef(null);
   const bottomRef = useRef(null);
   const [profilePic, setProfilePic] = useState(() => {
-    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png"; // Update path
+    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
   });
   const [reactions, setReactions] = useState({});
   const [imageOverlay, setImageOverlay] = useState(null);
@@ -289,6 +291,10 @@ export default function ChatFeed({
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
+  const { createOpenHandler, createCloseHandler } = useModal();
+  const { setImageUrl } = useImageViewer();
+  const openImageViewer = createOpenHandler("imageViewer");
+  const closeImageViewer = createCloseHandler("imageViewer");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -579,7 +585,7 @@ export default function ChatFeed({
       setAbortController(null);
       setLoadingMemories(false);
     }
-  }, [actionOverlay]);
+  }, [actionOverlay, abortController]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -587,20 +593,17 @@ export default function ChatFeed({
     toast.success("Copied to clipboard");
   };
 
-  const handleReaction = useCallback(
-    (index, pairID, emoji, feedback) => {
-      setReactions((prevReactions) => ({
-        ...prevReactions,
-        [index]: [...(prevReactions[index] || []), emoji],
-      }));
-      setReactionOverlay(null);
-      setActionOverlay(null);
-      if (auth.currentUser) {
-        saveFeedback(auth.currentUser.uid, pairID, emoji, feedback);
-      }
-    },
-    [auth.currentUser]
-  );
+  const handleReaction = useCallback((index, pairID, emoji, feedback) => {
+    setReactions((prevReactions) => ({
+      ...prevReactions,
+      [index]: [...(prevReactions[index] || []), emoji],
+    }));
+    setReactionOverlay(null);
+    setActionOverlay(null);
+    if (auth.currentUser) {
+      saveFeedback(auth.currentUser.uid, pairID, emoji, feedback);
+    }
+  }, []);
 
   const handleBubbleInteraction = (e, index) => {
     // Don't show action overlay if user is selecting text
@@ -649,11 +652,14 @@ export default function ChatFeed({
 
   const handleImageClick = (src) => {
     const cachedUrl = getCachedUrl(src);
-    setImageOverlay(cachedUrl.ok ?? src);
+    const imageUrl = cachedUrl.ok ?? src;
+    setImageUrl(imageUrl);
+    openImageViewer();
   };
 
   const handleImageDownload = (src) => {
     window.open(src, "_blank");
+    closeImageViewer();
   };
 
   const closeImageOverlay = () => {
@@ -677,16 +683,15 @@ export default function ChatFeed({
     return (
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        children={displayText}
         components={{
-          a: ({ node, href, children, ...props }) => (
+          a: ({ href, children, ...props }) => (
             <a
               {...props}
               href={href}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => {
-                e.stopPropagation(); // Prevent bubble interaction
+                e.stopPropagation();
               }}
               style={{
                 color: "#3941b8",
@@ -699,20 +704,13 @@ export default function ChatFeed({
               {children}
             </a>
           ),
-          p: ({ node, ...props }) => (
-            <p {...props} style={{ margin: "0.5em 0" }} />
-          ),
-          ol: ({ node, ordered, ...props }) => (
-            <ol {...props} className="chat-bubble-list" />
-          ),
-          ul: ({ node, ...props }) => (
-            <ul {...props} className="chat-bubble-list" />
-          ),
-          li: ({ node, ordered, ...props }) => (
+          p: ({ ...props }) => <p {...props} style={{ margin: "0.5em 0" }} />,
+          ol: ({ ...props }) => <ol {...props} className="chat-bubble-list" />,
+          ul: ({ ...props }) => <ul {...props} className="chat-bubble-list" />,
+          li: ({ ...props }) => (
             <li {...props} className="chat-bubble-list-item" />
           ),
-          img: ({ node, src, alt, ...props }) => {
-            const [imgSrc, setImgSrc] = useState(src);
+          img: ({ src, alt, ...props }) => {
             // Check if this is a DALL-E URL
             if (src?.includes("oaidalleapiprodscus.blob.core.windows.net")) {
               try {
@@ -772,7 +770,10 @@ export default function ChatFeed({
               getPresignedUrl(src).then(
                 (url) => {
                   if (url.ok) {
-                    setImgSrc(url.ok);
+                    const img = document.querySelector(`img[src="${src}"]`);
+                    if (img) {
+                      img.src = url.ok;
+                    }
                   }
                 },
                 (err) => {
@@ -783,32 +784,32 @@ export default function ChatFeed({
             return (
               <img
                 {...props}
-                src={imgSrc}
+                src={src}
                 alt={alt}
                 className="chat-image"
                 onClick={(e) => {
-                  e.stopPropagation(); // Stop bubble interaction
+                  e.stopPropagation();
                   handleImageClick(src);
                 }}
                 onError={(e) => {
                   const errSrc = e.target.src;
                   console.error(`Image load error: ${e}; src: ${errSrc}`);
                   if (errSrc === src) {
-                    setImgSrc(IMAGE_PLACEHOLDER_IMAGE);
+                    e.target.src = IMAGE_PLACEHOLDER_IMAGE;
                   } else {
-                    setImgSrc(src);
+                    e.target.src = src;
                   }
                   if (errSrc.startsWith("https://ditto-content")) {
                     setTimeout(() => {
                       console.log("trying image again", errSrc);
-                      setImgSrc(errSrc);
+                      e.target.src = errSrc;
                     }, 5_000);
                   }
                 }}
               />
             );
           },
-          code({ node, inline, className, children, ...props }) {
+          code({ inline, className, children, ...props }) {
             let match = /language-(\w+)/.exec(className || "");
             let hasCodeBlock;
             if (displayText.match(/```/g)) {
@@ -821,13 +822,13 @@ export default function ChatFeed({
               return (
                 <div className="code-container">
                   <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, "")}
                     style={vscDarkPlus}
                     language={match[1]}
                     PreTag="div"
                     {...props}
-                    className="code-block"
-                  />
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
                   <button
                     className="copy-button code-block-button"
                     onClick={(e) => {
@@ -862,7 +863,9 @@ export default function ChatFeed({
             }
           },
         }}
-      />
+      >
+        {displayText}
+      </ReactMarkdown>
     );
   };
 
@@ -893,7 +896,6 @@ export default function ChatFeed({
 
     // Detect tool type from message content if not already set
     const toolType = message.toolType || detectToolType(message.text);
-    const hasToolStatus = message.toolStatus && toolType;
 
     return (
       <motion.div
@@ -911,8 +913,8 @@ export default function ChatFeed({
               isLastDittoMessage && isGenerating
                 ? "animating"
                 : isLastDittoMessage && !isGenerating
-                  ? "spinning"
-                  : ""
+                ? "spinning"
+                : ""
             }`}
           />
         )}
@@ -952,8 +954,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
+                        ? "failed"
+                        : ""
                     }`}
                   >
                     {message.toolStatus}

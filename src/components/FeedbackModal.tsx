@@ -1,5 +1,5 @@
 import { MdBugReport, MdLightbulb } from "react-icons/md";
-import { useActionState, useCallback } from "react";
+import { useActionState, useCallback, useEffect } from "react";
 import { useState, useRef } from "react";
 import { BASE_URL } from "../firebaseConfig";
 import { getDeviceID, APP_VERSION } from "../utils/deviceId";
@@ -27,7 +27,6 @@ async function submitFeedback(_: FeedbackState, formData: FormData) {
       body: formData,
     });
     if (response.status === 201) {
-      toast.success("Feedback submitted successfully!");
       return { ok: true };
     }
     const error = await response.text();
@@ -51,14 +50,22 @@ export default function FeedbackModal({
   const [state, formAction] = useActionState(submitFeedback, { ok: false });
   const formRef = useRef<HTMLFormElement>(null);
   const closeModal = createCloseHandler("feedback");
+  useEffect(() => {
+    if (state?.err) {
+      toast.error(state.err);
+    }
+    if (state?.ok) {
+      toast.success("Feedback submitted successfully!");
+      formRef.current?.reset();
+      state.ok = false;
+      closeModal();
+    }
+  }, [state, closeModal]);
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
   if (auth.error || token.error) {
     return <div className="error-message">Authentication required</div>;
-  }
-  if (state?.err) {
-    toast.error(state.err);
   }
 
   return (
@@ -109,7 +116,7 @@ export default function FeedbackModal({
             rows={6}
           />
         </div>
-        <SubmitButton onSubmit={closeModal} />
+        <SubmitButton />
         <SocialLinks />
       </form>
     </Modal>

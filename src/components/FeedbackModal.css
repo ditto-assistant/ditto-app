@@ -1,39 +1,6 @@
 @import "../styles/variables.css";
 @import "../styles/global.css";
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  position: relative;
-  background: linear-gradient(180deg, #2f3136 0%, #36393f 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 500px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
 .feedback-type-selector {
   margin-bottom: 20px;
 }
@@ -138,13 +105,6 @@
 }
 
 @media (max-width: 480px) {
-  .modal-content {
-    width: 95%;
-    margin: 20px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
   .feedback-buttons {
     flex-direction: column;
   }

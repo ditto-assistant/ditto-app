@@ -1,5 +1,5 @@
 import React from "react";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { motion } from "framer-motion";
 import "./ModalHeader.css";
 
@@ -7,12 +7,16 @@ interface ModalHeaderProps {
   title: string;
   onClose: () => void;
   className?: string;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const ModalHeader: React.FC<ModalHeaderProps> = ({
   title,
   onClose,
   className = "",
+  isFullscreen = false,
+  onToggleFullscreen,
 }) => {
   return (
     <div className={`modal-header ${className}`}>
@@ -23,13 +27,33 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
       >
         {title}
       </motion.h3>
-      <motion.div
-        whileHover={{ scale: 1.1, rotate: 90 }}
-        whileTap={{ scale: 0.9 }}
-        transition={{ duration: 0.2 }}
-      >
-        <MdClose className="close-icon" onClick={onClose} />
-      </motion.div>
+      <div className="modal-controls">
+        {onToggleFullscreen && (
+          <motion.button
+            className="modal-control fullscreen"
+            onClick={onToggleFullscreen}
+            aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          >
+            {isFullscreen ? (
+              <MdFullscreenExit size={20} />
+            ) : (
+              <MdFullscreen size={20} />
+            )}
+          </motion.button>
+        )}
+        <motion.button
+          className="modal-control close"
+          onClick={onClose}
+          aria-label="Close"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <MdClose size={20} />
+        </motion.button>
+      </div>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import {
   createContext,
   useCallback,
@@ -5,9 +6,10 @@ import {
   ReactNode,
   useReducer,
   Fragment,
+  Suspense,
 } from "react";
 
-export type ModalId = "feedback" | "memoryNetwork";
+export type ModalId = "feedback" | "memoryNetwork" | "imageViewer";
 
 type ModalRegistration = {
   component: ReactNode;
@@ -134,7 +136,9 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
       <>
         {children}
         {Object.entries(state.modals).map(([id, modal]) => (
-          <Fragment key={id}>{modal.content}</Fragment>
+          <Fragment key={id}>
+            <Suspense fallback={<LoadingSpinner />}>{modal.content}</Suspense>
+          </Fragment>
         ))}
       </>
     </ModalContext.Provider>
