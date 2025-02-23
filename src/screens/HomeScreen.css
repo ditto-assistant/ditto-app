@@ -280,25 +280,6 @@ body:not(.login-page) {
   }
 }
 
-/* Additional fix for iOS devices */
-@supports (-webkit-touch-callout: none) {
-  .App {
-    height: -webkit-fill-available;
-  }
-
-  .App-body {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-/* Add support for safe area insets */
-@supports (padding: env(safe-area-inset-top)) {
-  .App {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
 /* Additional styles for other scrollable elements */
 .message-list,
 .status-bar {

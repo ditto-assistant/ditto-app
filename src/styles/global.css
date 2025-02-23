@@ -49,10 +49,17 @@ body {
   flex-direction: column;
 }
 
-/* For iOS devices to handle the bottom bar area */
-@supports (padding: max(0px)) {
+/* iOS and Safe Area handling */
+@supports (-webkit-touch-callout: none) {
   #root {
-    padding-bottom: max(0px, env(safe-area-inset-bottom));
+    min-height: -webkit-fill-available;
+  }
+}
+
+@supports (padding: env(safe-area-inset-top)) {
+  #root {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
