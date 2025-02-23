@@ -331,7 +331,7 @@ const TableView = ({ memories, onMemoryClick }) => {
           } else {
             const inlineText = String(children).replace(/\n$/, "");
             return (
-              <div className="inline-code-container">
+              <span className="inline-code-container">
                 <code className="inline-code" {...props}>
                   {children}
                 </code>
@@ -352,7 +352,7 @@ const TableView = ({ memories, onMemoryClick }) => {
                 >
                   <FiCopy />
                 </button>
-              </div>
+              </span>
             );
           }
         },
@@ -568,7 +568,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
             } else {
               const inlineText = String(children).replace(/\n$/, "");
               return (
-                <div className="inline-code-container">
+                <span className="inline-code-container">
                   <code className="inline-code" {...props}>
                     {children}
                   </code>
@@ -589,7 +589,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
                   >
                     <FiCopy />
                   </button>
-                </div>
+                </span>
               );
             }
           },

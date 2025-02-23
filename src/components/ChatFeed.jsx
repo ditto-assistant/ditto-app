@@ -268,7 +268,6 @@ export default function ChatFeed({
     },
   },
 }) {
-  const [copied, setCopied] = useState(false);
   const [actionOverlay, setActionOverlay] = useState(null);
   const [reactionOverlay, setReactionOverlay] = useState(null);
   const feedRef = useRef(null);
@@ -285,8 +284,6 @@ export default function ChatFeed({
   const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [newMessageAnimation, setNewMessageAnimation] = useState(false);
-  const [lastMessageIndex, setLastMessageIndex] = useState(-1);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
@@ -585,9 +582,8 @@ export default function ChatFeed({
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
     setActionOverlay(null);
-    setTimeout(() => setCopied(false), 2000);
+    toast.success("Copied to clipboard");
   };
 
   const handleReaction = useCallback(
@@ -846,7 +842,7 @@ export default function ChatFeed({
             } else {
               const inlineText = String(children).replace(/\n$/, "");
               return (
-                <div className="inline-code-container">
+                <span className="inline-code-container">
                   <code className="inline-code" {...props}>
                     {children}
                   </code>
@@ -860,7 +856,7 @@ export default function ChatFeed({
                   >
                     <FiCopy />
                   </button>
-                </div>
+                </span>
               );
             }
           },
@@ -914,8 +910,8 @@ export default function ChatFeed({
               isLastDittoMessage && isGenerating
                 ? "animating"
                 : isLastDittoMessage && !isGenerating
-                  ? "spinning"
-                  : ""
+                ? "spinning"
+                : ""
             }`}
           />
         )}
@@ -955,8 +951,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
+                        ? "failed"
+                        : ""
                     }`}
                   >
                     {message.toolStatus}
@@ -1398,7 +1394,6 @@ export default function ChatFeed({
     >
       {messages.map(renderMessageWithAvatar)}
       {hasInputField && <input type="text" className="chat-input-field" />}
-      {copied && <div className="copied-notification">Copied!</div>}
       <div ref={bottomRef} />
       {reactionOverlay && (
         <div
