@@ -1,3 +1,8 @@
+---
+description: React Function Component Guidelines
+globs: *.tsx,*.jsx
+alwaysApply: true
+---
 We use `export default function` for components.
 
 We use `export function` for hooks.
