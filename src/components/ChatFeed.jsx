@@ -19,6 +19,7 @@ import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
 import { getMemories } from "@/api/getMemories";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { saveFeedback } from "@/control/firebase";
 import dittoAvatar from "/icons/ditto-icon.png";
 
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
