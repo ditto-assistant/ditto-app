@@ -1,0 +1,5 @@
+We use `export default function` for components.
+
+We use `export function` for hooks.
+
+Seek to reduce complexity where possible.
