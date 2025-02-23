@@ -155,12 +155,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     script: null,
     category: null,
   });
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // Add this state for the selected script overlay
-  const [showScriptActions, setShowScriptActions] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState({});
   const [scriptVersions, setScriptVersions] = useState([]);
 
   // Add this effect to load script versions when selected script changes

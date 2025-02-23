@@ -46,7 +46,8 @@ export default function HomeScreen() {
   const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
   const [isScriptsOverlayOpen, setIsScriptsOverlayOpen] = useState(false);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
-  const { openModal } = useModal();
+  const { createOpenHandler } = useModal();
+  const openFeedbackModal = createOpenHandler("feedback");
 
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
@@ -151,119 +152,105 @@ export default function HomeScreen() {
   };
 
   const appBodyRef = useRef(null);
-  // check for localStorage memoryWipe being set to true and reset cound and create new conversation
+
   useEffect(() => {
-    if (localStorage.getItem("resetMemory") === "true") {
-      localStorage.setItem("resetMemory", "false");
-      setCount(0);
-      createConversation(
-        { prompts: [], responses: [], timestamps: [], pairIDs: [] },
-        true
-      );
-    }
-  }, [localStorage.getItem("resetMemory")]);
+    const syncConversationHist = async () => {
+      const localHistCount = parseInt(localStorage.getItem("histCount"));
+      const thinkingObjectString = localStorage.getItem("thinking");
 
-  const syncConversationHist = async () => {
-    const localHistCount = parseInt(localStorage.getItem("histCount"));
-    const thinkingObjectString = localStorage.getItem("thinking");
+      if (thinkingObjectString !== null && conversation.is_typing === false) {
+        const thinkingObject = JSON.parse(thinkingObjectString);
+        const usersPrompt = thinkingObject.prompt;
 
-    if (thinkingObjectString !== null && conversation.is_typing === false) {
-      const thinkingObject = JSON.parse(thinkingObjectString);
-      const usersPrompt = thinkingObject.prompt;
-
-      setConversation((prevState) => {
-        const newMessages = [
-          ...prevState.messages,
-          { sender: "User", text: usersPrompt, timestamp: Date.now() },
-        ];
-        return {
-          ...prevState,
-          messages: newMessages,
-          is_typing: true,
-        };
-      });
-    }
-
-    if (histCount < localHistCount) {
-      setCount(localHistCount);
-      const localHist = getSavedConversation();
-      createConversation(localHist, false);
-    }
-
-    if (isNaN(localHistCount)) {
-      setCount(0);
-    }
-  };
-
-  // Add this function after getSavedConversation
-  const checkAndResyncPairIDs = () => {
-    const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-    const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-    const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
-
-    // Check if arrays exist and have matching lengths
-    if (
-      prompts.length !== responses.length ||
-      prompts.length !== timestamps.length ||
-      prompts.length !== pairIDs.length
-    ) {
-      console.log("Detected mismatch in localStorage arrays:");
-      console.log(`prompts: ${prompts.length}`);
-      console.log(`responses: ${responses.length}`);
-      console.log(`timestamps: ${timestamps.length}`);
-      console.log(`pairIDs: ${pairIDs.length}`);
-
-      // Load conversation history from Firestore to resync
-      const userID = localStorage.getItem("userID");
-      if (userID) {
-        console.log("Resyncing conversation history from Firestore...");
-        loadConversationHistoryFromFirestore(userID)
-          .then((conversationHistory) => {
-            if (conversationHistory) {
-              localStorage.setItem(
-                "prompts",
-                JSON.stringify(conversationHistory.prompts)
-              );
-              localStorage.setItem(
-                "responses",
-                JSON.stringify(conversationHistory.responses)
-              );
-              localStorage.setItem(
-                "timestamps",
-                JSON.stringify(conversationHistory.timestamps)
-              );
-              localStorage.setItem(
-                "pairIDs",
-                JSON.stringify(conversationHistory.pairIDs)
-              );
-              localStorage.setItem(
-                "histCount",
-                conversationHistory.prompts.length
-              );
-              console.log("Successfully resynced conversation history");
-              console.log(
-                `New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`
-              );
-
-              // Update the conversation state
-              const newConversation = createConversation(
-                conversationHistory,
-                false,
-                true
-              );
-              setConversation(newConversation);
-            }
-          })
-          .catch((error) => {
-            console.error("Error resyncing conversation history:", error);
-          });
+        setConversation((prevState) => {
+          const newMessages = [
+            ...prevState.messages,
+            { sender: "User", text: usersPrompt, timestamp: Date.now() },
+          ];
+          return {
+            ...prevState,
+            messages: newMessages,
+            is_typing: true,
+          };
+        });
       }
-    }
-  };
 
-  // Add this to your existing useEffect that runs on mount
-  useEffect(() => {
+      if (histCount < localHistCount) {
+        setCount(localHistCount);
+        const localHist = getSavedConversation();
+        createConversation(localHist, false);
+      }
+
+      if (isNaN(localHistCount)) {
+        setCount(0);
+      }
+    };
+
+    const checkAndResyncPairIDs = () => {
+      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
+      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
+      const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
+
+      // Check if arrays exist and have matching lengths
+      if (
+        prompts.length !== responses.length ||
+        prompts.length !== timestamps.length ||
+        prompts.length !== pairIDs.length
+      ) {
+        console.log("Detected mismatch in localStorage arrays:");
+        console.log(`prompts: ${prompts.length}`);
+        console.log(`responses: ${responses.length}`);
+        console.log(`timestamps: ${timestamps.length}`);
+        console.log(`pairIDs: ${pairIDs.length}`);
+
+        // Load conversation history from Firestore to resync
+        const userID = localStorage.getItem("userID");
+        if (userID) {
+          console.log("Resyncing conversation history from Firestore...");
+          loadConversationHistoryFromFirestore(userID)
+            .then((conversationHistory) => {
+              if (conversationHistory) {
+                localStorage.setItem(
+                  "prompts",
+                  JSON.stringify(conversationHistory.prompts)
+                );
+                localStorage.setItem(
+                  "responses",
+                  JSON.stringify(conversationHistory.responses)
+                );
+                localStorage.setItem(
+                  "timestamps",
+                  JSON.stringify(conversationHistory.timestamps)
+                );
+                localStorage.setItem(
+                  "pairIDs",
+                  JSON.stringify(conversationHistory.pairIDs)
+                );
+                localStorage.setItem(
+                  "histCount",
+                  conversationHistory.prompts.length
+                );
+                console.log("Successfully resynced conversation history");
+                console.log(
+                  `New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`
+                );
+
+                // Update the conversation state
+                const newConversation = createConversation(
+                  conversationHistory,
+                  false,
+                  true
+                );
+                setConversation(newConversation);
+              }
+            })
+            .catch((error) => {
+              console.error("Error resyncing conversation history:", error);
+            });
+        }
+      }
+    };
     checkAndResyncPairIDs();
 
     const handleStatus = async () => {
@@ -283,7 +270,7 @@ export default function HomeScreen() {
     }, 10000);
 
     return () => clearInterval(syncInterval);
-  }, [conversation]);
+  }, [conversation, bootStatus, histCount]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -595,7 +582,7 @@ export default function HomeScreen() {
           className="icon-button header-feedback-button"
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.1 }}
-          onClick={() => openModal("feedback")}
+          onClick={openFeedbackModal}
         >
           <MdFeedback className="icon" />
         </motion.div>

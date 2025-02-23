@@ -1,69 +1,46 @@
 import { MdBugReport, MdLightbulb } from "react-icons/md";
 import { useActionState, useCallback } from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { BASE_URL } from "../firebaseConfig";
 import { getDeviceID, APP_VERSION } from "../utils/deviceId";
 import { useAuth, useAuthToken } from "../hooks/useAuth";
-import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { SubmitButton } from "./ui/buttons/SubmitButton";
-import { A } from "./ui/links/Anchor";
-import { ModalHeader } from "./ui/modals/ModalHeader";
+import SocialLinks from "./ui/links/SocialLinks";
 import "./FeedbackModal.css";
-
-function SocialLinks() {
-  return (
-    <div className="feedback-actions">
-      <A href="https://github.com/orgs/ditto-assistant/discussions/new/choose">
-        <FaGithub /> New Discussion
-      </A>
-      <A href="https://github.com/ditto-assistant/ditto-app/issues/new">
-        <FaGithub /> New Issue
-      </A>
-      <A href="https://www.instagram.com/heyditto.ai">
-        <FaInstagram /> Instagram
-      </A>
-      <A href="https://x.com/heydittoai">
-        <FaXTwitter /> Twitter
-      </A>
-      <A href="https://www.youtube.com/@heyditto">
-        <FaYoutube /> YouTube
-      </A>
-    </div>
-  );
-}
+import { useModal } from "@/hooks/useModal";
+import Modal from "./Modal";
+import { Result } from "@/types/common";
 
 type FeedbackType = "bug" | "feature-request";
 interface FeedbackModalProps {
-  onClose: () => void;
   feedbackType?: FeedbackType;
 }
 
-async function submitFeedback(prevState: any, formData: FormData) {
+type FeedbackState = Result<boolean>;
+
+async function submitFeedback(_: FeedbackState, formData: FormData) {
   try {
     const response = await fetch(`${BASE_URL}/v1/feedback`, {
       method: "POST",
       body: formData,
     });
-
     if (response.status === 201) {
       toast.success("Feedback submitted successfully!");
-      return { success: true };
+      return { ok: true };
     }
     const error = await response.text();
-    toast.error(error || "Failed to submit feedback");
-    return { success: false, error };
-  } catch (error) {
-    toast.error("Failed to submit feedback");
-    return { success: false, error: "Failed to submit feedback" };
+    return { err: error };
+  } catch (error: unknown) {
+    return { err: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 
 export default function FeedbackModal({
-  onClose,
   feedbackType = "bug",
 }: FeedbackModalProps) {
+  const { createCloseHandler } = useModal();
   const [selectedType, setSelectedType] = useState(feedbackType);
   const createSelectTypeCallback = useCallback(
     (type: FeedbackType) => () => setSelectedType(type),
@@ -71,80 +48,70 @@ export default function FeedbackModal({
   );
   const auth = useAuth();
   const token = useAuthToken();
-  const [state, formAction] = useActionState(submitFeedback, null);
+  const [state, formAction] = useActionState(submitFeedback, { ok: false });
   const formRef = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    if (state?.success) {
-      onClose();
-    }
-  }, [state?.success, onClose]);
-
+  const closeModal = createCloseHandler("feedback");
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />;
   }
   if (auth.error || token.error) {
     return <div className="error-message">Authentication required</div>;
   }
+  if (state?.err) {
+    toast.error(state.err);
+  }
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal-content">
-        <ModalHeader title="Feedback" onClose={onClose} />
-        <div className="modal-body">
-          <form ref={formRef} action={formAction}>
-            <input type="hidden" name="userID" value={auth.user?.uid || ""} />
-            <input type="hidden" name="deviceID" value={getDeviceID()} />
-            <input type="hidden" name="version" value={APP_VERSION} />
-            <input
-              type="hidden"
-              name="authorization"
-              value={`Bearer ${token.data}`}
-            />
+    <Modal id="feedback" title="Feedback" fullScreen>
+      <form ref={formRef} action={formAction}>
+        <input type="hidden" name="userID" value={auth.user?.uid || ""} />
+        <input type="hidden" name="deviceID" value={getDeviceID()} />
+        <input type="hidden" name="version" value={APP_VERSION} />
+        <input
+          type="hidden"
+          name="authorization"
+          value={`Bearer ${token.data}`}
+        />
 
-            <div className="feedback-type-selector">
-              <div className="feedback-buttons">
-                <button
-                  type="button"
-                  onClick={createSelectTypeCallback("bug")}
-                  className={`modal-feedback-button feedback-bug-button ${
-                    selectedType === "bug" ? "selected" : ""
-                  }`}
-                >
-                  <MdBugReport className="feedback-icon bug-icon" />
-                  Bug
-                </button>
-                <button
-                  type="button"
-                  onClick={createSelectTypeCallback("feature-request")}
-                  className={`modal-feedback-button feedback-feature-button ${
-                    selectedType === "feature-request" ? "selected" : ""
-                  }`}
-                >
-                  <MdLightbulb className="feedback-icon feature-icon" />
-                  Idea
-                </button>
-              </div>
-              <input type="hidden" name="type" value={selectedType} />
-            </div>
-
-            <div className="feedback-form">
-              <textarea
-                id="feedback"
-                name="feedback"
-                className="feedback-textarea"
-                placeholder="Write your feedback here..."
-                required
-                rows={6}
-              />
-            </div>
-            <SubmitButton />
-            <SocialLinks />
-          </form>
+        <div className="feedback-type-selector">
+          <div className="feedback-buttons">
+            <button
+              type="button"
+              onClick={createSelectTypeCallback("bug")}
+              className={`modal-feedback-button feedback-bug-button ${
+                selectedType === "bug" ? "selected" : ""
+              }`}
+            >
+              <MdBugReport className="feedback-icon bug-icon" />
+              Bug
+            </button>
+            <button
+              type="button"
+              onClick={createSelectTypeCallback("feature-request")}
+              className={`modal-feedback-button feedback-feature-button ${
+                selectedType === "feature-request" ? "selected" : ""
+              }`}
+            >
+              <MdLightbulb className="feedback-icon feature-icon" />
+              Idea
+            </button>
+          </div>
+          <input type="hidden" name="type" value={selectedType} />
         </div>
-      </div>
-    </div>
+
+        <div className="feedback-form">
+          <textarea
+            id="feedback"
+            name="feedback"
+            className="feedback-textarea"
+            placeholder="Write your feedback here..."
+            required
+            rows={6}
+          />
+        </div>
+        <SubmitButton onSubmit={closeModal} />
+        <SocialLinks />
+      </form>
+    </Modal>
   );
 }

@@ -15,9 +15,8 @@ import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useModal } from "./hooks/useModal";
-import { ModalProvider } from "./hooks/useModal";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ModalProvider, ModalRegistry } from "./hooks/useModal";
 
 const Login = lazy(() => import("./screens/login"));
 const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
@@ -53,6 +52,23 @@ const router = createBrowserRouter(
   )
 );
 
+const modalRegistry: ModalRegistry = {
+  feedback: {
+    component: (
+      <Suspense fallback={<FullScreenSpinner />}>
+        <FeedbackModal />
+      </Suspense>
+    ),
+  },
+  memoryNetwork: {
+    component: (
+      <Suspense fallback={<FullScreenSpinner />}>
+        <div>Memory Network Modal</div>
+      </Suspense>
+    ),
+  },
+} as const;
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -61,7 +77,7 @@ export default function App() {
           <ModelPreferencesProvider>
             <MemoryCountProvider>
               <PresignedUrlProvider>
-                <ModalProvider>
+                <ModalProvider registry={modalRegistry}>
                   <RouterProvider router={router} />
                   <Toaster
                     position="bottom-center"
@@ -73,7 +89,6 @@ export default function App() {
                       },
                     }}
                   />
-                  <ModalConsumer />
                 </ModalProvider>
               </PresignedUrlProvider>
             </MemoryCountProvider>
@@ -82,13 +97,5 @@ export default function App() {
       </AuthProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
-  );
-}
-
-function ModalConsumer() {
-  const { currentModal, closeModal } = useModal();
-
-  return (
-    <>{currentModal === "feedback" && <FeedbackModal onClose={closeModal} />}</>
   );
 }
