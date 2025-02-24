@@ -11,7 +11,6 @@ interface MemoryControlsModalProps {
 
 function MemoryControlsModal({ onClose }: MemoryControlsModalProps) {
   const { preferences, updatePreferences } = useModelPreferences();
-  if (!preferences) return null;
 
   const handleShortTermChange = useCallback(
     (newValues: number[]) => {
@@ -39,6 +38,7 @@ function MemoryControlsModal({ onClose }: MemoryControlsModalProps) {
     [preferences, updatePreferences]
   );
 
+  if (!preferences) return null;
   return (
     <div className="modal-overlay">
       <div className="modal-content">

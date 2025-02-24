@@ -1,13 +1,12 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  ReactNode,
-  useCallback,
-} from "react";
+import React, { useRef, useState, useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { DEFAULT_MODAL_STATE, ModalId, useModal } from "../hooks/useModal";
-import { ModalHeader } from "./ui/modals/ModalHeader";
+import {
+  DEFAULT_MODAL_STATE,
+  ModalId,
+  useModal,
+} from "../../../hooks/useModal";
+import { ModalHeader } from "./ModalHeader";
+import "./Modal.css";
 
 interface ModalProps {
   id: ModalId;
@@ -25,7 +24,8 @@ export default function Modal({
   children,
   fullScreen = false,
 }: ModalProps) {
-  const { createCloseHandler, getModalState } = useModal();
+  const { createBringToFrontHandler, createCloseHandler, getModalState } =
+    useModal();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -36,13 +36,9 @@ export default function Modal({
   const [isResizing, setIsResizing] = useState(false);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0 });
   const [resizeEdge, setResizeEdge] = useState<string | null>(null);
-  const [zIndex, setZIndex] = useState(1);
   const closeModal = createCloseHandler(id);
-  const { isOpen } = getModalState(id) ?? DEFAULT_MODAL_STATE;
-
-  const bringToFront = useCallback(() => {
-    setZIndex(Date.now());
-  }, []);
+  const bringToFront = createBringToFrontHandler(id);
+  const { isOpen, zIndex } = getModalState(id) ?? DEFAULT_MODAL_STATE;
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -204,26 +200,34 @@ export default function Modal({
   const modalStyle = isFullscreen
     ? {
         zIndex,
+        height: "100%",
+        width: "100%",
       }
     : {
+        zIndex,
         position: "fixed" as const,
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        zIndex,
         transform: `translate(${localTransform.x}px, ${localTransform.y}px)`,
       };
 
   return createPortal(
     <div
       ref={modalRef}
-      className="modal-container"
+      className="modal container"
       style={modalStyle}
-      onMouseDown={bringToFront}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          closeModal();
+        } else {
+          bringToFront();
+        }
+      }}
       onTouchStart={bringToFront}
     >
-      <div className="modal-content">
+      <div className="modal content">
         <div onMouseDown={handleStartDrag} onTouchStart={handleStartDrag}>
           <ModalHeader
             title={title}
@@ -233,7 +237,7 @@ export default function Modal({
             onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
           />
         </div>
-        <div className="modal-body">{children}</div>
+        <div className="modal body">{children}</div>
 
         {!isFullscreen && (
           <>

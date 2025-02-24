@@ -25,6 +25,7 @@ interface ModalState {
 
 export interface SingleModalState {
   isOpen: boolean;
+  zIndex: number;
   content: ReactNode;
 }
 
@@ -35,7 +36,8 @@ type ModalAction =
       content: ReactNode;
     }
   | { type: "CLOSE_MODAL"; id: ModalId }
-  | { type: "CLOSE_ALL" };
+  | { type: "CLOSE_ALL" }
+  | { type: "BRING_TO_FRONT"; id: ModalId };
 
 const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
   switch (action.type) {
@@ -72,6 +74,32 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
       );
       return { ...state, modals: closedModals };
 
+    case "BRING_TO_FRONT": {
+      const currentModal = state.modals[action.id];
+      if (!currentModal) return state;
+
+      const currentZIndex = currentModal.zIndex || 0;
+      const maxZIndex = Math.max(
+        currentZIndex,
+        ...Object.values(state.modals)
+          .filter((modal) => modal !== currentModal)
+          .map((modal) => modal.zIndex || 0)
+      );
+
+      if (currentZIndex >= maxZIndex) return state;
+
+      return {
+        ...state,
+        modals: {
+          ...state.modals,
+          [action.id]: {
+            ...currentModal,
+            zIndex: maxZIndex + 1,
+          },
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -80,6 +108,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
 interface ModalContextType {
   createOpenHandler: (id: ModalId) => () => void;
   createCloseHandler: (id: ModalId) => () => void;
+  createBringToFrontHandler: (id: ModalId) => () => void;
   closeAllModals: () => void;
   getModalState: (id: ModalId) => SingleModalState | undefined;
 }
@@ -117,6 +146,11 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
     []
   );
 
+  const createBringToFrontHandler = useCallback(
+    (id: ModalId) => () => dispatch({ type: "BRING_TO_FRONT", id }),
+    []
+  );
+
   const closeAllModals = useCallback(() => dispatch({ type: "CLOSE_ALL" }), []);
 
   const getModalState = useCallback(
@@ -127,6 +161,7 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
   return (
     <ModalContext.Provider
       value={{
+        createBringToFrontHandler,
         createOpenHandler,
         createCloseHandler,
         closeAllModals,
@@ -156,4 +191,5 @@ export function useModal() {
 export const DEFAULT_MODAL_STATE: SingleModalState = {
   isOpen: false,
   content: null,
+  zIndex: 1,
 };

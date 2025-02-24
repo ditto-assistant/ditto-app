@@ -10,7 +10,7 @@ import { SubmitButton } from "./ui/buttons/SubmitButton";
 import SocialLinks from "./ui/links/SocialLinks";
 import "./FeedbackModal.css";
 import { useModal } from "@/hooks/useModal";
-import Modal from "./Modal";
+import Modal from "./ui/modals/Modal";
 import { Result } from "@/types/common";
 
 type FeedbackType = "bug" | "feature-request";

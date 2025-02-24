@@ -1,7 +1,7 @@
 ---
 description: React Function Component Guidelines
 globs: *.tsx,*.jsx
-alwaysApply: true
+alwaysApply: false
 ---
 We use `export default function` for components.
 
