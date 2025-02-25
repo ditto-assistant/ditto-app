@@ -200,7 +200,7 @@
 
 .tab {
   padding: 16px 32px;
-  color: #B5BAC1;
+  color: #b5bac1;
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
@@ -210,7 +210,7 @@
 }
 
 .tab.active {
-  color: #5865F2;
+  color: #5865f2;
 }
 
 .tab.active::after {
@@ -220,7 +220,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #5865F2;
+  background-color: #5865f2;
 }
 
 /* Search and Sort Container */
@@ -244,19 +244,19 @@
 
 .sort-icon {
   font-size: 16px;
-  color: #B5BAC1;
+  color: #b5bac1;
 }
 
 .sort-text {
   font-size: 14px;
-  color: #B5BAC1;
+  color: #b5bac1;
   font-weight: 500;
 }
 
 /* Script Card Styles */
 .script-card {
   background-color: #313338;
-  border: 1px solid #1E1F22;
+  border: 1px solid #1e1f22;
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -275,7 +275,7 @@
 }
 
 .script-card.selected {
-  border-color: #5865F2;
+  border-color: #5865f2;
 }
 
 .script-card-header {
@@ -287,7 +287,7 @@
 }
 
 .script-name {
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 600;
   margin: 0;
   width: 100%;
@@ -313,7 +313,7 @@
 
 .timestamp {
   font-size: 12px;
-  color: #B5BAC1;
+  color: #b5bac1;
   opacity: 0.8;
   font-weight: 500;
 }
@@ -328,8 +328,8 @@
 
 .edit-button {
   padding: 6px 12px;
-  background-color: #4F545C;
-  color: #FFFFFF;
+  background-color: #4f545c;
+  color: #ffffff;
   border-radius: 4px;
   cursor: pointer;
   border: none;
@@ -340,8 +340,8 @@
 
 .select-button {
   padding: 6px 12px;
-  background-color: #5865F2;
-  color: #FFFFFF;
+  background-color: #5865f2;
+  color: #ffffff;
   border-radius: 4px;
   cursor: pointer;
   border: none;
@@ -352,7 +352,7 @@
 
 .more-icon {
   font-size: 18px;
-  color: #B5BAC1;
+  color: #b5bac1;
   cursor: pointer;
   margin-left: 4px;
   padding: 4px;
@@ -362,7 +362,7 @@
 
 .more-icon:hover {
   background-color: rgba(79, 84, 92, 0.3);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* Selected Script Styles */
@@ -373,12 +373,12 @@
   background: transparent;
   display: flex;
   justify-content: center;
-  border-bottom: 1px solid #1E1F22;
+  border-bottom: 1px solid #1e1f22;
 }
 
 .selected-script {
-  background-color: #2B2D31;
-  border: 1px solid #1E1F22;
+  background-color: #2b2d31;
+  border: 1px solid #1e1f22;
   padding: 16px 20px;
   border-radius: 12px;
   max-width: 800px;
@@ -398,7 +398,7 @@
 }
 
 .selected-script-label {
-  color: #99AAB5;
+  color: #99aab5;
   margin: 0;
   font-size: 12px;
   font-weight: 600;
@@ -407,7 +407,7 @@
 }
 
 .selected-script-name {
-  color: #7289DA;
+  color: #7289da;
   font-weight: 600;
   font-size: 18px;
   margin: 0;
@@ -421,9 +421,9 @@
 }
 
 .edit-selected-button {
-  background-color: #4F545C;
+  background-color: #4f545c;
   border: none;
-  color: #FFFFFF;
+  color: #ffffff;
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 13px;
@@ -434,8 +434,8 @@
 
 .deselect-button {
   background-color: transparent;
-  border: 1px solid #DA373C;
-  color: #DA373C;
+  border: 1px solid #da373c;
+  color: #da373c;
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 13px;
@@ -448,7 +448,7 @@
 .card-menu-item {
   padding: 8px 12px;
   font-size: 14px;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -459,7 +459,7 @@
 }
 
 .card-menu-item.danger {
-  color: #DA373C;
+  color: #da373c;
 }
 
 .card-menu-item.danger:hover {
@@ -467,7 +467,7 @@
 }
 
 .card-menu-item.primary {
-  color: #5865F2;
+  color: #5865f2;
 }
 
 .menu-divider {
@@ -483,7 +483,7 @@
   justify-content: center;
   align-items: center;
   padding: 32px 0;
-  color: #B5BAC1;
+  color: #b5bac1;
 }
 
 .no-results-text {
@@ -495,7 +495,7 @@
 /* Version Badge */
 .version-badge {
   font-size: 12px;
-  color: #B5BAC1;
+  color: #b5bac1;
   background-color: rgba(79, 84, 92, 0.3);
   padding: 2px 6px;
   border-radius: 4px;
@@ -505,9 +505,9 @@
 
 /* Rename Input */
 .rename-input {
-  background-color: #1E1F22;
-  color: #FFFFFF;
-  border: 1px solid #1E1F22;
+  background-color: #1e1f22;
+  color: #ffffff;
+  border: 1px solid #1e1f22;
   border-radius: 4px;
   padding: 6px 10px;
   width: 100%;
@@ -516,6 +516,6 @@
 }
 
 .rename-input:focus {
-  border-color: #5865F2;
+  border-color: #5865f2;
   box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
 }
