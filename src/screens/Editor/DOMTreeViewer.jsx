@@ -12,7 +12,7 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconButton } from "@mui/material";
 import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 if (import.meta.env.PROD) {
   ace.config.set(

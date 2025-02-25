@@ -25,7 +25,7 @@ import {
 } from "react-icons/fa";
 import { Button, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import DOMTreeViewer from "../../components/DOMTreeViewer";
+import DOMTreeViewer from "@/screens/Editor/DOMTreeViewer";
 import { syncLocalScriptsWithFirestore } from "../../control/firebase"; // Changed from '../control/agent'
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import ReactMarkdown from "react-markdown";
@@ -904,16 +904,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             width: isMobile
               ? "100%"
               : isMaximized === "editor"
-                ? "100%"
-                : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`,
+              ? "100%"
+              : isMaximized === "preview"
+              ? "0%"
+              : `${splitPosition}%`,
             height: isMobile
               ? isMaximized === "editor"
                 ? "100%"
                 : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`
+                ? "0%"
+                : `${splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
@@ -1100,16 +1100,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             width: isMobile
               ? "100%"
               : isMaximized === "preview"
-                ? "100%"
-                : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`,
+              ? "100%"
+              : isMaximized === "editor"
+              ? "0%"
+              : `${100 - splitPosition}%`,
             height: isMobile
               ? isMaximized === "preview"
                 ? "100%"
                 : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`
+                ? "0%"
+                : `${100 - splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}

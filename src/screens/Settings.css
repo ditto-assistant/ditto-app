@@ -1,0 +1,101 @@
+.settings-content {
+    padding: 20px;
+}
+
+.danger-content {
+    padding: 20px;
+}
+
+.danger-description {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #f04747;
+    padding: 15px;
+    background-color: rgba(240, 71, 71, 0.1);
+    border-radius: 4px;
+}
+
+.tokens-info {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.balance-item {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.highlight-text {
+    color: #7289da;
+    font-weight: bold;
+}
+
+.settings-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.button {
+    margin: 10px 0;
+    width: 100%;
+    max-width: 200px;
+    color: white;
+    background-color: #7289da;
+    text-align: center;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.button:hover {
+    background-color: #5b6eae;
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+}
+
+.settings-footer {
+    padding: 15px;
+    margin-top: auto;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer-divider {
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 0 0 15px 0;
+}
+
+.version-container {
+    color: #8e9297;
+    font-size: 0.8em;
+    text-align: center;
+}
+
+.danger-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+/* Additional utility classes */
+.full-width {
+    width: 100% !important;
+    max-width: 200px;
+}

@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback } from "react";
 import { FaBrain } from "react-icons/fa";
 import { IoSettingsSharp, IoExtensionPuzzle } from "react-icons/io5";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
-import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
 import "./MemoryOverlay.css";
 import ModelPreferencesModal from "@/components/ModelPreferencesModal";
 import MemoryControlsModal from "@/components/MemoryControlsModal";
@@ -99,8 +98,6 @@ export default function MemoryOverlay({ closeOverlay }: MemoryOverlayProps) {
             >
               Agent Tools
             </ModalButton>
-
-            <DeleteMemoryButton onSuccess={closeOverlay} />
           </div>
         </div>
 

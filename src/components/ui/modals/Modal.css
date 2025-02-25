@@ -106,3 +106,60 @@
     background: #1a1a1a;
   }
 }
+
+/* Add these styles to the existing Modal.css file */
+
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #2f3136;
+}
+
+.modal-tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: transparent;
+  color: #b9bbbe;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  margin-right: 2px;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.modal-tab:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.modal-tab.active {
+  color: #ffffff;
+  border-bottom: 2px solid #7289da;
+  margin-bottom: -1px;
+}
+
+.modal-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: currentColor;
+}
+
+/* Danger tab styling */
+.modal-tab.danger {
+  color: #f04747;
+}
+
+.modal-tab.danger.active {
+  border-bottom-color: #f04747;
+}
+
+.modal-tab.danger:hover {
+  color: #f04747;
+  background-color: rgba(240, 71, 71, 0.05);
+}

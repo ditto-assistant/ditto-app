@@ -8,11 +8,20 @@ import {
 import { ModalHeader } from "./ModalHeader";
 import "./Modal.css";
 
+export interface ModalTab {
+  id: string;
+  label: string;
+  content: ReactNode;
+  customClass?: string;
+}
+
 interface ModalProps {
   id: ModalId;
   title: string;
-  children: ReactNode;
+  children?: ReactNode;
   fullScreen?: boolean;
+  tabs?: ModalTab[];
+  defaultTabId?: string;
 }
 
 const MIN_WIDTH = 280;
@@ -23,6 +32,8 @@ export default function Modal({
   title,
   children,
   fullScreen = false,
+  tabs,
+  defaultTabId,
 }: ModalProps) {
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
     useModal();
@@ -30,12 +41,15 @@ export default function Modal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: 100, y: 100 });
-  const [size, setSize] = useState({ width: 400, height: 300 });
+  const [size, setSize] = useState({ width: 250, height: 400 });
   const [isFullscreen, setIsFullscreen] = useState(fullScreen);
   const [localTransform, setLocalTransform] = useState({ x: 0, y: 0 });
   const [isResizing, setIsResizing] = useState(false);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0 });
   const [resizeEdge, setResizeEdge] = useState<string | null>(null);
+  const [activeTabId, setActiveTabId] = useState<string | undefined>(
+    defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined)
+  );
   const closeModal = createCloseHandler(id);
   const bringToFront = createBringToFrontHandler(id);
   const { isOpen, zIndex } = getModalState(id) ?? DEFAULT_MODAL_STATE;
@@ -202,6 +216,13 @@ export default function Modal({
         transform: `translate(${localTransform.x}px, ${localTransform.y}px)`,
       };
 
+  const renderTabContent = () => {
+    if (!tabs) return children;
+
+    const activeTab = tabs.find((tab) => tab.id === activeTabId);
+    return activeTab ? activeTab.content : null;
+  };
+
   return createPortal(
     <div
       ref={modalRef}
@@ -226,7 +247,24 @@ export default function Modal({
             onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
           />
         </div>
-        <div className="modal body">{children}</div>
+
+        {tabs && tabs.length > 0 && (
+          <div className="modal-tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`modal-tab ${
+                  tab.id === activeTabId ? "active" : ""
+                } ${tab.customClass || ""}`}
+                onClick={() => setActiveTabId(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="modal body">{renderTabContent()}</div>
 
         {!isFullscreen && (
           <>
