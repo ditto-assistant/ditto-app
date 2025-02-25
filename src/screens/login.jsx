@@ -169,8 +169,9 @@ const Login = () => {
       localStorage.setItem("lastName", user.displayName?.split(" ")[1]);
 
       // Get conversation history
-      const conversationHistory =
-        await loadConversationHistoryFromFirestore(userID);
+      const conversationHistory = await loadConversationHistoryFromFirestore(
+        userID
+      );
       if (conversationHistory) {
         localStorage.setItem(
           "prompts",
