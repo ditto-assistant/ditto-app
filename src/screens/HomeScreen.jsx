@@ -492,14 +492,30 @@ export default function HomeScreen() {
     };
   }, []);
 
+  // Handle keyboard events for accessibility
+  const handleKeyDown = (event, callback) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      callback();
+    }
+  };
+
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="app-header">
         <motion.div
           className="header-feedback-button"
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          whileHover={{
+            scale: 1.1,
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+          }}
           onClick={openFeedbackModal}
+          onKeyDown={(e) => handleKeyDown(e, openFeedbackModal)}
+          aria-label="Feedback"
+          role="button"
+          tabIndex={0}
         >
           <MdFeedback className="icon" />
         </motion.div>
@@ -531,8 +547,17 @@ export default function HomeScreen() {
 
         <motion.div
           className="settings-button"
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.9 }}
+          whileHover={{
+            scale: 1.1,
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+          }}
           onClick={openSettingsModal}
+          onKeyDown={(e) => handleKeyDown(e, openSettingsModal)}
+          aria-label="Settings"
+          role="button"
+          tabIndex={0}
         >
           <IoSettingsOutline className="icon" />
         </motion.div>

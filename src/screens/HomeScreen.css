@@ -54,6 +54,8 @@ header.app-header {
   justify-content: space-between;
   position: relative;
   align-items: center;
+  padding: 10px 12px;
+  min-height: 64px;
 }
 
 /* Use the app-icon-button class from components.css instead */
@@ -63,23 +65,45 @@ header.app-header {
   composes: app-icon-button;
 }
 
-/* Add flex properties to the buttons */
+/* Improved header button styles for better clickability */
 .header-feedback-button,
 .settings-button {
-  flex: 0 0 auto; /* Don't allow flex to resize these */
-  min-width: 40px; /* Ensure consistent width */
+  flex: 0 0 auto;
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  margin: 0 8px;
+  position: relative;
+  touch-action: manipulation; /* Improves touch response */
+  -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
 }
 
 .header-feedback-button {
-  margin-right: 0;
+  margin-right: 8px;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .settings-button {
-  margin-left: 0;
+  margin-left: 8px;
   position: relative;
-  z-index: 1;
+  z-index: 10;
+}
+
+.header-feedback-button .icon,
+.settings-button .icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 /* Use the app-icon class from components.css instead */
@@ -98,7 +122,10 @@ header.app-header {
 }
 
 /* Title container is now using app-title-container directly */
-/* Removed duplicate title-container class */
+/* Adjust title container to work well with the larger buttons */
+.app-title-container {
+  max-width: calc(100% - 140px); /* Adjust for larger buttons */
+}
 
 .ditto-icon {
   width: 30px;
@@ -233,6 +260,21 @@ header.app-header {
     position: sticky;
     bottom: 0;
     z-index: 100;
+  }
+
+  .header-feedback-button,
+  .settings-button {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .header-feedback-button .icon,
+  .settings-button .icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
   }
 }
 
