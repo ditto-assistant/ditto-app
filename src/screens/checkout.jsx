@@ -164,7 +164,7 @@ const Checkout = () => {
 
           <Button
             variant="contained"
-            onClick={() => navigate("/settings")}
+            onClick={() => navigate("/")}
             style={styles.navButton}
           >
             GO BACK

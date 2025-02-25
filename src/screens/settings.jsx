@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import {
   Divider,
   Button,
@@ -9,7 +8,6 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { FaArrowLeft } from "react-icons/fa";
 import { deleteUser, getAuth } from "firebase/auth";
 import {
   removeUserFromFirestore,
@@ -20,14 +18,18 @@ import { useBalance } from "../hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { clearStorage } from "@/utils/deviceId";
+import Modal from "@/components/ui/modals/Modal";
+import { useModal } from "@/hooks/useModal";
+import { A } from "@/components/ui/links/Anchor";
 
-const Settings = () => {
-  const navigate = useNavigate();
+export default function Settings() {
   const balance = useBalance();
   const { signOut, user } = useAuth();
   const auth = getAuth();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reAuthDialogOpen, setReAuthDialogOpen] = useState(false);
+  const { createCloseHandler } = useModal();
+  const closeModal = createCloseHandler("settings");
 
   const handleLogout = () => {
     console.log("logging out");
@@ -37,7 +39,7 @@ const Settings = () => {
       localStorage.setItem("hasSeenTOS", hasSeenTOS);
     }
     signOut();
-    navigate("/login");
+    closeModal();
   };
 
   const handleDeleteAccount = async () => {
@@ -70,7 +72,7 @@ const Settings = () => {
       await removeUserFromFirestore(currentUser.uid);
       await deleteAllUserScriptsFromFirestore(currentUser.uid);
       clearStorage();
-      navigate("/login");
+      closeModal();
     } catch (error) {
       console.error("Error deleting account: ", error);
       if (error.code === "auth/requires-recent-login") {
@@ -91,89 +93,63 @@ const Settings = () => {
   };
 
   return (
-    <div style={styles.overlay}>
-      <div
-        style={{
-          ...styles.settingsContainer,
-          opacity: 1,
-          transform: "translateY(0)",
-          transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
-        }}
-      >
-        <header style={styles.header}>
-          <Button
-            variant="text"
-            onClick={() => navigate("/")}
-            style={styles.backButton}
-            startIcon={<FaArrowLeft />}
-          >
-            BACK
-          </Button>
-          <h2 style={styles.headerTitle}>Settings</h2>
-        </header>
-        <div style={styles.settingsContent}>
-          <div style={styles.tokensInfo}>
-            {!balance.isLoading ? (
-              <>
-                <p style={styles.balanceItem}>
-                  Ditto Tokens:{" "}
-                  <span style={styles.highlightText}>
-                    {balance.data?.balance}
-                  </span>
-                </p>
-                <p style={styles.balanceItem}>
-                  Images:{" "}
-                  <span style={styles.highlightText}>
-                    {balance.data?.images}
-                  </span>
-                </p>
-                <p style={styles.balanceItem}>
-                  Searches:{" "}
-                  <span style={styles.highlightText}>
-                    {" "}
-                    {balance.data?.searches}{" "}
-                  </span>
-                </p>
-              </>
-            ) : (
-              <div style={styles.spinnerContainer}>
-                <LoadingSpinner size={45} inline={true} />
-              </div>
-            )}
-          </div>
-          <div style={styles.settingsOptions}>
+    <Modal id="settings" title="Settings">
+      <div style={styles.settingsContent}>
+        <div style={styles.tokensInfo}>
+          {!balance.isLoading ? (
+            <>
+              <p style={styles.balanceItem}>
+                Ditto Tokens:{" "}
+                <span style={styles.highlightText}>
+                  {balance.data?.balance}
+                </span>
+              </p>
+              <p style={styles.balanceItem}>
+                Images:{" "}
+                <span style={styles.highlightText}>{balance.data?.images}</span>
+              </p>
+              <p style={styles.balanceItem}>
+                Searches:{" "}
+                <span style={styles.highlightText}>
+                  {" "}
+                  {balance.data?.searches}{" "}
+                </span>
+              </p>
+            </>
+          ) : (
+            <div style={styles.spinnerContainer}>
+              <LoadingSpinner size={45} inline={true} />
+            </div>
+          )}
+        </div>
+        <div style={styles.settingsOptions}>
+          <A href="/checkout" variant="contained" style={styles.button}>
+            ADD TOKENS
+          </A>
+          <div style={styles.buttonRow}>
             <Button
               variant="contained"
-              onClick={() => navigate("/checkout")}
-              style={styles.button}
+              onClick={handleLogout}
+              style={styles.halfButton}
             >
-              ADD TOKENS
+              LOG OUT
             </Button>
-            <div style={styles.buttonRow}>
-              <Button
-                variant="contained"
-                onClick={handleLogout}
-                style={styles.halfButton}
-              >
-                LOG OUT
-              </Button>
-              <Button
-                variant="contained"
-                onClick={openDeleteDialog}
-                style={styles.deleteButton}
-              >
-                DELETE ACCOUNT
-              </Button>
-            </div>
+            <Button
+              variant="contained"
+              onClick={openDeleteDialog}
+              style={styles.deleteButton}
+            >
+              DELETE ACCOUNT
+            </Button>
           </div>
         </div>
-        <footer style={styles.footer}>
-          <Divider style={styles.divider} />
-          <div style={styles.versionContainer}>
-            <small>Version: {packageJson.version}</small>
-          </div>
-        </footer>
       </div>
+      <footer style={styles.footer}>
+        <Divider style={styles.divider} />
+        <div style={styles.versionContainer}>
+          <small>Version: {packageJson.version}</small>
+        </div>
+      </footer>
 
       <Dialog
         open={reAuthDialogOpen}
@@ -258,9 +234,9 @@ const Settings = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Modal>
   );
-};
+}
 
 const styles = {
   overlay: {
@@ -402,5 +378,3 @@ const styles = {
     height: "80px",
   },
 };
-
-export default Settings;

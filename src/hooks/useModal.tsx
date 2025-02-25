@@ -9,7 +9,7 @@ import {
   Suspense,
 } from "react";
 
-export type ModalId = "feedback" | "memoryNetwork" | "imageViewer";
+export type ModalId = "feedback" | "memoryNetwork" | "imageViewer" | "settings";
 
 type ModalRegistration = {
   component: ReactNode;
@@ -86,7 +86,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
           .map((modal) => modal.zIndex || 0)
       );
 
-      if (currentZIndex >= maxZIndex) return state;
+      if (currentZIndex > maxZIndex) return state;
 
       return {
         ...state,

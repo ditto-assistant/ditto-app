@@ -40,17 +40,6 @@ export default function Modal({
   const bringToFront = createBringToFrontHandler(id);
   const { isOpen, zIndex } = getModalState(id) ?? DEFAULT_MODAL_STATE;
 
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeModal();
-    };
-
-    if (isOpen) {
-      window.addEventListener("keydown", handleEsc);
-      return () => window.removeEventListener("keydown", handleEsc);
-    }
-  }, [isOpen, closeModal]);
-
   const handleStartDrag = (e: React.MouseEvent | React.TouchEvent) => {
     if ((e.target as HTMLElement).closest(".modal-controls")) return;
 

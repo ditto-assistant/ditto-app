@@ -43,7 +43,6 @@ const router = createBrowserRouter(
         }
       >
         <Route index element={<HomeScreen />} />
-        <Route path="settings" element={<Settings />} />
         <Route path="canvas" element={<DittoCanvas />} />
         <Route path="checkout">
           <Route index element={<Checkout />} />
@@ -63,6 +62,9 @@ const modalRegistry: ModalRegistry = {
   },
   imageViewer: {
     component: <ImageViewer />,
+  },
+  settings: {
+    component: <Settings />,
   },
 } as const;
 

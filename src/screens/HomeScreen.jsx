@@ -46,8 +46,8 @@ export default function HomeScreen() {
   const [isScriptsOverlayOpen, setIsScriptsOverlayOpen] = useState(false);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
   const { createOpenHandler } = useModal();
+  const openSettingsModal = createOpenHandler("settings");
   const openFeedbackModal = createOpenHandler("feedback");
-
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
     return savedConversation
@@ -600,7 +600,7 @@ export default function HomeScreen() {
         <motion.div
           className="icon-button settings-button"
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/settings")}
+          onClick={openSettingsModal}
         >
           <IoSettingsOutline className="icon" />
         </motion.div>
