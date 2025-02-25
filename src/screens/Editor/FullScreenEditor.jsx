@@ -879,16 +879,16 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             width: isMobile
               ? "100%"
               : isMaximized === "editor"
-              ? "100%"
-              : isMaximized === "preview"
-              ? "0%"
-              : `${splitPosition}%`,
+                ? "100%"
+                : isMaximized === "preview"
+                  ? "0%"
+                  : `${splitPosition}%`,
             height: isMobile
               ? isMaximized === "editor"
                 ? "100%"
                 : isMaximized === "preview"
-                ? "0%"
-                : `${splitPosition}%`
+                  ? "0%"
+                  : `${splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
@@ -1045,16 +1045,16 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             width: isMobile
               ? "100%"
               : isMaximized === "preview"
-              ? "100%"
-              : isMaximized === "editor"
-              ? "0%"
-              : `${100 - splitPosition}%`,
+                ? "100%"
+                : isMaximized === "editor"
+                  ? "0%"
+                  : `${100 - splitPosition}%`,
             height: isMobile
               ? isMaximized === "preview"
                 ? "100%"
                 : isMaximized === "editor"
-                ? "0%"
-                : `${100 - splitPosition}%`
+                  ? "0%"
+                  : `${100 - splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
