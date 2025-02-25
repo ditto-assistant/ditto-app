@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { deleteUser, getAuth } from "firebase/auth";
 import {
   removeUserFromFirestore,

@@ -750,9 +750,6 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
       console.log("Syncing scripts with Firestore for type: ", scriptType);
     }
 
-    // Fetch timestamps
-    const timestamps = await getScriptTimestamps(userID, scriptType);
-
     const querySnapshot = await getDocs(
       collection(db, "scripts", userID, scriptType)
     );

@@ -57,7 +57,7 @@ if (import.meta.env.PROD) {
   );
 }
 
-const useSplitPane = (isMobile, initialPosition = 50) => {
+const useSplitPane = (initialPosition = 50) => {
   const [splitPosition, setSplitPosition] = useState(initialPosition);
   const [isMaximized, setIsMaximized] = useState("preview");
   const containerRef = useRef(null);
@@ -77,7 +77,6 @@ const SearchOverlay = ({
   onSearch,
   onClose,
   searchResults,
-  isMobile,
 }) => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -271,8 +270,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       const response = await updaterAgent(
         usersPrompt,
         code,
-        preferences.programmerModel,
-        true
+        preferences.programmerModel
       );
 
       // Log the response in yellow
@@ -337,7 +335,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
   }, [scriptChatMessages]);
 
   const { splitPosition, isMaximized, setIsMaximized, containerRef } =
-    useSplitPane(isMobile);
+    useSplitPane();
 
   // Add state to track editor initialization
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -940,7 +938,6 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     setSearchTerm("");
                   }}
                   searchResults={searchResults}
-                  isMobile={isMobile}
                 />
                 <Tooltip title={searchVisible ? "Close Search" : "Search"}>
                   <IconButton

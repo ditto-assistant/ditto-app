@@ -272,6 +272,10 @@ function useScriptsManager(): ScriptsManagerReturnType {
     },
   });
 
+  const handleDeselectScript = useCallback(() => {
+    setSelectedScriptLocal(null);
+  }, []);
+
   // Mutations for script reversion
   const revertScriptMutation = useMutation({
     mutationFn: ({
@@ -317,12 +321,8 @@ function useScriptsManager(): ScriptsManagerReturnType {
         handleDeselectScript();
       }
     },
-    []
+    [handleDeselectScript]
   );
-
-  const handleDeselectScript = useCallback(() => {
-    setSelectedScriptLocal(null);
-  }, []);
 
   const refreshScriptQueries = useCallback(
     (scriptType?: ScriptType) => {

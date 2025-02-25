@@ -8,9 +8,7 @@ import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash } from "react-icons/fa";
-import { deleteConversation } from "../control/memory";
 import MemoryNetwork from "./MemoryNetwork";
-import { LoadingSpinner } from "./LoadingSpinner";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { useModelPreferences } from "../hooks/useModelPreferences";
@@ -278,10 +276,8 @@ export default function ChatFeed({
   const [relatedMemories, setRelatedMemories] = useState([]);
   const [loadingMemories, setLoadingMemories] = useState(false);
   const [abortController, setAbortController] = useState(null);
-  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
-  const { deleteMemory } = useMemoryDeletion(updateConversation);
+  const { confirmMemoryDeletion } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
   const { handleImageClick } = useImageViewerHandler(true);
 
@@ -639,7 +635,7 @@ export default function ChatFeed({
     setReactionOverlay(null);
   };
 
-  const renderMessageText = (text, index, sender) => {
+  const renderMessageText = (text) => {
     // First replace code block markers
     let displayText = text?.replace(
       /```[a-zA-Z0-9]+/g,
@@ -917,7 +913,7 @@ export default function ChatFeed({
             <div className="message-text" style={bubbleStyles.text}>
               {message.toolStatus && toolType ? (
                 <>
-                  {renderMessageText(message.text, index, message.sender)}
+                  {renderMessageText(message.text)}
                   <div
                     className={`tool-status ${
                       message.toolStatus === "complete"
@@ -938,7 +934,7 @@ export default function ChatFeed({
                   </div>
                 </>
               ) : (
-                renderMessageText(message.text, index, message.sender)
+                renderMessageText(message.text)
               )}
             </div>
             <div className="message-footer">
@@ -1186,97 +1182,13 @@ export default function ChatFeed({
   // Update handleMessageDelete to use pairID directly
   const handleMessageDelete = async (index) => {
     const message = messages[index];
-
-    // Get the pairID from the message
     const pairID = message.pairID;
-
     if (!pairID) {
       console.error("No pairID found for message:", message);
       return;
     }
-
-    // Show confirmation overlay
-    setDeleteConfirmation({
-      memory: {
-        prompt:
-          message.sender === "Ditto" && index > 0
-            ? messages[index - 1].text
-            : message.text,
-        response: message.sender === "Ditto" ? message.text : null,
-      },
-      idx: index,
-      docId: pairID,
-      isMessageDelete: true,
-    });
-
-    // Close the action overlay
+    confirmMemoryDeletion(pairID, { isMessage: true });
     setActionOverlay(null);
-  };
-
-  // Update confirmDelete to handle both cases
-  const confirmDelete = async () => {
-    if (!deleteConfirmation) return;
-
-    const { docId, isMessageDelete } = deleteConfirmation;
-    const userID = auth.currentUser.uid;
-
-    try {
-      setIsDeletingMessage(true);
-
-      const success = await deleteConversation(userID, docId);
-
-      if (success) {
-        // Close delete confirmation with animation
-        setDeleteConfirmation(null);
-
-        if (isMessageDelete) {
-          // Update conversation state to remove the message pair
-          updateConversation((prevState) => ({
-            ...prevState,
-            messages: prevState.messages.filter((msg) => msg.pairID !== docId),
-          }));
-
-          // Update local storage
-          const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-          const responses = JSON.parse(
-            localStorage.getItem("responses") || "[]"
-          );
-          const timestamps = JSON.parse(
-            localStorage.getItem("timestamps") || "[]"
-          );
-          const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
-
-          const pairIndex = pairIDs.indexOf(docId);
-          if (pairIndex !== -1) {
-            prompts.splice(pairIndex, 1);
-            responses.splice(pairIndex, 1);
-            timestamps.splice(pairIndex, 1);
-            pairIDs.splice(pairIndex, 1);
-
-            localStorage.setItem("prompts", JSON.stringify(prompts));
-            localStorage.setItem("responses", JSON.stringify(responses));
-            localStorage.setItem("timestamps", JSON.stringify(timestamps));
-            localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
-            localStorage.setItem("histCount", pairIDs.length);
-          }
-        } else {
-          // const newMemories = relatedMemories.related.filter((_, i) => i !== idx);
-          // setRelatedMemories(newMemories);
-          // if (newMemories.length === 0) {
-          // setMemoryOverlay(null);
-          // }
-        }
-        toast.success("Message deleted successfully");
-
-        // Dispatch memoryUpdated event
-        window.dispatchEvent(new Event("memoryUpdated"));
-      }
-    } catch (error) {
-      console.error("Error deleting:", error);
-      toast.error("Failed to delete message");
-    } finally {
-      setIsDeletingMessage(false);
-    }
   };
 
   // Add this useEffect to listen for memory deletion events
@@ -1409,69 +1321,8 @@ export default function ChatFeed({
               <MemoryNetwork
                 memories={relatedMemories}
                 onClose={() => setMemoryOverlay(null)}
-                onMemoryDeleted={(deletedId) => {
-                  const userID = auth.currentUser.uid;
-                  deleteMemory(userID, deletedId);
-                }}
+                updateConversation={updateConversation}
               />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {deleteConfirmation && (
-          <motion.div
-            className="delete-confirmation-overlay"
-            onClick={() => setDeleteConfirmation(null)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              className="delete-confirmation-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="delete-confirmation-title">Delete Message?</div>
-              <div className="delete-confirmation-message">
-                Are you sure you want to delete this message? This action cannot
-                be undone.
-              </div>
-              {isDeletingMessage ? (
-                <div className="delete-confirmation-loading">
-                  <LoadingSpinner size={24} inline={true} />
-                  <div>Deleting message...</div>
-                </div>
-              ) : (
-                <>
-                  <div
-                    className={`delete-confirmation-docid ${
-                      !deleteConfirmation.docId ? "not-found" : ""
-                    }`}
-                  >
-                    Document ID: {deleteConfirmation.docId || "Not found"}
-                  </div>
-                  <div className="delete-confirmation-buttons">
-                    <button
-                      className="delete-confirmation-button cancel"
-                      onClick={() => setDeleteConfirmation(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="delete-confirmation-button confirm"
-                      onClick={confirmDelete}
-                      disabled={!deleteConfirmation.docId}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </>
-              )}
             </motion.div>
           </motion.div>
         )}

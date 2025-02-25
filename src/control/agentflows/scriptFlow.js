@@ -62,7 +62,6 @@ export const handleScriptGeneration = async ({
       prompt,
       scriptContents,
       preferences.programmerModel,
-      true
     );
     console.log("%c" + scriptResponse, "color: yellow");
   }

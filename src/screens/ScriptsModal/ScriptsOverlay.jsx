@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MdAdd, MdSort } from "react-icons/md";
 import { FaTrash, FaUndo, FaCog } from "react-icons/fa";
 // import { downloadOpenscadScript } from "../control/agentTools";
@@ -59,20 +59,9 @@ export default function ScriptsOverlay() {
   const [activeCard, setActiveCard] = useState(null);
   const [menuPosition, setMenuPosition] = useState(null);
   const [renameScriptId, setRenameScriptId] = useState(null);
-  const [deleteConfirmation, setDeleteConfirmation] = useState({
-    script: null,
-    category: null,
-    deleteAllVersions: false,
-  });
   const [versionOverlay, setVersionOverlay] = useState(null);
   const [openScadViewer, setOpenScadViewer] = useState(null);
   const cardRefs = useRef({});
-  const [revertConfirmation, setRevertConfirmation] = useState({
-    show: false,
-    script: null,
-    category: null,
-    version: null,
-  });
 
   const getBaseName = (name) => {
     const match = name.match(/^[^\-]+/);

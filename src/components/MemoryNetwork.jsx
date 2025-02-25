@@ -8,11 +8,9 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FiCopy } from "react-icons/fi";
-import { auth } from "../control/firebase";
-import { deleteConversation } from "../control/memory";
-import { LoadingSpinner } from "./LoadingSpinner";
 import remarkGfm from "remark-gfm";
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
+import { useMemoryDeletion } from "@/hooks/useMemoryDeletion";
 
 const formatDateTime = (timestamp) => {
   if (!timestamp) return "";
@@ -39,97 +37,20 @@ const formatDateTime = (timestamp) => {
   }).format(timestamp);
 };
 
-// Add this component near the top of the file
-const DeleteConfirmationContent = ({
-  deleteConfirmation,
-  setDeleteConfirmation,
-  confirmDelete,
-  isDeletingMessage,
-}) => (
-  <motion.div
-    className="delete-confirmation-content"
-    onClick={(e) => e.stopPropagation()}
-    initial={{ scale: 0.9, opacity: 0, y: 50 }}
-    animate={{ scale: 1, opacity: 1, y: 0 }}
-    exit={{ scale: 0.9, opacity: 0, y: 50 }}
-    transition={{ duration: 0.3, ease: "easeOut" }}
-    style={styles.deleteConfirmationContent}
-  >
-    <div style={styles.deleteConfirmationTitle}>Delete Memory?</div>
-    <div style={styles.deleteConfirmationMessage}>
-      Are you sure you want to delete this memory? This action cannot be undone.
-    </div>
-    {isDeletingMessage ? (
-      <div style={styles.deleteConfirmationLoading}>
-        <LoadingSpinner size={24} inline={true} />
-        <div>Deleting memory...</div>
-      </div>
-    ) : (
-      <>
-        <div style={styles.deleteConfirmationDocId}>
-          Document ID: {deleteConfirmation.docId || "Not found"}
-        </div>
-        <div style={styles.deleteConfirmationButtons}>
-          <button
-            style={styles.deleteConfirmationButtonCancel}
-            onClick={() => setDeleteConfirmation(null)}
-          >
-            Cancel
-          </button>
-          <button
-            style={styles.deleteConfirmationButtonConfirm}
-            onClick={confirmDelete}
-            disabled={!deleteConfirmation.docId}
-          >
-            Delete
-          </button>
-        </div>
-      </>
-    )}
-  </motion.div>
-);
-
 // Update the TableView component
-const TableView = ({ memories }) => {
-  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [deletingMemories, setDeletingMemories] = useState(new Set());
-  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+const TableView = ({ memories, updateConversation }) => {
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const { handleImageClick } = useImageViewerHandler(false);
+  const { confirmMemoryDeletion } = useMemoryDeletion(updateConversation);
 
   const handleDelete = async (memory) => {
-    setDeleteConfirmation({
-      memory,
-      docId: memory.id || memory.pairID,
-    });
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteConfirmation) return;
-
-    const { docId } = deleteConfirmation;
-    const userID = auth.currentUser.uid;
-
-    try {
-      setIsDeletingMessage(true);
-      setDeletingMemories((prev) => new Set([...prev, docId]));
-
-      const success = await deleteConversation(userID, docId);
-
-      if (success) {
-        window.dispatchEvent(new Event("memoryUpdated"));
-        setDeleteConfirmation(null);
-      }
-    } catch (error) {
-      console.error("Error deleting:", error);
-    } finally {
-      setIsDeletingMessage(false);
-      setDeletingMemories((prev) => {
-        const next = new Set(prev);
-        next.delete(docId);
-        return next;
+    const docId = memory.id || memory.pairID;
+    if (docId) {
+      confirmMemoryDeletion(docId, {
+        onSuccess: () => {
+          window.dispatchEvent(new Event("memoryUpdated"));
+        },
       });
-      setDeleteConfirmation(null);
     }
   };
 
@@ -215,7 +136,6 @@ const TableView = ({ memories }) => {
                   backgroundColor: `${nodeColor}22`,
                 },
               }}
-              disabled={deletingMemories.has(memory.id)}
             >
               <FaTrash />
             </button>
@@ -350,59 +270,23 @@ const TableView = ({ memories }) => {
       {memories.map((memory) => (
         <MemoryNode key={memory.id} memory={memory} />
       ))}
-
-      {/* Delete Confirmation Overlay */}
-      <AnimatePresence>
-        {deleteConfirmation && (
-          <motion.div
-            className="delete-confirmation-overlay"
-            onClick={() => !isDeletingMessage && setDeleteConfirmation(null)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <DeleteConfirmationContent
-              deleteConfirmation={deleteConfirmation}
-              setDeleteConfirmation={setDeleteConfirmation}
-              confirmDelete={confirmDelete}
-              isDeletingMessage={isDeletingMessage}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
 
-// Add the MemoryNodeOverlay component
-const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
-  const [deleteConfirmation, setDeleteConfirmation] = useState(false);
-  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+// Update the MemoryNodeOverlay component
+const MemoryNodeOverlay = ({ node, onClose, onDelete, updateConversation }) => {
   const { handleImageClick } = useImageViewerHandler(false);
+  const { confirmMemoryDeletion } = useMemoryDeletion(updateConversation);
 
   const handleDelete = useCallback(() => {
-    setDeleteConfirmation(true);
-  }, []);
-
-  const confirmDelete = useCallback(async () => {
-    setIsDeletingMessage(true);
-    const userID = auth.currentUser.uid;
-
-    try {
-      const success = await deleteConversation(userID, node.id);
-
-      if (success) {
+    confirmMemoryDeletion(node.id, {
+      onSuccess: () => {
         onDelete(node.id);
-        setDeleteConfirmation(false);
         onClose();
-      }
-    } catch (error) {
-      console.error("Error deleting conversation:", error);
-    } finally {
-      setIsDeletingMessage(false);
-    }
-  }, [node.id, onDelete, onClose]);
+      },
+    });
+  }, [node.id, onDelete, onClose, confirmMemoryDeletion]);
 
   // Define renderMarkdown within the scope of MemoryNodeOverlay
   const renderMarkdown = useCallback(
@@ -564,68 +448,20 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
             </button>
           </div>
         </motion.div>
-
-        {/* Delete Confirmation Overlay */}
-        {deleteConfirmation && (
-          <motion.div
-            className="delete-confirmation-overlay"
-            onClick={() => setDeleteConfirmation(false)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={styles.deleteConfirmationOverlay}
-          >
-            <motion.div
-              className="delete-confirmation-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              style={styles.deleteConfirmationContent}
-            >
-              <div style={styles.deleteConfirmationTitle}>Delete Memory?</div>
-              <div style={styles.deleteConfirmationMessage}>
-                Are you sure you want to delete this memory? This action cannot
-                be undone.
-              </div>
-              {isDeletingMessage ? (
-                <div style={styles.deleteConfirmationLoading}>
-                  <LoadingSpinner size={24} inline={true} />
-                  <div>Deleting memory...</div>
-                </div>
-              ) : (
-                <div style={styles.deleteConfirmationButtons}>
-                  <button
-                    style={styles.deleteConfirmationButtonCancel}
-                    onClick={() => setDeleteConfirmation(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    style={styles.deleteConfirmationButtonConfirm}
-                    onClick={confirmDelete}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
       </motion.div>
     </AnimatePresence>
   );
 };
 
 // Update the MemoryNetwork component
-const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
-  const [nodesData, setNodesData] = useState(memories);
+const MemoryNetwork = ({ memories = [], onClose, updateConversation }) => {
   const [viewMode, setViewMode] = useState("table");
-  const containerRef = useRef(null);
-  const networkRef = useRef(null);
+  const [nodesData, setNodesData] = useState(memories);
   const [selectedNode, setSelectedNode] = useState(null);
+  const networkRef = useRef(null);
+  const containerRef = useRef(null);
   const nodeIdMapRef = useRef({});
+
   const handleNodeClick = useCallback(
     (nodeId) => {
       const data = nodeIdMapRef.current[nodeId];
@@ -827,12 +663,8 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
       // Remove the deleted memory from the nodes data
       const updatedNodes = removeMemoryById(nodesData, deletedId);
       setNodesData(updatedNodes);
-
-      if (onMemoryDeleted) {
-        onMemoryDeleted(deletedId);
-      }
     },
-    [nodesData, onMemoryDeleted]
+    [nodesData]
   );
 
   return (
@@ -870,15 +702,18 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
         {viewMode === "tree" ? (
           <div ref={containerRef} style={styles.network} />
         ) : (
-          <TableView memories={memories} />
+          <TableView
+            memories={memories}
+            updateConversation={updateConversation}
+          />
         )}
       </div>
 
-      {/* Add the MemoryNodeOverlay component */}
       {selectedNode && (
         <MemoryNodeOverlay
           node={selectedNode}
           onClose={() => setSelectedNode(null)}
+          updateConversation={updateConversation}
           onDelete={handleMemoryDeleted}
         />
       )}
@@ -1422,72 +1257,6 @@ const styles = {
     margin: "4px 0",
   },
 
-  deleteConfirmationOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 5001,
-    backdropFilter: "blur(5px)",
-    padding: "20px",
-  },
-  deleteConfirmationContent: {
-    backgroundColor: "#36393f",
-    borderRadius: "12px",
-    padding: "24px",
-    width: "90%",
-    maxWidth: "400px",
-    textAlign: "center",
-    color: "#ffffff",
-  },
-  deleteConfirmationTitle: {
-    fontSize: "1.2em",
-    marginBottom: "16px",
-    fontWeight: "600",
-  },
-  deleteConfirmationMessage: {
-    marginBottom: "24px",
-    color: "rgba(255, 255, 255, 0.8)",
-    lineHeight: "1.4",
-  },
-  deleteConfirmationButtons: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "16px",
-  },
-  deleteConfirmationButtonCancel: {
-    backgroundColor: "#4f545c",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    padding: "10px 20px",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  },
-  deleteConfirmationButtonConfirm: {
-    backgroundColor: "#ed4245",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    padding: "10px 20px",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  },
-  deleteConfirmationLoading: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "12px",
-    padding: "20px",
-    color: "rgba(255, 255, 255, 0.8)",
-  },
   memoryNodeOverlay: {
     position: "fixed",
     top: 0,
