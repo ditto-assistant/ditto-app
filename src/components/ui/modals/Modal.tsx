@@ -216,13 +216,6 @@ export default function Modal({
         transform: `translate(${localTransform.x}px, ${localTransform.y}px)`,
       };
 
-  const renderTabContent = () => {
-    if (!tabs) return children;
-
-    const activeTab = tabs.find((tab) => tab.id === activeTabId);
-    return activeTab ? activeTab.content : null;
-  };
-
   return createPortal(
     <div
       ref={modalRef}
@@ -264,7 +257,23 @@ export default function Modal({
           </div>
         )}
 
-        <div className="modal body">{renderTabContent()}</div>
+        <div className="modal-wrapper">
+          <div className="modal body">
+            {tabs && tabs.length > 0
+              ? // If tabs are enabled, render active tab content
+                (() => {
+                  const activeTab = tabs.find((tab) => tab.id === activeTabId);
+                  return activeTab ? activeTab.content : null;
+                })()
+              : // If no tabs, render children inside the body
+                children}
+          </div>
+
+          {/* Always render children (like footer) when tabs are enabled */}
+          {tabs && tabs.length > 0 && children && (
+            <div className="modal-footer">{children}</div>
+          )}
+        </div>
 
         {!isFullscreen && (
           <>

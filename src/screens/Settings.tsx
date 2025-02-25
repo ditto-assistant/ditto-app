@@ -199,7 +199,6 @@ export default function Settings() {
       defaultTabId="general"
     >
       <footer className="settings-footer">
-        <Divider className="footer-divider" />
         <div className="version-container">
           <small>Version: {packageJson.version}</small>
         </div>

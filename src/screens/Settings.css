@@ -1,9 +1,9 @@
-.settings-content {
-  padding: 20px;
-}
-
+.settings-content,
 .danger-content {
   padding: 20px;
+  min-height: 300px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .danger-description {
@@ -69,10 +69,11 @@
 
 .settings-footer {
   padding: 15px;
-  margin-top: auto;
-  position: absolute;
-  bottom: 0;
+  background-color: #2f3136;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
+  position: relative;
+  bottom: 0;
 }
 
 .footer-divider {
@@ -92,10 +93,4 @@
   align-items: center;
   width: 100%;
   gap: 10px;
-}
-
-/* Additional utility classes */
-.full-width {
-  width: 100% !important;
-  max-width: 200px;
 }
