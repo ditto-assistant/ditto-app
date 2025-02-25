@@ -21,15 +21,15 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "./hooks/useModal";
 
 const DittoCanvasModal = lazy(() => import("./components/DittoCanvasModal"));
-const Login = lazy(() => import("./screens/Login"));
+const Login = lazy(() => import("./screens/Login.jsx"));
 const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const ImageViewer = lazy(() => import("./components/ImageViewer"));
-const HomeScreen = lazy(() => import("./screens/HomeScreen"));
+const HomeScreen = lazy(() => import("./screens/HomeScreen.jsx"));
 const Settings = lazy(() => import("./screens/Settings"));
-const Checkout = lazy(() => import("./screens/Checkout"));
-const CheckoutSuccess = lazy(() => import("./screens/CheckoutSuccess"));
+const Checkout = lazy(() => import("./screens/Checkout.jsx"));
+const CheckoutSuccess = lazy(() => import("./screens/CheckoutSuccess.jsx"));
 const ScriptsOverlay = lazy(
-  () => import("./screens/ScriptsModal/ScriptsOverlay")
+  () => import("./screens/ScriptsModal/ScriptsOverlay.jsx")
 );
 const queryClient = new QueryClient();
 
