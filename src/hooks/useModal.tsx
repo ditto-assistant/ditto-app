@@ -9,7 +9,13 @@ import {
   Suspense,
 } from "react";
 
-export type ModalId = "feedback" | "memoryNetwork" | "imageViewer" | "settings";
+export type ModalId =
+  | "feedback"
+  | "memoryNetwork"
+  | "imageViewer"
+  | "settings"
+  | "scripts"
+  | "dittoCanvas";
 
 type ModalRegistration = {
   component: ReactNode;
@@ -41,7 +47,12 @@ type ModalAction =
 
 const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
   switch (action.type) {
-    case "OPEN_MODAL":
+    case "OPEN_MODAL": {
+      // Calculate the highest z-index among all modals
+      const maxZIndex = Object.values(state.modals)
+        .map((modal) => modal?.zIndex || 0)
+        .reduce((max, current) => Math.max(max, current), 0);
+
       return {
         ...state,
         modals: {
@@ -49,9 +60,11 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
           [action.id]: {
             isOpen: true,
             content: action.content,
+            zIndex: maxZIndex + 1, // Set z-index higher than any existing modal
           },
         },
       };
+    }
 
     case "CLOSE_MODAL":
       return {

@@ -6,7 +6,7 @@ import {
   resetConversation,
   deleteAllUserImagesFromFirebaseStorageBucket,
 } from "@/control/firebase";
-
+import { useAuth } from "@/hooks/useAuth";
 interface DeleteMemoryButtonProps {
   onSuccess?: () => void;
   className?: string;
@@ -16,6 +16,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
   onSuccess,
   className = "",
 }) => {
+  const { user } = useAuth();
   const deleteAllMemory = useCallback(async () => {
     const dialog = document.createElement("div");
     dialog.className = "confirmation-dialog";
@@ -45,8 +46,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
         setTimeout(() => dialog.remove(), 300);
         console.log("Resetting conversation history...");
         localStorage.setItem("resetMemory", "true");
-        const userID = localStorage.getItem("userID");
-        if (!userID) return;
+        if (!user?.uid) return;
 
         localStorage.removeItem("prompts");
         localStorage.removeItem("responses");
@@ -54,8 +54,8 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
         localStorage.removeItem("pairIDs");
         localStorage.removeItem("histCount");
 
-        await resetConversation(userID);
-        await deleteAllUserImagesFromFirebaseStorageBucket(userID);
+        await resetConversation(user?.uid);
+        await deleteAllUserImagesFromFirebaseStorageBucket(user?.uid);
 
         window.dispatchEvent(
           new CustomEvent("memoryDeleted", {

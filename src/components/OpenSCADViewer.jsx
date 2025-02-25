@@ -3,7 +3,7 @@ import { FaTimes, FaSave } from "react-icons/fa";
 import { IconButton } from "@mui/material";
 import { useState } from "react";
 import { saveScriptToFirestore } from "../control/firebase";
-
+import { useAuth } from "../hooks/useAuth";
 const darkModeColors = {
   background: "#1E1F22",
   foreground: "#2B2D31",
@@ -17,12 +17,12 @@ const darkModeColors = {
 const OpenSCADViewer = ({ script, onClose }) => {
   const [content, setContent] = useState(script.content);
   const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const userID = localStorage.getItem("userID");
-      await saveScriptToFirestore(userID, content, "openSCAD", script.name);
+      await saveScriptToFirestore(user?.uid, content, "openSCAD", script.name);
 
       // Update localStorage
       const openSCADScripts = JSON.parse(

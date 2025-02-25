@@ -21,7 +21,8 @@ import MemoryOverlay from "../components/MemoryOverlay";
 import ScriptsOverlay from "../components/ScriptsOverlay";
 import FullScreenEditor from "../components/FullScreenEditor";
 import { useModal } from "../hooks/useModal";
-
+import { useAuth } from "../hooks/useAuth";
+import { useScripts } from "../hooks/useScripts.tsx";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
@@ -33,6 +34,7 @@ export default function HomeScreen() {
     localStorage.getItem("histCount") || 0
   );
   const [showStatusBar, setShowStatusBar] = useState(true);
+  const { user } = useAuth();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
@@ -45,9 +47,16 @@ export default function HomeScreen() {
   const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
   const [isScriptsOverlayOpen, setIsScriptsOverlayOpen] = useState(false);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
-  const { createOpenHandler } = useModal();
-  const openSettingsModal = createOpenHandler("settings");
-  const openFeedbackModal = createOpenHandler("feedback");
+  const modal = useModal();
+  const openSettingsModal = modal.createOpenHandler("settings");
+  const openFeedbackModal = modal.createOpenHandler("feedback");
+  const {
+    selectedScript,
+    setSelectedScript,
+    handleDeselectScript,
+    saveScript,
+  } = useScripts();
+
   const loadConversationFromLocalStorage = () => {
     const savedConversation = localStorage.getItem("conversation");
     return savedConversation
@@ -72,28 +81,26 @@ export default function HomeScreen() {
     });
   }, []);
 
-  const [workingScript, setWorkingScript] = useState(() => {
-    const storedScript = localStorage.getItem("workingOnScript");
-    if (!storedScript) return null;
-    try {
-      const parsed = JSON.parse(storedScript);
-      return parsed.script || null;
-    } catch (e) {
-      console.error("Error parsing workingOnScript:", e);
-      return null;
-    }
-  });
-
-  // check for localStorage item latestWorkingOnScript which contains JSON of script and scriptName and navigate to canvas with that script
-  // canvas takes the script and scriptName as props
   useEffect(() => {
     const latestWorkingOnScript = localStorage.getItem("latestWorkingOnScript");
     if (latestWorkingOnScript) {
-      const { script, scriptName } = JSON.parse(latestWorkingOnScript);
+      const { script, scriptName, content, scriptType } = JSON.parse(
+        latestWorkingOnScript
+      );
       localStorage.removeItem("latestWorkingOnScript");
-      navigate("/canvas", { state: { script, scriptName } });
+
+      // Set selected script using useScriptsManager
+      setSelectedScript({
+        name: scriptName,
+        content: script,
+        scriptType: "webApps",
+      });
+
+      // Open the canvas modal
+      const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
+      openDittoCanvas();
     }
-  }, [navigate]);
+  }, [navigate, modal, setSelectedScript]);
 
   const createConversation = (hist, reset, onload) => {
     try {
@@ -203,11 +210,9 @@ export default function HomeScreen() {
         console.log(`timestamps: ${timestamps.length}`);
         console.log(`pairIDs: ${pairIDs.length}`);
 
-        // Load conversation history from Firestore to resync
-        const userID = localStorage.getItem("userID");
-        if (userID) {
+        if (user?.uid) {
           console.log("Resyncing conversation history from Firestore...");
-          loadConversationHistoryFromFirestore(userID)
+          loadConversationHistoryFromFirestore(user?.uid)
             .then((conversationHistory) => {
               if (conversationHistory) {
                 localStorage.setItem(
@@ -445,23 +450,14 @@ export default function HomeScreen() {
   // Functions for play, edit, and deselect actions
   const handlePlayScript = () => {
     try {
-      let workingOnScript = JSON.parse(localStorage.getItem("workingOnScript"));
-      let scriptType = workingOnScript.scriptType;
-      let content = workingOnScript.contents;
-      let name = workingOnScript.script;
-      if (scriptType === "webApps") {
-        navigate("/canvas", { state: { script: content, scriptName: name } });
-      } else if (scriptType === "openSCAD") {
-        downloadOpenscadScript(content, name);
+      if (selectedScript) {
+        // No need to set selected script again since it's already set
+        const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
+        openDittoCanvas();
       }
     } catch (error) {
       console.error("Error playing script:", error);
     }
-  };
-
-  const handleDeselectScript = () => {
-    localStorage.removeItem("workingOnScript");
-    setWorkingScript(null);
   };
 
   const [showScriptActions, setShowScriptActions] = useState(false);
@@ -478,28 +474,16 @@ export default function HomeScreen() {
       setFullScreenEdit({
         ...script,
         onSaveCallback: async (newContent) => {
-          const userID = localStorage.getItem("userID");
           try {
-            await saveScriptToFirestore(
-              userID,
-              newContent,
-              script.scriptType,
-              script.name
-            );
+            // Use the script manager to save
+            await saveScript(newContent, script.scriptType, script.name);
 
-            // Update local scripts
-            await syncLocalScriptsWithFirestore(userID, script.scriptType);
-
-            // Update workingOnScript in localStorage
-            const workingOnScript = {
-              script: script.name,
-              contents: newContent,
+            // Select the script using script manager with proper field names
+            setSelectedScript({
+              name: script.name,
+              content: newContent,
               scriptType: script.scriptType,
-            };
-            localStorage.setItem(
-              "workingOnScript",
-              JSON.stringify(workingOnScript)
-            );
+            });
 
             setFullScreenEdit(null);
             window.dispatchEvent(new Event("scriptsUpdated"));
@@ -514,7 +498,7 @@ export default function HomeScreen() {
     return () => {
       window.removeEventListener("editScript", handleEditScript);
     };
-  }, []);
+  }, [saveScript, setSelectedScript]);
 
   useEffect(() => {
     const handleCloseFullScreenEditor = () => {
@@ -535,26 +519,14 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const handleScriptUpdate = () => {
-      const storedScript = localStorage.getItem("workingOnScript");
-      if (storedScript) {
-        try {
-          const parsed = JSON.parse(storedScript);
-          setWorkingScript(parsed.script);
-        } catch (e) {
-          console.error("Error parsing workingOnScript:", e);
-          setWorkingScript(null);
-        }
-      } else {
-        setWorkingScript(null);
-      }
+      // No need to do anything here since useScriptsManager will handle the state
+      // Just refreshing the UI by forcing a re-render
+      setShowScriptActions(false);
     };
 
     // Listen for both events
     window.addEventListener("scriptSelected", handleScriptUpdate);
     window.addEventListener("scriptsUpdated", handleScriptUpdate);
-
-    // Initial check
-    handleScriptUpdate();
 
     return () => {
       window.removeEventListener("scriptSelected", handleScriptUpdate);
@@ -573,9 +545,9 @@ export default function HomeScreen() {
         >
           <MdFeedback className="icon" />
         </motion.div>
-        {workingScript ? (
+        {selectedScript ? (
           <MiniFocusOverlay
-            scriptName={workingScript}
+            scriptName={selectedScript.script}
             onPlay={handlePlayScript}
             onDeselect={handleDeselectScript}
             onOverlayTrigger={handleScriptNameClick}
@@ -721,55 +693,22 @@ export default function HomeScreen() {
       )}
 
       <AnimatePresence>
-        {showScriptActions && workingScript && (
+        {showScriptActions && selectedScript && (
           <ScriptActionsOverlay
-            scriptName={workingScript}
+            scriptName={selectedScript.script}
             script={{
-              name: workingScript,
-              content: (() => {
-                const stored = localStorage.getItem("workingOnScript");
-                if (!stored) return "";
-                try {
-                  const parsed = JSON.parse(stored);
-                  return parsed.contents || "";
-                } catch (e) {
-                  console.error("Error parsing script contents:", e);
-                  return "";
-                }
-              })(),
-              scriptType: (() => {
-                const stored = localStorage.getItem("workingOnScript");
-                if (!stored) return "";
-                try {
-                  const parsed = JSON.parse(stored);
-                  return parsed.scriptType || "";
-                } catch (e) {
-                  console.error("Error parsing script type:", e);
-                  return "";
-                }
-              })(),
+              name: selectedScript.script,
+              content: selectedScript.contents,
+              scriptType: selectedScript.scriptType,
             }}
             onPlay={handlePlayScript}
             onEdit={async (updatedContent) => {
-              const storedScript = localStorage.getItem("workingOnScript");
-              if (!storedScript) return;
-
               try {
-                const parsed = JSON.parse(storedScript);
-                const userID = localStorage.getItem("userID");
-                await saveScriptToFirestore(
-                  userID,
+                // Use the scripts manager to update the script
+                await saveScript(
                   updatedContent,
-                  parsed.scriptType,
-                  parsed.script
-                );
-                // Update the stored script content
-                localStorage.setItem(
-                  "workingOnScript",
-                  JSON.stringify({
-                    ...parsed,
-                    contents: updatedContent,
-                  })
+                  selectedScript.scriptType,
+                  selectedScript.script
                 );
               } catch (e) {
                 console.error("Error updating script:", e);

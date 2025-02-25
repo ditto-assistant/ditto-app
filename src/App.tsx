@@ -15,6 +15,7 @@ import { MemoryCountProvider } from "./hooks/useMemoryCount";
 import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { ImageViewerProvider } from "./hooks/useImageViewer";
+import { ScriptsProvider } from "./hooks/useScripts.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "./hooks/useModal";
@@ -23,10 +24,11 @@ const Login = lazy(() => import("./screens/login"));
 const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const ImageViewer = lazy(() => import("./components/ImageViewer"));
 const HomeScreen = lazy(() => import("./screens/HomeScreen"));
-const DittoCanvas = lazy(() => import("./screens/DittoCanvas"));
 const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
+const ScriptsOverlay = lazy(() => import("./components/ScriptsOverlay"));
+const DittoCanvasModal = lazy(() => import("./components/DittoCanvasModal"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -43,7 +45,6 @@ const router = createBrowserRouter(
         }
       >
         <Route index element={<HomeScreen />} />
-        <Route path="canvas" element={<DittoCanvas />} />
         <Route path="checkout">
           <Route index element={<Checkout />} />
           <Route path="success" element={<CheckoutSuccess />} />
@@ -66,6 +67,12 @@ const modalRegistry: ModalRegistry = {
   settings: {
     component: <Settings />,
   },
+  scripts: {
+    component: <ScriptsOverlay />,
+  },
+  dittoCanvas: {
+    component: <DittoCanvasModal />,
+  },
 } as const;
 
 export default function App() {
@@ -77,19 +84,21 @@ export default function App() {
             <MemoryCountProvider>
               <PresignedUrlProvider>
                 <ImageViewerProvider>
-                  <ModalProvider registry={modalRegistry}>
-                    <RouterProvider router={router} />
-                    <Toaster
-                      position="bottom-center"
-                      toastOptions={{
-                        duration: 4000,
-                        style: {
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      }}
-                    />
-                  </ModalProvider>
+                  <ScriptsProvider>
+                    <ModalProvider registry={modalRegistry}>
+                      <RouterProvider router={router} />
+                      <Toaster
+                        position="bottom-center"
+                        toastOptions={{
+                          duration: 4000,
+                          style: {
+                            background: "#333",
+                            color: "#fff",
+                          },
+                        }}
+                      />
+                    </ModalProvider>
+                  </ScriptsProvider>
                 </ImageViewerProvider>
               </PresignedUrlProvider>
             </MemoryCountProvider>

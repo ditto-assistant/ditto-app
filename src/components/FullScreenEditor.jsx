@@ -35,6 +35,7 @@ import FullScreenSpinner from "./LoadingSpinner";
 import updaterAgent from "../control/agentflows/updaterAgentFlow";
 import ModelDropdown from "./ModelDropdown";
 import { useBalance } from "../hooks/useBalance";
+import { useAuth } from "../hooks/useAuth";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -179,6 +180,7 @@ const SearchOverlay = ({
 };
 
 const FullScreenEditor = ({ script, onClose, onSave }) => {
+  const { user } = useAuth();
   const [code, setCode] = useState(script.content);
   const [previewKey, setPreviewKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -757,10 +759,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const closeEditor = async () => {
     setShowLoadingSpinner(true); // Show the loading spinner
 
-    const userID = localStorage.getItem("userID");
-
-    await syncLocalScriptsWithFirestore(userID, "webApps");
-    await syncLocalScriptsWithFirestore(userID, "openSCAD");
+    await syncLocalScriptsWithFirestore(user?.uid, "webApps");
+    await syncLocalScriptsWithFirestore(user?.uid, "openSCAD");
 
     const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
     const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
@@ -904,16 +904,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             width: isMobile
               ? "100%"
               : isMaximized === "editor"
-                ? "100%"
-                : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`,
+              ? "100%"
+              : isMaximized === "preview"
+              ? "0%"
+              : `${splitPosition}%`,
             height: isMobile
               ? isMaximized === "editor"
                 ? "100%"
                 : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`
+                ? "0%"
+                : `${splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
@@ -1100,16 +1100,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             width: isMobile
               ? "100%"
               : isMaximized === "preview"
-                ? "100%"
-                : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`,
+              ? "100%"
+              : isMaximized === "editor"
+              ? "0%"
+              : `${100 - splitPosition}%`,
             height: isMobile
               ? isMaximized === "preview"
                 ? "100%"
                 : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`
+                ? "0%"
+                : `${100 - splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}

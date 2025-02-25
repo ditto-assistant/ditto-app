@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { removeUserFromFirestore } from "../control/firebase";
+import { useAuth } from "../hooks/useAuth";
 import "./TermsOfService.css";
 
 const TermsOfService = ({ onClose, isNewAccount = false }) => {
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleAccept = () => {
     if (isNewAccount) {
@@ -19,9 +21,8 @@ const TermsOfService = ({ onClose, isNewAccount = false }) => {
   const handleDecline = async () => {
     if (isNewAccount) {
       // Delete the user's account
-      const userID = localStorage.getItem("userID");
-      if (userID) {
-        await removeUserFromFirestore(userID);
+      if (user?.uid) {
+        await removeUserFromFirestore(user?.uid);
       }
       // Clear local storage
       localStorage.clear();

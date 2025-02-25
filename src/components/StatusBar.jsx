@@ -3,13 +3,17 @@ import { FaBrain, FaLaptopCode } from "react-icons/fa";
 import { useBalance } from "../hooks/useBalance";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useMemoryCount } from "../hooks/useMemoryCount";
+import { useModal } from "../hooks/useModal";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import "./StatusBar.css";
 
-export default function StatusBar({ onMemoryClick, onScriptsClick }) {
+export default function StatusBar({ onMemoryClick }) {
   const balance = useBalance();
   const memoryCount = useMemoryCount();
+  const { createOpenHandler } = useModal();
+  const openScriptsModal = createOpenHandler("scripts");
+
   const [showUSD, setShowUSD] = useState(() => {
     let savedMode = localStorage.getItem("status_bar_fiat_balance");
     if (savedMode == null) {
@@ -50,7 +54,7 @@ export default function StatusBar({ onMemoryClick, onScriptsClick }) {
       <div className="center-section">
         <motion.div
           className="icon-button"
-          onClick={onScriptsClick}
+          onClick={openScriptsModal}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >

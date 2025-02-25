@@ -746,28 +746,15 @@ export const deleteAllUserScriptsFromFirestore = async (userID) => {
 
 export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
   try {
-    // Add a debounce mechanism using localStorage
-    const now = Date.now();
-    const lastSyncTime = localStorage.getItem(`lastSync_${scriptType}`);
-    const SYNC_COOLDOWN = 5000; // 5 seconds cooldown between syncs
-
-    if (lastSyncTime && now - parseInt(lastSyncTime) < SYNC_COOLDOWN) {
-      // If we've synced recently, skip this sync
-      return [];
-    }
-
     if (mode === "development") {
       console.log(
-        "Syncing local storage with Firestore for scripts of type: ",
+        "Syncing scripts with Firestore for type: ",
         scriptType
       );
     }
 
-    // Update last sync time
-    localStorage.setItem(`lastSync_${scriptType}`, now.toString());
-
-    // Fetch timestamps first
-    await getScriptTimestamps(userID, scriptType);
+    // Fetch timestamps
+    const timestamps = await getScriptTimestamps(userID, scriptType);
 
     const querySnapshot = await getDocs(
       collection(db, "scripts", userID, scriptType)
@@ -789,7 +776,6 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
       scripts.push(scriptObj);
     });
 
-    localStorage.setItem(scriptType, JSON.stringify(scripts));
     return scripts;
   } catch (e) {
     console.error("Error getting documents from scripts collection: ", e);
@@ -858,23 +844,6 @@ export const getModelPreferencesFromFirestore = async (userID) => {
 
 export const getScriptTimestamps = async (userID, scriptType) => {
   try {
-    const now = Date.now();
-    const lastTimestampFetch = localStorage.getItem(
-      `lastTimestampFetch_${scriptType}`
-    );
-    const FETCH_COOLDOWN = 5000; // 5 seconds cooldown
-
-    if (
-      lastTimestampFetch &&
-      now - parseInt(lastTimestampFetch) < FETCH_COOLDOWN
-    ) {
-      // Return cached timestamps if available
-      const cachedTimestamps = localStorage.getItem(`${scriptType}Timestamps`);
-      return cachedTimestamps ? JSON.parse(cachedTimestamps) : {};
-    }
-
-    localStorage.setItem(`lastTimestampFetch_${scriptType}`, now.toString());
-
     const querySnapshot = await getDocs(
       collection(db, "scripts", userID, scriptType)
     );
@@ -891,12 +860,9 @@ export const getScriptTimestamps = async (userID, scriptType) => {
       };
     });
 
-    // Save to localStorage
-    localStorage.setItem(`${scriptType}Timestamps`, JSON.stringify(timestamps));
-
     if (mode === "development") {
       console.log(
-        `Timestamps fetched and stored for ${scriptType}:`,
+        `Timestamps fetched for ${scriptType}:`,
         timestamps
       );
     }
@@ -908,15 +874,9 @@ export const getScriptTimestamps = async (userID, scriptType) => {
   }
 };
 
-// Add a utility function to get timestamps from localStorage
-export const getLocalScriptTimestamps = (scriptType) => {
-  try {
-    const timestamps = localStorage.getItem(`${scriptType}Timestamps`);
-    return timestamps ? JSON.parse(timestamps) : {};
-  } catch (e) {
-    console.error("Error getting script timestamps from localStorage:", e);
-    return {};
-  }
+// Replace the localStorage-based function with a placeholder that returns timestamps from the provided data
+export const getLocalScriptTimestamps = (timestamps = {}) => {
+  return timestamps || {};
 };
 
 // Update the helper function to be exported
