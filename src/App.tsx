@@ -16,7 +16,7 @@ import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
 import { ImageViewerProvider } from "./hooks/useImageViewer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "./hooks/useModal";
 
 const Login = lazy(() => import("./screens/login"));
@@ -94,7 +94,7 @@ export default function App() {
           </ModelPreferencesProvider>
         </BalanceProvider>
       </AuthProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
