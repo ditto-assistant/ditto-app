@@ -35,29 +35,19 @@
   font-weight: bold;
 }
 
-.settings-options {
+.settings-options,
+.danger-buttons {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  gap: 10px;
+  gap: 16px;
 }
 
-.button {
-  margin: 10px 0;
+.memory-manager-container {
   width: 100%;
-  max-width: 200px;
-  color: white;
-  background-color: #7289da;
-  text-align: center;
-  padding: 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.button:hover {
-  background-color: #5b6eae;
+  display: flex;
+  justify-content: center;
 }
 
 .spinner-container {
@@ -87,10 +77,14 @@
   text-align: center;
 }
 
-.danger-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 10px;
+/* Media queries for responsive design */
+@media (max-width: 480px) {
+  .settings-content,
+  .danger-content {
+    padding: 16px;
+  }
+
+  .settings-button {
+    max-width: 100%;
+  }
 }

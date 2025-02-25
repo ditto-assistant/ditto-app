@@ -1,0 +1,169 @@
+/* Common button styles for Ditto app */
+@import "./animations.css";
+
+/* Base button styles */
+.ditto-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+}
+
+/* Button sizes */
+.ditto-button.small {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.ditto-button.large {
+  padding: 14px 24px;
+  font-size: 16px;
+}
+
+/* Button widths */
+.ditto-button.full-width {
+  width: 100%;
+}
+
+.ditto-button.fixed-width {
+  width: 100%;
+  max-width: 280px;
+}
+
+/* Button states */
+.ditto-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button variants */
+.ditto-button.primary {
+  background: linear-gradient(135deg, #7289da 0%, #5865f2 100%);
+  color: white;
+}
+
+.ditto-button.primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ditto-button.primary:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+.ditto-button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.ditto-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ditto-button.secondary:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ditto-button.danger {
+  background: linear-gradient(135deg, #ed4245 0%, #ab2123 100%);
+  color: white;
+}
+
+.ditto-button.danger:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ditto-button.danger:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+.ditto-button.ghost {
+  background: transparent;
+  color: #b9bbbe;
+}
+
+.ditto-button.ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.ditto-button.ghost:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Icon button (circular) */
+.ditto-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ditto-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ditto-icon-button:active {
+  transform: scale(1);
+}
+
+.ditto-icon-button .icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  display: block;
+  color: white;
+}
+
+/* Button icon */
+.button-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+/* Loading spinner */
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 480px) {
+  .ditto-button.fixed-width {
+    max-width: 100%;
+  }
+}

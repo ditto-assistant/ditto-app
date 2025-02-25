@@ -40,50 +40,6 @@ header.app-header {
   min-height: 64px;
 }
 
-/* Improved header button styles for better clickability */
-.header-feedback-button,
-.settings-button {
-  /* Base styles for circular container and centering */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  /* Custom overrides for better clickability */
-  min-width: 48px;
-  min-height: 48px;
-  width: 48px;
-  height: 48px;
-  margin: 0 8px;
-  z-index: 10;
-  touch-action: manipulation; /* Improves touch response */
-  -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
-}
-
-/* Hover effects */
-.header-feedback-button:hover,
-.settings-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.header-feedback-button .icon,
-.settings-button .icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  display: block; /* Ensure proper centering */
-}
-
-/* Use the app-icon class from components.css */
-.icon {
-  composes: app-icon;
-}
-
 /* Status indicator styles */
 .icon.active {
   color: var(--status-positive);
@@ -241,53 +197,30 @@ header.app-header {
 /* Mobile-specific adjustments */
 @media screen and (max-width: 768px) {
   header.app-header {
-    padding: 0 10px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    padding: 8px 12px;
   }
 
   .App-body {
-    padding: 10px;
-    flex: 1;
-    height: auto;
-    min-height: 0;
+    padding: 0 12px;
   }
 
   .chat-card {
-    border-radius: 15px;
+    margin: 0;
   }
 
   .App {
-    min-height: -webkit-fill-available;
-    height: calc(var(--vh, 1vh) * 100);
+    padding-bottom: 80px;
   }
 
   .App-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
-  }
-
-  .header-feedback-button,
-  .settings-button {
-    min-width: 44px;
-    min-height: 44px;
-    width: 44px;
-    height: 44px;
-  }
-
-  .header-feedback-button .icon,
-  .settings-button .icon {
-    font-size: 22px;
-    width: 22px;
-    height: 22px;
+    padding: 12px;
   }
 }
 
 /* Add a new media query for larger screens */
 @media screen and (min-width: 1200px) {
   .message-list {
-    width: 80%;
+    max-width: 800px;
+    margin: 0 auto;
   }
 }

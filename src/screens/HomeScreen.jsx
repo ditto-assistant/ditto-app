@@ -20,6 +20,7 @@ import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useScripts } from "@/hooks/useScripts.tsx";
+import "@/styles/buttons.css";
 import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
@@ -504,7 +505,7 @@ export default function HomeScreen() {
     <div className="App" onClick={handleCloseMediaOptions}>
       <header className="app-header">
         <motion.div
-          className="header-feedback-button"
+          className="ditto-icon-button"
           whileTap={{ scale: 0.9 }}
           whileHover={{
             scale: 1.1,
@@ -546,7 +547,7 @@ export default function HomeScreen() {
         )}
 
         <motion.div
-          className="settings-button"
+          className="ditto-icon-button"
           whileTap={{ scale: 0.9 }}
           whileHover={{
             scale: 1.1,

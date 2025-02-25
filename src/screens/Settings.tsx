@@ -1,11 +1,4 @@
 import { useState } from "react";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
 import { deleteUser, getAuth } from "firebase/auth";
 import {
   removeUserFromFirestore,
@@ -18,9 +11,9 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { clearStorage } from "@/utils/deviceId";
 import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
-import { A } from "@/components/ui/links/Anchor";
-import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
+import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
+import { ConfirmationDialog } from "@/components/ui/dialogs/ConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
 
@@ -127,10 +120,14 @@ export default function Settings() {
         )}
       </div>
       <div className="settings-options">
-        <A href="/checkout" className="button">
+        <ModalButton
+          variant="primary"
+          onClick={() => (window.location.href = "/checkout")}
+          fixedWidth
+        >
           ADD TOKENS
-        </A>
-        <ModalButton variant="primary" onClick={handleLogout} fullWidth>
+        </ModalButton>
+        <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
           LOG OUT
         </ModalButton>
       </div>
@@ -146,10 +143,12 @@ export default function Settings() {
         </p>
       </div>
       <div className="danger-buttons">
-        <ModalButton variant="danger" onClick={openDeleteDialog} fullWidth>
+        <ModalButton variant="danger" onClick={openDeleteDialog} fixedWidth>
           DELETE ACCOUNT
         </ModalButton>
-        <DeleteMemoryButton onSuccess={closeModal} className="full-width" />
+        <div className="memory-manager-container">
+          <DeleteMemoryButton onSuccess={closeModal} fixedWidth />
+        </div>
       </div>
     </div>
   );
@@ -183,79 +182,30 @@ export default function Settings() {
         </div>
       </footer>
 
-      <Dialog
-        open={reAuthDialogOpen}
+      <ConfirmationDialog
+        isOpen={reAuthDialogOpen}
         onClose={() => setReAuthDialogOpen(false)}
-        PaperProps={{
-          style: {
-            backgroundColor: "#36393f",
-            color: "white",
-            maxWidth: "400px",
-            width: "90%",
-          },
+        title="Re-authentication Required"
+        message="For security reasons, you need to sign in again before deleting your account. Would you like to sign out now?"
+        confirmLabel="Sign Out"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          setReAuthDialogOpen(false);
+          handleLogout();
         }}
-      >
-        <DialogTitle style={{ color: "white" }}>
-          Re-authentication Required
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText style={{ color: "#8e9297" }}>
-            For security reasons, you need to sign in again before deleting your
-            account. Would you like to sign out now?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions style={{ padding: "16px" }}>
-          <ModalButton
-            variant="ghost"
-            onClick={() => setReAuthDialogOpen(false)}
-          >
-            Cancel
-          </ModalButton>
-          <ModalButton
-            variant="primary"
-            onClick={() => {
-              setReAuthDialogOpen(false);
-              handleLogout();
-            }}
-          >
-            Sign Out
-          </ModalButton>
-        </DialogActions>
-      </Dialog>
+        variant="primary"
+      />
 
-      <Dialog
-        open={deleteDialogOpen}
+      <ConfirmationDialog
+        isOpen={deleteDialogOpen}
         onClose={closeDeleteDialog}
-        aria-labelledby="delete-account-dialog-title"
-        aria-describedby="delete-account-dialog-description"
-        PaperProps={{
-          style: {
-            backgroundColor: "#36393f",
-            color: "white",
-          },
-        }}
-      >
-        <DialogTitle id="delete-account-dialog-title">
-          {"Confirm Account Deletion"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText
-            id="delete-account-dialog-description"
-            style={{ color: "#8e9297" }}
-          >
-            Are you sure you want to delete your account? This action cannot be
-            undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <ModalButton variant="ghost" onClick={closeDeleteDialog}>
-            Cancel
-          </ModalButton>
-          <ModalButton variant="danger" onClick={handleDeleteAccount}>
-            Delete
-          </ModalButton>
-        </DialogActions>
-      </Dialog>
+        title="Confirm Account Deletion"
+        message="Are you sure you want to delete your account? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteAccount}
+        variant="danger"
+      />
     </Modal>
   );
 }

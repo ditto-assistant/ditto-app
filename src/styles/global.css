@@ -1,5 +1,6 @@
 @import "./variables.css";
 @import "./components.css";
+@import "./buttons.css";
 
 * {
   margin: 0;
