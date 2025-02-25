@@ -1,7 +1,6 @@
 import "./HomeScreen.css";
 import { useState, useEffect, useRef, Suspense, useCallback } from "react";
-import { useNavigate } from "react-router";
-import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
+import { grabStatus } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
 import { loadConversationHistoryFromFirestore } from "../control/firebase";
@@ -13,7 +12,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
 import MiniFocusOverlay from "../components/MiniFocusOverlay";
 import ScriptActionsOverlay from "../components/ScriptActionsOverlay";
-import { saveScriptToFirestore } from "../control/firebase";
 import ChatFeed from "../components/ChatFeed";
 import StatusBar from "../components/StatusBar";
 import SendMessage from "../components/SendMessage";
@@ -26,7 +24,6 @@ import { useScripts } from "../hooks/useScripts.tsx";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
-  const navigate = useNavigate();
   const balance = useBalance();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
@@ -50,6 +47,7 @@ export default function HomeScreen() {
   const modal = useModal();
   const openSettingsModal = modal.createOpenHandler("settings");
   const openFeedbackModal = modal.createOpenHandler("feedback");
+  const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const {
     selectedScript,
     setSelectedScript,
@@ -80,27 +78,6 @@ export default function HomeScreen() {
       return newState;
     });
   }, []);
-
-  useEffect(() => {
-    const latestWorkingOnScript = localStorage.getItem("latestWorkingOnScript");
-    if (latestWorkingOnScript) {
-      const { script, scriptName, content, scriptType } = JSON.parse(
-        latestWorkingOnScript
-      );
-      localStorage.removeItem("latestWorkingOnScript");
-
-      // Set selected script using useScriptsManager
-      setSelectedScript({
-        name: scriptName,
-        content: script,
-        scriptType: "webApps",
-      });
-
-      // Open the canvas modal
-      const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
-      openDittoCanvas();
-    }
-  }, [navigate, modal, setSelectedScript]);
 
   const createConversation = (hist, reset, onload) => {
     try {
@@ -274,7 +251,7 @@ export default function HomeScreen() {
     }, 10000);
 
     return () => clearInterval(syncInterval);
-  }, [conversation, bootStatus, histCount]);
+  }, [conversation, bootStatus, histCount, user?.uid]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -451,8 +428,6 @@ export default function HomeScreen() {
   const handlePlayScript = () => {
     try {
       if (selectedScript) {
-        // No need to set selected script again since it's already set
-        const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
         openDittoCanvas();
       }
     } catch (error) {
@@ -514,23 +489,6 @@ export default function HomeScreen() {
         "closeFullScreenEditor",
         handleCloseFullScreenEditor
       );
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleScriptUpdate = () => {
-      // No need to do anything here since useScriptsManager will handle the state
-      // Just refreshing the UI by forcing a re-render
-      setShowScriptActions(false);
-    };
-
-    // Listen for both events
-    window.addEventListener("scriptSelected", handleScriptUpdate);
-    window.addEventListener("scriptsUpdated", handleScriptUpdate);
-
-    return () => {
-      window.removeEventListener("scriptSelected", handleScriptUpdate);
-      window.removeEventListener("scriptsUpdated", handleScriptUpdate);
     };
   }, []);
 
