@@ -7,29 +7,29 @@ import {
   Outlet,
 } from "react-router";
 import { Toaster } from "react-hot-toast";
-import FullScreenSpinner from "./components/LoadingSpinner";
-import AuthenticatedRoute from "./hooks/AuthenticatedRoute";
-import { AuthProvider } from "./hooks/useAuth";
-import { BalanceProvider } from "./hooks/useBalance";
-import { MemoryCountProvider } from "./hooks/useMemoryCount";
-import { PresignedUrlProvider } from "./hooks/usePresignedUrls";
-import { ModelPreferencesProvider } from "./hooks/useModelPreferences";
-import { ImageViewerProvider } from "./hooks/useImageViewer";
-import { ScriptsProvider } from "./hooks/useScripts";
+import FullScreenSpinner from "@/components/LoadingSpinner";
+import AuthenticatedRoute from "@/hooks/AuthenticatedRoute";
+import { AuthProvider } from "@/hooks/useAuth";
+import { BalanceProvider } from "@/hooks/useBalance";
+import { MemoryCountProvider } from "@/hooks/useMemoryCount";
+import { PresignedUrlProvider } from "@/hooks/usePresignedUrls";
+import { ModelPreferencesProvider } from "@/hooks/useModelPreferences";
+import { ImageViewerProvider } from "@/hooks/useImageViewer";
+import { ScriptsProvider } from "@/hooks/useScripts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { ModalProvider, ModalRegistry } from "./hooks/useModal";
+import { ModalProvider, ModalRegistry } from "@/hooks/useModal";
 
-const DittoCanvasModal = lazy(() => import("./components/DittoCanvasModal"));
-const Login = lazy(() => import("./screens/Login.jsx"));
-const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
-const ImageViewer = lazy(() => import("./components/ImageViewer"));
-const HomeScreen = lazy(() => import("./screens/HomeScreen.jsx"));
-const Settings = lazy(() => import("./screens/Settings"));
-const Checkout = lazy(() => import("./screens/Checkout.jsx"));
-const CheckoutSuccess = lazy(() => import("./screens/CheckoutSuccess.jsx"));
+const DittoCanvasModal = lazy(() => import("@/components/DittoCanvasModal"));
+const Login = lazy(() => import("@/screens/Login"));
+const FeedbackModal = lazy(() => import("@/components/FeedbackModal"));
+const ImageViewer = lazy(() => import("@/components/ImageViewer"));
+const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
+const Settings = lazy(() => import("@/screens/Settings"));
+const Checkout = lazy(() => import("@/screens/Checkout"));
+const CheckoutSuccess = lazy(() => import("@/screens/CheckoutSuccess"));
 const ScriptsOverlay = lazy(
-  () => import("./screens/ScriptsModal/ScriptsOverlay.jsx")
+  () => import("@/screens/ScriptsModal/ScriptsOverlay")
 );
 const queryClient = new QueryClient();
 
