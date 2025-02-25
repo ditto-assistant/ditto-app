@@ -21,7 +21,7 @@ import { useModal } from "@/hooks/useModal";
 import { A } from "@/components/ui/links/Anchor";
 import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
-import "./settings.css";
+import "./Settings.css";
 import toast from "react-hot-toast";
 
 export default function Settings() {
