@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, lazy } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { auth } from "../control/firebase";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -6,8 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "./ChatFeed.css";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiCopy, FiDownload } from "react-icons/fi";
-import { IoMdArrowBack } from "react-icons/io";
+import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash } from "react-icons/fa";
 import { deleteConversation } from "../control/memory";
 import MemoryNetwork from "./MemoryNetwork";
@@ -21,8 +20,7 @@ import { getMemories } from "@/api/getMemories";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { saveFeedback } from "@/control/firebase";
 import dittoAvatar from "/icons/ditto-icon.png";
-import { useModal } from "../hooks/useModal";
-import { useImageViewer } from "../hooks/useImageViewer";
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const USER_AVATAR_KEY = "userAvatar";
@@ -253,11 +251,8 @@ const getAvatarWithCooldown = async (photoURL) => {
 
 export default function ChatFeed({
   messages,
-  histCount,
-  isTyping = false,
   hasInputField = false,
   showSenderName = false,
-  bubblesCentered = false,
   scrollToBottom = false,
   startAtBottom = false,
   updateConversation,
@@ -279,22 +274,16 @@ export default function ChatFeed({
     return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
   });
   const [reactions, setReactions] = useState({});
-  const [imageOverlay, setImageOverlay] = useState(null);
-  const [imageControlsVisible, setImageControlsVisible] = useState(true);
   const [memoryOverlay, setMemoryOverlay] = useState(null);
   const [relatedMemories, setRelatedMemories] = useState([]);
   const [loadingMemories, setLoadingMemories] = useState(false);
-  const [deletingMemories, setDeletingMemories] = useState(new Set());
   const [abortController, setAbortController] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
-  const { isDeleting, deleteMemory } = useMemoryDeletion(updateConversation);
+  const { deleteMemory } = useMemoryDeletion(updateConversation);
   const { preferences } = useModelPreferences();
-  const { createOpenHandler, createCloseHandler } = useModal();
-  const { setImageUrl } = useImageViewer();
-  const openImageViewer = createOpenHandler("imageViewer");
-  const closeImageViewer = createCloseHandler("imageViewer");
+  const { handleImageClick } = useImageViewerHandler(true);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -379,7 +368,7 @@ export default function ChatFeed({
         }));
       }
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }); // Empty dependency array means this runs once on mount
 
   const scrollToBottomOfFeed = useCallback((quick = false) => {
     if (bottomRef.current) {
@@ -650,28 +639,6 @@ export default function ChatFeed({
     setReactionOverlay(null);
   };
 
-  const handleImageClick = (src) => {
-    const cachedUrl = getCachedUrl(src);
-    const imageUrl = cachedUrl.ok ?? src;
-    setImageUrl(imageUrl);
-    openImageViewer();
-  };
-
-  const handleImageDownload = (src) => {
-    window.open(src, "_blank");
-    closeImageViewer();
-  };
-
-  const closeImageOverlay = () => {
-    setImageOverlay(null);
-  };
-
-  const toggleImageControls = (e) => {
-    e.stopPropagation();
-    setImageControlsVisible(!imageControlsVisible);
-  };
-
-  // Update the renderMessageText function
   const renderMessageText = (text, index, sender) => {
     // First replace code block markers
     let displayText = text?.replace(
@@ -834,6 +801,7 @@ export default function ChatFeed({
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopy(String(children).replace(/\n$/, ""));
+                      toast.success("Copied to clipboard!");
                     }}
                     title="Copy code"
                   >
@@ -853,6 +821,7 @@ export default function ChatFeed({
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopy(inlineText);
+                      toast.success("Copied to clipboard!");
                     }}
                     title="Copy code"
                   >
@@ -913,8 +882,8 @@ export default function ChatFeed({
               isLastDittoMessage && isGenerating
                 ? "animating"
                 : isLastDittoMessage && !isGenerating
-                  ? "spinning"
-                  : ""
+                ? "spinning"
+                : ""
             }`}
           />
         )}
@@ -954,8 +923,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
+                        ? "failed"
+                        : ""
                     }`}
                   >
                     {message.toolStatus}
@@ -1088,7 +1057,7 @@ export default function ChatFeed({
 
   // Update the scroll handler useEffect
   useEffect(() => {
-    const handleScroll = (e) => {
+    const handleScroll = () => {
       // Close overlays immediately when scrolling starts
       if (actionOverlay || reactionOverlay) {
         setActionOverlay(null);
@@ -1217,7 +1186,6 @@ export default function ChatFeed({
   // Update handleMessageDelete to use pairID directly
   const handleMessageDelete = async (index) => {
     const message = messages[index];
-    const userID = auth.currentUser.uid;
 
     // Get the pairID from the message
     const pairID = message.pairID;
@@ -1249,15 +1217,11 @@ export default function ChatFeed({
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
 
-    const { memory, idx, docId, isMessageDelete } = deleteConfirmation;
+    const { docId, isMessageDelete } = deleteConfirmation;
     const userID = auth.currentUser.uid;
 
     try {
       setIsDeletingMessage(true);
-
-      if (isMessageDelete) {
-        setDeletingMemories((prev) => new Set([...prev, idx]));
-      }
 
       const success = await deleteConversation(userID, docId);
 
@@ -1312,11 +1276,6 @@ export default function ChatFeed({
       toast.error("Failed to delete message");
     } finally {
       setIsDeletingMessage(false);
-      setDeletingMemories((prev) => {
-        const next = new Set(prev);
-        next.delete(idx);
-        return next;
-      });
     }
   };
 
@@ -1374,7 +1333,7 @@ export default function ChatFeed({
     const debouncedResize = debounce(handleResize, 100);
     window.addEventListener("resize", debouncedResize);
     return () => window.removeEventListener("resize", debouncedResize);
-  }, [messages]);
+  }, [messages, scrollToBottomOfFeed]);
 
   // Add debounce utility function
   const debounce = (func, wait) => {
@@ -1428,58 +1387,6 @@ export default function ChatFeed({
             </button>
           ))}
         </div>
-      )}
-      {imageOverlay && (
-        <AnimatePresence>
-          <motion.div
-            className="image-overlay"
-            onClick={closeImageOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="image-overlay-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            >
-              <img
-                src={imageOverlay}
-                alt="Full size"
-                onClick={toggleImageControls}
-              />
-              <AnimatePresence>
-                {imageControlsVisible && (
-                  <motion.div
-                    className="image-overlay-controls"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button
-                      className="image-control-button back"
-                      onClick={closeImageOverlay}
-                      title="Back"
-                    >
-                      <IoMdArrowBack />
-                    </button>
-                    <button
-                      className="image-control-button download"
-                      onClick={() => handleImageDownload(imageOverlay)}
-                      title="Download"
-                    >
-                      <FiDownload />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
       )}
       <AnimatePresence>
         {memoryOverlay && (

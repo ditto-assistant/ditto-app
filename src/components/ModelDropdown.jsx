@@ -23,7 +23,6 @@ const ModelDropdown = ({
   value,
   onChange,
   hasEnoughBalance,
-  inMemoryOverlay = false,
   models = DEFAULT_MODELS,
   isOpen,
   onOpenChange,
@@ -41,7 +40,7 @@ const ModelDropdown = ({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [onOpenChange]);
 
   useEffect(() => {
     if (!hasEnoughBalance && selectedModel?.isPremium) {

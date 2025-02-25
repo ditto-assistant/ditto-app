@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom";
-import { MdClose, MdAdd, MdSort } from "react-icons/md";
-import { FaPlay, FaTrash, FaDownload, FaUndo, FaCog } from "react-icons/fa";
+import { MdAdd, MdSort } from "react-icons/md";
+import { FaTrash, FaUndo, FaCog } from "react-icons/fa";
 import {
   deleteScriptFromFirestore,
   saveScriptToFirestore,
@@ -15,16 +14,12 @@ import { downloadOpenscadScript } from "../control/agentTools";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ScriptsOverlay.css";
 
-// Import all the components you need from ScriptsScreen
-import FullScreenEditor from "./FullScreenEditor";
 import CardMenu from "./CardMenu";
-import VersionOverlay from "./VersionOverlay";
 import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
 import SearchBar from "./SearchBar";
 import AddScriptOverlay from "./AddScriptOverlay";
 import OpenSCADViewer from "./OpenSCADViewer";
 import RevertConfirmationOverlay from "./RevertConfirmationOverlay";
-import ScriptActionsOverlay from "./ScriptActionsOverlay";
 
 // Add import
 import { useScripts } from "../hooks/useScripts";
@@ -67,14 +62,10 @@ const formatTimestamp = (timestamp) => {
 };
 
 const ScriptsOverlay = ({ closeOverlay }) => {
-  // Replace the scripts state with the hook
   const { scripts, setScripts, refreshScripts } = useScripts();
-
-  // Add effect to refresh scripts when overlay opens
   useEffect(() => {
     refreshScripts();
-  }, []); // Run once when overlay opens
-
+  }); // Run once when overlay opens
   const [activeTab, setActiveTab] = useState("webApps");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("recent");
@@ -82,9 +73,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     webApps: false,
     openSCAD: false,
   });
-  // ... copy other state variables
-
-  // Copy all the helper functions from ScriptsScreen
   const getBaseName = (name) => {
     const match = name.match(/^[^\-]+/);
     return match ? match[0].replace(/([a-z])([A-Z])/g, "$1 $2").trim() : name;
@@ -128,9 +116,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     }
   };
 
-  // ... copy other helper functions
-
-  // Add these additional states
   const [activeCard, setActiveCard] = useState(null);
   const [menuPosition, setMenuPosition] = useState(null);
   const [selectedScript, setSelectedScript] = useState(() => {
@@ -145,18 +130,13 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     isDeleteAll: false,
   });
   const [versionOverlay, setVersionOverlay] = useState(null);
-  const [fullScreenEdit, setFullScreenEdit] = useState(null);
   const [openScadViewer, setOpenScadViewer] = useState(null);
   const cardRefs = useRef({});
-
-  // Add these state variables at the top with the others:
   const [revertConfirmation, setRevertConfirmation] = useState({
     show: false,
     script: null,
     category: null,
   });
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [scriptVersions, setScriptVersions] = useState([]);
 
   // Add this effect to load script versions when selected script changes
   useEffect(() => {
@@ -180,16 +160,13 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     loadScriptVersions();
   }, [selectedScript]);
 
-  // Add this effect to update parent component when script is selected
   useEffect(() => {
     if (selectedScript) {
       window.dispatchEvent(new Event("scriptsUpdated"));
     }
   }, [selectedScript]);
 
-  // Add these handlers:
   const handleSelectScript = (script) => {
-    // Update localStorage
     localStorage.setItem(
       "workingOnScript",
       JSON.stringify({
@@ -329,34 +306,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     }
   };
 
-  const handleVersionButtonClick = async (baseName, event) => {
-    event.stopPropagation();
-    console.log("Version button clicked for:", baseName);
-
-    // Get all versions of this script
-    const versions = scripts[activeTab].filter(
-      (script) => getBaseName(script.name.replace(/ /g, "")) === baseName
-    );
-    console.log("Found versions:", versions);
-
-    if (versions.length > 0) {
-      const menuRect = event.currentTarget
-        .closest(".card-menu")
-        .getBoundingClientRect();
-
-      setMenuPosition({
-        top: menuRect.top,
-        left: menuRect.right + 8,
-        openUpward: false,
-      });
-
-      setVersionOverlay({
-        baseScriptName: baseName,
-        versions: versions,
-      });
-    }
-  };
-
   const handleSelectVersion = (script) => {
     // Update localStorage
     localStorage.setItem(
@@ -390,7 +339,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
       if (searchTerm) {
         return (
           <div style={styles.noResults}>
-            No scripts found matching "{searchTerm}"
+            No scripts found matching &quot;{searchTerm}&quot;
           </div>
         );
       } else {
@@ -654,8 +603,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     });
   };
 
-  // Add these helper functions after the existing ones:
-
   const filterScripts = (scripts, searchTerm) => {
     let filteredScripts = scripts;
     if (searchTerm) {
@@ -848,107 +795,6 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     setRenameScriptId(null);
   };
 
-  // Add these handlers after the existing ones:
-
-  const handleSaveFullScreenEdit = async (newContent) => {
-    const category = fullScreenEdit.scriptType;
-    const userID = localStorage.getItem("userID");
-
-    try {
-      const baseName = fullScreenEdit.name.split("-v")[0];
-
-      // Only create a backup if we're not already editing the base version
-      if (fullScreenEdit.name !== baseName) {
-        // Determine the next version number for the old script
-        const currentScripts = scripts[category];
-        const versionNumbers = currentScripts
-          .filter((script) => script.name.startsWith(baseName))
-          .map((script) => {
-            const match = script.name.match(/-v(\d+)$/);
-            return match ? parseInt(match[1], 10) : 0;
-          });
-
-        const nextVersion = Math.max(...versionNumbers) + 1;
-        const oldVersionName = `${baseName}-v${nextVersion}`;
-
-        // Save the old script with the incremented version number
-        await saveScriptToFirestore(
-          userID,
-          fullScreenEdit.content,
-          category,
-          oldVersionName
-        );
-      }
-
-      // Save the new content as the base name (latest version)
-      await saveScriptToFirestore(userID, newContent, category, baseName);
-
-      // Update local scripts state
-      setScripts((prevScripts) => ({
-        ...prevScripts,
-        [category]: prevScripts[category].map((script) =>
-          script.name === fullScreenEdit.name
-            ? { ...script, name: baseName, content: newContent }
-            : script
-        ),
-      }));
-
-      // Update localStorage
-      const updatedScripts = {
-        ...scripts,
-        [category]: scripts[category].map((script) =>
-          script.name === fullScreenEdit.name
-            ? { ...script, name: baseName, content: newContent }
-            : script
-        ),
-      };
-      localStorage.setItem(category, JSON.stringify(updatedScripts[category]));
-
-      // Update workingOnScript in localStorage
-      localStorage.setItem(
-        "workingOnScript",
-        JSON.stringify({
-          script: baseName,
-          contents: newContent,
-          scriptType: category,
-        })
-      );
-
-      setFullScreenEdit(null);
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Error saving:", error);
-      return Promise.reject(error);
-    }
-  };
-
-  const handleRevert = async () => {
-    const userID = localStorage.getItem("userID");
-    const storedScript = JSON.parse(localStorage.getItem("workingOnScript"));
-
-    if (storedScript) {
-      const baseScriptName = storedScript.script.split("-v")[0];
-      const versions = await getVersionsOfScriptFromFirestore(
-        userID,
-        storedScript.scriptType,
-        baseScriptName
-      );
-
-      if (versions.length > 1) {
-        // Get the highest version number
-        const latestVersion = versions.reduce(
-          (max, version) => Math.max(max, version.versionNumber),
-          0
-        );
-
-        // Select that version
-        const version = versions.find((v) => v.versionNumber === latestVersion);
-        await handleVersionSelect(version);
-      }
-    }
-  };
-
-  // Add this effect to handle script updates
   useEffect(() => {
     const handleScriptsUpdate = async () => {
       // Force update the scripts state with the latest data
@@ -965,7 +811,7 @@ const ScriptsOverlay = ({ closeOverlay }) => {
     return () => {
       window.removeEventListener("scriptsUpdated", handleScriptsUpdate);
     };
-  }, []);
+  });
 
   // Add this effect to sync with Firestore
   useEffect(() => {

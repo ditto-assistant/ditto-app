@@ -32,6 +32,7 @@ import { searchExamples } from "@/api/searchExamples";
  * @param {string} image - The user's image.
  * @param {function} updateConversation - A function that updates the conversation.
  * @param {ModelPreferences} preferences - The user's preferences.
+ * @param {boolean} isPremiumUser - Whether the user is a premium user.
  */
 export const sendPrompt = async (
   userID,
@@ -39,7 +40,8 @@ export const sendPrompt = async (
   prompt,
   image,
   updateConversation,
-  preferences
+  preferences,
+  isPremiumUser = false
 ) => {
   try {
     const userMessage = {
@@ -118,7 +120,11 @@ export const sendPrompt = async (
 
     let mainAgentModel = preferences.mainModel;
     if (image && !modelSupportsImageAttachments(mainAgentModel)) {
-      mainAgentModel = "gpt-4o-mini";
+      if (isPremiumUser) {
+        mainAgentModel = "claude-3-5-sonnet";
+      } else {
+        mainAgentModel = "llama-3-2";
+      }
     }
 
     let response = await promptLLM(
@@ -314,7 +320,6 @@ export const processResponse = async (
         userID,
         image,
         memories,
-        updateConversation,
         preferences,
       });
       await updateMessageWithToolStatus(
@@ -346,7 +351,6 @@ export const processResponse = async (
         userID,
         image,
         memories,
-        updateConversation,
         preferences,
       });
       await updateMessageWithToolStatus(

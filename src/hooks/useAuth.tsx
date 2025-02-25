@@ -27,7 +27,7 @@ export const useAuth = () => {
 export const useAuthToken = () => {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["authToken", user?.uid],
+    queryKey: ["authToken", user],
     queryFn: async () => {
       if (!user) return undefined;
       return user.getIdToken();

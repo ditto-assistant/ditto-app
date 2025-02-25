@@ -45,3 +45,8 @@ gh-release:
 create-release: tag-latest gh-release
 alias cr := create-release
 
+lint:
+	bun lint
+
+lint-fix:
+	bun lint-fix

@@ -35,7 +35,6 @@ export const handleScriptGeneration = async ({
   userID,
   image,
   memories,
-  updateConversation,
   preferences,
 }) => {
   const query = response.split(tag)[1];

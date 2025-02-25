@@ -50,10 +50,10 @@ const TermsOfService = ({ onClose, isNewAccount = false }) => {
           <h3>Last Updated: October 29, 2024</h3>
 
           <p>
-            Welcome to Omni Aura LLC ("Omni Aura", "we", "us", or "our"). These
+            {`Welcome to Omni Aura LLC ("Omni Aura", "we", "us", or "our"). These
             Terms of Service ("Terms") govern your access to and use of our
             website, applications, and other products and services
-            (collectively, the "Services").
+            (collectively, the "Services").`}
           </p>
 
           <p>
@@ -101,14 +101,14 @@ const TermsOfService = ({ onClose, isNewAccount = false }) => {
 
           <h4>3. User Content</h4>
           <p>
-            Our Services may allow you to submit, post, or display content,
+            {`Our Services may allow you to submit, post, or display content,
             including but not limited to text, graphics, photos, videos, and
             links ("User Content"). You retain all ownership rights in and are
             solely responsible for your User Content. You grant us a
             non-exclusive, transferable, sub-licensable, royalty-free, worldwide
             license to use, reproduce, modify, adapt, publish, translate,
             distribute, and display your User Content in connection with
-            operating and providing the Services.
+            operating and providing the Services.`}
           </p>
 
           <p>
@@ -138,11 +138,11 @@ const TermsOfService = ({ onClose, isNewAccount = false }) => {
             </li>
             <li>Impersonating another person or entity.</li>
             <li>
-              Uploading, transmitting, or otherwise making available any content
+              {`Uploading, transmitting, or otherwise making available any content
               that is harmful, threatening, abusive, harassing, tortious,
               defamatory, vulgar, obscene, libelous, invasive of another's
               privacy, hateful, or racially, ethnically or otherwise
-              objectionable.
+              objectionable.`}
             </li>
             <li>
               Interfering with or disrupting the Services or servers or networks
@@ -153,9 +153,9 @@ const TermsOfService = ({ onClose, isNewAccount = false }) => {
               Services or any other systems or networks.
             </li>
             <li>
-              Using any automated systems, including but not limited to "bots",
+              {`Using any automated systems, including but not limited to "bots",
               "scrapers," or "offline readers" to access, interact with, or
-              collect data from the Services.
+              collect data from the Services.`}
             </li>
           </ul>
 
@@ -179,10 +179,10 @@ const TermsOfService = ({ onClose, isNewAccount = false }) => {
 
           <h4>7. Disclaimer of Warranties</h4>
           <p>
-            The Services and all information, content, materials, products, and
+            {`The Services and all information, content, materials, products, and
             other services included on or otherwise made available to you
             through the Services are provided by Omni Aura on an "as is" and "as
-            available" basis.
+            available" basis.`}
           </p>
 
           <p>

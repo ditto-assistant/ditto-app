@@ -1,5 +1,4 @@
-import { DEFAULT_PREFERENCES, IMAGE_GENERATION_MODELS } from "../constants";
-import { auth } from "../control/firebase";
+import { DEFAULT_PREFERENCES } from "../constants";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
 

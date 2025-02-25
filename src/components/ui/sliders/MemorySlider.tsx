@@ -22,15 +22,15 @@ interface MemorySliderProps {
   maxChainLength?: number;
 }
 
-function useDebounce<T extends any[]>(
-  callback: (...args: T) => void,
+function useDebounce<T>(
+  callback: (...args: T[]) => void,
   delay: number
-): [(...args: T) => void, boolean] {
-  const timeoutRef = useRef<NodeJS.Timeout>(null);
+): [(...args: T[]) => void, boolean] {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const debouncedCallback = useCallback(
-    (...args: T) => {
+    (...args: T[]) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

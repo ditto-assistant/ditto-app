@@ -23,7 +23,6 @@ const ModelDropdownImage = ({
   value,
   onChange,
   hasEnoughBalance,
-  inMemoryOverlay = false,
   isOpen,
   onOpenChange,
 }) => {

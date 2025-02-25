@@ -1,4 +1,4 @@
-import { useState, useEffect, MouseEvent } from "react";
+import { useState } from "react";
 import { MdClose } from "react-icons/md";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { DEFAULT_MODELS, IMAGE_GENERATION_MODELS } from "../constants";
@@ -57,7 +57,6 @@ export default function ModelPreferencesModal({
   onClose,
 }: ModelPreferencesModalProps) {
   const { preferences, updatePreferences } = useModelPreferences();
-  if (!preferences) return null;
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
@@ -83,7 +82,7 @@ export default function ModelPreferencesModal({
   const MemoizedMdClose = useMemo(() => <MdClose className="close-icon" />, []);
   const MemoizedFaCrownFree = useMemo(
     () => <FaCrown style={faCrownStyle} />,
-    []
+    [faCrownStyle]
   );
   const MemoizedFaCrownPremium = useMemo(() => <FaCrown />, []);
 
@@ -151,85 +150,87 @@ export default function ModelPreferencesModal({
   }, []);
 
   const renderModelCard = useCallback(
-    (model: ModelOption) => (
-      <div
-        key={model.id}
-        onClick={() =>
-          handleModelChange(
-            activeSection === "main" ? "mainModel" : "programmerModel",
-            model.id
-          )
-        }
-        className={`model-card ${
-          model.id ===
-          preferences[
-            activeSection === "main" ? "mainModel" : "programmerModel"
-          ]
-            ? "selected"
-            : ""
-        }`}
-      >
-        <div className="model-card-header">
-          <span className="model-name">{model.name}</span>
-          {model.vendor && (
-            <span
-              className="vendor-badge"
-              style={{
-                backgroundColor: VENDOR_COLORS[model.vendor],
-              }}
-            >
-              {getVendorIcon(model.vendor)}
-            </span>
-          )}
+    (model: ModelOption) => {
+      if (!preferences) return null;
+      return (
+        <div
+          key={model.id}
+          onClick={() =>
+            handleModelChange(
+              activeSection === "main" ? "mainModel" : "programmerModel",
+              model.id
+            )
+          }
+          className={`model-card ${
+            model.id ===
+            preferences[
+              activeSection === "main" ? "mainModel" : "programmerModel"
+            ]
+              ? "selected"
+              : ""
+          }`}
+        >
+          <div className="model-card-header">
+            <span className="model-name">{model.name}</span>
+            {model.vendor && (
+              <span
+                className="vendor-badge"
+                style={{
+                  backgroundColor: VENDOR_COLORS[model.vendor],
+                }}
+              >
+                {getVendorIcon(model.vendor)}
+              </span>
+            )}
+          </div>
+          <div className="model-badges">
+            {model.speedLevel && (
+              <span
+                className="badge"
+                style={{
+                  background: SPEED_COLORS[model.speedLevel],
+                }}
+              >
+                {getSpeedIcon(model.speedLevel)}
+                {model.speedLevel.charAt(0).toUpperCase() +
+                  model.speedLevel.slice(1)}
+              </span>
+            )}
+            {model.isFree ? (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#43B581",
+                }}
+              >
+                {MemoizedFaCrownFree} Free
+              </span>
+            ) : model.isPremium ? (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#5865F2",
+                }}
+              >
+                {MemoizedFaCrownPremium} Premium
+              </span>
+            ) : null}
+            {model.supports?.imageAttachments && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#43B581",
+                }}
+              >
+                {MemoizedFaImage} Image
+              </span>
+            )}
+          </div>
         </div>
-        <div className="model-badges">
-          {model.speedLevel && (
-            <span
-              className="badge"
-              style={{
-                background: SPEED_COLORS[model.speedLevel],
-              }}
-            >
-              {getSpeedIcon(model.speedLevel)}
-              {model.speedLevel.charAt(0).toUpperCase() +
-                model.speedLevel.slice(1)}
-            </span>
-          )}
-          {model.isFree ? (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: "#43B581",
-              }}
-            >
-              {MemoizedFaCrownFree} Free
-            </span>
-          ) : model.isPremium ? (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: "#5865F2",
-              }}
-            >
-              {MemoizedFaCrownPremium} Premium
-            </span>
-          ) : null}
-          {model.supports?.imageAttachments && (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: "#43B581",
-              }}
-            >
-              {MemoizedFaImage} Image
-            </span>
-          )}
-        </div>
-      </div>
-    ),
+      );
+    },
     [
       activeSection,
-      faCrownStyle,
       getSpeedIcon,
       getVendorIcon,
       handleModelChange,
@@ -274,91 +275,94 @@ export default function ModelPreferencesModal({
   }, [activeFilters, showTaggedModels]);
 
   const renderImageModelCard = useCallback(
-    (model: ModelOption) => (
-      <div
-        key={model.id}
-        className={`model-card ${
-          model.id === preferences.imageGeneration.model ? "selected" : ""
-        }`}
-        onClick={() => {
-          setExpandedImageModel(
-            expandedImageModel === model.id ? null : model.id
-          );
-        }}
-      >
-        <div className="model-card-content">
-          <div className="model-name-with-arrow">
-            <MdKeyboardArrowRight
-              className={`dropdown-arrow ${
-                expandedImageModel === model.id ? "rotated" : ""
-              }`}
-            />
-            <span className="model-name">{model.name}</span>
-          </div>
-          {model.vendor && (
-            <span
-              className="vendor-badge"
-              style={{
-                backgroundColor: VENDOR_COLORS[model.vendor],
-              }}
-            >
-              {getVendorIcon(model.vendor)}
-            </span>
-          )}
-        </div>
-        <div className="model-badges">
-          {model.isPremium && (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: "#5865F2",
-              }}
-            >
-              {MemoizedFaCrownPremium} Premium
-            </span>
-          )}
-          {model.id.includes("hd") && (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: "#FAA61A",
-              }}
-            >
-              HD Quality
-            </span>
-          )}
-        </div>
-        {expandedImageModel === model.id && model.sizeOptions && (
-          <div className="dimension-options">
-            {model.sizeOptions.map((size) => (
-              <button
-                key={size.wh}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card collapse when selecting size
-                  handleModelChange("imageGeneration", {
-                    model: model.id,
-                    size,
-                  });
-                }}
-                className={`dimension-button ${
-                  model.id === preferences.imageGeneration.model &&
-                  size.wh === preferences.imageGeneration.size.wh
-                    ? "selected"
-                    : ""
+    (model: ModelOption) => {
+      if (!preferences) return null;
+      return (
+        <div
+          key={model.id}
+          className={`model-card ${
+            model.id === preferences.imageGeneration.model ? "selected" : ""
+          }`}
+          onClick={() => {
+            setExpandedImageModel(
+              expandedImageModel === model.id ? null : model.id
+            );
+          }}
+        >
+          <div className="model-card-content">
+            <div className="model-name-with-arrow">
+              <MdKeyboardArrowRight
+                className={`dropdown-arrow ${
+                  expandedImageModel === model.id ? "rotated" : ""
                 }`}
+              />
+              <span className="model-name">{model.name}</span>
+            </div>
+            {model.vendor && (
+              <span
+                className="vendor-badge"
+                style={{
+                  backgroundColor: VENDOR_COLORS[model.vendor],
+                }}
               >
-                {size.description}
-              </button>
-            ))}
+                {getVendorIcon(model.vendor)}
+              </span>
+            )}
           </div>
-        )}
-      </div>
-    ),
+          <div className="model-badges">
+            {model.isPremium && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#5865F2",
+                }}
+              >
+                {MemoizedFaCrownPremium} Premium
+              </span>
+            )}
+            {model.id.includes("hd") && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#FAA61A",
+                }}
+              >
+                HD Quality
+              </span>
+            )}
+          </div>
+          {expandedImageModel === model.id && model.sizeOptions && (
+            <div className="dimension-options">
+              {model.sizeOptions.map((size) => (
+                <button
+                  key={size.wh}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card collapse when selecting size
+                    handleModelChange("imageGeneration", {
+                      model: model.id,
+                      size,
+                    });
+                  }}
+                  className={`dimension-button ${
+                    model.id === preferences.imageGeneration.model &&
+                    size.wh === preferences.imageGeneration.size.wh
+                      ? "selected"
+                      : ""
+                  }`}
+                >
+                  {size.description}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    },
     [
       expandedImageModel,
       getVendorIcon,
       handleModelChange,
-      preferences.imageGeneration,
+      preferences,
       MemoizedFaCrownPremium,
     ]
   );
@@ -399,6 +403,8 @@ export default function ModelPreferencesModal({
     []
   );
 
+  if (!preferences) return null;
+
   return (
     <div className="modal-overlay" onClick={handleModalClick}>
       <div
@@ -422,8 +428,8 @@ export default function ModelPreferencesModal({
               {section === "main"
                 ? "Main Agent"
                 : section === "programmer"
-                  ? "Programmer"
-                  : "Image Generation"}
+                ? "Programmer"
+                : "Image Generation"}
             </button>
           ))}
         </div>

@@ -16,7 +16,7 @@ export default function ImageViewer() {
   };
 
   return (
-    <Modal id="imageViewer" title="Image Viewer" fullScreen>
+    <Modal id="imageViewer" title="Preview" fullScreen>
       <div className="image-viewer-container">
         <img
           src={imageUrl}

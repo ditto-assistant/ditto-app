@@ -6,13 +6,12 @@ import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { useIsMobile } from "../hooks/useIsMobile";
-
-const INACTIVITY_TIMEOUT = 2000; // 2 seconds
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
+import { useBalance } from "@/hooks/useBalance";
 
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
- * @param {function(imageUrl: string): void} props.onImageEnlarge - A function that enlarges an image
  * @param {function(): void} props.onCameraOpen - A function that opens the camera
  * @param {string} props.capturedImage - The URL of the captured image
  * @param {function(): void} props.onClearCapturedImage - A function that clears the captured image
@@ -20,12 +19,9 @@ const INACTIVITY_TIMEOUT = 2000; // 2 seconds
  * @param {function(): void} props.onOpenMediaOptions - A function that opens the media options
  * @param {function(): void} props.onCloseMediaOptions - A function that closes the media options
  * @param {function} props.updateConversation - A function that updates the conversation
- * @param {function} props.onFocus - A function that handles the focus event
- * @param {function(): void} props.onBlur - A function that handles the blur event
  * @param {function(): void} props.onStop - A function that handles the stop event
  */
 export default function SendMessage({
-  onImageEnlarge,
   onCameraOpen,
   capturedImage,
   onClearCapturedImage,
@@ -33,8 +29,6 @@ export default function SendMessage({
   onOpenMediaOptions,
   onCloseMediaOptions,
   updateConversation,
-  onFocus,
-  onBlur,
   onStop,
 }) {
   const [message, setMessage] = useState("");
@@ -43,10 +37,10 @@ export default function SendMessage({
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
   const isMobile = useIsMobile();
-  const [isImageEnlarged, setIsImageEnlarged] = useState(false);
-  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const { preferences } = useModelPreferences();
+  const { handleImageClick } = useImageViewerHandler(false);
+  const { data: balance } = useBalance();
 
   useEffect(() => {
     if (capturedImage) {
@@ -98,7 +92,8 @@ export default function SendMessage({
           messageToSend,
           imageURI,
           updateConversation,
-          preferences
+          preferences,
+          balance.hasPremium
         );
       } catch (error) {
         console.error("Error sending message:", error);
@@ -161,7 +156,6 @@ export default function SendMessage({
 
   useEffect(() => resizeTextArea(), [message, image]);
 
-  // Add this new function to handle pasted data
   const handlePaste = (event) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
@@ -177,29 +171,6 @@ export default function SendMessage({
       }
     }
   };
-
-  const toggleImageEnlarge = (e) => {
-    e.stopPropagation();
-    onImageEnlarge(image);
-  };
-
-  const toggleImageFullscreen = (e) => {
-    e.stopPropagation();
-    setIsImageFullscreen(!isImageFullscreen);
-  };
-
-  const handleClickOutside = () => {
-    if (isImageFullscreen) {
-      setIsImageFullscreen(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [isImageFullscreen]);
 
   const handlePlusClick = (e) => {
     e.stopPropagation();
@@ -242,7 +213,6 @@ export default function SendMessage({
             overflowY: "hidden",
             marginRight: "-5px",
           }}
-          onFocus={() => setIsImageEnlarged(false)}
         />
         <div className="IconsWrapper">
           <FaPlus className="PlusButton" onClick={handlePlusClick} />
@@ -263,7 +233,7 @@ export default function SendMessage({
       />
 
       {image && (
-        <div className="ImagePreview" onClick={toggleImageEnlarge}>
+        <div className="ImagePreview" onClick={() => handleImageClick(image)}>
           <img src={image} alt="Preview" />
           <FaTimes
             className="RemoveImage"
@@ -317,28 +287,6 @@ export default function SendMessage({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {isImageEnlarged && (
-        <div className="EnlargedImageOverlay" onClick={toggleImageEnlarge}>
-          <div
-            className="EnlargedImageContainer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img src={image} alt="Enlarged Preview" />
-          </div>
-        </div>
-      )}
-
-      {isImageFullscreen && (
-        <div className="FullscreenImageOverlay" onClick={handleClickOutside}>
-          <img
-            src={image}
-            alt="Fullscreen Preview"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-
       <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
     </form>
   );

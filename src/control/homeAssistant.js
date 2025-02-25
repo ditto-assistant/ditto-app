@@ -16,7 +16,7 @@ const sendGoogleSdkCommand = async (prompt) => {
     const data = {
       command: prompt,
     };
-    const response = await fetch(url, {
+    await fetch(url, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),

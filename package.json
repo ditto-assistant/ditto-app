@@ -1,6 +1,6 @@
 {
   "name": "ditto-pwa",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "private": true,
   "type": "module",
   "dependencies": {
@@ -55,8 +55,8 @@
     "serve": "vite preview",
     "clean": "rm -rf build",
     "depcheck": "depcheck",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint-fix": "eslint . --ext .ts,.tsx --fix"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint-fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "browserslist": {
     "production": [

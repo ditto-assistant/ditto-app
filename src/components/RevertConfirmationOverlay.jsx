@@ -28,7 +28,7 @@ const RevertConfirmationOverlay = ({
         <FaUndo style={styles.revertIcon} />
         <h3 style={styles.title}>Confirm Revert</h3>
         <p style={styles.message}>
-          Are you sure you want to revert to "{scriptName}"
+          Are you sure you want to revert to &quot;{scriptName}&quot;
           <span style={styles.versionBadge}>v{version}</span>?
         </p>
         <div style={styles.buttons}>

@@ -40,7 +40,7 @@ function useModels() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["modelPreferences", user?.uid],
+    queryKey: ["modelPreferences", user],
     queryFn: async () => {
       if (!user) throw new Error("No user");
       const prefs = (await getModelPreferencesFromFirestore(

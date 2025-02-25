@@ -89,7 +89,9 @@ export const mainTemplate = (
 ${tools
   .map(
     (tool, index) =>
-      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${
+        tool.trigger
+      })`
   )
   .join("\n")}`
       : "";

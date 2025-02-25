@@ -72,7 +72,6 @@ const darkModeColors = {
 const useSplitPane = (isMobile, initialPosition = 50) => {
   const [splitPosition, setSplitPosition] = useState(initialPosition);
   const [isMaximized, setIsMaximized] = useState("preview");
-  const isDragging = useRef(false);
   const containerRef = useRef(null);
 
   return {
@@ -188,7 +187,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const isMobile = useIsMobile();
   const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
   const [viewMode, setViewMode] = useState("code"); // Changed from 'tree' to 'code'
-  const [selectedNode, setSelectedNode] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showScriptChat, setShowScriptChat] = useState(false);
   const [scriptChatMessages, setScriptChatMessages] = useState([]);
@@ -215,8 +213,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
   const balance = useBalance();
 
-  // Add function to track selection in AceEditor
-  const handleEditorSelection = (selection) => {
+  const handleEditorSelection = () => {
     const editor = editorRef.current?.editor;
     if (editor) {
       const selectedText = editor.getSelectedText();
@@ -440,11 +437,10 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     // Find all matches to get total count
     let matches = 0;
-    const pos = editor.selection.getCursor();
     editor.session
       .getDocument()
       .getAllLines()
-      .forEach((line, row) => {
+      .forEach((line) => {
         let index = -1;
         while (
           (index = line
@@ -484,17 +480,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     setSearchResults({ total: matches, current: matches > 0 ? current : 0 });
   }, []);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSearch(searchTerm, e.shiftKey ? "backward" : "forward");
-    }
-    if (e.key === "Escape") {
-      setSearchVisible(false);
-      setSearchTerm("");
-    }
-  };
-
   useEffect(() => {
     if (searchTerm) {
       handleSearch(searchTerm);
@@ -505,6 +490,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
   // Update useEffect for keyboard shortcuts
   useEffect(() => {
+    const eRef = editorRef.current;
     const handleKeyboardShortcuts = (e) => {
       // Check for Ctrl/Cmd + F
       if ((e.ctrlKey || e.metaKey) && e.key === "f") {
@@ -517,8 +503,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     };
 
     // Add event listener to the editor instance only when it's ready
-    if (editorRef.current?.editor && isEditorReady) {
-      const editor = editorRef.current.editor;
+    if (eRef?.editor && isEditorReady) {
+      const editor = eRef.editor;
       editor.commands.addCommand({
         name: "toggleSearch",
         bindKey: { win: "Ctrl-F", mac: "Command-F" },
@@ -537,21 +523,17 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
     // Cleanup
     return () => {
       document.removeEventListener("keydown", handleKeyboardShortcuts);
-      if (editorRef.current?.editor && isEditorReady) {
-        const editor = editorRef.current.editor;
+      if (eRef?.editor && isEditorReady) {
+        const editor = eRef.editor;
         editor.commands.removeCommand("toggleSearch");
       }
     };
   }, [searchVisible, isEditorReady]);
 
   // Add editor onLoad handler
-  const handleEditorLoad = (editor) => {
+  const handleEditorLoad = () => {
     setIsEditorReady(true);
   };
-
-  const onNodeClick = useCallback((node) => {
-    setSelectedNode(node);
-  }, []);
 
   const handleNodeUpdate = (node, updatedHTML) => {
     // Update the code state with the new HTML
@@ -565,20 +547,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
     // Force preview refresh
     setPreviewKey((prev) => prev + 1);
-  };
-
-  const findCorrespondingNode = (doc, targetNode) => {
-    const walk = (node) => {
-      if (node.isEqualNode(targetNode)) {
-        return node;
-      }
-      for (let child of node.childNodes) {
-        const result = walk(child);
-        if (result) return result;
-      }
-      return null;
-    };
-    return walk(doc.documentElement);
   };
 
   const handleClose = () => {
@@ -650,36 +618,6 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
       document.head.removeChild(style);
     };
   }, []);
-
-  const handleResizeMouseDown = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const startX = e.pageX;
-    const startY = e.pageY;
-    const startWidth = scriptChatSize.width;
-    const startHeight = scriptChatSize.height;
-
-    const handleResize = (e) => {
-      requestAnimationFrame(() => {
-        const newWidth = Math.max(300, startWidth + (e.pageX - startX));
-        const newHeight = Math.max(300, startHeight + (e.pageY - startY));
-
-        setScriptChatSize({
-          width: newWidth,
-          height: newHeight,
-        });
-      });
-    };
-
-    const handleResizeEnd = () => {
-      document.removeEventListener("mousemove", handleResize);
-      document.removeEventListener("mouseup", handleResizeEnd);
-    };
-
-    document.addEventListener("mousemove", handleResize);
-    document.addEventListener("mouseup", handleResizeEnd);
-  };
 
   const adjustTextareaHeight = (textarea) => {
     if (!textarea) return;
@@ -966,16 +904,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             width: isMobile
               ? "100%"
               : isMaximized === "editor"
-                ? "100%"
-                : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`,
+              ? "100%"
+              : isMaximized === "preview"
+              ? "0%"
+              : `${splitPosition}%`,
             height: isMobile
               ? isMaximized === "editor"
                 ? "100%"
                 : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`
+                ? "0%"
+                : `${splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
@@ -1148,9 +1086,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             ) : (
               <DOMTreeViewer
                 htmlContent={code}
-                onNodeClick={onNodeClick}
                 onNodeUpdate={handleNodeUpdate}
-                showScriptChat={showScriptChat}
                 setShowScriptChat={setShowScriptChat}
                 setSelectedCodeAttachment={setSelectedCodeAttachment}
               />
@@ -1164,16 +1100,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             width: isMobile
               ? "100%"
               : isMaximized === "preview"
-                ? "100%"
-                : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`,
+              ? "100%"
+              : isMaximized === "editor"
+              ? "0%"
+              : `${100 - splitPosition}%`,
             height: isMobile
               ? isMaximized === "preview"
                 ? "100%"
                 : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`
+                ? "0%"
+                : `${100 - splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
@@ -1421,15 +1357,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                   ) : (
                     <>
                       <ReactMarkdown
-                        children={msg.content}
                         components={{
-                          code({
-                            node,
-                            inline,
-                            className,
-                            children,
-                            ...props
-                          }) {
+                          code({ inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(
                               className || ""
                             );
@@ -1449,7 +1378,9 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             );
                           },
                         }}
-                      />
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
                       {msg.fullScript && (
                         <button
                           onClick={(e) => {
@@ -1674,7 +1605,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     }}
                     style={styles.unsavedDangerButton}
                   >
-                    Don't Save
+                    {"Don't Save"}
                   </motion.button>
                   <motion.button
                     whileHover={{

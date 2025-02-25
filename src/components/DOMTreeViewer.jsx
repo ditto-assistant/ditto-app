@@ -39,42 +39,10 @@ const darkModeColors = {
   border: "#1E1F22",
 };
 
-const typingIndicatorCSS = `
-.typing-indicator {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    height: 20px;
-    margin-top: 8px;
-}
-
-.typing-dot {
-    width: 6px;
-    height: 6px;
-    margin: 0 2px;
-    background-color: ${darkModeColors.textSecondary};
-    border-radius: 50%;
-    animation: bounce 0.6s infinite alternate;
-    animation-delay: calc(var(--i) * 0.2s);
-}
-
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-`;
-
 const NodeEditor = ({
   node,
   onClose,
   onSave,
-  htmlContent,
-  updateHtmlContent,
-  showScriptChat,
   setShowScriptChat,
   setSelectedCodeAttachment,
 }) => {
@@ -179,9 +147,7 @@ const NodeEditor = ({
 
 const DOMTreeViewer = ({
   htmlContent,
-  onNodeClick,
   onNodeUpdate,
-  showScriptChat,
   setShowScriptChat,
   setSelectedCodeAttachment,
 }) => {
@@ -351,7 +317,6 @@ const DOMTreeViewer = ({
       if (params.nodes.length > 0) {
         const clickedNode = nodes.get(params.nodes[0]);
         setSelectedNode(clickedNode.refNode);
-        onNodeClick(clickedNode.refNode);
       }
     });
 
@@ -365,7 +330,7 @@ const DOMTreeViewer = ({
       }
     });
 
-    networkRef.current.on("dragEnd", (params) => {
+    networkRef.current.on("dragEnd", () => {
       if (isDragging && draggedNode) {
         const position = networkRef.current.getPositions([draggedNode])[
           draggedNode
@@ -403,7 +368,7 @@ const DOMTreeViewer = ({
       passive: false,
     });
 
-    networkRef.current.on("stabilizationProgress", function (params) {
+    networkRef.current.on("stabilizationProgress", function () {
       setIsLoading(true);
       if (stabilizationTimeout.current) {
         clearTimeout(stabilizationTimeout.current);
@@ -520,9 +485,6 @@ const DOMTreeViewer = ({
                 node={selectedNode}
                 onClose={() => setSelectedNode(null)}
                 onSave={handleNodeUpdate}
-                htmlContent={htmlContent}
-                updateHtmlContent={onNodeUpdate}
-                showScriptChat={showScriptChat}
                 setShowScriptChat={setShowScriptChat}
                 setSelectedCodeAttachment={setSelectedCodeAttachment}
               />

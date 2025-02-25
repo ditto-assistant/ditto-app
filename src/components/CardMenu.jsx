@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 const CardMenu = ({ children, style, onDelete }) => {
-  const { transformOrigin, ...restStyle } = style;
+  const { ...restStyle } = style;
   const isMobile = useIsMobile();
   const [shouldOpenUpward, setShouldOpenUpward] = useState(false);
 

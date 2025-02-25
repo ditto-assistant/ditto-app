@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { presignURL } from "@/api/bucket";
 import { Result } from "@/types/common";
 import { IMAGE_PLACEHOLDER_IMAGE } from "@/constants";

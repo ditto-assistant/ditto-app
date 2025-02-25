@@ -1,5 +1,5 @@
 import "./HomeScreen.css";
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { grabStatus, syncLocalScriptsWithFirestore } from "../control/firebase";
 import FullScreenSpinner from "../components/LoadingSpinner";
@@ -33,7 +33,6 @@ export default function HomeScreen() {
     localStorage.getItem("histCount") || 0
   );
   const [showStatusBar, setShowStatusBar] = useState(true);
-  const [enlargedImage, setEnlargedImage] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
@@ -65,13 +64,13 @@ export default function HomeScreen() {
     loadConversationFromLocalStorage
   );
 
-  const updateConversation = (updateFn) => {
+  const updateConversation = useCallback((updateFn) => {
     setConversation((prevState) => {
       const newState = updateFn(prevState);
       localStorage.setItem("conversation", JSON.stringify(newState));
       return newState;
     });
-  };
+  }, []);
 
   const [workingScript, setWorkingScript] = useState(() => {
     const storedScript = localStorage.getItem("workingOnScript");
@@ -94,7 +93,7 @@ export default function HomeScreen() {
       localStorage.removeItem("latestWorkingOnScript");
       navigate("/canvas", { state: { script, scriptName } });
     }
-  }, [localStorage.getItem("latestWorkingOnScript")]);
+  }, [navigate]);
 
   const createConversation = (hist, reset, onload) => {
     try {
@@ -333,18 +332,6 @@ export default function HomeScreen() {
 
   const toggleStatusBar = () => {
     setShowStatusBar((prev) => !prev);
-  };
-
-  /**
-   * Enlarges an image to a full screen view
-   * @param {string} imageUrl - The URL of the image to enlarge
-   */
-  const handleImageEnlarge = (imageUrl) => {
-    setEnlargedImage(imageUrl);
-  };
-
-  const closeEnlargedImage = () => {
-    setEnlargedImage(null);
   };
 
   const handleCameraOpen = () => {
@@ -662,8 +649,6 @@ export default function HomeScreen() {
                   <ChatFeed
                     messages={conversation.messages}
                     showSenderName={false}
-                    histCount={histCount}
-                    isTyping={conversation.is_typing}
                     scrollToBottom={true}
                     startAtBottom={startAtBottom}
                     updateConversation={updateConversation}
@@ -677,7 +662,6 @@ export default function HomeScreen() {
       <footer className="App-footer">
         <Suspense fallback={<FullScreenSpinner />}>
           <SendMessage
-            onImageEnlarge={handleImageEnlarge}
             onCameraOpen={handleCameraOpen}
             capturedImage={capturedImage}
             onClearCapturedImage={() => setCapturedImage(null)}
@@ -728,28 +712,6 @@ export default function HomeScreen() {
       </AnimatePresence>
 
       <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-
-      <AnimatePresence>
-        {enlargedImage && (
-          <motion.div
-            className="EnlargedImageOverlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeEnlargedImage}
-          >
-            <motion.div
-              className="EnlargedImageContainer"
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img src={enlargedImage} alt="Enlarged Preview" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {showTOS && (
         <TermsOfService

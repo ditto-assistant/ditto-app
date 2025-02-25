@@ -51,7 +51,7 @@ const VersionsOverlay = ({
     }
   };
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = () => {
     if (deleteConfirmation.show) return;
     onClose();
   };

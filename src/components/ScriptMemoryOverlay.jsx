@@ -23,6 +23,10 @@ function ScriptMemoryOverlay({
 }) {
   const overlayContentRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(closeOverlay, 300);
+  };
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 50);
@@ -32,18 +36,14 @@ function ScriptMemoryOverlay({
         overlayContentRef.current &&
         !overlayContentRef.current.contains(event.target)
       ) {
-        handleClose();
+        setIsVisible(false);
+        setTimeout(closeOverlay, 300);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(closeOverlay, 300);
-  };
+  });
 
   const handleResetHistory = async () => {
     // Create and show the confirmation dialog

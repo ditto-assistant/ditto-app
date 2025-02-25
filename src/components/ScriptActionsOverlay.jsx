@@ -24,13 +24,14 @@ function ScriptActionsOverlay({
         overlayContentRef.current &&
         !overlayContentRef.current.contains(event.target)
       ) {
-        handleClose();
+        setIsVisible(false);
+        setTimeout(onClose, 300);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  });
 
   const handleClose = () => {
     setIsVisible(false);

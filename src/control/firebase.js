@@ -7,14 +7,12 @@ import {
   query,
   collection,
   addDoc,
-  vector,
   orderBy,
   updateDoc,
   limit,
   getDocs,
   writeBatch,
   deleteDoc,
-  where,
   getCountFromServer,
 } from "firebase/firestore";
 import {
@@ -27,7 +25,6 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { DEFAULT_PREFERENCES } from "@/constants";
-import { getDeviceID } from "@/utils/deviceId";
 
 /**@typedef {import("@/types/llm").Model} Model */
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */

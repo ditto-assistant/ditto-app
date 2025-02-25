@@ -6,29 +6,23 @@ import { FaTable, FaProjectDiagram, FaTimes, FaTrash } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { IoMdArrowBack, IoMdArrowDropdown } from "react-icons/io";
-import { FiDownload, FiCopy } from "react-icons/fi";
+import { IoMdArrowDropdown } from "react-icons/io";
+import { FiCopy } from "react-icons/fi";
 import { auth } from "../control/firebase";
 import { deleteConversation } from "../control/memory";
 import { LoadingSpinner } from "./LoadingSpinner";
 import remarkGfm from "remark-gfm";
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 
-// Update the formatDateTime function to handle both Firestore timestamps and regular dates
 const formatDateTime = (timestamp) => {
   if (!timestamp) return "";
-
-  // Handle Firestore timestamp
   if (timestamp?.toDate) {
     timestamp = timestamp.toDate();
   } else if (typeof timestamp === "string") {
-    // Handle ISO string
     timestamp = new Date(timestamp);
   } else if (typeof timestamp === "number") {
-    // Handle milliseconds timestamp
     timestamp = new Date(timestamp);
   }
-
-  // Validate the date
   if (!(timestamp instanceof Date) || isNaN(timestamp)) {
     return "";
   }
@@ -96,13 +90,12 @@ const DeleteConfirmationContent = ({
 );
 
 // Update the TableView component
-const TableView = ({ memories, onMemoryClick }) => {
+const TableView = ({ memories }) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [deletingMemories, setDeletingMemories] = useState(new Set());
-  const [imageOverlay, setImageOverlay] = useState(null);
-  const [imageControlsVisible, setImageControlsVisible] = useState(true);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
+  const { handleImageClick } = useImageViewerHandler(false);
 
   const handleDelete = async (memory) => {
     setDeleteConfirmation({
@@ -114,7 +107,7 @@ const TableView = ({ memories, onMemoryClick }) => {
   const confirmDelete = async () => {
     if (!deleteConfirmation) return;
 
-    const { memory, docId } = deleteConfirmation;
+    const { docId } = deleteConfirmation;
     const userID = auth.currentUser.uid;
 
     try {
@@ -248,46 +241,27 @@ const TableView = ({ memories, onMemoryClick }) => {
     );
   };
 
-  const handleImageClick = (src) => {
-    setImageOverlay(src);
-  };
-
-  const handleImageDownload = (src) => {
-    window.open(src, "_blank");
-  };
-
-  const closeImageOverlay = () => {
-    setImageOverlay(null);
-  };
-
-  const toggleImageControls = (e) => {
-    e.stopPropagation();
-    setImageControlsVisible(!imageControlsVisible);
-  };
-
   const renderMarkdown = (content) => (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        ol: ({ node, ordered, ...props }) => (
+        ol: ({ ...props }) => (
           <ol
             {...props}
             style={{ ...styles.chatBubbleList, ...styles.orderedList }}
           />
         ),
-        ul: ({ node, ...props }) => (
+        ul: ({ ...props }) => (
           <ul
             {...props}
             style={{ ...styles.chatBubbleList, ...styles.unorderedList }}
           />
         ),
-        li: ({ node, ordered, ...props }) => (
+        li: ({ ...props }) => (
           <li {...props} style={styles.chatBubbleListItem} />
         ),
-        p: ({ node, ...props }) => (
-          <p {...props} style={{ margin: "0.5em 0" }} />
-        ),
-        code({ node, inline, className, children, ...props }) {
+        p: ({ ...props }) => <p {...props} style={{ margin: "0.5em 0" }} />,
+        code({ inline, className, children, ...props }) {
           let match = /language-(\w+)/.exec(className || "");
           let hasCodeBlock;
           if (content.match(/```/g)) {
@@ -300,13 +274,14 @@ const TableView = ({ memories, onMemoryClick }) => {
             return (
               <div className="code-container">
                 <SyntaxHighlighter
-                  children={String(children).replace(/\n$/, "")}
                   style={vscDarkPlus}
                   language={match[1]}
                   PreTag="div"
                   {...props}
                   className="code-block"
-                />
+                >
+                  {children}
+                </SyntaxHighlighter>
                 <button
                   className="copy-button code-block-button"
                   onClick={(e) => {
@@ -396,60 +371,6 @@ const TableView = ({ memories, onMemoryClick }) => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Image Overlay */}
-      <AnimatePresence>
-        {imageOverlay && (
-          <motion.div
-            className="image-overlay"
-            onClick={closeImageOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="image-overlay-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            >
-              <img
-                src={imageOverlay}
-                alt="Full size"
-                onClick={toggleImageControls}
-              />
-              <AnimatePresence>
-                {imageControlsVisible && (
-                  <motion.div
-                    className="image-overlay-controls"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button
-                      className="image-control-button back"
-                      onClick={closeImageOverlay}
-                      title="Back"
-                    >
-                      <IoMdArrowBack />
-                    </button>
-                    <button
-                      className="image-control-button download"
-                      onClick={() => handleImageDownload(imageOverlay)}
-                      title="Download"
-                    >
-                      <FiDownload />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
@@ -457,9 +378,8 @@ const TableView = ({ memories, onMemoryClick }) => {
 // Add the MemoryNodeOverlay component
 const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
-  const [imageOverlay, setImageOverlay] = useState(null);
-  const [imageControlsVisible, setImageControlsVisible] = useState(true);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+  const { handleImageClick } = useImageViewerHandler(false);
 
   const handleDelete = useCallback(() => {
     setDeleteConfirmation(true);
@@ -484,47 +404,29 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
     }
   }, [node.id, onDelete, onClose]);
 
-  const handleImageClick = useCallback((src) => {
-    setImageOverlay(src);
-  }, []);
-
-  const closeImageOverlay = useCallback(() => {
-    setImageOverlay(null);
-  }, []);
-
-  const toggleImageControls = useCallback(
-    (e) => {
-      e.stopPropagation();
-      setImageControlsVisible(!imageControlsVisible);
-    },
-    [imageControlsVisible]
-  );
-
   // Define renderMarkdown within the scope of MemoryNodeOverlay
   const renderMarkdown = useCallback(
     (content) => (
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          ol: ({ node, ordered, ...props }) => (
+          ol: ({ ...props }) => (
             <ol
               {...props}
               style={{ ...styles.chatBubbleList, ...styles.orderedList }}
             />
           ),
-          ul: ({ node, ...props }) => (
+          ul: ({ ...props }) => (
             <ul
               {...props}
               style={{ ...styles.chatBubbleList, ...styles.unorderedList }}
             />
           ),
-          li: ({ node, ordered, ...props }) => (
+          li: ({ ...props }) => (
             <li {...props} style={styles.chatBubbleListItem} />
           ),
-          p: ({ node, ...props }) => (
-            <p {...props} style={{ margin: "0.5em 0" }} />
-          ),
-          code({ node, inline, className, children, ...props }) {
+          p: ({ ...props }) => <p {...props} style={{ margin: "0.5em 0" }} />,
+          code({ inline, className, children, ...props }) {
             let match = /language-(\w+)/.exec(className || "");
             let hasCodeBlock;
             if (content.match(/```/g)) {
@@ -537,13 +439,14 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
               return (
                 <div className="code-container">
                   <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, "")}
                     style={vscDarkPlus}
                     language={match[1]}
                     PreTag="div"
                     {...props}
                     className="code-block"
-                  />
+                  >
+                    {children}
+                  </SyntaxHighlighter>
                   <button
                     className="copy-button code-block-button"
                     onClick={(e) => {
@@ -710,59 +613,6 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete }) => {
             </motion.div>
           </motion.div>
         )}
-        {/* Image Overlay */}
-        <AnimatePresence>
-          {imageOverlay && (
-            <motion.div
-              className="image-overlay"
-              onClick={closeImageOverlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="image-overlay-content"
-                onClick={(e) => e.stopPropagation()}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              >
-                <img
-                  src={imageOverlay}
-                  alt="Full size"
-                  onClick={toggleImageControls}
-                />
-                <AnimatePresence>
-                  {imageControlsVisible && (
-                    <motion.div
-                      className="image-overlay-controls"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <button
-                        className="image-control-button back"
-                        onClick={closeImageOverlay}
-                        title="Back"
-                      >
-                        <IoMdArrowBack />
-                      </button>
-                      <button
-                        className="image-control-button download"
-                        onClick={() => handleImageDownload(imageOverlay)}
-                        title="Download"
-                      >
-                        <FiDownload />
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     </AnimatePresence>
   );
@@ -776,19 +626,204 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
   const networkRef = useRef(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const nodeIdMapRef = useRef({});
+  const handleNodeClick = useCallback(
+    (nodeId) => {
+      const data = nodeIdMapRef.current[nodeId];
+      if (data) {
+        setSelectedNode(data);
+      }
+    },
+    [nodeIdMapRef]
+  );
 
-  // Add new effect to handle view mode changes
   useEffect(() => {
+    const buildNetwork = (nodesData) => {
+      if (!containerRef.current) return;
+      if (networkRef.current) {
+        networkRef.current.destroy();
+        networkRef.current = null;
+      }
+
+      const nodes = new DataSet();
+      const edges = new DataSet();
+      let nodeId = 1;
+      const nodeIdMap = {};
+
+      // Helper function to recursively add nodes and edges
+      const addMemoryNodes = (
+        memory,
+        parentNodeId = null,
+        depth = 0,
+        parentPath = ""
+      ) => {
+        const currentNodeId = nodeId++;
+        const currentPath = parentPath
+          ? `${parentPath}.${nodeId}`
+          : `${nodeId}`;
+        const label = parentNodeId === null ? "Your Prompt" : currentPath;
+
+        // Color palette for different depths
+        const colors = [
+          "#FF5733", // Root (orange-red)
+          "#3498DB", // Level 1 (blue)
+          "#2ECC71", // Level 2 (green)
+          "#9B59B6", // Level 3 (purple)
+          "#F1C40F", // Level 4 (yellow)
+          "#E74C3C", // Level 5 (red)
+          "#1ABC9C", // Level 6 (turquoise)
+          "#D35400", // Level 7 (dark orange)
+          "#8E44AD", // Level 8 (dark purple)
+          "#27AE60", // Level 9 (dark green)
+        ];
+
+        // Get color based on depth, cycling through colors if depth exceeds array length
+        const nodeColor =
+          depth === 0 ? colors[0] : colors[(depth % (colors.length - 1)) + 1];
+
+        nodes.add({
+          id: currentNodeId,
+          label: label,
+          title: memory.prompt,
+          color: nodeColor,
+          size: Math.max(30 - depth * 3, 15), // Adjusted size reduction
+          font: {
+            size: Math.max(16 - depth * 1, 12), // Adjusted font size reduction
+            color: "#ffffff",
+          },
+        });
+
+        nodeIdMap[currentNodeId] = {
+          prompt: memory.prompt,
+          response: memory.response || "",
+          timestamp: memory.timestampString || memory.timestamp,
+          id: memory.id,
+          path: currentPath,
+        };
+
+        if (parentNodeId !== null) {
+          edges.add({
+            from: parentNodeId,
+            to: currentNodeId,
+            length: Math.max(200 - depth * 20, 80), // Adjusted length reduction
+            color: {
+              color: nodeColor,
+              opacity: 0.4,
+            },
+          });
+        }
+
+        // Recursively add child nodes
+        if (memory.children && memory.children.length > 0) {
+          memory.children.forEach((childMemory) => {
+            addMemoryNodes(childMemory, currentNodeId, depth + 1, currentPath);
+          });
+        }
+
+        return currentNodeId;
+      };
+
+      // Start building the network from the root node
+      addMemoryNodes(nodesData[0]);
+
+      // Store the nodeIdMap in the ref
+      nodeIdMapRef.current = nodeIdMap;
+
+      const options = {
+        nodes: {
+          shape: "dot",
+          font: {
+            color: "#ffffff",
+            face: "Arial",
+          },
+          borderWidth: 2,
+          shadow: true,
+        },
+        edges: {
+          color: { color: "#ffffff", opacity: 0.3 },
+          width: 2,
+          smooth: {
+            type: "continuous",
+          },
+          arrows: {
+            to: { enabled: true, scaleFactor: 0.5 },
+          },
+        },
+        physics: {
+          enabled: true,
+          barnesHut: {
+            gravitationalConstant: -3000,
+            centralGravity: 0.3,
+            springLength: 200,
+            springConstant: 0.04,
+            damping: 0.09,
+            avoidOverlap: 0.1,
+          },
+          stabilization: {
+            enabled: true,
+            iterations: 1000,
+            updateInterval: 100,
+          },
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 200,
+          multiselect: false,
+          dragView: true,
+          zoomView: true,
+          selectConnectedEdges: false,
+          hoverConnectedEdges: true,
+        },
+      };
+
+      // If network already exists, destroy it before creating a new one
+      if (networkRef.current) {
+        networkRef.current.destroy();
+      }
+
+      networkRef.current = new Network(
+        containerRef.current,
+        { nodes, edges },
+        options
+      );
+
+      networkRef.current.on("click", (params) => {
+        if (params.nodes.length > 0) {
+          handleNodeClick(params.nodes[0]);
+        }
+      });
+
+      return () => {
+        networkRef.current.destroy();
+      };
+    };
+
     if (viewMode === "tree") {
       // Small delay to ensure container is ready
       setTimeout(() => {
         buildNetwork(nodesData);
       }, 0);
     }
-  }, [viewMode, nodesData]);
+  }, [viewMode, nodesData, handleNodeClick]);
 
   const handleMemoryDeleted = useCallback(
     (deletedId) => {
+      const removeMemoryById = (nodes, id) => {
+        const newNodes = JSON.parse(JSON.stringify(nodes)); // Deep copy
+        const removeHelper = (memories) => {
+          return memories.filter((memory) => {
+            if (memory.id === id) {
+              return false;
+            }
+            if (memory.children) {
+              memory.children = removeHelper(memory.children);
+            }
+            return true;
+          });
+        };
+        newNodes[0].children = removeHelper(newNodes[0].children || []);
+        return newNodes;
+      };
+
       // Remove the deleted memory from the nodes data
       const updatedNodes = removeMemoryById(nodesData, deletedId);
       setNodesData(updatedNodes);
@@ -798,193 +833,6 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
       }
     },
     [nodesData, onMemoryDeleted]
-  );
-
-  const removeMemoryById = useCallback((nodes, id) => {
-    const newNodes = JSON.parse(JSON.stringify(nodes)); // Deep copy
-    const removeHelper = (memories) => {
-      return memories.filter((memory) => {
-        if (memory.id === id) {
-          return false;
-        }
-        if (memory.children) {
-          memory.children = removeHelper(memory.children);
-        }
-        return true;
-      });
-    };
-    newNodes[0].children = removeHelper(newNodes[0].children || []);
-    return newNodes;
-  }, []);
-
-  const buildNetwork = useCallback((nodesData) => {
-    if (!containerRef.current) return;
-
-    // Clear existing network
-    if (networkRef.current) {
-      networkRef.current.destroy();
-      networkRef.current = null;
-    }
-
-    const nodes = new DataSet();
-    const edges = new DataSet();
-    let nodeId = 1;
-    const nodeIdMap = {};
-
-    // Helper function to recursively add nodes and edges
-    const addMemoryNodes = (
-      memory,
-      parentNodeId = null,
-      depth = 0,
-      parentPath = ""
-    ) => {
-      const currentNodeId = nodeId++;
-      const currentPath = parentPath ? `${parentPath}.${nodeId}` : `${nodeId}`;
-      const label = parentNodeId === null ? "Your Prompt" : currentPath;
-
-      // Color palette for different depths
-      const colors = [
-        "#FF5733", // Root (orange-red)
-        "#3498DB", // Level 1 (blue)
-        "#2ECC71", // Level 2 (green)
-        "#9B59B6", // Level 3 (purple)
-        "#F1C40F", // Level 4 (yellow)
-        "#E74C3C", // Level 5 (red)
-        "#1ABC9C", // Level 6 (turquoise)
-        "#D35400", // Level 7 (dark orange)
-        "#8E44AD", // Level 8 (dark purple)
-        "#27AE60", // Level 9 (dark green)
-      ];
-
-      // Get color based on depth, cycling through colors if depth exceeds array length
-      const nodeColor =
-        depth === 0 ? colors[0] : colors[(depth % (colors.length - 1)) + 1];
-
-      nodes.add({
-        id: currentNodeId,
-        label: label,
-        title: memory.prompt,
-        color: nodeColor,
-        size: Math.max(30 - depth * 3, 15), // Adjusted size reduction
-        font: {
-          size: Math.max(16 - depth * 1, 12), // Adjusted font size reduction
-          color: "#ffffff",
-        },
-      });
-
-      nodeIdMap[currentNodeId] = {
-        prompt: memory.prompt,
-        response: memory.response || "",
-        timestamp: memory.timestampString || memory.timestamp,
-        id: memory.id,
-        path: currentPath,
-      };
-
-      if (parentNodeId !== null) {
-        edges.add({
-          from: parentNodeId,
-          to: currentNodeId,
-          length: Math.max(200 - depth * 20, 80), // Adjusted length reduction
-          color: {
-            color: nodeColor,
-            opacity: 0.4,
-          },
-        });
-      }
-
-      // Recursively add child nodes
-      if (memory.children && memory.children.length > 0) {
-        memory.children.forEach((childMemory, index) => {
-          addMemoryNodes(childMemory, currentNodeId, depth + 1, currentPath);
-        });
-      }
-
-      return currentNodeId;
-    };
-
-    // Start building the network from the root node
-    addMemoryNodes(nodesData[0]);
-
-    // Store the nodeIdMap in the ref
-    nodeIdMapRef.current = nodeIdMap;
-
-    const options = {
-      nodes: {
-        shape: "dot",
-        font: {
-          color: "#ffffff",
-          face: "Arial",
-        },
-        borderWidth: 2,
-        shadow: true,
-      },
-      edges: {
-        color: { color: "#ffffff", opacity: 0.3 },
-        width: 2,
-        smooth: {
-          type: "continuous",
-        },
-        arrows: {
-          to: { enabled: true, scaleFactor: 0.5 },
-        },
-      },
-      physics: {
-        enabled: true,
-        barnesHut: {
-          gravitationalConstant: -3000,
-          centralGravity: 0.3,
-          springLength: 200,
-          springConstant: 0.04,
-          damping: 0.09,
-          avoidOverlap: 0.1,
-        },
-        stabilization: {
-          enabled: true,
-          iterations: 1000,
-          updateInterval: 100,
-        },
-      },
-      interaction: {
-        hover: true,
-        tooltipDelay: 200,
-        multiselect: false,
-        dragView: true,
-        zoomView: true,
-        selectConnectedEdges: false,
-        hoverConnectedEdges: true,
-      },
-    };
-
-    // If network already exists, destroy it before creating a new one
-    if (networkRef.current) {
-      networkRef.current.destroy();
-    }
-
-    networkRef.current = new Network(
-      containerRef.current,
-      { nodes, edges },
-      options
-    );
-
-    networkRef.current.on("click", (params) => {
-      if (params.nodes.length > 0) {
-        handleNodeClick(params.nodes[0]);
-      }
-    });
-
-    return () => {
-      networkRef.current.destroy();
-    };
-  }, []);
-
-  const handleNodeClick = useCallback(
-    (nodeId) => {
-      const data = nodeIdMapRef.current[nodeId];
-      if (data) {
-        setSelectedNode(data);
-      }
-    },
-    [nodeIdMapRef]
   );
 
   return (
@@ -1022,7 +870,7 @@ const MemoryNetwork = ({ memories = [], onClose, onMemoryDeleted }) => {
         {viewMode === "tree" ? (
           <div ref={containerRef} style={styles.network} />
         ) : (
-          <TableView memories={memories} onMemoryClick={handleNodeClick} />
+          <TableView memories={memories} />
         )}
       </div>
 
