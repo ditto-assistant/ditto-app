@@ -1,0 +1,117 @@
+/* Common component styles for Ditto app */
+@import "./variables.css";
+
+/* Common header styles */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background-color: var(--header-background);
+  backdrop-filter: blur(10px);
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  position: relative;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+/* Common title container styles */
+.app-title-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  margin: 0 auto;
+  max-width: calc(100% - 120px); /* Leave space for buttons */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Prevent content overflow */
+  z-index: 5; /* Ensure it's above other elements */
+}
+
+.app-title-container:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.app-title-container:active {
+  transform: scale(0.98);
+}
+
+/* Common icon button styles */
+.app-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.app-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Common icon styles */
+.app-icon {
+  font-size: 20px;
+  color: var(--text-normal);
+  width: 20px;
+  height: 20px;
+  background: none;
+}
+
+/* Editor specific components */
+.editor-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--background-editor);
+  z-index: var(--z-index-modal);
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  background-color: var(--background-editor-header);
+  padding: 0 var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-dark);
+  height: 64px;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 var(--spacing-sm);
+    height: 56px;
+  }
+
+  .app-icon-button {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .app-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}

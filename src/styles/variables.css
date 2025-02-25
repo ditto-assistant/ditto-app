@@ -1,29 +1,49 @@
 :root {
-  /* Colors */
-  --primary-color: #7289da;
-  --primary-hover: #677bc4;
-  --primary-active: #5865f2;
+  /* Primary colors */
+  --primary: #5865f2;
+  --primary-hover: #4752c4;
+  --primary-active: #3c45a5;
 
-  /* Discord-like colors */
+  /* Background colors */
   --background-primary: #36393f;
   --background-secondary: #2f3136;
   --background-tertiary: #202225;
   --background-input: #40444b;
+  --background-floating: #18191c;
+  --background-editor: #1e1f22;
+  --background-editor-header: #2b2d31;
+  --background-hover: rgba(79, 84, 92, 0.16);
+  --background-active: rgba(79, 84, 92, 0.24);
 
   /* Text colors */
   --text-normal: #dcddde;
   --text-muted: #72767d;
   --text-link: #00b0f4;
+  --text-positive: #43b581;
+  --text-warning: #faa61a;
+  --text-danger: #f04747;
+  --text-brand: #5865f2;
+  --text-white: #ffffff;
+  --text-secondary: #b5bac1;
 
   /* Interactive colors */
   --interactive-normal: #b9bbbe;
   --interactive-hover: #dcddde;
   --interactive-active: #ffffff;
+  --interactive-muted: #4f545c;
 
   /* Status colors */
-  --status-danger: #ed4245;
+  --status-positive: #3ba55c;
   --status-warning: #faa81a;
-  --status-success: #3ba55c;
+  --status-danger: #ed4245;
+
+  /* UI element colors */
+  --border-color: rgba(79, 84, 92, 0.48);
+  --border-strong: rgba(79, 84, 92, 0.8);
+  --border-dark: #1e1f22;
+  --header-background: rgba(32, 34, 37, 0.9);
+  --hover-overlay: rgba(50, 53, 59, 0.5);
+  --hover-element: #32353b;
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -36,6 +56,16 @@
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 16px;
+  --border-radius: 12px;
+
+  /* Layout variables */
+  --header-height: 60px;
+  --footer-height: 70px;
+  --scrollbar-width: 8px;
+  --scrollbar-track-color: rgba(0, 0, 0, 0.1);
+  --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
+  --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
+  --vh: 1vh; /* This will be updated via JavaScript */
 
   /* Transitions */
   --transition-quick: 0.1s ease;

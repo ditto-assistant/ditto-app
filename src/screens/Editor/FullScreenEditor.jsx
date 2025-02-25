@@ -39,6 +39,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import "./FullScreenEditor.css"; // Import the CSS file
 
 // Initialize ace for production
 if (import.meta.env.PROD) {
@@ -55,20 +56,6 @@ if (import.meta.env.PROD) {
     "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
   );
 }
-
-const darkModeColors = {
-  background: "#1E1F22",
-  foreground: "#2B2D31",
-  primary: "#5865F2",
-  secondary: "#4752C4",
-  text: "#FFFFFF",
-  textSecondary: "#B5BAC1",
-  border: "#1E1F22",
-  hover: "#32353B",
-  headerBackground: "#2B2D31",
-  inputBackground: "#1E1F22",
-  danger: "#ff4444",
-};
 
 const useSplitPane = (isMobile, initialPosition = 50) => {
   const [splitPosition, setSplitPosition] = useState(initialPosition);
@@ -110,19 +97,19 @@ const SearchOverlay = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={styles.searchOverlayBackdrop}
+            className="search-overlay-backdrop"
             onClick={onClose}
           />
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            style={styles.searchOverlayContainer}
+            className="search-overlay-container"
           >
-            <motion.div style={styles.searchOverlay} layoutId="searchOverlay">
-              <div style={styles.searchInputWrapper}>
-                <div style={styles.searchIconWrapper}>
-                  <FaSearch size={14} style={styles.searchIcon} />
+            <motion.div className="search-overlay" layoutId="searchOverlay">
+              <div className="search-input-wrapper">
+                <div className="search-icon-wrapper">
+                  <FaSearch size={14} className="search-icon" />
                 </div>
                 <input
                   type="text"
@@ -130,24 +117,24 @@ const SearchOverlay = ({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  style={styles.searchInput}
+                  className="search-input"
                   autoFocus
                 />
                 {searchResults.total > 0 && (
-                  <div style={styles.searchCountWrapper}>
-                    <span style={styles.searchCount}>
+                  <div className="search-count-wrapper">
+                    <span className="search-count">
                       {searchResults.current} of {searchResults.total}
                     </span>
                   </div>
                 )}
               </div>
-              <div style={styles.searchActions}>
+              <div className="search-actions">
                 <Tooltip title="Previous (Shift + Enter)">
                   <span>
                     <IconButton
                       onClick={() => onSearch(searchTerm, "backward")}
                       disabled={!searchTerm || searchResults.total === 0}
-                      sx={styles.searchButton}
+                      className="search-button"
                     >
                       ↑
                     </IconButton>
@@ -158,15 +145,15 @@ const SearchOverlay = ({
                     <IconButton
                       onClick={() => onSearch(searchTerm, "forward")}
                       disabled={!searchTerm || searchResults.total === 0}
-                      sx={styles.searchButton}
+                      className="search-button"
                     >
                       ↓
                     </IconButton>
                   </span>
                 </Tooltip>
-                <div style={styles.searchDivider} />
+                <div className="search-divider" />
                 <Tooltip title="Close (Esc)">
-                  <IconButton onClick={onClose} sx={styles.searchButton}>
+                  <IconButton onClick={onClose} className="search-button">
                     ✕
                   </IconButton>
                 </Tooltip>
@@ -179,7 +166,7 @@ const SearchOverlay = ({
   );
 };
 
-const FullScreenEditor = ({ script, onClose, onSave }) => {
+export default function FullScreenEditor({ script, onClose, onSave }) {
   const { user } = useAuth();
   const [code, setCode] = useState(script.content);
   const [previewKey, setPreviewKey] = useState(0);
@@ -385,9 +372,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
   const handleSave = async () => {
     try {
-      // Check if content has changed
       if (code === script.content) {
-        toast.warning("No Changes to Save!");
+        toast.error("No Changes to Save!");
         return;
       }
 
@@ -595,7 +581,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 width: 6px;
                 height: 6px;
                 margin: 0 2px;
-                background-color: ${darkModeColors.textSecondary};
+                background-color: var(--text-secondary);
                 border-radius: 50%;
                 animation: bounce 0.6s infinite alternate;
                 animation-delay: calc(var(--i) * 0.2s);
@@ -841,98 +827,87 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
   }, [showMemoryOverlay]);
 
   return (
-    <div style={styles.container}>
+    <div className="editor-container">
       <motion.div
-        style={styles.header}
+        className="editor-header"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <div style={styles.headerLeft}>
+        <div className="header-left">
           <Tooltip title="Back">
-            <IconButton onClick={handleClose} sx={styles.iconButton}>
+            <IconButton onClick={handleClose} className="icon-button">
               <FaArrowLeft />
             </IconButton>
           </Tooltip>
-          <div style={styles.titleContainer}>
-            <h3 style={styles.title}>{script.name}</h3>
-            <span style={styles.scriptType}>
+          <div className="title-container">
+            <h3 className="editor-title">{script.name}</h3>
+            <span className="script-type">
               {script.scriptType === "webApps" ? "Web App" : "OpenSCAD"}
             </span>
           </div>
         </div>
-        <div style={styles.actions}>
+        <div className="actions">
           <Tooltip title="Chat">
             <IconButton
               onClick={() => setShowScriptChat((prev) => !prev)}
-              sx={{
-                ...styles.iconButton,
-                color: showScriptChat
-                  ? darkModeColors.primary
-                  : darkModeColors.text,
-              }}
+              className={`icon-button ${showScriptChat ? "active" : ""}`}
             >
               <FaComments size={16} />
             </IconButton>
           </Tooltip>
-          <div style={styles.divider} />
+          <div className="divider" />
           <Tooltip title="Run">
-            <IconButton onClick={handleRunPreview} sx={styles.iconButton}>
+            <IconButton onClick={handleRunPreview} className="icon-button">
               <FaPlay size={16} />
             </IconButton>
           </Tooltip>
           <Button
             onClick={handleSave}
             variant="contained"
-            sx={styles.saveButton}
+            className="save-button"
             size={isMobile ? "small" : "medium"}
           >
             Save
           </Button>
         </div>
       </motion.div>
-      <div
-        ref={containerRef}
-        style={{
-          ...styles.content,
-          flexDirection: isMobile ? "column" : "row",
-        }}
-      >
+      <div ref={containerRef} className="editor-content">
         <motion.div
-          style={styles.editorPane}
+          className="editor-pane"
           animate={{
             width: isMobile
               ? "100%"
               : isMaximized === "editor"
-                ? "100%"
-                : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`,
+              ? "100%"
+              : isMaximized === "preview"
+              ? "0%"
+              : `${splitPosition}%`,
             height: isMobile
               ? isMaximized === "editor"
                 ? "100%"
                 : isMaximized === "preview"
-                  ? "0%"
-                  : `${splitPosition}%`
+                ? "0%"
+                : `${splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         >
-          <div style={styles.paneHeader}>
-            <span style={styles.paneTitle}>Editor</span>
-            <div style={styles.paneActions}>
+          <div className="pane-header">
+            <span className="pane-title">Editor</span>
+            <div className="pane-actions">
               <Tooltip title="Undo">
                 <IconButton
                   onClick={handleUndo}
                   disabled={historyIndex === 0}
-                  sx={styles.iconButton}
+                  className="icon-button"
                 >
                   <FaUndo
                     size={12}
                     color={
                       historyIndex === 0
-                        ? darkModeColors.textSecondary
-                        : darkModeColors.text
+                        ? "var(--text-secondary)"
+                        : "var(--text)"
                     }
                   />
                 </IconButton>
@@ -941,20 +916,20 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 <IconButton
                   onClick={handleRedo}
                   disabled={historyIndex === editHistory.length - 1}
-                  sx={styles.iconButton}
+                  className="icon-button"
                 >
                   <FaRedo
                     size={12}
                     color={
                       historyIndex === editHistory.length - 1
-                        ? darkModeColors.textSecondary
-                        : darkModeColors.text
+                        ? "var(--text-secondary)"
+                        : "var(--text)"
                     }
                   />
                 </IconButton>
               </Tooltip>
-              <div style={styles.divider} />
-              <div style={styles.searchContainer}>
+              <div className="divider" />
+              <div className="search-container">
                 <SearchOverlay
                   visible={searchVisible}
                   searchTerm={searchTerm}
@@ -970,12 +945,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 <Tooltip title={searchVisible ? "Close Search" : "Search"}>
                   <IconButton
                     onClick={() => setSearchVisible(!searchVisible)}
-                    sx={{
-                      ...styles.iconButton,
-                      color: searchVisible
-                        ? darkModeColors.primary
-                        : darkModeColors.text,
-                    }}
+                    className={`icon-button ${searchVisible ? "active" : ""}`}
                   >
                     <FaSearch size={12} />
                   </IconButton>
@@ -984,23 +954,18 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               <Tooltip title="Toggle Word Wrap">
                 <IconButton
                   onClick={() => setWrapEnabled((prev) => !prev)}
-                  sx={{
-                    ...styles.iconButton,
-                    color: wrapEnabled
-                      ? darkModeColors.primary
-                      : darkModeColors.text,
-                  }}
+                  className={`icon-button ${wrapEnabled ? "active" : ""}`}
                 >
                   <FaAlignLeft size={12} />
                 </IconButton>
               </Tooltip>
-              <div style={styles.divider} />
+              <div className="divider" />
               <Tooltip
                 title={isMaximized === "editor" ? "Restore" : "Maximize"}
               >
                 <IconButton
                   onClick={() => toggleMaximize("editor")}
-                  sx={styles.iconButton}
+                  className="icon-button"
                 >
                   {isMaximized === "editor" ? (
                     <FaCompress size={12} />
@@ -1011,21 +976,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               </Tooltip>
             </div>
           </div>
-          <div style={styles.viewToggle}>
+          <div className="view-toggle">
             <Tooltip title="Code View">
               <IconButton
                 onClick={() => setViewMode("code")}
-                sx={{
-                  ...styles.iconButton,
-                  backgroundColor:
-                    viewMode === "code"
-                      ? `${darkModeColors.primary}20`
-                      : "transparent",
-                  color:
-                    viewMode === "code"
-                      ? darkModeColors.primary
-                      : darkModeColors.text,
-                }}
+                className={`icon-button ${viewMode === "code" ? "active" : ""}`}
               >
                 <FaCode size={16} />
               </IconButton>
@@ -1033,17 +988,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             <Tooltip title="DOM Tree View">
               <IconButton
                 onClick={() => setViewMode("tree")}
-                sx={{
-                  ...styles.iconButton,
-                  backgroundColor:
-                    viewMode === "tree"
-                      ? `${darkModeColors.primary}20`
-                      : "transparent",
-                  color:
-                    viewMode === "tree"
-                      ? darkModeColors.primary
-                      : darkModeColors.text,
-                }}
+                className={`icon-button ${viewMode === "tree" ? "active" : ""}`}
               >
                 <FaProjectDiagram size={16} />
               </IconButton>
@@ -1079,7 +1024,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 }}
                 onSelectionChange={handleEditorSelection}
                 style={{
-                  backgroundColor: darkModeColors.background,
+                  backgroundColor: "var(--background)",
                   borderRadius: "4px",
                 }}
               />
@@ -1095,42 +1040,42 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
         </motion.div>
 
         <motion.div
-          style={styles.previewPane}
+          className="preview-pane"
           animate={{
             width: isMobile
               ? "100%"
               : isMaximized === "preview"
-                ? "100%"
-                : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`,
+              ? "100%"
+              : isMaximized === "editor"
+              ? "0%"
+              : `${100 - splitPosition}%`,
             height: isMobile
               ? isMaximized === "preview"
                 ? "100%"
                 : isMaximized === "editor"
-                  ? "0%"
-                  : `${100 - splitPosition}%`
+                ? "0%"
+                : `${100 - splitPosition}%`
               : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         >
-          <div style={styles.paneHeader}>
-            <span style={styles.paneTitle}>Preview</span>
-            <div style={styles.paneActions}>
+          <div className="pane-header">
+            <span className="pane-title">Preview</span>
+            <div className="pane-actions">
               {isMaximized === "preview" && (
                 <>
                   <Tooltip title="Undo">
                     <IconButton
                       onClick={handleUndo}
                       disabled={historyIndex === 0}
-                      sx={styles.iconButton}
+                      className="icon-button"
                     >
                       <FaUndo
                         size={12}
                         color={
                           historyIndex === 0
-                            ? darkModeColors.textSecondary
-                            : darkModeColors.text
+                            ? "var(--text-secondary)"
+                            : "var(--text)"
                         }
                       />
                     </IconButton>
@@ -1139,28 +1084,28 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     <IconButton
                       onClick={handleRedo}
                       disabled={historyIndex === editHistory.length - 1}
-                      sx={styles.iconButton}
+                      className="icon-button"
                     >
                       <FaRedo
                         size={12}
                         color={
                           historyIndex === editHistory.length - 1
-                            ? darkModeColors.textSecondary
-                            : darkModeColors.text
+                            ? "var(--text-secondary)"
+                            : "var(--text)"
                         }
                       />
                     </IconButton>
                   </Tooltip>
-                  <div style={styles.divider} />
+                  <div className="divider" />
                 </>
               )}
               <button
                 onClick={() => toggleMaximize("preview")}
-                style={styles.showEditorButton}
+                className="show-editor-button"
               >
                 {isMaximized === "preview" ? (
                   <>
-                    <span style={styles.showEditorText}>Show Editor</span>
+                    <span className="show-editor-text">Show Editor</span>
                     <FaChevronDown size={12} />
                   </>
                 ) : (
@@ -1172,7 +1117,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
           <iframe
             key={previewKey}
             srcDoc={code}
-            style={styles.preview}
+            className="preview"
             sandbox="allow-scripts allow-same-origin allow-forms"
             title="Preview"
           />
@@ -1184,20 +1129,20 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={styles.savingOverlay}
+            className="saving-overlay"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              style={styles.savingContent}
+              className="saving-content"
             >
               <LoadingSpinner size={50} inline={true} />
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                style={styles.savingText}
+                className="saving-text"
               >
                 Saving changes...
               </motion.p>
@@ -1213,8 +1158,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            className="script-chat-container"
             style={{
-              ...styles.scriptChatContainer,
               width: `${scriptChatSize.width}px`,
               height: `${scriptChatSize.height}px`,
               left:
@@ -1229,28 +1174,24 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             }}
             onMouseDown={handleDragStart}
           >
-            <div style={styles.scriptChatHeader}>
-              <div style={styles.scriptChatTitle}>Programmer Agent</div>
+            <div className="script-chat-header">
+              <div className="script-chat-title">Programmer Agent</div>
               <div
                 style={{ display: "flex", gap: "8px", alignItems: "center" }}
               >
                 <Tooltip title="Settings">
                   <IconButton
-                    className="settings-button" // Add this class
+                    className={`icon-button settings-button ${
+                      showMemoryOverlay ? "active" : ""
+                    }`}
                     onClick={() => setShowMemoryOverlay((prev) => !prev)}
-                    sx={{
-                      ...styles.iconButton,
-                      color: showMemoryOverlay
-                        ? darkModeColors.primary
-                        : darkModeColors.text,
-                    }}
                   >
                     <FaBrain size={16} />
                   </IconButton>
                 </Tooltip>
                 <IconButton
                   onClick={() => setShowScriptChat(false)}
-                  sx={styles.iconButton}
+                  className="icon-button"
                 >
                   <FaTimes size={16} />
                 </IconButton>
@@ -1260,18 +1201,17 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               <AnimatePresence>
                 {showMemoryOverlay && (
                   <motion.div
-                    className="script-chat-settings" // Add this class
+                    className="script-chat-settings"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    style={styles.scriptChatSettings}
                   >
                     <div style={{ padding: "16px" }}>
                       <div style={{ marginBottom: "16px" }}>
                         <h4
                           style={{
                             margin: "0 0 8px 0",
-                            color: darkModeColors.text,
+                            color: "var(--text)",
                             fontSize: "14px",
                           }}
                         >
@@ -1292,15 +1232,12 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           width: "100%",
                           padding: "8px",
                           backgroundColor: "transparent",
-                          color: darkModeColors.danger,
-                          border: `1px solid ${darkModeColors.danger}`,
+                          color: "var(--danger)",
+                          border: "1px solid var(--danger)",
                           borderRadius: "6px",
                           cursor: "pointer",
                           fontSize: "14px",
                           transition: "all 0.2s ease",
-                          "&:hover": {
-                            backgroundColor: `${darkModeColors.danger}15`,
-                          },
                         }}
                       >
                         Reset Chat History
@@ -1310,14 +1247,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                 )}
               </AnimatePresence>
             </div>
-            <div style={styles.scriptChatMessages}>
+            <div className="script-chat-messages">
               {scriptChatMessages.map((msg, index) => (
                 <div
                   key={index}
+                  className={
+                    msg.role === "user" ? "user-message" : "assistant-message"
+                  }
                   style={{
-                    ...(msg.role === "user"
-                      ? styles.userMessage
-                      : styles.assistantMessage),
                     position: "relative",
                     cursor: "pointer",
                     filter:
@@ -1338,18 +1275,18 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             e.stopPropagation();
                             setCodeViewerOverlay(msg.content);
                           }}
-                          style={styles.viewCodeButton}
+                          className="view-code-button"
                         >
                           View Code
                         </button>
                       )}
-                      <div style={styles.messageText}>
+                      <div className="message-text">
                         {/* Only show the user's message, not the history */}
                         {msg.content.split("```")[2]?.split("\n\n")[1] ||
                           msg.content.split("\nPrevious commands:")[0]}
                       </div>
                       {msg.timestamp && (
-                        <div style={styles.messageTimestamp}>
+                        <div className="message-timestamp">
                           {new Date(msg.timestamp).toLocaleTimeString()}
                         </div>
                       )}
@@ -1389,7 +1326,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             setScriptChatCopied(true);
                             setTimeout(() => setScriptChatCopied(false), 2000);
                           }}
-                          style={styles.copyFullScriptButton}
+                          className="copy-full-script-button"
                         >
                           Copy Full Script
                         </button>
@@ -1406,17 +1343,17 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    style={styles.codeViewerOverlay}
+                    className="code-viewer-overlay"
                     onClick={() => setCodeViewerOverlay(null)}
                   >
                     <motion.div
                       initial={{ scale: 0.95 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0.95 }}
-                      style={styles.codeViewerContent}
+                      className="code-viewer-content"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div style={styles.codeViewerBody}>
+                      <div className="code-viewer-body">
                         {/* Extract and display only the code snippet */}
                         <SyntaxHighlighter
                           style={vscDarkPlus}
@@ -1441,7 +1378,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                             setTimeout(() => setScriptChatCopied(false), 2000);
                             setCodeViewerOverlay(null);
                           }}
-                          style={styles.codeViewerCopyButton}
+                          className="code-viewer-copy-button"
                         >
                           Copy Code
                         </button>
@@ -1453,9 +1390,8 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
 
               {scriptChatActionOverlay && (
                 <div
-                  className="scriptChatActionOverlay"
+                  className="script-chat-action-overlay"
                   style={{
-                    ...styles.scriptChatActionOverlay,
                     position: "fixed",
                     left: scriptChatActionOverlay.clientX,
                     top: scriptChatActionOverlay.clientY,
@@ -1475,7 +1411,7 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                           message.content;
                         handleScriptChatCopy(textToCopy);
                       }}
-                      style={styles.scriptChatActionButton}
+                      className="script-chat-action-button"
                     >
                       Copy
                     </button>
@@ -1484,17 +1420,14 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                     onClick={() =>
                       handleScriptChatDelete(scriptChatActionOverlay.index)
                     }
-                    style={{
-                      ...styles.scriptChatActionButton,
-                      color: "#ff4444",
-                    }}
+                    className="script-chat-action-button danger"
                   >
                     Delete
                   </button>
                 </div>
               )}
               {scriptChatCopied && (
-                <div style={styles.copiedNotification}>Copied!</div>
+                <div className="copied-notification">Copied!</div>
               )}
               {isTyping && (
                 <div className="typing-indicator">
@@ -1505,17 +1438,16 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
               )}
               <div ref={scriptChatMessagesEndRef} />
             </div>
-            <div style={styles.scriptChatInputContainer}>
+            <div className="script-chat-input-container">
               {selectedCodeAttachment && (
-                <div style={styles.codeAttachmentPreview}>
-                  <pre style={styles.codePreview}>
+                <div className="code-attachment-preview">
+                  <pre className="code-preview">
                     {selectedCodeAttachment.length > 100
                       ? selectedCodeAttachment.substring(0, 100) + "..."
                       : selectedCodeAttachment}
                   </pre>
                   <FaTimes
-                    className="RemoveCode"
-                    style={styles.removeCodeButton}
+                    className="remove-code-button"
                     onClick={() => setSelectedCodeAttachment(null)}
                   />
                 </div>
@@ -1549,11 +1481,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
                   }
                 }}
                 placeholder="Send a command..."
-                style={styles.scriptChatInput}
+                className="script-chat-input"
               />
               <button
                 onClick={handleScriptChatSend}
-                style={styles.scriptChatSendButton}
+                className="script-chat-send-button"
               >
                 Send
               </button>
@@ -1568,56 +1500,56 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={styles.unsavedOverlay}
+            className="unsaved-overlay"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: "spring", damping: 20 }}
-              style={styles.unsavedContent}
+              className="unsaved-content"
             >
-              <h3 style={styles.unsavedTitle}>Unsaved Changes</h3>
-              <p style={styles.unsavedText}>
+              <h3 className="unsaved-title">Unsaved Changes</h3>
+              <p className="unsaved-text">
                 You have unsaved changes. Would you like to save before closing?
               </p>
-              <div style={styles.unsavedActions}>
+              <div className="unsaved-actions">
                 <motion.button
                   whileHover={{
                     scale: 1.02,
-                    backgroundColor: `${darkModeColors.hover}CC`,
+                    backgroundColor: `var(--hover)CC`,
                   }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowUnsavedChanges(false)}
-                  style={styles.unsavedSecondaryButton}
+                  className="unsaved-secondary-button"
                 >
                   Cancel
                 </motion.button>
-                <div style={styles.unsavedPrimaryActions}>
+                <div className="unsaved-primary-actions">
                   <motion.button
                     whileHover={{
                       scale: 1.02,
-                      backgroundColor: `${darkModeColors.danger}15`,
+                      backgroundColor: `var(--danger)15`,
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={async () => {
                       await closeEditor();
                     }}
-                    style={styles.unsavedDangerButton}
+                    className="unsaved-danger-button"
                   >
                     {"Don't Save"}
                   </motion.button>
                   <motion.button
                     whileHover={{
                       scale: 1.02,
-                      backgroundColor: darkModeColors.secondary,
+                      backgroundColor: "var(--secondary)",
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={async () => {
                       await handleSave();
                       await closeEditor();
                     }}
-                    style={styles.unsavedPrimaryButton}
+                    className="unsaved-primary-button"
                   >
                     Save & Close
                   </motion.button>
@@ -1634,840 +1566,11 @@ const FullScreenEditor = ({ script, onClose, onSave }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          style={styles.loadingOverlay}
+          className="loading-overlay"
         >
           <FullScreenSpinner text="Cleaning up" />
         </motion.div>
       )}
     </div>
   );
-};
-
-const styles = {
-  container: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: darkModeColors.background,
-    zIndex: 1000,
-    display: "flex",
-    flexDirection: "column",
-  },
-  header: {
-    backgroundColor: darkModeColors.headerBackground,
-    padding: "0 16px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottom: `1px solid ${darkModeColors.border}`,
-    height: "64px",
-    "@media (max-width: 768px)": {
-      padding: "0 8px",
-      height: "56px",
-    },
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    flex: 1,
-    minWidth: 0, // Allows flex items to shrink below content size
-    "@media (max-width: 768px)": {
-      gap: "8px",
-    },
-  },
-  titleContainer: {
-    display: "flex",
-    flexDirection: "column",
-    minWidth: 0, // Allows container to shrink
-    flex: 1,
-  },
-  title: {
-    color: darkModeColors.text,
-    margin: 0,
-    fontSize: "16px",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    "@media (max-width: 768px)": {
-      fontSize: "14px",
-    },
-  },
-  scriptType: {
-    color: darkModeColors.textSecondary,
-    fontSize: "12px",
-    "@media (max-width: 768px)": {
-      fontSize: "11px",
-    },
-  },
-  actions: {
-    display: "flex",
-    gap: "8px",
-    alignItems: "center",
-    "@media (max-width: 768px)": {
-      gap: "4px",
-    },
-  },
-  iconButton: {
-    color: darkModeColors.text,
-    padding: "8px",
-    borderRadius: "8px",
-    "&:hover": {
-      backgroundColor: `${darkModeColors.hover}80`,
-    },
-    "@media (max-width: 768px)": {
-      padding: "6px",
-    },
-  },
-  saveButton: {
-    backgroundColor: darkModeColors.primary,
-    textTransform: "none",
-    fontWeight: 500,
-    borderRadius: "8px",
-    padding: "6px 16px",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-    },
-    "@media (max-width: 768px)": {
-      padding: "4px 12px",
-      minWidth: "unset",
-    },
-  },
-  content: {
-    display: "flex",
-    flex: 1,
-    overflow: "hidden",
-    backgroundColor: darkModeColors.background,
-  },
-  paneHeader: {
-    height: "40px",
-    backgroundColor: darkModeColors.foreground,
-    borderBottom: `1px solid ${darkModeColors.border}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 12px",
-  },
-  paneTitle: {
-    color: darkModeColors.textSecondary,
-    fontSize: "13px",
-    fontWeight: 500,
-  },
-  editorPane: {
-    backgroundColor: darkModeColors.background,
-    overflow: "hidden",
-    position: "relative",
-  },
-  previewPane: {
-    backgroundColor: darkModeColors.background,
-    overflow: "hidden",
-    position: "relative",
-  },
-  preview: {
-    width: "100%",
-    height: "calc(100% - 40px)",
-    border: "none",
-    backgroundColor: "white",
-  },
-  dragHandle: {
-    position: "relative",
-    width: "4px",
-    backgroundColor: darkModeColors.border,
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: darkModeColors.primary,
-    },
-    "@media (max-width: 768px)": {
-      width: "100%",
-      height: "4px",
-    },
-  },
-  dragHandleActive: {
-    backgroundColor: darkModeColors.primary,
-  },
-  searchContainer: {
-    display: "flex",
-    alignItems: "center",
-    position: "relative",
-  },
-  searchInputContainer: {
-    position: "relative",
-    overflow: "hidden",
-    marginRight: "4px",
-  },
-  divider: {
-    width: "1px",
-    height: "24px",
-    backgroundColor: darkModeColors.border,
-    margin: "0 8px",
-  },
-  searchOverlayBackdrop: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
-    zIndex: 1200,
-  },
-  searchOverlayContainer: {
-    position: "fixed",
-    top: 16,
-    left: 0,
-    right: 0,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    zIndex: 1201,
-    padding: "0 16px",
-  },
-  searchOverlay: {
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "12px",
-    padding: "12px",
-    display: "flex",
-    gap: "12px",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.24)",
-    border: `1px solid ${darkModeColors.border}`,
-    maxWidth: "600px",
-    width: "100%",
-    "@media (max-width: 768px)": {
-      flexDirection: "column",
-      gap: "8px",
-    },
-  },
-  searchInputWrapper: {
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-    flex: 1,
-    minWidth: 0,
-  },
-  searchIconWrapper: {
-    position: "absolute",
-    left: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: darkModeColors.textSecondary,
-  },
-  searchInput: {
-    backgroundColor: darkModeColors.inputBackground,
-    border: `1px solid ${darkModeColors.border}`,
-    borderRadius: "8px",
-    padding: "8px 12px 8px 36px",
-    color: darkModeColors.text,
-    fontSize: "14px",
-    width: "100%",
-    outline: "none",
-    transition: "all 0.2s ease",
-    "&:focus": {
-      borderColor: darkModeColors.primary,
-      boxShadow: `0 0 0 2px ${darkModeColors.primary}20`,
-    },
-  },
-  searchCountWrapper: {
-    position: "absolute",
-    right: "12px",
-    backgroundColor: `${darkModeColors.primary}20`,
-    padding: "2px 8px",
-    borderRadius: "12px",
-  },
-  searchCount: {
-    color: darkModeColors.primary,
-    fontSize: "12px",
-    fontWeight: "500",
-    userSelect: "none",
-  },
-  searchActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-    "@media (max-width: 768px)": {
-      justifyContent: "flex-end",
-    },
-  },
-  searchButton: {
-    color: darkModeColors.text,
-    padding: "8px",
-    borderRadius: "8px",
-    minWidth: "36px",
-    height: "36px",
-    "&:hover": {
-      backgroundColor: `${darkModeColors.hover}80`,
-    },
-    "&.Mui-disabled": {
-      color: `${darkModeColors.textSecondary}80`,
-    },
-  },
-  searchDivider: {
-    width: "1px",
-    height: "24px",
-    backgroundColor: darkModeColors.border,
-    margin: "0 4px",
-  },
-  viewToggle: {
-    position: "absolute",
-    right: "12px",
-    top: "48px",
-    display: "flex",
-    gap: "8px",
-    padding: "8px",
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-    zIndex: 10,
-  },
-  savingOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(30, 31, 34, 0.5)",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2000,
-  },
-  savingContent: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "16px",
-    backgroundColor: darkModeColors.foreground,
-    padding: "24px 32px",
-    borderRadius: "12px",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.24)",
-    border: `1px solid ${darkModeColors.border}`,
-  },
-  savingText: {
-    color: darkModeColors.text,
-    fontSize: "16px",
-    fontWeight: 500,
-    margin: 0,
-  },
-  scriptChatContainer: {
-    position: "fixed",
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "12px",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.24)",
-    border: `1px solid ${darkModeColors.border}`,
-    display: "flex",
-    flexDirection: "column",
-    zIndex: 100,
-    overflow: "hidden",
-    minWidth: "300px",
-    minHeight: "300px",
-    resize: "both",
-    "@media (max-width: 768px)": {
-      width: "calc(100% - 24px)",
-      height: "50%",
-      right: "12px",
-      bottom: "12px",
-      resize: "none",
-      maxHeight: "80vh", // Prevent chat from taking up too much space
-      display: "flex", // Ensure proper flex layout
-      flexDirection: "column",
-    },
-  },
-  scriptChatHeader: {
-    padding: "12px 16px",
-    borderBottom: `1px solid ${darkModeColors.border}`,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    position: "relative", // Add this
-  },
-  scriptChatTitle: {
-    color: darkModeColors.text,
-    fontSize: "14px",
-    fontWeight: 600,
-  },
-  scriptChatMessages: {
-    flex: 1,
-    overflowY: "auto",
-    padding: "12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    WebkitOverflowScrolling: "touch", // Add smooth scrolling on iOS
-    msOverflowStyle: "none", // Hide scrollbar in IE/Edge
-    scrollbarWidth: "none", // Hide scrollbar in Firefox
-    "&::-webkit-scrollbar": {
-      // Hide scrollbar in Chrome/Safari
-      display: "none",
-    },
-    "@media (max-width: 768px)": {
-      // Ensure the container doesn't exceed viewport height on mobile
-      maxHeight: "calc(100% - 120px)", // Account for header and input area
-    },
-  },
-  scriptChatInputContainer: {
-    position: "relative",
-    padding: "12px",
-    borderTop: `1px solid ${darkModeColors.border}`,
-    display: "flex",
-    gap: "8px",
-    backgroundColor: darkModeColors.foreground, // Add background color
-    "@media (max-width: 768px)": {
-      position: "sticky", // Keep input visible when keyboard is open
-      bottom: 0,
-      width: "100%",
-      boxSizing: "border-box",
-    },
-  },
-  scriptChatInput: {
-    flex: 1,
-    backgroundColor: darkModeColors.background,
-    border: `1px solid ${darkModeColors.border}`,
-    borderRadius: "6px",
-    padding: "8px 12px",
-    color: darkModeColors.text,
-    fontSize: "14px",
-    lineHeight: "1.5",
-    outline: "none",
-    resize: "none",
-    minHeight: "40px",
-    maxHeight: "147px", // 6 rows * 21px + 16px padding
-    overflowY: "auto",
-    transition: "height 0.2s ease",
-    "&:focus": {
-      borderColor: darkModeColors.primary,
-    },
-  },
-  scriptChatSendButton: {
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    border: "none",
-    borderRadius: "6px",
-    padding: "8px 16px",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-    },
-  },
-  userMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    padding: "8px 12px",
-    borderRadius: "12px 12px 0 12px",
-    maxWidth: "80%",
-    wordBreak: "break-word",
-    cursor: "pointer", // Add this to show it's clickable
-    transition: "filter 0.2s ease", // Add this for smooth blur transition
-  },
-  assistantMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: darkModeColors.secondary,
-    color: darkModeColors.text,
-    padding: "8px 12px",
-    borderRadius: "12px 12px 12px 0",
-    maxWidth: "80%",
-    wordBreak: "break-word",
-    cursor: "pointer", // Add this to show it's clickable
-    transition: "filter 0.2s ease", // Add this for smooth blur transition
-  },
-  copiedNotification: {
-    position: "fixed",
-    bottom: "20px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    backgroundColor: "rgba(0, 128, 0, 0.75)",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "5px",
-    zIndex: 1000,
-  },
-  paneActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-  },
-  copyFullScriptButton: {
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "background-color 0.2s, transform 0.2s",
-    marginTop: "8px",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-      transform: "translateY(-2px)",
-    },
-    "&:active": {
-      transform: "translateY(0)",
-    },
-  },
-  showEditorButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    backgroundColor: "transparent",
-    border: "none",
-    color: darkModeColors.text,
-    padding: "6px 12px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
-    "&:hover": {
-      backgroundColor: `${darkModeColors.hover}80`,
-    },
-  },
-  showEditorText: {
-    color: darkModeColors.text,
-    fontSize: "14px",
-    fontWeight: 500,
-  },
-  codeAttachmentPreview: {
-    position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: "5px",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    boxShadow: "0px 2px 5px rgba(0,0,0,0.5)",
-    maxWidth: "90%",
-    zIndex: 2,
-    cursor: "default",
-    transition: "all 0.3s ease",
-    bottom: "100%",
-    left: 0,
-    marginBottom: "10px",
-  },
-
-  codePreview: {
-    margin: 0,
-    padding: "4px 8px",
-    backgroundColor: darkModeColors.background,
-    borderRadius: "4px",
-    color: darkModeColors.text,
-    fontSize: "12px",
-    fontFamily: "monospace",
-    maxWidth: "100%",
-    overflow: "hidden",
-    whiteSpace: "pre-wrap",
-    wordBreak: "break-all",
-  },
-
-  removeCodeButton: {
-    color: darkModeColors.text,
-    cursor: "pointer",
-    marginLeft: "8px",
-    transition: "color 0.2s ease",
-    "&:hover": {
-      color: "#ff5050",
-    },
-  },
-  scriptChatActionOverlay: {
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "10px",
-    padding: "8px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    width: "auto",
-    minWidth: "120px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
-    border: `1px solid ${darkModeColors.border}`,
-    transition: "transform 0.2s, opacity 0.2s",
-    opacity: 1,
-    pointerEvents: "auto",
-  },
-  scriptChatActionButton: {
-    backgroundColor: "transparent",
-    border: "none",
-    color: darkModeColors.text,
-    padding: "8px 16px",
-    cursor: "pointer",
-    borderRadius: "6px",
-    transition: "background-color 0.2s, transform 0.2s",
-    fontSize: "14px",
-    "&:hover": {
-      backgroundColor: `${darkModeColors.hover}80`,
-      transform: "translateY(-2px)",
-    },
-  },
-  copyCodeButton: {
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 16px",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "background-color 0.2s, transform 0.2s",
-    marginTop: "8px",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-      transform: "translateY(-2px)",
-    },
-    "&:active": {
-      transform: "translateY(0)",
-    },
-  },
-  codeBlockContainer: {
-    position: "relative",
-    padding: "4px",
-    borderRadius: "8px",
-    backgroundColor: "transparent",
-  },
-  copyIconOverlay: {
-    position: "absolute",
-    top: "8px",
-    right: "8px",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: "50%",
-    padding: "4px",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.3)",
-    },
-  },
-  copyIcon: {
-    color: darkModeColors.text,
-    fontSize: "14px",
-  },
-  viewCodeButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    color: darkModeColors.text,
-    border: "none",
-    borderRadius: "6px",
-    padding: "8px 16px",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "background-color 0.2s, transform 0.2s",
-    marginBottom: "8px",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-      transform: "translateY(-1px)",
-    },
-  },
-  messageText: {
-    color: darkModeColors.text,
-    fontSize: "14px",
-    lineHeight: "1.5",
-  },
-  codeViewerOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2000,
-    padding: "20px",
-  },
-  codeViewerContent: {
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "12px",
-    width: "90%",
-    maxWidth: "800px",
-    maxHeight: "80vh",
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden",
-    padding: "20px",
-  },
-  codeViewerBody: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  },
-  codeViewerCopyButton: {
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "background-color 0.2s, transform 0.2s",
-    alignSelf: "flex-end",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-      transform: "translateY(-2px)",
-    },
-    "&:active": {
-      transform: "translateY(0)",
-    },
-  },
-  intentWarningOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2000,
-    padding: "20px",
-  },
-  intentWarningContent: {
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "12px",
-    width: "90%",
-    maxWidth: "400px",
-    padding: "20px",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-  },
-  intentWarningText: {
-    color: darkModeColors.text,
-    fontSize: "16px",
-    marginBottom: "20px",
-  },
-  intentWarningActions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
-  },
-  intentWarningButton: {
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    border: "none",
-    borderRadius: "6px",
-    padding: "8px 16px",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
-    "&:hover": {
-      backgroundColor: darkModeColors.secondary,
-    },
-  },
-  unsavedOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2000,
-  },
-  unsavedContent: {
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "16px",
-    padding: "28px",
-    width: "90%",
-    maxWidth: "420px",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.24)",
-    border: `1px solid ${darkModeColors.border}`,
-  },
-  unsavedTitle: {
-    color: darkModeColors.text,
-    margin: "0 0 12px 0",
-    fontSize: "24px",
-    fontWeight: "600",
-    letterSpacing: "-0.02em",
-  },
-  unsavedText: {
-    color: darkModeColors.textSecondary,
-    margin: "0 0 28px 0",
-    fontSize: "15px",
-    lineHeight: "1.5",
-    fontWeight: "400",
-  },
-  unsavedActions: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "16px",
-  },
-  unsavedPrimaryActions: {
-    display: "flex",
-    gap: "12px",
-  },
-  unsavedSecondaryButton: {
-    padding: "10px 16px",
-    borderRadius: "8px",
-    border: "none",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    backgroundColor: darkModeColors.hover,
-    color: darkModeColors.text,
-    transition: "all 0.2s ease",
-  },
-  unsavedDangerButton: {
-    padding: "10px 16px",
-    borderRadius: "8px",
-    border: "none",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    backgroundColor: "transparent",
-    color: darkModeColors.danger,
-    transition: "all 0.2s ease",
-  },
-  unsavedPrimaryButton: {
-    padding: "10px 20px",
-    borderRadius: "8px",
-    border: "none",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    backgroundColor: darkModeColors.primary,
-    color: darkModeColors.text,
-    transition: "all 0.2s ease",
-  },
-  loadingOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(30, 31, 34, 0.5)",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2000,
-  },
-  messageTimestamp: {
-    fontSize: "10px",
-    color: "rgba(255, 255, 255, 0.5)",
-    marginTop: "4px",
-    alignSelf: "flex-end",
-  },
-  scriptChatSettings: {
-    position: "absolute",
-    top: "100%",
-    right: 0,
-    backgroundColor: darkModeColors.foreground,
-    borderRadius: "0 0 12px 12px",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
-    border: `1px solid ${darkModeColors.border}`,
-    borderTop: "none",
-    width: "300px",
-    zIndex: 10,
-    overflow: "hidden",
-    transition: "transform 0.2s ease, opacity 0.2s ease",
-    transform: "translateY(0)",
-    opacity: 1,
-  },
-};
-
-export default FullScreenEditor;
+}

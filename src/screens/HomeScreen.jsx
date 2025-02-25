@@ -494,15 +494,16 @@ export default function HomeScreen() {
 
   return (
     <div className="App" onClick={handleCloseMediaOptions}>
-      <header className="App-header">
+      <header className="app-header">
         <motion.div
-          className="icon-button header-feedback-button"
+          className="header-feedback-button"
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.1 }}
           onClick={openFeedbackModal}
         >
           <MdFeedback className="icon" />
         </motion.div>
+
         {selectedScript ? (
           <MiniFocusOverlay
             scriptName={selectedScript.script}
@@ -512,7 +513,7 @@ export default function HomeScreen() {
           />
         ) : (
           <motion.div
-            className="title-container"
+            className="app-title-container"
             onClick={toggleStatusBar}
             whileHover={{
               scale: 1.02,
@@ -527,8 +528,9 @@ export default function HomeScreen() {
             </motion.div>
           </motion.div>
         )}
+
         <motion.div
-          className="icon-button settings-button"
+          className="settings-button"
           whileTap={{ scale: 0.95 }}
           onClick={openSettingsModal}
         >

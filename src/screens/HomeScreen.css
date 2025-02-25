@@ -1,19 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-:root {
-  --primary-color: #7289da;
-  --background-color: #36393f;
-  --text-color: #dcddde;
-  --header-height: 60px;
-  --footer-height: 70px;
-  --border-radius: 12px;
-  --scrollbar-width: 8px;
-  --scrollbar-track-color: rgba(0, 0, 0, 0.1);
-  --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);
-  --scrollbar-thumb-hover-color: rgba(114, 137, 218, 0.8);
-  --vh: 1vh;
-  /* This will be updated via JavaScript */
-}
+@import "../styles/variables.css";
+@import "../styles/components.css";
 
 body {
   margin: 0;
@@ -31,8 +18,8 @@ body {
 }
 
 body:not(.login-page) {
-  background-color: #2f3136;
-  color: var(--text-color);
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -46,7 +33,7 @@ body:not(.login-page) {
   /* Fallback */
   height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
-  background-color: var(--background-color);
+  background-color: var(--background-primary);
   overflow: hidden;
   position: fixed;
   /* Add fixed positioning */
@@ -57,89 +44,61 @@ body:not(.login-page) {
   /* Allow vertical scrolling and pinch zoom only */
 }
 
-.App-header {
-  flex-shrink: 0;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background-color: rgba(32, 34, 37, 0.9);
-  backdrop-filter: blur(10px);
-  z-index: 10;
+/* Header styles - using app-header from components.css */
+header.app-header {
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  align-items: center;
 }
 
+/* Use the app-icon-button class from components.css instead */
 .microphone-button,
 .settings-button,
 .header-feedback-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  padding: 0;
-  border: none;
-  background-image: none;
+  composes: app-icon-button;
 }
 
-.microphone-button:hover,
-.settings-button:hover,
-.header-feedback-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+/* Add flex properties to the buttons */
+.header-feedback-button,
+.settings-button {
+  flex: 0 0 auto; /* Don't allow flex to resize these */
+  min-width: 40px; /* Ensure consistent width */
 }
 
+.header-feedback-button {
+  margin-right: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.settings-button {
+  margin-left: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Use the app-icon class from components.css instead */
 .icon {
-  font-size: 20px;
-  color: var(--text-color);
-  width: 20px;
-  height: 20px;
-  background: none;
+  composes: app-icon;
 }
 
 .icon.active {
-  color: #43b581;
+  color: var(--status-positive);
   background: none;
 }
 
 .icon.inactive {
-  color: #f04747;
+  color: var(--status-danger);
   background: none;
 }
 
-.title-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  margin: 0 auto;
-  width: fit-content;
-  background-color: transparent;
-}
-
-.title-container:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px);
-}
-
-.title-container:active {
-  transform: translateY(1px);
-}
+/* Title container is now using app-title-container directly */
+/* Removed duplicate title-container class */
 
 .ditto-icon {
   width: 30px;
@@ -154,7 +113,7 @@ body:not(.login-page) {
   font-size: 24px;
   font-weight: 600;
   margin: 0;
-  background: linear-gradient(90deg, #7289da 0%, #5b6eae 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, #5b6eae 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -165,7 +124,7 @@ body:not(.login-page) {
   overflow-y: auto;
   padding: 10px 20px;
   scrollbar-width: thin;
-  scrollbar-color: var(--primary-color) transparent;
+  scrollbar-color: var(--primary) transparent;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -178,7 +137,7 @@ body:not(.login-page) {
 
 .App-footer {
   /* flex-shrink: 0; */
-  background-color: rgba(32, 34, 37, 0.9);
+  background-color: var(--header-background);
   backdrop-filter: blur(10px);
   /* border-top-left-radius: var(--border-radius); */
   /* border-top-right-radius: var(--border-radius); */
@@ -244,12 +203,20 @@ body:not(.login-page) {
 
 /* Mobile-specific adjustments */
 @media screen and (max-width: 768px) {
-  .App-header {
+  header.app-header {
     padding: 0 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
   .App-body {
     padding: 10px;
+    flex: 1;
+    height: auto;
+    /* Allow content to determine height */
+    min-height: 0;
+    /* Enable proper flex shrinking */
   }
 
   .chat-card {
@@ -260,20 +227,6 @@ body:not(.login-page) {
     /* Use dynamic viewport height */
     min-height: -webkit-fill-available;
     height: calc(var(--vh, 1vh) * 100);
-  }
-
-  .App-body {
-    flex: 1;
-    height: auto;
-    /* Allow content to determine height */
-    min-height: 0;
-    /* Enable proper flex shrinking */
-  }
-
-  .App-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
   }
 
   .App-footer {
