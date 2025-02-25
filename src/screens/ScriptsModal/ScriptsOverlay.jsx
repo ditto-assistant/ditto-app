@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MdAdd, MdSort } from "react-icons/md";
 import { FaTrash, FaUndo, FaCog } from "react-icons/fa";
 // import { downloadOpenscadScript } from "../control/agentTools";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ScriptsOverlay.css";
 import CardMenu from "@/components/ui/CardMenu";
-import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
 import SearchBar from "./SearchBar";
 import AddScriptOverlay from "./AddScriptOverlay";
 import OpenSCADViewer from "./OpenSCADViewer";
-import RevertConfirmationOverlay from "./RevertConfirmationOverlay";
 import { useScripts } from "@/hooks/useScripts.tsx";
 import { useModal } from "@/hooks/useModal";
 import VersionsOverlay from "./VersionsOverlay";
 import Modal from "@/components/ui/modals/Modal";
+import { ConfirmationDialog } from "@/components/ui/dialogs/ConfirmationDialog";
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return "";
@@ -63,7 +62,7 @@ export default function ScriptsOverlay() {
     show: false,
     script: null,
     category: null,
-    isDeleteAll: false,
+    deleteAllVersions: false,
   });
   const [versionOverlay, setVersionOverlay] = useState(null);
   const [openScadViewer, setOpenScadViewer] = useState(null);
@@ -72,6 +71,7 @@ export default function ScriptsOverlay() {
     show: false,
     script: null,
     category: null,
+    version: null,
   });
 
   const getBaseName = (name) => {
@@ -245,7 +245,12 @@ export default function ScriptsOverlay() {
   };
 
   const handleRevertScript = async (category, currentScript) => {
-    setRevertConfirmation({ show: false, script: null, category: null });
+    setRevertConfirmation({
+      show: false,
+      script: null,
+      category: null,
+      version: null,
+    });
 
     try {
       // Delete the current version (which will become the new version)
@@ -568,6 +573,7 @@ export default function ScriptsOverlay() {
                         show: true,
                         script: currentScript,
                         category: category,
+                        version: version,
                       });
                       setActiveCard(null);
                       setMenuPosition(null);
@@ -590,7 +596,7 @@ export default function ScriptsOverlay() {
                     show: true,
                     script: currentScript,
                     category: category,
-                    isDeleteAll: true,
+                    deleteAllVersions: true,
                   });
                   setActiveCard(null);
                   setMenuPosition(null);
@@ -817,23 +823,32 @@ export default function ScriptsOverlay() {
       </AnimatePresence>
 
       {deleteConfirmation.show && (
-        <DeleteConfirmationOverlay
+        <ConfirmationDialog
           isOpen={deleteConfirmation.show}
           onClose={() =>
             setDeleteConfirmation({
               show: false,
               script: null,
-              category: null,
+              deleteAllVersions: false,
             })
           }
           onConfirm={() =>
             handleDeleteScript(
               deleteConfirmation.category,
-              deleteConfirmation.script
+              deleteConfirmation.script,
+              deleteConfirmation.deleteAllVersions
             )
           }
-          scriptName={deleteConfirmation.script?.name}
-          isDeleteAll={deleteConfirmation.isDeleteAll}
+          title="Confirm Delete"
+          message={
+            deleteConfirmation.deleteAllVersions
+              ? `Are you sure you want to delete "${deleteConfirmation.script?.name}" and all its versions? This action cannot be undone.`
+              : `Are you sure you want to delete "${deleteConfirmation.script?.name}"? This action cannot be undone.`
+          }
+          confirmLabel={
+            deleteConfirmation.deleteAllVersions ? "Delete All" : "Delete"
+          }
+          variant="danger"
         />
       )}
 
@@ -845,14 +860,10 @@ export default function ScriptsOverlay() {
       )}
 
       {revertConfirmation.show && (
-        <RevertConfirmationOverlay
+        <ConfirmationDialog
           isOpen={revertConfirmation.show}
           onClose={() =>
-            setRevertConfirmation({
-              show: false,
-              script: null,
-              category: null,
-            })
+            setRevertConfirmation({ show: false, script: null, version: null })
           }
           onConfirm={() =>
             handleRevertScript(
@@ -860,29 +871,29 @@ export default function ScriptsOverlay() {
               revertConfirmation.script
             )
           }
-          scriptName={
-            getBaseNameAndVersion(revertConfirmation.script?.name || "")
-              .baseName
+          title="Confirm Revert"
+          message={
+            <span>
+              Are you sure you want to revert to &quot;
+              {revertConfirmation.script?.name}&quot;
+              <span
+                style={{
+                  backgroundColor: "#5865F2",
+                  color: "#FFFFFF",
+                  borderRadius: "4px",
+                  padding: "2px 6px",
+                  fontSize: "12px",
+                  display: "inline-block",
+                  margin: "0 4px",
+                }}
+              >
+                v{revertConfirmation.version}
+              </span>
+              ?
+            </span>
           }
-          version={(() => {
-            if (!revertConfirmation.script) return "";
-            const baseScriptName = getBaseNameAndVersion(
-              revertConfirmation.script.name
-            ).baseName;
-            const relatedScripts =
-              scripts[revertConfirmation.category]?.filter(
-                (script) =>
-                  getBaseNameAndVersion(script.name).baseName === baseScriptName
-              ) || [];
-            let highestVersion = 0;
-            relatedScripts.forEach((script) => {
-              const { version } = getBaseNameAndVersion(script.name);
-              if (version && parseInt(version) > highestVersion) {
-                highestVersion = parseInt(version);
-              }
-            });
-            return highestVersion.toString();
-          })()}
+          confirmLabel="Revert"
+          variant="primary"
         />
       )}
 

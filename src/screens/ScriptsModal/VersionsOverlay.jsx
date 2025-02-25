@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { FaCodeBranch, FaTrash } from "react-icons/fa";
 import { useState } from "react";
-import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
+import { ConfirmationDialog } from "@/components/ui/dialogs/ConfirmationDialog";
 
 const VersionsOverlay = ({
   isOpen,
@@ -140,12 +140,14 @@ const VersionsOverlay = ({
         </motion.button>
       </motion.div>
 
-      <DeleteConfirmationOverlay
+      <ConfirmationDialog
         isOpen={deleteConfirmation.show}
         onClose={() => setDeleteConfirmation({ show: false, script: null })}
         onConfirm={handleConfirmDelete}
-        scriptName={deleteConfirmation.script?.name}
-        isDeleteAll={false}
+        title="Confirm Delete"
+        message={`Are you sure you want to delete "${deleteConfirmation.script?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
       />
     </motion.div>
   );
