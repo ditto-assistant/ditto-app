@@ -428,8 +428,8 @@ export default function ModelPreferencesModal({
               {section === "main"
                 ? "Main Agent"
                 : section === "programmer"
-                ? "Programmer"
-                : "Image Generation"}
+                  ? "Programmer"
+                  : "Image Generation"}
             </button>
           ))}
         </div>

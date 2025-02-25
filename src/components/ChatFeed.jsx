@@ -882,8 +882,8 @@ export default function ChatFeed({
               isLastDittoMessage && isGenerating
                 ? "animating"
                 : isLastDittoMessage && !isGenerating
-                ? "spinning"
-                : ""
+                  ? "spinning"
+                  : ""
             }`}
           />
         )}
@@ -923,8 +923,8 @@ export default function ChatFeed({
                       message.toolStatus === "complete"
                         ? "complete"
                         : message.toolStatus === "failed"
-                        ? "failed"
-                        : ""
+                          ? "failed"
+                          : ""
                     }`}
                   >
                     {message.toolStatus}
