@@ -10,11 +10,11 @@ import { deleteUser, getAuth } from "firebase/auth";
 import {
   removeUserFromFirestore,
   deleteAllUserScriptsFromFirestore,
-} from "../control/firebase";
+} from "@/control/firebase";
 import packageJson from "../../package.json";
-import { useBalance } from "../hooks/useBalance";
+import { useBalance } from "@/hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { clearStorage } from "@/utils/deviceId";
 import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";

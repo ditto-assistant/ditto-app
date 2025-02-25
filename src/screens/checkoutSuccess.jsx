@@ -2,9 +2,9 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
-import { useBalance } from "../hooks/useBalance";
+import { useBalance } from "@/hooks/useBalance";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
-import ModelPreferencesSelectors from "../components/ModelPreferencesSelectors";
+import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
