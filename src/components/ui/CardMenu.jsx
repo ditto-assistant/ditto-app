@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useIsMobile } from "../hooks/useIsMobile";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 const CardMenu = ({ children, style, onDelete }) => {
   const { ...restStyle } = style;

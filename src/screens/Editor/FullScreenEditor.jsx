@@ -25,20 +25,20 @@ import {
 } from "react-icons/fa";
 import { Button, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import DOMTreeViewer from "./DOMTreeViewer";
-import { syncLocalScriptsWithFirestore } from "../control/firebase"; // Changed from '../control/agent'
-import { LoadingSpinner } from "./LoadingSpinner";
+import DOMTreeViewer from "../../components/DOMTreeViewer";
+import { syncLocalScriptsWithFirestore } from "../../control/firebase"; // Changed from '../control/agent'
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import FullScreenSpinner from "./LoadingSpinner";
-import updaterAgent from "../control/agentflows/updaterAgentFlow";
-import ModelDropdown from "./ModelDropdown";
-import { useBalance } from "../hooks/useBalance";
-import { useAuth } from "../hooks/useAuth";
+import FullScreenSpinner from "../../components/LoadingSpinner";
+import updaterAgent from "../../control/agentflows/updaterAgentFlow";
+import ModelDropdown from "../../components/ModelDropdown";
+import { useBalance } from "../../hooks/useBalance";
+import { useAuth } from "../../hooks/useAuth";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
-import { useIsMobile } from "../hooks/useIsMobile";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 // Initialize ace for production
 if (import.meta.env.PROD) {

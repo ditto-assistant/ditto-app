@@ -2,8 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaSave } from "react-icons/fa";
 import { IconButton } from "@mui/material";
 import { useState } from "react";
-import { saveScriptToFirestore } from "../control/firebase";
-import { useAuth } from "../hooks/useAuth";
+import { saveScriptToFirestore } from "../../control/firebase";
+import { useAuth } from "../../hooks/useAuth";
 const darkModeColors = {
   background: "#1E1F22",
   foreground: "#2B2D31",

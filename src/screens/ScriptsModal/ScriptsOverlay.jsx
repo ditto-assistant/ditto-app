@@ -4,16 +4,16 @@ import { FaTrash, FaUndo, FaCog } from "react-icons/fa";
 // import { downloadOpenscadScript } from "../control/agentTools";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ScriptsOverlay.css";
-import CardMenu from "./CardMenu";
+import CardMenu from "../../components/ui/CardMenu";
 import DeleteConfirmationOverlay from "./DeleteConfirmationOverlay";
 import SearchBar from "./SearchBar";
 import AddScriptOverlay from "./AddScriptOverlay";
 import OpenSCADViewer from "./OpenSCADViewer";
 import RevertConfirmationOverlay from "./RevertConfirmationOverlay";
-import { useScripts } from "../hooks/useScripts.tsx";
-import { useModal } from "../hooks/useModal";
+import { useScripts } from "../../hooks/useScripts.tsx";
+import { useModal } from "../../hooks/useModal";
 import VersionsOverlay from "./VersionsOverlay";
-import Modal from "./ui/modals/Modal";
+import Modal from "../../components/ui/modals/Modal";
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return "";

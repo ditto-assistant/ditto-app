@@ -8,7 +8,7 @@ import {
 } from "react-router";
 import { Toaster } from "react-hot-toast";
 import FullScreenSpinner from "./components/LoadingSpinner";
-import AuthenticatedRoute from "./components/AuthenticatedRoute";
+import AuthenticatedRoute from "./hooks/AuthenticatedRoute";
 import { AuthProvider } from "./hooks/useAuth";
 import { BalanceProvider } from "./hooks/useBalance";
 import { MemoryCountProvider } from "./hooks/useMemoryCount";
@@ -27,7 +27,9 @@ const HomeScreen = lazy(() => import("./screens/HomeScreen"));
 const Settings = lazy(() => import("./screens/settings"));
 const Checkout = lazy(() => import("./screens/checkout"));
 const CheckoutSuccess = lazy(() => import("./screens/checkoutSuccess"));
-const ScriptsOverlay = lazy(() => import("./components/ScriptsOverlay"));
+const ScriptsOverlay = lazy(
+  () => import("./screens/ScriptsModal/ScriptsOverlay")
+);
 const DittoCanvasModal = lazy(() => import("./components/DittoCanvasModal"));
 const queryClient = new QueryClient();
 
