@@ -1,12 +1,10 @@
 import { useState } from "react";
 import {
-  Divider,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button as MuiButton,
 } from "@mui/material";
 import { deleteUser, getAuth } from "firebase/auth";
 import {
@@ -24,23 +22,7 @@ import { A } from "@/components/ui/links/Anchor";
 import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
 import "./settings.css";
-
-// Updated balance data structure based on the actual API response
-interface BalanceData {
-  hasPremium: boolean;
-  balanceRaw: number;
-  balance: string;
-  usd: string;
-  images: string;
-  imagesRaw: number;
-  searches: string;
-  searchesRaw: number;
-  dropAmountRaw?: number;
-  dropAmount?: string;
-  totalAirdroppedRaw?: number;
-  totalAirdropped?: string;
-  lastAirdropAt?: Date;
-}
+import toast from "react-hot-toast";
 
 export default function Settings() {
   const balance = useBalance();
@@ -96,13 +78,17 @@ export default function Settings() {
       await deleteAllUserScriptsFromFirestore(currentUser.uid);
       clearStorage();
       closeModal();
-    } catch (error: any) {
-      console.error("Error deleting account: ", error);
-      if (error.code === "auth/requires-recent-login") {
-        setDeleteDialogOpen(false);
-        setReAuthDialogOpen(true);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error deleting account: ", error);
+        if (error.message === "auth/requires-recent-login") {
+          setDeleteDialogOpen(false);
+          setReAuthDialogOpen(true);
+        } else {
+          toast.error(`Error deleting account: ${error.message}`);
+        }
       } else {
-        alert(`Error deleting account: ${error.message}`);
+        console.error("Error deleting account: ", error);
       }
     }
   };
@@ -123,22 +109,15 @@ export default function Settings() {
           <>
             <p className="balance-item">
               Ditto Tokens:{" "}
-              <span className="highlight-text">
-                {(balance.data as BalanceData)?.balance}
-              </span>
+              <span className="highlight-text">{balance.data?.balance}</span>
             </p>
             <p className="balance-item">
               Images:{" "}
-              <span className="highlight-text">
-                {(balance.data as BalanceData)?.images}
-              </span>
+              <span className="highlight-text">{balance.data?.images}</span>
             </p>
             <p className="balance-item">
               Searches:{" "}
-              <span className="highlight-text">
-                {" "}
-                {(balance.data as BalanceData)?.searches}{" "}
-              </span>
+              <span className="highlight-text">{balance.data?.searches}</span>
             </p>
           </>
         ) : (

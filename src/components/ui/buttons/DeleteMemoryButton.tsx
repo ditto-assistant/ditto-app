@@ -77,7 +77,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
         if (e.target === dialog) handleCancel();
       });
     });
-  }, [onSuccess]);
+  }, [onSuccess, user?.uid]);
 
   return (
     <motion.div
