@@ -20,6 +20,7 @@ import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useScripts } from "@/hooks/useScripts.tsx";
+import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {

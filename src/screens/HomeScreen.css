@@ -145,6 +145,9 @@ body:not(.login-page) {
   width: 30px;
   height: 30px;
   margin-right: 10px;
+  max-width: 30px;
+  max-height: 30px;
+  object-fit: contain;
 }
 
 .App-title {
