@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FiDownload } from "react-icons/fi";
 import { useImageViewer } from "@/hooks/useImageViewer";
-import Modal from "./ui/modals/Modal";
+import Modal from "@/components/ui/modals/Modal";
 import "./ImageViewer.css";
 
 export default function ImageViewer() {

@@ -1,16 +1,16 @@
 import { MdBugReport, MdLightbulb } from "react-icons/md";
 import { useActionState, useCallback, useEffect } from "react";
 import { useState, useRef } from "react";
-import { BASE_URL } from "../firebaseConfig";
-import { getDeviceID, APP_VERSION } from "../utils/deviceId";
-import { useAuth, useAuthToken } from "../hooks/useAuth";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { BASE_URL } from "@/firebaseConfig";
+import { getDeviceID, APP_VERSION } from "@/utils/deviceId";
+import { useAuth, useAuthToken } from "@/hooks/useAuth";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toast } from "react-hot-toast";
-import { SubmitButton } from "./ui/buttons/SubmitButton";
-import SocialLinks from "./ui/links/SocialLinks";
+import { SubmitButton } from "@/components/ui/buttons/SubmitButton";
+import SocialLinks from "@/components/ui/links/SocialLinks";
 import "./FeedbackModal.css";
 import { useModal } from "@/hooks/useModal";
-import Modal from "./ui/modals/Modal";
+import Modal from "@/components/ui/modals/Modal";
 import { Result } from "@/types/common";
 
 type FeedbackType = "bug" | "feature-request";

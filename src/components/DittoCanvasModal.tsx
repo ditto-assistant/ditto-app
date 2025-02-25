@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { IconButton } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { useIsMobile } from "../hooks/useIsMobile";
-import Modal from "./ui/modals/Modal";
-import { useModal } from "../hooks/useModal";
-import { ScriptObject } from "../hooks/useScripts.tsx";
-import { useScripts } from "../hooks/useScripts.tsx";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import Modal from "@/components/ui/modals/Modal";
+import { useModal } from "@/hooks/useModal";
+import { ScriptObject, useScripts } from "@/hooks/useScripts";
 import "./DittoCanvasModal.css";
 
 export default function DittoCanvasModal() {

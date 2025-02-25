@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import {
@@ -12,10 +12,10 @@ import {
   saveUserToFirestore,
   getUserObjectFromFirestore,
   loadConversationHistoryFromFirestore,
-} from "../control/firebase";
-import { auth } from "../control/firebase";
+  auth,
+} from "@/control/firebase";
 import "./Login.css";
-import TermsOfService from "../components/TermsOfService";
+import TermsOfService from "@/components/TermsOfService";
 
 const PasswordInput = ({
   value,
@@ -169,8 +169,9 @@ const Login = () => {
       localStorage.setItem("lastName", user.displayName?.split(" ")[1]);
 
       // Get conversation history
-      const conversationHistory =
-        await loadConversationHistoryFromFirestore(userID);
+      const conversationHistory = await loadConversationHistoryFromFirestore(
+        userID
+      );
       if (conversationHistory) {
         localStorage.setItem(
           "prompts",
