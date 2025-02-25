@@ -12,7 +12,7 @@ import { useScripts } from "@/hooks/useScripts.tsx";
 import { useModal } from "@/hooks/useModal";
 import VersionsOverlay from "./VersionsOverlay";
 import Modal from "@/components/ui/modals/Modal";
-import { ConfirmationDialog } from "@/components/ui/dialogs/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return "";
@@ -31,6 +31,7 @@ const formatTimestamp = (timestamp) => {
 
 export default function ScriptsOverlay() {
   const { createCloseHandler, createOpenHandler } = useModal();
+  const { showConfirmationDialog } = useConfirmationDialog();
   const closeOverlay = createCloseHandler("scripts");
 
   // Use the scripts context hook instead of useScriptsManager
@@ -59,7 +60,6 @@ export default function ScriptsOverlay() {
   const [menuPosition, setMenuPosition] = useState(null);
   const [renameScriptId, setRenameScriptId] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({
-    show: false,
     script: null,
     category: null,
     deleteAllVersions: false,
@@ -103,12 +103,54 @@ export default function ScriptsOverlay() {
     window.dispatchEvent(new Event("scriptSelected"));
   };
 
+  const openDeleteConfirmation = (script, category, deleteAllVersions) => {
+    const content = deleteAllVersions
+      ? `Are you sure you want to delete "${script?.name}" and all its versions? This action cannot be undone.`
+      : `Are you sure you want to delete "${script?.name}"? This action cannot be undone.`;
+
+    showConfirmationDialog({
+      title: "Confirm Delete",
+      content,
+      confirmLabel: deleteAllVersions ? "Delete All" : "Delete",
+      variant: "danger",
+      onConfirm: () => handleDeleteScript(category, script, deleteAllVersions),
+    });
+  };
+
+  const openRevertConfirmation = (script, category, version) => {
+    showConfirmationDialog({
+      title: "Confirm Revert",
+      content: (
+        <span>
+          Are you sure you want to revert to &quot;
+          {script?.name}&quot;
+          <span
+            style={{
+              backgroundColor: "#5865F2",
+              color: "#FFFFFF",
+              borderRadius: "4px",
+              padding: "2px 6px",
+              fontSize: "12px",
+              display: "inline-block",
+              margin: "0 4px",
+            }}
+          >
+            v{version}
+          </span>
+          ?
+        </span>
+      ),
+      confirmLabel: "Revert",
+      variant: "primary",
+      onConfirm: () => handleRevertScript(category, script),
+    });
+  };
+
   const handleDeleteScript = async (
     category,
     currentScript,
     deleteAllVersions = true
   ) => {
-    setDeleteConfirmation({ show: false, script: null, category: null });
     const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
 
     try {
@@ -245,13 +287,6 @@ export default function ScriptsOverlay() {
   };
 
   const handleRevertScript = async (category, currentScript) => {
-    setRevertConfirmation({
-      show: false,
-      script: null,
-      category: null,
-      version: null,
-    });
-
     try {
       // Delete the current version (which will become the new version)
       await revertScript(category, currentScript.name);
@@ -569,12 +604,7 @@ export default function ScriptsOverlay() {
                         e.preventDefault();
                         e.stopPropagation();
                       }
-                      setRevertConfirmation({
-                        show: true,
-                        script: currentScript,
-                        category: category,
-                        version: version,
-                      });
+                      openRevertConfirmation(currentScript, category, version);
                       setActiveCard(null);
                       setMenuPosition(null);
                     }}
@@ -592,12 +622,7 @@ export default function ScriptsOverlay() {
                     e.preventDefault();
                     e.stopPropagation();
                   }
-                  setDeleteConfirmation({
-                    show: true,
-                    script: currentScript,
-                    category: category,
-                    deleteAllVersions: true,
-                  });
+                  openDeleteConfirmation(currentScript, category, true);
                   setActiveCard(null);
                   setMenuPosition(null);
                 }}
@@ -822,78 +847,10 @@ export default function ScriptsOverlay() {
         )}
       </AnimatePresence>
 
-      {deleteConfirmation.show && (
-        <ConfirmationDialog
-          isOpen={deleteConfirmation.show}
-          onClose={() =>
-            setDeleteConfirmation({
-              show: false,
-              script: null,
-              deleteAllVersions: false,
-            })
-          }
-          onConfirm={() =>
-            handleDeleteScript(
-              deleteConfirmation.category,
-              deleteConfirmation.script,
-              deleteConfirmation.deleteAllVersions
-            )
-          }
-          title="Confirm Delete"
-          message={
-            deleteConfirmation.deleteAllVersions
-              ? `Are you sure you want to delete "${deleteConfirmation.script?.name}" and all its versions? This action cannot be undone.`
-              : `Are you sure you want to delete "${deleteConfirmation.script?.name}"? This action cannot be undone.`
-          }
-          confirmLabel={
-            deleteConfirmation.deleteAllVersions ? "Delete All" : "Delete"
-          }
-          variant="danger"
-        />
-      )}
-
       {openScadViewer && (
         <OpenSCADViewer
           script={openScadViewer}
           onClose={() => setOpenScadViewer(null)}
-        />
-      )}
-
-      {revertConfirmation.show && (
-        <ConfirmationDialog
-          isOpen={revertConfirmation.show}
-          onClose={() =>
-            setRevertConfirmation({ show: false, script: null, version: null })
-          }
-          onConfirm={() =>
-            handleRevertScript(
-              revertConfirmation.category,
-              revertConfirmation.script
-            )
-          }
-          title="Confirm Revert"
-          message={
-            <span>
-              Are you sure you want to revert to &quot;
-              {revertConfirmation.script?.name}&quot;
-              <span
-                style={{
-                  backgroundColor: "#5865F2",
-                  color: "#FFFFFF",
-                  borderRadius: "4px",
-                  padding: "2px 6px",
-                  fontSize: "12px",
-                  display: "inline-block",
-                  margin: "0 4px",
-                }}
-              >
-                v{revertConfirmation.version}
-              </span>
-              ?
-            </span>
-          }
-          confirmLabel="Revert"
-          variant="primary"
         />
       )}
 

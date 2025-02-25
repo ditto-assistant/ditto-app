@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { FaCodeBranch, FaTrash } from "react-icons/fa";
-import { useState } from "react";
-import { ConfirmationDialog } from "@/components/ui/dialogs/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
 const VersionsOverlay = ({
   isOpen,
@@ -11,10 +10,7 @@ const VersionsOverlay = ({
   versions,
   category,
 }) => {
-  const [deleteConfirmation, setDeleteConfirmation] = useState({
-    show: false,
-    script: null,
-  });
+  const { showConfirmationDialog } = useConfirmationDialog();
 
   if (!isOpen) return null;
 
@@ -35,24 +31,21 @@ const VersionsOverlay = ({
   });
 
   const handleModalClick = (e) => {
-    if (deleteConfirmation.show) return;
     e.preventDefault();
     e.stopPropagation();
   };
 
   const handleDelete = (script) => {
-    setDeleteConfirmation({ show: true, script });
-  };
-
-  const handleConfirmDelete = () => {
-    if (deleteConfirmation.script) {
-      onDelete(category, deleteConfirmation.script, false);
-      setDeleteConfirmation({ show: false, script: null });
-    }
+    showConfirmationDialog({
+      title: "Confirm Delete",
+      content: `Are you sure you want to delete "${script.name}"? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      variant: "danger",
+      onConfirm: () => onDelete(category, script, false),
+    });
   };
 
   const handleOverlayClick = () => {
-    if (deleteConfirmation.show) return;
     onClose();
   };
 
@@ -139,16 +132,6 @@ const VersionsOverlay = ({
           Cancel
         </motion.button>
       </motion.div>
-
-      <ConfirmationDialog
-        isOpen={deleteConfirmation.show}
-        onClose={() => setDeleteConfirmation({ show: false, script: null })}
-        onConfirm={handleConfirmDelete}
-        title="Confirm Delete"
-        message={`Are you sure you want to delete "${deleteConfirmation.script?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        variant="danger"
-      />
     </motion.div>
   );
 };

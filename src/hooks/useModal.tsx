@@ -15,7 +15,8 @@ export type ModalId =
   | "imageViewer"
   | "settings"
   | "scripts"
-  | "dittoCanvas";
+  | "dittoCanvas"
+  | "confirmationDialog";
 
 type ModalRegistration = {
   component: ReactNode;

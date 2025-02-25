@@ -13,7 +13,7 @@ import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
 import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
-import { ConfirmationDialog } from "@/components/ui/dialogs/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
 
@@ -21,9 +21,8 @@ export default function Settings() {
   const balance = useBalance();
   const { signOut, user } = useAuth();
   const auth = getAuth();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [reAuthDialogOpen, setReAuthDialogOpen] = useState<boolean>(false);
   const { createCloseHandler } = useModal();
+  const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
 
   const handleLogout = () => {
@@ -45,6 +44,17 @@ export default function Settings() {
       return;
     }
 
+    const openReauthenticationDialog = () =>
+      showConfirmationDialog({
+        title: "Re-authentication Required",
+        content:
+          "For security reasons, you need to sign in again before deleting your account. Would you like to sign out now?",
+        confirmLabel: "Sign Out",
+        cancelLabel: "Cancel",
+        onConfirm: handleLogout,
+        variant: "primary",
+      });
+
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -60,8 +70,7 @@ export default function Settings() {
       const fiveMinutes = 5 * 60 * 1000;
 
       if (now - lastSignInTime > fiveMinutes) {
-        setDeleteDialogOpen(false);
-        setReAuthDialogOpen(true);
+        openReauthenticationDialog();
         return;
       }
 
@@ -75,8 +84,7 @@ export default function Settings() {
       if (error instanceof Error) {
         console.error("Error deleting account: ", error);
         if (error.message === "auth/requires-recent-login") {
-          setDeleteDialogOpen(false);
-          setReAuthDialogOpen(true);
+          openReauthenticationDialog();
         } else {
           toast.error(`Error deleting account: ${error.message}`);
         }
@@ -87,11 +95,15 @@ export default function Settings() {
   };
 
   const openDeleteDialog = () => {
-    setDeleteDialogOpen(true);
-  };
-
-  const closeDeleteDialog = () => {
-    setDeleteDialogOpen(false);
+    showConfirmationDialog({
+      title: "Confirm Account Deletion",
+      content:
+        "Are you sure you want to delete your account? This action cannot be undone.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      onConfirm: handleDeleteAccount,
+      variant: "danger",
+    });
   };
 
   // Create the tab content for the main settings
@@ -181,31 +193,6 @@ export default function Settings() {
           <small>Version: {packageJson.version}</small>
         </div>
       </footer>
-
-      <ConfirmationDialog
-        isOpen={reAuthDialogOpen}
-        onClose={() => setReAuthDialogOpen(false)}
-        title="Re-authentication Required"
-        message="For security reasons, you need to sign in again before deleting your account. Would you like to sign out now?"
-        confirmLabel="Sign Out"
-        cancelLabel="Cancel"
-        onConfirm={() => {
-          setReAuthDialogOpen(false);
-          handleLogout();
-        }}
-        variant="primary"
-      />
-
-      <ConfirmationDialog
-        isOpen={deleteDialogOpen}
-        onClose={closeDeleteDialog}
-        title="Confirm Account Deletion"
-        message="Are you sure you want to delete your account? This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        onConfirm={handleDeleteAccount}
-        variant="danger"
-      />
     </Modal>
   );
 }

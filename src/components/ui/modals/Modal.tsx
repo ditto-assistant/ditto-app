@@ -105,7 +105,6 @@ export default function Modal({
 
     const handleEnd = () => {
       if (isDragging) {
-        // Update the final position in local state
         const finalPosition = {
           x: position.x + localTransform.x,
           y: position.y + localTransform.y,
@@ -260,16 +259,13 @@ export default function Modal({
         <div className="modal-wrapper">
           <div className="modal body">
             {tabs && tabs.length > 0
-              ? // If tabs are enabled, render active tab content
-                (() => {
+              ? (() => {
                   const activeTab = tabs.find((tab) => tab.id === activeTabId);
                   return activeTab ? activeTab.content : null;
                 })()
-              : // If no tabs, render children inside the body
-                children}
+              : children}
           </div>
 
-          {/* Always render children (like footer) when tabs are enabled */}
           {tabs && tabs.length > 0 && children && (
             <div className="modal-footer">{children}</div>
           )}

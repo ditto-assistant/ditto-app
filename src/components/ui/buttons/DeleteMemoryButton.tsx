@@ -6,7 +6,7 @@ import {
   deleteAllUserImagesFromFirebaseStorageBucket,
 } from "@/control/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { ConfirmationDialog } from "../dialogs/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
 interface DeleteMemoryButtonProps {
   onSuccess?: () => void;
@@ -20,15 +20,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
   fixedWidth,
 }) => {
   const { user } = useAuth();
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-
-  const handleOpenDialog = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-  };
+  const { showConfirmationDialog } = useConfirmationDialog();
 
   const handleDeleteMemory = async () => {
     console.log("Resetting conversation history...");
@@ -50,32 +42,30 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
       })
     );
 
-    handleCloseDialog();
     onSuccess?.();
   };
 
-  return (
-    <>
-      <ModalButton
-        variant="danger"
-        onClick={handleOpenDialog}
-        className={className}
-        icon={<FaTrash />}
-        fixedWidth={fixedWidth}
-      >
-        Delete All Memory
-      </ModalButton>
+  const handleOpenDialog = () => {
+    showConfirmationDialog({
+      title: "Delete All Memory",
+      content:
+        "Are you sure you want to delete all memory? This action cannot be undone.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      onConfirm: handleDeleteMemory,
+      variant: "danger",
+    });
+  };
 
-      <ConfirmationDialog
-        isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        title="Delete All Memory"
-        message="Are you sure you want to delete all memory? This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        onConfirm={handleDeleteMemory}
-        variant="danger"
-      />
-    </>
+  return (
+    <ModalButton
+      variant="danger"
+      onClick={handleOpenDialog}
+      className={className}
+      icon={<FaTrash />}
+      fixedWidth={fixedWidth}
+    >
+      Delete All Memory
+    </ModalButton>
   );
 };
