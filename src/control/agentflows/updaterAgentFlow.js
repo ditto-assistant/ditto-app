@@ -10,7 +10,7 @@ import {
 export default async function updaterAgent(
   prompt,
   scriptContents,
-  programmerModel,
+  programmerModel
 ) {
   try {
     // Step 1: Design tasks using the planner

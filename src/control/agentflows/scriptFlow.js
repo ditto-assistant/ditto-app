@@ -61,7 +61,7 @@ export const handleScriptGeneration = async ({
     scriptResponse = await updaterAgent(
       prompt,
       scriptContents,
-      preferences.programmerModel,
+      preferences.programmerModel
     );
     console.log("%c" + scriptResponse, "color: yellow");
   }
