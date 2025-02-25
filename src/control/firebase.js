@@ -747,10 +747,7 @@ export const deleteAllUserScriptsFromFirestore = async (userID) => {
 export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
   try {
     if (mode === "development") {
-      console.log(
-        "Syncing scripts with Firestore for type: ",
-        scriptType
-      );
+      console.log("Syncing scripts with Firestore for type: ", scriptType);
     }
 
     // Fetch timestamps
@@ -861,10 +858,7 @@ export const getScriptTimestamps = async (userID, scriptType) => {
     });
 
     if (mode === "development") {
-      console.log(
-        `Timestamps fetched for ${scriptType}:`,
-        timestamps
-      );
+      console.log(`Timestamps fetched for ${scriptType}:`, timestamps);
     }
 
     return timestamps;
