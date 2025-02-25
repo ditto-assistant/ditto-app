@@ -293,9 +293,7 @@
 .modal-enter-active {
   opacity: 1;
   transform: scale(1);
-  transition:
-    opacity 300ms,
-    transform 300ms;
+  transition: opacity 300ms, transform 300ms;
 }
 
 .modal-exit {
@@ -306,9 +304,7 @@
 .modal-exit-active {
   opacity: 0;
   transform: scale(0.95);
-  transition:
-    opacity 300ms,
-    transform 300ms;
+  transition: opacity 300ms, transform 300ms;
 }
 
 /* Memory Controls specific styles */
@@ -406,23 +402,6 @@
   font-size: 14px;
   color: #b9bbbe;
   line-height: 1.4;
-}
-
-/* Model preferences specific styles */
-.model-selector-container {
-  position: relative;
-  z-index: 9002;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.model-selector {
-  position: relative;
-  z-index: 9003;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .model-label {
