@@ -20,6 +20,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "./hooks/useModal";
 
+const DittoCanvasModal = lazy(() => import("./components/DittoCanvasModal"));
 const Login = lazy(() => import("./screens/Login"));
 const FeedbackModal = lazy(() => import("./components/FeedbackModal"));
 const ImageViewer = lazy(() => import("./components/ImageViewer"));
@@ -30,7 +31,6 @@ const CheckoutSuccess = lazy(() => import("./screens/CheckoutSuccess"));
 const ScriptsOverlay = lazy(
   () => import("./screens/ScriptsModal/ScriptsOverlay")
 );
-const DittoCanvasModal = lazy(() => import("./components/DittoCanvasModal"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
