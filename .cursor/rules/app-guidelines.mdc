@@ -4,6 +4,7 @@ globs:
 alwaysApply: true
 ---
 - We use .ts and .tsx
+- `bun` is our package manager
 - Our legacy files are .js and we are in the process of migrating to typescript
 - Our codebase has a few large files that we are working on refactoring and simplifying
 - Our backend is written in Go and we are in the process of creating new API endpoints to further simplify the frontend
