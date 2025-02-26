@@ -52,16 +52,16 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
   const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
   const [showTOS, setShowTOS] = useState(false);
-  if (user) {
-    navigate("/");
-  }
 
   useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
     document.body.classList.add("login-page");
     return () => {
       document.body.classList.remove("login-page");
     };
-  }, []);
+  }, [user, navigate]);
 
   const handleSignIn = async () => {
     try {

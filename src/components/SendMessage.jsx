@@ -93,7 +93,7 @@ export default function SendMessage({
           imageURI,
           updateConversation,
           preferences,
-          balance.hasPremium
+          balance.hasPremium ?? false
         );
       } catch (error) {
         console.error("Error sending message:", error);

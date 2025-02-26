@@ -1,3 +1,5 @@
+@import "../../../styles/variables.css";
+
 .modal.container {
   position: fixed;
   background: var(--background-primary);
