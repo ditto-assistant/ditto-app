@@ -209,11 +209,15 @@ header.app-header {
   }
 
   .App {
-    padding-bottom: 80px;
+    /* Remove the fixed padding-bottom that was causing the gap */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
 
   .App-footer {
     padding: 12px;
+    margin-top: auto; /* Push footer to bottom */
   }
 }
 
