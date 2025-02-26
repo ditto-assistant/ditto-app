@@ -63,7 +63,7 @@ export const useMemoryDeletion = (updateConversation) => {
         }
       }
     },
-    [updateConversation, user.uid]
+    [updateConversation, user]
   );
 
   const confirmMemoryDeletion = useCallback(
@@ -102,7 +102,7 @@ export const useMemoryDeletion = (updateConversation) => {
         onConfirm: () => deleteMemory(docId, options),
       });
     },
-    [showConfirmationDialog, deleteMemory, user.uid]
+    [showConfirmationDialog, deleteMemory, user]
   );
 
   return {
