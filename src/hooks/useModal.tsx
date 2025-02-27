@@ -101,7 +101,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
           .map((modal) => modal.zIndex || 0)
       );
 
-      if (currentZIndex > maxZIndex) return state;
+      if (currentZIndex >= maxZIndex) return state;
 
       return {
         ...state,
@@ -162,8 +162,36 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
   );
 
   const createBringToFrontHandler = useCallback(
-    (id: ModalId) => () => dispatch({ type: "BRING_TO_FRONT", id }),
-    []
+    (id: ModalId) => {
+      // Create a debounced version that only fires once per 100ms
+      let lastCallTime = 0;
+      const DEBOUNCE_TIME = 100; // milliseconds
+
+      return () => {
+        const now = Date.now();
+        if (now - lastCallTime < DEBOUNCE_TIME) {
+          return; // Skip if called too soon after last call
+        }
+        lastCallTime = now;
+
+        // Check if modal is already at the front before dispatching
+        const modal = state.modals[id];
+        if (!modal) return;
+
+        const currentZIndex = modal.zIndex || 0;
+        const maxZIndex = Math.max(
+          ...Object.values(state.modals)
+            .filter((m) => m !== modal)
+            .map((m) => m.zIndex || 0)
+        );
+
+        // Only dispatch if we need to change the z-index
+        if (currentZIndex < maxZIndex) {
+          dispatch({ type: "BRING_TO_FRONT", id });
+        }
+      };
+    },
+    [state.modals]
   );
 
   const closeAllModals = useCallback(() => dispatch({ type: "CLOSE_ALL" }), []);

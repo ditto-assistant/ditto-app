@@ -223,10 +223,29 @@ export default function Modal({
           bringToFront();
         }
       }}
-      onTouchStart={bringToFront}
+      onTouchStart={(e) => {
+        const target = e.target as HTMLElement;
+        const isInteractive =
+          target.tagName === "BUTTON" ||
+          target.tagName === "A" ||
+          target.tagName === "INPUT" ||
+          target.closest("button") ||
+          target.closest("a") ||
+          target.closest("input");
+
+        if (!isInteractive) {
+          bringToFront();
+        }
+      }}
     >
       <div className="modal content">
-        <div onMouseDown={handleStartDrag} onTouchStart={handleStartDrag}>
+        <div
+          onMouseDown={handleStartDrag}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleStartDrag(e);
+          }}
+        >
           <ModalHeader
             title={title}
             onClose={closeModal}

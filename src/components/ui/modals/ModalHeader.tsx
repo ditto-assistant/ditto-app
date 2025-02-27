@@ -18,6 +18,13 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
   isFullscreen = false,
   onToggleFullscreen,
 }) => {
+  // Handle touch events separately to prevent iOS Safari issues
+  const handleButtonTouch = (e: React.TouchEvent, callback: () => void) => {
+    e.stopPropagation(); // Prevent event bubbling
+    e.preventDefault(); // Prevent default behavior
+    callback();
+  };
+
   return (
     <div className={`modal-header ${className}`}>
       <motion.h3
@@ -32,6 +39,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
           <motion.button
             className="modal-control fullscreen"
             onClick={onToggleFullscreen}
+            onTouchEnd={(e) => handleButtonTouch(e, onToggleFullscreen)}
             aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -47,6 +55,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
         <motion.button
           className="modal-control close"
           onClick={onClose}
+          onTouchEnd={(e) => handleButtonTouch(e, onClose)}
           aria-label="Close"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
