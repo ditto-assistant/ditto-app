@@ -14,8 +14,6 @@ import ScriptActionsOverlay from "@/components/ScriptActionsOverlay";
 import ChatFeed from "@/components/ChatFeed";
 import StatusBar from "@/components/StatusBar";
 import SendMessage from "@/components/SendMessage";
-import MemoryOverlay from "@/components/MemoryOverlay";
-import ScriptsOverlay from "@/screens/ScriptsModal/ScriptsOverlay";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,13 +40,13 @@ export default function HomeScreen() {
   const [showTOS, setShowTOS] = useState(() => {
     return !localStorage.getItem("hasSeenTOS");
   });
-  const [isMemoryOverlayOpen, setIsMemoryOverlayOpen] = useState(false);
-  const [isScriptsOverlayOpen, setIsScriptsOverlayOpen] = useState(false);
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
   const modal = useModal();
   const openSettingsModal = modal.createOpenHandler("settings");
   const openFeedbackModal = modal.createOpenHandler("feedback");
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
+  const openMemoryOverlay = modal.createOpenHandler("memorySettings");
+  const openScriptsOverlay = modal.createOpenHandler("scripts");
   const {
     selectedScript,
     setSelectedScript,
@@ -579,8 +577,8 @@ export default function HomeScreen() {
               }
             >
               <StatusBar
-                onMemoryClick={() => setIsMemoryOverlayOpen(true)}
-                onScriptsClick={() => setIsScriptsOverlayOpen(true)}
+                onMemoryClick={openMemoryOverlay}
+                onScriptsClick={openScriptsOverlay}
               />
             </Suspense>
           </motion.div>
@@ -703,34 +701,6 @@ export default function HomeScreen() {
             onDeselect={handleDeselectScript}
             onClose={() => setShowScriptActions(false)}
           />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isMemoryOverlayOpen && (
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <MemoryOverlay closeOverlay={() => setIsMemoryOverlayOpen(false)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isScriptsOverlayOpen && (
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <ScriptsOverlay
-              closeOverlay={() => setIsScriptsOverlayOpen(false)}
-            />
-          </motion.div>
         )}
       </AnimatePresence>
 

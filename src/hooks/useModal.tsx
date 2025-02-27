@@ -16,7 +16,8 @@ export type ModalId =
   | "settings"
   | "scripts"
   | "dittoCanvas"
-  | "confirmationDialog";
+  | "confirmationDialog"
+  | "memorySettings";
 
 type ModalRegistration = {
   component: ReactNode;

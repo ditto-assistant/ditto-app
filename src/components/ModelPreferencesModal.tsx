@@ -1,6 +1,10 @@
-import { useState } from "react";
-import { MdClose } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { useState, useEffect, Fragment } from "react";
+import {
+  MdKeyboardArrowRight,
+  MdExpandMore,
+  MdExpandLess,
+  MdFilterAlt,
+} from "react-icons/md";
 import { DEFAULT_MODELS, IMAGE_GENERATION_MODELS } from "../constants";
 import {
   FaBolt,
@@ -19,9 +23,7 @@ import { ModelOption, Model, ModelPreferences, Vendor } from "../types/llm";
 import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
-interface ModelPreferencesModalProps {
-  onClose: () => void;
-}
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface ActiveFilters {
   speed: "slow" | "medium" | "fast" | "insane" | null;
@@ -53,10 +55,8 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
     "linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8F00FF)",
 };
 
-export default function ModelPreferencesModal({
-  onClose,
-}: ModelPreferencesModalProps) {
-  const { preferences, updatePreferences } = useModelPreferences();
+export default function ModelPreferencesModal() {
+  const { preferences, updatePreferences, isLoading } = useModelPreferences();
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
@@ -75,28 +75,97 @@ export default function ModelPreferencesModal({
   const [expandedImageModel, setExpandedImageModel] = useState<Model | null>(
     null
   );
+  const [selectedModels, setSelectedModels] = useState<{
+    mainModel: string;
+    programmerModel: string;
+    imageGeneration: {
+      model: string;
+      size: { wh: string; description: string };
+    };
+  } | null>(null);
+
+  // Use the useIsMobile hook instead of window width check
+  const isMobile = useIsMobile();
+
+  // State for mobile filter section visibility
+  const [isFilterSectionExpanded, setIsFilterSectionExpanded] = useState(false);
+
+  // State for collapsible filter groups - collapsed by default on mobile, expanded on desktop
+  const [expandedFilters, setExpandedFilters] = useState<{
+    speed: boolean;
+    pricing: boolean;
+    features: boolean;
+    vendor: boolean;
+    provider: boolean;
+    dimensions: boolean;
+    quality: boolean;
+  }>({
+    speed: !isMobile,
+    pricing: !isMobile,
+    features: !isMobile,
+    vendor: !isMobile,
+    provider: !isMobile,
+    dimensions: !isMobile,
+    quality: !isMobile,
+  });
+
+  // Update expanded filters when mobile state changes
+  useEffect(() => {
+    if (!isMobile) {
+      setExpandedFilters({
+        speed: true,
+        pricing: true,
+        features: true,
+        vendor: true,
+        provider: true,
+        dimensions: true,
+        quality: true,
+      });
+    } else {
+      setExpandedFilters({
+        speed: false,
+        pricing: false,
+        features: false,
+        vendor: false,
+        provider: false,
+        dimensions: false,
+        quality: false,
+      });
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (preferences) {
+      setSelectedModels({
+        mainModel: preferences.mainModel,
+        programmerModel: preferences.programmerModel,
+        imageGeneration: {
+          model: preferences.imageGeneration.model,
+          size: preferences.imageGeneration.size,
+        },
+      });
+    }
+  }, [preferences]);
 
   const faFireStyle = useMemo(() => ({ color: "#FF0000" }), []);
   const faCrownStyle = useMemo(() => ({ opacity: 0.5 }), []);
   const MemoizedFaImage = useMemo(() => <FaImage />, []);
-  const MemoizedMdClose = useMemo(() => <MdClose className="close-icon" />, []);
   const MemoizedFaCrownFree = useMemo(
     () => <FaCrown style={faCrownStyle} />,
     [faCrownStyle]
   );
   const MemoizedFaCrownPremium = useMemo(() => <FaCrown />, []);
 
-  const handleModalClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
   const handleModelChange = useCallback(
     (key: keyof ModelPreferences, value: any) => {
+      setSelectedModels((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          [key]: value,
+        };
+      });
+
       updatePreferences({ [key]: value });
     },
     [updatePreferences]
@@ -107,6 +176,17 @@ export default function ModelPreferencesModal({
       setActiveFilters((prev) => ({
         ...prev,
         [filterType]: prev[filterType] === value ? null : value,
+      }));
+    },
+    []
+  );
+
+  // Toggle filter group expansion
+  const toggleFilterGroup = useCallback(
+    (filterGroup: keyof typeof expandedFilters) => {
+      setExpandedFilters((prev) => ({
+        ...prev,
+        [filterGroup]: !prev[filterGroup],
       }));
     },
     []
@@ -149,9 +229,29 @@ export default function ModelPreferencesModal({
     }
   }, []);
 
+  // Get the currently selected model details
+  const getSelectedModelDetails = useCallback(
+    (modelType: "mainModel" | "programmerModel" | "imageGeneration") => {
+      if (!selectedModels) return null;
+
+      if (modelType === "imageGeneration") {
+        const selectedModel = IMAGE_GENERATION_MODELS.find(
+          (model) => model.id === selectedModels.imageGeneration.model
+        );
+        return selectedModel;
+      }
+
+      const selectedModel = DEFAULT_MODELS.find(
+        (model) => model.id === selectedModels[modelType]
+      );
+      return selectedModel;
+    },
+    [selectedModels]
+  );
+
   const renderModelCard = useCallback(
     (model: ModelOption) => {
-      if (!preferences) return null;
+      if (!preferences || !selectedModels) return null;
       return (
         <div
           key={model.id}
@@ -163,7 +263,7 @@ export default function ModelPreferencesModal({
           }
           className={`model-card ${
             model.id ===
-            preferences[
+            selectedModels[
               activeSection === "main" ? "mainModel" : "programmerModel"
             ]
               ? "selected"
@@ -235,6 +335,7 @@ export default function ModelPreferencesModal({
       getVendorIcon,
       handleModelChange,
       preferences,
+      selectedModels,
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
@@ -276,12 +377,12 @@ export default function ModelPreferencesModal({
 
   const renderImageModelCard = useCallback(
     (model: ModelOption) => {
-      if (!preferences) return null;
+      if (!preferences || !selectedModels) return null;
       return (
         <div
           key={model.id}
           className={`model-card ${
-            model.id === preferences.imageGeneration.model ? "selected" : ""
+            model.id === selectedModels.imageGeneration.model ? "selected" : ""
           }`}
           onClick={() => {
             setExpandedImageModel(
@@ -344,8 +445,8 @@ export default function ModelPreferencesModal({
                     });
                   }}
                   className={`dimension-button ${
-                    model.id === preferences.imageGeneration.model &&
-                    size.wh === preferences.imageGeneration.size.wh
+                    model.id === selectedModels.imageGeneration.model &&
+                    size.wh === selectedModels.imageGeneration.size.wh
                       ? "selected"
                       : ""
                   }`}
@@ -363,6 +464,7 @@ export default function ModelPreferencesModal({
       getVendorIcon,
       handleModelChange,
       preferences,
+      selectedModels,
       MemoizedFaCrownPremium,
     ]
   );
@@ -403,19 +505,328 @@ export default function ModelPreferencesModal({
     []
   );
 
-  if (!preferences) return null;
+  // Render selected model indicator
+  const renderSelectedModelIndicator = useCallback(() => {
+    if (!selectedModels) return null;
+
+    const modelType =
+      activeSection === "main"
+        ? "mainModel"
+        : activeSection === "programmer"
+          ? "programmerModel"
+          : "imageGeneration";
+
+    const selectedModel = getSelectedModelDetails(modelType);
+    if (!selectedModel) return null;
+
+    return (
+      <div className="selected-model-indicator">
+        <div className="selected-model-title">
+          {activeSection === "main"
+            ? "Selected Main Agent"
+            : activeSection === "programmer"
+              ? "Selected Programmer"
+              : "Selected Image Generator"}
+        </div>
+        <div className="selected-model-name">
+          <span>{selectedModel.name}</span>
+          {selectedModel.vendor && (
+            <span
+              className="vendor-badge"
+              style={{
+                backgroundColor: VENDOR_COLORS[selectedModel.vendor],
+              }}
+            >
+              {getVendorIcon(selectedModel.vendor)}
+            </span>
+          )}
+        </div>
+        <div className="selected-model-badges">
+          {selectedModel.speedLevel && (
+            <span
+              className="badge"
+              style={{
+                background: SPEED_COLORS[selectedModel.speedLevel],
+              }}
+            >
+              {getSpeedIcon(selectedModel.speedLevel)}
+              {selectedModel.speedLevel.charAt(0).toUpperCase() +
+                selectedModel.speedLevel.slice(1)}
+            </span>
+          )}
+          {selectedModel.isFree ? (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: "#43B581",
+              }}
+            >
+              {MemoizedFaCrownFree} Free
+            </span>
+          ) : selectedModel.isPremium ? (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: "#5865F2",
+              }}
+            >
+              {MemoizedFaCrownPremium} Premium
+            </span>
+          ) : null}
+          {selectedModel.supports?.imageAttachments && (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: "#43B581",
+              }}
+            >
+              {MemoizedFaImage} Image
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }, [
+    activeSection,
+    getSelectedModelDetails,
+    getSpeedIcon,
+    getVendorIcon,
+    selectedModels,
+    MemoizedFaCrownFree,
+    MemoizedFaCrownPremium,
+    MemoizedFaImage,
+  ]);
+
+  // Compact version of renderModelCard for mobile
+  const renderCompactModelCard = useCallback(
+    (model: ModelOption) => {
+      if (!preferences || !selectedModels) return null;
+
+      const isSelected =
+        model.id ===
+        selectedModels[
+          activeSection === "main" ? "mainModel" : "programmerModel"
+        ];
+
+      return (
+        <div
+          key={model.id}
+          onClick={() =>
+            handleModelChange(
+              activeSection === "main" ? "mainModel" : "programmerModel",
+              model.id
+            )
+          }
+          className={`model-card ${isSelected ? "selected" : ""}`}
+        >
+          <div className="model-card-header">
+            <span className="model-name">{model.name}</span>
+            {model.vendor && (
+              <span
+                className="vendor-badge"
+                style={{
+                  backgroundColor: VENDOR_COLORS[model.vendor],
+                }}
+              >
+                {getVendorIcon(model.vendor)}
+              </span>
+            )}
+          </div>
+          <div className="model-badges">
+            {model.speedLevel && (
+              <span
+                className="badge"
+                style={{
+                  background: SPEED_COLORS[model.speedLevel],
+                }}
+              >
+                {getSpeedIcon(model.speedLevel)}
+              </span>
+            )}
+            {model.isFree && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#43B581",
+                }}
+              >
+                {MemoizedFaCrownFree}
+              </span>
+            )}
+            {model.isPremium && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#5865F2",
+                }}
+              >
+                {MemoizedFaCrownPremium}
+              </span>
+            )}
+            {model.supports?.imageAttachments && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#43B581",
+                }}
+              >
+                {MemoizedFaImage}
+              </span>
+            )}
+          </div>
+          {isSelected && (
+            <div className="selected-indicator">
+              <div className="selected-dot"></div>
+            </div>
+          )}
+        </div>
+      );
+    },
+    [
+      activeSection,
+      getSpeedIcon,
+      getVendorIcon,
+      handleModelChange,
+      preferences,
+      selectedModels,
+      MemoizedFaImage,
+      MemoizedFaCrownFree,
+      MemoizedFaCrownPremium,
+    ]
+  );
+
+  // Compact version of renderImageModelCard for mobile
+  const renderCompactImageModelCard = useCallback(
+    (model: ModelOption) => {
+      if (!preferences || !selectedModels) return null;
+
+      const isSelected = model.id === selectedModels.imageGeneration.model;
+      const isExpanded = expandedImageModel === model.id;
+
+      return (
+        <div
+          key={model.id}
+          className={`model-card ${isSelected ? "selected" : ""} ${isExpanded ? "expanded" : ""}`}
+          onClick={() => {
+            setExpandedImageModel(
+              expandedImageModel === model.id ? null : model.id
+            );
+          }}
+        >
+          <div className="model-card-content">
+            <div className="model-name-with-arrow">
+              <MdKeyboardArrowRight
+                className={`dropdown-arrow ${isExpanded ? "rotated" : ""}`}
+              />
+              <span className="model-name">{model.name}</span>
+            </div>
+            {model.vendor && (
+              <span
+                className="vendor-badge"
+                style={{
+                  backgroundColor: VENDOR_COLORS[model.vendor],
+                }}
+              >
+                {getVendorIcon(model.vendor)}
+              </span>
+            )}
+          </div>
+          <div className="model-badges">
+            {model.isPremium && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#5865F2",
+                }}
+              >
+                {MemoizedFaCrownPremium}
+              </span>
+            )}
+            {model.id.includes("hd") && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: "#FAA61A",
+                }}
+              >
+                HD
+              </span>
+            )}
+          </div>
+          {isExpanded && model.sizeOptions && (
+            <div className="dimension-options">
+              {model.sizeOptions.map((size) => (
+                <button
+                  key={size.wh}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card collapse when selecting size
+                    handleModelChange("imageGeneration", {
+                      model: model.id,
+                      size,
+                    });
+                  }}
+                  className={`dimension-button ${
+                    model.id === selectedModels.imageGeneration.model &&
+                    size.wh === selectedModels.imageGeneration.size.wh
+                      ? "selected"
+                      : ""
+                  }`}
+                >
+                  {size.description}
+                </button>
+              ))}
+            </div>
+          )}
+          {isSelected && !isExpanded && (
+            <div className="selected-indicator">
+              <div className="selected-dot"></div>
+            </div>
+          )}
+        </div>
+      );
+    },
+    [
+      expandedImageModel,
+      getVendorIcon,
+      handleModelChange,
+      preferences,
+      selectedModels,
+      MemoizedFaCrownPremium,
+    ]
+  );
+
+  // Toggle filter section visibility for mobile
+  const toggleFilterSection = useCallback(() => {
+    setIsFilterSectionExpanded((prev) => !prev);
+  }, []);
+
+  // Quick filter selection for mobile
+  const handleQuickFilterSelect = useCallback(
+    (filterType: keyof ActiveFilters, value: any) => {
+      setActiveFilters((prev) => {
+        // If the same filter is selected, clear it
+        if (prev[filterType] === value) {
+          return {
+            ...prev,
+            [filterType]: null,
+          };
+        }
+
+        // Otherwise set the new filter value
+        return {
+          ...prev,
+          [filterType]: value,
+        };
+      });
+    },
+    []
+  );
+
+  if (!preferences || !selectedModels) return null;
 
   return (
-    <div className="modal-overlay" onClick={handleModalClick}>
-      <div
-        className="modal-content model-preferences-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header">
-          <h3>Model Preferences</h3>
-          <div onClick={onClose}>{MemoizedMdClose}</div>
-        </div>
-
+    <div className="model-preferences-content">
+      <div className="section-tabs-container">
         <div className="section-tabs">
           {["main", "programmer", "image"].map((section) => (
             <button
@@ -433,91 +844,239 @@ export default function ModelPreferencesModal({
             </button>
           ))}
         </div>
+      </div>
 
-        {activeSection !== "image" ? (
-          <div className="two-column-layout">
-            <div className="filter-section">
-              <div className="filter-group">
-                <span className="filter-label">Speed</span>
-                <div className="filter-buttons">
-                  {["slow", "medium", "fast", "insane"].map((speed) => (
+      {activeSection !== "image" ? (
+        <div className="two-column-layout">
+          {isMobile && (
+            <>
+              {/* Selected model indicator for mobile */}
+              {renderSelectedModelIndicator()}
+
+              {/* MARK: - Filter Chips */}
+              <div className="quick-filters">
+                {/* Free/Premium quick filters */}
+                <button
+                  onClick={() => handleQuickFilterSelect("pricing", "free")}
+                  className={`quick-filter-chip ${activeFilters.pricing === "free" ? "active" : ""}`}
+                >
+                  {MemoizedFaCrownFree} Free
+                </button>
+
+                {/* Speed quick filters */}
+                {[
+                  { speed: "fast", label: "Fast" },
+                  { speed: "medium", label: "Smart" },
+                ].map(({ speed, label }) => (
+                  <Fragment key={speed}>
                     <button
-                      key={speed}
-                      onClick={() => toggleFilter("speed", speed)}
-                      className={`filter-button ${
-                        activeFilters.speed === speed ? "active-filter" : ""
-                      }`}
-                      style={{
-                        background:
-                          activeFilters.speed === speed
-                            ? SPEED_COLORS[speed as keyof typeof SPEED_COLORS]
-                            : undefined,
-                      }}
+                      onClick={() => handleQuickFilterSelect("speed", speed)}
+                      className={`quick-filter-chip ${activeFilters.speed === speed ? "active" : ""}`}
                     >
                       {getSpeedIcon(speed as ActiveFilters["speed"])}
-                      {speed.charAt(0).toUpperCase() + speed.slice(1)}
+                      {label}
                     </button>
-                  ))}
+                  </Fragment>
+                ))}
+
+                {/* Image support quick filter */}
+                <button
+                  onClick={() =>
+                    handleQuickFilterSelect(
+                      "imageSupport",
+                      !activeFilters.imageSupport
+                    )
+                  }
+                  className={`quick-filter-chip ${activeFilters.imageSupport ? "active" : ""}`}
+                >
+                  {MemoizedFaImage} Image
+                </button>
+              </div>
+
+              {/* Collapsible filter section toggle */}
+              <div
+                className="filter-section-toggle"
+                onClick={toggleFilterSection}
+              >
+                <span>Advanced Filters</span>
+                <MdFilterAlt />
+              </div>
+            </>
+          )}
+
+          <div className={`filter-section ${isMobile ? "mobile" : ""}`}>
+            <div
+              className={`filter-section-content ${isMobile ? (isFilterSectionExpanded ? "expanded" : "") : "expanded"}`}
+            >
+              {/* Desktop selected model indicator */}
+              {!isMobile && renderSelectedModelIndicator()}
+
+              {/* Speed filter group */}
+              <div className="filter-group">
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("speed")}
+                >
+                  <span className="filter-label-text">Speed</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.speed ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
+                </div>
+                <div
+                  className={`filter-content ${expandedFilters.speed ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
+                    {["slow", "medium", "fast", "insane"].map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => toggleFilter("speed", speed)}
+                        className={`filter-button ${activeFilters.speed === speed ? "active" : ""}`}
+                        style={
+                          activeFilters.speed === speed
+                            ? {
+                                background:
+                                  SPEED_COLORS[
+                                    speed as NonNullable<ActiveFilters["speed"]>
+                                  ],
+                              }
+                            : {}
+                        }
+                      >
+                        {getSpeedIcon(speed as ActiveFilters["speed"])}
+                        {isMobile
+                          ? ""
+                          : speed.charAt(0).toUpperCase() + speed.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
+              {/* Pricing filter group */}
               <div className="filter-group">
-                <span className="filter-label">Pricing</span>
-                <div className="filter-buttons">
-                  <button
-                    onClick={() => toggleFilter("pricing", "free")}
-                    className={`filter-button ${
-                      activeFilters.pricing === "free" ? "active-filter" : ""
-                    }`}
-                  >
-                    {MemoizedFaCrownFree} Free
-                  </button>
-                  <button
-                    onClick={() => toggleFilter("pricing", "premium")}
-                    className={`filter-button ${
-                      activeFilters.pricing === "premium" ? "active-filter" : ""
-                    }`}
-                  >
-                    {MemoizedFaCrownPremium} Premium
-                  </button>
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("pricing")}
+                >
+                  <span className="filter-label-text">Pricing</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.pricing ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
                 </div>
-              </div>
-
-              <div className="filter-group">
-                <span className="filter-label">Features</span>
-                <div className="filter-buttons">
-                  <button
-                    onClick={() =>
-                      toggleFilter("imageSupport", !activeFilters.imageSupport)
-                    }
-                    className={`filter-button ${
-                      activeFilters.imageSupport ? "active-filter" : ""
-                    }`}
-                  >
-                    {MemoizedFaImage} Image Attachment
-                  </button>
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <span className="filter-label">Vendor</span>
-                <div className="filter-buttons">
-                  {Object.entries(VENDOR_COLORS).map(([vendor, color]) => (
+                <div
+                  className={`filter-content ${expandedFilters.pricing ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
                     <button
-                      key={vendor}
-                      onClick={() => toggleFilter("vendor", vendor as Vendor)}
-                      className={`filter-button ${
-                        activeFilters.vendor === vendor ? "active-filter" : ""
-                      }`}
-                      style={{
-                        background:
-                          activeFilters.vendor === vendor ? color : undefined,
-                      }}
+                      onClick={() => toggleFilter("pricing", "free")}
+                      className={`filter-button ${activeFilters.pricing === "free" ? "active" : ""}`}
+                      style={
+                        activeFilters.pricing === "free"
+                          ? { backgroundColor: "#43B581" }
+                          : {}
+                      }
                     >
-                      {getVendorIcon(vendor as Vendor)}
-                      {vendor.charAt(0).toUpperCase() + vendor.slice(1)}
+                      {MemoizedFaCrownFree} {isMobile ? "" : "Free"}
                     </button>
-                  ))}
+                    <button
+                      onClick={() => toggleFilter("pricing", "premium")}
+                      className={`filter-button ${activeFilters.pricing === "premium" ? "active" : ""}`}
+                      style={
+                        activeFilters.pricing === "premium"
+                          ? { backgroundColor: "#5865F2" }
+                          : {}
+                      }
+                    >
+                      {MemoizedFaCrownPremium} {isMobile ? "" : "Premium"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Features filter group */}
+              <div className="filter-group">
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("features")}
+                >
+                  <span className="filter-label-text">Features</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.features ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
+                </div>
+                <div
+                  className={`filter-content ${expandedFilters.features ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
+                    <button
+                      onClick={() =>
+                        toggleFilter(
+                          "imageSupport",
+                          !activeFilters.imageSupport
+                        )
+                      }
+                      className={`filter-button ${activeFilters.imageSupport ? "active" : ""}`}
+                      style={
+                        activeFilters.imageSupport
+                          ? { backgroundColor: "#43B581" }
+                          : {}
+                      }
+                    >
+                      {MemoizedFaImage} {isMobile ? "" : "Image Attachment"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vendor filter group */}
+              <div className="filter-group">
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("vendor")}
+                >
+                  <span className="filter-label-text">Vendor</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.vendor ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
+                </div>
+                <div
+                  className={`filter-content ${expandedFilters.vendor ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
+                    {Object.entries(VENDOR_COLORS).map(([vendor, color]) => (
+                      <button
+                        key={vendor}
+                        onClick={() => toggleFilter("vendor", vendor as Vendor)}
+                        className={`filter-button ${activeFilters.vendor === vendor ? "active" : ""}`}
+                        style={
+                          activeFilters.vendor === vendor
+                            ? { background: color }
+                            : {}
+                        }
+                      >
+                        {getVendorIcon(vendor as Vendor)}
+                        {isMobile
+                          ? ""
+                          : vendor.charAt(0).toUpperCase() + vendor.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -525,98 +1084,215 @@ export default function ModelPreferencesModal({
                 <label className="tagged-models-label">
                   <input
                     type="checkbox"
+                    className="checkbox"
                     checked={showTaggedModels}
                     onChange={(e) => setShowTaggedModels(e.target.checked)}
-                    className="checkbox"
                   />
-                  <span className="tagged-models-text">
-                    Show tagged models
+                  <div className="tagged-models-text">
+                    <span>Show tagged models</span>
                     {showTaggedModels && (
                       <span className="tagged-models-hint">
                         Showing date-tagged versions
                       </span>
                     )}
-                  </span>
+                  </div>
                 </label>
               </div>
             </div>
+          </div>
 
-            <div className="model-grid-container">
-              <div className="model-grid">
-                {filteredModels.length > 0 ? (
+          <div className="model-grid-container">
+            <div className="model-grid">
+              {filteredModels.length > 0 ? (
+                isMobile ? (
+                  filteredModels.map(renderCompactModelCard)
+                ) : (
                   filteredModels.map(renderModelCard)
-                ) : (
-                  <div className="no-results">
-                    No models match the selected filters
-                  </div>
-                )}
-              </div>
+                )
+              ) : (
+                <div className="no-results">
+                  No models match the selected filters
+                </div>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="two-column-layout">
-            <div className="filter-section">
-              <div className="filter-group">
-                <span className="filter-label">Provider</span>
-                <div className="filter-buttons">
+        </div>
+      ) : (
+        <div className="two-column-layout">
+          {isMobile && (
+            <>
+              {/* Selected model indicator for mobile */}
+              {renderSelectedModelIndicator()}
+
+              {/* Quick filter chips for image models */}
+              <div className="quick-filters">
+                {/* Provider quick filter */}
+                <button
+                  onClick={() => toggleImageFilter("provider", "openai")}
+                  className={`quick-filter-chip ${imageFilters.provider === "openai" ? "active" : ""}`}
+                >
+                  <SiOpenai /> OpenAI
+                </button>
+
+                {/* Quality quick filters */}
+                {[
+                  { id: "hd", label: "HD" },
+                  { id: "medium", label: "Medium" },
+                  { id: "low", label: "Low" },
+                ].map(({ id, label }) => (
                   <button
-                    onClick={() => toggleImageFilter("provider", "openai")}
-                    className={`filter-button ${
-                      imageFilters.provider === "openai" ? "active-filter" : ""
-                    }`}
-                    style={{
-                      background:
-                        imageFilters.provider === "openai"
-                          ? VENDOR_COLORS.openai
-                          : undefined,
-                    }}
+                    key={id}
+                    onClick={() => toggleImageFilter("quality", id)}
+                    className={`quick-filter-chip ${imageFilters.quality === id ? "active" : ""}`}
                   >
-                    <SiOpenai /> OpenAI
+                    {label}
                   </button>
-                </div>
+                ))}
               </div>
 
+              {/* Collapsible filter section toggle */}
+              <div
+                className="filter-section-toggle"
+                onClick={toggleFilterSection}
+              >
+                <span>Advanced Filters</span>
+                <MdFilterAlt />
+              </div>
+            </>
+          )}
+
+          <div className={`filter-section ${isMobile ? "mobile" : ""}`}>
+            <div
+              className={`filter-section-content ${isMobile ? (isFilterSectionExpanded ? "expanded" : "") : "expanded"}`}
+            >
+              {/* Desktop selected model indicator */}
+              {!isMobile && renderSelectedModelIndicator()}
+
+              {/* Provider filter */}
               <div className="filter-group">
-                <span className="filter-label">Quality</span>
-                <div className="filter-buttons">
-                  {[
-                    { id: "low", label: "Basic" },
-                    { id: "medium", label: "Standard" },
-                    { id: "hd", label: "HD" },
-                  ].map(({ id, label }) => (
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("provider")}
+                >
+                  <span className="filter-label-text">Provider</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.provider ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
+                </div>
+                <div
+                  className={`filter-content ${expandedFilters.provider ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
                     <button
-                      key={id}
-                      onClick={() =>
-                        toggleImageFilter(
-                          "quality",
-                          id as ImageFilters["quality"]
-                        )
+                      onClick={() => toggleImageFilter("provider", "openai")}
+                      className={`filter-button ${imageFilters.provider === "openai" ? "active" : ""}`}
+                      style={
+                        imageFilters.provider === "openai"
+                          ? { backgroundColor: VENDOR_COLORS.openai }
+                          : {}
                       }
-                      className={`filter-button ${
-                        imageFilters.quality === id ? "active-filter" : ""
-                      }`}
                     >
-                      {label}
+                      <SiOpenai /> {isMobile ? "" : "OpenAI"}
                     </button>
-                  ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="model-grid-container">
-              <div className="model-grid">
-                {filteredImageModels.length > 0 ? (
-                  filteredImageModels.map(renderImageModelCard)
-                ) : (
-                  <div className="no-results">
-                    No models match the selected filters
+              {/* Dimensions filter */}
+              <div className="filter-group">
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("dimensions")}
+                >
+                  <span className="filter-label-text">Dimensions</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.dimensions ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
+                </div>
+                <div
+                  className={`filter-content ${expandedFilters.dimensions ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
+                    {[
+                      { id: "square", label: "Square" },
+                      { id: "landscape", label: "Landscape" },
+                      { id: "portrait", label: "Portrait" },
+                    ].map(({ id, label }) => (
+                      <button
+                        key={id}
+                        onClick={() => toggleImageFilter("dimensions", id)}
+                        className={`filter-button ${imageFilters.dimensions === id ? "active" : ""}`}
+                      >
+                        {isMobile ? label.charAt(0) : label}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Quality filter */}
+              <div className="filter-group">
+                <div
+                  className="filter-label"
+                  onClick={() => toggleFilterGroup("quality")}
+                >
+                  <span className="filter-label-text">Quality</span>
+                  <span className="chevron-icon">
+                    {expandedFilters.quality ? (
+                      <MdExpandLess />
+                    ) : (
+                      <MdExpandMore />
+                    )}
+                  </span>
+                </div>
+                <div
+                  className={`filter-content ${expandedFilters.quality ? "expanded" : ""}`}
+                >
+                  <div className="filter-buttons">
+                    {[
+                      { id: "hd", label: "HD" },
+                      { id: "medium", label: "Medium" },
+                      { id: "low", label: "Low" },
+                    ].map(({ id, label }) => (
+                      <button
+                        key={id}
+                        onClick={() => toggleImageFilter("quality", id)}
+                        className={`filter-button ${imageFilters.quality === id ? "active" : ""}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+
+          <div className="model-grid-container">
+            <div className="model-grid">
+              {filteredImageModels.length > 0 ? (
+                isMobile ? (
+                  filteredImageModels.map(renderCompactImageModelCard)
+                ) : (
+                  filteredImageModels.map(renderImageModelCard)
+                )
+              ) : (
+                <div className="no-results">
+                  No models match the selected filters
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

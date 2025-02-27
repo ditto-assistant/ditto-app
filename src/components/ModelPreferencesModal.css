@@ -1,19 +1,3 @@
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
 .model-preferences-modal {
   width: 100%;
   height: 100vh;
@@ -40,112 +24,81 @@
   color: #7289da;
 }
 
+.model-preferences-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.section-tabs-container {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 12px;
+}
+
 .section-tabs {
   display: flex;
-  gap: 6px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #1e1f22;
-  width: 100%;
-  box-sizing: border-box;
-  flex-wrap: wrap;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.section-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .section-tab {
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  background: transparent;
   border: none;
-  background-color: transparent;
-  color: #ffffff;
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap;
-  flex: 0 1 auto;
+  flex: 1;
   text-align: center;
 }
 
 .section-tab:hover {
-  filter: brightness(1.1);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .section-tab.active-tab {
-  background-color: #5865f2;
+  color: #fff;
+  border-bottom: 2px solid #7289da;
+  background: rgba(114, 137, 218, 0.1);
 }
 
 .two-column-layout {
   display: flex;
-  flex-direction: column;
-  height: calc(100vh - 120px);
-  overflow: auto;
+  height: 100%;
+  overflow: hidden;
 }
 
 .filter-section {
-  padding: 12px 16px;
-  border-bottom: 1px solid #1e1f22;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filter-label {
-  color: #b9bbbe;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.filter-buttons {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.filter-button {
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: none;
-  background-color: #2f3136;
-  color: #ffffff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  flex: 0 1 auto;
-}
-
-.filter-button:hover {
-  filter: brightness(1.1);
-}
-
-.filter-button.active-filter {
-  background-color: #5865f2;
+  width: 240px;
+  padding: 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .model-grid-container {
-  padding: 12px 16px;
-  padding-bottom: 80px;
-  width: 100%;
-  box-sizing: border-box;
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .model-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .model-card {
@@ -157,10 +110,12 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #1e1f22;
+  position: relative;
 }
 
 .model-card.selected {
   border: 2px solid #5865f2;
+  background-color: rgba(88, 101, 242, 0.1);
 }
 
 .model-card:hover {
@@ -230,11 +185,9 @@
 }
 
 .tagged-models-toggle {
-  margin-top: 12px;
+  margin-top: 16px;
   padding: 8px 0;
-  border-top: 1px solid #1e1f22;
-  display: flex;
-  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tagged-models-label {
@@ -242,13 +195,11 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   color: #b9bbbe;
 }
 
 .checkbox {
-  width: 14px;
-  height: 14px;
   cursor: pointer;
   accent-color: #5865f2;
 }
@@ -260,9 +211,10 @@
 }
 
 .tagged-models-hint {
+  display: block;
+  font-size: 11px;
+  opacity: 0.7;
   color: #5865f2;
-  font-size: 10px;
-  font-style: italic;
 }
 
 .no-results {
@@ -270,12 +222,6 @@
   text-align: center;
   color: #b9bbbe;
   grid-column: 1 / -1;
-}
-
-.modal-body {
-  padding: 16px;
-  flex: 1;
-  overflow-y: auto;
 }
 
 .model-selector {
@@ -425,4 +371,417 @@
 
 .dropdown-arrow.rotated {
   transform: rotate(90deg);
+}
+
+/* Filter section styles */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.filter-label {
+  color: #b9bbbe;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.filter-label-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.filter-button {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background-color: #2f3136;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex: 0 1 auto;
+}
+
+.filter-button.active {
+  background-color: #5865f2;
+}
+
+/* Selected model indicator */
+.selected-model-indicator {
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #5865f2;
+}
+
+.selected-model-title {
+  font-size: 12px;
+  color: #b9bbbe;
+  margin-bottom: 6px;
+}
+
+.selected-model-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selected-model-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* Collapsible filter groups for mobile */
+.filter-content {
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+  opacity: 0;
+  position: relative;
+}
+
+.filter-content.expanded {
+  max-height: 200px;
+  overflow-y: auto;
+  opacity: 1;
+  margin-bottom: 8px;
+}
+
+.chevron-icon {
+  transition: transform 0.3s ease;
+  color: #b9bbbe;
+}
+
+.chevron-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .filter-section {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    max-height: none;
+    overflow-y: visible;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: #2f3136;
+  }
+
+  /* Collapsible filter section */
+  .filter-section-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #36393f;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #ffffff;
+  }
+
+  .filter-section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .filter-section-content.expanded {
+    max-height: 1000px;
+  }
+
+  .two-column-layout {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .model-grid-container {
+    padding: 8px;
+    overflow-y: visible;
+    margin-top: 8px;
+  }
+
+  .model-preferences-content {
+    overflow: visible;
+  }
+
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
+  .model-card {
+    padding: 10px;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    touch-action: manipulation;
+    border-radius: 12px;
+  }
+
+  .model-card-header {
+    margin-bottom: 4px;
+  }
+
+  .model-name {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .badge {
+    padding: 2px 4px;
+    font-size: 10px;
+    min-width: 0;
+  }
+
+  .selected-model-indicator {
+    margin-bottom: 12px;
+    padding: 10px;
+  }
+
+  .filter-label {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .filter-group {
+    margin-bottom: 8px;
+  }
+
+  .section-tabs-container {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #36393f;
+    width: 100%;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px;
+  }
+
+  .section-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    background-color: #36393f;
+  }
+
+  .section-tab {
+    flex: 1 0 auto;
+    white-space: nowrap;
+    padding: 10px 8px;
+    font-size: 13px;
+    min-width: 33.33%;
+    text-align: center;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    touch-action: manipulation;
+  }
+
+  .section-tab.active-tab {
+    background: rgba(114, 137, 218, 0.2);
+    border-bottom: 2px solid #7289da;
+    color: white;
+    font-weight: 600;
+  }
+
+  /* Ensure filter content doesn't create nested scrollable areas */
+  .filter-content.expanded {
+    max-height: none;
+    overflow-y: visible;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* More compact filter buttons on mobile */
+  .filter-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 0;
+    min-height: 40px;
+    touch-action: manipulation;
+  }
+
+  /* Compact badges for mobile */
+  .model-badges {
+    gap: 4px;
+  }
+
+  /* Smaller vendor badge for mobile */
+  .vendor-badge {
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+
+  /* Smaller dimension buttons for mobile */
+  .dimension-button {
+    padding: 8px;
+    font-size: 12px;
+    min-height: 40px;
+    touch-action: manipulation;
+  }
+
+  /* Quick filter chips at the top */
+  .quick-filters {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .quick-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .quick-filter-chip {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    white-space: nowrap;
+    font-size: 12px;
+    color: #ffffff;
+    touch-action: manipulation;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .quick-filter-chip.active {
+    background: #5865f2;
+  }
+
+  /* Make the selected state more obvious */
+  .model-card.selected {
+    box-shadow:
+      0 0 0 2px #5865f2,
+      0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+  }
+
+  /* Ensure the selected indicator is visible */
+  .selected-indicator {
+    top: 6px;
+    right: 6px;
+  }
+
+  /* Expanded image model card */
+  .model-card.expanded {
+    z-index: 5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    background-color: #3a3d44;
+  }
+
+  /* Make dimension options more touch-friendly */
+  .dimension-options {
+    margin-top: 10px;
+    padding-top: 10px;
+    gap: 10px;
+  }
+
+  .dimension-button {
+    padding: 10px;
+    border-radius: 8px;
+    min-height: 44px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .dimension-button.selected {
+    background: #5865f2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Improve dropdown arrow visibility */
+  .dropdown-arrow {
+    font-size: 22px;
+  }
+
+  /* Ensure model cards have enough space for content */
+  .model-card {
+    min-height: 100px;
+  }
+
+  /* For very small screens, show 2 columns */
+  @media (max-width: 360px) {
+    .model-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Ensure the model grid container has enough space */
+  .two-column-layout {
+    padding-bottom: 60px;
+  }
+}
+
+/* Selected indicator dot */
+.selected-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.selected-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #5865f2;
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
 }

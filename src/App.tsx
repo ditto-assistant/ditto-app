@@ -17,7 +17,7 @@ import { ModelPreferencesProvider } from "@/hooks/useModelPreferences";
 import { ImageViewerProvider } from "@/hooks/useImageViewer";
 import { ScriptsProvider } from "@/hooks/useScripts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "@/hooks/useModal";
 import { ConfirmationDialogProvider } from "@/hooks/useConfirmationDialog";
 
@@ -35,6 +35,7 @@ const ScriptsOverlay = lazy(
 const ConfirmationDialog = lazy(
   () => import("@/components/ui/modals/ConfirmationModal")
 );
+const MemoryOverlay = lazy(() => import("@/components/MemoryOverlay"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -82,6 +83,9 @@ const modalRegistry: ModalRegistry = {
   confirmationDialog: {
     component: <ConfirmationDialog id="confirmationDialog" />,
   },
+  memorySettings: {
+    component: <MemoryOverlay />,
+  },
 } as const;
 
 export default function App() {
@@ -116,7 +120,7 @@ export default function App() {
           </ModelPreferencesProvider>
         </BalanceProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }

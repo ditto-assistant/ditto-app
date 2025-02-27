@@ -63,10 +63,6 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   const [localValues, setLocalValues] = useState<number[]>(values);
   const [debouncedOnChange, isSaving] = useDebounce(onChange, debounceMs);
 
-  useEffect(() => {
-    setLocalValues(values);
-  }, [values]);
-
   const handleChange = useCallback(
     (index: number) => (_event: Event, newValue: number | number[]) => {
       const value = Array.isArray(newValue) ? newValue[0] : newValue;
