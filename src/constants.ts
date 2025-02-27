@@ -67,11 +67,15 @@ export const DEFAULT_MODELS: ModelOption[] = [
     isTaggedModel: true,
     speedLevel: "medium",
   },
-
   // {
   //   id: "claude-3-haiku",
   //   name: "Claude 3 Haiku",
   //   vendor: "anthropic",
+  //   supports: {
+  //     imageAttachments: "single",
+  //     tools: true,
+  //   },
+  //   speedLevel: "fast",
   // },
   {
     id: "claude-3-haiku@20240307",
@@ -101,17 +105,6 @@ export const DEFAULT_MODELS: ModelOption[] = [
     isTaggedModel: true,
   },
   {
-    id: "claude-3-5-sonnet",
-    name: "Claude 3.5 Sonnet",
-    isPremium: true,
-    vendor: "anthropic",
-    supports: {
-      imageAttachments: "single",
-      tools: true,
-    },
-    speedLevel: "medium",
-  },
-  {
     id: "claude-3-5-sonnet@20240620",
     name: "Claude 3.5 Sonnet (2024-06-20)",
     isPremium: true,
@@ -125,13 +118,14 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "claude-3-5-sonnet-v2",
-    name: "Claude 3.5 Sonnet V2",
+    name: "Claude 3.5 Sonnet",
     isPremium: true,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-sonnet-v2@20241022",
