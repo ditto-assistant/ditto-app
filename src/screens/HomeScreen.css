@@ -38,6 +38,14 @@ header.app-header {
   border-top-right-radius: 0px;
   padding: 10px 12px;
   min-height: 64px;
+  /* Add padding for iOS notch */
+  padding-top: max(10px, env(safe-area-inset-top, 0px));
+  /* Position fixed for iOS */
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 
 /* Status indicator styles */
@@ -92,6 +100,13 @@ header.app-header {
 .App-footer {
   background-color: var(--header-background);
   backdrop-filter: blur(10px);
+  /* Add padding for iOS home indicator */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 
 .loading-placeholder {
@@ -198,6 +213,7 @@ header.app-header {
 @media screen and (max-width: 768px) {
   header.app-header {
     padding: 8px 12px;
+    padding-top: max(8px, env(safe-area-inset-top, 0px));
   }
 
   .App-body {
@@ -217,6 +233,7 @@ header.app-header {
 
   .App-footer {
     padding: 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
     margin-top: auto; /* Push footer to bottom */
   }
 }
@@ -226,5 +243,31 @@ header.app-header {
   .message-list {
     max-width: 800px;
     margin: 0 auto;
+  }
+}
+
+/* iOS-specific adjustments */
+@supports (-webkit-touch-callout: none) {
+  .App {
+    /* Use the full height of the viewport on iOS */
+    height: -webkit-fill-available;
+  }
+
+  .App-footer {
+    /* Ensure the footer is visible above the Safari toolbar */
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    /* Fix for iOS Safari bottom bar */
+    position: sticky;
+    bottom: 0;
+  }
+
+  /* Fix for iOS notch area */
+  .app-header {
+    padding-top: max(10px, env(safe-area-inset-top, 0px));
+  }
+
+  /* Fix for iOS home indicator area */
+  .ios-device .Form {
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
   }
 }

@@ -18,6 +18,7 @@ import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useScripts } from "@/hooks/useScripts.tsx";
+import { useIsIOS } from "@/hooks/useIsIOS";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
@@ -47,6 +48,7 @@ export default function HomeScreen() {
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const openMemoryOverlay = modal.createOpenHandler("memorySettings");
   const openScriptsOverlay = modal.createOpenHandler("scripts");
+  const isIOS = useIsIOS();
   const {
     selectedScript,
     setSelectedScript,
@@ -303,13 +305,119 @@ export default function HomeScreen() {
       }
     });
 
+    // iOS-specific handling for Safari toolbar
+    if (isIOS) {
+      // Add meta viewport tag to prevent scaling issues
+      const viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (viewportMeta) {
+        viewportMeta.setAttribute(
+          "content",
+          "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        );
+      } else {
+        const meta = document.createElement("meta");
+        meta.name = "viewport";
+        meta.content =
+          "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+        document.head.appendChild(meta);
+      }
+
+      // Add CSS class to html element for iOS-specific styling
+      document.documentElement.classList.add("ios");
+
+      // Set initial safe area values using getComputedStyle for compatibility
+      const safeAreaBottom =
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--safe-area-bottom"
+        ) || "0px";
+      const safeAreaTop =
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--safe-area-top"
+        ) || "0px";
+
+      document.documentElement.style.setProperty(
+        "--safe-area-bottom",
+        safeAreaBottom
+      );
+      document.documentElement.style.setProperty(
+        "--safe-area-top",
+        safeAreaTop
+      );
+
+      // Handle iOS Safari toolbar appearance/disappearance
+      let lastScrollY = window.scrollY;
+      const handleIOSScroll = () => {
+        const currentScrollY = window.scrollY;
+        const isScrollingDown = currentScrollY > lastScrollY;
+
+        // When scrolling down, the toolbar hides, so we need to adjust
+        if (isScrollingDown && currentScrollY > 50) {
+          document.documentElement.style.setProperty(
+            "--safe-area-bottom",
+            "0px"
+          );
+        } else if (!isScrollingDown) {
+          // When scrolling up, the toolbar appears
+          document.documentElement.style.setProperty(
+            "--safe-area-bottom",
+            `${Math.max(0, parseInt(getComputedStyle(document.documentElement).getPropertyValue("--safe-area-bottom") || "0"))}px`
+          );
+        }
+
+        lastScrollY = currentScrollY;
+        setVH(); // Update viewport height calculation
+      };
+
+      // Handle orientation changes specifically for iOS
+      const handleIOSOrientationChange = () => {
+        // Force redraw after orientation change
+        setTimeout(() => {
+          // Reset safe area values
+          const newSafeAreaBottom =
+            getComputedStyle(document.documentElement).getPropertyValue(
+              "--safe-area-bottom"
+            ) || "0px";
+          const newSafeAreaTop =
+            getComputedStyle(document.documentElement).getPropertyValue(
+              "--safe-area-top"
+            ) || "0px";
+
+          document.documentElement.style.setProperty(
+            "--safe-area-bottom",
+            newSafeAreaBottom
+          );
+          document.documentElement.style.setProperty(
+            "--safe-area-top",
+            newSafeAreaTop
+          );
+
+          setVH();
+        }, 300); // Delay to allow iOS to complete orientation change
+      };
+
+      window.addEventListener("scroll", handleIOSScroll, { passive: true });
+      window.addEventListener("orientationchange", handleIOSOrientationChange);
+
+      return () => {
+        window.removeEventListener("resize", setVH);
+        window.removeEventListener("orientationchange", setVH);
+        window.removeEventListener(
+          "orientationchange",
+          handleIOSOrientationChange
+        );
+        window.removeEventListener("scroll", setVH);
+        window.removeEventListener("scroll", handleIOSScroll);
+        document.documentElement.classList.remove("ios");
+      };
+    }
+
     // Cleanup
     return () => {
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);
       window.removeEventListener("scroll", setVH);
     };
-  }, []);
+  }, [isIOS]);
 
   const toggleStatusBar = () => {
     setShowStatusBar((prev) => !prev);
@@ -500,7 +608,10 @@ export default function HomeScreen() {
   };
 
   return (
-    <div className="App" onClick={handleCloseMediaOptions}>
+    <div
+      className={`App ${isIOS ? "ios-device" : ""}`}
+      onClick={handleCloseMediaOptions}
+    >
       <header className="app-header">
         <motion.div
           className="ditto-icon-button"

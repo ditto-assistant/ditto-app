@@ -1,6 +1,11 @@
 @import "../styles/variables.css";
 @import "@/styles/animations.css";
 
+/* Add iOS-specific styles */
+.ios-device .Form {
+  padding-bottom: max(var(--spacing-sm), var(--safe-area-bottom));
+}
+
 .Contents {
   display: flex;
   flex-direction: column;
@@ -24,6 +29,7 @@
   background-color: var(--background-input);
   position: relative;
   gap: var(--spacing-sm);
+  z-index: 10; /* Ensure it's above other elements */
 }
 
 .InputWrapper {
@@ -49,6 +55,20 @@
 .TextArea:focus {
   border: 1px solid var(--primary-color);
   box-shadow: 0 0 3px var(--primary-color);
+}
+
+/* iOS-specific adjustments for the text area */
+@supports (-webkit-touch-callout: none) {
+  .TextArea {
+    /* Prevent zoom on focus in iOS */
+    font-size: 16px;
+  }
+
+  /* Fix for iOS keyboard appearance */
+  .ios-device .TextArea:focus {
+    /* Add padding to prevent text from being hidden by keyboard */
+    padding-bottom: max(var(--spacing-sm), 8px);
+  }
 }
 
 .IconsWrapper {
