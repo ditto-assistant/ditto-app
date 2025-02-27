@@ -29,11 +29,6 @@
   background-color: var(--scrollbar-thumb-hover-color);
 }
 
-html {
-  /* The min-height hack for iOS to prevent white bar at bottom */
-  min-height: calc(100% + env(safe-area-inset-top));
-}
-
 body {
   overscroll-behavior: none;
   font-family:
@@ -56,46 +51,10 @@ body {
   flex-direction: column;
 }
 
-/* iOS and Safe Area handling */
+/* Basic iOS fixes */
 @supports (-webkit-touch-callout: none) {
-  html,
-  body {
-    /* Use the full height of the viewport on iOS */
-    height: -webkit-fill-available;
-  }
-
   #root {
     min-height: -webkit-fill-available;
-  }
-
-  /* Fix for iOS Safari bottom bar */
-  .App-footer {
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-
-  /* Fix for iOS notch/status bar */
-  .app-header {
-    padding-top: env(safe-area-inset-top, 0);
-  }
-}
-
-@supports (padding: env(safe-area-inset-top)) {
-  body {
-    /* Apply safe area insets to the body */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right)
-      env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
-
-  /* Ensure the app container respects safe areas */
-  .App {
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-
-  /* Ensure the footer stays above the bottom safe area */
-  .App-footer {
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    margin-bottom: env(safe-area-inset-bottom, 0);
   }
 }
 

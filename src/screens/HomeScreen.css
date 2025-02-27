@@ -38,9 +38,9 @@ header.app-header {
   border-top-right-radius: 0px;
   padding: 10px 12px;
   min-height: 64px;
-  /* Add padding for iOS notch */
-  padding-top: max(10px, env(safe-area-inset-top, 0px));
-  /* Position fixed for iOS */
+  /* Add minimal padding for iOS notch */
+  padding-top: env(safe-area-inset-top, 10px);
+  /* Position sticky for iOS */
   position: sticky;
   top: 0;
   left: 0;
@@ -100,7 +100,7 @@ header.app-header {
 .App-footer {
   background-color: var(--header-background);
   backdrop-filter: blur(10px);
-  /* Add padding for iOS home indicator */
+  /* Minimal padding for iOS home indicator */
   padding-bottom: env(safe-area-inset-bottom, 0px);
   position: sticky;
   bottom: 0;
@@ -213,7 +213,7 @@ header.app-header {
 @media screen and (max-width: 768px) {
   header.app-header {
     padding: 8px 12px;
-    padding-top: max(8px, env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 8px);
   }
 
   .App-body {
@@ -233,7 +233,7 @@ header.app-header {
 
   .App-footer {
     padding: 12px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 12px);
     margin-top: auto; /* Push footer to bottom */
   }
 }
@@ -246,28 +246,10 @@ header.app-header {
   }
 }
 
-/* iOS-specific adjustments */
+/* iOS-specific adjustments - simplified */
 @supports (-webkit-touch-callout: none) {
   .App {
     /* Use the full height of the viewport on iOS */
     height: -webkit-fill-available;
-  }
-
-  .App-footer {
-    /* Ensure the footer is visible above the Safari toolbar */
-    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
-    /* Fix for iOS Safari bottom bar */
-    position: sticky;
-    bottom: 0;
-  }
-
-  /* Fix for iOS notch area */
-  .app-header {
-    padding-top: max(10px, env(safe-area-inset-top, 0px));
-  }
-
-  /* Fix for iOS home indicator area */
-  .ios-device .Form {
-    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
   }
 }

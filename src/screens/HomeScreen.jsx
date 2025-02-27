@@ -312,90 +312,21 @@ export default function HomeScreen() {
       if (viewportMeta) {
         viewportMeta.setAttribute(
           "content",
-          "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+          "width=device-width, initial-scale=1, viewport-fit=cover"
         );
-      } else {
-        const meta = document.createElement("meta");
-        meta.name = "viewport";
-        meta.content =
-          "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
-        document.head.appendChild(meta);
       }
 
-      // Add CSS class to html element for iOS-specific styling
+      // Add iOS class to root element
       document.documentElement.classList.add("ios");
 
-      // Set initial safe area values using getComputedStyle for compatibility
-      const safeAreaBottom =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--safe-area-bottom"
-        ) || "0px";
-      const safeAreaTop =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--safe-area-top"
-        ) || "0px";
-
-      document.documentElement.style.setProperty(
-        "--safe-area-bottom",
-        safeAreaBottom
-      );
-      document.documentElement.style.setProperty(
-        "--safe-area-top",
-        safeAreaTop
-      );
-
-      // Handle iOS Safari toolbar appearance/disappearance
-      let lastScrollY = window.scrollY;
-      const handleIOSScroll = () => {
-        const currentScrollY = window.scrollY;
-        const isScrollingDown = currentScrollY > lastScrollY;
-
-        // When scrolling down, the toolbar hides, so we need to adjust
-        if (isScrollingDown && currentScrollY > 50) {
-          document.documentElement.style.setProperty(
-            "--safe-area-bottom",
-            "0px"
-          );
-        } else if (!isScrollingDown) {
-          // When scrolling up, the toolbar appears
-          document.documentElement.style.setProperty(
-            "--safe-area-bottom",
-            `${Math.max(0, parseInt(getComputedStyle(document.documentElement).getPropertyValue("--safe-area-bottom") || "0"))}px`
-          );
-        }
-
-        lastScrollY = currentScrollY;
-        setVH(); // Update viewport height calculation
-      };
-
-      // Handle orientation changes specifically for iOS
+      // Simple handler for orientation changes
       const handleIOSOrientationChange = () => {
         // Force redraw after orientation change
         setTimeout(() => {
-          // Reset safe area values
-          const newSafeAreaBottom =
-            getComputedStyle(document.documentElement).getPropertyValue(
-              "--safe-area-bottom"
-            ) || "0px";
-          const newSafeAreaTop =
-            getComputedStyle(document.documentElement).getPropertyValue(
-              "--safe-area-top"
-            ) || "0px";
-
-          document.documentElement.style.setProperty(
-            "--safe-area-bottom",
-            newSafeAreaBottom
-          );
-          document.documentElement.style.setProperty(
-            "--safe-area-top",
-            newSafeAreaTop
-          );
-
           setVH();
-        }, 300); // Delay to allow iOS to complete orientation change
+        }, 300); // Small delay to allow iOS to complete orientation change
       };
 
-      window.addEventListener("scroll", handleIOSScroll, { passive: true });
       window.addEventListener("orientationchange", handleIOSOrientationChange);
 
       return () => {
@@ -405,8 +336,6 @@ export default function HomeScreen() {
           "orientationchange",
           handleIOSOrientationChange
         );
-        window.removeEventListener("scroll", setVH);
-        window.removeEventListener("scroll", handleIOSScroll);
         document.documentElement.classList.remove("ios");
       };
     }

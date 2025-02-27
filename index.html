@@ -1,51 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-app-version="2">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="/favicon.ico" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-touch-fullscreen" content="yes">
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="Hey Ditto!" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/manifest.webmanifest" />
-  <title>Ditto</title>
-  <script>
-    if ('serviceWorker' in navigator) {
-      const appVersion = document.documentElement.getAttribute('data-app-version');
-      if (appVersion === '2') {
-        // New version: let Vite PWA handle registration
-        console.log('New app version detected. Skipping manual SW registration.');
-      } else {
-        // Old version: unregister old SW and register the cleanup worker
-        navigator.serviceWorker.getRegistrations().then(function (registrations) {
-          for (let registration of registrations) {
-            registration.unregister();
-          }
-        }).then(function () {
-          return navigator.serviceWorker.register('/worker.js');
-        }).then(function (reg) {
-          console.log('Cleanup worker registered:', reg);
-        }).catch(function (err) {
-          console.log('SW registration failed:', err);
-        });
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Hey Ditto!" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>Ditto</title>
+    <script>
+      if ("serviceWorker" in navigator) {
+        const appVersion =
+          document.documentElement.getAttribute("data-app-version");
+        if (appVersion === "2") {
+          // New version: let Vite PWA handle registration
+          console.log(
+            "New app version detected. Skipping manual SW registration."
+          );
+        } else {
+          // Old version: unregister old SW and register the cleanup worker
+          navigator.serviceWorker
+            .getRegistrations()
+            .then(function (registrations) {
+              for (let registration of registrations) {
+                registration.unregister();
+              }
+            })
+            .then(function () {
+              return navigator.serviceWorker.register("/worker.js");
+            })
+            .then(function (reg) {
+              console.log("Cleanup worker registered:", reg);
+            })
+            .catch(function (err) {
+              console.log("SW registration failed:", err);
+            });
+        }
       }
-    }
-  </script>
-</head>
+    </script>
+  </head>
 
-<body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root">
-    <p class="page-info"></p>
-  </div>
-  <div style="width: 100%; height: 100%;" id="modal-root"></div>
-  <script type="module" src="/src/index.jsx"></script>
-</body>
-
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+      <p class="page-info"></p>
+    </div>
+    <div style="width: 100%; height: 100%" id="modal-root"></div>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
 </html>

@@ -1,9 +1,9 @@
 @import "../styles/variables.css";
 @import "@/styles/animations.css";
 
-/* Add iOS-specific styles */
+/* Simplified iOS-specific styles */
 .ios-device .Form {
-  padding-bottom: max(var(--spacing-sm), var(--safe-area-bottom));
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .Contents {
@@ -30,6 +30,7 @@
   position: relative;
   gap: var(--spacing-sm);
   z-index: 10; /* Ensure it's above other elements */
+  align-items: center; /* Align items in the center to fix button height */
 }
 
 .InputWrapper {
@@ -57,17 +58,11 @@
   box-shadow: 0 0 3px var(--primary-color);
 }
 
-/* iOS-specific adjustments for the text area */
+/* Simplified iOS-specific adjustments for the text area */
 @supports (-webkit-touch-callout: none) {
   .TextArea {
     /* Prevent zoom on focus in iOS */
     font-size: 16px;
-  }
-
-  /* Fix for iOS keyboard appearance */
-  .ios-device .TextArea:focus {
-    /* Add padding to prevent text from being hidden by keyboard */
-    padding-bottom: max(var(--spacing-sm), 8px);
   }
 }
 
@@ -118,12 +113,14 @@
   border-radius: var(--border-radius-md);
   color: var(--interactive-active);
   padding: var(--spacing-sm) var(--spacing-md);
-  /* margin-left: 0; */
-  /* margin-right: -2px; */
   cursor: pointer;
   transition: all var(--transition-normal);
-  /* white-space: nowrap; */
-  /* min-width: fit-content; */
+  height: 100%; /* Make the button height match its container */
+  align-self: stretch; /* Stretch to match parent height */
+  min-height: 44px; /* Minimum touch target size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .Submit.disabled {
