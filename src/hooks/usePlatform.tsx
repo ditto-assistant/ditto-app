@@ -27,6 +27,7 @@ export function usePlatform() {
       userAgent
     );
   const isMobile = hasTouchScreen && isMobileUserAgent;
+  const isPWA = window.matchMedia("(display-mode: standalone)").matches;
 
   let platform: Platform;
   if (isIPhone) {
@@ -56,6 +57,7 @@ export function usePlatform() {
     isLinux,
     isMobile,
     isIOS,
+    isPWA,
   };
 }
 
@@ -69,6 +71,7 @@ type PlatformContextType = {
   isLinux: boolean;
   isMobile: boolean;
   isIOS: boolean;
+  isPWA: boolean;
 };
 
 const PlatformContext = createContext<PlatformContextType | null>(null);

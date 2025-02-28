@@ -19,7 +19,7 @@
   box-sizing: border-box;
   transition: padding-top 0.3s ease-out;
   scroll-behavior: auto;
-  padding-bottom: calc(80px + var(--safe-area-bottom));
+  padding-bottom: calc(80px + var(--safe-area-bottom, 0px));
 }
 
 /* Ensure smooth animation for the bottom ref */
@@ -1461,4 +1461,25 @@ ul.chat-bubble-list {
 
 .chat-bubble-list .chat-bubble-list-item {
   margin: 0.2em 0;
+}
+
+/* Add PWA-specific styles for the chat feed */
+@media all and (display-mode: standalone) {
+  .chat-feed {
+    /* Use environment variable directly in PWA mode */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Adjust message container margins in PWA mode */
+  .message-container {
+    margin-bottom: 8px; /* Consistent spacing in PWA mode */
+  }
+
+  /* Fix any modal positioning in PWA mode */
+  .action-overlay,
+  .reaction-overlay {
+    /* Ensure overlays don't get hidden by safe areas */
+    margin-top: env(safe-area-inset-top, 0px);
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }

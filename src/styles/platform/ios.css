@@ -71,14 +71,60 @@
   /* Fix for iOS Safari in standalone PWA mode */
   @media all and (display-mode: standalone) {
     body {
-      /* Ensure content doesn't get hidden under the home indicator */
-      padding-bottom: var(--safe-area-bottom);
+      /* Ensure content doesn't get hidden under the home indicator, but only in Safari */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* Override padding values for PWA mode */
+    .app {
+      /* PWA mode doesn't need extra padding at bottom */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .app-header {
+      /* Ensure proper top padding in PWA mode using env() */
+      padding-top: env(safe-area-inset-top, 0px);
     }
 
     .app-footer {
       position: fixed !important;
       bottom: 0 !important;
       z-index: 1000 !important;
+      /* Use safe-area-inset-bottom directly in PWA mode */
+      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    }
+
+    /* Reduce padding for app-body in PWA mode */
+    .app-body {
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      margin-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Reduce padding for chat feed in PWA mode */
+    .chat-feed {
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Fix form spacing in PWA mode */
+    .form {
+      margin-bottom: env(safe-area-inset-bottom, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* Ensure the icon buttons are properly positioned */
+    .ditto-icon-button {
+      margin-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* Make modals aware of safe area in PWA mode */
+    .modal-header {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* Fix for modal close buttons */
+    .modal-close-button,
+    .modal-maximize-button {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
     }
   }
 

@@ -44,6 +44,8 @@ header.app-header {
   left: 0;
   right: 0;
   z-index: 100;
+  /* Use CSS variables for safe area insets to keep elements visible */
+  padding-top: var(--safe-area-top, 0px);
 }
 
 /* Status indicator styles */
@@ -86,8 +88,8 @@ header.app-header {
   overflow-y: auto;
   padding: 10px 20px;
   padding-bottom: calc(
-    80px + var(--safe-area-bottom)
-  ); /* Increased padding to prevent overlap */
+    80px + var(--safe-area-bottom, 0px)
+  ); /* Adjusted padding to use variable with fallback */
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -106,6 +108,10 @@ header.app-header {
   left: 0;
   right: 0;
   z-index: 100; /* Ensure it stays on top */
+  padding-bottom: var(
+    --safe-area-bottom,
+    0px
+  ); /* Use CSS variable with fallback */
 }
 
 .loading-placeholder {
@@ -246,5 +252,29 @@ header.app-header {
   .message-list {
     max-width: 800px;
     margin: 0 auto;
+  }
+}
+
+/* PWA-specific adjustments */
+@media all and (display-mode: standalone) {
+  header.app-header {
+    /* Use the environment variable directly in PWA mode */
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .app-body {
+    /* Reduce padding in PWA mode */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-footer {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Fix for header buttons in PWA mode */
+  .ditto-icon-button {
+    position: relative;
+    z-index: 101;
+    margin-top: 0; /* Reset margin and use proper positioning */
   }
 }

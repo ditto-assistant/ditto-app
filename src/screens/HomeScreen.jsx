@@ -48,7 +48,7 @@ export default function HomeScreen() {
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const openMemoryOverlay = modal.createOpenHandler("memorySettings");
   const openScriptsOverlay = modal.createOpenHandler("scripts");
-  const { isIOS } = usePlatform();
+  const { isIOS, isPWA } = usePlatform();
   const {
     selectedScript,
     setSelectedScript,
@@ -296,7 +296,9 @@ export default function HomeScreen() {
 
       // Also set a specific iOS viewport height value
       if (isIOS) {
-        const iosVh = (window.innerHeight + 80) * 0.01; // Add extra space for the footer
+        // Adjust for PWA mode - don't add extra space in PWA mode
+        const extraSpace = isPWA ? 0 : 80; // No extra space needed in PWA mode
+        const iosVh = (window.innerHeight + extraSpace) * 0.01;
         document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
       }
     };
@@ -319,8 +321,6 @@ export default function HomeScreen() {
           "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
         );
       }
-
-      // Add iOS class to root element only
 
       if (window.visualViewport) {
         window.visualViewport.addEventListener("resize", setVH);
@@ -351,7 +351,7 @@ export default function HomeScreen() {
       window.removeEventListener("orientationchange", setVH);
       window.removeEventListener("scroll", setVH);
     };
-  }, [isIOS]);
+  }, [isIOS, isPWA]);
 
   const toggleStatusBar = () => {
     setShowStatusBar((prev) => !prev);
