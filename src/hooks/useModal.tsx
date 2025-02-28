@@ -7,6 +7,8 @@ import {
   useReducer,
   Fragment,
   Suspense,
+  useMemo,
+  useRef,
 } from "react";
 
 export type ModalId =
@@ -70,6 +72,11 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
     }
 
     case "CLOSE_MODAL":
+      // If the modal doesn't exist or is already closed, avoid unnecessary state update
+      if (!state.modals[action.id] || !state.modals[action.id]?.isOpen) {
+        return state;
+      }
+
       return {
         ...state,
         modals: {
@@ -81,7 +88,13 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
         },
       };
 
-    case "CLOSE_ALL":
+    case "CLOSE_ALL": {
+      // Only update if there are open modals
+      const hasOpenModals = Object.values(state.modals).some(
+        (modal) => modal?.isOpen
+      );
+      if (!hasOpenModals) return state;
+
       const closedModals = Object.fromEntries(
         Object.entries(state.modals).map(([id, modal]) => [
           id,
@@ -89,19 +102,24 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
         ])
       );
       return { ...state, modals: closedModals };
+    }
 
     case "BRING_TO_FRONT": {
       const currentModal = state.modals[action.id];
       if (!currentModal) return state;
 
-      const currentZIndex = currentModal.zIndex || 0;
-      const maxZIndex = Math.max(
-        currentZIndex,
-        ...Object.values(state.modals)
-          .filter((modal) => modal !== currentModal)
-          .map((modal) => modal.zIndex || 0)
+      // Find the highest z-index from other modals
+      const otherModals = Object.entries(state.modals)
+        .filter(([id]) => id !== action.id)
+        .map(([, modal]) => modal);
+
+      const maxZIndex = otherModals.reduce(
+        (max, modal) => Math.max(max, modal?.zIndex || 0),
+        0
       );
 
+      // Only update if the modal's z-index isn't already higher than others
+      const currentZIndex = currentModal.zIndex || 0;
       if (currentZIndex >= maxZIndex) return state;
 
       return {
@@ -139,60 +157,65 @@ interface ModalProviderProps {
 export function ModalProvider({ children, registry }: ModalProviderProps) {
   const [state, dispatch] = useReducer(modalReducer, { modals: {} });
 
-  const createOpenHandler = useCallback(
-    (id: ModalId) => {
-      const registration = registry[id];
-      if (!registration) {
-        console.error(`No modal registered for id: ${id}`);
-        return () => {};
+  // Store stable references to all modal handlers to avoid recreating them
+  const stableHandlers = useRef(
+    new Map<
+      ModalId,
+      {
+        open: () => void;
+        close: () => void;
+        bringToFront: () => void;
       }
-      return () => {
-        dispatch({
-          type: "OPEN_MODAL",
-          id,
-          content: registration.component,
+    >()
+  );
+
+  // Function to get or create a stable handler for a modal
+  const getOrCreateHandlers = useCallback(
+    (id: ModalId) => {
+      if (!stableHandlers.current.has(id)) {
+        // Create stable handlers only once per modal ID
+        stableHandlers.current.set(id, {
+          open: () => {
+            const registration = registry[id];
+            if (!registration) {
+              console.error(`No modal registered for id: ${id}`);
+              return;
+            }
+            dispatch({
+              type: "OPEN_MODAL",
+              id,
+              content: registration.component,
+            });
+          },
+          close: () => dispatch({ type: "CLOSE_MODAL", id }),
+          bringToFront: () => dispatch({ type: "BRING_TO_FRONT", id }),
         });
-      };
+      }
+      return stableHandlers.current.get(id)!;
     },
     [registry]
   );
 
+  // Factory functions that return stable handler references
+  const createOpenHandler = useCallback(
+    (id: ModalId) => {
+      return getOrCreateHandlers(id).open;
+    },
+    [getOrCreateHandlers]
+  );
+
   const createCloseHandler = useCallback(
-    (id: ModalId) => () => dispatch({ type: "CLOSE_MODAL", id }),
-    []
+    (id: ModalId) => {
+      return getOrCreateHandlers(id).close;
+    },
+    [getOrCreateHandlers]
   );
 
   const createBringToFrontHandler = useCallback(
     (id: ModalId) => {
-      // Create a debounced version that only fires once per 100ms
-      let lastCallTime = 0;
-      const DEBOUNCE_TIME = 100; // milliseconds
-
-      return () => {
-        const now = Date.now();
-        if (now - lastCallTime < DEBOUNCE_TIME) {
-          return; // Skip if called too soon after last call
-        }
-        lastCallTime = now;
-
-        // Check if modal is already at the front before dispatching
-        const modal = state.modals[id];
-        if (!modal) return;
-
-        const currentZIndex = modal.zIndex || 0;
-        const maxZIndex = Math.max(
-          ...Object.values(state.modals)
-            .filter((m) => m !== modal)
-            .map((m) => m.zIndex || 0)
-        );
-
-        // Only dispatch if we need to change the z-index
-        if (currentZIndex < maxZIndex) {
-          dispatch({ type: "BRING_TO_FRONT", id });
-        }
-      };
+      return getOrCreateHandlers(id).bringToFront;
     },
-    [state.modals]
+    [getOrCreateHandlers]
   );
 
   const closeAllModals = useCallback(() => dispatch({ type: "CLOSE_ALL" }), []);
@@ -202,16 +225,26 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
     [state.modals]
   );
 
+  // Memoize the context value to prevent unnecessary rerenders
+  const contextValue = useMemo(
+    () => ({
+      createOpenHandler,
+      createCloseHandler,
+      createBringToFrontHandler,
+      closeAllModals,
+      getModalState,
+    }),
+    [
+      createOpenHandler,
+      createCloseHandler,
+      createBringToFrontHandler,
+      closeAllModals,
+      getModalState,
+    ]
+  );
+
   return (
-    <ModalContext.Provider
-      value={{
-        createBringToFrontHandler,
-        createOpenHandler,
-        createCloseHandler,
-        closeAllModals,
-        getModalState,
-      }}
-    >
+    <ModalContext.Provider value={contextValue}>
       <>
         {children}
         {Object.entries(state.modals).map(([id, modal]) => (
@@ -226,6 +259,7 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
 
 export function useModal() {
   const context = useContext(ModalContext);
+
   if (!context) {
     throw new Error("useModal must be used within a ModalProvider");
   }

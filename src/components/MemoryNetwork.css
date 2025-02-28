@@ -40,22 +40,38 @@
 }
 
 .memory-network-graph {
-  background-color: #2f3136;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.memory-network-table {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  overflow-y: auto;
 }
 
 #memory-network-container {
   width: 100%;
-  height: 100%;
+  height: 600px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .memory-network-loading {
   display: flex;
-  align-items: center;
   justify-content: center;
-  width: 100%;
+  align-items: center;
   height: 100%;
-  color: #ffffff;
-  font-size: 1.2em;
+  min-height: 300px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
 }
 
 .memory-network-graph.active,
@@ -125,21 +141,21 @@
 }
 
 .memory-delete-button {
-  background: none;
+  background-color: rgba(200, 30, 30, 0.3);
+  color: white;
   border: none;
-  color: #ff4444;
-  cursor: pointer;
-  padding: 4px 8px;
   border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8em;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .memory-delete-button:hover {
-  background-color: rgba(255, 68, 68, 0.1);
+  background-color: rgba(220, 30, 30, 0.5);
 }
 
 .memory-delete-button:active {
@@ -148,12 +164,11 @@
 
 /* Memory Node Styles */
 .memory-node {
-  background-color: #36393f;
-  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background-color: rgba(20, 20, 20, 0.6);
   overflow: hidden;
-  transition: all 0.2s ease;
-  cursor: pointer;
 }
 
 .memory-node:hover {
@@ -166,31 +181,44 @@
   max-height: unset;
 }
 
+.memory-node-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  background-color: rgba(40, 40, 40, 0.6);
+}
+
 .memory-node-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background-color: rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.memory-node-connector {
+  width: 20px;
+  height: 20px;
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  margin-right: 10px;
 }
 
 .memory-node-time {
-  font-size: 0.8em;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.memory-node-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .memory-node-content {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
+  padding: 12px 16px;
   max-height: 200px;
   overflow: hidden;
-}
-
-.memory-node-expanded .memory-node-content {
-  max-height: unset;
+  position: relative;
 }
 
 .memory-node-fade {
@@ -198,21 +226,31 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 50px;
   background: linear-gradient(
     to bottom,
-    rgba(54, 57, 63, 0),
-    rgba(54, 57, 63, 1)
+    rgba(20, 20, 20, 0),
+    rgba(20, 20, 20, 1)
   );
-  pointer-events: none;
 }
 
-.memory-node-connector {
-  width: 2px;
-  height: 12px;
-  background-color: rgba(255, 255, 255, 0.2);
-  margin-left: 20px;
-  margin-top: -1px;
+.memory-node-expanded .memory-node-content {
+  max-height: none;
+}
+
+.memory-view-button {
+  background-color: rgba(30, 80, 200, 0.3);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.memory-view-button:hover {
+  background-color: rgba(30, 80, 220, 0.5);
 }
 
 /* Memory Node Overlay Styles */
@@ -392,31 +430,12 @@
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-.memory-node-header {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+/* Make network nodes more visible */
+.vis-network .vis-node {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-.memory-node-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.memory-view-button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background-color 0.2s;
-}
-
-.memory-view-button:hover {
-  background-color: var(--bg-hover);
+.vis-network .vis-edge {
+  stroke-width: 2px;
 }

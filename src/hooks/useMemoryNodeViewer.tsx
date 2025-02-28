@@ -1,4 +1,10 @@
-import { ReactNode, createContext, useContext, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { useModal } from "./useModal";
 
 interface MemoryNodeData {
@@ -59,16 +65,16 @@ export function useMemoryNodeViewer() {
   const openModal = createOpenHandler("memoryNodeViewer");
   const closeModal = createCloseHandler("memoryNodeViewer");
 
-  const showMemoryNode = (
-    node: MemoryNodeData,
-    deleteCallback?: (node: MemoryNodeData) => void
-  ) => {
-    context.setNodeData(node);
-    if (deleteCallback) {
-      context.setOnDelete(() => deleteCallback);
-    }
-    openModal();
-  };
+  const showMemoryNode = useCallback(
+    (node: MemoryNodeData, deleteCallback?: (node: MemoryNodeData) => void) => {
+      context.setNodeData(node);
+      if (deleteCallback) {
+        context.setOnDelete(() => deleteCallback);
+      }
+      openModal();
+    },
+    [context, openModal]
+  );
 
   const hideMemoryNode = () => {
     closeModal();
