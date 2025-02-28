@@ -13,6 +13,18 @@
   touch-action: manipulation;
 }
 
+.modal.container.fullscreen {
+  border-radius: 0;
+  box-shadow: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .modal.content {
   height: 100%;
   display: flex;
@@ -128,6 +140,36 @@
 @media (prefers-color-scheme: dark) {
   .modal.content {
     background: #1a1a1a;
+  }
+}
+
+/* iOS safe area support */
+@supports (-webkit-touch-callout: none) {
+  .modal.container.fullscreen {
+    /* Apply safe area insets in fullscreen mode */
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+    padding-left: var(--safe-area-left);
+    padding-right: var(--safe-area-right);
+  }
+
+  /* Ensure the modal body has proper padding in fullscreen mode */
+  .modal.container.fullscreen .modal.body {
+    padding-bottom: max(16px, var(--safe-area-bottom));
+    padding-left: max(16px, var(--safe-area-left));
+    padding-right: max(16px, var(--safe-area-right));
+  }
+
+  /* Adjustments for PWA mode */
+  @media all and (display-mode: standalone) {
+    .modal.container.fullscreen {
+      position: fixed;
+    }
+
+    .modal-close-button,
+    .modal-maximize-button {
+      top: calc(var(--safe-area-top) + 10px);
+    }
   }
 }
 

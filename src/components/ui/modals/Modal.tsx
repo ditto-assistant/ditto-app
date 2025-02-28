@@ -199,8 +199,6 @@ export default function Modal({
   const modalStyle = isFullscreen
     ? {
         zIndex,
-        height: "100%",
-        width: "100%",
       }
     : {
         zIndex,
@@ -215,7 +213,7 @@ export default function Modal({
   return createPortal(
     <div
       ref={modalRef}
-      className="modal container"
+      className={`modal container ${isFullscreen ? "fullscreen" : ""}`}
       style={modalStyle}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
