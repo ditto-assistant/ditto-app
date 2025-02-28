@@ -187,7 +187,6 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
     height: isMobile ? window.innerHeight * 0.6 : 500,
   });
   const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null);
-  const [scriptChatCopied, setScriptChatCopied] = useState(false);
   const [scriptChatPosition, setScriptChatPosition] = useState({
     x: isMobile ? (window.innerWidth - window.innerWidth * 0.9) / 2 : null,
     y: isMobile ? (window.innerHeight - window.innerHeight * 0.6) / 2 : null,
@@ -641,9 +640,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
 
   const handleScriptChatCopy = (text) => {
     navigator.clipboard.writeText(text);
-    setScriptChatCopied(true);
+    toast.success("Copied!");
     setScriptChatActionOverlay(null);
-    setTimeout(() => setScriptChatCopied(false), 2000);
   };
 
   const handleScriptChatDelete = (index) => {
@@ -1320,8 +1318,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                           onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(msg.fullScript);
-                            setScriptChatCopied(true);
-                            setTimeout(() => setScriptChatCopied(false), 2000);
+                            toast.success("Copied!");
                           }}
                           className="copy-full-script-button"
                         >
@@ -1371,8 +1368,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                                 .split("```")[0]
                                 .trim()
                             );
-                            setScriptChatCopied(true);
-                            setTimeout(() => setScriptChatCopied(false), 2000);
+                            toast.success("Copied!");
                             setCodeViewerOverlay(null);
                           }}
                           className="code-viewer-copy-button"
@@ -1422,9 +1418,6 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     Delete
                   </button>
                 </div>
-              )}
-              {scriptChatCopied && (
-                <div className="copied-notification">Copied!</div>
               )}
               {isTyping && (
                 <div className="typing-indicator">

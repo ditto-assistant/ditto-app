@@ -9,6 +9,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FiCopy } from "react-icons/fi";
 import remarkGfm from "remark-gfm";
+import toast from "react-hot-toast";
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion";
 
@@ -209,13 +210,7 @@ const TableView = ({ memories, updateConversation }) => {
                     navigator.clipboard.writeText(
                       String(children).replace(/\n$/, "")
                     );
-                    const toast = document.createElement("div");
-                    toast.className = "copied-notification";
-                    toast.textContent = "Copied!";
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                      toast.remove();
-                    }, 2000);
+                    toast.success("Copied!");
                   }}
                   title="Copy code"
                 >
@@ -235,13 +230,7 @@ const TableView = ({ memories, updateConversation }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(inlineText);
-                    const toast = document.createElement("div");
-                    toast.className = "copied-notification";
-                    toast.textContent = "Copied!";
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                      toast.remove();
-                    }, 2000);
+                    toast.success("Copied!");
                   }}
                   title="Copy code"
                 >
@@ -338,13 +327,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete, updateConversation }) => {
                       navigator.clipboard.writeText(
                         String(children).replace(/\n$/, "")
                       );
-                      const toast = document.createElement("div");
-                      toast.className = "copied-notification";
-                      toast.textContent = "Copied!";
-                      document.body.appendChild(toast);
-                      setTimeout(() => {
-                        toast.remove();
-                      }, 2000);
+                      toast.success("Copied!");
                     }}
                     title="Copy code"
                   >
@@ -364,13 +347,7 @@ const MemoryNodeOverlay = ({ node, onClose, onDelete, updateConversation }) => {
                     onClick={(e) => {
                       e.stopPropagation();
                       navigator.clipboard.writeText(inlineText);
-                      const toast = document.createElement("div");
-                      toast.className = "copied-notification";
-                      toast.textContent = "Copied!";
-                      document.body.appendChild(toast);
-                      setTimeout(() => {
-                        toast.remove();
-                      }, 2000);
+                      toast.success("Copied!");
                     }}
                     title="Copy code"
                   >

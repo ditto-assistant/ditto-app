@@ -185,7 +185,6 @@
 
 /* Ensure overlays appear above the scripts modal */
 .add-script-overlay,
-.delete-confirmation-overlay,
 .revert-confirmation-overlay {
   z-index: 9999;
 }

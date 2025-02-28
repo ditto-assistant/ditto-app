@@ -1,6 +1,12 @@
 @import "../styles/variables.css";
 @import "../styles/animations.css";
 
+/* Add root variables for chat bubble colors */
+:root {
+  --ditto-color: #40444b;
+  --user-color: #4752c4;
+}
+
 .chat-feed {
   background-color: transparent;
   padding: 20px;
@@ -16,11 +22,6 @@
   padding-bottom: calc(80px + var(--safe-area-bottom));
 }
 
-/* Add smooth scrolling behavior to the container */
-.chat-feed {
-  scroll-behavior: smooth;
-}
-
 /* Ensure smooth animation for the bottom ref */
 .chat-feed > div:last-child {
   transition: margin-top 0.3s ease-out;
@@ -29,42 +30,145 @@
 
 .message-container {
   display: flex;
-  align-items: flex-end;
-  margin-bottom: 12px;
-  /* Slightly more spacing between messages */
+  flex-direction: column;
+  align-items: flex-start;
   position: relative;
-  width: 100%;
   transition: opacity 0.2s ease-out;
 }
 
-.message-container.Ditto {
-  flex-direction: row;
-}
-
 .message-container.User {
-  justify-content: flex-end;
+  align-items: flex-end;
 }
 
+/* Avatar positioning for all screen sizes */
 .avatar {
-  width: 2.4em;
-  /* Slightly larger avatars */
-  height: 2.4em;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: none;
-  /* Remove border */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 0 8px;
-  /* Increased margin */
   object-fit: cover;
   overflow: hidden;
+  position: relative;
+  margin-top: 0px;
+  z-index: 1;
+}
+
+.message-container.Ditto .avatar.ditto-avatar {
+  align-self: flex-start;
+  margin-left: 8px;
+}
+
+.message-container.User .avatar.user-avatar {
+  align-self: flex-end;
+  margin-right: 8px;
+}
+
+/* Adjust the spacing at the bottom to make room for reactions */
+.message-reactions {
+  margin-top: 4px;
+  align-self: flex-start;
+  margin-bottom: 8px;
+}
+
+/* Typing indicator positioning */
+.typing-indicator-container {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.typing-indicator-container .avatar.ditto-avatar {
+  margin-top: -5px;
+  margin-left: 8px;
+}
+
+/* Create teardrop effect for chat bubbles */
+.chat-bubble.Ditto {
+  border-bottom-left-radius: 2px !important;
+  position: relative;
+  margin-left: 0;
+  margin-right: auto;
+  max-width: 90%;
+}
+
+.chat-bubble.User {
+  border-bottom-right-radius: 2px !important;
+  position: relative;
+  margin-left: auto;
+  margin-right: 0;
+  max-width: 90%;
+}
+
+/* Add teardrop effect using pseudo-elements */
+.chat-bubble.Ditto:after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0px;
+  width: 15px;
+  height: 15px;
+  background: var(--ditto-color, #40444b);
+  border-bottom-left-radius: 15px;
+  z-index: -1;
+}
+
+.chat-bubble.User:after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: 0px;
+  width: 15px;
+  height: 15px;
+  background: var(--user-color, #4752c4);
+  border-bottom-right-radius: 15px;
+  z-index: -1;
+}
+
+/* Small screen layout with avatars below messages */
+@media screen and (max-width: 600px) {
+  .message-container {
+    max-width: 95%;
+  }
+
+  .message-container.User {
+    margin-left: auto;
+  }
+
+  .message-container.Ditto {
+    margin-right: auto;
+  }
+
+  .chat-bubble.small-message {
+    max-width: max-content;
+  }
+
+  /* Adjust footer positioning */
+  .message-footer {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+
+  .typing-indicator-container {
+    align-self: flex-start;
+    margin-left: 12px;
+    margin-bottom: 8px;
+  }
+
+  .typing-indicator {
+    padding: 8px 12px;
+    border-radius: 18px;
+    background-color: var(--ditto-color, #40444b);
+  }
 }
 
 .chat-bubble {
   position: relative;
-  padding: 10px 15px;
-  border-radius: 15px;
+  /* border-radius: 15px; */
   margin: 5px 0;
-  max-width: 80%;
+  /* max-width: 80%; */
   transition: background-color 0.2s ease;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -82,8 +186,7 @@
   -moz-user-select: text;
   -ms-user-select: text;
   width: auto;
-  gap: 4px;
-  margin-top: 16px;
+  /* gap: 4px; */
   touch-action: pan-y;
 }
 
@@ -113,12 +216,11 @@
 
 .chat-bubble.User {
   background-color: #4752c4;
-  /* Darker blue for user messages */
   color: #ffffff;
   text-align: left;
-  margin-left: 10px;
-  margin-right: 5px;
-  border-bottom-right-radius: 2px;
+  margin-left: auto;
+  margin-right: 0;
+  border-bottom-right-radius: 2px !important;
   border-top-right-radius: 16px;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
@@ -128,17 +230,16 @@
 
 .chat-bubble.Ditto {
   background-color: #40444b;
-  /* Lighter gray than before */
   color: #ffffff;
   text-align: left;
-  margin-right: 10px;
-  margin-left: 5px;
-  border-bottom-left-radius: 2px;
+  margin-right: auto;
+  margin-left: 0;
+  border-bottom-left-radius: 2px !important;
   border-top-right-radius: 16px;
   border-top-left-radius: 16px;
   border-bottom-right-radius: 16px;
   border: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .sender-name {
@@ -151,21 +252,17 @@
 
 .message-text {
   font-size: 14px;
-  line-height: 1.4;
-  padding-bottom: 0.5em;
-  padding-top: 0.5em;
-  min-height: 20px;
   user-select: text;
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
-  max-width: 100%;
   word-wrap: break-word;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
   overflow: hidden;
   touch-action: pan-y;
+  padding: 0px 4px;
 }
 
 .chat-image {
@@ -177,7 +274,6 @@
   border-radius: 10px;
   padding: 1em;
   margin: 1em 0;
-  /* Add margin to top and bottom */
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
@@ -350,86 +446,38 @@
   top: 8px;
   right: 8px;
   opacity: 1;
-  /* Always visible */
 }
 
-/* Remove the hover show/hide for copy button */
 .code-container:hover .code-block-button {
   opacity: 1;
 }
 
-/* Update inline code button spacing */
 .inline-code-button {
   position: static;
-  margin-left: 8px;
+  margin: 0;
   width: 32px;
   height: 32px;
   padding: 8px;
-}
-
-.inline-code-button svg {
-  margin-right: 6px;
-}
-
-.copied-notification {
-  position: fixed;
-  bottom: 6em;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 128, 0, 0.75);
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5000;
-  opacity: 1;
-  transition: opacity 1s ease-in-out;
-}
-
-/* Disable text selection for touch devices (usually mobile) */
-@media (pointer: coarse) {
-  .chat-bubble {
-    touch-action: manipulation;
-    transition: none;
-  }
-
-  .chat-bubble:active {
-    transform: none;
-    transition: none;
-  }
 }
 
 .message-footer {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 2px 12px;
-  /* Reduced top/bottom padding from 4px to 2px */
-  box-sizing: border-box;
-  background: transparent;
-  border-top: none;
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 .message-timestamp {
-  font-size: 0.65em;
-  /* Slightly smaller from 0.7em */
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-  line-height: 1;
-  padding-bottom: 5px;
+  margin-left: auto;
 }
 
 .message-options {
   cursor: pointer;
   font-size: 1.2em;
   color: rgba(0, 0, 0, 0.7);
-  /* Darker color for better visibility */
 }
 
 .message-options span {
@@ -437,23 +485,9 @@
   transform: rotate(90deg);
 }
 
-/* Adjust padding for both bubble types */
-.chat-bubble.User,
-.chat-bubble.Ditto {
-  padding-bottom: 22px;
-  /* Reduced from 30px */
-}
-
-/* Add styles for small messages */
-.chat-bubble.small-message {
-  min-height: 50px;
-  min-width: 60px; /* Ensure minimum width for very short messages */
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Center content vertically */
-  padding-left: 15px;
-  padding-right: 15px;
-  border-radius: 18px; /* More rounded for small messages */
+.chat-bubble.small-message .message-footer {
+  position: relative;
+  padding: 0;
 }
 
 .chat-bubble.User.small-message {
@@ -465,8 +499,7 @@
 }
 
 .chat-bubble.small-message .message-text {
-  min-height: 20px;
-  text-align: center; /* Center text for very short messages */
+  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -476,7 +509,6 @@
 .chat-bubble.small-message .message-footer {
   width: 100%;
   justify-content: center;
-  padding: 2px 8px;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -501,13 +533,11 @@
 .user-avatar {
   border-radius: 50%;
   background-color: #ffffff;
-  /* Fallback background color */
 }
 
 .ditto-avatar {
   border-radius: 50%;
   background-color: transparent;
-  /* Allow logo background to show */
 }
 
 .reaction {
@@ -538,8 +568,7 @@
 
 /* Adjust chat bubble to make room for reactions on the left */
 .chat-bubble {
-  margin-top: 16px;
-  /* Increased to make room for reactions */
+  margin-top: 1px;
   position: relative;
 }
 
@@ -548,7 +577,6 @@
   position: absolute;
   top: -10px;
   right: 10px;
-  /* ... rest of the existing tool badge styles ... */
 }
 
 /* Add a subtle animation for new reactions */
@@ -568,162 +596,8 @@
   animation: reactionAppear 0.2s ease-out forwards;
 }
 
-/* Image-related styles are now handled by ImageViewer component */
-/* Remove redundant .image-overlay and related styles */
-
-/* Chat bubble and other existing styles */
 .chat-bubble {
-  max-width: 60%;
-}
-
-/* Add styles for the image container */
-.memory-image-container {
-  margin: 4px 0;
-  max-height: 120px;
-  /* Slightly smaller than before */
-  overflow: hidden;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  display: inline-block;
-  margin-right: 8px;
-  vertical-align: top;
-}
-
-.memory-image-container:hover {
-  opacity: 0.9;
-}
-
-/* Style the images themselves */
-.memory-image {
-  max-height: 120px;
-  /* Match container */
-  width: auto;
-  object-fit: cover;
-  border-radius: 6px;
-  transition: transform 0.2s;
-}
-
-.memory-image:hover {
-  transform: scale(1.02);
-}
-
-/* Update memory response to handle text with images better */
-.memory-response {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.95em;
-  margin-bottom: 8px;
-  line-height: 1.4;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-/* Add styles for multiple images in a row */
-.memory-response p {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-/* Make sure text nodes in the response wrap properly */
-.memory-response p > :not(.memory-image-container) {
-  flex: 1 1 100%;
-}
-
-/* Add these styles for the delete confirmation overlay */
-.delete-confirmation-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-  backdrop-filter: blur(5px);
-}
-
-.delete-confirmation-content {
-  background-color: #36393f;
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  color: #ffffff;
-}
-
-.delete-confirmation-title {
-  font-size: 1.2em;
-  margin-bottom: 16px;
-  font-weight: 600;
-}
-
-.delete-confirmation-message {
-  margin-bottom: 24px;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.4;
-}
-
-.delete-confirmation-docid {
-  font-family: monospace;
-  background-color: #2f3136;
-  padding: 8px;
-  border-radius: 6px;
-  margin-bottom: 24px;
-  word-break: break-all;
-  font-size: 0.9em;
-  color: #a0a0a0;
-}
-
-.delete-confirmation-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.delete-confirmation-button {
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.delete-confirmation-button.cancel {
-  background-color: #4f545c;
-  color: white;
-}
-
-.delete-confirmation-button.confirm {
-  background-color: #ed4245;
-  color: white;
-}
-
-/* Add styles for disabled state */
-.delete-confirmation-button.confirm:disabled {
-  background-color: #72494a;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: not-allowed;
-  transform: none;
-}
-
-.delete-confirmation-button:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
-}
-
-.delete-confirmation-button:not(:disabled):active {
-  transform: translateY(0);
-}
-
-/* Update docId style when not found */
-.delete-confirmation-docid.not-found {
-  color: #ed4245;
+  max-width: 80%;
 }
 
 /* Add these styles for the delete action button */
@@ -740,20 +614,6 @@
 
 .action-button.delete-action:active {
   background-color: rgba(255, 68, 68, 0.2);
-}
-
-/* Add loading spinner styles */
-.delete-confirmation-loading {
-  font-family: monospace;
-  background-color: #2f3136;
-  padding: 16px;
-  border-radius: 6px;
-  margin-bottom: 24px;
-  color: #a0a0a0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
 }
 
 .spinner {
@@ -794,7 +654,6 @@
 .message-text a {
   pointer-events: auto;
   position: relative;
-  z-index: 1;
   transition: opacity var(--transition-normal);
 }
 
@@ -902,7 +761,6 @@
     padding: 6px 8px;
     font-size: 0.8em;
     gap: 4px;
-    /* Reduce space between icon and text */
   }
 
   .memory-control-button svg {
@@ -944,7 +802,6 @@
     transform: translateX(18px);
   }
 
-  /* Adjust the controls container padding */
   .memory-controls {
     padding: 8px 12px;
   }
@@ -974,26 +831,12 @@
     font-size: 0.75em;
   }
 
-  /* Further reduce margins */
   .memory-content {
     width: calc(100% - 16px);
     margin: 8px;
   }
-
-  /* Adjust header padding */
-  .memory-header {
-    padding: 16px;
-  }
 }
 
-/* Add styles for image bubbles */
-.chat-bubble {
-  /* ... existing styles ... */
-  gap: 4px;
-  /* Add gap between image and text content */
-}
-
-/* Create container for images */
 .chat-image-container {
   position: relative;
   margin: -10px -14px 8px -14px;
@@ -1004,7 +847,6 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
-/* Update image styles */
 .chat-image {
   display: block;
   max-width: 100%;
@@ -1013,7 +855,6 @@
   height: auto;
   object-fit: contain;
   margin: 1em 0;
-  /* Add margin to top and bottom */
   padding: 0;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
@@ -1231,28 +1072,6 @@
   }
 }
 
-/* Update z-index to ensure overlay is above other content */
-.delete-confirmation-overlay {
-  /* ... existing styles */
-  z-index: 5000;
-  /* Adjust if necessary */
-}
-
-/* Add transition styles if needed */
-.delete-confirmation-content {
-  /* ... existing styles */
-  will-change: transform, opacity;
-}
-
-/* Add these styles for the animated chunks */
-.animating-chunk {
-  position: absolute;
-  color: rgba(255, 255, 255, 0.7);
-  animation: fadeInChunk 0.5s ease-out;
-  margin-left: 2px;
-  white-space: pre-wrap;
-}
-
 @keyframes fadeInChunk {
   0% {
     opacity: 0;
@@ -1293,21 +1112,6 @@
   }
 }
 
-/* Ensure smooth scrolling */
-.chat-feed {
-  scroll-behavior: smooth;
-}
-
-/* Update the animating word styles */
-.animating-word {
-  position: absolute;
-  color: rgba(255, 255, 255, 0.9);
-  animation: fadeInWord 0.4s ease-out;
-  margin-left: 2px;
-  white-space: pre-wrap;
-  display: inline-block;
-}
-
 @keyframes fadeInWord {
   0% {
     opacity: 0;
@@ -1326,10 +1130,8 @@
   }
 }
 
-/* Update message text container to handle animations */
 .message-text {
   position: relative;
-  min-height: 20px;
   overflow: hidden;
 }
 

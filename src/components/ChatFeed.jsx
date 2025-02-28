@@ -871,19 +871,6 @@ export default function ChatFeed({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
-        {message.sender === "Ditto" && (
-          <img
-            src={dittoAvatar}
-            alt="Ditto"
-            className={`avatar ditto-avatar ${
-              isLastDittoMessage && isGenerating
-                ? "animating"
-                : isLastDittoMessage && !isGenerating
-                  ? "spinning"
-                  : ""
-            }`}
-          />
-        )}
         {showTypingIndicator ? (
           <div className="typing-indicator-container">
             <div className="typing-indicator">
@@ -893,69 +880,84 @@ export default function ChatFeed({
             </div>
           </div>
         ) : (
-          <div
-            className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
-              actionOverlay && actionOverlay.index === index ? "blurred" : ""
-            } ${isSmallMessage ? "small-message" : ""}`}
-            style={bubbleStyles.chatbubble}
-            onClick={(e) => handleBubbleInteraction(e, index)}
-            onContextMenu={(e) => handleBubbleInteraction(e, index)}
-            data-index={index}
-          >
-            {toolType && (
-              <div className={`tool-badge ${toolType.toLowerCase()}`}>
-                {toolType.toUpperCase()}
-              </div>
-            )}
+          <>
+            <div
+              className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
+                actionOverlay && actionOverlay.index === index ? "blurred" : ""
+              } ${isSmallMessage ? "small-message" : ""}`}
+              style={bubbleStyles.chatbubble}
+              onClick={(e) => handleBubbleInteraction(e, index)}
+              onContextMenu={(e) => handleBubbleInteraction(e, index)}
+              data-index={index}
+            >
+              {toolType && (
+                <div className={`tool-badge ${toolType.toLowerCase()}`}>
+                  {toolType.toUpperCase()}
+                </div>
+              )}
 
-            {showSenderName && message.sender && (
-              <div className="sender-name">{message.sender}</div>
-            )}
-            <div className="message-text" style={bubbleStyles.text}>
-              {message.toolStatus && toolType ? (
-                <>
-                  {renderMessageText(message.text)}
-                  <div
-                    className={`tool-status ${
-                      message.toolStatus === "complete"
-                        ? "complete"
-                        : message.toolStatus === "failed"
-                          ? "failed"
-                          : ""
-                    }`}
-                  >
-                    {message.toolStatus}
-                    {message.showTypingDots && (
-                      <div className="typing-dots">
-                        <div className="dot"></div>
-                        <div className="dot"></div>
-                        <div className="dot"></div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                renderMessageText(message.text)
+              {showSenderName && message.sender && (
+                <div className="sender-name">{message.sender}</div>
+              )}
+              <div className="message-text" style={bubbleStyles.text}>
+                {message.toolStatus && toolType ? (
+                  <>
+                    {renderMessageText(message.text)}
+                    <div
+                      className={`tool-status ${
+                        message.toolStatus === "complete"
+                          ? "complete"
+                          : message.toolStatus === "failed"
+                            ? "failed"
+                            : ""
+                      }`}
+                    >
+                      {message.toolStatus}
+                      {message.showTypingDots && (
+                        <div className="typing-dots">
+                          <div className="dot"></div>
+                          <div className="dot"></div>
+                          <div className="dot"></div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  renderMessageText(message.text)
+                )}
+              </div>
+              <div className="message-footer">
+                <div className="message-timestamp">
+                  {formatTimestamp(message.timestamp)}
+                </div>
+              </div>
+              {reactions[index] && reactions[index].length > 0 && (
+                <div className="message-reactions">
+                  {reactions[index].map((emoji, emojiIndex) => (
+                    <span key={emojiIndex} className="reaction">
+                      {emoji}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
-            <div className="message-footer">
-              <div className="message-timestamp">
-                {formatTimestamp(message.timestamp)}
-              </div>
-            </div>
-            {reactions[index] && reactions[index].length > 0 && (
-              <div className="message-reactions">
-                {reactions[index].map((emoji, emojiIndex) => (
-                  <span key={emojiIndex} className="reaction">
-                    {emoji}
-                  </span>
-                ))}
-              </div>
+            {message.sender === "Ditto" && (
+              <img
+                src={dittoAvatar}
+                alt="Ditto"
+                className={`avatar ditto-avatar ${
+                  isLastDittoMessage && isGenerating
+                    ? "animating"
+                    : isLastDittoMessage && !isGenerating
+                      ? "spinning"
+                      : ""
+                }`}
+              />
             )}
-          </div>
-        )}
-        {message.sender === "User" && (
-          <img src={profilePic} alt="User" className="avatar user-avatar" />
+            {message.sender === "User" && (
+              <img src={profilePic} alt="User" className="avatar user-avatar" />
+            )}
+          </>
         )}
         {actionOverlay && actionOverlay.index === index && (
           <div
