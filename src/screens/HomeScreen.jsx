@@ -284,63 +284,72 @@ export default function HomeScreen() {
     // Update the existing useEffect that handles viewport height
     const setVH = () => {
       // First get the viewport height and multiply it by 1% to get a value for a vh unit
-      const vh = window.innerHeight * 0.01;
+      let vh = window.innerHeight * 0.01;
+
+      // For iOS Safari, use the visualViewport API for more accurate measurements
+      if (isIOS && window.visualViewport) {
+        vh = window.visualViewport.height * 0.01;
+      }
+
       // Then set the value in the --vh custom property to the root of the document
       document.documentElement.style.setProperty("--vh", `${vh}px`);
+
+      // Also set a specific iOS viewport height value
+      if (isIOS) {
+        const iosVh = (window.innerHeight + 80) * 0.01; // Add extra space for the footer
+        document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
+      }
     };
 
     // Initial set
     setVH();
 
-    // Add event listeners
+    // Add event listeners for various events that might change the viewport
     window.addEventListener("resize", setVH);
     window.addEventListener("orientationchange", setVH);
+    window.addEventListener("scroll", setVH);
 
-    // For Chrome mobile, handle toolbar show/hide
-    let lastHeight = window.innerHeight;
-    window.addEventListener("scroll", () => {
-      if (window.innerHeight !== lastHeight) {
-        lastHeight = window.innerHeight;
-        setVH();
-      }
-    });
-
-    // iOS-specific handling for Safari toolbar
+    // Special handling for iOS to help with browser chrome appearing/disappearing
     if (isIOS) {
       // Add meta viewport tag to prevent scaling issues
       const viewportMeta = document.querySelector('meta[name="viewport"]');
       if (viewportMeta) {
         viewportMeta.setAttribute(
           "content",
-          "width=device-width, initial-scale=1, viewport-fit=cover"
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
         );
       }
 
-      // Add iOS class to root element
+      // Add iOS class to root and body elements
       document.documentElement.classList.add("ios");
+      document.body.classList.add("ios-device");
 
-      // Simple handler for orientation changes
-      const handleIOSOrientationChange = () => {
-        // Force redraw after orientation change
-        setTimeout(() => {
-          setVH();
-        }, 300); // Small delay to allow iOS to complete orientation change
-      };
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", setVH);
+        window.visualViewport.addEventListener("scroll", setVH);
+      }
 
-      window.addEventListener("orientationchange", handleIOSOrientationChange);
+      // Set a timer to periodically check viewport size on iOS
+      const safariHeightTimer = setInterval(setVH, 500);
+
+      // Also check after a brief delay for when the page first loads
+      setTimeout(setVH, 300);
 
       return () => {
+        // Clean up event listeners
         window.removeEventListener("resize", setVH);
         window.removeEventListener("orientationchange", setVH);
-        window.removeEventListener(
-          "orientationchange",
-          handleIOSOrientationChange
-        );
+        window.removeEventListener("scroll", setVH);
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener("resize", setVH);
+          window.visualViewport.removeEventListener("scroll", setVH);
+        }
+        clearInterval(safariHeightTimer);
         document.documentElement.classList.remove("ios");
+        document.body.classList.remove("ios-device");
       };
     }
 
-    // Cleanup
     return () => {
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);

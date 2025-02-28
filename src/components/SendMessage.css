@@ -1,9 +1,14 @@
 @import "../styles/variables.css";
 @import "@/styles/animations.css";
 
-/* Simplified iOS-specific styles */
+/* Improved iOS-specific styles */
 .ios-device .Form {
   padding-bottom: env(safe-area-inset-bottom, 0);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 300; /* Ensure it's above everything */
 }
 
 .Contents {
@@ -31,6 +36,8 @@
   gap: var(--spacing-sm);
   z-index: 10; /* Ensure it's above other elements */
   align-items: center; /* Align items in the center to fix button height */
+  padding: 8px;
+  border-radius: 8px;
 }
 
 .InputWrapper {
@@ -38,6 +45,7 @@
   width: 100%;
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
 .TextArea {
@@ -50,7 +58,7 @@
   line-height: 1.5;
   font-size: 16px;
   max-height: 200px;
-  min-height: 20px;
+  min-height: 44px;
 }
 
 .TextArea:focus {
@@ -58,11 +66,25 @@
   box-shadow: 0 0 3px var(--primary-color);
 }
 
-/* Simplified iOS-specific adjustments for the text area */
+/* Enhanced iOS-specific adjustments for the text area */
 @supports (-webkit-touch-callout: none) {
   .TextArea {
     /* Prevent zoom on focus in iOS */
     font-size: 16px;
+    padding-left: env(safe-area-inset-left, var(--spacing-md));
+    padding-right: calc(env(safe-area-inset-right, 0px) + 40px);
+  }
+
+  .ios-device .Submit {
+    height: 44px;
+    min-height: 44px;
+    border-radius: var(--border-radius-md);
+    padding-right: calc(var(--spacing-md) + env(safe-area-inset-right, 0px));
+    margin-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .ios-device .App-footer {
+    z-index: 300;
   }
 }
 
@@ -115,12 +137,13 @@
   padding: var(--spacing-sm) var(--spacing-md);
   cursor: pointer;
   transition: all var(--transition-normal);
-  height: 100%; /* Make the button height match its container */
-  align-self: stretch; /* Stretch to match parent height */
+  height: 44px; /* Fixed height for consistency */
   min-height: 44px; /* Minimum touch target size */
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  align-self: stretch;
 }
 
 .Submit.disabled {
