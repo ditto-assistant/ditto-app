@@ -38,7 +38,7 @@ import { useBalance } from "../../hooks/useBalance";
 import { useAuth } from "../../hooks/useAuth";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
-import { useIsMobile } from "../../hooks/useIsMobile";
+import { usePlatform } from "@/hooks/usePlatform";
 import "./FullScreenEditor.css"; // Import the CSS file
 
 // Initialize ace for production
@@ -172,7 +172,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
   const editorRef = useRef(null);
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
   const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
   const [viewMode, setViewMode] = useState("code"); // Changed from 'tree' to 'code'
   const [isSaving, setIsSaving] = useState(false);

@@ -5,10 +5,9 @@ import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { useIsMobile } from "../hooks/useIsMobile";
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 import { useBalance } from "@/hooks/useBalance";
-
+import { usePlatform } from "@/hooks/usePlatform";
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -36,7 +35,7 @@ export default function SendMessage({
   const textAreaRef = useRef(null);
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const { preferences } = useModelPreferences();
   const { handleImageClick } = useImageViewerHandler(false);

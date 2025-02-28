@@ -15,7 +15,8 @@ import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePlatform } from "@/hooks/usePlatform";
+
 export default function Settings() {
   const balance = useBalance();
   const { signOut, user } = useAuth();
@@ -23,7 +24,7 @@ export default function Settings() {
   const { createCloseHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
 
   const handleLogout = () => {
     console.log("logging out");

@@ -1,14 +1,21 @@
 @import "../styles/variables.css";
 @import "@/styles/animations.css";
 
-/* Improved iOS-specific styles */
-.ios-device .Form {
-  padding-bottom: env(safe-area-inset-bottom, 0);
+/* Form styles */
+.Form {
   display: flex;
-  align-items: center;
-  width: 100%;
+  flex: 1;
+  max-width: 100%;
+  background-color: var(--background-input);
   position: relative;
-  z-index: 300; /* Ensure it's above everything */
+  gap: var(--spacing-sm);
+  z-index: 10;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: var(
+    --safe-area-bottom
+  ); /* Add safe area inset for all devices */
 }
 
 .Contents {
@@ -25,19 +32,6 @@
   justify-content: center;
   align-items: flex-end;
   position: relative;
-}
-
-.Form {
-  display: flex;
-  flex: 1;
-  max-width: 100%;
-  background-color: var(--background-input);
-  position: relative;
-  gap: var(--spacing-sm);
-  z-index: 10; /* Ensure it's above other elements */
-  align-items: center; /* Align items in the center to fix button height */
-  padding: 8px;
-  border-radius: 8px;
 }
 
 .InputWrapper {
@@ -66,27 +60,7 @@
   box-shadow: 0 0 3px var(--primary-color);
 }
 
-/* Enhanced iOS-specific adjustments for the text area */
-@supports (-webkit-touch-callout: none) {
-  .TextArea {
-    /* Prevent zoom on focus in iOS */
-    font-size: 16px;
-    padding-left: env(safe-area-inset-left, var(--spacing-md));
-    padding-right: calc(env(safe-area-inset-right, 0px) + 40px);
-  }
-
-  .ios-device .Submit {
-    height: 44px;
-    min-height: 44px;
-    border-radius: var(--border-radius-md);
-    padding-right: calc(var(--spacing-md) + env(safe-area-inset-right, 0px));
-    margin-bottom: env(safe-area-inset-bottom, 0);
-  }
-
-  .ios-device .App-footer {
-    z-index: 300;
-  }
-}
+/* Remove duplicated iOS-specific styles - now in platform/ios.css */
 
 .IconsWrapper {
   position: absolute;

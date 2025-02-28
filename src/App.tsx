@@ -16,6 +16,7 @@ import { PresignedUrlProvider } from "@/hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "@/hooks/useModelPreferences";
 import { ImageViewerProvider } from "@/hooks/useImageViewer";
 import { ScriptsProvider } from "@/hooks/useScripts";
+import { PlatformProvider } from "@/hooks/usePlatform";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "@/hooks/useModal";
@@ -98,21 +99,23 @@ export default function App() {
               <PresignedUrlProvider>
                 <ImageViewerProvider>
                   <ScriptsProvider>
-                    <ConfirmationDialogProvider>
-                      <ModalProvider registry={modalRegistry}>
-                        <RouterProvider router={router} />
-                        <Toaster
-                          position="bottom-center"
-                          toastOptions={{
-                            duration: 4000,
-                            style: {
-                              background: "#333",
-                              color: "#fff",
-                            },
-                          }}
-                        />
-                      </ModalProvider>
-                    </ConfirmationDialogProvider>
+                    <PlatformProvider>
+                      <ConfirmationDialogProvider>
+                        <ModalProvider registry={modalRegistry}>
+                          <RouterProvider router={router} />
+                          <Toaster
+                            position="bottom-center"
+                            toastOptions={{
+                              duration: 4000,
+                              style: {
+                                background: "#333",
+                                color: "#fff",
+                              },
+                            }}
+                          />
+                        </ModalProvider>
+                      </ConfirmationDialogProvider>
+                    </PlatformProvider>
                   </ScriptsProvider>
                 </ImageViewerProvider>
               </PresignedUrlProvider>

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useIsMobile } from "../../hooks/useIsMobile";
+import { usePlatform } from "@/hooks/usePlatform";
 
 const CardMenu = ({ children, style, onDelete }) => {
   const { ...restStyle } = style;
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
   const [shouldOpenUpward, setShouldOpenUpward] = useState(false);
 
   useEffect(() => {

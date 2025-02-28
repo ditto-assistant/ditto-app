@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { IconButton } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import Modal from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
 import { ScriptObject, useScripts } from "@/hooks/useScripts";
 import "./DittoCanvasModal.css";
+import { usePlatform } from "@/hooks/usePlatform";
 
 export default function DittoCanvasModal() {
   const { createCloseHandler } = useModal();
   const closeModal = createCloseHandler("dittoCanvas");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
 
   const { selectedScript, scripts } = useScripts();
 

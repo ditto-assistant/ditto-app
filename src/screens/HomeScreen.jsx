@@ -18,7 +18,7 @@ import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useScripts } from "@/hooks/useScripts.tsx";
-import { useIsIOS } from "@/hooks/useIsIOS";
+import { usePlatform } from "@/hooks/usePlatform";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
@@ -48,7 +48,7 @@ export default function HomeScreen() {
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const openMemoryOverlay = modal.createOpenHandler("memorySettings");
   const openScriptsOverlay = modal.createOpenHandler("scripts");
-  const isIOS = useIsIOS();
+  const { isIOS } = usePlatform();
   const {
     selectedScript,
     setSelectedScript,
@@ -320,9 +320,7 @@ export default function HomeScreen() {
         );
       }
 
-      // Add iOS class to root and body elements
-      document.documentElement.classList.add("ios");
-      document.body.classList.add("ios-device");
+      // Add iOS class to root element only
 
       if (window.visualViewport) {
         window.visualViewport.addEventListener("resize", setVH);
@@ -345,8 +343,6 @@ export default function HomeScreen() {
           window.visualViewport.removeEventListener("scroll", setVH);
         }
         clearInterval(safariHeightTimer);
-        document.documentElement.classList.remove("ios");
-        document.body.classList.remove("ios-device");
       };
     }
 
@@ -546,10 +542,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <div
-      className={`App ${isIOS ? "ios-device" : ""}`}
-      onClick={handleCloseMediaOptions}
-    >
+    <div className="App" onClick={handleCloseMediaOptions}>
       <header className="app-header">
         <motion.div
           className="ditto-icon-button"

@@ -38,8 +38,6 @@ header.app-header {
   border-top-right-radius: 0px;
   padding: 10px 12px;
   min-height: 64px;
-  /* Add padding for iOS notch */
-  padding-top: env(safe-area-inset-top, 10px);
   /* Position sticky for iOS */
   position: sticky;
   top: 0;
@@ -88,8 +86,8 @@ header.app-header {
   overflow-y: auto;
   padding: 10px 20px;
   padding-bottom: calc(
-    70px + env(safe-area-inset-bottom, 0px)
-  ); /* Add padding to account for fixed footer */
+    80px + var(--safe-area-bottom)
+  ); /* Increased padding to prevent overlap */
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -103,13 +101,11 @@ header.app-header {
 .App-footer {
   background-color: var(--header-background);
   backdrop-filter: blur(10px);
-  /* iOS home indicator padding */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  position: fixed; /* Change from sticky to fixed */
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 100; /* Increase z-index to ensure it stays on top */
+  z-index: 100; /* Ensure it stays on top */
 }
 
 .loading-placeholder {
@@ -216,13 +212,13 @@ header.app-header {
 @media screen and (max-width: 768px) {
   header.app-header {
     padding: 8px 12px;
-    padding-top: env(safe-area-inset-top, 8px);
+    padding-top: var(--safe-area-top);
   }
 
   .App-body {
     padding: 0 12px;
     padding-bottom: calc(
-      70px + env(safe-area-inset-bottom, 0px)
+      70px + var(--safe-area-bottom)
     ); /* Account for footer on mobile */
   }
 
@@ -239,7 +235,7 @@ header.app-header {
   .App-footer {
     padding: 12px;
     padding-bottom: calc(
-      12px + env(safe-area-inset-bottom, 0px)
+      12px + var(--safe-area-bottom)
     ); /* Ensure padding doesn't collapse */
     margin-top: auto; /* Push footer to bottom */
   }
@@ -253,36 +249,4 @@ header.app-header {
   }
 }
 
-/* Improved iOS-specific adjustments */
-@supports (-webkit-touch-callout: none) {
-  .App {
-    /* Use the full height of the viewport on iOS */
-    height: -webkit-fill-available;
-    /* Use custom iOS viewport height if available */
-    height: calc(var(--ios-vh, 1vh) * 100);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  /* Fix for notch areas */
-  .ios-device header.app-header {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  /* Fix for home indicator area - improved */
-  .ios-device .App-footer {
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-    bottom: 0;
-    position: fixed;
-    z-index: 200; /* Ensure higher z-index than other elements */
-  }
-
-  /* Disable pinch zoom */
-  .ios-device {
-    touch-action: pan-y;
-  }
-
-  /* Ensure app content doesn't get hidden under Safari UI */
-  .ios-device .App-body {
-    margin-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-  }
-}
+/* Remove duplicated iOS-specific styles - now in platform/ios.css */

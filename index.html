@@ -26,27 +26,6 @@
         window.matchMedia("(display-mode: standalone)").matches
       ) {
         document.documentElement.classList.add("pwa-standalone");
-
-        // Handle iOS Safari bottom bar
-        document.addEventListener("DOMContentLoaded", function () {
-          // Create a style element for custom CSS
-          const style = document.createElement("style");
-          style.textContent = `
-            .App-footer {
-              position: fixed !important;
-              bottom: 0 !important;
-              z-index: 1000 !important;
-              padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-            }
-            body {
-              padding-bottom: env(safe-area-inset-bottom, 20px);
-            }
-            .App-body {
-              margin-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-            }
-          `;
-          document.head.appendChild(style);
-        });
       }
 
       if ("serviceWorker" in navigator) {

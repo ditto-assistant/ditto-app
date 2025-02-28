@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { ModalButton } from "./ModalButton";
-import { useIsMobile } from "../../../hooks/useIsMobile";
+import { usePlatform } from "../../../hooks/usePlatform";
 import "./SubmitButton.css";
 
 interface SubmitButtonProps
@@ -20,7 +20,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   ...props
 }) => {
   const { pending } = useFormStatus();
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
 
   useEffect(() => {
     if (isMobile || !enableKeyboardShortcut) return;

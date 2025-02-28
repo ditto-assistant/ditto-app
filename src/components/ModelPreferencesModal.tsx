@@ -24,6 +24,7 @@ import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePlatform } from "@/hooks/usePlatform";
 
 interface ActiveFilters {
   speed: "slow" | "medium" | "fast" | "insane" | null;
@@ -84,8 +85,7 @@ export default function ModelPreferencesModal() {
     };
   } | null>(null);
 
-  // Use the useIsMobile hook instead of window width check
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
 
   // State for mobile filter section visibility
   const [isFilterSectionExpanded, setIsFilterSectionExpanded] = useState(false);

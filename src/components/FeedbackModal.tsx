@@ -12,7 +12,8 @@ import "./FeedbackModal.css";
 import { useModal } from "@/hooks/useModal";
 import Modal from "@/components/ui/modals/Modal";
 import { Result } from "@/types/common";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePlatform } from "@/hooks/usePlatform";
+
 type FeedbackType = "bug" | "feature-request";
 interface FeedbackModalProps {
   feedbackType?: FeedbackType;
@@ -39,7 +40,7 @@ async function submitFeedback(_: FeedbackState, formData: FormData) {
 export default function FeedbackModal({
   feedbackType = "bug",
 }: FeedbackModalProps) {
-  const isMobile = useIsMobile();
+  const { isMobile } = usePlatform();
   const { createCloseHandler } = useModal();
   const [selectedType, setSelectedType] = useState(feedbackType);
   const createSelectTypeCallback = useCallback(

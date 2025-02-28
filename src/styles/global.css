@@ -1,6 +1,7 @@
 @import "./variables.css";
 @import "./components.css";
 @import "./buttons.css";
+@import "./platform/ios.css";
 
 * {
   margin: 0;
@@ -68,43 +69,6 @@ body {
   top: 0;
   left: 0;
   overflow: hidden;
-}
-
-/* Improved iOS fixes */
-@supports (-webkit-touch-callout: none) {
-  html,
-  body {
-    height: -webkit-fill-available;
-  }
-
-  #root {
-    min-height: -webkit-fill-available;
-    height: -webkit-fill-available;
-    min-height: calc(var(--ios-vh, 1vh) * 100);
-  }
-
-  /* Handle notch and home indicator areas */
-  .app-header {
-    padding-top: env(safe-area-inset-top, 0px) !important;
-  }
-
-  .App-footer {
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-  }
-
-  /* Fix for iOS Safari in standalone PWA mode */
-  @media all and (display-mode: standalone) {
-    body {
-      /* Ensure content doesn't get hidden under the home indicator */
-      padding-bottom: env(safe-area-inset-bottom, 20px);
-    }
-
-    .App-footer {
-      position: fixed !important;
-      bottom: 0 !important;
-      z-index: 1000 !important;
-    }
-  }
 }
 
 /* Prevent page zoom on iOS */

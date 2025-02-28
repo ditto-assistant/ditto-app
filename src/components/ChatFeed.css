@@ -13,6 +13,7 @@
   box-sizing: border-box;
   transition: padding-top 0.3s ease-out;
   scroll-behavior: auto;
+  /* padding-bottom: calc(80px + var(--safe-area-bottom)); */
 }
 
 /* Add smooth scrolling behavior to the container */
@@ -23,6 +24,7 @@
 /* Ensure smooth animation for the bottom ref */
 .chat-feed > div:last-child {
   transition: margin-top 0.3s ease-out;
+  margin-bottom: 20px; /* Add margin to the last element to prevent overlap */
 }
 
 .message-container {
