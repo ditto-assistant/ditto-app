@@ -9,6 +9,7 @@ import { useMemoryNetwork, Memory } from "@/hooks/useMemoryNetwork";
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
 import { Network, Node, Edge } from "vis-network";
 import "./MemoryNetwork.css";
+import { usePlatform } from "@/hooks/usePlatform";
 
 const formatDateTime = (timestamp: number) => {
   if (!timestamp) return "";
@@ -150,6 +151,7 @@ export default function MemoryNetworkModal() {
   const { memories, loading, deleteMemory } = useMemoryNetwork();
   const { confirmMemoryDeletion } = useMemoryDeletion();
   const { showMemoryNode } = useMemoryNodeViewer();
+  const { isMobile } = usePlatform();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const networkInitializedRef = useRef<boolean>(false);
   const networkNeedsUpdate = useRef<boolean>(true);
@@ -597,6 +599,7 @@ export default function MemoryNetworkModal() {
     <Modal
       id="memoryNetwork"
       title="Memory Network"
+      fullScreen={isMobile}
       tabs={[
         {
           id: "network",

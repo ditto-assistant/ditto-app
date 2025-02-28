@@ -1,10 +1,10 @@
-import { FaTrash, FaTimes } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import MarkdownRenderer from "./MarkdownRenderer";
 import Modal from "./ui/modals/Modal";
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
 import "./MemoryNodeModal.css";
-
+import { usePlatform } from "@/hooks/usePlatform";
 function formatDateTime(timestamp?: number) {
   if (!timestamp) return "";
   const date = new Date(timestamp);
@@ -18,6 +18,7 @@ function formatDateTime(timestamp?: number) {
 
 export default function MemoryNodeModal() {
   const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer();
+  const { isMobile } = usePlatform();
 
   // Determine if this is the root node
   const isRootNode = nodeData?.level === 0;
@@ -36,7 +37,11 @@ export default function MemoryNodeModal() {
   };
 
   return (
-    <Modal id="memoryNodeViewer" title={isRootNode ? "Your Prompt" : "Memory"}>
+    <Modal
+      id="memoryNodeViewer"
+      title={isRootNode ? "Your Prompt" : "Memory"}
+      fullScreen={isMobile}
+    >
       <div className="memory-node-modal">
         {nodeData && (
           <>
