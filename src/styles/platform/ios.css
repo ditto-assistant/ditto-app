@@ -14,7 +14,7 @@
   }
 
   /* App container */
-  .App {
+  .app {
     /* Use the full height of the viewport on iOS */
     height: -webkit-fill-available;
     /* Use custom iOS viewport height if available */
@@ -28,7 +28,7 @@
   }
 
   /* Footer adjustments for home indicator */
-  .App-footer {
+  .app-footer {
     padding-bottom: var(--safe-area-bottom);
     z-index: 300;
     position: fixed;
@@ -36,13 +36,13 @@
   }
 
   /* Input field adjustments */
-  .Form {
+  .form {
     margin-bottom: var(--safe-area-bottom);
     padding-bottom: var(--safe-area-bottom);
   }
 
   /* Text area adjustments */
-  .TextArea {
+  .text-area {
     /* Prevent zoom on focus in iOS */
     font-size: 16px;
     padding-left: var(--safe-area-left, var(--spacing-md));
@@ -50,7 +50,7 @@
   }
 
   /* Submit button adjustments */
-  .Submit {
+  .submit {
     height: 44px;
     min-height: 44px;
     border-radius: var(--border-radius-md);
@@ -58,7 +58,7 @@
   }
 
   /* Body content adjustments */
-  .App-body {
+  .app-body {
     padding-bottom: calc(80px + var(--safe-area-bottom));
     margin-bottom: calc(80px + var(--safe-area-bottom));
   }
@@ -75,7 +75,7 @@
       padding-bottom: var(--safe-area-bottom);
     }
 
-    .App-footer {
+    .app-footer {
       position: fixed !important;
       bottom: 0 !important;
       z-index: 1000 !important;

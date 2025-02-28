@@ -191,14 +191,14 @@ export default function SendMessage({
   };
 
   return (
-    <form className="Form" onSubmit={handleSubmit}>
-      <div className="InputWrapper">
+    <form className="form" onSubmit={handleSubmit}>
+      <div className="input-wrapper">
         <textarea
           ref={textAreaRef}
           onKeyDown={handleKeyDown}
           onInput={resizeTextArea}
           onPaste={handlePaste}
-          className="TextArea"
+          className="text-area"
           type="text"
           value={message}
           onChange={(e) => {
@@ -213,8 +213,8 @@ export default function SendMessage({
             marginRight: "-5px",
           }}
         />
-        <div className="IconsWrapper">
-          <FaPlus className="PlusButton" onClick={handlePlusClick} />
+        <div className="icons-wrapper">
+          <FaPlus className="plus-button" onClick={handlePlusClick} />
           <input
             id="image-upload"
             type="file"
@@ -225,17 +225,17 @@ export default function SendMessage({
         </div>
       </div>
       <input
-        className={`Submit ${isWaitingForResponse ? "disabled" : ""}`}
+        className={`submit ${isWaitingForResponse ? "disabled" : ""}`}
         type="submit"
         value="Send"
         disabled={isWaitingForResponse}
       />
 
       {image && (
-        <div className="ImagePreview" onClick={() => handleImageClick(image)}>
+        <div className="image-preview" onClick={() => handleImageClick(image)}>
           <img src={image} alt="Preview" />
           <FaTimes
-            className="RemoveImage"
+            className="remove-image"
             onClick={(e) => {
               e.stopPropagation();
               handleClearImage();
@@ -247,14 +247,14 @@ export default function SendMessage({
       <AnimatePresence>
         {showMediaOptions && (
           <motion.div
-            className="MediaOptionsOverlay"
+            className="media-options-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCloseMediaOptions}
           >
             <motion.div
-              className="MediaOptionsContent"
+              className="media-options-content"
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
@@ -263,21 +263,21 @@ export default function SendMessage({
             >
               <button
                 type="button" // Add this
-                className="MediaOption"
+                className="media-option"
                 onClick={handleGalleryClick}
               >
                 <FaImage /> Photo Gallery
               </button>
               <button
                 type="button" // Add this
-                className="MediaOption"
+                className="media-option"
                 onClick={handleCameraClick}
               >
                 <FaCamera /> Camera
               </button>
               <button
                 type="button" // Add this
-                className="CancelButton"
+                className="cancel-button"
                 onClick={onCloseMediaOptions}
               >
                 Cancel

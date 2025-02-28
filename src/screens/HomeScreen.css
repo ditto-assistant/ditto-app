@@ -13,7 +13,7 @@ body:not(.login-page) {
   align-items: center;
 }
 
-.App {
+.app {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -71,7 +71,7 @@ header.app-header {
   object-fit: contain;
 }
 
-.App-title {
+.app-title {
   font-size: 24px;
   font-weight: 600;
   margin: 0;
@@ -81,7 +81,7 @@ header.app-header {
   -webkit-text-fill-color: transparent;
 }
 
-.App-body {
+.app-body {
   flex: 1;
   overflow-y: auto;
   padding: 10px 20px;
@@ -98,7 +98,7 @@ header.app-header {
   /* Smooth scrolling on iOS */
 }
 
-.App-footer {
+.app-footer {
   background-color: var(--header-background);
   backdrop-filter: blur(10px);
   position: fixed;
@@ -126,7 +126,7 @@ header.app-header {
 }
 
 /* Camera overlay styles */
-.CameraOverlay {
+.camera-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -139,7 +139,7 @@ header.app-header {
   z-index: 3000;
 }
 
-.CameraContainer {
+.camera-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -150,14 +150,14 @@ header.app-header {
   overflow: hidden;
 }
 
-.CameraFeed {
+.camera-feed {
   width: 100%;
   height: auto;
   max-height: calc(90vh - 100px);
   object-fit: contain;
 }
 
-.CameraControls {
+.camera-controls {
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -167,7 +167,7 @@ header.app-header {
 }
 
 /* Camera control buttons */
-.FlipCameraIcon {
+.flip-camera-icon {
   font-size: 24px;
   color: white;
   cursor: pointer;
@@ -177,13 +177,13 @@ header.app-header {
   transition: all 0.2s ease;
 }
 
-.FlipCameraIcon:hover {
+.flip-camera-icon:hover {
   background-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
 }
 
-.CameraSnap,
-.CameraClose {
+.camera-snap,
+.camera-close {
   padding: 8px 16px;
   border-radius: 20px;
   border: none;
@@ -194,16 +194,16 @@ header.app-header {
   transition: all 0.2s ease;
 }
 
-.CameraSnap {
+.camera-snap {
   background-color: var(--primary);
 }
 
-.CameraClose {
+.camera-close {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.CameraSnap:hover,
-.CameraClose:hover {
+.camera-snap:hover,
+.camera-close:hover {
   transform: scale(1.05);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -215,7 +215,7 @@ header.app-header {
     padding-top: var(--safe-area-top);
   }
 
-  .App-body {
+  .app-body {
     padding: 0 12px;
     padding-bottom: calc(
       70px + var(--safe-area-bottom)
@@ -226,13 +226,13 @@ header.app-header {
     margin: 0;
   }
 
-  .App {
+  .app {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
   }
 
-  .App-footer {
+  .app-footer {
     padding: 12px;
     padding-bottom: calc(
       12px + var(--safe-area-bottom)
@@ -248,5 +248,3 @@ header.app-header {
     margin: 0 auto;
   }
 }
-
-/* Remove duplicated iOS-specific styles - now in platform/ios.css */

@@ -848,7 +848,8 @@ export default function ChatFeed({
   // Update the renderMessageWithAvatar function
   const renderMessageWithAvatar = (message, index) => {
     const isLastMessage = index === messages.length - 1;
-    const isSmallMessage = message.text?.length <= 5;
+    const isSmallMessage =
+      message.text?.length <= 15 && !message.text?.includes("\n");
     const isUserMessage = message.sender === "User";
     const showTypingIndicator = message.isTyping && message.text === "";
     const isGenerating = message.sender === "Ditto" && message.isTyping;

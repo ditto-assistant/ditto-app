@@ -2,7 +2,7 @@
 @import "@/styles/animations.css";
 
 /* Form styles */
-.Form {
+.form {
   display: flex;
   flex: 1;
   max-width: 100%;
@@ -18,14 +18,14 @@
   ); /* Add safe area inset for all devices */
 }
 
-.Contents {
+.contents {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
 
-.Bar {
+.bar {
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -34,7 +34,7 @@
   position: relative;
 }
 
-.InputWrapper {
+.input-wrapper {
   position: relative;
   width: 100%;
   display: flex;
@@ -42,7 +42,7 @@
   height: 100%;
 }
 
-.TextArea {
+.text-area {
   flex: 1;
   border: none;
   resize: none;
@@ -55,14 +55,14 @@
   min-height: 44px;
 }
 
-.TextArea:focus {
+.text-area:focus {
   border: 1px solid var(--primary-color);
   box-shadow: 0 0 3px var(--primary-color);
 }
 
 /* Remove duplicated iOS-specific styles - now in platform/ios.css */
 
-.IconsWrapper {
+.icons-wrapper {
   position: absolute;
   right: var(--spacing-sm);
   display: flex;
@@ -70,8 +70,8 @@
   height: 100%;
 }
 
-.Mic,
-.PlusButton {
+.mic,
+.plus-button {
   color: var(--interactive-active);
   cursor: pointer;
   transition: color var(--transition-normal);
@@ -79,12 +79,12 @@
   font-size: 20px;
 }
 
-.Mic:hover,
-.PlusButton:hover {
+.mic:hover,
+.plus-button:hover {
   color: var(--primary-color);
 }
 
-.Mic.listening {
+.mic.listening {
   animation: pulse 1s infinite;
   color: var(--status-danger);
 }
@@ -103,7 +103,7 @@
   }
 }
 
-.Submit {
+.submit {
   background-color: var(--primary-active);
   border: none;
   border-radius: var(--border-radius-md);
@@ -120,22 +120,22 @@
   align-self: stretch;
 }
 
-.Submit.disabled {
+.submit.disabled {
   background-color: var(--background-secondary);
   color: var(--text-muted);
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.Submit:not(.disabled):hover {
+.submit:not(.disabled):hover {
   background-color: var(--primary-hover);
 }
 
-.Submit:not(.disabled):active {
+.submit:not(.disabled):active {
   background-color: var(--primary-color);
 }
 
-.ImagePreview {
+.image-preview {
   position: absolute;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 5px;
@@ -152,7 +152,7 @@
   margin-bottom: 10px;
 }
 
-.ImagePreview img {
+.image-preview img {
   width: 50px;
   height: 50px;
   object-fit: cover;
@@ -160,17 +160,17 @@
   margin-right: 10px;
 }
 
-.RemoveImage {
+.remove-image {
   color: white;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.RemoveImage:hover {
+.remove-image:hover {
   color: #ff5050;
 }
 
-.CameraOverlay {
+.camera-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -183,7 +183,7 @@
   z-index: 3000;
 }
 
-.CameraContainer {
+.camera-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -194,7 +194,7 @@
   overflow: hidden;
 }
 
-.CameraFeed {
+.camera-feed {
   width: 100%;
   height: auto;
   max-height: calc(90vh - 100px);
@@ -202,7 +202,7 @@
   object-fit: contain;
 }
 
-.CameraControls {
+.camera-controls {
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -211,19 +211,19 @@
   background-color: #40444b;
 }
 
-.FlipCameraIcon {
+.flip-camera-icon {
   color: white;
   font-size: 30px;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.FlipCameraIcon:hover {
+.flip-camera-icon:hover {
   color: #7289da;
 }
 
-.CameraSnap,
-.CameraClose {
+.camera-snap,
+.camera-close {
   background-color: #7289da;
   color: white;
   border: none;
@@ -234,17 +234,17 @@
   transition: background-color 0.2s ease;
 }
 
-.CameraSnap:hover,
-.CameraClose:hover {
+.camera-snap:hover,
+.camera-close:hover {
   background-color: #5b6eae;
 }
 
-.CameraSnap:active,
-.CameraClose:active {
+.camera-snap:active,
+.camera-close:active {
   background-color: #4a5899;
 }
 
-.FullscreenImageOverlay {
+.fullscreen-image-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -258,7 +258,7 @@
   animation: fadeIn 0.3s ease;
 }
 
-.FullscreenImageOverlay img {
+.fullscreen-image-overlay img {
   max-width: 90%;
   max-height: 90%;
   object-fit: contain;
@@ -267,7 +267,7 @@
 }
 
 /* Updated styles for the media options overlay */
-.MediaOptionsOverlay {
+.media-options-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -280,7 +280,7 @@
   z-index: 1000;
 }
 
-.MediaOptionsContent {
+.media-options-content {
   background-color: #2f3136;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -291,7 +291,7 @@
   flex-direction: column;
 }
 
-.MediaOption {
+.media-option {
   background-color: #40444b;
   border: none;
   border-radius: 10px;
@@ -306,21 +306,21 @@
   font-size: 16px;
 }
 
-.MediaOption:last-of-type {
+.media-option:last-of-type {
   margin-bottom: 20px;
   /* Add space between options and cancel button */
 }
 
-.MediaOption:hover {
+.media-option:hover {
   background-color: #4a4d57;
 }
 
-.MediaOption svg {
+.media-option svg {
   margin-right: 10px;
 }
 
 /* Updated styles for the cancel button */
-.CancelButton {
+.cancel-button {
   background-color: transparent;
   border: 2px solid #7289da;
   border-radius: 10px;
@@ -336,43 +336,43 @@
   letter-spacing: 0.5px;
 }
 
-.CancelButton:hover {
+.cancel-button:hover {
   background-color: rgba(114, 137, 218, 0.1);
   color: #ffffff;
   border-color: #ffffff;
 }
 
-.CancelButton:active {
+.cancel-button:active {
   transform: scale(0.98);
 }
 
 /* Add media query for small screens */
 @media screen and (max-width: 380px) {
-  .Form {
+  .form {
     padding: var(--spacing-xs) var(--spacing-sm);
     margin: 0;
     gap: var(--spacing-xs);
   }
 
-  .TextArea {
+  .text-area {
     padding: var(--spacing-xs) var(--spacing-sm);
     padding-right: 40px;
     font-size: 14px;
     margin: 0;
   }
 
-  .Submit {
+  .submit {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 14px;
     min-width: 60px;
   }
 
-  .IconsWrapper {
+  .icons-wrapper {
     right: var(--spacing-xs);
   }
 
-  .Mic,
-  .PlusButton {
+  .mic,
+  .plus-button {
     margin-left: var(--spacing-xs);
     font-size: 18px;
   }

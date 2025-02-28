@@ -447,12 +447,44 @@
 /* Add styles for small messages */
 .chat-bubble.small-message {
   min-height: 50px;
-  /* Minimum height for small messages */
+  min-width: 60px; /* Ensure minimum width for very short messages */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  padding-left: 15px;
+  padding-right: 15px;
+  border-radius: 18px; /* More rounded for small messages */
+}
+
+.chat-bubble.User.small-message {
+  border-bottom-right-radius: 8px; /* Adjust the tail shape for small user messages */
+}
+
+.chat-bubble.Ditto.small-message {
+  border-bottom-left-radius: 8px; /* Adjust the tail shape for small Ditto messages */
 }
 
 .chat-bubble.small-message .message-text {
   min-height: 20px;
-  /* Minimum height for text in small messages */
+  text-align: center; /* Center text for very short messages */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Adjust timestamp position for small messages */
+.chat-bubble.small-message .message-footer {
+  width: 100%;
+  justify-content: center;
+  padding: 2px 8px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.chat-bubble.small-message .message-timestamp {
+  text-align: center;
+  width: 100%;
 }
 
 .message-reactions {

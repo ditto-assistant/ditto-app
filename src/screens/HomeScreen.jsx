@@ -542,7 +542,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <div className="App" onClick={handleCloseMediaOptions}>
+    <div className="app" onClick={handleCloseMediaOptions}>
       <header className="app-header">
         <motion.div
           className="ditto-icon-button"
@@ -579,7 +579,7 @@ export default function HomeScreen() {
             whileTap={{ scale: 0.98 }}
           >
             <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
-            <h1 className="App-title">Hey Ditto</h1>
+            <h1 className="app-title">Hey Ditto</h1>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
               {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
             </motion.div>
@@ -627,7 +627,7 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
       <div
-        className="App-body"
+        className="app-body"
         ref={appBodyRef}
         onClick={handleCloseMediaOptions}
       >
@@ -657,7 +657,7 @@ export default function HomeScreen() {
           </AnimatePresence>
         </div>
       </div>
-      <footer className="App-footer">
+      <footer className="app-footer">
         <Suspense fallback={<FullScreenSpinner />}>
           <SendMessage
             onCameraOpen={handleCameraOpen}
@@ -677,30 +677,30 @@ export default function HomeScreen() {
       <AnimatePresence>
         {isCameraOpen && (
           <motion.div
-            className="CameraOverlay"
+            className="camera-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleCameraClose}
           >
             <motion.div
-              className="CameraContainer"
+              className="camera-container"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <video ref={videoRef} autoPlay className="CameraFeed"></video>
-              <div className="CameraControls">
+              <video ref={videoRef} autoPlay className="camera-feed"></video>
+              <div className="camera-controls">
                 <MdFlipCameraIos
-                  className="FlipCameraIcon"
+                  className="flip-camera-icon"
                   onClick={toggleCamera}
                 />
-                <button className="CameraSnap" onClick={handleSnap}>
+                <button className="camera-snap" onClick={handleSnap}>
                   Snap
                 </button>
-                <button className="CameraClose" onClick={handleCameraClose}>
+                <button className="camera-close" onClick={handleCameraClose}>
                   Close
                 </button>
               </div>
