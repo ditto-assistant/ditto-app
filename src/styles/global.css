@@ -59,8 +59,7 @@ body {
 }
 
 #root {
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -69,33 +68,6 @@ body {
   top: 0;
   left: 0;
   overflow: hidden;
-}
-
-/* Define safe area CSS variables to use throughout the app */
-:root {
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-}
-
-/* Add PWA detection class to body */
-@media all and (display-mode: standalone) {
-  body {
-    --is-pwa: true;
-  }
-
-  /* Use viewport units directly in PWA mode */
-  #root {
-    min-height: 100dvh;
-    height: 100dvh;
-  }
-}
-
-/* Prevent page zoom on iOS */
-input,
-textarea {
-  font-size: 16px;
 }
 
 code {

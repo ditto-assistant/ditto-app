@@ -294,10 +294,9 @@ export default function HomeScreen() {
       // Then set the value in the --vh custom property to the root of the document
       document.documentElement.style.setProperty("--vh", `${vh}px`);
 
-      // Also set a specific iOS viewport height value
+      // Simple approach - don't add extra space in PWA mode
       if (isIOS) {
-        // Adjust for PWA mode - don't add extra space in PWA mode
-        const extraSpace = isPWA ? 0 : 80; // No extra space needed in PWA mode
+        const extraSpace = isPWA ? 0 : 20; // No extra space needed in PWA mode
         const iosVh = (window.innerHeight + extraSpace) * 0.01;
         document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
       }

@@ -13,10 +13,6 @@
   align-items: center;
   padding: 8px;
   border-radius: 8px;
-  margin-bottom: var(
-    --safe-area-bottom,
-    0px
-  ); /* Add safe area inset with fallback for all devices */
 }
 
 .contents {
@@ -379,26 +375,4 @@
   }
 }
 
-/* Add PWA-specific styles for the form */
-@media all and (display-mode: standalone) {
-  .form {
-    /* Use environment variable directly in PWA mode for more accurate spacing */
-    margin-bottom: env(safe-area-inset-bottom, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  /* Adjust icon positioning in PWA mode */
-  .icons-wrapper {
-    right: calc(var(--spacing-sm) + env(safe-area-inset-right, 0px));
-  }
-
-  /* Adjust text area padding in PWA mode */
-  .text-area {
-    padding-right: calc(40px + env(safe-area-inset-right, 0px));
-  }
-
-  /* Adjust submit button in PWA mode */
-  .submit {
-    padding-right: calc(var(--spacing-md) + env(safe-area-inset-right, 0px));
-  }
-}
+/* iOS and PWA specific styles are now in platform/ios.css */
