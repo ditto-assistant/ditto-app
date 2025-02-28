@@ -5,20 +5,18 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "./ChatFeed.css";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash } from "react-icons/fa";
-import MemoryNetwork from "./MemoryNetwork";
 import { usePresignedUrls } from "../hooks/usePresignedUrls";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
-import { useModelPreferences } from "../hooks/useModelPreferences";
 import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
-import { getMemories } from "@/api/getMemories";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { saveFeedback } from "@/control/firebase";
 import dittoAvatar from "/icons/ditto-icon.png";
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
+import { useMemoryNetwork } from "@/hooks/useMemoryNetwork";
 
 const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
 const USER_AVATAR_KEY = "userAvatar";
@@ -272,14 +270,10 @@ export default function ChatFeed({
     return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
   });
   const [reactions, setReactions] = useState({});
-  const [memoryOverlay, setMemoryOverlay] = useState(null);
-  const [relatedMemories, setRelatedMemories] = useState([]);
-  const [loadingMemories, setLoadingMemories] = useState(false);
-  const [abortController, setAbortController] = useState(null);
   const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
   const { confirmMemoryDeletion } = useMemoryDeletion(updateConversation);
-  const { preferences } = useModelPreferences();
   const { handleImageClick } = useImageViewerHandler(true);
+  const { showMemoryNetwork } = useMemoryNetwork();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -564,13 +558,10 @@ export default function ChatFeed({
   }, [actionOverlay]);
 
   useEffect(() => {
-    if (!actionOverlay && abortController) {
+    if (!actionOverlay) {
       // Cancel any pending memory fetch when action overlay closes
-      abortController.abort();
-      setAbortController(null);
-      setLoadingMemories(false);
     }
-  }, [actionOverlay, abortController]);
+  }, [actionOverlay]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -991,10 +982,9 @@ export default function ChatFeed({
             <button
               onClick={() => handleShowMemories(actionOverlay.index)}
               className="action-button"
-              disabled={loadingMemories}
             >
               <FaBrain style={{ marginRight: "5px" }} />
-              {loadingMemories ? "Loading..." : "Memories"}
+              Memories
             </button>
             <button
               onClick={() => handleMessageDelete(actionOverlay.index)}
@@ -1111,74 +1101,12 @@ export default function ChatFeed({
 
   const handleShowMemories = async (index) => {
     try {
-      const controller = new AbortController();
-      setAbortController(controller);
-      setLoadingMemories(true);
-
       const message = messages[index];
-      const userID = auth.currentUser.uid;
-
-      let promptToUse;
-      let currentPairID;
-      let currentTimestamp;
-      if (message.sender === "User") {
-        promptToUse = message.text;
-        currentPairID = message.pairID;
-        currentTimestamp = message.timestamp;
-      } else {
-        if (index > 0 && messages[index - 1].sender === "User") {
-          promptToUse = messages[index - 1].text;
-          currentPairID = messages[index - 1].pairID;
-          currentTimestamp = messages[index - 1].timestamp;
-        } else {
-          console.error("Could not find corresponding prompt for response");
-          setLoadingMemories(false);
-          return;
-        }
-      }
-      const memoriesResponse = await getMemories(
-        {
-          userID,
-          longTerm: {
-            pairID: currentPairID,
-            nodeCounts: preferences.memory.longTermMemoryChain,
-          },
-        },
-        "application/json"
-      );
-      if (memoriesResponse.err) {
-        throw new Error(memoriesResponse.err);
-      }
-      if (!memoriesResponse.ok.longTerm) {
-        throw new Error("Failed to fetch memories");
-      }
-      const networkData = [
-        {
-          prompt: promptToUse,
-          response: message.text,
-          timestamp: currentTimestamp,
-          timestampString: new Date(currentTimestamp).toISOString(),
-          children: memoriesResponse.ok.longTerm,
-        },
-      ];
-
-      console.log("Network Data:", networkData);
-      setRelatedMemories(networkData);
-      setMemoryOverlay({
-        index,
-        clientX: actionOverlay.clientX,
-        clientY: actionOverlay.clientY,
-      });
       setActionOverlay(null);
+      await showMemoryNetwork(message, index, messages);
     } catch (error) {
-      if (error.name === "AbortError") {
-        console.log("Memory fetch cancelled");
-      } else {
-        console.error("Error fetching memories:", error);
-      }
-    } finally {
-      setLoadingMemories(false);
-      setAbortController(null);
+      console.error("Error showing memories:", error);
+      toast.error("Failed to show memories");
     }
   };
 
@@ -1303,33 +1231,6 @@ export default function ChatFeed({
           ))}
         </div>
       )}
-      <AnimatePresence>
-        {memoryOverlay && (
-          <motion.div
-            className="memory-overlay"
-            onClick={() => setMemoryOverlay(null)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              className="memory-content"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <MemoryNetwork
-                memories={relatedMemories}
-                onClose={() => setMemoryOverlay(null)}
-                updateConversation={updateConversation}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

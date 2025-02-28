@@ -17,7 +17,8 @@ export type ModalId =
   | "scripts"
   | "dittoCanvas"
   | "confirmationDialog"
-  | "memorySettings";
+  | "memorySettings"
+  | "memoryNodeViewer";
 
 type ModalRegistration = {
   component: ReactNode;

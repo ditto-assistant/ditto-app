@@ -21,6 +21,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModalProvider, ModalRegistry } from "@/hooks/useModal";
 import { ConfirmationDialogProvider } from "@/hooks/useConfirmationDialog";
+import { MemoryNetworkProvider } from "@/hooks/useMemoryNetwork";
+import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer";
 
 const DittoCanvasModal = lazy(() => import("@/components/DittoCanvasModal"));
 const Login = lazy(() => import("@/screens/Login"));
@@ -37,6 +39,8 @@ const ConfirmationDialog = lazy(
   () => import("@/components/ui/modals/ConfirmationModal")
 );
 const MemoryOverlay = lazy(() => import("@/components/MemoryOverlay"));
+const MemoryNetworkModal = lazy(() => import("@/components/MemoryNetwork"));
+const MemoryNodeModal = lazy(() => import("@/components/MemoryNodeModal"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -67,7 +71,7 @@ const modalRegistry: ModalRegistry = {
     component: <FeedbackModal />,
   },
   memoryNetwork: {
-    component: <div>Memory Network Modal</div>,
+    component: <MemoryNetworkModal />,
   },
   imageViewer: {
     component: <ImageViewer />,
@@ -87,47 +91,53 @@ const modalRegistry: ModalRegistry = {
   memorySettings: {
     component: <MemoryOverlay />,
   },
+  memoryNodeViewer: {
+    component: <MemoryNodeModal />,
+  },
 } as const;
 
-export default function App() {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BalanceProvider>
-          <ModelPreferencesProvider>
-            <MemoryCountProvider>
-              <PresignedUrlProvider>
+          <MemoryCountProvider>
+            <PresignedUrlProvider>
+              <ModelPreferencesProvider>
                 <ImageViewerProvider>
                   <ScriptsProvider>
                     <PlatformProvider>
-                      <ConfirmationDialogProvider>
-                        <ModalProvider registry={modalRegistry}>
-                          <RouterProvider router={router} />
-                          <Toaster
-                            position="bottom-center"
-                            toastOptions={{
-                              duration: 4000,
-                              style: {
-                                background: "#333",
-                                color: "#fff",
-                              },
-                            }}
-                          />
-                        </ModalProvider>
-                      </ConfirmationDialogProvider>
+                      <MemoryNetworkProvider>
+                        <ConfirmationDialogProvider>
+                          <MemoryNodeViewerProvider>
+                            <ModalProvider registry={modalRegistry}>
+                              <RouterProvider router={router} />
+                              <Toaster
+                                position="bottom-center"
+                                toastOptions={{
+                                  style: {
+                                    background: "#333",
+                                    color: "#fff",
+                                    borderRadius: "8px",
+                                    padding: "12px 16px",
+                                  },
+                                }}
+                              />
+                              <ReactQueryDevtools initialIsOpen={false} />
+                            </ModalProvider>
+                          </MemoryNodeViewerProvider>
+                        </ConfirmationDialogProvider>
+                      </MemoryNetworkProvider>
                     </PlatformProvider>
                   </ScriptsProvider>
                 </ImageViewerProvider>
-              </PresignedUrlProvider>
-            </MemoryCountProvider>
-          </ModelPreferencesProvider>
+              </ModelPreferencesProvider>
+            </PresignedUrlProvider>
+          </MemoryCountProvider>
         </BalanceProvider>
       </AuthProvider>
-      <ReactQueryDevtools
-        buttonPosition="bottom-left"
-        client={queryClient}
-        initialIsOpen={false}
-      />
     </QueryClientProvider>
   );
 }
+
+export default App;

@@ -18,6 +18,7 @@ interface ModalProps {
   fullScreen?: boolean;
   tabs?: ModalTab[];
   defaultTabId?: string;
+  onTabChange?: (tabId: string) => void;
 }
 
 const MIN_WIDTH = 280;
@@ -30,6 +31,7 @@ export default function Modal({
   fullScreen = false,
   tabs,
   defaultTabId,
+  onTabChange,
 }: ModalProps) {
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
     useModal();
@@ -263,7 +265,12 @@ export default function Modal({
                 className={`modal-tab ${
                   tab.id === activeTabId ? "active" : ""
                 } ${tab.customClass || ""}`}
-                onClick={() => setActiveTabId(tab.id)}
+                onClick={() => {
+                  setActiveTabId(tab.id);
+                  if (onTabChange) {
+                    onTabChange(tab.id);
+                  }
+                }}
               >
                 {tab.label}
               </button>

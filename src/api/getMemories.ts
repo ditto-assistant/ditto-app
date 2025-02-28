@@ -16,7 +16,7 @@ export interface Memory {
 export interface ParamsLongTermMemoriesV2 {
   pairID: string;
   nodeCounts: number[];
-  nodeThresholds: number[];
+  nodeThresholds?: number[];
 }
 
 export interface ParamsShortTermMemoriesV2 {

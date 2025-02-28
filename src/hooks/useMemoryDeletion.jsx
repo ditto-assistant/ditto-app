@@ -11,6 +11,7 @@ export const useMemoryDeletion = (updateConversation) => {
   const deleteMemory = useCallback(
     async (docId, options = {}) => {
       if (!user.uid) return;
+      if (!docId) return;
       try {
         const toastId = toast.loading("Deleting memory...");
         const success = await deleteConversation(user.uid, docId);

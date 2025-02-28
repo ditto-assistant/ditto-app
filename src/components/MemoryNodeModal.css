@@ -1,0 +1,73 @@
+.memory-node-modal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.memory-node-modal .node-body {
+  flex: 1;
+  padding-bottom: 16px;
+  overflow-y: auto;
+}
+
+.memory-node-modal .message-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.memory-node-modal .memory-timestamp {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-bottom: -8px;
+}
+
+.memory-node-modal .user-message {
+  background-color: var(--bg-card);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.memory-node-modal .messages-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 8px 0;
+  width: 100%;
+}
+
+.memory-node-modal .ditto-message {
+  background-color: var(--primary-container);
+  padding: 16px;
+  border-radius: 8px;
+  color: var(--on-primary-container);
+}
+
+.memory-node-modal .node-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.memory-node-modal .delete-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: var(--error);
+  color: var(--on-error);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.memory-node-modal .delete-button:hover {
+  background-color: var(--error-hover);
+}
