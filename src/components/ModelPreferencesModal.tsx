@@ -23,7 +23,6 @@ import { ModelOption, Model, ModelPreferences, Vendor } from "../types/llm";
 import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { usePlatform } from "@/hooks/usePlatform";
 
 interface ActiveFilters {
@@ -76,14 +75,6 @@ export default function ModelPreferencesModal() {
   const [expandedImageModel, setExpandedImageModel] = useState<Model | null>(
     null
   );
-  const [selectedModels, setSelectedModels] = useState<{
-    mainModel: string;
-    programmerModel: string;
-    imageGeneration: {
-      model: string;
-      size: { wh: string; description: string };
-    };
-  } | null>(null);
 
   const { isMobile } = usePlatform();
 
@@ -134,19 +125,6 @@ export default function ModelPreferencesModal() {
     }
   }, [isMobile]);
 
-  useEffect(() => {
-    if (preferences) {
-      setSelectedModels({
-        mainModel: preferences.mainModel,
-        programmerModel: preferences.programmerModel,
-        imageGeneration: {
-          model: preferences.imageGeneration.model,
-          size: preferences.imageGeneration.size,
-        },
-      });
-    }
-  }, [preferences]);
-
   const faFireStyle = useMemo(() => ({ color: "#FF0000" }), []);
   const faCrownStyle = useMemo(() => ({ opacity: 0.5 }), []);
   const MemoizedFaImage = useMemo(() => <FaImage />, []);
@@ -158,14 +136,6 @@ export default function ModelPreferencesModal() {
 
   const handleModelChange = useCallback(
     (key: keyof ModelPreferences, value: any) => {
-      setSelectedModels((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          [key]: value,
-        };
-      });
-
       updatePreferences({ [key]: value });
     },
     [updatePreferences]
@@ -232,26 +202,26 @@ export default function ModelPreferencesModal() {
   // Get the currently selected model details
   const getSelectedModelDetails = useCallback(
     (modelType: "mainModel" | "programmerModel" | "imageGeneration") => {
-      if (!selectedModels) return null;
+      if (!preferences) return null;
 
       if (modelType === "imageGeneration") {
         const selectedModel = IMAGE_GENERATION_MODELS.find(
-          (model) => model.id === selectedModels.imageGeneration.model
+          (model) => model.id === preferences.imageGeneration.model
         );
         return selectedModel;
       }
 
       const selectedModel = DEFAULT_MODELS.find(
-        (model) => model.id === selectedModels[modelType]
+        (model) => model.id === preferences[modelType]
       );
       return selectedModel;
     },
-    [selectedModels]
+    [preferences]
   );
 
   const renderModelCard = useCallback(
     (model: ModelOption) => {
-      if (!preferences || !selectedModels) return null;
+      if (!preferences) return null;
       return (
         <div
           key={model.id}
@@ -263,7 +233,7 @@ export default function ModelPreferencesModal() {
           }
           className={`model-card ${
             model.id ===
-            selectedModels[
+            preferences[
               activeSection === "main" ? "mainModel" : "programmerModel"
             ]
               ? "selected"
@@ -335,7 +305,6 @@ export default function ModelPreferencesModal() {
       getVendorIcon,
       handleModelChange,
       preferences,
-      selectedModels,
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
@@ -377,12 +346,12 @@ export default function ModelPreferencesModal() {
 
   const renderImageModelCard = useCallback(
     (model: ModelOption) => {
-      if (!preferences || !selectedModels) return null;
+      if (!preferences) return null;
       return (
         <div
           key={model.id}
           className={`model-card ${
-            model.id === selectedModels.imageGeneration.model ? "selected" : ""
+            model.id === preferences.imageGeneration.model ? "selected" : ""
           }`}
           onClick={() => {
             setExpandedImageModel(
@@ -445,8 +414,8 @@ export default function ModelPreferencesModal() {
                     });
                   }}
                   className={`dimension-button ${
-                    model.id === selectedModels.imageGeneration.model &&
-                    size.wh === selectedModels.imageGeneration.size.wh
+                    model.id === preferences.imageGeneration.model &&
+                    size.wh === preferences.imageGeneration.size.wh
                       ? "selected"
                       : ""
                   }`}
@@ -464,7 +433,6 @@ export default function ModelPreferencesModal() {
       getVendorIcon,
       handleModelChange,
       preferences,
-      selectedModels,
       MemoizedFaCrownPremium,
     ]
   );
@@ -507,7 +475,7 @@ export default function ModelPreferencesModal() {
 
   // Render selected model indicator
   const renderSelectedModelIndicator = useCallback(() => {
-    if (!selectedModels) return null;
+    if (!preferences) return null;
 
     const modelType =
       activeSection === "main"
@@ -591,7 +559,7 @@ export default function ModelPreferencesModal() {
     getSelectedModelDetails,
     getSpeedIcon,
     getVendorIcon,
-    selectedModels,
+    preferences,
     MemoizedFaCrownFree,
     MemoizedFaCrownPremium,
     MemoizedFaImage,
@@ -600,13 +568,11 @@ export default function ModelPreferencesModal() {
   // Compact version of renderModelCard for mobile
   const renderCompactModelCard = useCallback(
     (model: ModelOption) => {
-      if (!preferences || !selectedModels) return null;
+      if (!preferences) return null;
 
       const isSelected =
         model.id ===
-        selectedModels[
-          activeSection === "main" ? "mainModel" : "programmerModel"
-        ];
+        preferences[activeSection === "main" ? "mainModel" : "programmerModel"];
 
       return (
         <div
@@ -688,7 +654,6 @@ export default function ModelPreferencesModal() {
       getVendorIcon,
       handleModelChange,
       preferences,
-      selectedModels,
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
@@ -698,9 +663,9 @@ export default function ModelPreferencesModal() {
   // Compact version of renderImageModelCard for mobile
   const renderCompactImageModelCard = useCallback(
     (model: ModelOption) => {
-      if (!preferences || !selectedModels) return null;
+      if (!preferences) return null;
 
-      const isSelected = model.id === selectedModels.imageGeneration.model;
+      const isSelected = model.id === preferences.imageGeneration.model;
       const isExpanded = expandedImageModel === model.id;
 
       return (
@@ -766,8 +731,8 @@ export default function ModelPreferencesModal() {
                     });
                   }}
                   className={`dimension-button ${
-                    model.id === selectedModels.imageGeneration.model &&
-                    size.wh === selectedModels.imageGeneration.size.wh
+                    model.id === preferences.imageGeneration.model &&
+                    size.wh === preferences.imageGeneration.size.wh
                       ? "selected"
                       : ""
                   }`}
@@ -790,7 +755,6 @@ export default function ModelPreferencesModal() {
       getVendorIcon,
       handleModelChange,
       preferences,
-      selectedModels,
       MemoizedFaCrownPremium,
     ]
   );
@@ -822,7 +786,7 @@ export default function ModelPreferencesModal() {
     []
   );
 
-  if (!preferences || !selectedModels) return null;
+  if (!preferences) return null;
 
   return (
     <div className="model-preferences-content">

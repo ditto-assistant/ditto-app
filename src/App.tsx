@@ -123,7 +123,10 @@ function App() {
                                   },
                                 }}
                               />
-                              <ReactQueryDevtools initialIsOpen={false} />
+                              <ReactQueryDevtools
+                                buttonPosition="bottom-left"
+                                initialIsOpen={false}
+                              />
                             </ModalProvider>
                           </MemoryNodeViewerProvider>
                         </ConfirmationDialogProvider>

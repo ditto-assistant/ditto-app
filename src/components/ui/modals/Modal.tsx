@@ -73,7 +73,6 @@ export default function Modal({
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
     setResizeStart({ x: clientX, y: clientY });
     bringToFront();
-    e.preventDefault();
     e.stopPropagation();
   };
 
@@ -244,7 +243,6 @@ export default function Modal({
         <div
           onMouseDown={handleStartDrag}
           onTouchStart={(e) => {
-            e.preventDefault();
             handleStartDrag(e);
           }}
         >

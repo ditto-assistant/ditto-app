@@ -40,9 +40,9 @@ function useModels() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["modelPreferences", user],
+    queryKey: ["modelPreferences", user?.uid],
     queryFn: async () => {
-      if (!user) throw new Error("No user");
+      if (!user?.uid) throw new Error("No user");
       const prefs = (await getModelPreferencesFromFirestore(
         user.uid
       )) as ModelPreferences | null;
@@ -62,7 +62,7 @@ function useModels() {
 
   const mutation = useMutation({
     mutationFn: async (newPreferences: Partial<ModelPreferences>) => {
-      if (!user) throw new Error("No user");
+      if (!user?.uid) throw new Error("No user");
       const currentPrefs = query.data || DEFAULT_PREFERENCES;
       const updatedPreferences = {
         ...currentPrefs,
