@@ -435,23 +435,13 @@ export default function HomeScreen() {
         >
           <AnimatePresence>
             {(!showStatusBar || statusBarLoaded) && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="chat-feed-container"
+              <Suspense
+                fallback={
+                  <div className="loading-placeholder">Loading chat...</div>
+                }
               >
-                <Suspense
-                  fallback={
-                    <div className="loading-placeholder">Loading chat...</div>
-                  }
-                >
-                  <ChatFeed
-                    scrollToBottom={true}
-                    startAtBottom={startAtBottom}
-                  />
-                </Suspense>
-              </motion.div>
+                <ChatFeed scrollToBottom={true} startAtBottom={startAtBottom} />
+              </Suspense>
             )}
           </AnimatePresence>
         </div>

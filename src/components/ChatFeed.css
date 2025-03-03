@@ -105,83 +105,6 @@
   z-index: -1;
 }
 
-/* Small screen layout with avatars below messages */
-@media screen and (max-width: 600px) {
-  .message-container {
-    max-width: 95%;
-  }
-
-  .message-container.User {
-    margin-left: auto;
-  }
-
-  .message-container.Ditto {
-    margin-right: auto;
-  }
-
-  .chat-bubble.small-message {
-    max-width: max-content;
-  }
-
-  /* Adjust footer positioning */
-  .message-footer {
-    font-size: 11px;
-    opacity: 0.8;
-  }
-
-  .typing-indicator-container {
-    align-self: flex-start;
-    margin-left: 12px;
-    margin-bottom: 8px;
-  }
-
-  .typing-indicator {
-    padding: 8px 12px;
-    border-radius: 18px;
-    background-color: var(--ditto-color, #40444b);
-  }
-}
-
-.chat-bubble {
-  position: relative;
-  /* border-radius: 15px; */
-  margin: 5px 0;
-  /* max-width: 80%; */
-  transition: background-color 0.2s ease;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  user-select: text;
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  width: auto;
-  /* gap: 4px; */
-  touch-action: pan-y;
-}
-
-@media (hover: hover) {
-  .chat-bubble:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .chat-bubble.User:hover {
-    background-color: rgba(114, 137, 218, 0.15);
-  }
-
-  .chat-bubble.Ditto:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-}
-
 .chat-bubble:active {
   background-color: rgba(255, 255, 255, 0.03);
 }
@@ -1469,7 +1392,7 @@ ul.chat-bubble-list {
   overflow-y: hidden; /* Let ScrollToBottom handle overflow */
   overflow-x: hidden; /* Prevent horizontal scrolling */
   position: relative;
-  padding: 0 10px;
+  padding: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   padding-bottom: 20px;
@@ -1535,7 +1458,6 @@ ul.chat-bubble-list {
 .custom-scroll-view {
   height: 100%;
   overflow-y: auto;
-  padding: 0 10px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
