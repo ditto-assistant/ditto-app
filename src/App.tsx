@@ -39,7 +39,6 @@ const ScriptsOverlay = lazy(
 const ConfirmationDialog = lazy(
   () => import("@/components/ui/modals/ConfirmationModal")
 );
-const MemoryOverlay = lazy(() => import("@/components/MemoryOverlay"));
 const MemoryNetworkModal = lazy(() => import("@/components/MemoryNetwork"));
 const MemoryNodeModal = lazy(() => import("@/components/MemoryNodeModal"));
 const queryClient = new QueryClient();
@@ -89,9 +88,6 @@ const modalRegistry: ModalRegistry = {
   confirmationDialog: {
     component: <ConfirmationDialog id="confirmationDialog" />,
   },
-  memorySettings: {
-    component: <MemoryOverlay />,
-  },
   memoryNodeViewer: {
     component: <MemoryNodeModal />,
   },
@@ -126,7 +122,8 @@ function App() {
                                     },
                                   }}
                                 />,
-                                document.getElementById('toast-root') || document.body
+                                document.getElementById("toast-root") ||
+                                  document.body
                               )}
                               <ReactQueryDevtools
                                 buttonPosition="bottom-left"

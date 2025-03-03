@@ -19,7 +19,6 @@ export type ModalId =
   | "scripts"
   | "dittoCanvas"
   | "confirmationDialog"
-  | "memorySettings"
   | "memoryNodeViewer";
 
 type ModalRegistration = {

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import FullScreenSpinner from "@/components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
 import TermsOfService from "@/components/TermsOfService";
-import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear.png";
 import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
@@ -359,7 +358,7 @@ export default function HomeScreen() {
           >
             <FaLaptopCode className="icon" />
           </motion.div>
-          
+
           <motion.div
             className="ditto-icon-button"
             whileTap={{ scale: 0.9 }}
