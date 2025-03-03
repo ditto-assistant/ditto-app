@@ -39,35 +39,73 @@
   position: relative;
 }
 
-.memory-network-graph {
-  position: relative;
+.network-view-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  min-height: 600px;
+  z-index: 2;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.network-view-container.active {
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+}
+
+.network-view-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.memory-network-graph {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
   display: flex;
   flex-direction: column;
 }
 
 .memory-network-table {
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 140px);
   min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.memory-table-scroll-container {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 40px; /* Add extra padding at bottom for better UX */
+  padding-top: 10px;
+  height: 100%;
+  min-height: calc(100vh - 200px);
+  max-height: calc(100vh - 180px);
 }
 
 #memory-network-container {
-  width: 100% !important;
-  height: 600px !important;
-  min-height: 600px !important;
+  width: 100%;
+  height: calc(100vh - 160px);
+  min-height: 400px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background-color: rgba(0, 0, 0, 0.1);
-  position: relative !important;
+  position: relative;
   overflow: hidden;
-  visibility: visible !important;
-  display: block !important;
-  z-index: 1;
-  transition: opacity 0.3s ease;
-  opacity: 1;
+  margin-bottom: 0;
 }
 
 .memory-network-loading {
@@ -80,11 +118,6 @@
   font-size: 16px;
 }
 
-.memory-network-graph.active,
-.memory-network-table.active {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 /* Table View Styles */
 .memory-table {
@@ -93,8 +126,10 @@
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
-  height: 100%;
   box-sizing: border-box;
+  flex: 1;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .memory-row {
@@ -157,15 +192,18 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .memory-delete-button:hover {
   background-color: rgba(220, 30, 30, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .memory-delete-button:active {
   transform: translateY(0px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Memory Node Styles */
@@ -185,8 +223,14 @@
 }
 
 .memory-node-expanded {
+  border-left: 3px solid rgba(114, 137, 218, 0.7);
+  background-color: rgba(30, 30, 30, 0.7);
+}
+
+.memory-node-expanded {
   max-height: unset;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .memory-node-header {
@@ -228,20 +272,34 @@
 .memory-node-expand-icon {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
-  transition: transform 0.2s ease;
-  width: 16px;
-  height: 16px;
+  transition: all 0.2s ease;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.memory-node-expand-icon.has-children {
+  background-color: rgba(114, 137, 218, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(114, 137, 218, 0.4);
 }
 
 .memory-node-expanded .memory-node-expand-icon {
   transform: rotate(0deg);
 }
 
-.memory-node:not(.memory-node-expanded) .memory-node-expand-icon {
+.memory-node:not(.memory-node-expanded) .memory-node-expand-icon.has-children {
   transform: rotate(-90deg);
+}
+
+.memory-children-count {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 4px;
 }
 
 .memory-node-actions {
@@ -254,17 +312,67 @@
   max-height: 200px;
   overflow: hidden;
   position: relative;
-  transition: max-height 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.memory-node-expanded .memory-node-content {
-  max-height: 1000px;
+.memory-node-content.expanded {
+  max-height: none; /* Allow unlimited height */
+  animation: expandContent 0.3s ease;
+}
+
+.memory-node-content.collapsed {
+  max-height: 200px;
+  opacity: 0.9;
+  animation: collapseContent 0.3s ease;
+}
+
+@keyframes expandContent {
+  from { max-height: 200px; opacity: 0.9; }
+  to { max-height: 2000px; opacity: 1; } /* Use higher value for animation */
+}
+
+@keyframes collapseContent {
+  from { max-height: 2000px; opacity: 1; }
+  to { max-height: 200px; opacity: 0.9; }
+}
+
+.memory-children-container {
+  padding-left: 20px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  border-left: 2px dashed rgba(114, 137, 218, 0.3);
+  animation: fadeIn 0.3s ease;
+  width: calc(100% - 20px);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .memory-node-messages {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.memory-empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 20px;
 }
 
 /* Customize ChatMessage styling in memory nodes */
@@ -301,11 +409,20 @@
   padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 .memory-view-button:hover {
   background-color: rgba(30, 80, 220, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.memory-view-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Memory Node Overlay Styles */

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaEye } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { DataSet } from "vis-data";
 import ChatMessage from "./ChatMessage";
@@ -61,6 +61,17 @@ const TableView: React.FC<{
     );
   };
 
+  // Get the total count of items including children
+  const getMemoryTreeCount = (memory: Memory): number => {
+    let count = 1; // Count self
+    if (memory.children && memory.children.length > 0) {
+      memory.children.forEach((child) => {
+        count += getMemoryTreeCount(child);
+      });
+    }
+    return count;
+  };
+
   const MemoryNode: React.FC<{
     memory: Memory;
     depth?: number;
@@ -69,6 +80,8 @@ const TableView: React.FC<{
   }> = ({ memory, depth = 0, index = 0, parentPath = "" }) => {
     const nodePath = parentPath ? `${parentPath}-${index}` : `${index}`;
     const isExpanded = expandedNodes.has(nodePath);
+    const hasChildren = memory.children && memory.children.length > 0;
+    const childrenCount = hasChildren ? getMemoryTreeCount(memory) - 1 : 0;
 
     return (
       <div
@@ -82,10 +95,17 @@ const TableView: React.FC<{
 
           <div className="memory-node-info">
             <div className="memory-node-time">
-              {formatDateTime(memory.timestamp)}
-              <span className="memory-node-expand-icon">
-                {isExpanded ? "▼" : "▶"}
+              <span
+                className={`memory-node-expand-icon ${hasChildren ? "has-children" : ""}`}
+              >
+                {hasChildren ? (isExpanded ? "▼" : "▶") : "○"}
               </span>
+              {formatDateTime(memory.timestamp)}
+              {hasChildren && (
+                <span className="memory-children-count">
+                  ({childrenCount} {childrenCount === 1 ? "child" : "children"})
+                </span>
+              )}
             </div>
             <div className="memory-node-actions">
               <button
@@ -94,8 +114,9 @@ const TableView: React.FC<{
                   e.stopPropagation();
                   handleViewMemory(memory);
                 }}
+                title="View memory details"
               >
-                View
+                <FaEye /> View
               </button>
               <button
                 className="memory-delete-button"
@@ -103,6 +124,7 @@ const TableView: React.FC<{
                   e.stopPropagation();
                   handleDelete(memory);
                 }}
+                title="Delete this memory"
               >
                 <FaTrash /> Delete
               </button>
@@ -110,7 +132,9 @@ const TableView: React.FC<{
           </div>
         </div>
 
-        <div className="memory-node-content">
+        <div
+          className={`memory-node-content ${isExpanded ? "expanded" : "collapsed"}`}
+        >
           <div className="memory-node-messages">
             <ChatMessage
               content={memory.prompt}
@@ -142,9 +166,9 @@ const TableView: React.FC<{
           {!isExpanded && <div className="memory-node-fade" />}
         </div>
 
-        {isExpanded && memory.children && memory.children.length > 0 && (
-          <div style={{ marginTop: "12px", marginLeft: "12px" }}>
-            {memory.children.map((child, childIndex) => (
+        {isExpanded && hasChildren && (
+          <div className="memory-children-container">
+            {memory.children?.map((child, childIndex) => (
               <MemoryNode
                 key={`${nodePath}-${childIndex}`}
                 memory={child}
@@ -161,9 +185,15 @@ const TableView: React.FC<{
 
   return (
     <div className="memory-table">
-      {memories.map((memory, index) => (
-        <MemoryNode key={index} memory={memory} index={index} />
-      ))}
+      {memories.length === 0 ? (
+        <div className="memory-empty-state">
+          No memories found. Chat with Ditto to create memories.
+        </div>
+      ) : (
+        memories.map((memory, index) => (
+          <MemoryNode key={index} memory={memory} index={index} />
+        ))
+      )}
     </div>
   );
 };
@@ -254,8 +284,6 @@ export default function MemoryNetworkModal() {
           parentPath = ""
         ) => {
           if (!memory) return null;
-          // We now only use the ID directly
-          const documentId = memory.id;
           // Use a consistent node ID pattern for the visualization
           const nodeId = parentPath
             ? `${parentPath}-${depth}`
@@ -427,19 +455,12 @@ export default function MemoryNetworkModal() {
 
   // Initialize or update the network when necessary
   useEffect(() => {
-    console.log("Network effect running", {
-      activeTab,
-      networkNeedsUpdate: networkNeedsUpdate.current,
-      networkData,
-      networkIsStabilizing: networkIsStabilizing.current,
-    });
-
-    // Skip if the network tab isn't active or we don't have network data
+    // Only attempt to create/update network when the network tab is active and we have data
     if (activeTab !== "network" || !networkData) {
       return;
     }
 
-    // Skip network recreation unless it's needed or if stabilization is in progress
+    // Skip if already have a network and don't need update
     if (
       !networkNeedsUpdate.current &&
       network &&
@@ -448,270 +469,161 @@ export default function MemoryNetworkModal() {
       return;
     }
 
-    // If we're already stabilizing, don't rebuild the network
+    // Skip if already stabilizing
     if (networkIsStabilizing.current) {
       return;
     }
 
-    // Get or create the container
+    // Get the container
     const container = document.getElementById("memory-network-container");
     if (!container) {
       console.error("Container not found for memory network");
       return;
     }
 
-    // Ensure the container has proper dimensions before initializing
-    if (!container.clientWidth || !container.clientHeight) {
-      container.style.width = "100%";
-      container.style.height = "600px"; // Ensure a minimum height
-    }
-
-    // Set up just once per render cycle
+    // Reset the update flag
     networkNeedsUpdate.current = false;
 
-    // Add a small delay to ensure the DOM is ready and container is rendered
+    // Add a small delay to ensure the DOM is ready
     const timer = setTimeout(() => {
       try {
-        // If we already have a network instance, destroy it to create a fresh one
-        // This ensures we don't have any rendering issues with the network
+        // Clean up old network if it exists
         if (network) {
           network.destroy();
         }
 
-        // Create a new network instance with the memoized data
+        // Create a new network with the data
         if (networkData) {
           const { nodes, edges, options } = networkData;
 
-          // Modify physics options for better initial rendering
+          // Set stabilization options
           const networkOptions = {
             ...options,
             physics: {
               ...options.physics,
               stabilization: {
                 enabled: true,
-                iterations: 200, // Reduced iterations to prevent long stabilization
+                iterations: 100,
                 updateInterval: 50,
                 fit: true,
               },
             },
           };
 
-          // Create container size checker (sometimes container isn't fully rendered yet)
-          if (container.clientWidth < 50 || container.clientHeight < 50) {
-            container.style.width = "100%";
-            container.style.height = "600px";
-            // Force a reflow
-            container.getBoundingClientRect();
-          }
-
+          // Create the network
           const networkInstance = new Network(
             container,
             { nodes, edges },
             networkOptions
           );
 
-          // Set the stabilizing flag before stabilization starts
+          // Set stabilizing flag
           networkIsStabilizing.current = true;
 
-          // Save the network instance
+          // Save the network
           setNetwork(networkInstance);
           networkInitializedRef.current = true;
 
-          // Create an instance of the node click handler that won't recreate on every render
-          const handleNodeClick = (params: { nodes?: string[] | number[] }) => {
-            // Make sure we have nodes parameter and it's an array with values
-            if (
-              !params.nodes ||
-              !Array.isArray(params.nodes) ||
-              params.nodes.length === 0
-            ) {
-              return;
-            }
+          // Set up node click handler
+          networkInstance.on(
+            "click",
+            (params: { nodes?: string[] | number[] }) => {
+              if (
+                !params.nodes ||
+                !Array.isArray(params.nodes) ||
+                params.nodes.length === 0
+              ) {
+                return;
+              }
 
-            try {
-              const nodeId = params.nodes[0].toString();
-              if (nodeId) {
-                // Get the memory data directly from our map
-                const nodeData = memoryMap.get(nodeId);
-
-                if (nodeData) {
-                  // Use showMemoryNode with the complete memory data
-                  showMemoryNode(nodeData, handleNodeDelete);
+              try {
+                const nodeId = params.nodes[0].toString();
+                if (nodeId) {
+                  const nodeData = memoryMap.get(nodeId);
+                  if (nodeData) {
+                    showMemoryNode(nodeData, handleNodeDelete);
+                  }
                 }
+              } catch (error) {
+                console.error("Error handling node click:", error);
               }
-            } catch (error) {
-              console.error("Error handling node click:", error);
             }
-          };
+          );
 
-          networkInstance.on("click", handleNodeClick);
-
-          // Add event listener for stabilized event and make sure the network is visible
+          // Handle stabilization completion
           networkInstance.once("stabilized", () => {
-            try {
-              // Reset the stabilizing flag to allow future updates when needed
-              networkIsStabilizing.current = false;
-
-              // Fit the view, but don't cause any state updates that would trigger render
-              networkInstance.fit({
-                animation: {
-                  duration: 500,
-                  easingFunction: "easeInOutQuad",
-                },
-              });
-
-              // Save reference to the container to ensure it stays in DOM
-              if (containerRef.current) {
-                containerRef.current.style.display = "block";
-              }
-            } catch (error) {
-              console.error("Error fitting network view:", error);
-              // Make sure we reset the flag even if there's an error
-              networkIsStabilizing.current = false;
-            }
-          });
-
-          // Also add a handler for when network redraw is complete
-          networkInstance.on("afterDrawing", () => {
-            if (containerRef.current) {
-              containerRef.current.style.display = "block";
-            }
+            networkIsStabilizing.current = false;
+            networkInstance.fit();
           });
         }
       } catch (error) {
         console.error("Error initializing memory network:", error);
         toast.error("Failed to initialize memory network visualization");
-        // Reset the flags in case of error
         networkIsStabilizing.current = false;
         networkNeedsUpdate.current = false;
       }
-    }, 300); // Small delay to ensure container is ready
+    }, 300);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, networkData]); // Only depend on activeTab and networkData
+  }, [
+    activeTab,
+    networkData,
+    network,
+    handleNodeDelete,
+    showMemoryNode,
+    memoryMap,
+  ]);
 
-  // Only mark network for update when memories actually change
+  // Fit the network when it's visible and active
   useEffect(() => {
-    if (memories && activeTab === "network") {
-      networkNeedsUpdate.current = true;
-    }
-  }, [memories, activeTab]);
-
-  // Track previous tab to handle tab switches properly
-  const previousTabRef = useRef<string | null>(null);
-
-  // Handle tab changes - make sure network is shown when switching back to network tab
-  useEffect(() => {
-    // First check if this is a tab switch (not initial load)
-    if (
-      previousTabRef.current !== null &&
-      previousTabRef.current !== activeTab
-    ) {
-      // If switching TO network tab
-      if (activeTab === "network") {
-        console.log("Switching TO network tab");
-        // Always trigger a network update when switching to network tab
-        networkNeedsUpdate.current = true;
-
-        // If we already have a network, make sure the container is visible
-        if (network) {
-          const container = document.getElementById("memory-network-container");
-          if (container) {
-            container.style.display = "block";
-            container.style.visibility = "visible";
-          }
-        }
-      }
-    } else if (activeTab === "network") {
-      // Initial load to network tab
-      networkNeedsUpdate.current = true;
-    }
-
-    // Update previous tab reference
-    previousTabRef.current = activeTab;
-  }, [activeTab, network]);
-
-  // Instead of destroying the network, we'll just make sure it stays visible
-  // This ensures the network remains rendered even when other modals are open
-  useEffect(() => {
-    // We don't need to listen for modal close events anymore,
-    // since we're keeping the network rendered at all times
-
-    // If we have an existing network, and we're in the network tab,
-    // make sure it's properly visible
-    if (network && activeTab === "network" && !networkIsStabilizing.current) {
+    // Only execute this effect when on network tab with an existing network
+    if (activeTab === "network" && network && !networkIsStabilizing.current) {
       try {
-        const container = document.getElementById("memory-network-container");
-        if (container) {
-          container.style.display = "block";
-
-          // This forces a redraw of the network which may have become invisible
-          // due to DOM manipulations
-          setTimeout(() => {
-            network.fit({
-              animation: {
-                duration: 300,
-                easingFunction: "easeInOutQuad",
-              },
-            });
-          }, 100);
-        }
+        // Use a small timeout to ensure the container is properly sized in the DOM
+        setTimeout(() => {
+          network.fit({
+            animation: {
+              duration: 300,
+              easingFunction: "easeInOutQuad",
+            },
+          });
+        }, 100);
       } catch (err) {
-        console.error("Error ensuring network visibility:", err);
+        console.error("Error fitting network:", err);
       }
     }
   }, [network, activeTab, networkIsStabilizing]);
 
-  // Add a special effect to ensure the network is visible after interacting with modals
-  useEffect(() => {
-    // Only run this for network tab when network exists
-    if (activeTab === "network") {
-      // Use a small delay to allow other DOM operations to complete
-      const timer = setTimeout(() => {
-        try {
-          // Check if container exists and is accessible
-          const container = document.getElementById("memory-network-container");
-          if (container) {
-            // Ensure the container is fully visible
-            container.style.visibility = "visible";
-            container.style.display = "block";
+  // Create the network view component
+  const NetworkView = useMemo(() => {
+    console.log("Rendering NetworkView");
+    return (
+      <div className="memory-network-graph">
+        {loading ? (
+          <div className="memory-network-loading">Loading memories...</div>
+        ) : (
+          <div id="memory-network-container" ref={containerRef}></div>
+        )}
+      </div>
+    );
+  }, [loading, containerRef]);
 
-            // Only try to use the network if it exists
-            if (network && !networkIsStabilizing.current) {
-              try {
-                // Force network redraw to fix any rendering issues
-                network.redraw();
+  // Create the table view component
+  const TableViewContent = useMemo(() => {
+    console.log("Rendering TableViewContent");
 
-                // Occasionally start the simulation to keep the network active
-                if (Math.random() < 0.2) {
-                  // Only do this 20% of the time to avoid too much CPU usage
-                  network.startSimulation();
-                }
-              } catch (innerErr) {
-                console.error("Network operation failed:", innerErr);
-                // If network operations fail, mark it for update on next cycle
-                networkNeedsUpdate.current = true;
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Error during network refresh:", err);
-        }
-      }, 300);
-
-      return () => clearTimeout(timer);
-    }
-  }, [network, activeTab, networkIsStabilizing]);
-
-  // Cleanly destroy the network when unmounting component (not when switching tabs)
-  useEffect(() => {
-    return () => {
-      if (network) {
-        network.destroy();
-      }
-    };
-  }, []);
+    return (
+      <div className="memory-network-table">
+        {loading ? (
+          <div className="memory-network-loading">Loading memories...</div>
+        ) : (
+          <div className="memory-table-scroll-container">
+            <TableView memories={memories} />
+          </div>
+        )}
+      </div>
+    );
+  }, [loading, memories]);
 
   return (
     <Modal
@@ -722,38 +634,23 @@ export default function MemoryNetworkModal() {
         {
           id: "network",
           label: "Network View",
-          content: (
-            <div className="memory-network-graph active">
-              {loading ? (
-                <div className="memory-network-loading">
-                  Loading memories...
-                </div>
-              ) : (
-                <div id="memory-network-container" ref={containerRef}></div>
-              )}
-            </div>
-          ),
-          customClass: "",
+          content: null, // We'll render this via children
         },
         {
           id: "table",
           label: "Table View",
-          content: (
-            <div className="memory-network-table active">
-              {loading ? (
-                <div className="memory-network-loading">
-                  Loading memories...
-                </div>
-              ) : (
-                <TableView memories={memories} />
-              )}
-            </div>
-          ),
-          customClass: "",
+          content: TableViewContent, // Table view comes from the tab content
         },
       ]}
       defaultTabId="network"
       onTabChange={handleTabChange}
-    />
+    >
+      {/* Network view rendered conditionally as children */}
+      <div
+        className={`network-view-container ${activeTab === "network" ? "active" : "hidden"}`}
+      >
+        {NetworkView}
+      </div>
+    </Modal>
   );
 }

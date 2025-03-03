@@ -279,12 +279,15 @@ export default function Modal({
             {tabs && tabs.length > 0
               ? (() => {
                   const activeTab = tabs.find((tab) => tab.id === activeTabId);
-                  return activeTab ? activeTab.content : null;
+                  return activeTab && activeTab.content ? activeTab.content : null;
                 })()
-              : children}
+              : null}
+              
+            {/* Always render children - visibility controlled by CSS */}
+            {children}
           </div>
 
-          {tabs && tabs.length > 0 && children && (
+          {tabs && tabs.length > 0 && false && (
             <div className="modal-footer">{children}</div>
           )}
         </div>

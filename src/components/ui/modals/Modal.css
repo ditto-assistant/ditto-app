@@ -50,6 +50,9 @@
   display: flex;
   flex-direction: column;
   touch-action: pan-y;
+  height: 100%; /* Ensure full height */
+  position: relative; /* For proper scrolling */
+  max-height: calc(100vh - 140px); /* Ensure it doesn't overflow the viewport */
 }
 
 .modal-children {
@@ -178,6 +181,9 @@
   display: flex;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background-color: #2f3136;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .modal-tab {
