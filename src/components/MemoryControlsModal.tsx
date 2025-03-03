@@ -47,7 +47,7 @@ function MemoryControlsModal() {
         max={MEMORY_CONFIG.shortTerm.max}
         step={MEMORY_CONFIG.shortTerm.step}
         marks={MEMORY_CONFIG.shortTerm.marks}
-        description="Number of recent messages to include in short-term memory"
+        description={`Number of recent messages to include in short-term memory (max ${MEMORY_CONFIG.shortTerm.max})`}
       />
 
       <MemorySlider
@@ -58,7 +58,7 @@ function MemoryControlsModal() {
         max={MEMORY_CONFIG.longTerm.max}
         step={MEMORY_CONFIG.longTerm.step}
         marks={MEMORY_CONFIG.longTerm.marks}
-        description={`Chain of memory depths for long-term memory search (max ${MEMORY_CONFIG.longTerm.maxChainLength} levels)`}
+        description={`Chain of memory depths for long-term memory search (max ${MEMORY_CONFIG.longTerm.maxChainLength} levels, max ${MEMORY_CONFIG.longTerm.max} memories per level)`}
         showChainControls
         maxChainLength={MEMORY_CONFIG.longTerm.maxChainLength}
       />
