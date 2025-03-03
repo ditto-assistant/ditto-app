@@ -19,9 +19,9 @@ const MarkdownRenderer = ({
 }: MarkdownRendererProps) => {
   const { handleImageClick } = useImageViewerHandler();
   const { isIOS } = usePlatform();
-  
+
   if (!content) return null;
-  
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast.success("Copied to clipboard");
@@ -39,23 +39,22 @@ const MarkdownRenderer = ({
             </a>
           ),
           img: ({ src, alt, ...props }) => (
-            <div className="image-container" style={{ 
-              minHeight: isIOS ? '180px' : 'auto',
-              minWidth: '100px',
-              background: 'rgba(0, 0, 0, 0.05)',
-              position: 'relative',
-            }}>
-              <img
-                src={src}
-                alt={alt || ""}
-                {...props}
-                className="markdown-image"
-                onClick={() => src && handleImageClick(src)}
-                // Keep just the essential attributes for iOS
-                draggable="false"
-                loading="eager"
-              />
-            </div>
+            <img
+              src={src}
+              alt={alt || ""}
+              {...props}
+              className="markdown-image image-container"
+              style={{
+                minHeight: isIOS ? "180px" : "auto",
+                minWidth: "100px",
+                background: "rgba(0, 0, 0, 0.05)",
+                position: "relative",
+              }}
+              onClick={() => src && handleImageClick(src)}
+              // Keep just the essential attributes for iOS
+              draggable="false"
+              loading="eager"
+            />
           ),
           // Handle inline code with copy button - this component only handles inline code
           // since code blocks are handled by the pre component above
@@ -93,22 +92,28 @@ const MarkdownRenderer = ({
               typeof children === "object" &&
               "code-0" in children
             ) {
+              console.log("is code-0 in children", children["code-0"]);
               codeElement = children["code-0"];
             }
             // Check if children itself is the code element
+            // @ts-expect-error - props does exist in the code block case
             else if (children?.props?.node?.tagName === "code") {
+              console.log("is children a code element", children);
               codeElement = children;
             }
 
             if (codeElement) {
+              // @ts-expect-error - props does exist in the code block case
               const { className } = codeElement.props || {};
               const match = /language-(\w+)/.exec(className || "");
               const language = match ? match[1] : "text";
 
-              // Get the code content
+              // @ts-expect-error - props does exist in the code block case
               const code = Array.isArray(codeElement.props?.children)
-                ? codeElement.props.children[0] || ""
-                : codeElement.props?.children || "";
+                ? // @ts-expect-error - props does exist in the code block case
+                  codeElement.props.children[0] || ""
+                : // @ts-expect-error - props does exist in the code block case
+                  codeElement.props?.children || "";
 
               return (
                 <div className="code-block-wrapper">
@@ -125,7 +130,7 @@ const MarkdownRenderer = ({
                       <FiCopy />
                     </button>
                   </div>
-                  
+
                   {/* Scrollable code container */}
                   <div className="code-container">
                     <SyntaxHighlighter
@@ -136,9 +141,9 @@ const MarkdownRenderer = ({
                       wrapLongLines={false}
                       customStyle={{
                         margin: 0,
-                        padding: '16px',
-                        borderRadius: '6px',
-                        minWidth: 'min-content',
+                        padding: "16px",
+                        borderRadius: "6px",
+                        minWidth: "min-content",
                       }}
                       {...props}
                     >

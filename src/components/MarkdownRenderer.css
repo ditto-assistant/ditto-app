@@ -9,24 +9,24 @@
 
 /* Style links with better contrast */
 .markdown-content a {
-  color: #2196F3; /* Brighter blue for better visibility */
+  color: #2196f3; /* Brighter blue for better visibility */
   text-decoration: underline;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .markdown-content a:hover {
-  color: #64B5F6; /* Even brighter on hover */
+  color: #64b5f6; /* Even brighter on hover */
 }
 
 /* Dark mode specific link styling for better contrast */
 @media (prefers-color-scheme: dark) {
   .markdown-content a {
-    color: #64B5F6; /* Lighter blue in dark mode for better contrast */
+    color: #64b5f6; /* Lighter blue in dark mode for better contrast */
   }
-  
+
   .markdown-content a:hover {
-    color: #90CAF9; /* Even lighter on hover */
+    color: #90caf9; /* Even lighter on hover */
   }
 }
 
@@ -129,7 +129,7 @@
   cursor: pointer;
   transition: transform 0.2s ease;
   display: block; /* Prevents inline spacing issues */
-  
+
   /* Add GPU acceleration and rendering optimizations */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -146,7 +146,7 @@
     /* Make images more responsive to taps */
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   /* Ensure image container is stable */
   .image-container {
     min-height: 100px; /* Simple minimum height */
@@ -189,7 +189,7 @@
     -webkit-text-size-adjust: none !important; /* Prevent iOS text size adjustment */
     max-height: none !important; /* Prevent height restrictions */
   }
-  
+
   /* Target SyntaxHighlighter specifically */
   .code-container .react-syntax-highlighter,
   .code-container .react-syntax-highlighter code,
