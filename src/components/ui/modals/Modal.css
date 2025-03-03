@@ -138,6 +138,24 @@
   .modal.content {
     border-radius: 8px 8px 0 0;
   }
+  
+  /* Touch-friendly tab layout on small screens */
+  .modal-tab {
+    padding: 12px 12px; /* Increased vertical padding for better touch targets */
+    font-size: 13px;
+    min-width: 70px; /* Ensure minimum touch target width */
+  }
+  
+  /* Better scrolling behavior for tabs on mobile */
+  .modal-tabs {
+    /* Add slight padding to improve touch area */
+    padding: 0 2px;
+    /* Stronger fade to indicate scrolling */
+    mask-image: linear-gradient(to right, black 80%, transparent 95%);
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 95%);
+    /* Improve momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -184,10 +202,25 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  scroll-behavior: smooth;
+  white-space: nowrap;
+  /* Add gradient fade on the right to indicate more content */
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  padding-bottom: 2px; /* Small padding to avoid cutting off active border */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.modal-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .modal-tab {
-  padding: 10px 20px;
+  padding: 10px 16px; /* Slightly reduced horizontal padding */
   font-size: 14px;
   font-weight: 500;
   background-color: transparent;
@@ -198,6 +231,8 @@
   margin-right: 2px;
   position: relative;
   transition: color 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .modal-tab:hover {

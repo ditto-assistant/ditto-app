@@ -16,6 +16,10 @@ import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useMemo } from "react";
+import ModelPreferencesModal from "@/components/ModelPreferencesModal";
+import MemoryControlsModal from "@/components/MemoryControlsModal";
+import AgentToolsModal from "@/components/AgentToolsModal";
 
 export default function Settings() {
   const balance = useBalance();
@@ -25,6 +29,11 @@ export default function Settings() {
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
   const { isMobile } = usePlatform();
+  
+  // Memoize the memory-related modal components
+  const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
+  const memoryControls = useMemo(() => <MemoryControlsModal />, []);
+  const agentTools = useMemo(() => <AgentToolsModal />, []);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -172,6 +181,21 @@ export default function Settings() {
       id: "general",
       label: "General",
       content: generalTabContent,
+    },
+    {
+      id: "models",
+      label: "Models",
+      content: modelPreferences,
+    },
+    {
+      id: "memory",
+      label: "Memory",
+      content: memoryControls,
+    },
+    {
+      id: "tools",
+      label: "Tools",
+      content: agentTools,
     },
     {
       id: "danger",

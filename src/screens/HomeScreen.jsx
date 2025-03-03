@@ -7,10 +7,10 @@ import dittoIcon from "/icons/ditto-icon-clear.png";
 import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
+import { FaLaptopCode } from "react-icons/fa";
 import MiniFocusOverlay from "@/components/MiniFocusOverlay";
 import ScriptActionsOverlay from "@/components/ScriptActionsOverlay";
 import ChatFeed from "@/components/ChatFeed";
-import StatusBar from "@/components/StatusBar";
 import SendMessage from "@/components/SendMessage";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
@@ -22,7 +22,6 @@ const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
-  const [showStatusBar, setShowStatusBar] = useState(true);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
@@ -37,7 +36,6 @@ export default function HomeScreen() {
   const openSettingsModal = modal.createOpenHandler("settings");
   const openFeedbackModal = modal.createOpenHandler("feedback");
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
-  const openMemoryOverlay = modal.createOpenHandler("memorySettings");
   const openScriptsOverlay = modal.createOpenHandler("scripts");
   const { isIOS, isPWA } = usePlatform();
   const {
@@ -120,10 +118,6 @@ export default function HomeScreen() {
       window.removeEventListener("scroll", setVH);
     };
   }, [isIOS, isPWA]);
-
-  const toggleStatusBar = () => {
-    setShowStatusBar((prev) => !prev);
-  };
 
   const handleCameraOpen = () => {
     setIsCameraOpen(true);
@@ -250,8 +244,6 @@ export default function HomeScreen() {
     setShowScriptActions(true);
   };
 
-  const [statusBarLoaded, setStatusBarLoaded] = useState(false);
-
   useEffect(() => {
     const handleEditScript = (event) => {
       const { script } = event.detail;
@@ -339,7 +331,6 @@ export default function HomeScreen() {
         ) : (
           <motion.div
             className="app-title-container"
-            onClick={toggleStatusBar}
             whileHover={{
               scale: 1.02,
               backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -347,53 +338,47 @@ export default function HomeScreen() {
             whileTap={{ scale: 0.98 }}
           >
             <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
-            <h1 className="app-title">Hey Ditto</h1>
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-              {showStatusBar ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
-            </motion.div>
+            <h1 className="app-title">Ditto</h1>
           </motion.div>
         )}
 
-        <motion.div
-          className="ditto-icon-button"
-          whileTap={{ scale: 0.9 }}
-          whileHover={{
-            scale: 1.1,
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          }}
-          onClick={openSettingsModal}
-          onKeyDown={(e) => handleKeyDown(e, openSettingsModal)}
-          aria-label="Settings"
-          role="button"
-          tabIndex={0}
-        >
-          <IoSettingsOutline className="icon" />
-        </motion.div>
-      </header>
-      <AnimatePresence>
-        {showStatusBar && (
+        <div className="header-buttons">
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ marginBottom: "-4px" }}
-            onAnimationComplete={() => setStatusBarLoaded(true)}
+            className="ditto-icon-button"
+            whileTap={{ scale: 0.9 }}
+            whileHover={{
+              scale: 1.1,
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={openScriptsOverlay}
+            onKeyDown={(e) => handleKeyDown(e, openScriptsOverlay)}
+            aria-label="Scripts"
+            role="button"
+            tabIndex={0}
           >
-            <Suspense
-              fallback={
-                <div className="loading-placeholder">Loading status...</div>
-              }
-            >
-              <StatusBar
-                onMemoryClick={openMemoryOverlay}
-                onScriptsClick={openScriptsOverlay}
-              />
-            </Suspense>
+            <FaLaptopCode className="icon" />
           </motion.div>
-        )}
-      </AnimatePresence>
+          
+          <motion.div
+            className="ditto-icon-button"
+            whileTap={{ scale: 0.9 }}
+            whileHover={{
+              scale: 1.1,
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={openSettingsModal}
+            onKeyDown={(e) => handleKeyDown(e, openSettingsModal)}
+            aria-label="Settings"
+            role="button"
+            tabIndex={0}
+          >
+            <IoSettingsOutline className="icon" />
+          </motion.div>
+        </div>
+      </header>
+      {/* Status bar has been removed */}
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="app-content-wrapper">
           <div
@@ -401,9 +386,7 @@ export default function HomeScreen() {
             ref={appBodyRef}
             onClick={handleCloseMediaOptions}
           >
-            <AnimatePresence>
-              {(!showStatusBar || statusBarLoaded) && <ChatFeed />}
-            </AnimatePresence>
+            <ChatFeed />
           </div>
           <div className="app-footer">
             <SendMessage

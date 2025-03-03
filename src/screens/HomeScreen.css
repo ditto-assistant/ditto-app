@@ -249,3 +249,26 @@ header.app-header {
 }
 
 /* iOS and PWA specific styles are now centralized in platform/ios.css */
+
+/* Header buttons container */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Add this code after your existing styles */
+.ditto-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}

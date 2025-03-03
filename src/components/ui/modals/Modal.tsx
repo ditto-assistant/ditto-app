@@ -36,6 +36,8 @@ export default function Modal({
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
     useModal();
   const modalRef = useRef<HTMLDivElement>(null);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLButtonElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: 100, y: 100 });
@@ -75,6 +77,28 @@ export default function Modal({
     bringToFront();
     e.stopPropagation();
   };
+
+  // Scroll to active tab when it changes
+  useEffect(() => {
+    if (activeTabRef.current && tabsContainerRef.current) {
+      const tabElement = activeTabRef.current;
+      const tabsContainer = tabsContainerRef.current;
+      const tabRect = tabElement.getBoundingClientRect();
+      const containerRect = tabsContainer.getBoundingClientRect();
+      
+      // Check if tab is outside visible area
+      if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
+        // Calculate scroll position to center the tab
+        const scrollPosition = tabElement.offsetLeft - 
+          (tabsContainer.clientWidth / 2) + (tabElement.clientWidth / 2);
+        
+        tabsContainer.scrollTo({
+          left: Math.max(0, scrollPosition),
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeTabId]);
 
   useEffect(() => {
     const getBoundedPosition = (
@@ -254,10 +278,11 @@ export default function Modal({
         </div>
 
         {tabs && tabs.length > 0 && (
-          <div className="modal-tabs">
+          <div className="modal-tabs" ref={tabsContainerRef}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                ref={tab.id === activeTabId ? activeTabRef : null}
                 className={`modal-tab ${
                   tab.id === activeTabId ? "active" : ""
                 } ${tab.customClass || ""}`}
