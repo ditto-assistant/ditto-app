@@ -29,27 +29,27 @@ const TableView: React.FC<{
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(() => {
     // Start with an empty set
     const initialExpanded = new Set<string>();
-    
+
     // Add only root level nodes (index 0, 1, 2, etc.)
     memories.forEach((_, index) => {
       initialExpanded.add(index.toString());
     });
-    
+
     return initialExpanded;
   });
-  
+
   const { confirmMemoryDeletion } = useMemoryDeletion();
   const { showMemoryNode } = useMemoryNodeViewer();
-  
+
   // Update expanded nodes ONLY on initial render or when memories array changes completely
   const initializedRef = useRef(false);
   useEffect(() => {
     // Skip if already initialized
     if (initializedRef.current) return;
-    
+
     // Mark as initialized
     initializedRef.current = true;
-    
+
     // Set all root nodes as expanded
     if (memories.length > 0) {
       const rootNodes = new Set<string>();

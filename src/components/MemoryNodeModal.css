@@ -37,14 +37,16 @@
   overflow: visible;
 }
 
-.memory-prompt, .memory-response {
+.memory-prompt,
+.memory-response {
   background-color: rgba(30, 30, 30, 0.5);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 8px;
 }
 
-.memory-prompt h4, .memory-response h4 {
+.memory-prompt h4,
+.memory-response h4 {
   margin: 0 0 8px 0;
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;

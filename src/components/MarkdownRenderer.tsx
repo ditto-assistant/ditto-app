@@ -92,13 +92,11 @@ const MarkdownRenderer = ({
               typeof children === "object" &&
               "code-0" in children
             ) {
-              console.log("is code-0 in children", children["code-0"]);
               codeElement = children["code-0"];
             }
             // Check if children itself is the code element
             // @ts-expect-error - props does exist in the code block case
             else if (children?.props?.node?.tagName === "code") {
-              console.log("is children a code element", children);
               codeElement = children;
             }
 

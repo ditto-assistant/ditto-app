@@ -29,7 +29,7 @@ export default function Settings() {
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
   const { isMobile } = usePlatform();
-  
+
   // Memoize the memory-related modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
   const memoryControls = useMemo(() => <MemoryControlsModal />, []);

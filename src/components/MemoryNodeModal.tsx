@@ -52,8 +52,10 @@ export default function MemoryNodeModal() {
                   <div className="memory-response">
                     <h4>Response:</h4>
                     <div className="markdown-wrapper">
-                      <MarkdownRenderer 
-                        content={nodeData.response || "No response content available"}
+                      <MarkdownRenderer
+                        content={
+                          nodeData.response || "No response content available"
+                        }
                         className="memory-markdown"
                       />
                     </div>

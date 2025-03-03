@@ -18,7 +18,9 @@ interface MemoryNodeViewerContextType {
   nodeData: MemoryWithLevel | null;
   setNodeData: (data: MemoryWithLevel | null) => void;
   onDelete?: (node: MemoryWithLevel) => void;
-  setOnDelete: (callback: ((node: MemoryWithLevel) => void) | undefined) => void;
+  setOnDelete: (
+    callback: ((node: MemoryWithLevel) => void) | undefined
+  ) => void;
 }
 
 const MemoryNodeViewerContext = createContext<
@@ -63,7 +65,10 @@ export function useMemoryNodeViewer() {
   const closeModal = createCloseHandler("memoryNodeViewer");
 
   const showMemoryNode = useCallback(
-    (node: MemoryWithLevel, deleteCallback?: (node: MemoryWithLevel) => void) => {
+    (
+      node: MemoryWithLevel,
+      deleteCallback?: (node: MemoryWithLevel) => void
+    ) => {
       context.setNodeData(node);
       if (deleteCallback) {
         context.setOnDelete(() => deleteCallback);
@@ -76,7 +81,7 @@ export function useMemoryNodeViewer() {
   const hideMemoryNode = useCallback(() => {
     // First close the modal
     closeModal();
-    
+
     // We no longer need to clear the data as quickly,
     // which avoids some race conditions when re-rendering the network
     setTimeout(() => {

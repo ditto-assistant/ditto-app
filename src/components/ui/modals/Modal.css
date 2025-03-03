@@ -138,14 +138,14 @@
   .modal.content {
     border-radius: 8px 8px 0 0;
   }
-  
+
   /* Touch-friendly tab layout on small screens */
   .modal-tab {
     padding: 12px 12px; /* Increased vertical padding for better touch targets */
     font-size: 13px;
     min-width: 70px; /* Ensure minimum touch target width */
   }
-  
+
   /* Better scrolling behavior for tabs on mobile */
   .modal-tabs {
     /* Add slight padding to improve touch area */

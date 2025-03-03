@@ -85,16 +85,21 @@ export default function Modal({
       const tabsContainer = tabsContainerRef.current;
       const tabRect = tabElement.getBoundingClientRect();
       const containerRect = tabsContainer.getBoundingClientRect();
-      
+
       // Check if tab is outside visible area
-      if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
+      if (
+        tabRect.left < containerRect.left ||
+        tabRect.right > containerRect.right
+      ) {
         // Calculate scroll position to center the tab
-        const scrollPosition = tabElement.offsetLeft - 
-          (tabsContainer.clientWidth / 2) + (tabElement.clientWidth / 2);
-        
+        const scrollPosition =
+          tabElement.offsetLeft -
+          tabsContainer.clientWidth / 2 +
+          tabElement.clientWidth / 2;
+
         tabsContainer.scrollTo({
           left: Math.max(0, scrollPosition),
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     }
@@ -304,10 +309,12 @@ export default function Modal({
             {tabs && tabs.length > 0
               ? (() => {
                   const activeTab = tabs.find((tab) => tab.id === activeTabId);
-                  return activeTab && activeTab.content ? activeTab.content : null;
+                  return activeTab && activeTab.content
+                    ? activeTab.content
+                    : null;
                 })()
               : null}
-              
+
             {/* Always render children - visibility controlled by CSS */}
             {children}
           </div>

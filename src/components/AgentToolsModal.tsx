@@ -92,7 +92,6 @@ export default function AgentToolsModal() {
             <p className="tool-description">{TOOLS.openScad.description}</p>
           </label>
         </div>
-
       </div>
     </div>
   );

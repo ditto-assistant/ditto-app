@@ -87,10 +87,10 @@
       bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
     }
   }
-  
+
   /* iPad Mini specific fix (smaller screen) */
-  @media (min-width: 744px) and (max-width: 767px), 
-         (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+  @media (min-width: 744px) and (max-width: 767px),
+    (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
     .follow-button {
       /* More aggressive positioning for iPad Mini */
       bottom: calc(170px + env(safe-area-inset-bottom, 0px)) !important;

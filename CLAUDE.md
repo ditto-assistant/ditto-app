@@ -1,6 +1,7 @@
 # Ditto App - Development Guide
 
 ## Essential Commands
+
 - Build: `bun run build` or `vite build`
 - Dev server: `bun run start`
 - Preview: `vite preview`
@@ -9,6 +10,7 @@
 - Format: `bun run format` or `prettier --write "**/*.{ts,tsx,js,jsx,md,json,css}" --config .prettierrc`
 
 ## Code Style Guidelines
+
 - **Formatting**: 2 spaces, double quotes, ES5 trailing commas
 - **TypeScript**: Strict mode enabled, use explicit types for function params and returns
 - **React**: Functional components with hooks, avoid class components
