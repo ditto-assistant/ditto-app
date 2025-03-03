@@ -7,6 +7,29 @@
   line-height: 1.4;
 }
 
+/* Style links with better contrast */
+.markdown-content a {
+  color: #2196F3; /* Brighter blue for better visibility */
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.markdown-content a:hover {
+  color: #64B5F6; /* Even brighter on hover */
+}
+
+/* Dark mode specific link styling for better contrast */
+@media (prefers-color-scheme: dark) {
+  .markdown-content a {
+    color: #64B5F6; /* Lighter blue in dark mode for better contrast */
+  }
+  
+  .markdown-content a:hover {
+    color: #90CAF9; /* Even lighter on hover */
+  }
+}
+
 /* Inline code container styles */
 .inline-code-container {
   position: relative;
@@ -109,6 +132,14 @@
   /* Custom scrollbar styling */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Fix for iOS code block font size */
+@supports (-webkit-touch-callout: none) {
+  .code-container pre,
+  .code-container code {
+    font-size: 14px !important; /* Force consistent font size on iOS */
+  }
 }
 
 /* Custom scrollbar for WebKit browsers (Chrome, Safari, etc.) */

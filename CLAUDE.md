@@ -1,0 +1,19 @@
+# Ditto App - Development Guide
+
+## Essential Commands
+- Build: `bun run build` or `vite build`
+- Dev server: `bun run start`
+- Preview: `vite preview`
+- Lint: `bun lint` or `eslint . --ext .ts,.tsx,.js,.jsx`
+- Fix linting: `bun lint-fix` or `eslint . --ext .ts,.tsx,.js,.jsx --fix`
+- Format: `bun run format` or `prettier --write "**/*.{ts,tsx,js,jsx,md,json,css}" --config .prettierrc`
+
+## Code Style Guidelines
+- **Formatting**: 2 spaces, double quotes, ES5 trailing commas
+- **TypeScript**: Strict mode enabled, use explicit types for function params and returns
+- **React**: Functional components with hooks, avoid class components
+- **Naming**: PascalCase for components/types, camelCase for variables/functions
+- **CSS**: Component-specific CSS files with the same name as the component
+- **Error Handling**: Use try/catch for async operations, provide meaningful error messages
+- **Imports**: Group imports by external libs first, then internal modules
+- **Components**: Keep components focused on a single responsibility

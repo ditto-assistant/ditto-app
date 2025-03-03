@@ -1,33 +1,31 @@
 .message-container {
   display: flex;
   margin: 6px 0;
-  gap: 10px;
   max-width: 100%;
-  align-items: flex-end;
   position: relative;
+  flex-direction: column;
+  width: 100%;
 }
 
 .message-container.ditto {
-  flex-direction: row-reverse;
-  justify-content: flex-end;
+  align-items: flex-start;
 }
 
 .message-container.user {
-  flex-direction: row;
-  justify-content: flex-end;
+  align-items: flex-end;
 }
 
 .message-avatar {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   overflow: visible;
   position: relative;
   cursor: pointer;
   z-index: 2;
   transition: transform 0.2s ease;
-  align-self: flex-end;
+  margin-top: 4px;
 }
 
 .message-avatar:hover {
@@ -54,10 +52,11 @@
 .message-content {
   display: flex;
   flex-direction: column;
-  max-width: 85%;
+  max-width: 90%;
   width: fit-content;
   min-width: 0;
   position: relative;
+  margin-bottom: 2px;
 }
 
 @media screen and (min-width: 1200px) {
@@ -79,7 +78,6 @@
   position: relative;
   width: fit-content;
   max-width: 100%;
-  overflow: visible;
 }
 
 /* Teardrop message styling */
@@ -87,28 +85,28 @@
   background-color: #007aff;
   margin-left: auto;
   margin-right: 0;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 18px;
+  border-radius: 18px;
+  position: relative;
 }
 
 .message-bubble.ditto {
   background-color: #1c1c1e;
   margin-right: auto;
   margin-left: 0;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 18px;
+  border-radius: 18px;
+  position: relative;
 }
 
 .message-text {
   font-size: 14px;
   line-height: 1.4;
   word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
   user-select: text;
   -webkit-user-select: text;
+  max-width: 100%;
+  overflow: visible;
 }
 
 .message-timestamp {
@@ -150,11 +148,13 @@
 }
 
 .avatar-action-menu.right {
-  right: 36px;
+  right: 0;
+  top: -36px;
 }
 
 .avatar-action-menu.left {
-  left: 36px;
+  left: 0;
+  top: -36px;
 }
 
 .action-icon-button {

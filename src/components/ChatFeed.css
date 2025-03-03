@@ -1479,22 +1479,11 @@ ul.chat-bubble-list {
 }
 
 .message-pair {
-  margin-bottom: 8px;
   will-change: transform, opacity;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  padding: 0 10px;
 }
-
-/* Message wrapper styles are now handled in ChatMessage.css */
-
-/* Action menu styling is now in ChatMessage.css */
-
-/* Action menu positioning moved to ChatMessage.css */
-
-/* Action icon button styles moved to ChatMessage.css */
-
-/* Message indicators and message content styles moved to ChatMessage.css */
 
 .loading-indicator {
   position: sticky;
