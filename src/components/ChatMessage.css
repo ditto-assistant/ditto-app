@@ -26,6 +26,11 @@
   z-index: 2;
   transition: transform 0.2s ease;
   margin-top: 4px;
+  /* Prevent iOS touch scrolling issues */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .message-avatar:hover {
@@ -36,6 +41,14 @@
   z-index: 3;
 }
 
+/* iOS-specific fixes to prevent jittering when tapping avatars */
+@supports (-webkit-touch-callout: none) {
+  .message-avatar {
+    will-change: transform;  /* GPU acceleration */
+    transform: translateZ(0);  /* Force GPU rendering */
+  }
+}
+
 .avatar-image {
   width: 100%;
   height: 100%;
@@ -43,6 +56,17 @@
   border-radius: 50%;
   border: 2px solid transparent;
   transition: border-color 0.2s ease-in-out;
+}
+
+/* Simple iOS fixes for avatar images */
+@supports (-webkit-touch-callout: none) {
+  .avatar-image {
+    /* Basic GPU acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Remove tap highlight */
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 .message-avatar.active .avatar-image {
@@ -78,6 +102,36 @@
   position: relative;
   width: fit-content;
   max-width: 100%;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+}
+
+/* Add a subtle loading state with a shimmer effect for iOS */
+@supports (-webkit-touch-callout: none) {
+  .message-bubble:not(.content-ready) {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .message-bubble:not(.content-ready)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 150%; }
+  }
 }
 
 /* Teardrop message styling */

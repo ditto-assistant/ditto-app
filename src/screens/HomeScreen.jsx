@@ -56,28 +56,21 @@ export default function HomeScreen() {
 
   const appBodyRef = useRef(null);
 
+  // Removed automatic scroll-to-bottom on resize as it prevents users from scrolling up
   useEffect(() => {
-    const handleResize = () => {
-      const chatContainer = appBodyRef.current;
-      if (chatContainer) {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
-    };
-
+    // This effect is kept for future reference but no longer forces scroll to bottom
+    // which caused issues with iOS scrolling
+    
     const handleFocus = (event) => {
-      if (
-        event.target.tagName === "INPUT" ||
-        event.target.tagName === "TEXTAREA"
-      ) {
-        setTimeout(handleResize, 500); // Timeout to wait for keyboard to simply open
+      // Only handle keyboard focus events without forced scrolling
+      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
+        // Input field focused - no action needed
       }
     };
 
-    window.addEventListener("resize", handleResize);
     window.addEventListener("focusin", handleFocus);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
       window.removeEventListener("focusin", handleFocus);
     };
   }, []);
@@ -427,26 +420,20 @@ export default function HomeScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="app-content-wrapper">
-        <div
-          className="app-body"
-          ref={appBodyRef}
-          onClick={handleCloseMediaOptions}
-        >
-          <AnimatePresence>
-            {(!showStatusBar || statusBarLoaded) && (
-              <Suspense
-                fallback={
-                  <div className="loading-placeholder">Loading chat...</div>
-                }
-              >
+      <Suspense fallback={<FullScreenSpinner />}>
+        <div className="app-content-wrapper">
+          <div
+            className="app-body"
+            ref={appBodyRef}
+            onClick={handleCloseMediaOptions}
+          >
+            <AnimatePresence>
+              {(!showStatusBar || statusBarLoaded) && (
                 <ChatFeed scrollToBottom={true} startAtBottom={startAtBottom} />
-              </Suspense>
-            )}
-          </AnimatePresence>
-        </div>
-        <div className="app-footer">
-          <Suspense fallback={<FullScreenSpinner />}>
+              )}
+            </AnimatePresence>
+          </div>
+          <div className="app-footer">
             <SendMessage
               onCameraOpen={handleCameraOpen}
               capturedImage={capturedImage}
@@ -458,9 +445,9 @@ export default function HomeScreen() {
                 balance.refetch();
               }}
             />
-          </Suspense>
+          </div>
         </div>
-      </div>
+      </Suspense>
 
       <AnimatePresence>
         {isCameraOpen && (

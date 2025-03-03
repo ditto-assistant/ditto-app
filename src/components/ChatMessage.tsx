@@ -4,6 +4,7 @@ import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash } from "react-icons/fa";
+import { usePlatform } from "@/hooks/usePlatform";
 import "./ChatMessage.css";
 
 const detectToolType = (text: string) => {
@@ -117,6 +118,7 @@ export default function ChatMessage({
   menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth();
+  const { isIOS } = usePlatform();
   const avatar = isUser
     ? (user?.photoURL ?? DEFAULT_USER_AVATAR)
     : DITTO_AVATAR;
@@ -146,6 +148,7 @@ export default function ChatMessage({
       );
     }
   };
+
   const toolType = isUser ? null : detectToolType(content);
 
   return (
@@ -157,7 +160,7 @@ export default function ChatMessage({
     >
       <div className="message-content">
         <div
-          className={`message-bubble ${isUser ? "user" : "ditto"}`}
+          className={`message-bubble ${isUser ? "user" : "ditto"} content-ready`}
           style={{
             ...bubbleStyles.chatbubble,
             backgroundColor: isUser ? "#007AFF" : "#1C1C1E",
@@ -186,6 +189,8 @@ export default function ChatMessage({
           src={avatar}
           alt={isUser ? "User Avatar" : "Ditto Avatar"}
           className="avatar-image"
+          draggable="false"
+          loading="eager"
         />
 
         <AnimatePresence>

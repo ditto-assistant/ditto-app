@@ -1398,6 +1398,51 @@ ul.chat-bubble-list {
   padding-bottom: 20px;
 }
 
+/* Non-iOS specific styles */
+@supports not (-webkit-touch-callout: none) {
+  /* For desktop and Android browsers */
+  .bottom-spacer {
+    height: 0px !important; /* Moderate spacing for desktop */
+  }
+
+  /* Position follow button for desktop and Android */
+  .follow-button {
+    bottom: 110px !important; /* Position well above send message on desktop/Android */
+    touch-action: manipulation !important; /* Prevent scroll interference */
+  }
+
+  /* Specific handling for Android devices */
+  @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+    .follow-button {
+      bottom: 120px !important; /* Position even higher on Android */
+    }
+  }
+}
+
+/* iOS specific styles */
+@supports (-webkit-touch-callout: none) {
+  .chat-feed-container {
+    margin-bottom: env(safe-area-inset-bottom, 0px); /* Respect iOS safe area */
+  }
+
+  /* Bottom spacer should provide more room for iOS */
+  .bottom-spacer {
+    height: 120px !important; /* Overrides the inline style */
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Adjust bottom padding in PWA mode */
+  @media all and (display-mode: standalone) {
+    .chat-feed-container {
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .messages-container {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+  }
+}
+
 .chat-feed-container::-webkit-scrollbar {
   width: 6px;
 }
@@ -1426,22 +1471,43 @@ ul.chat-bubble-list {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  bottom: 20px;
+  position: fixed;
+  bottom: 100px; /* Position above the send message bar */
   right: 20px;
   width: 40px;
   height: 40px;
-  background-color: var(--color-primary, #4752c4);
+  background-color: var(--primary, #4752c4);
   color: white;
   border-radius: 50%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  z-index: 5;
+  z-index: 1500; /* Higher z-index to ensure visibility */
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.9; /* Increased opacity for better visibility */
   transition:
     opacity 0.2s,
     transform 0.2s;
   border: none;
+  /* Force hardware acceleration and prevent rendering issues */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+
+  /* Apply best practices from research to prevent scroll interference */
+  pointer-events: auto;
+  touch-action: none; /* Don't interfere with scrolling gestures */
+  -webkit-touch-callout: none; /* Disable callout */
+  -webkit-user-select: none; /* Disable selection */
+  user-select: none;
+  /* Disable all manipulation of the button except explicit taps */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Remove tap highlight */
+  cursor: pointer !important;
+  /* Create a larger invisible padding for easier tapping without scrolling interference */
+  padding: 0 !important;
+  margin: 0 !important;
+  /* Add a slight delay to ensure button taps don't interfere with scrolling */
+  transition: transform 0.1s linear !important;
 }
 
 .follow-button:hover {
@@ -1461,6 +1527,8 @@ ul.chat-bubble-list {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
+
+/* We're using a different approach to fix iOS avatar clicking issues */
 
 .messages-scroll-view::-webkit-scrollbar,
 .custom-scroll-view::-webkit-scrollbar {

@@ -55,12 +55,79 @@
   .app-body {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); /* Adjust for fixed footer */
+    padding-bottom: calc(
+      80px + env(safe-area-inset-bottom, 0px)
+    ); /* Adjust for fixed footer */
   }
 
   /* Chat feed adjustments to account for fixed footer */
   .chat-feed {
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Fix for follow button and bottom spacer in chat feed */
+  .follow-button {
+    bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+    position: fixed !important;
+    z-index: 2000 !important; /* Very high z-index to ensure it's above all other elements */
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Hardware acceleration for smoother performance */
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    pointer-events: auto !important;
+    /* Only activate on tap, not during scrolling */
+    touch-action: manipulation !important;
+  }
+
+  /* Specific iPad handling with more precise device targeting */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .follow-button {
+      /* Position higher on iPad */
+      bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+  
+  /* iPad Mini specific fix (smaller screen) */
+  @media (min-width: 744px) and (max-width: 767px), 
+         (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+    .follow-button {
+      /* More aggressive positioning for iPad Mini */
+      bottom: calc(170px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
+  /* Different spacing for PWA mode vs Safari */
+  @media all and (display-mode: standalone) {
+    .follow-button {
+      /* In PWA mode, no browser chrome to account for */
+      bottom: 140px !important;
+    }
+
+    /* In PWA mode less bottom padding needed */
+    .bottom-spacer {
+      height: 70px !important;
+    }
+  }
+
+  /* Safari browser mode */
+  @media not all and (display-mode: standalone) {
+    .follow-button {
+      /* In Safari, account for browser chrome */
+      bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* In Safari more bottom padding needed */
+    .bottom-spacer {
+      height: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
+  /* Ensure bottom spacer provides enough room but not excessive */
+  .bottom-spacer {
+    display: block !important;
+    position: relative;
+    width: 100%;
   }
 
   /* Fix for iOS Safari in standalone PWA mode */

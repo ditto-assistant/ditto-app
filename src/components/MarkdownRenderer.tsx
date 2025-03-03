@@ -5,6 +5,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { FiCopy } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 import "./MarkdownRenderer.css";
 
 interface MarkdownRendererProps {
@@ -17,7 +18,10 @@ const MarkdownRenderer = ({
   className = "",
 }: MarkdownRendererProps) => {
   const { handleImageClick } = useImageViewerHandler();
+  const { isIOS } = usePlatform();
+  
   if (!content) return null;
+  
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast.success("Copied to clipboard");
@@ -35,13 +39,23 @@ const MarkdownRenderer = ({
             </a>
           ),
           img: ({ src, alt, ...props }) => (
-            <img
-              src={src}
-              alt={alt || ""}
-              {...props}
-              className="markdown-image"
-              onClick={() => src && handleImageClick(src)}
-            />
+            <div className="image-container" style={{ 
+              minHeight: isIOS ? '180px' : 'auto',
+              minWidth: '100px',
+              background: 'rgba(0, 0, 0, 0.05)',
+              position: 'relative',
+            }}>
+              <img
+                src={src}
+                alt={alt || ""}
+                {...props}
+                className="markdown-image"
+                onClick={() => src && handleImageClick(src)}
+                // Keep just the essential attributes for iOS
+                draggable="false"
+                loading="eager"
+              />
+            </div>
           ),
           // Handle inline code with copy button - this component only handles inline code
           // since code blocks are handled by the pre component above

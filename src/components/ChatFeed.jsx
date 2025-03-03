@@ -57,13 +57,20 @@ const CustomScrollToBottom = ({
     if (!scrollContainerRef.current) return;
 
     const scrollContainer = scrollContainerRef.current;
-    const scrollHeight = scrollContainer.scrollHeight;
 
-    scrollContainer.scrollTo({
-      top: scrollHeight,
-      behavior: behavior,
-    });
+    // Use a timeout to ensure all content is rendered before scrolling
+    // This helps when images are still loading
+    setTimeout(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight, // Re-read scrollHeight in case it changed
+        behavior: behavior,
+      });
+    }, 50);
   };
+
+  // Create refs outside of useEffect
+  const userScrollingImageRef = useRef(false);
+  const userScrollingKeyboardRef = useRef(false);
 
   // Handle initial scroll behavior and add ref to onScrollToTopRef
   useEffect(() => {
@@ -72,11 +79,147 @@ const CustomScrollToBottom = ({
     }
 
     if (scrollContainerRef.current) {
-      // Initial scroll to bottom without animation
-      scrollToBottom(initialScrollBehavior);
-      isInitialScrollRef.current = false;
+      // Only do initial scroll to bottom (don't scroll on dependency changes)
+      if (isInitialScrollRef.current) {
+        scrollToBottom(initialScrollBehavior);
+        isInitialScrollRef.current = false;
+      }
+
+      // Add an event listener for image loading to handle layout shifts
+      let scrollTimer = null;
+
+      // Helper to track if user is actively scrolling
+      const trackUserScrolling = () => {
+        userScrollingImageRef.current = true;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+          userScrollingImageRef.current = false;
+        }, 200);
+      };
+
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.addEventListener(
+          "scroll",
+          trackUserScrolling
+        );
+      }
+
+      const handleImageLoad = () => {
+        // Only auto-scroll if user is at bottom AND not actively scrolling
+        if (isScrolledToBottom && !userScrollingImageRef.current) {
+          setTimeout(() => scrollToBottom("auto"), 50);
+        }
+      };
+
+      // Find all images in the container and add load event listeners
+      const images = scrollContainerRef.current.querySelectorAll("img");
+      images.forEach((img) => {
+        if (!img.complete) {
+          img.addEventListener("load", handleImageLoad);
+        }
+      });
+
+      // Cleanup event listeners
+      return () => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.removeEventListener(
+            "scroll",
+            trackUserScrolling
+          );
+
+          const images = scrollContainerRef.current.querySelectorAll("img");
+          images.forEach((img) => {
+            img.removeEventListener("load", handleImageLoad);
+          });
+        }
+        clearTimeout(scrollTimer);
+      };
     }
-  }, [initialScrollBehavior, onScrollToTopRef]);
+  }, [
+    detectScrollToTop,
+    initialScrollBehavior,
+    isScrolledToBottom,
+    onScrollToTopRef,
+  ]);
+
+  // Add keyboard appearance detection for better button positioning
+  useEffect(() => {
+    const initialHeight = window.innerHeight;
+    let isKeyboardVisible = false;
+    let previousDiff = 0;
+    const MIN_KEYBOARD_HEIGHT = 200; // Minimum height to consider as keyboard
+    let scrollTimeout = null;
+
+    // Helper to detect if user is actively scrolling
+    const setScrolling = () => {
+      userScrollingKeyboardRef.current = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        userScrollingKeyboardRef.current = false;
+      }, 150); // Consider user done scrolling after 150ms of inactivity
+    };
+
+    // Add scroll listener to detect active scrolling
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.addEventListener("scroll", setScrolling);
+    }
+
+    const handleResize = () => {
+      // Don't process resize events during active scrolling
+      if (userScrollingKeyboardRef.current) return;
+
+      const currentHeight = window.innerHeight;
+      const heightDiff = initialHeight - currentHeight;
+
+      // Only consider significant height changes (to avoid minor layout shifts)
+      if (Math.abs(heightDiff - previousDiff) < 50) return;
+      previousDiff = heightDiff;
+
+      if (heightDiff > MIN_KEYBOARD_HEIGHT) {
+        // Keyboard is likely visible
+        if (!isKeyboardVisible) {
+          isKeyboardVisible = true;
+
+          // Adjust button position when keyboard appears
+          const button = document.querySelector(".follow-button");
+          if (button) {
+            // Move the button up to be visible above the keyboard
+            button.style.bottom = `${heightDiff + 20}px`;
+            button.style.transition = "bottom 0.2s ease-out";
+          }
+
+          // ONLY scroll to bottom when keyboard first appears AND
+          // user was already at the bottom
+          if (isScrolledToBottom) {
+            // Small delay to let layout adjust first
+            setTimeout(() => scrollToBottom("auto"), 100);
+          }
+        }
+      } else {
+        // Keyboard is likely hidden
+        if (isKeyboardVisible) {
+          isKeyboardVisible = false;
+
+          // Reset button position when keyboard disappears
+          const button = document.querySelector(".follow-button");
+          if (button) {
+            // Let the CSS handle the positioning again
+            button.style.bottom = "";
+            button.style.transition = "bottom 0.3s ease-out";
+          }
+        }
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.removeEventListener("scroll", setScrolling);
+      }
+      clearTimeout(scrollTimeout);
+    };
+  }, [isScrolledToBottom]);
 
   // Listen for scroll events
   const handleScroll = (e) => {
@@ -116,7 +259,16 @@ const CustomScrollToBottom = ({
   // Scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollContainerRef.current && isScrolledToBottom) {
+      // Immediate scroll
       scrollToBottom(initialScrollBehavior);
+
+      // Also scroll after a delay to account for images loading
+      // This ensures we're at the bottom even if image loading changes content height
+      setTimeout(() => {
+        if (isScrolledToBottom) {
+          scrollToBottom(initialScrollBehavior);
+        }
+      }, 300); // Longer delay to account for image loading
     }
 
     if (onScrollComplete) {
@@ -142,10 +294,28 @@ const CustomScrollToBottom = ({
       {showScrollToBottom && (
         <button
           className="follow-button"
-          onClick={() => scrollToBottom()}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            e.preventDefault(); // Prevent default action
+            scrollToBottom();
+          }}
           aria-label="Scroll to bottom"
+          style={{
+            visibility: "visible" /* Forces visibility for iOS */,
+            display: "flex" /* Ensures flex display is applied */,
+            pointerEvents: "auto" /* Ensures clickability on iOS */,
+            boxShadow:
+              "0 2px 10px rgba(0, 0, 0, 0.3)" /* Stronger shadow for visibility */,
+            touchAction:
+              "none" /* Prevent this element from handling touch events for scrolling */,
+          }}
+          onTouchStart={(e) => {
+            // Only allow touch for the button click, not for scrolling
+            e.stopPropagation();
+          }}
         >
-          <FaChevronDown />
+          <FaChevronDown size={18} />{" "}
+          {/* Slightly larger icon for better visibility */}
         </button>
       )}
     </div>
@@ -252,13 +422,39 @@ export default function ChatFeed({
     }
   };
 
-  // Only make messages visible when loaded
+  // Only make messages visible when loaded - with more stable timing
   useEffect(() => {
+    // Track if the effect is still mounted
+    let isMounted = true;
+
     if (!isLoading && messages.length > 0) {
-      setMessagesVisible(true);
-      initialRenderRef.current = false;
+      // In development mode, React can do double renders which can cause jank
+      // Let's use RequestAnimationFrame to ensure we only update visibility during a proper frame
+      requestAnimationFrame(() => {
+        // Make sure component is still mounted before updating state
+        if (!isMounted) return;
+
+        // For iOS, add a slightly longer delay to ensure the DOM is stable
+        if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+          // Delay rendering to avoid jitter, especially in dev mode
+          setTimeout(() => {
+            if (isMounted) {
+              setMessagesVisible(true);
+              initialRenderRef.current = false;
+            }
+          }, 200); // Increased delay for better stability on iOS
+        } else {
+          setMessagesVisible(true);
+          initialRenderRef.current = false;
+        }
+      });
     }
-  }, [isLoading, messages]);
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoading, messages, isMobile]);
 
   // Function to handle scroll to top detection
   const handleScrollToTop = () => {
@@ -498,7 +694,7 @@ export default function ChatFeed({
               );
             })
             .reverse()}
-          <div ref={bottomRef} style={{ height: "20px" }} />
+          <div ref={bottomRef} className="bottom-spacer" />
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">
