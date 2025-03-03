@@ -279,7 +279,6 @@ export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   htmlScript: true,
   imageGeneration: true,
   googleSearch: true,
-  googleHome: false,
 } as const;
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
@@ -310,11 +309,6 @@ export const TOOLS = {
     name: "Web Search",
     description: "Search the web for information",
     trigger: "<GOOGLE_SEARCH>",
-  },
-  googleHome: {
-    name: "Home Assistant",
-    description: "Control smart home devices",
-    trigger: "<GOOGLE_HOME>",
   },
   webApps: {
     name: "Web Apps",

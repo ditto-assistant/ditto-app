@@ -93,19 +93,6 @@ export default function AgentToolsModal() {
           </label>
         </div>
 
-        <div className="tool-toggle">
-          <label>
-            <div className="tool-toggle-header">
-              <input
-                type="checkbox"
-                checked={localTools.googleHome}
-                onChange={() => handleToolToggle("googleHome")}
-              />
-              <span className="tool-name">{TOOLS.googleHome.name}</span>
-            </div>
-            <p className="tool-description">{TOOLS.googleHome.description}</p>
-          </label>
-        </div>
       </div>
     </div>
   );

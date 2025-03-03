@@ -97,7 +97,6 @@ export type ToolPreferences = {
   htmlScript: boolean;
   imageGeneration: boolean;
   googleSearch: boolean;
-  googleHome: boolean;
 };
 
 export type MemoryPreferences = {

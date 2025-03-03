@@ -15,7 +15,7 @@ import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
 import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
-import { handleHomeAssistant } from "./agentflows/homeFlow";
+// Home Assistant removed
 import { modelSupportsImageAttachments } from "@/types/llm";
 import { getMemories } from "@/api/getMemories";
 import { saveResponse } from "@/api/saveResponse";
@@ -133,7 +133,6 @@ export const sendPrompt = async (
       "<HTML_SCRIPT>",
       "<IMAGE_GENERATION>",
       "<GOOGLE_SEARCH>",
-      "<GOOGLE_HOME>",
     ];
     let toolTriggered = false;
     for (const trigger of toolTriggers) {
@@ -424,22 +423,7 @@ export const processResponse = async (
       return finalResponse;
     }
 
-    // Handle Home Assistant tasks
-    if (response.includes("<GOOGLE_HOME>")) {
-      await updateMessageWithToolStatus(
-        pairID,
-        "Executing Home Assistant Task",
-        "home"
-      );
-      const finalResponse = await handleHomeAssistant(response);
-      await updateMessageWithToolStatus(
-        pairID,
-        finalResponse.includes("failed") ? "failed" : "complete",
-        "home",
-        finalResponse
-      );
-      return finalResponse;
-    }
+    // Home Assistant functionality removed
 
     return response;
   } catch (error) {
