@@ -56,12 +56,18 @@
 }
 
 #memory-network-container {
-  width: 100%;
-  height: 600px;
+  width: 100% !important;
+  height: 600px !important;
+  min-height: 600px !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background-color: rgba(0, 0, 0, 0.1);
-  position: relative;
+  position: relative !important;
   overflow: hidden;
+  visibility: visible !important;
+  display: block !important;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  opacity: 1;
 }
 
 .memory-network-loading {
@@ -169,6 +175,7 @@
   margin-bottom: 12px;
   background-color: rgba(20, 20, 20, 0.6);
   overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .memory-node:hover {
@@ -179,6 +186,7 @@
 
 .memory-node-expanded {
   max-height: unset;
+  transition: all 0.3s ease;
 }
 
 .memory-node-header {
@@ -187,6 +195,11 @@
   padding: 10px 16px;
   cursor: pointer;
   background-color: rgba(40, 40, 40, 0.6);
+  transition: background-color 0.2s ease;
+}
+
+.memory-node-header:hover {
+  background-color: rgba(60, 60, 60, 0.8);
 }
 
 .memory-node-info {
@@ -207,6 +220,28 @@
 .memory-node-time {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.memory-node-expand-icon {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: transform 0.2s ease;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memory-node-expanded .memory-node-expand-icon {
+  transform: rotate(0deg);
+}
+
+.memory-node:not(.memory-node-expanded) .memory-node-expand-icon {
+  transform: rotate(-90deg);
 }
 
 .memory-node-actions {
@@ -219,6 +254,11 @@
   max-height: 200px;
   overflow: hidden;
   position: relative;
+  transition: max-height 0.3s ease;
+}
+
+.memory-node-expanded .memory-node-content {
+  max-height: 1000px;
 }
 
 .memory-node-messages {

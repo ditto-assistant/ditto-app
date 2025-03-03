@@ -213,7 +213,7 @@ export default function Modal({
   return createPortal(
     <div
       ref={modalRef}
-      className={`modal container ${isFullscreen ? "fullscreen" : ""}`}
+      className={`modal container ${isFullscreen ? "fullscreen" : ""} ${id}`}
       style={modalStyle}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
@@ -275,7 +275,7 @@ export default function Modal({
         )}
 
         <div className="modal-wrapper">
-          <div className="modal body">
+          <div className={`modal body ${id}-body`}>
             {tabs && tabs.length > 0
               ? (() => {
                   const activeTab = tabs.find((tab) => tab.id === activeTabId);

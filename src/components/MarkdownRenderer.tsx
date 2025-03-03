@@ -19,8 +19,9 @@ const MarkdownRenderer = ({
   const { handleImageClick } = useImageViewerHandler();
   if (!content) return null;
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("Copied to clipboard");
+    });
   };
 
   return (

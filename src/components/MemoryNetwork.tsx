@@ -5,15 +5,15 @@ import { DataSet } from "vis-data";
 import ChatMessage from "./ChatMessage";
 import Modal from "./ui/modals/Modal";
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion";
-import { useMemoryNetwork, Memory } from "@/hooks/useMemoryNetwork";
+import { useMemoryNetwork } from "@/hooks/useMemoryNetwork";
+import { Memory } from "@/api/getMemories";
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
 import { Network, Node, Edge } from "vis-network";
 import "./MemoryNetwork.css";
-import { usePlatform } from "@/hooks/usePlatform";
 
-const formatDateTime = (timestamp: number) => {
+const formatDateTime = (timestamp: Date | number) => {
   if (!timestamp) return "";
-  const date = new Date(timestamp);
+  const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
   return new Intl.DateTimeFormat("default", {
     month: "short",
     day: "numeric",
@@ -83,6 +83,9 @@ const TableView: React.FC<{
           <div className="memory-node-info">
             <div className="memory-node-time">
               {formatDateTime(memory.timestamp)}
+              <span className="memory-node-expand-icon">
+                {isExpanded ? "▼" : "▶"}
+              </span>
             </div>
             <div className="memory-node-actions">
               <button
@@ -111,7 +114,11 @@ const TableView: React.FC<{
           <div className="memory-node-messages">
             <ChatMessage
               content={memory.prompt}
-              timestamp={memory.timestamp || Date.now()}
+              timestamp={
+                memory.timestamp instanceof Date
+                  ? memory.timestamp.getTime()
+                  : Date.now()
+              }
               isUser={true}
               bubbleStyles={{
                 text: { fontSize: 14 },
@@ -120,7 +127,11 @@ const TableView: React.FC<{
             />
             <ChatMessage
               content={memory.response}
-              timestamp={memory.timestamp || Date.now()}
+              timestamp={
+                memory.timestamp instanceof Date
+                  ? memory.timestamp.getTime()
+                  : Date.now()
+              }
               isUser={false}
               bubbleStyles={{
                 text: { fontSize: 14 },
@@ -163,7 +174,6 @@ export default function MemoryNetworkModal() {
   const { memories, loading, deleteMemory } = useMemoryNetwork();
   const { confirmMemoryDeletion } = useMemoryDeletion();
   const { showMemoryNode } = useMemoryNodeViewer();
-  const { isMobile } = usePlatform();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const networkInitializedRef = useRef<boolean>(false);
   const networkNeedsUpdate = useRef<boolean>(true);
@@ -244,7 +254,7 @@ export default function MemoryNetworkModal() {
           parentPath = ""
         ) => {
           if (!memory) return null;
-          // We now only use the ID directly since originalId is being removed
+          // We now only use the ID directly
           const documentId = memory.id;
           // Use a consistent node ID pattern for the visualization
           const nodeId = parentPath
@@ -291,15 +301,10 @@ export default function MemoryNetworkModal() {
               },
             });
 
-            // Store the memory data separately with only the ID
-            const memoryData = {
-              // Use the document ID as the only identifier
-              id: documentId,
-              prompt: memory.prompt || "",
-              response: memory.response || "",
-              timestamp: memory.timestamp || Date.now(),
+            // Store the complete memory data with added properties
+            const memoryWithLevel = {
+              ...memory,
               level: depth,
-              // Store additional information for debugging
               nodeId: nodeId,
             };
 
@@ -333,8 +338,8 @@ export default function MemoryNetworkModal() {
               });
             }
 
-            // Return just the nodeId and directly store memoryData in the memoryMap
-            memoryMap.set(nodeId, memoryData);
+            // Return just the nodeId and directly store the memory with level info in the memoryMap
+            memoryMap.set(nodeId, memoryWithLevel);
             return nodeId;
           } catch (error) {
             console.error("Error adding node to network:", error);
@@ -467,7 +472,8 @@ export default function MemoryNetworkModal() {
     // Add a small delay to ensure the DOM is ready and container is rendered
     const timer = setTimeout(() => {
       try {
-        // If we already have a network instance, destroy it to prevent memory leaks
+        // If we already have a network instance, destroy it to create a fresh one
+        // This ensures we don't have any rendering issues with the network
         if (network) {
           network.destroy();
         }
@@ -525,24 +531,13 @@ export default function MemoryNetworkModal() {
             try {
               const nodeId = params.nodes[0].toString();
               if (nodeId) {
-                // Get the memory data from our map, which contains the original document ID
-                const nodeDataFromMap = memoryMap.get(nodeId) || {};
-                // Get data from the nodes dataset instead of the network instance
-                const nodeDataFromVis = networkData.nodes.get(nodeId) || {};
+                // Get the memory data directly from our map
+                const nodeData = memoryMap.get(nodeId);
 
-                // Get the document ID from the memory map
-                const documentId = nodeDataFromMap.id;
-
-                // Ensure we prioritize the document ID for operations
-                const combinedData = {
-                  ...nodeDataFromVis,
-                  ...nodeDataFromMap,
-                  // Explicitly set ID field
-                  id: documentId,
-                };
-
-                // Use showMemoryNode instead of setSelectedNode
-                showMemoryNode(combinedData, handleNodeDelete);
+                if (nodeData) {
+                  // Use showMemoryNode with the complete memory data
+                  showMemoryNode(nodeData, handleNodeDelete);
+                }
               }
             } catch (error) {
               console.error("Error handling node click:", error);
@@ -564,10 +559,22 @@ export default function MemoryNetworkModal() {
                   easingFunction: "easeInOutQuad",
                 },
               });
+
+              // Save reference to the container to ensure it stays in DOM
+              if (containerRef.current) {
+                containerRef.current.style.display = "block";
+              }
             } catch (error) {
               console.error("Error fitting network view:", error);
               // Make sure we reset the flag even if there's an error
               networkIsStabilizing.current = false;
+            }
+          });
+
+          // Also add a handler for when network redraw is complete
+          networkInstance.on("afterDrawing", () => {
+            if (containerRef.current) {
+              containerRef.current.style.display = "block";
             }
           });
         }
@@ -591,27 +598,126 @@ export default function MemoryNetworkModal() {
     }
   }, [memories, activeTab]);
 
-  // Listen for tab changes to trigger rendering when switching to network tab
+  // Track previous tab to handle tab switches properly
+  const previousTabRef = useRef<string | null>(null);
+
+  // Handle tab changes - make sure network is shown when switching back to network tab
   useEffect(() => {
-    if (activeTab === "network") {
+    // First check if this is a tab switch (not initial load)
+    if (
+      previousTabRef.current !== null &&
+      previousTabRef.current !== activeTab
+    ) {
+      // If switching TO network tab
+      if (activeTab === "network") {
+        console.log("Switching TO network tab");
+        // Always trigger a network update when switching to network tab
+        networkNeedsUpdate.current = true;
+
+        // If we already have a network, make sure the container is visible
+        if (network) {
+          const container = document.getElementById("memory-network-container");
+          if (container) {
+            container.style.display = "block";
+            container.style.visibility = "visible";
+          }
+        }
+      }
+    } else if (activeTab === "network") {
+      // Initial load to network tab
       networkNeedsUpdate.current = true;
     }
-  }, [activeTab]);
 
-  // Cleanly destroy the network when unmounting
+    // Update previous tab reference
+    previousTabRef.current = activeTab;
+  }, [activeTab, network]);
+
+  // Instead of destroying the network, we'll just make sure it stays visible
+  // This ensures the network remains rendered even when other modals are open
+  useEffect(() => {
+    // We don't need to listen for modal close events anymore,
+    // since we're keeping the network rendered at all times
+
+    // If we have an existing network, and we're in the network tab,
+    // make sure it's properly visible
+    if (network && activeTab === "network" && !networkIsStabilizing.current) {
+      try {
+        const container = document.getElementById("memory-network-container");
+        if (container) {
+          container.style.display = "block";
+
+          // This forces a redraw of the network which may have become invisible
+          // due to DOM manipulations
+          setTimeout(() => {
+            network.fit({
+              animation: {
+                duration: 300,
+                easingFunction: "easeInOutQuad",
+              },
+            });
+          }, 100);
+        }
+      } catch (err) {
+        console.error("Error ensuring network visibility:", err);
+      }
+    }
+  }, [network, activeTab, networkIsStabilizing]);
+
+  // Add a special effect to ensure the network is visible after interacting with modals
+  useEffect(() => {
+    // Only run this for network tab when network exists
+    if (activeTab === "network") {
+      // Use a small delay to allow other DOM operations to complete
+      const timer = setTimeout(() => {
+        try {
+          // Check if container exists and is accessible
+          const container = document.getElementById("memory-network-container");
+          if (container) {
+            // Ensure the container is fully visible
+            container.style.visibility = "visible";
+            container.style.display = "block";
+
+            // Only try to use the network if it exists
+            if (network && !networkIsStabilizing.current) {
+              try {
+                // Force network redraw to fix any rendering issues
+                network.redraw();
+
+                // Occasionally start the simulation to keep the network active
+                if (Math.random() < 0.2) {
+                  // Only do this 20% of the time to avoid too much CPU usage
+                  network.startSimulation();
+                }
+              } catch (innerErr) {
+                console.error("Network operation failed:", innerErr);
+                // If network operations fail, mark it for update on next cycle
+                networkNeedsUpdate.current = true;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error during network refresh:", err);
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [network, activeTab, networkIsStabilizing]);
+
+  // Cleanly destroy the network when unmounting component (not when switching tabs)
   useEffect(() => {
     return () => {
       if (network) {
         network.destroy();
       }
     };
-  });
+  }, []);
 
   return (
     <Modal
       id="memoryNetwork"
       title="Memory Network"
-      fullScreen={isMobile}
+      fullScreen={true}
       tabs={[
         {
           id: "network",
@@ -623,15 +729,7 @@ export default function MemoryNetworkModal() {
                   Loading memories...
                 </div>
               ) : (
-                <div
-                  id="memory-network-container"
-                  style={{
-                    width: "100%",
-                    height: "600px",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                  }}
-                  ref={containerRef}
-                ></div>
+                <div id="memory-network-container" ref={containerRef}></div>
               )}
             </div>
           ),

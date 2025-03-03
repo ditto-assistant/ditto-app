@@ -1,17 +1,17 @@
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import Modal from "./ui/modals/Modal";
-import ChatMessage from "./ChatMessage";
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
 import "./MemoryNodeModal.css";
 import { usePlatform } from "@/hooks/usePlatform";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 export default function MemoryNodeModal() {
   const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer();
   const { isMobile } = usePlatform();
 
   // Determine if this is the root node
-  const isRootNode = nodeData?.level === 0;
+  const isRootNode = nodeData?.level === 0 || nodeData?.depth === 0;
 
   // Handle deletion with error handling
   const handleDelete = () => {
@@ -30,36 +30,35 @@ export default function MemoryNodeModal() {
     <Modal
       id="memoryNodeViewer"
       title={isRootNode ? "Your Prompt" : "Memory"}
-      fullScreen={isMobile}
+      fullScreen={isMobile} // Use fullscreen on mobile, resizable on desktop
     >
       <div className="memory-node-modal">
         {nodeData && (
           <>
-            <div className="node-body">
+            <div className="node-body memory-scroll-container">
               <div className="memory-node-content">
-                {/* User prompt message using ChatMessage component */}
-                <ChatMessage
-                  content={nodeData.prompt || "No prompt content available"}
-                  timestamp={nodeData.timestamp || Date.now()}
-                  isUser={true}
-                  bubbleStyles={{
-                    text: { fontSize: 14 },
-                    chatbubble: { borderRadius: 8, padding: 8 }
-                  }}
-                />
-                
-                {/* Only show response if this isn't the root node */}
-                {!isRootNode && (
-                  <ChatMessage
-                    content={nodeData.response || "No response content available"}
-                    timestamp={nodeData.timestamp || Date.now()}
-                    isUser={false}
-                    bubbleStyles={{
-                      text: { fontSize: 14 },
-                      chatbubble: { borderRadius: 8, padding: 8 }
-                    }}
-                  />
-                )}
+                <div className="memory-messages-wrapper">
+                  {/* User prompt message */}
+                  <div className="memory-prompt">
+                    <h4>Prompt:</h4>
+                    <div className="memory-text">
+                      {nodeData.prompt || "No prompt content available"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="memory-messages-wrapper">
+                  {/* Response with Markdown rendering */}
+                  <div className="memory-response">
+                    <h4>Response:</h4>
+                    <div className="markdown-wrapper">
+                      <MarkdownRenderer 
+                        content={nodeData.response || "No response content available"}
+                        className="memory-markdown"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="node-footer">

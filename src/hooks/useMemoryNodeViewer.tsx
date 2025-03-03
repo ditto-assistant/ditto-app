@@ -6,22 +6,19 @@ import {
   useState,
 } from "react";
 import { useModal } from "./useModal";
+import { Memory } from "@/api/getMemories";
 
-interface MemoryNodeData {
-  id: string;
-  prompt: string;
-  response: string;
-  level: number;
-  timestamp?: number;
+// Just add level field for nodes that may not have it
+interface MemoryWithLevel extends Memory {
+  level?: number;
   nodeId?: string;
-  [key: string]: any; // For any additional properties
 }
 
 interface MemoryNodeViewerContextType {
-  nodeData: MemoryNodeData | null;
-  setNodeData: (data: MemoryNodeData | null) => void;
-  onDelete?: (node: MemoryNodeData) => void;
-  setOnDelete: (callback: ((node: MemoryNodeData) => void) | undefined) => void;
+  nodeData: MemoryWithLevel | null;
+  setNodeData: (data: MemoryWithLevel | null) => void;
+  onDelete?: (node: MemoryWithLevel) => void;
+  setOnDelete: (callback: ((node: MemoryWithLevel) => void) | undefined) => void;
 }
 
 const MemoryNodeViewerContext = createContext<
@@ -33,9 +30,9 @@ export function MemoryNodeViewerProvider({
 }: {
   children: ReactNode;
 }) {
-  const [nodeData, setNodeData] = useState<MemoryNodeData | null>(null);
+  const [nodeData, setNodeData] = useState<MemoryWithLevel | null>(null);
   const [onDelete, setOnDelete] = useState<
-    ((node: MemoryNodeData) => void) | undefined
+    ((node: MemoryWithLevel) => void) | undefined
   >(undefined);
 
   return (
@@ -66,7 +63,7 @@ export function useMemoryNodeViewer() {
   const closeModal = createCloseHandler("memoryNodeViewer");
 
   const showMemoryNode = useCallback(
-    (node: MemoryNodeData, deleteCallback?: (node: MemoryNodeData) => void) => {
+    (node: MemoryWithLevel, deleteCallback?: (node: MemoryWithLevel) => void) => {
       context.setNodeData(node);
       if (deleteCallback) {
         context.setOnDelete(() => deleteCallback);
@@ -76,14 +73,17 @@ export function useMemoryNodeViewer() {
     [context, openModal]
   );
 
-  const hideMemoryNode = () => {
+  const hideMemoryNode = useCallback(() => {
+    // First close the modal
     closeModal();
-    // Small delay to ensure the modal is closed before clearing data
+    
+    // We no longer need to clear the data as quickly,
+    // which avoids some race conditions when re-rendering the network
     setTimeout(() => {
       context.setNodeData(null);
       context.setOnDelete(undefined);
-    }, 200);
-  };
+    }, 500);
+  }, [context, closeModal]);
 
   return {
     ...context,
