@@ -4,7 +4,6 @@ import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash } from "react-icons/fa";
-import { usePlatform } from "@/hooks/usePlatform";
 import "./ChatMessage.css";
 
 const detectToolType = (text: string) => {
@@ -118,7 +117,6 @@ export default function ChatMessage({
   menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth();
-  const { isIOS } = usePlatform();
   const avatar = isUser
     ? (user?.photoURL ?? DEFAULT_USER_AVATAR)
     : DITTO_AVATAR;

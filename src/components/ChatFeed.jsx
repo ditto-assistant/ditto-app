@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./ChatFeed.css";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash, FaChevronDown } from "react-icons/fa";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
@@ -368,8 +368,6 @@ const AvatarActionMenu = ({
 };
 
 export default function ChatFeed({
-  scrollToBottom = true,
-  startAtBottom = true,
   bubbleStyles = {
     text: {
       fontSize: 14,

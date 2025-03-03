@@ -1,8 +1,6 @@
-import { useState, useEffect, useRef, Suspense, useCallback } from "react";
-import { grabStatus } from "@/control/firebase";
+import { useState, useEffect, useRef, Suspense } from "react";
 import FullScreenSpinner from "@/components/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
-import { loadConversationHistoryFromFirestore } from "@/control/firebase";
 import TermsOfService from "@/components/TermsOfService";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import dittoIcon from "/icons/ditto-icon-clear.png";
@@ -16,20 +14,15 @@ import StatusBar from "@/components/StatusBar";
 import SendMessage from "@/components/SendMessage";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
-import { useAuth } from "@/hooks/useAuth";
 import { useScripts } from "@/hooks/useScripts.tsx";
 import { usePlatform } from "@/hooks/usePlatform";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
-import { ConversationProvider } from "@/hooks/useConversationHistory";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
-  const [bootStatus, setBootStatus] = useState("on");
-  const [startAtBottom, setStartAtBottom] = useState(true);
   const [showStatusBar, setShowStatusBar] = useState(true);
-  const { user } = useAuth();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
@@ -55,25 +48,6 @@ export default function HomeScreen() {
   } = useScripts();
 
   const appBodyRef = useRef(null);
-
-  // Removed automatic scroll-to-bottom on resize as it prevents users from scrolling up
-  useEffect(() => {
-    // This effect is kept for future reference but no longer forces scroll to bottom
-    // which caused issues with iOS scrolling
-    
-    const handleFocus = (event) => {
-      // Only handle keyboard focus events without forced scrolling
-      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
-        // Input field focused - no action needed
-      }
-    };
-
-    window.addEventListener("focusin", handleFocus);
-
-    return () => {
-      window.removeEventListener("focusin", handleFocus);
-    };
-  }, []);
 
   useEffect(() => {
     // Update the existing useEffect that handles viewport height
@@ -428,9 +402,7 @@ export default function HomeScreen() {
             onClick={handleCloseMediaOptions}
           >
             <AnimatePresence>
-              {(!showStatusBar || statusBarLoaded) && (
-                <ChatFeed scrollToBottom={true} startAtBottom={startAtBottom} />
-              )}
+              {(!showStatusBar || statusBarLoaded) && <ChatFeed />}
             </AnimatePresence>
           </div>
           <div className="app-footer">

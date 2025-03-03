@@ -59,7 +59,7 @@ const MarkdownRenderer = ({
           ),
           // Handle inline code with copy button - this component only handles inline code
           // since code blocks are handled by the pre component above
-          code: ({ node, className, children, ...props }: any) => {
+          code: ({ className, children, ...props }) => {
             const value = String(children).trim();
 
             // For inline code, we wrap it with a container to position the copy button
@@ -83,7 +83,7 @@ const MarkdownRenderer = ({
           },
 
           // Handle pre blocks specifically for code blocks
-          pre: ({ node, children, ...props }: any) => {
+          pre: ({ children, ...props }) => {
             // Find code element and get its props
             let codeElement = null;
 
