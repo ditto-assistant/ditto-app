@@ -5,14 +5,21 @@
 .form {
   display: flex;
   flex: 1;
-  max-width: 100%;
+  width: 100%;
   background-color: var(--background-input);
   position: relative;
   gap: var(--spacing-sm);
   z-index: 10;
   align-items: center;
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: 8px;
+  margin-bottom: var(--safe-area-bottom, 0px);
+}
+
+/* Ensure the form doesn't overlap with chat content */
+.app-footer .form {
+  margin-top: 0;
+  margin-bottom: var(--safe-area-bottom, 0px);
 }
 
 .contents {

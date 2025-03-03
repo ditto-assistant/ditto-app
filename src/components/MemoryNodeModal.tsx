@@ -1,20 +1,10 @@
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import MarkdownRenderer from "./MarkdownRenderer";
 import Modal from "./ui/modals/Modal";
+import ChatMessage from "./ChatMessage";
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
 import "./MemoryNodeModal.css";
 import { usePlatform } from "@/hooks/usePlatform";
-function formatDateTime(timestamp?: number) {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  return new Intl.DateTimeFormat("default", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  }).format(date);
-}
 
 export default function MemoryNodeModal() {
   const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer();
@@ -46,29 +36,29 @@ export default function MemoryNodeModal() {
         {nodeData && (
           <>
             <div className="node-body">
-              <div className="message-container">
-                {nodeData.timestamp && (
-                  <div className="memory-timestamp">
-                    {formatDateTime(nodeData.timestamp)}
-                  </div>
-                )}
-                <div className="user-message">
-                  <MarkdownRenderer
-                    content={nodeData.prompt || "No prompt content available"}
-                  />
-                </div>
-                {/* Only show divider and response if this isn't the root node */}
+              <div className="memory-node-content">
+                {/* User prompt message using ChatMessage component */}
+                <ChatMessage
+                  content={nodeData.prompt || "No prompt content available"}
+                  timestamp={nodeData.timestamp || Date.now()}
+                  isUser={true}
+                  bubbleStyles={{
+                    text: { fontSize: 14 },
+                    chatbubble: { borderRadius: 8, padding: 8 }
+                  }}
+                />
+                
+                {/* Only show response if this isn't the root node */}
                 {!isRootNode && (
-                  <>
-                    <div className="messages-divider" />
-                    <div className="ditto-message">
-                      <MarkdownRenderer
-                        content={
-                          nodeData.response || "No response content available"
-                        }
-                      />
-                    </div>
-                  </>
+                  <ChatMessage
+                    content={nodeData.response || "No response content available"}
+                    timestamp={nodeData.timestamp || Date.now()}
+                    isUser={false}
+                    bubbleStyles={{
+                      text: { fontSize: 14 },
+                      chatbubble: { borderRadius: 8, padding: 8 }
+                    }}
+                  />
                 )}
               </div>
             </div>

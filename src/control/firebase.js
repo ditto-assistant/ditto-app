@@ -257,20 +257,6 @@ export const grabConversationHistoryCount = async (userID) => {
 };
 
 /**
- * Gets status from database.
- */
-export const grabStatus = async () => {
-  return { status: "on" }; // TODO: Implement this
-};
-
-/**
- * Gets mic status from database.
- */
-export const grabMicStatus = async () => {
-  return { status: "on" }; // TODO: Implement this
-};
-
-/**
  * Delete a collection, in batches of batchSize. Note that this does
  * not recursively delete subcollections of documents in the collection
  */

@@ -13,38 +13,15 @@
   overflow-y: auto;
 }
 
-.memory-node-modal .message-container {
+.memory-node-modal .memory-node-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.memory-node-modal .memory-timestamp {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  text-align: right;
-  margin-bottom: -8px;
-}
-
-.memory-node-modal .user-message {
-  background-color: var(--bg-card);
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.memory-node-modal .messages-divider {
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 8px 0;
-  width: 100%;
-}
-
-.memory-node-modal .ditto-message {
-  background-color: var(--primary-container);
-  padding: 16px;
-  border-radius: 8px;
-  color: var(--on-primary-container);
+/* Override ChatMessage styles within memory node context */
+.memory-node-modal .message-container {
+  margin-bottom: 0;
 }
 
 .memory-node-modal .node-footer {

@@ -8,6 +8,8 @@ import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 import { useBalance } from "@/hooks/useBalance";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { toast } from "react-hot-toast";
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -17,7 +19,6 @@ import { usePlatform } from "@/hooks/usePlatform";
  * @param {boolean} props.showMediaOptions - Whether the media options are shown
  * @param {function(): void} props.onOpenMediaOptions - A function that opens the media options
  * @param {function(): void} props.onCloseMediaOptions - A function that closes the media options
- * @param {function} props.updateConversation - A function that updates the conversation
  * @param {function(): void} props.onStop - A function that handles the stop event
  */
 export default function SendMessage({
@@ -27,19 +28,20 @@ export default function SendMessage({
   showMediaOptions,
   onOpenMediaOptions,
   onCloseMediaOptions,
-  updateConversation,
   onStop,
 }) {
   const [message, setMessage] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(capturedImage || "");
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const textAreaRef = useRef(null);
+  const preferences = useModelPreferences();
+  const { openImageViewer } = useImageViewerHandler();
+  const balance = useBalance();
+  const { isMobile } = usePlatform();
+  const { refetch } = useConversationHistory();
+
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
-  const { isMobile } = usePlatform();
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
-  const { preferences } = useModelPreferences();
-  const { handleImageClick } = useImageViewerHandler(false);
-  const { data: balance } = useBalance();
 
   useEffect(() => {
     if (capturedImage) {
@@ -47,14 +49,19 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
+  useEffect(() => {
+    resizeTextArea();
+  }, []);
+
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleClearImage = () => {
@@ -65,62 +72,77 @@ export default function SendMessage({
   const handleSubmit = async (event) => {
     if (event) event.preventDefault();
 
-    const thinkingObjectString = localStorage.getItem("thinking");
-    const isThinking = thinkingObjectString !== null;
-
     if (isWaitingForResponse) return;
 
-    if ((message !== "" || finalTranscriptRef.current) && !isThinking) {
-      setIsWaitingForResponse(true);
-      try {
-        const userID = auth.currentUser.uid;
-        const firstName = localStorage.getItem("firstName");
-        let messageToSend = finalTranscriptRef.current || message;
-        let imageURI = "";
-        if (image) {
+    if (message === "" && !finalTranscriptRef.current && !image) return;
+
+    setIsWaitingForResponse(true);
+
+    try {
+      const userID = auth.currentUser?.uid;
+
+      if (!userID) {
+        toast.error("Please log in to send a message");
+        setIsWaitingForResponse(false);
+        return;
+      }
+      if (!preferences.data) {
+        toast.error("Please set your model preferences");
+        setIsWaitingForResponse(false);
+        return;
+      }
+
+      const firstName = localStorage.getItem("firstName") || "";
+      let messageToSend = finalTranscriptRef.current || message;
+      let imageURI = "";
+
+      if (image) {
+        try {
           imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
           messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          toast.error("Failed to upload image");
         }
-        setMessage("");
-        setImage("");
-        finalTranscriptRef.current = "";
-        resizeTextArea();
-        await sendPrompt(
-          userID,
-          firstName,
-          messageToSend,
-          imageURI,
-          updateConversation,
-          preferences,
-          balance.hasPremium ?? false
-        );
-      } catch (error) {
-        console.error("Error sending message:", error);
-      } finally {
-        setIsWaitingForResponse(false);
-        onStop();
       }
+
+      setMessage("");
+      setImage("");
+      finalTranscriptRef.current = "";
+      resizeTextArea();
+
+      await sendPrompt(
+        userID,
+        firstName,
+        messageToSend,
+        imageURI,
+        null,
+        preferences.data,
+        refetch,
+        balance.hasPremium ?? false
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsWaitingForResponse(false);
+      onStop();
     }
   };
 
   const handleKeyDown = (e) => {
     if (isMobile) {
-      // On mobile, Enter always creates a new line
       if (e.key === "Enter") {
         e.preventDefault();
         setMessage((prevMessage) => prevMessage + "\n");
         resizeTextArea();
       }
     } else {
-      // On web
       if (e.key === "Enter") {
         if (e.ctrlKey || e.metaKey) {
-          // Ctrl+Enter or Cmd+Enter adds a new line
           e.preventDefault();
           setMessage((prevMessage) => prevMessage + "\n");
           resizeTextArea();
         } else if (!e.shiftKey) {
-          // Enter (without Shift) submits the form
           e.preventDefault();
           handleSubmit();
         }
@@ -177,14 +199,14 @@ export default function SendMessage({
   };
 
   const handleGalleryClick = (e) => {
-    e.preventDefault(); // Add this line
+    e.preventDefault();
     e.stopPropagation();
     document.getElementById("image-upload").click();
     onCloseMediaOptions();
   };
 
   const handleCameraClick = (e) => {
-    e.preventDefault(); // Add this line
+    e.preventDefault();
     e.stopPropagation();
     onCameraOpen();
     onCloseMediaOptions();
@@ -232,7 +254,7 @@ export default function SendMessage({
       />
 
       {image && (
-        <div className="image-preview" onClick={() => handleImageClick(image)}>
+        <div className="image-preview" onClick={() => openImageViewer(image)}>
           <img src={image} alt="Preview" />
           <FaTimes
             className="remove-image"
@@ -262,21 +284,21 @@ export default function SendMessage({
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                type="button" // Add this
+                type="button"
                 className="media-option"
                 onClick={handleGalleryClick}
               >
                 <FaImage /> Photo Gallery
               </button>
               <button
-                type="button" // Add this
+                type="button"
                 className="media-option"
                 onClick={handleCameraClick}
               >
                 <FaCamera /> Camera
               </button>
               <button
-                type="button" // Add this
+                type="button"
                 className="cancel-button"
                 onClick={onCloseMediaOptions}
               >

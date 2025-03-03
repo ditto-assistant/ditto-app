@@ -3,6 +3,53 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Inline code container styles */
+.inline-code-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+/* Style for code that's not in a pre element (inline code) */
+.markdown-content :not(pre) > code,
+.inline-code-container > code {
+  display: inline;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+  white-space: normal;
+}
+
+/* Inline code copy button */
+.inline-copy-button {
+  position: relative;
+  top: 0;
+  margin-left: 4px;
+  background: rgba(71, 82, 196, 0.9);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px;
+  height: 16px;
+  width: 16px;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.inline-copy-button svg {
+  width: 10px;
+  height: 10px;
 }
 
 .markdown-content p {
@@ -17,6 +64,21 @@
 
 .markdown-content li {
   margin: 0.4em 0;
+  line-height: 1.5;
+}
+
+.markdown-content li > p {
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
+/* Ensure that ordered and unordered lists have correct spacing */
+.markdown-content ol,
+.markdown-content ul {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 1.5em;
 }
 
 .markdown-image {
@@ -31,15 +93,82 @@
   transform: scale(1.02);
 }
 
-.code-container {
+.code-block-wrapper {
   position: relative;
   margin: 12px 0;
+  width: 100%;
+  display: block;
+  border-radius: 6px;
 }
 
-.copy-button {
+.code-container {
+  width: 100%;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  display: block !important; /* Override inline code display property */
+  border-radius: 6px; /* Match the border-radius of the syntax highlighter */
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Custom scrollbar for WebKit browsers (Chrome, Safari, etc.) */
+.code-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.code-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
+.code-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Button container to keep it fixed in position */
+.copy-button-container {
   position: absolute;
   top: 8px;
   right: 8px;
+  z-index: 10;
+}
+
+/* Override SyntaxHighlighter styles for horizontal scrolling */
+.code-container pre {
+  white-space: pre !important; /* Ensure pre preserves whitespace */
+  overflow-x: visible !important; /* Let parent container handle scrolling */
+  min-width: min-content; /* Ensure content takes at least its minimum width */
+  display: block !important;
+}
+
+/* SyntaxHighlighter renders multiple nested divs, ensure they don't interfere with scrolling */
+.code-container > div {
+  min-width: min-content !important; /* Ensure content doesn't shrink below its natural width */
+  max-width: none !important; /* Let parent container constrain width */
+  overflow: visible !important; /* Let the parent container handle scrolling */
+}
+
+/* Ensure SyntaxHighlighter displays as block */
+.markdown-content pre {
+  display: block;
+  margin: 0.5em 0;
+  padding: 0;
+}
+
+.markdown-content pre code {
+  display: block;
+  white-space: pre;
+  padding: 1em;
+  background-color: #282c34;
+  border-radius: 6px;
+}
+
+/* Code block copy button */
+.copy-button {
   background: rgba(71, 82, 196, 0.9);
   color: white;
   border: none;
@@ -50,26 +179,10 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  opacity: 0;
 }
 
-.code-container:hover .copy-button,
-.inline-code-container:hover .copy-button {
-  opacity: 1;
-}
-
-.inline-code-container {
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  background: #282c34;
-  border-radius: 6px;
-  padding: 2px 6px;
-  margin: 0 2px;
-}
-
-.inline-code {
-  color: #ffffff;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 0.9em;
+.copy-button:hover {
+  background: rgba(71, 82, 196, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

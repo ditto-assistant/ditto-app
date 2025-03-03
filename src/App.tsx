@@ -12,7 +12,6 @@ import AuthenticatedRoute from "@/hooks/AuthenticatedRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { BalanceProvider } from "@/hooks/useBalance";
 import { MemoryCountProvider } from "@/hooks/useMemoryCount";
-import { PresignedUrlProvider } from "@/hooks/usePresignedUrls";
 import { ModelPreferencesProvider } from "@/hooks/useModelPreferences";
 import { ImageViewerProvider } from "@/hooks/useImageViewer";
 import { ScriptsProvider } from "@/hooks/useScripts";
@@ -23,6 +22,7 @@ import { ModalProvider, ModalRegistry } from "@/hooks/useModal";
 import { ConfirmationDialogProvider } from "@/hooks/useConfirmationDialog";
 import { MemoryNetworkProvider } from "@/hooks/useMemoryNetwork";
 import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer";
+import { ConversationProvider } from "./hooks/useConversationHistory";
 
 const DittoCanvasModal = lazy(() => import("@/components/DittoCanvasModal"));
 const Login = lazy(() => import("@/screens/Login"));
@@ -102,14 +102,14 @@ function App() {
       <AuthProvider>
         <BalanceProvider>
           <MemoryCountProvider>
-            <PresignedUrlProvider>
-              <ModelPreferencesProvider>
-                <ImageViewerProvider>
-                  <ScriptsProvider>
-                    <PlatformProvider>
-                      <MemoryNetworkProvider>
-                        <ConfirmationDialogProvider>
-                          <MemoryNodeViewerProvider>
+            <ModelPreferencesProvider>
+              <ImageViewerProvider>
+                <ScriptsProvider>
+                  <PlatformProvider>
+                    <MemoryNetworkProvider>
+                      <ConfirmationDialogProvider>
+                        <MemoryNodeViewerProvider>
+                          <ConversationProvider>
                             <ModalProvider registry={modalRegistry}>
                               <RouterProvider router={router} />
                               <Toaster
@@ -128,14 +128,14 @@ function App() {
                                 initialIsOpen={false}
                               />
                             </ModalProvider>
-                          </MemoryNodeViewerProvider>
-                        </ConfirmationDialogProvider>
-                      </MemoryNetworkProvider>
-                    </PlatformProvider>
-                  </ScriptsProvider>
-                </ImageViewerProvider>
-              </ModelPreferencesProvider>
-            </PresignedUrlProvider>
+                          </ConversationProvider>
+                        </MemoryNodeViewerProvider>
+                      </ConfirmationDialogProvider>
+                    </MemoryNetworkProvider>
+                  </PlatformProvider>
+                </ScriptsProvider>
+              </ImageViewerProvider>
+            </ModelPreferencesProvider>
           </MemoryCountProvider>
         </BalanceProvider>
       </AuthProvider>

@@ -1,257 +1,205 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { auth } from "../control/firebase";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useEffect, useRef, useState } from "react";
 import "./ChatFeed.css";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FiCopy } from "react-icons/fi";
-import { FaBrain, FaTrash } from "react-icons/fa";
-import { usePresignedUrls } from "../hooks/usePresignedUrls";
+import { FaBrain, FaTrash, FaChevronDown } from "react-icons/fa";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
-import { IMAGE_PLACEHOLDER_IMAGE, NOT_FOUND_IMAGE } from "@/constants";
 import { toast } from "react-hot-toast";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { saveFeedback } from "@/control/firebase";
-import dittoAvatar from "/icons/ditto-icon.png";
-import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork";
-
-const emojis = ["❤️", "👍", "👎", "😠", "😢", "😂", "❗"];
-const USER_AVATAR_KEY = "userAvatar";
-const AVATAR_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const AVATAR_FETCH_COOLDOWN = 60 * 1000; // 1 minute cooldown between fetch attempts
+import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { usePlatform } from "@/hooks/usePlatform";
+import ChatMessage from "./ChatMessage";
 
 // Add this helper function at the top level
 const triggerHapticFeedback = () => {
   if (navigator.vibrate) {
-    navigator.vibrate(50); // 50ms subtle vibration
+    navigator.vibrate(10);
   }
 };
 
-// Add this new function at the top level
-const loadMessagesFromLocalStorage = () => {
-  try {
-    const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-    const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-    const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
+// Debug helper for development only
+const ScrollDebugger = ({ show, scrollInfo }) => {
+  if (!show) return null;
 
-    const messages = [];
-    messages.push({
-      sender: "Ditto",
-      text: "Hi! I'm Ditto.",
-      timestamp: Date.now(),
-      pairID: null,
+  return (
+    <div className="scroll-debugger">
+      <div>scrollTop: {scrollInfo.scrollTop}</div>
+      <div>hasNextPage: {scrollInfo.hasNextPage ? "true" : "false"}</div>
+      <div>isLoading: {scrollInfo.isLoading ? "true" : "false"}</div>
+      <div>isFetching: {scrollInfo.isFetchingNextPage ? "true" : "false"}</div>
+      <div>isNearTop: {scrollInfo.isNearTop ? "true" : "false"}</div>
+    </div>
+  );
+};
+
+// Custom ScrollToBottom component
+const CustomScrollToBottom = ({
+  children,
+  className,
+  onScroll,
+  onScrollComplete,
+  className: containerClassName,
+  style: containerStyle,
+  scrollViewClassName,
+  initialScrollBehavior = "auto",
+  detectScrollToTop = () => {},
+  onScrollToTopRef,
+}) => {
+  const scrollContainerRef = useRef(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
+  const isInitialScrollRef = useRef(true);
+  const prevScrollTopRef = useRef(0);
+  const scrollHeightRef = useRef(0);
+
+  // Scroll to bottom programmatically
+  const scrollToBottom = (behavior = "smooth") => {
+    if (!scrollContainerRef.current) return;
+
+    const scrollContainer = scrollContainerRef.current;
+    const scrollHeight = scrollContainer.scrollHeight;
+
+    scrollContainer.scrollTo({
+      top: scrollHeight,
+      behavior: behavior,
     });
+  };
 
-    for (let i = 0; i < prompts.length; i++) {
-      messages.push({
-        sender: "User",
-        text: prompts[i],
-        timestamp: timestamps[i],
-        pairID: pairIDs[i],
-      });
-      messages.push({
-        sender: "Ditto",
-        text: responses[i],
-        timestamp: timestamps[i],
-        pairID: pairIDs[i],
-      });
+  // Handle initial scroll behavior and add ref to onScrollToTopRef
+  useEffect(() => {
+    if (onScrollToTopRef) {
+      onScrollToTopRef.current = detectScrollToTop;
     }
 
-    return messages;
-  } catch (error) {
-    console.error("Error loading messages from localStorage:", error);
-    return [];
-  }
-};
-
-// Add this helper function near the top of the file
-const detectToolType = (text) => {
-  if (!text) return null;
-
-  // Check for tool indicators in the message text
-  if (text.includes("OpenSCAD Script Generated")) return "openscad";
-  if (text.includes("HTML Script Generated")) return "html";
-  if (text.includes("Image Task:")) return "image";
-  if (text.includes("Google Search Query:")) return "search";
-  if (text.includes("Home Assistant Task:")) return "home";
-
-  return null;
-};
-
-const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
-  let lastError;
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        mode: "cors",
-        credentials: "omit",
-        headers: {
-          Accept: "image/*",
-          Origin: window.location.origin,
-          ...options.headers,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return response;
-    } catch (error) {
-      console.error(`Fetch attempt ${i + 1} failed:`, error);
-      lastError = error;
-      if (i < maxRetries - 1) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, Math.pow(2, i) * 1000)
-        );
-      }
+    if (scrollContainerRef.current) {
+      // Initial scroll to bottom without animation
+      scrollToBottom(initialScrollBehavior);
+      isInitialScrollRef.current = false;
     }
-  }
-  throw lastError;
-};
+  }, [initialScrollBehavior, onScrollToTopRef]);
 
-const getAvatarWithCooldown = async (photoURL) => {
-  try {
-    const now = Date.now();
-    const lastFetchAttempt = localStorage.getItem("lastAvatarFetchAttempt");
-    const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
-    const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
-    const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
+  // Listen for scroll events
+  const handleScroll = (e) => {
+    if (!scrollContainerRef.current) return;
 
-    // Use cached avatar if valid
+    const scrollContainer = scrollContainerRef.current;
+    const scrollTop = scrollContainer.scrollTop;
+    const scrollHeight = scrollContainer.scrollHeight;
+    const clientHeight = scrollContainer.clientHeight;
+
+    // Check if scrolled to bottom (with a small buffer)
+    const isBottom = scrollHeight - scrollTop - clientHeight < 30;
+    setIsScrolledToBottom(isBottom);
+    setShowScrollToBottom(!isBottom);
+
+    // Detect scroll to top for pagination
+    const isNearTop = scrollTop < 50;
+
     if (
-      cachedAvatar &&
-      cachedPhotoURL === photoURL &&
-      cacheTimestamp &&
-      now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
+      isNearTop &&
+      scrollTop < prevScrollTopRef.current &&
+      scrollHeightRef.current === scrollHeight
     ) {
-      return cachedAvatar;
+      detectScrollToTop();
     }
 
-    // Clear cache if URL changed
-    if (cachedPhotoURL !== photoURL) {
-      localStorage.removeItem(USER_AVATAR_KEY);
-      localStorage.removeItem("avatarCacheTimestamp");
-      localStorage.removeItem("cachedPhotoURL");
+    // Track direction and scroll height for next check
+    prevScrollTopRef.current = scrollTop;
+    scrollHeightRef.current = scrollHeight;
+
+    // Call callback if provided
+    if (onScroll) {
+      onScroll(e);
+    }
+  };
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollContainerRef.current && isScrolledToBottom) {
+      scrollToBottom(initialScrollBehavior);
     }
 
-    // Use cached avatar during cooldown
-    if (
-      lastFetchAttempt &&
-      now - parseInt(lastFetchAttempt) < AVATAR_FETCH_COOLDOWN &&
-      cachedAvatar
-    ) {
-      return cachedAvatar;
+    if (onScrollComplete) {
+      onScrollComplete();
     }
+  }, [children, isScrolledToBottom, initialScrollBehavior, onScrollComplete]);
 
-    localStorage.setItem("lastAvatarFetchAttempt", now.toString());
+  return (
+    <div className={containerClassName} style={containerStyle}>
+      <div
+        ref={scrollContainerRef}
+        className={scrollViewClassName || "custom-scroll-view"}
+        onScroll={handleScroll}
+        style={{
+          overflowY: "auto",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        {children}
+      </div>
 
-    const userID = auth.currentUser?.uid;
-    if (!userID) throw new Error("No user ID");
+      {showScrollToBottom && (
+        <button
+          className="follow-button"
+          onClick={() => scrollToBottom()}
+          aria-label="Scroll to bottom"
+        >
+          <FaChevronDown />
+        </button>
+      )}
+    </div>
+  );
+};
 
-    const storage = getStorage();
-    const avatarRef = ref(storage, `avatars/${userID}/profile.jpg`);
+// Avatar action menu component
+const AvatarActionMenu = ({
+  isVisible,
+  isUser,
+  onCopy,
+  onDelete,
+  onShowMemories,
+}) => {
+  if (!isVisible) return null;
 
-    try {
-      // Try to get existing avatar from Firebase Storage
-      const downloadURL = await getDownloadURL(avatarRef);
+  const direction = isUser ? "left" : "right";
 
-      // Configure fetch options for CORS
-      const fetchOptions = {
-        mode: "cors",
-        credentials: "omit",
-        headers: {
-          Accept: "image/*",
-          Origin: window.location.origin,
-        },
-      };
-
-      // Try to fetch the existing avatar
-      const response = await fetchWithRetry(downloadURL, fetchOptions);
-      const blob = await response.blob();
-
-      // Convert blob to base64
-      const base64data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
-      // Cache the successful result
-      localStorage.setItem(USER_AVATAR_KEY, base64data);
-      localStorage.setItem("avatarCacheTimestamp", now.toString());
-      localStorage.setItem("cachedPhotoURL", photoURL);
-
-      return base64data;
-    } catch (storageError) {
-      console.error("Firebase Storage error:", storageError);
-
-      // Try direct fetch from original URL as fallback
-      try {
-        const response = await fetchWithRetry(photoURL, {
-          mode: "cors",
-          credentials: "omit",
-          headers: {
-            Accept: "image/*",
-            Origin: window.location.origin,
-          },
-        });
-
-        const blob = await response.blob();
-        const base64data = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-
-        // Try to upload to Firebase Storage
-        try {
-          const metadata = {
-            contentType: "image/jpeg",
-            cacheControl: "public,max-age=86400",
-            customMetadata: {
-              originalURL: photoURL,
-              timestamp: now.toString(),
-            },
-          };
-
-          await uploadBytes(avatarRef, blob, metadata);
-        } catch (uploadError) {
-          console.error("Failed to upload to Firebase Storage:", uploadError);
-        }
-
-        // Cache the result even if upload failed
-        localStorage.setItem(USER_AVATAR_KEY, base64data);
-        localStorage.setItem("avatarCacheTimestamp", now.toString());
-        localStorage.setItem("cachedPhotoURL", photoURL);
-
-        return base64data;
-      } catch (fetchError) {
-        console.error("Direct fetch error:", fetchError);
-        throw fetchError;
-      }
-    }
-  } catch (error) {
-    console.error("Avatar fetch error:", error);
-    // Return cached avatar if available, otherwise placeholder
-    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
-  }
+  return (
+    <motion.div
+      className={`avatar-action-menu ${direction}`}
+      initial={{ opacity: 0, x: isUser ? 20 : -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: isUser ? 20 : -20 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
+      <button
+        className="action-icon-button"
+        onClick={onCopy}
+        aria-label="Copy message"
+      >
+        <FiCopy />
+      </button>
+      <button
+        className="action-icon-button"
+        onClick={onShowMemories}
+        aria-label="Show memories"
+      >
+        <FaBrain />
+      </button>
+      <button
+        className="action-icon-button delete"
+        onClick={onDelete}
+        aria-label="Delete message"
+      >
+        <FaTrash />
+      </button>
+    </motion.div>
+  );
 };
 
 export default function ChatFeed({
-  messages,
-  hasInputField = false,
-  showSenderName = false,
-  scrollToBottom = false,
-  startAtBottom = false,
-  updateConversation,
+  scrollToBottom = true,
+  startAtBottom = true,
   bubbleStyles = {
     text: {
       fontSize: 14,
@@ -262,973 +210,299 @@ export default function ChatFeed({
     },
   },
 }) {
-  const [actionOverlay, setActionOverlay] = useState(null);
-  const [reactionOverlay, setReactionOverlay] = useState(null);
-  const feedRef = useRef(null);
-  const bottomRef = useRef(null);
-  const [profilePic, setProfilePic] = useState(() => {
-    return localStorage.getItem(USER_AVATAR_KEY) || "/user_placeholder.png";
-  });
-  const [reactions, setReactions] = useState({});
-  const { getPresignedUrl, getCachedUrl } = usePresignedUrls();
-  const { confirmMemoryDeletion } = useMemoryDeletion(updateConversation);
-  const { handleImageClick } = useImageViewerHandler(true);
+  const {
+    messages,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useConversationHistory();
   const { showMemoryNetwork } = useMemoryNetwork();
+  const { confirmMemoryDeletion } = useMemoryDeletion();
+  const bottomRef = useRef(null);
+  const { isMobile } = usePlatform();
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user?.photoURL) {
-        loadUserAvatar(user.photoURL);
-      }
-    });
+  // State for UI interactions
+  const [activeAvatarIndex, setActiveAvatarIndex] = useState(null);
 
-    return () => unsubscribe();
-  }, []);
+  // State for scroll and content management
+  const [messagesVisible, setMessagesVisible] = useState(false);
+  const [isNearTop, setIsNearTop] = useState(false);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [shouldFetchNext, setShouldFetchNext] = useState(false);
 
-  const loadUserAvatar = async (photoURL) => {
-    try {
-      // First try to get from cache immediately
-      const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
-      const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
-      const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
-      const now = Date.now();
+  // Refs for tracking scroll state
+  const initialRenderRef = useRef(true);
+  const prevHeightRef = useRef(0);
+  const fetchingRef = useRef(false);
+  const detectScrollToTopRef = useRef(null);
 
-      // Use cached avatar if it's valid and not expired
-      if (
-        cachedAvatar &&
-        cachedPhotoURL === photoURL &&
-        cacheTimestamp &&
-        now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
-      ) {
-        setProfilePic(cachedAvatar);
-        return; // Exit early if we have valid cache
-      }
+  // Handle avatar click to show menu
+  const handleAvatarClick = (e, index) => {
+    e.stopPropagation(); // Prevent bubbling to document click handler
 
-      // Set placeholder while we fetch
-      setProfilePic("/user_placeholder.png");
-
-      // Attempt to fetch with retries
-      let retryCount = 0;
-      const maxRetries = 3;
-
-      while (retryCount < maxRetries) {
-        try {
-          const avatarData = await getAvatarWithCooldown(photoURL);
-          setProfilePic(avatarData);
-          break; // Success, exit retry loop
-        } catch (error) {
-          console.error(
-            `Avatar fetch attempt ${retryCount + 1} failed:`,
-            error
-          );
-          retryCount++;
-
-          if (retryCount === maxRetries) {
-            // If all retries failed but we have a cached avatar, use it
-            if (cachedAvatar) {
-              console.log(
-                "Using expired cached avatar after all retries failed"
-              );
-              setProfilePic(cachedAvatar);
-            }
-          } else {
-            // Wait before retrying (exponential backoff)
-            await new Promise((resolve) =>
-              setTimeout(resolve, Math.pow(2, retryCount) * 1000)
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error in avatar loading process:", error);
-      // Final fallback - use cached avatar if available, otherwise placeholder
-      const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
-      setProfilePic(cachedAvatar || "/user_placeholder.png");
+    if (activeAvatarIndex === index) {
+      // If clicking the same avatar, hide the menu
+      setActiveAvatarIndex(null);
+    } else {
+      // Show menu for this avatar
+      setActiveAvatarIndex(index);
+      triggerHapticFeedback();
     }
   };
 
+  // Only make messages visible when loaded
   useEffect(() => {
-    // Only load messages if the current messages array is empty
-    if (messages.length <= 1) {
-      const savedMessages = loadMessagesFromLocalStorage();
-      if (savedMessages.length > 0) {
-        updateConversation((prevState) => ({
-          ...prevState,
-          messages: savedMessages,
-        }));
+    if (!isLoading && messages.length > 0) {
+      setMessagesVisible(true);
+      initialRenderRef.current = false;
+    }
+  }, [isLoading, messages]);
+
+  // Function to handle scroll to top detection
+  const handleScrollToTop = () => {
+    if (
+      hasNextPage &&
+      !isLoading &&
+      !isFetchingNextPage &&
+      !fetchingRef.current
+    ) {
+      console.log("AT TOP DETECTED: Triggering fetch");
+      fetchingRef.current = true;
+      setShouldFetchNext(true);
+    }
+  };
+
+  // Handle pagination data loading
+  useEffect(() => {
+    const fetchOlderMessages = async () => {
+      if (!shouldFetchNext) return;
+
+      try {
+        console.log("Fetching older messages...");
+        // Execute the fetch
+        await fetchNextPage();
+
+        console.log("Fetch complete");
+
+        // Reset state with a small delay to prevent immediate re-trigger
+        setTimeout(() => {
+          fetchingRef.current = false;
+          setShouldFetchNext(false);
+          console.log("Fetch state reset");
+        }, 500);
+      } catch (error) {
+        console.error("Error loading more messages:", error);
+        fetchingRef.current = false;
+        setShouldFetchNext(false);
       }
-    }
-  }); // Empty dependency array means this runs once on mount
+    };
 
-  const scrollToBottomOfFeed = useCallback((quick = false) => {
-    if (bottomRef.current) {
-      requestAnimationFrame(() => {
-        bottomRef.current.scrollIntoView({
-          behavior: quick ? "auto" : "smooth",
-          block: "end",
-          inline: "nearest",
-        });
-      });
+    if (shouldFetchNext) {
+      fetchOlderMessages();
     }
-  }, []);
+  }, [shouldFetchNext, fetchNextPage]);
 
-  // Scroll handling in a separate effect
+  // Handle clicking outside to close action menu
   useEffect(() => {
-    if (messages.length > 0 && (startAtBottom || scrollToBottom)) {
-      scrollToBottomOfFeed(true);
-    }
-  }, [messages, scrollToBottom, startAtBottom, scrollToBottomOfFeed]);
+    const handleClickOutside = (e) => {
+      if (activeAvatarIndex !== null) {
+        // Check if the click is outside the action menu and avatar
+        let targetElement = e.target;
+        let isClickOnMenu = false;
 
-  useEffect(() => {
-    // Load user avatar with cooldown and caching
-    const loadUserAvatar = async () => {
-      if (auth.currentUser?.photoURL) {
-        try {
-          // First try to get from cache immediately
-          const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
-          const cachedPhotoURL = localStorage.getItem("cachedPhotoURL");
-          const cacheTimestamp = localStorage.getItem("avatarCacheTimestamp");
-          const now = Date.now();
-
-          // Use cached avatar if it's valid and not expired
+        while (targetElement && !isClickOnMenu) {
           if (
-            cachedAvatar &&
-            cachedPhotoURL === auth.currentUser.photoURL &&
-            cacheTimestamp &&
-            now - parseInt(cacheTimestamp) < AVATAR_CACHE_DURATION
+            targetElement.classList &&
+            (targetElement.classList.contains("avatar-action-menu") ||
+              targetElement.classList.contains("message-avatar") ||
+              targetElement.classList.contains("action-icon-button"))
           ) {
-            setProfilePic(cachedAvatar);
-            return; // Exit early if we have valid cache
+            isClickOnMenu = true;
           }
-
-          // Set placeholder while we fetch
-          setProfilePic("/user_placeholder.png");
-
-          // Attempt to fetch with retries
-          let retryCount = 0;
-          const maxRetries = 3;
-
-          while (retryCount < maxRetries) {
-            try {
-              const avatarData = await getAvatarWithCooldown(
-                auth.currentUser.photoURL
-              );
-              setProfilePic(avatarData);
-              break; // Success, exit retry loop
-            } catch (error) {
-              console.error(
-                `Avatar fetch attempt ${retryCount + 1} failed:`,
-                error
-              );
-              retryCount++;
-
-              if (retryCount === maxRetries) {
-                // If all retries failed but we have a cached avatar, use it
-                if (cachedAvatar) {
-                  console.log(
-                    "Using expired cached avatar after all retries failed"
-                  );
-                  setProfilePic(cachedAvatar);
-                }
-              } else {
-                // Wait before retrying (exponential backoff)
-                await new Promise((resolve) =>
-                  setTimeout(resolve, Math.pow(2, retryCount) * 1000)
-                );
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Error in avatar loading process:", error);
-          // Final fallback - use cached avatar if available, otherwise placeholder
-          const cachedAvatar = localStorage.getItem(USER_AVATAR_KEY);
-          setProfilePic(cachedAvatar || "/user_placeholder.png");
+          targetElement = targetElement.parentElement;
         }
-      } else {
-        setProfilePic("/user_placeholder.png");
-      }
-    };
 
-    loadUserAvatar();
-  }, []);
-
-  useEffect(() => {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    const TOUCH_THRESHOLD = 10;
-    const TIME_THRESHOLD = 300;
-    let isClosing = false;
-
-    const handleTouchStart = (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartTime = Date.now();
-      isClosing = false;
-    };
-
-    const handleTouchEnd = (e) => {
-      if (!actionOverlay || isClosing) return;
-
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      const touchEndTime = Date.now();
-      const touchDuration = touchEndTime - touchStartTime;
-
-      // Calculate movement
-      const deltaX = Math.abs(touchEndX - touchStartX);
-      const deltaY = Math.abs(touchEndY - touchStartY);
-
-      // If movement is too large or touch duration is too short, don't close
-      if (
-        deltaX > TOUCH_THRESHOLD ||
-        deltaY > TOUCH_THRESHOLD ||
-        touchDuration < TIME_THRESHOLD
-      ) {
-        return;
-      }
-
-      const target = document.elementFromPoint(touchEndX, touchEndY);
-      if (!target) return;
-
-      // Don't close if touching inside overlays
-      const isOverlayTouch =
-        target.closest(".action-overlay") ||
-        target.closest(".reaction-overlay") ||
-        target.closest(".action-button");
-
-      if (isOverlayTouch) return;
-
-      // Get the touched bubble
-      const touchedBubble = target.closest(".chat-bubble");
-
-      // If touching outside both overlays and bubbles, close overlay
-      if (!isOverlayTouch && !touchedBubble) {
-        isClosing = true;
-        setTimeout(() => {
-          setActionOverlay(null);
-          setReactionOverlay(null);
-        }, 50);
-        return;
-      }
-
-      // If touching a different bubble, close overlay
-      if (touchedBubble) {
-        const bubbleIndex = parseInt(touchedBubble.dataset.index);
-        if (bubbleIndex !== actionOverlay.index) {
-          isClosing = true;
-          setTimeout(() => {
-            setActionOverlay(null);
-            setReactionOverlay(null);
-          }, 50);
+        if (!isClickOnMenu) {
+          setActiveAvatarIndex(null);
         }
       }
     };
 
-    const handleMouseDown = (e) => {
-      if (e.touches || !actionOverlay || isClosing) return;
-
-      const isOverlayClick =
-        e.target.closest(".action-overlay") ||
-        e.target.closest(".reaction-overlay") ||
-        e.target.closest(".action-button");
-
-      if (isOverlayClick) return;
-
-      const clickedBubble = e.target.closest(".chat-bubble");
-
-      if (!isOverlayClick && !clickedBubble) {
-        isClosing = true;
-        setTimeout(() => {
-          setActionOverlay(null);
-          setReactionOverlay(null);
-        }, 50);
-      }
-    };
-
-    document.addEventListener("touchstart", handleTouchStart, true);
-    document.addEventListener("touchend", handleTouchEnd, true);
-    document.addEventListener("mousedown", handleMouseDown, true);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
 
     return () => {
-      document.removeEventListener("touchstart", handleTouchStart, true);
-      document.removeEventListener("touchend", handleTouchEnd, true);
-      document.removeEventListener("mousedown", handleMouseDown, true);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [actionOverlay]);
+  }, [activeAvatarIndex]);
 
-  useEffect(() => {
-    if (!actionOverlay) {
-      // Cancel any pending memory fetch when action overlay closes
-    }
-  }, [actionOverlay]);
-
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    setActionOverlay(null);
-    toast.success("Copied to clipboard");
-  };
-
-  const handleReaction = useCallback((index, pairID, emoji, feedback) => {
-    setReactions((prevReactions) => ({
-      ...prevReactions,
-      [index]: [...(prevReactions[index] || []), emoji],
-    }));
-    setReactionOverlay(null);
-    setActionOverlay(null);
-    if (auth.currentUser) {
-      saveFeedback(auth.currentUser.uid, pairID, emoji, feedback);
-    }
-  }, []);
-
-  const handleBubbleInteraction = (e, index) => {
-    // Don't show action overlay if user is selecting text
-    if (window.getSelection().toString()) {
+  // Message action handlers
+  const handleCopy = (message, type = "prompt") => {
+    const textToCopy = type === "prompt" ? message.prompt : message.response;
+    if (!textToCopy) {
+      toast.error("No content to copy");
       return;
     }
 
-    // Don't show action overlay if click was on an image
-    if (e.target.classList.contains("chat-image")) {
-      return;
-    }
-
-    // Prevent default behavior
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Trigger haptic feedback
-    triggerHapticFeedback();
-
-    // If clicking the same bubble that has an open overlay, close it
-    if (actionOverlay && actionOverlay.index === index) {
-      setActionOverlay(null);
-      setReactionOverlay(null);
-      return;
-    }
-
-    // Calculate position for the overlay
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x =
-      e.clientX ||
-      (e.touches ? e.touches[0].clientX : rect.left + rect.width / 2);
-    const y =
-      e.clientY ||
-      (e.touches ? e.touches[0].clientY : rect.top + rect.height / 2);
-
-    setActionOverlay({
-      index,
-      clientX: x,
-      clientY: y,
-      type: "text",
-    });
-
-    // Close any open reaction overlay
-    setReactionOverlay(null);
-  };
-
-  const renderMessageText = (text) => {
-    // First replace code block markers
-    let displayText = text?.replace(
-      /```[a-zA-Z0-9]+/g,
-      (match) => `\n${match}`
-    );
-    displayText = displayText?.replace(/```\./g, "```\n");
-
-    return (
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          a: ({ href, children, ...props }) => (
-            <a
-              {...props}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              style={{
-                color: "#3941b8",
-                textDecoration: "none",
-                textShadow: "0 0 1px #7787d7",
-                cursor: "pointer",
-                pointerEvents: "auto",
-              }}
-            >
-              {children}
-            </a>
-          ),
-          p: ({ ...props }) => <p {...props} style={{ margin: "0.5em 0" }} />,
-          ol: ({ ...props }) => <ol {...props} className="chat-bubble-list" />,
-          ul: ({ ...props }) => <ul {...props} className="chat-bubble-list" />,
-          li: ({ ...props }) => (
-            <li {...props} className="chat-bubble-list-item" />
-          ),
-          img: ({ src, alt, ...props }) => {
-            // Check if this is a DALL-E URL
-            if (src?.includes("oaidalleapiprodscus.blob.core.windows.net")) {
-              try {
-                const url = new URL(src);
-                const expiryParam = url.searchParams.get("se");
-                if (expiryParam) {
-                  // Parse dates and ensure we're using UTC
-                  const expiryDate = new Date(decodeURIComponent(expiryParam));
-                  const now = new Date();
-                  if (now < expiryDate) {
-                    // console.log("DALL-E URL is within valid time window", src);
-                    return (
-                      <img
-                        {...props}
-                        src={src}
-                        alt={alt}
-                        className="chat-image"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleImageClick(src);
-                        }}
-                      />
-                    );
-                  }
-                }
-              } catch (e) {
-                console.error("Error parsing DALL-E URL:", e);
-              }
-            }
-            const cachedUrl = getCachedUrl(src);
-            function onClick(e) {
-              e.stopPropagation();
-              handleImageClick(src);
-            }
-            if (cachedUrl.ok) {
-              return (
-                <img
-                  {...props}
-                  src={cachedUrl.ok}
-                  alt={alt}
-                  className="chat-image"
-                  onClick={onClick}
-                />
-              );
-            }
-            if (!src) {
-              return (
-                <img
-                  {...props}
-                  src={NOT_FOUND_IMAGE}
-                  alt={alt}
-                  className="chat-image"
-                />
-              );
-            }
-            if (!src.startsWith("https://firebasestorage.googleapis.com/")) {
-              getPresignedUrl(src).then(
-                (url) => {
-                  if (url.ok) {
-                    const img = document.querySelector(`img[src="${src}"]`);
-                    if (img) {
-                      img.src = url.ok;
-                    }
-                  }
-                },
-                (err) => {
-                  console.error(`Image Load error: ${err}; src: ${src}`);
-                }
-              );
-            }
-            return (
-              <img
-                {...props}
-                src={src}
-                alt={alt}
-                className="chat-image"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleImageClick(src);
-                }}
-                onError={(e) => {
-                  const errSrc = e.target.src;
-                  console.error(`Image load error: ${e}; src: ${errSrc}`);
-                  if (errSrc === src) {
-                    e.target.src = IMAGE_PLACEHOLDER_IMAGE;
-                  } else {
-                    e.target.src = src;
-                  }
-                  if (errSrc.startsWith("https://ditto-content")) {
-                    setTimeout(() => {
-                      console.log("trying image again", errSrc);
-                      e.target.src = errSrc;
-                    }, 5_000);
-                  }
-                }}
-              />
-            );
-          },
-          code({ inline, className, children, ...props }) {
-            let match = /language-(\w+)/.exec(className || "");
-            let hasCodeBlock;
-            if (displayText.match(/```/g)) {
-              hasCodeBlock = displayText.match(/```/g).length % 2 === 0;
-            }
-            if (match === null && hasCodeBlock) {
-              match = ["language-txt", "txt"];
-            }
-            if (!inline && match) {
-              return (
-                <div className="code-container">
-                  <SyntaxHighlighter
-                    style={vscDarkPlus}
-                    language={match[1]}
-                    PreTag="div"
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, "")}
-                  </SyntaxHighlighter>
-                  <button
-                    className="copy-button code-block-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(String(children).replace(/\n$/, ""));
-                      toast.success("Copied to clipboard!");
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </div>
-              );
-            } else {
-              const inlineText = String(children).replace(/\n$/, "");
-              return (
-                <span className="inline-code-container">
-                  <code className="inline-code" {...props}>
-                    {children}
-                  </code>
-                  <button
-                    className="copy-button inline-code-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(inlineText);
-                      toast.success("Copied to clipboard!");
-                    }}
-                    title="Copy code"
-                  >
-                    <FiCopy />
-                  </button>
-                </span>
-              );
-            }
-          },
-        }}
-      >
-        {displayText}
-      </ReactMarkdown>
-    );
-  };
-
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "";
-    const date = new Date(timestamp);
-    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return new Intl.DateTimeFormat("default", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: browserTimezone,
-    }).format(date);
-  };
-
-  // Update the renderMessageWithAvatar function
-  const renderMessageWithAvatar = (message, index) => {
-    const isLastMessage = index === messages.length - 1;
-    const isSmallMessage =
-      message.text?.length <= 15 && !message.text?.includes("\n");
-    const isUserMessage = message.sender === "User";
-    const showTypingIndicator = message.isTyping && message.text === "";
-    const isGenerating = message.sender === "Ditto" && message.isTyping;
-
-    // Add this to determine if this is the most recent Ditto message
-    const isLastDittoMessage =
-      message.sender === "Ditto" &&
-      messages.findIndex((msg, i) => i > index && msg.sender === "Ditto") ===
-        -1;
-
-    // Detect tool type from message content if not already set
-    const toolType = message.toolType || detectToolType(message.text);
-
-    return (
-      <motion.div
-        key={`${message.pairID}-${index}`}
-        className={`message-container ${isUserMessage ? "User" : "Ditto"}`}
-        initial={isLastMessage ? false : { opacity: 0, y: 10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
-      >
-        {showTypingIndicator ? (
-          <div className="typing-indicator-container">
-            <div className="typing-indicator">
-              <div className="typing-dot" style={{ "--i": 0 }} />
-              <div className="typing-dot" style={{ "--i": 1 }} />
-              <div className="typing-dot" style={{ "--i": 2 }} />
-            </div>
-          </div>
-        ) : (
-          <>
-            <div
-              className={`chat-bubble ${isUserMessage ? "User" : "Ditto"} ${
-                actionOverlay && actionOverlay.index === index ? "blurred" : ""
-              } ${isSmallMessage ? "small-message" : ""}`}
-              style={bubbleStyles.chatbubble}
-              onClick={(e) => handleBubbleInteraction(e, index)}
-              onContextMenu={(e) => handleBubbleInteraction(e, index)}
-              data-index={index}
-            >
-              {toolType && (
-                <div className={`tool-badge ${toolType.toLowerCase()}`}>
-                  {toolType.toUpperCase()}
-                </div>
-              )}
-
-              {showSenderName && message.sender && (
-                <div className="sender-name">{message.sender}</div>
-              )}
-              <div className="message-text" style={bubbleStyles.text}>
-                {message.toolStatus && toolType ? (
-                  <>
-                    {renderMessageText(message.text)}
-                    <div
-                      className={`tool-status ${
-                        message.toolStatus === "complete"
-                          ? "complete"
-                          : message.toolStatus === "failed"
-                            ? "failed"
-                            : ""
-                      }`}
-                    >
-                      {message.toolStatus}
-                      {message.showTypingDots && (
-                        <div className="typing-dots">
-                          <div className="dot"></div>
-                          <div className="dot"></div>
-                          <div className="dot"></div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  renderMessageText(message.text)
-                )}
-              </div>
-              <div className="message-footer">
-                <div className="message-timestamp">
-                  {formatTimestamp(message.timestamp)}
-                </div>
-              </div>
-              {reactions[index] && reactions[index].length > 0 && (
-                <div className="message-reactions">
-                  {reactions[index].map((emoji, emojiIndex) => (
-                    <span key={emojiIndex} className="reaction">
-                      {emoji}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            {message.sender === "Ditto" && (
-              <img
-                src={dittoAvatar}
-                alt="Ditto"
-                className={`avatar ditto-avatar ${
-                  isLastDittoMessage && isGenerating
-                    ? "animating"
-                    : isLastDittoMessage && !isGenerating
-                      ? "spinning"
-                      : ""
-                }`}
-              />
-            )}
-            {message.sender === "User" && (
-              <img src={profilePic} alt="User" className="avatar user-avatar" />
-            )}
-          </>
-        )}
-        {actionOverlay && actionOverlay.index === index && (
-          <div
-            className="action-overlay"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: "fixed",
-              left: `${actionOverlay.clientX}px`,
-              top: `${actionOverlay.clientY}px`,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <button
-              onClick={() => handleCopy(messages[actionOverlay.index].text)}
-              className="action-button"
-            >
-              Copy
-            </button>
-            <button
-              onClick={() =>
-                handleReactionOverlay(
-                  actionOverlay.index,
-                  actionOverlay.clientX,
-                  actionOverlay.clientY
-                )
-              }
-              className="action-button"
-            >
-              React
-            </button>
-            <button
-              onClick={() => handleShowMemories(actionOverlay.index)}
-              className="action-button"
-            >
-              <FaBrain style={{ marginRight: "5px" }} />
-              Memories
-            </button>
-            <button
-              onClick={() => handleMessageDelete(actionOverlay.index)}
-              className="action-button delete-action"
-            >
-              <FaTrash style={{ marginRight: "5px" }} />
-              Delete
-            </button>
-          </div>
-        )}
-        {reactionOverlay === index && (
-          <div
-            className="reaction-overlay"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {emojis.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() =>
-                  handleReaction(index, messages[index].pairID, emoji, "")
-                }
-                className="emoji-button"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        )}
-      </motion.div>
-    );
-  };
-
-  const adjustOverlayPosition = (left, top) => {
-    const overlay = document.querySelector(".reaction-overlay");
-    if (!overlay) return { left, top };
-
-    const rect = overlay.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let adjustedLeft = left;
-    let adjustedTop = top;
-
-    if (left + rect.width > viewportWidth) {
-      adjustedLeft = viewportWidth - rect.width;
-    }
-    if (left < 0) {
-      adjustedLeft = 0;
-    }
-    if (top + rect.height > viewportHeight) {
-      adjustedTop = viewportHeight - rect.height;
-    }
-    if (top < 0) {
-      adjustedTop = 0;
-    }
-
-    return { left: adjustedLeft, top: adjustedTop };
-  };
-
-  // Update the scroll handler useEffect
-  useEffect(() => {
-    const handleScroll = () => {
-      // Close overlays immediately when scrolling starts
-      if (actionOverlay || reactionOverlay) {
-        setActionOverlay(null);
-        setReactionOverlay(null);
+    navigator.clipboard.writeText(textToCopy).then(
+      () => {
+        toast.success("Copied to clipboard");
+        setActiveAvatarIndex(null);
+      },
+      (err) => {
+        console.error("Could not copy text: ", err);
+        toast.error("Failed to copy text");
       }
-    };
-
-    // Add scroll listener to both the feed container and window
-    const feedElement = feedRef.current;
-    if (feedElement) {
-      feedElement.addEventListener("scroll", handleScroll, { passive: true });
-    }
-
-    // Also listen for window scroll in case the feed is part of a larger scrollable area
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    // Add wheel event listeners for mouse wheel scrolling
-    if (feedElement) {
-      feedElement.addEventListener("wheel", handleScroll, { passive: true });
-    }
-    window.addEventListener("wheel", handleScroll, { passive: true });
-
-    // Add touch move listener for mobile scrolling
-    if (feedElement) {
-      feedElement.addEventListener("touchmove", handleScroll, {
-        passive: true,
-      });
-    }
-    window.addEventListener("touchmove", handleScroll, { passive: true });
-
-    return () => {
-      // Clean up all event listeners
-      if (feedElement) {
-        feedElement.removeEventListener("scroll", handleScroll);
-        feedElement.removeEventListener("wheel", handleScroll);
-        feedElement.removeEventListener("touchmove", handleScroll);
-      }
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("wheel", handleScroll);
-      window.removeEventListener("touchmove", handleScroll);
-    };
-  }, [actionOverlay, reactionOverlay]); // Dependencies ensure we're using current overlay states
-
-  const handleReactionOverlay = (index, clientX, clientY) => {
-    setReactionOverlay({
-      index,
-      clientX,
-      clientY,
-    });
-    setActionOverlay(null);
+    );
   };
 
-  const handleShowMemories = async (index) => {
+  // Handle memory deletion
+  const handleMessageDelete = async (message) => {
+    setActiveAvatarIndex(null);
+    if (!message.id) {
+      console.error("Cannot delete message: missing ID");
+      return;
+    }
     try {
-      const message = messages[index];
-      setActionOverlay(null);
-      await showMemoryNetwork(message, index, messages);
-    } catch (error) {
-      console.error("Error showing memories:", error);
-      toast.error("Failed to show memories");
-    }
-  };
-
-  // Update handleMessageDelete to use pairID directly
-  const handleMessageDelete = async (index) => {
-    const message = messages[index];
-    const pairID = message.pairID;
-    if (!pairID) {
-      console.error("No pairID found for message:", message);
-      return;
-    }
-    confirmMemoryDeletion(pairID, { isMessage: true });
-    setActionOverlay(null);
-  };
-
-  // Add this useEffect to listen for memory deletion events
-  useEffect(() => {
-    const handleMemoryDeleted = () => {
-      // Refresh the chat feed by updating the messages state
-      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-
-      const newMessages = [];
-      newMessages.push({
-        sender: "Ditto",
-        text: "Hi! I'm Ditto.",
-        timestamp: Date.now(),
+      await confirmMemoryDeletion(message.id, {
+        onSuccess: () => {
+          refetch(); // Refresh the conversation after deletion
+        },
       });
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast.error("Failed to delete message");
+    }
+  };
 
-      for (let i = 0; i < prompts.length; i++) {
-        newMessages.push({
-          sender: "User",
-          text: prompts[i],
-          timestamp: timestamps[i],
-        });
-        newMessages.push({
-          sender: "Ditto",
-          text: responses[i],
-          timestamp: timestamps[i],
-        });
-      }
-
-      // Update the messages state
-      updateConversation((prevState) => ({
-        ...prevState,
-        messages: newMessages,
-      }));
-    };
-
-    window.addEventListener("memoryDeleted", handleMemoryDeleted);
-
-    return () => {
-      window.removeEventListener("memoryDeleted", handleMemoryDeleted);
-    };
-  }, [updateConversation]);
-
-  // Add a new useEffect to handle window resize events
-  useEffect(() => {
-    const handleResize = () => {
-      if (messages.length > 0) {
-        // Use immediate scroll for resize events
-        scrollToBottomOfFeed(true);
-      }
-    };
-
-    const debouncedResize = debounce(handleResize, 100);
-    window.addEventListener("resize", debouncedResize);
-    return () => window.removeEventListener("resize", debouncedResize);
-  }, [messages, scrollToBottomOfFeed]);
-
-  // Add debounce utility function
-  const debounce = (func, wait) => {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
+  // Handle showing memory network
+  const handleShowMemories = async (message) => {
+    setActiveAvatarIndex(null);
+    try {
+      await showMemoryNetwork(message);
+    } catch (error) {
+      console.error("Error showing memory network:", error);
+      toast.error("Failed to show memory network");
+    }
   };
 
   return (
-    <div
-      className="chat-feed"
-      ref={feedRef}
-      style={{ scrollBehavior: "auto" }} // Override any smooth scrolling
-    >
-      {messages.map(renderMessageWithAvatar)}
-      {hasInputField && <input type="text" className="chat-input-field" />}
-      <div ref={bottomRef} />
-      {reactionOverlay && (
+    <div className="chat-feed-container">
+      {/* Debug component - only in development */}
+      {process.env.NODE_ENV === "development" && (
+        <ScrollDebugger
+          show={process.env.NODE_ENV === "development"}
+          scrollInfo={{
+            scrollTop,
+            hasNextPage,
+            isLoading,
+            isFetchingNextPage,
+            isNearTop,
+          }}
+        />
+      )}
+
+      {/* Loading indicator for pagination */}
+      {isFetchingNextPage && (
         <div
-          className="reaction-overlay"
-          onClick={(e) => e.stopPropagation()}
+          className="loading-indicator"
+          style={{ position: "sticky", top: 0, zIndex: 10 }}
+        >
+          <div className="loading-spinner"></div>
+          <div>Loading more messages...</div>
+        </div>
+      )}
+
+      {/* Main content area */}
+      {isLoading ? (
+        <div className="empty-chat-message">
+          <div className="loading-spinner"></div>
+          <p>Loading conversation...</p>
+        </div>
+      ) : messages && messages.length > 0 ? (
+        <CustomScrollToBottom
+          className="messages-container"
+          scrollViewClassName="messages-scroll-view"
+          initialScrollBehavior="auto"
+          detectScrollToTop={handleScrollToTop}
+          onScrollToTopRef={detectScrollToTopRef}
           style={{
-            position: "fixed",
-            ...adjustOverlayPosition(
-              reactionOverlay.clientX,
-              reactionOverlay.clientY
-            ),
-            transform: "translate(-50%, -50%)",
+            opacity: messagesVisible ? 1 : 0,
+            transition: "opacity 0.2s ease-in-out",
           }}
         >
-          {emojis.map((emoji) => (
-            <button
-              key={emoji}
-              onClick={() =>
-                handleReaction(
-                  reactionOverlay.index,
-                  messages[reactionOverlay.index].pairID,
-                  emoji,
-                  ""
-                )
-              }
-              className="emoji-button"
-            >
-              {emoji}
-            </button>
-          ))}
+          {messages
+            .map((message, index) => {
+              const isUser =
+                message.prompt && !message.prompt.includes("SYSTEM:");
+              const isLast = index === messages.length - 1;
+
+              // Create separate IDs for prompt and response
+              const promptId = `prompt-${message.id || index}`;
+              const responseId = `response-${message.id || index}`;
+
+              // Check if this specific message is active
+              const isPromptActive = activeAvatarIndex === promptId;
+              const isResponseActive = activeAvatarIndex === responseId;
+
+              return (
+                <div key={message.id || index} className="message-pair">
+                  {/* Render user message (prompt) */}
+                  {message.prompt && isUser && (
+                    <ChatMessage
+                      pairID={message.id}
+                      content={message.prompt}
+                      timestamp={
+                        message.timestamp
+                          ? new Date(message.timestamp).getTime()
+                          : Date.now()
+                      }
+                      isUser={true}
+                      isLast={isLast}
+                      bubbleStyles={bubbleStyles}
+                      onAvatarClick={(e) => handleAvatarClick(e, promptId)}
+                      showMenu={isPromptActive}
+                      menuProps={{
+                        onCopy: () => handleCopy(message, "prompt"),
+                        onDelete: () => handleMessageDelete(message),
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                    />
+                  )}
+
+                  {/* Render Ditto's response */}
+                  {message.response && (
+                    <ChatMessage
+                      content={message.response}
+                      timestamp={
+                        message.timestamp
+                          ? new Date(message.timestamp).getTime()
+                          : Date.now()
+                      }
+                      isUser={false}
+                      isLast={isLast}
+                      bubbleStyles={bubbleStyles}
+                      onAvatarClick={(e) => handleAvatarClick(e, responseId)}
+                      showMenu={isResponseActive}
+                      menuProps={{
+                        onCopy: () => handleCopy(message, "response"),
+                        onDelete: () => handleMessageDelete(message),
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })
+            .reverse()}
+          <div ref={bottomRef} style={{ height: "20px" }} />
+        </CustomScrollToBottom>
+      ) : (
+        <div className="empty-chat-message">
+          <p>No messages yet. Start a conversation!</p>
         </div>
       )}
     </div>

@@ -32,6 +32,7 @@ import { searchExamples } from "@/api/searchExamples";
  * @param {string} image - The user's image.
  * @param {function} updateConversation - A function that updates the conversation.
  * @param {ModelPreferences} preferences - The user's preferences.
+ * @param {boolean} refetch - Whether to refetch the conversation history.
  * @param {boolean} isPremiumUser - Whether the user is a premium user.
  */
 export const sendPrompt = async (
@@ -41,29 +42,22 @@ export const sendPrompt = async (
   image,
   updateConversation,
   preferences,
+  refetch,
   isPremiumUser = false
 ) => {
   try {
-    const userMessage = {
-      sender: "User",
-      text: prompt,
+    // Create a thinking indicator in localStorage to show we're processing
+    // This is read by other components to show a loading state
+    const thinkingObject = {
+      prompt,
       timestamp: Date.now(),
-      pairID: null,
     };
-    const assistantMessage = {
-      sender: "Ditto",
-      text: "",
-      timestamp: Date.now(),
-      isTyping: true,
-      docId: null,
-      pairID: null,
-    };
-    updateConversation((prevState) => ({
-      ...prevState,
-      messages: [...prevState.messages, userMessage, assistantMessage],
-      is_typing: true,
-    }));
+    localStorage.setItem("thinking", JSON.stringify(thinkingObject));
 
+    // With our new backend-driven approach, we don't need to manually update the conversation UI
+    // The refetch in the useConversationHistory hook will handle this
+
+    // Create prompt in backend
     const { ok: pairID, err } = await createPrompt(prompt);
     if (err) {
       throw new Error(err);
@@ -72,6 +66,7 @@ export const sendPrompt = async (
       throw new Error("No pairID");
     }
 
+    console.log("preferences", preferences);
     const [memories, examplesString, scriptDetails] = await Promise.all([
       getMemories(
         {
@@ -156,7 +151,8 @@ export const sendPrompt = async (
           image,
           memories,
           updateConversation,
-          preferences
+          preferences,
+          refetch
         );
         break;
       }
@@ -164,32 +160,65 @@ export const sendPrompt = async (
     // If no tool was triggered, handle the complete response
     if (!toolTriggered) {
       await saveResponse(pairID, response);
-      // Update conversation with docId and pairID
-      updateConversation((prevState) => {
-        const messages = [...prevState.messages];
-        messages[messages.length - 2] = {
-          ...messages[messages.length - 2],
-          pairID,
-        };
-        messages[messages.length - 1] = {
-          ...messages[messages.length - 1],
-          text: response,
-          isTyping: false,
-          docId: pairID,
-          pairID: pairID,
-        };
-        return { ...prevState, messages };
-      });
+      // Update conversation with docId and pairID if updateConversation is provided
+      // Otherwise, rely on refetch to update the UI
+      if (updateConversation) {
+        updateConversation((prevState) => {
+          const messages = [...prevState.messages];
+          messages[messages.length - 2] = {
+            ...messages[messages.length - 2],
+            pairID,
+          };
+          messages[messages.length - 1] = {
+            ...messages[messages.length - 1],
+            text: response,
+            isTyping: false,
+            docId: pairID,
+            pairID: pairID,
+          };
+          return { ...prevState, messages };
+        });
+      } else if (refetch) {
+        // If updateConversation is not provided but refetch is, use refetch
+        refetch();
+      }
     }
 
     saveToLocalStorage(prompt, response, Date.now(), pairID);
 
     localStorage.setItem("idle", "true");
     return response;
-  } catch (e) {
-    console.error(e);
-    updateConversation((prevState) => ({ ...prevState, is_typing: false }));
-    return "An error occurred while processing your request. Please try again.";
+  } catch (error) {
+    console.error("Error in sendPrompt:", error);
+
+    // Remove thinking indicator
+    localStorage.removeItem("thinking");
+
+    // For backward compatibility, if updateConversation is provided
+    if (updateConversation) {
+      updateConversation((prevState) => ({
+        ...prevState,
+        is_typing: false,
+        messages: prevState.messages.map((msg, i) => {
+          if (i === prevState.messages.length - 1 && msg.isTyping) {
+            return {
+              ...msg,
+              text: "Sorry, something went wrong. Please try again.",
+              isTyping: false,
+            };
+          }
+          return msg;
+        }),
+      }));
+    } else if (refetch) {
+      // If updateConversation is not provided but refetch is, use refetch
+      refetch();
+    }
+
+    throw error;
+  } finally {
+    // Always remove the thinking indicator when done
+    localStorage.removeItem("thinking");
   }
 };
 
@@ -218,7 +247,8 @@ export const processResponse = async (
   image,
   memories,
   updateConversation,
-  preferences
+  preferences,
+  refetch
 ) => {
   console.log("%c" + response, "color: yellow");
 
@@ -226,14 +256,19 @@ export const processResponse = async (
   if (response.includes("402") || response.includes("Payment Required")) {
     const errorMessage =
       "Error: Payment Required. Please check your token balance.";
-    updateConversation((prevState) => ({
-      ...prevState,
-      messages: prevState.messages.map((msg, i) =>
-        i === prevState.messages.length - 1
-          ? { ...msg, text: errorMessage, isTyping: false, isError: true }
-          : msg
-      ),
-    }));
+    if (updateConversation) {
+      updateConversation((prevState) => ({
+        ...prevState,
+        messages: prevState.messages.map((msg, i) =>
+          i === prevState.messages.length - 1
+            ? { ...msg, text: errorMessage, isTyping: false, isError: true }
+            : msg
+        ),
+      }));
+    } else if (refetch) {
+      // If updateConversation is not provided but refetch is, use refetch
+      refetch();
+    }
     return errorMessage;
   }
 
@@ -247,55 +282,52 @@ export const processResponse = async (
       if (status === "complete" && finalResponse) {
         await saveResponse(pairID, finalResponse);
 
-        updateConversation((prevState) => {
-          const messages = [...prevState.messages];
-          messages[messages.length - 2] = {
-            ...messages[messages.length - 2],
-            pairID: pairID,
-          };
-          messages[messages.length - 1] = {
-            ...messages[messages.length - 1],
-            text: finalResponse,
-            toolType: type,
-            isTyping: false,
-            showToolBadge: true,
-            docId: pairID,
-            pairID: pairID,
-            toolStatus: null,
-            showTypingDots: false,
-          };
-          return { ...prevState, messages };
-        });
+        if (updateConversation) {
+          updateConversation((prevState) => {
+            const messages = [...prevState.messages];
+            messages[messages.length - 2] = {
+              ...messages[messages.length - 2],
+              pairID: pairID,
+            };
+            messages[messages.length - 1] = {
+              ...messages[messages.length - 1],
+              text: finalResponse,
+              toolType: type,
+              isTyping: false,
+              showToolBadge: true,
+              docId: pairID,
+              pairID: pairID,
+              toolStatus: null,
+              showTypingDots: false,
+            };
+            return { ...prevState, messages };
+          });
+        } else if (refetch) {
+          // If updateConversation is not provided but refetch is, use refetch
+          refetch();
+        }
 
         saveToLocalStorage(prompt, finalResponse, Date.now(), pairID);
       } else {
         const statusText = status.endsWith("...") ? status : `${status}`;
-        updateConversation((prevState) => {
-          const messages = [...prevState.messages];
-          messages[messages.length - 1] = {
-            ...messages[messages.length - 1],
-            text: finalResponse || response,
-            toolStatus: status !== "complete" ? statusText : null,
-            toolType: type,
-            isTyping: false,
-            showToolBadge: true,
-            showTypingDots: status !== "complete" && status !== "failed",
-          };
-          return { ...prevState, messages };
-        });
+        if (updateConversation) {
+          updateConversation((prevState) => {
+            const messages = [...prevState.messages];
+            messages[messages.length - 1] = {
+              ...messages[messages.length - 1],
+              text: finalResponse || response,
+              toolStatus: status !== "complete" ? statusText : null,
+              toolType: type,
+              isTyping: false,
+              showToolBadge: true,
+              showTypingDots: status !== "complete" && status !== "failed",
+            };
+            return { ...prevState, messages };
+          });
+        }
       }
     } catch (error) {
-      console.error("Error in updateMessageWithToolStatus:", error);
-      updateConversation((prevState) => {
-        const messages = [...prevState.messages];
-        messages[messages.length - 1] = {
-          ...messages[messages.length - 1],
-          text: errorMessage,
-          isTyping: false,
-          isError: true,
-        };
-        return { ...prevState, messages };
-      });
+      console.error("Error updating message with tool status:", error);
     }
   };
 

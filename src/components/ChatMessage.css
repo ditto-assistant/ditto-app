@@ -1,0 +1,195 @@
+.message-container {
+  display: flex;
+  margin: 6px 0;
+  gap: 10px;
+  max-width: 100%;
+  align-items: flex-end;
+  position: relative;
+}
+
+.message-container.ditto {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.message-container.user {
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.message-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: visible;
+  position: relative;
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.2s ease;
+  align-self: flex-end;
+}
+
+.message-avatar:hover {
+  transform: scale(1.1);
+}
+
+.message-avatar.active {
+  z-index: 3;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.message-avatar.active .avatar-image {
+  border-color: #4752c4;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  width: fit-content;
+  min-width: 0;
+  position: relative;
+}
+
+@media screen and (min-width: 1200px) {
+  .message-content {
+    max-width: 90%;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .message-content {
+    max-width: 95%;
+  }
+}
+
+.message-bubble {
+  padding: 12px;
+  padding-top: 14px;
+  color: white;
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* Teardrop message styling */
+.message-bubble.user {
+  background-color: #007aff;
+  margin-left: auto;
+  margin-right: 0;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 18px;
+}
+
+.message-bubble.ditto {
+  background-color: #1c1c1e;
+  margin-right: auto;
+  margin-left: 0;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 18px;
+}
+
+.message-text {
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.message-timestamp {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Tool label styling */
+.tool-label {
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+/* Avatar action menu styling */
+.avatar-action-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  background-color: rgba(30, 30, 32, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-action-menu.right {
+  right: 36px;
+}
+
+.avatar-action-menu.left {
+  left: 36px;
+}
+
+.action-icon-button {
+  background: none;
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.action-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.action-icon-button:active {
+  transform: scale(0.95);
+}
+
+.action-icon-button.delete {
+  color: #ff4444;
+}
+
+/* Dark mode specific styles */
+@media (prefers-color-scheme: dark) {
+  .message-bubble.ditto {
+    background-color: #2c2c2e;
+  }
+}

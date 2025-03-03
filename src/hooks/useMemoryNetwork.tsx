@@ -4,7 +4,6 @@ import { getMemories, Memory as ApiMemory } from "@/api/getMemories";
 import { useModelPreferences } from "./useModelPreferences";
 import { auth } from "@/control/firebase";
 import { toast } from "react-hot-toast";
-
 // Define our own Memory interface that matches what we need for the UI
 export interface Memory {
   id: string;
@@ -55,11 +54,7 @@ interface MemoryNetworkContextType {
   setMemories: (memories: Memory[]) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
-  fetchMemories: (
-    message: any,
-    index: number,
-    messages?: any[]
-  ) => Promise<void>;
+  fetchMemories: (memory: ApiMemory) => Promise<void>;
   deleteMemory: (memoryId: string) => void;
 }
 
@@ -84,7 +79,7 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
             filterMemoryById(prevMemories, memoryId)
           );
         },
-        fetchMemories: async (message, index, messages) => {
+        fetchMemories: async (memory) => {
           try {
             setLoading(true);
 
@@ -92,40 +87,14 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
             if (!userID) {
               throw new Error("User not authenticated");
             }
-
             if (!preferences) {
               throw new Error("Model preferences not available");
             }
-
-            let promptToUse: string;
-            let currentPairID: string;
-            let currentTimestamp: number;
-
-            if (message.sender === "User") {
-              promptToUse = message.text;
-              currentPairID = message.pairID;
-              currentTimestamp = message.timestamp;
-            } else {
-              // If this is a Ditto message, find the corresponding user message
-              const messagesList = messages || [];
-              if (index > 0 && messagesList[index - 1]?.sender === "User") {
-                promptToUse = messagesList[index - 1].text;
-                currentPairID = messagesList[index - 1].pairID;
-                currentTimestamp = messagesList[index - 1].timestamp;
-              } else {
-                console.error(
-                  "Could not find corresponding prompt for response"
-                );
-                setLoading(false);
-                return;
-              }
-            }
-
             const memoriesResponse = await getMemories(
               {
                 userID,
                 longTerm: {
-                  pairID: currentPairID,
+                  pairID: memory.id,
                   nodeCounts: preferences.memory.longTermMemoryChain,
                 },
                 stripImages: false,
@@ -151,18 +120,19 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
             console.log("Converted memories:", convertedMemories);
 
             // The root node uses the currentPairID which should always be available
-            const rootId = currentPairID;
+            const rootId = memory.id;
 
             // Create the network data structure
+            const date = new Date(memory.timestamp);
+            const timestamp = date.getTime();
+            const timestampString = date.toISOString();
             const networkData = [
               {
                 id: rootId,
-                prompt: promptToUse || "Your query",
-                response: message.text || "Response",
-                timestamp: currentTimestamp || Date.now(),
-                timestampString: currentTimestamp
-                  ? new Date(currentTimestamp).toISOString()
-                  : new Date().toISOString(),
+                prompt: memory.prompt || "Your query",
+                response: memory.response || "Response",
+                timestamp,
+                timestampString,
                 children: Array.isArray(convertedMemories)
                   ? convertedMemories
                   : [],
@@ -206,13 +176,9 @@ export function useMemoryNetwork() {
   const { createOpenHandler, createCloseHandler } = useModal();
   const openModal = createOpenHandler("memoryNetwork");
   const closeModal = createCloseHandler("memoryNetwork");
-  const showMemoryNetwork = async (
-    message: any,
-    index: number,
-    messages?: any[]
-  ) => {
+  const showMemoryNetwork = async (message: ApiMemory) => {
     try {
-      await context.fetchMemories(message, index, messages);
+      await context.fetchMemories(message);
       openModal();
     } catch (error) {
       console.error("Error showing memory network:", error);

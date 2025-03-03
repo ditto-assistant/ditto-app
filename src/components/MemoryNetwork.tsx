@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { DataSet } from "vis-data";
-import MarkdownRenderer from "./MarkdownRenderer";
+import ChatMessage from "./ChatMessage";
 import Modal from "./ui/modals/Modal";
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion";
 import { useMemoryNetwork, Memory } from "@/hooks/useMemoryNetwork";
@@ -108,13 +108,25 @@ const TableView: React.FC<{
         </div>
 
         <div className="memory-node-content">
-          <div>
-            <strong>Prompt:</strong>
-            <MarkdownRenderer content={memory.prompt} />
-          </div>
-          <div>
-            <strong>Response:</strong>
-            <MarkdownRenderer content={memory.response} />
+          <div className="memory-node-messages">
+            <ChatMessage
+              content={memory.prompt}
+              timestamp={memory.timestamp || Date.now()}
+              isUser={true}
+              bubbleStyles={{
+                text: { fontSize: 14 },
+                chatbubble: { borderRadius: 8, padding: 8 },
+              }}
+            />
+            <ChatMessage
+              content={memory.response}
+              timestamp={memory.timestamp || Date.now()}
+              isUser={false}
+              bubbleStyles={{
+                text: { fontSize: 14 },
+                chatbubble: { borderRadius: 8, padding: 8 },
+              }}
+            />
           </div>
           {!isExpanded && <div className="memory-node-fade" />}
         </div>

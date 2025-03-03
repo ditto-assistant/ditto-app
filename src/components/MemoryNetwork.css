@@ -221,6 +221,21 @@
   position: relative;
 }
 
+.memory-node-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Customize ChatMessage styling in memory nodes */
+.memory-node-messages .message-container {
+  margin-bottom: 0;
+}
+
+.memory-node-messages .message-bubble {
+  max-width: 100%;
+}
+
 .memory-node-fade {
   position: absolute;
   bottom: 0;

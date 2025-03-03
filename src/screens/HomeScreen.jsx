@@ -21,15 +21,13 @@ import { useScripts } from "@/hooks/useScripts.tsx";
 import { usePlatform } from "@/hooks/usePlatform";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
+import { ConversationProvider } from "@/hooks/useConversationHistory";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
   const [bootStatus, setBootStatus] = useState("on");
   const [startAtBottom, setStartAtBottom] = useState(true);
-  const [histCount, setCount] = useState(
-    localStorage.getItem("histCount") || 0
-  );
   const [showStatusBar, setShowStatusBar] = useState(true);
   const { user } = useAuth();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -56,203 +54,7 @@ export default function HomeScreen() {
     saveScript,
   } = useScripts();
 
-  const loadConversationFromLocalStorage = () => {
-    const savedConversation = localStorage.getItem("conversation");
-    return savedConversation
-      ? JSON.parse(savedConversation)
-      : {
-          messages: [
-            { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-          ],
-          is_typing: false,
-        };
-  };
-
-  const [conversation, setConversation] = useState(
-    loadConversationFromLocalStorage
-  );
-
-  const updateConversation = useCallback((updateFn) => {
-    setConversation((prevState) => {
-      const newState = updateFn(prevState);
-      localStorage.setItem("conversation", JSON.stringify(newState));
-      return newState;
-    });
-  }, []);
-
-  const createConversation = (hist, reset, onload) => {
-    try {
-      let newConversation = {
-        messages: [
-          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-        ],
-        is_typing: false,
-      };
-      if (reset) {
-        setConversation(newConversation);
-        return;
-      }
-      let prompts = hist.prompts || [];
-      let responses = hist.responses || [];
-      let timestamps = hist.timestamps || [];
-      let pairIDs = hist.pairIDs || [];
-
-      for (let i = 0; i < prompts.length; i++) {
-        let prompt = prompts[i];
-        let response = responses[i];
-        let timestamp = timestamps[i];
-        let pairID = pairIDs[i];
-
-        newConversation.messages.push({
-          sender: "User",
-          text: prompt,
-          timestamp: timestamp,
-          pairID: pairID,
-        });
-        newConversation.messages.push({
-          sender: "Ditto",
-          text: response,
-          timestamp: timestamp,
-          pairID: pairID,
-        });
-      }
-      if (onload) {
-        return newConversation;
-      } else {
-        setStartAtBottom(false);
-        setConversation(newConversation);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const getSavedConversation = () => {
-    let prompts = JSON.parse(localStorage.getItem("prompts"));
-    let responses = JSON.parse(localStorage.getItem("responses"));
-    let timestamps = JSON.parse(localStorage.getItem("timestamps"));
-    let pairIDs = JSON.parse(localStorage.getItem("pairIDs"));
-    return { prompts, responses, timestamps, pairIDs };
-  };
-
   const appBodyRef = useRef(null);
-
-  useEffect(() => {
-    const syncConversationHist = async () => {
-      const localHistCount = parseInt(localStorage.getItem("histCount"));
-      const thinkingObjectString = localStorage.getItem("thinking");
-
-      if (thinkingObjectString !== null && conversation.is_typing === false) {
-        const thinkingObject = JSON.parse(thinkingObjectString);
-        const usersPrompt = thinkingObject.prompt;
-
-        setConversation((prevState) => {
-          const newMessages = [
-            ...prevState.messages,
-            { sender: "User", text: usersPrompt, timestamp: Date.now() },
-          ];
-          return {
-            ...prevState,
-            messages: newMessages,
-            is_typing: true,
-          };
-        });
-      }
-
-      if (histCount < localHistCount) {
-        setCount(localHistCount);
-        const localHist = getSavedConversation();
-        createConversation(localHist, false);
-      }
-
-      if (isNaN(localHistCount)) {
-        setCount(0);
-      }
-    };
-
-    const checkAndResyncPairIDs = () => {
-      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-      const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
-
-      // Check if arrays exist and have matching lengths
-      if (
-        prompts.length !== responses.length ||
-        prompts.length !== timestamps.length ||
-        prompts.length !== pairIDs.length
-      ) {
-        console.log("Detected mismatch in localStorage arrays:");
-        console.log(`prompts: ${prompts.length}`);
-        console.log(`responses: ${responses.length}`);
-        console.log(`timestamps: ${timestamps.length}`);
-        console.log(`pairIDs: ${pairIDs.length}`);
-
-        if (user?.uid) {
-          console.log("Resyncing conversation history from Firestore...");
-          loadConversationHistoryFromFirestore(user?.uid)
-            .then((conversationHistory) => {
-              if (conversationHistory) {
-                localStorage.setItem(
-                  "prompts",
-                  JSON.stringify(conversationHistory.prompts)
-                );
-                localStorage.setItem(
-                  "responses",
-                  JSON.stringify(conversationHistory.responses)
-                );
-                localStorage.setItem(
-                  "timestamps",
-                  JSON.stringify(conversationHistory.timestamps)
-                );
-                localStorage.setItem(
-                  "pairIDs",
-                  JSON.stringify(conversationHistory.pairIDs)
-                );
-                localStorage.setItem(
-                  "histCount",
-                  conversationHistory.prompts.length
-                );
-                console.log("Successfully resynced conversation history");
-                console.log(
-                  `New lengths - prompts: ${conversationHistory.prompts.length}, pairIDs: ${conversationHistory.pairIDs.length}`
-                );
-
-                // Update the conversation state
-                const newConversation = createConversation(
-                  conversationHistory,
-                  false,
-                  true
-                );
-                setConversation(newConversation);
-              }
-            })
-            .catch((error) => {
-              console.error("Error resyncing conversation history:", error);
-            });
-        }
-      }
-    };
-    checkAndResyncPairIDs();
-
-    const handleStatus = async () => {
-      var statusDb = await grabStatus();
-      if (bootStatus !== statusDb.status) {
-        setBootStatus(statusDb.status);
-      }
-    };
-
-    const syncInterval = setInterval(async () => {
-      try {
-        await handleStatus();
-        await syncConversationHist();
-      } catch (e) {
-        console.log(e);
-      }
-    }, 10000);
-
-    return () => clearInterval(syncInterval);
-  }, [conversation, bootStatus, histCount, user?.uid]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -625,18 +427,19 @@ export default function HomeScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div
-        className="app-body"
-        ref={appBodyRef}
-        onClick={handleCloseMediaOptions}
-      >
-        <div className="chat-card">
+      <div className="app-content-wrapper">
+        <div
+          className="app-body"
+          ref={appBodyRef}
+          onClick={handleCloseMediaOptions}
+        >
           <AnimatePresence>
             {(!showStatusBar || statusBarLoaded) && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
+                className="chat-feed-container"
               >
                 <Suspense
                   fallback={
@@ -644,34 +447,30 @@ export default function HomeScreen() {
                   }
                 >
                   <ChatFeed
-                    messages={conversation.messages}
-                    showSenderName={false}
                     scrollToBottom={true}
                     startAtBottom={startAtBottom}
-                    updateConversation={updateConversation}
                   />
                 </Suspense>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+        <div className="app-footer">
+          <Suspense fallback={<FullScreenSpinner />}>
+            <SendMessage
+              onCameraOpen={handleCameraOpen}
+              capturedImage={capturedImage}
+              onClearCapturedImage={() => setCapturedImage(null)}
+              showMediaOptions={showMediaOptions}
+              onOpenMediaOptions={handleOpenMediaOptions}
+              onCloseMediaOptions={handleCloseMediaOptions}
+              onStop={() => {
+                balance.refetch();
+              }}
+            />
+          </Suspense>
+        </div>
       </div>
-      <footer className="app-footer">
-        <Suspense fallback={<FullScreenSpinner />}>
-          <SendMessage
-            onCameraOpen={handleCameraOpen}
-            capturedImage={capturedImage}
-            onClearCapturedImage={() => setCapturedImage(null)}
-            showMediaOptions={showMediaOptions}
-            onOpenMediaOptions={handleOpenMediaOptions}
-            onCloseMediaOptions={handleCloseMediaOptions}
-            updateConversation={updateConversation}
-            onStop={() => {
-              balance.refetch();
-            }}
-          />
-        </Suspense>
-      </footer>
 
       <AnimatePresence>
         {isCameraOpen && (

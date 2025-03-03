@@ -21,6 +21,11 @@ export default defineConfig({
         theme_color: "#000000",
         icons: [
           {
+            src: "icons/ditto-icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
             src: "icons/ditto-icon.png",
             sizes: "1024x1024",
             type: "image/png",

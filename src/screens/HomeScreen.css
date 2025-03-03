@@ -31,6 +31,15 @@ body:not(.login-page) {
   /* Only allow vertical scrolling */
 }
 
+/* Container that wraps both the chat body and footer for better layout control */
+.app-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Header styles - extending app-header from components.css */
 header.app-header {
   /* Only override what's needed from the base app-header */
@@ -84,7 +93,6 @@ header.app-header {
 .app-body {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 20px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -95,31 +103,33 @@ header.app-header {
   /* Smooth scrolling on iOS */
 }
 
+.chat-feed-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
 .app-footer {
   background-color: var(--header-background);
   backdrop-filter: blur(10px);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   z-index: 100; /* Ensure it stays on top */
+  padding: 10px 20px; /* Add consistent padding */
+  padding-bottom: calc(
+    10px + env(safe-area-inset-bottom, 0)
+  ); /* Account for safe area */
+  /* Add bottom-specific stylings */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  flex-shrink: 0; /* Prevent footer from shrinking */
 }
 
 .loading-placeholder {
   text-align: center;
   padding: 20px;
   color: rgba(255, 255, 255, 0.5);
-}
-
-/* Chat card styles */
-.chat-card {
-  flex: 1;
-  overflow-y: auto;
-  background-color: rgba(40, 44, 52, 0.6);
-  border-radius: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
 }
 
 /* Camera overlay styles */
@@ -228,13 +238,16 @@ header.app-header {
   .app-footer {
     padding: 12px;
     margin-top: auto; /* Push footer to bottom */
+    padding-bottom: calc(
+      12px + env(safe-area-inset-bottom, 0)
+    ); /* Account for safe area */
   }
 }
 
-/* Add a new media query for larger screens */
+/* Media query for larger screens */
 @media screen and (min-width: 1200px) {
   .message-list {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
   }
 }
