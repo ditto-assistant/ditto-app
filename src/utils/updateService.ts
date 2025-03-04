@@ -17,21 +17,15 @@ export const compareVersions = (v1: string, v2: string): number => {
   return 0;
 };
 
+// Import types from common.ts
+import type { UpdateServiceState } from "@/types/common";
+
 export type UpdateStatus =
   | "idle"
   | "update-available"
   | "update-ready"
   | "update-error"
   | "outdated";
-
-export interface UpdateServiceState {
-  status: UpdateStatus;
-  updateVersion?: string;
-  currentVersion: string;
-  lastCheckedVersion?: string;
-  needsRefresh: boolean;
-  justUpdated: boolean;
-}
 
 // Event names
 export const UPDATE_AVAILABLE = "update-available";
@@ -63,6 +57,30 @@ export const initUpdateService = () => {
       // User just updated
       state.justUpdated = true;
       state.lastCheckedVersion = storedVersion;
+
+      // Force clear webpack/vite chunk cache to reload all lazy components
+      try {
+        // Clear all cached resources from the browser cache using the Cache API
+        if ("caches" in window) {
+          caches.keys().then((cacheNames) => {
+            cacheNames.forEach((cacheName) => {
+              // Target Vite/Workbox caches specifically
+              if (cacheName.includes("vite") || cacheName.includes("workbox")) {
+                console.log(`Clearing cache: ${cacheName}`);
+                caches.delete(cacheName);
+              }
+            });
+          });
+        }
+
+        // If we detect we just updated, set a flag to force reload lazy components
+        // when they're accessed next
+        localStorage.setItem("force-reload-lazy", "true");
+
+        console.log("Update detected: Lazy components will be refreshed");
+      } catch (err) {
+        console.error("Failed to clear cache:", err);
+      }
     }
 
     // Save current version
@@ -98,8 +116,15 @@ export const initUpdateService = () => {
 
     // Make the update function globally available
     window.__updateSW = () => {
+      // First set the reload flag to force refreshing lazy components
+      localStorage.setItem("force-reload-lazy", "true");
+      // Then activate the service worker
       updateSW(true);
-      window.location.reload();
+      // Force a complete reload that bypasses the cache
+      setTimeout(() => {
+        console.log("Forcing complete page reload");
+        window.location.reload();
+      }, 300); // Small delay to ensure service worker activation
     };
 
     return updateSW;
@@ -145,9 +170,13 @@ export const getUpdateState = (): UpdateServiceState => {
 
 // Apply available update
 export const applyUpdate = () => {
+  // Always set the force reload flag before updating
+  localStorage.setItem("force-reload-lazy", "true");
+
   if (typeof window.__updateSW === "function") {
     window.__updateSW();
   } else {
+    // Force a hard reload to clear browser cache
     window.location.reload();
   }
 };

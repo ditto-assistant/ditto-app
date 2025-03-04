@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -53,6 +53,9 @@ const loadE = <T extends React.ComponentType<unknown>>(
 ) => {
   return lazy(async () => {
     try {
+      // Simply load the component directly
+      // The cache busting is now handled by the service worker
+      // and localStorage forced refreshes
       return await importFn();
     } catch (error) {
       // This will be caught by the ErrorBoundary
@@ -136,6 +139,16 @@ const modalRegistry: ModalRegistry = {
 } as const;
 
 function App() {
+  // Clear the force-reload-lazy flag once App has mounted
+  // This ensures we only force reload once per app update
+  useEffect(() => {
+    const forceReloadLazy = localStorage.getItem("force-reload-lazy") === "true";
+    if (forceReloadLazy) {
+      console.log("App mounted after update - clearing force-reload-lazy flag");
+      localStorage.removeItem("force-reload-lazy");
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
