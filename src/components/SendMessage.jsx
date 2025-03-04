@@ -147,20 +147,26 @@ export default function SendMessage({
 
       // Add optimistic message to the UI immediately
       console.log("🚀 [SendMessage] Creating optimistic message");
-      const optimisticId = addOptimisticMessage(messageToSend, imageURI);
+      const timestamp = Date.now().toString();
+      const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`;
+      const optimisticMessageId = addOptimisticMessage(
+        messageToSend,
+        imageURI,
+        optimisticId
+      );
 
       // Pass streaming callback to update UI in real time
       const streamingCallback = (chunk) => {
         console.log(
           `🔄 [SendMessage] Received streaming chunk of ${chunk.length} chars, updating optimistic message: ${optimisticId}`
         );
-        updateOptimisticResponse(optimisticId, chunk);
+        updateOptimisticResponse(optimisticMessageId, chunk);
       };
 
       try {
         console.log(
           "🚀 [SendMessage] Sending prompt with optimistic ID:",
-          optimisticId
+          optimisticMessageId
         );
 
         // Pass the optimistic ID and streaming callback to sendPrompt
@@ -174,7 +180,7 @@ export default function SendMessage({
           refetch,
           balance.hasPremium ?? false,
           streamingCallback,
-          optimisticId,
+          optimisticMessageId,
           finalizeOptimisticMessage
         );
 
@@ -183,7 +189,7 @@ export default function SendMessage({
         console.error("❌ [SendMessage] Error in sendPrompt:", error);
         // If there was an error, we should finalize the optimistic message with an error state
         finalizeOptimisticMessage(
-          optimisticId,
+          optimisticMessageId,
           "Sorry, an error occurred while processing your request. Please try again."
         );
       }

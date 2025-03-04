@@ -94,14 +94,12 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     [data?.pages]
   );
 
-  // Enhanced debug logging for message state
+  // Enhanced debug logging for message state (disabled in production)
   useEffect(() => {
-    if (serverMessages.length > 0 || optimisticMessages.length > 0) {
+    if (process.env.NODE_ENV !== 'production' && (serverMessages.length > 0 || optimisticMessages.length > 0)) {
       console.log("📊 [Messages State]", {
         serverMessageCount: serverMessages.length,
         optimisticMessageCount: optimisticMessages.length,
-        serverIds: serverMessages.map((m) => m.id).slice(0, 3),
-        optimisticIds: optimisticMessages.map((m) => m.id),
       });
     }
   }, [serverMessages, optimisticMessages]);
@@ -228,27 +226,12 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
 
     // Check if this optimistic message has been persisted to the server
     const matchingServerMsg = serverMessages.find((serverMsg) => {
-      // Match by ID if available (but optimistic IDs won't match server IDs)
-      if (serverMsg.id === optMsg.id && !optMsg.id.startsWith("optimistic-")) {
+      // Match only by exact ID (not by content)
+      // This ensures uniquely generated message IDs don't get filtered out
+      if (serverMsg.id === optMsg.id) {
         console.log("🔍 [Filtering] Removing optimistic message - ID match", {
           id: optMsg.id,
         });
-        return true;
-      }
-
-      // Only consider prompt matching as sufficient condition for duplicate detection
-      // This is a more aggressive approach to avoid duplicates
-      const promptMatch = serverMsg.prompt === optMsg.prompt;
-
-      if (promptMatch) {
-        console.log(
-          "🔍 [Filtering] Removing optimistic message - Content match",
-          {
-            optimisticId: optMsg.id,
-            serverId: serverMsg.id,
-            promptPreview: optMsg.prompt?.substring(0, 30) + "...",
-          }
-        );
         return true;
       }
 
