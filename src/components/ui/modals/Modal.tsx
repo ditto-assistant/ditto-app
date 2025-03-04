@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { DEFAULT_MODAL_STATE, ModalId, useModal } from "@/hooks/useModal";
 import { ModalHeader } from "./ModalHeader";
-import "./Modal.css";
 
 export interface ModalTab {
   id: string;

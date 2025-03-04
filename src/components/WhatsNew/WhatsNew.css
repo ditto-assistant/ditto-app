@@ -8,7 +8,7 @@
 .whats-new-generic {
   text-align: center;
   padding: 40px 20px;
-  color: #e8e8e8;
+  color: var(--text-normal);
 }
 
 .whats-new-generic p {
@@ -27,29 +27,29 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .whats-new-header h2 {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 600;
-  color: #e8e8e8;
+  color: var(--text-normal);
 }
 
 .whats-new-close {
   background: transparent;
   border: none;
-  color: #aaa;
+  color: var(--text-muted);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  transition: color 0.2s;
+  transition: color var(--transition-normal);
 }
 
 .whats-new-close:hover {
-  color: #e8e8e8;
+  color: var(--text-normal);
 }
 
 .whats-new-content {
@@ -62,22 +62,22 @@
   padding: 16px 20px;
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
 }
 
 .whats-new-button {
-  background-color: #6e56cf;
-  color: white;
+  background-color: var(--primary);
+  color: var(--text-white);
   border: none;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-normal);
 }
 
 .whats-new-button:hover {
-  background-color: #7c66d6;
+  background-color: var(--primary-hover);
 }
 
 /* Shared styles for version components */
@@ -92,12 +92,12 @@
 .whats-new-section h3 {
   font-size: 1.1rem;
   margin-bottom: 12px;
-  color: #e8e8e8;
+  color: var(--text-normal);
 }
 
 .whats-new-section p {
   margin: 8px 0;
-  color: #c5c5c5;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -130,24 +130,24 @@
 .whats-new-feature-text h4 {
   margin: 0 0 4px 0;
   font-size: 1rem;
-  color: #e8e8e8;
+  color: var(--text-normal);
 }
 
 .whats-new-feature-text p {
   margin: 0;
   font-size: 0.9rem;
-  color: #aaa;
+  color: var(--text-muted);
 }
 
 /* Feature categories */
 .feature-new .whats-new-feature-icon {
-  color: #4caf50;
+  color: var(--status-positive);
 }
 
 .feature-improved .whats-new-feature-icon {
-  color: #2196f3;
+  color: var(--text-link);
 }
 
 .feature-fixed .whats-new-feature-icon {
-  color: #ff9800;
+  color: var(--status-warning);
 }

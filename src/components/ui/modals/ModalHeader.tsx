@@ -1,7 +1,6 @@
 import React from "react";
 import { MdClose, MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { motion } from "framer-motion";
-import "./ModalHeader.css";
 
 interface ModalHeaderProps {
   title: string;

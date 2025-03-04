@@ -1,5 +1,4 @@
 import React from "react";
-import "./Anchor.css";
 
 interface AnchorLinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {

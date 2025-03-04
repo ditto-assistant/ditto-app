@@ -5,7 +5,6 @@ import { ModalHeader } from "./ModalHeader";
 import { motion } from "framer-motion";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import { ModalButton } from "../buttons/ModalButton";
-import "./ConfirmationModal.css";
 
 interface ConfirmationModalProps {
   id: ModalId;

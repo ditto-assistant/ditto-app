@@ -1,5 +1,4 @@
 import React from "react";
-import "./FilterGroup.css";
 
 interface FilterGroupProps {
   label: string;
