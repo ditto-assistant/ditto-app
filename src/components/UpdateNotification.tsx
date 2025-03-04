@@ -80,28 +80,13 @@ const UpdateNotification = () => {
     }
   };
 
-  // Check if any lazy components might be stale
-  const mightHaveStaleLazyComponents =
-    updateState.justUpdated ||
-    localStorage.getItem("force-reload-lazy") === "true";
-
   const isForced = updateState.status === "outdated";
 
   return (
     <div className={`update-notification ${isForced ? "forced" : ""}`}>
       <div className="update-notification-content">
         <div className="update-notification-icon">{isForced ? "⚠️" : "🔄"}</div>
-        <div className="update-notification-message">
-          {getMessage()}
-          {mightHaveStaleLazyComponents && (
-            <div className="update-note">
-              <small>
-                If you notice incorrect version numbers, please refresh the
-                page.
-              </small>
-            </div>
-          )}
-        </div>
+        <div className="update-notification-message">{getMessage()}</div>
         <div className="update-notification-actions">
           <button className="update-button" onClick={handleUpdate}>
             Update Now
