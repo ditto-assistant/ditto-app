@@ -73,10 +73,7 @@ const CustomScrollToBottom = ({
       const currentScrollContainer = scrollContainerRef.current;
 
       if (currentScrollContainer) {
-        currentScrollContainer.addEventListener(
-          "scroll",
-          trackUserScrolling
-        );
+        currentScrollContainer.addEventListener("scroll", trackUserScrolling);
       }
 
       const handleImageLoad = () => {
@@ -358,28 +355,28 @@ export default function ChatFeed({
         // Get initial scroll position
         const scrollContainer = document.querySelector(".messages-scroll-view");
         let prevHeight = 0;
-        
+
         if (scrollContainer) {
           prevHeight = scrollContainer.scrollHeight;
         }
-        
+
         console.log("Fetching older messages...");
         await fetchNextPage();
         console.log("Fetch complete");
-        
+
         // Set a reasonable timeout to ensure DOM is updated
         setTimeout(() => {
           if (scrollContainer) {
             // Get the new scroll height and calculate difference
             const newHeight = scrollContainer.scrollHeight;
             const heightDifference = newHeight - prevHeight;
-            
+
             // Position just below the new content
             if (heightDifference > 0) {
               scrollContainer.scrollTop = heightDifference;
             }
           }
-          
+
           fetchingRef.current = false;
           setShouldFetchNext(false);
         }, 150);

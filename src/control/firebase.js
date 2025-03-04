@@ -945,7 +945,7 @@ export const savePromptToFirestore = async (userID, prompt, image = "") => {
     const querySnapshot = await getDocs(
       collection(db, "users", userID, "drafts")
     );
-    
+
     if (!querySnapshot.empty) {
       // Update existing draft
       querySnapshot.forEach((doc) => {
@@ -963,7 +963,7 @@ export const savePromptToFirestore = async (userID, prompt, image = "") => {
         timestamp: new Date(),
       });
     }
-    
+
     if (mode === "development") {
       console.log("User prompt saved to Firestore");
     }
@@ -982,7 +982,7 @@ export const getPromptFromFirestore = async (userID) => {
     const querySnapshot = await getDocs(
       collection(db, "users", userID, "drafts")
     );
-    
+
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
       const data = doc.data();
@@ -991,7 +991,7 @@ export const getPromptFromFirestore = async (userID) => {
         image: data.image || "",
       };
     }
-    
+
     return null;
   } catch (e) {
     console.error("Error getting prompt from Firestore: ", e);
@@ -1008,13 +1008,13 @@ export const clearPromptFromFirestore = async (userID) => {
     const querySnapshot = await getDocs(
       collection(db, "users", userID, "drafts")
     );
-    
+
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
         deleteDoc(doc.ref);
       });
     }
-    
+
     if (mode === "development") {
       console.log("User prompt cleared from Firestore");
     }

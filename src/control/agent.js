@@ -126,10 +126,10 @@ export const sendPrompt = async (
     }
 
     // Create a simple callback to update the optimistic message
-    const textCallback = streamingCallback ? 
-      (text) => streamingCallback(text) : 
-      null;
-    
+    const textCallback = streamingCallback
+      ? (text) => streamingCallback(text)
+      : null;
+
     // Get the response from the LLM using the V2 endpoint with SSE streaming
     let response = await promptLLMV2(
       constructedPrompt,
@@ -138,27 +138,27 @@ export const sendPrompt = async (
       image,
       textCallback
     );
-    
+
     const toolTriggers = [
       "<OPENSCAD>",
       "<HTML_SCRIPT>",
       "<IMAGE_GENERATION>",
       "<GOOGLE_SEARCH>",
     ];
-    
+
     let toolTriggered = false;
     for (const trigger of toolTriggers) {
       if (response.includes(trigger)) {
         // Remove closing tag that matches the trigger
         response = response.replace(`</${trigger.slice(1)}`, "");
         toolTriggered = true;
-        
+
         // If we have an optimistic message, finalize it with the current response
         // before tool processing begins
         if (optimisticId && finalizeMessage) {
           finalizeMessage(optimisticId, response);
         }
-        
+
         await processResponse(
           response,
           prompt,
@@ -177,12 +177,12 @@ export const sendPrompt = async (
         break;
       }
     }
-    
+
     // If no tool was triggered, handle the complete response
     if (!toolTriggered) {
-        // Save the response to the backend
+      // Save the response to the backend
       await saveResponse(pairID, response);
-      
+
       // Finalize the optimistic message if we have one
       // Note: finalizeMessage already includes a refetch, so we don't need to do it again
       if (optimisticId && finalizeMessage) {
@@ -191,9 +191,11 @@ export const sendPrompt = async (
         // Only refetch if we're not using optimistic updates (fallback)
         // Small delay to ensure the previous operations complete
         setTimeout(() => {
-          console.log("🔄 [Agent] Triggering fallback refetch (no optimistic update)");
+          console.log(
+            "🔄 [Agent] Triggering fallback refetch (no optimistic update)"
+          );
           refetch();
-        }, 300); 
+        }, 300);
       }
     }
 
@@ -271,7 +273,7 @@ export const processResponse = async (
   if (response.includes("402") || response.includes("Payment Required")) {
     const errorMessage =
       "Error: Payment Required. Please check your token balance.";
-    
+
     // Update optimistic message if available
     if (optimisticId && finalizeMessage) {
       finalizeMessage(optimisticId, errorMessage);
@@ -309,15 +311,19 @@ export const processResponse = async (
         if (optimisticId && finalizeMessage) {
           // Mark as final message with a flag that will allow cleanup
           finalizeMessage(optimisticId, finalResponse);
-          
+
           // Trigger a refetch after saving the final tool response
           setTimeout(() => {
-            console.log(`🔄 [Agent] Triggering refetch after tool completion: ${optimisticId}`);
+            console.log(
+              `🔄 [Agent] Triggering refetch after tool completion: ${optimisticId}`
+            );
             refetch();
-            
+
             // Remove the optimistic message after the refetch completes
             setTimeout(() => {
-              console.log(`🧹 [Agent] Removing tool message after refetch: ${optimisticId}`);
+              console.log(
+                `🧹 [Agent] Removing tool message after refetch: ${optimisticId}`
+              );
               if (finalizeMessage) {
                 // Force message removal by sending special finalizing signal
                 // This will be handled by useConversationHistory
@@ -355,16 +361,19 @@ export const processResponse = async (
       } else {
         // For in-progress status updates
         const statusText = status.endsWith("...") ? status : `${status}`;
-        
+
         // Update optimistic message with status if available
         if (optimisticId && finalizeMessage) {
           // For in-progress updates, we want to show both the response and the status
           const currentText = finalResponse || response;
-          const statusLine = `\n\n*${type ? `${type}: ` : ''}${statusText}*`;
-          
+          const statusLine = `\n\n*${type ? `${type}: ` : ""}${statusText}*`;
+
           // Remove any previous status messages
-          const textWithoutStatus = currentText.replace(/\n\n\*(?:.*?): .*?\*$/s, '');
-          
+          const textWithoutStatus = currentText.replace(
+            /\n\n\*(?:.*?): .*?\*$/s,
+            ""
+          );
+
           // Keep isOptimistic flag true during tool processing to prevent premature removal
           finalizeMessage(optimisticId, textWithoutStatus + statusLine);
         } else if (updateConversation) {
@@ -465,8 +474,8 @@ export const processResponse = async (
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
       await updateMessageWithToolStatus(
-        pairID, 
-        "Generating Image", 
+        pairID,
+        "Generating Image",
         "image",
         null,
         optimisticId,
@@ -487,46 +496,46 @@ export const processResponse = async (
     // Handle Google search
     if (response.includes("<GOOGLE_SEARCH>")) {
       await updateMessageWithToolStatus(
-        pairID, 
-        "Searching Google", 
+        pairID,
+        "Searching Google",
         "search",
         null,
         optimisticId,
         finalizeMessage
       );
-      
+
       // Start with the response that contains the first agent's output
       // This will show any content after the <GOOGLE_SEARCH> tag
       const lastResponse = response;
-      
+
       // For tracking the cumulative streamed text so far
       let cumulativeStreamedText = "";
-      
+
       // Set up a streaming callback that updates the message in real-time
       const streamingCallback = (text) => {
         if (optimisticId && finalizeMessage) {
           // Append the new chunk to our cumulative text
           cumulativeStreamedText += text;
-          
+
           // For the Google search agent, we want to stream its response
           // after the query part, appending to the existing message
           finalizeMessage(
-            optimisticId, 
+            optimisticId,
             lastResponse + "\n\n" + cumulativeStreamedText,
-            false,  // Not final yet
-            true    // Indicate this is a streaming update
+            false, // Not final yet
+            true // Indicate this is a streaming update
           );
         }
       };
-      
+
       // Call Google search with streaming capability
       const finalResponse = await handleGoogleSearch(
         response,
         prompt,
         preferences,
-        streamingCallback  // Pass the streaming callback
+        streamingCallback // Pass the streaming callback
       );
-      
+
       await updateMessageWithToolStatus(
         pairID,
         "complete",
@@ -545,9 +554,9 @@ export const processResponse = async (
     console.error("Error in processResponse:", error);
     const errorMessage = "An error occurred while processing your request.";
     await updateMessageWithToolStatus(
-      pairID, 
-      "failed", 
-      null, 
+      pairID,
+      "failed",
+      null,
       errorMessage,
       optimisticId,
       finalizeMessage

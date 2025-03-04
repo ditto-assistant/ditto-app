@@ -1,6 +1,13 @@
 import "./SendMessage.css";
 import { useState, useEffect, useRef } from "react";
-import { FaPlus, FaImage, FaCamera, FaTimes, FaPaperPlane, FaExpand } from "react-icons/fa";
+import {
+  FaPlus,
+  FaImage,
+  FaCamera,
+  FaTimes,
+  FaPaperPlane,
+  FaExpand,
+} from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,29 +45,29 @@ export default function SendMessage({
   const { openImageViewer } = useImageViewerHandler();
   const balance = useBalance();
   const { isMobile } = usePlatform();
-  const { 
-    refetch, 
-    addOptimisticMessage, 
-    updateOptimisticResponse, 
-    finalizeOptimisticMessage 
+  const {
+    refetch,
+    addOptimisticMessage,
+    updateOptimisticResponse,
+    finalizeOptimisticMessage,
   } = useConversationHistory();
-  
+
   // Use the compose context instead of local state
-  const { 
-    message, 
-    setMessage, 
-    openComposeModal, 
-    isWaitingForResponse, 
+  const {
+    message,
+    setMessage,
+    openComposeModal,
+    isWaitingForResponse,
     setIsWaitingForResponse,
-    registerSubmitCallback
+    registerSubmitCallback,
   } = useCompose();
-  
+
   // Use prompt storage to save and clear prompts
   const { clearPrompt } = usePromptStorage();
 
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
-  
+
   // Register our submit handler with the compose context
   useEffect(() => {
     registerSubmitCallback(() => handleSubmit());
@@ -134,7 +141,7 @@ export default function SendMessage({
       setImage("");
       finalTranscriptRef.current = "";
       resizeTextArea();
-      
+
       // Clear the saved prompt from storage
       clearPrompt();
 
@@ -144,13 +151,18 @@ export default function SendMessage({
 
       // Pass streaming callback to update UI in real time
       const streamingCallback = (chunk) => {
-        console.log(`🔄 [SendMessage] Received streaming chunk of ${chunk.length} chars, updating optimistic message: ${optimisticId}`);
+        console.log(
+          `🔄 [SendMessage] Received streaming chunk of ${chunk.length} chars, updating optimistic message: ${optimisticId}`
+        );
         updateOptimisticResponse(optimisticId, chunk);
       };
 
       try {
-        console.log("🚀 [SendMessage] Sending prompt with optimistic ID:", optimisticId);
-        
+        console.log(
+          "🚀 [SendMessage] Sending prompt with optimistic ID:",
+          optimisticId
+        );
+
         // Pass the optimistic ID and streaming callback to sendPrompt
         await sendPrompt(
           userID,
@@ -165,12 +177,15 @@ export default function SendMessage({
           optimisticId,
           finalizeOptimisticMessage
         );
-        
+
         console.log("✅ [SendMessage] Prompt completed successfully");
       } catch (error) {
         console.error("❌ [SendMessage] Error in sendPrompt:", error);
         // If there was an error, we should finalize the optimistic message with an error state
-        finalizeOptimisticMessage(optimisticId, "Sorry, an error occurred while processing your request. Please try again.");
+        finalizeOptimisticMessage(
+          optimisticId,
+          "Sorry, an error occurred while processing your request. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -209,7 +224,7 @@ export default function SendMessage({
     if (textArea) {
       // Reset height to default to accurately calculate scrollHeight
       textArea.style.height = "24px";
-      
+
       // Calculate new height (min 24px, max 200px)
       const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
       textArea.style.height = `${newHeight}px`;
@@ -271,7 +286,6 @@ export default function SendMessage({
     onCameraOpen();
     onCloseMediaOptions();
   };
-  
 
   return (
     <>
@@ -298,7 +312,7 @@ export default function SendMessage({
             }}
           />
         </div>
-        
+
         <div className="bottom-buttons-bar">
           <div className="action-buttons">
             <div className="action-button" onClick={handlePlusClick}>
@@ -372,10 +386,10 @@ export default function SendMessage({
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>
-      
+
       <FullscreenComposeModal />
     </>
   );

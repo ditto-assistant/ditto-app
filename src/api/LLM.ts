@@ -76,7 +76,7 @@ export async function promptLLM(
         userPrompt,
         systemPrompt,
         model,
-        imageURL
+        imageURL,
       };
       const response = await fetch(routes.prompt, {
         method: "POST",
@@ -100,22 +100,24 @@ export async function promptLLM(
       // Handle the response stream
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
-      
+
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value, { stream: true });
-        
+
         // Process the response as a whole for now
         if (textCallback) {
           textCallback(chunk);
         }
-        
+
         responseMessage += chunk;
       }
-      
-      console.log(`✅ [LLM] Completed streaming, total length: ${responseMessage.length} chars`);
+
+      console.log(
+        `✅ [LLM] Completed streaming, total length: ${responseMessage.length} chars`
+      );
       return responseMessage;
     } catch (error) {
       console.error("Error in promptLLM:", error);
@@ -212,9 +214,9 @@ export async function promptLLMV2(
         userPrompt,
         systemPrompt,
         model,
-        imageURL
+        imageURL,
       };
-      
+
       const response = await fetch(routes.promptV2, {
         method: "POST",
         headers: {
@@ -237,24 +239,24 @@ export async function promptLLMV2(
       // Create an EventSource from the response
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
-      
+
       // Read and process the SSE stream
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value, { stream: true });
-        
+
         // Process the SSE events
         const eventStrings = chunk.split("\n\n").filter(Boolean);
-        
+
         for (const eventString of eventStrings) {
           if (!eventString.startsWith("data: ")) continue;
-          
+
           try {
             const eventData = JSON.parse(eventString.substring(6));
             const event = eventData as SSEEvent;
-            
+
             switch (event.type) {
               case "text":
                 if (textCallback) {
@@ -274,8 +276,10 @@ export async function promptLLMV2(
           }
         }
       }
-      
-      console.log(`✅ [LLM V2] Completed streaming, total length: ${responseMessage.length} chars`);
+
+      console.log(
+        `✅ [LLM V2] Completed streaming, total length: ${responseMessage.length} chars`
+      );
       return responseMessage;
     } catch (error) {
       console.error("Error in promptLLMV2:", error);

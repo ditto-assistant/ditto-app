@@ -110,26 +110,24 @@
   cursor: not-allowed;
 }
 
-
-
 @media screen and (max-width: 380px) {
   .fullscreen-compose-header {
     padding: 12px;
   }
-  
+
   .fullscreen-compose-header h2 {
     font-size: 16px;
   }
-  
+
   .fullscreen-compose-textarea {
     padding: 12px;
     font-size: 15px;
   }
-  
+
   .fullscreen-compose-footer {
     padding: 12px;
   }
-  
+
   .fullscreen-compose-send-button {
     padding: 10px 20px;
     font-size: 15px;

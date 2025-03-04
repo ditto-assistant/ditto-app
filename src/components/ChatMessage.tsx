@@ -188,11 +188,11 @@ export default function ChatMessage({
             <MarkdownRenderer content={content} />
           )}
           <div className="message-timestamp">
-            {isOptimistic ? (
-              content === "" ? "Thinking..." : "Streaming..."
-            ) : (
-              formatTimestamp(timestamp)
-            )}
+            {isOptimistic
+              ? content === ""
+                ? "Thinking..."
+                : "Streaming..."
+              : formatTimestamp(timestamp)}
           </div>
         </div>
       </div>

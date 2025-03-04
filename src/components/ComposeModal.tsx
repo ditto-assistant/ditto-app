@@ -1,10 +1,15 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 import { FaPaperPlane, FaTimes } from "react-icons/fa";
 import { createPortal } from "react-dom";
 import { usePlatform } from "@/hooks/usePlatform";
 import { usePromptStorage } from "@/hooks/usePromptStorage";
 import "./ComposeModal.css";
-
 
 // Define context types
 interface ComposeContextType {
@@ -27,26 +32,28 @@ interface ComposeProviderProps {
   children: React.ReactNode;
 }
 
-export const ComposeProvider: React.FC<ComposeProviderProps> = ({ children }) => {
+export const ComposeProvider: React.FC<ComposeProviderProps> = ({
+  children,
+}) => {
   const { promptData, savePrompt, clearPrompt } = usePromptStorage();
   const [message, setMessage] = useState("");
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
-  
+
   // Load saved prompt from storage when component mounts
   useEffect(() => {
     if (promptData && promptData.prompt) {
       setMessage(promptData.prompt);
     }
   }, [promptData]);
-  
+
   // Callback function to be overridden by SendMessage component
   const submitCallbackRef = useRef<(() => void) | null>(null);
-  
+
   const registerSubmitCallback = (callback: () => void) => {
     submitCallbackRef.current = callback;
   };
-  
+
   const handleSubmit = () => {
     if (submitCallbackRef.current) {
       submitCallbackRef.current();
@@ -54,16 +61,16 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({ children }) =>
       closeComposeModal();
     }
   };
-  
+
   // Update message and save to storage
   const handleSetMessage = (newMessage: string) => {
     setMessage(newMessage);
     savePrompt(newMessage);
   };
-  
+
   const openComposeModal = () => setIsComposeModalOpen(true);
   const closeComposeModal = () => setIsComposeModalOpen(false);
-  
+
   const value = {
     message,
     setMessage: handleSetMessage,
@@ -73,13 +80,11 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({ children }) =>
     handleSubmit,
     isWaitingForResponse,
     registerSubmitCallback,
-    setIsWaitingForResponse
+    setIsWaitingForResponse,
   };
-  
+
   return (
-    <ComposeContext.Provider value={value}>
-      {children}
-    </ComposeContext.Provider>
+    <ComposeContext.Provider value={value}>{children}</ComposeContext.Provider>
   );
 };
 
@@ -94,18 +99,18 @@ export const useCompose = () => {
 
 // Modal component for fullscreen compose
 export const FullscreenComposeModal: React.FC = () => {
-  const { 
-    message, 
-    setMessage, 
-    isComposeModalOpen, 
-    closeComposeModal, 
-    handleSubmit, 
-    isWaitingForResponse 
+  const {
+    message,
+    setMessage,
+    isComposeModalOpen,
+    closeComposeModal,
+    handleSubmit,
+    isWaitingForResponse,
   } = useCompose();
-  
+
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { isMobile } = usePlatform();
-  
+
   useEffect(() => {
     // Focus textarea when modal opens
     if (isComposeModalOpen && textAreaRef.current) {
@@ -113,55 +118,64 @@ export const FullscreenComposeModal: React.FC = () => {
         textAreaRef.current?.focus();
       }, 100);
     }
-    
+
     // Handle keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
       // Escape to close modal
       if (e.key === "Escape" && isComposeModalOpen) {
         closeComposeModal();
       }
-      
+
       // Cmd/Ctrl+Enter to submit
-      if (!isMobile && isComposeModalOpen && (e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      if (
+        !isMobile &&
+        isComposeModalOpen &&
+        (e.metaKey || e.ctrlKey) &&
+        e.key === "Enter"
+      ) {
         e.preventDefault();
         if (message.trim()) {
           handleSubmit();
         }
       }
     };
-    
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isComposeModalOpen, closeComposeModal, message, handleSubmit, isMobile]);
-  
+
   if (!isComposeModalOpen) return null;
-  
+
   return createPortal(
     <div className="fullscreen-compose-overlay">
       <div className="fullscreen-compose-container">
-            <div className="fullscreen-compose-header">
-              <h2>Compose Message</h2>
-              <FaTimes className="fullscreen-compose-close" onClick={closeComposeModal} />
-            </div>
-            <textarea
-              ref={textAreaRef}
-              className="fullscreen-compose-textarea"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message here..."
-            />
+        <div className="fullscreen-compose-header">
+          <h2>Compose Message</h2>
+          <FaTimes
+            className="fullscreen-compose-close"
+            onClick={closeComposeModal}
+          />
+        </div>
+        <textarea
+          ref={textAreaRef}
+          className="fullscreen-compose-textarea"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type your message here..."
+        />
         <div className="fullscreen-compose-footer">
-          <button 
+          <button
             className={`fullscreen-compose-send-button ${isWaitingForResponse ? "disabled" : ""}`}
             onClick={() => {
-              // Execute the submit handler 
+              // Execute the submit handler
               if (message.trim()) {
                 handleSubmit();
               }
             }}
             disabled={isWaitingForResponse}
           >
-            <FaPaperPlane /> Send {!isMobile && <span className="keyboard-shortcut">⌘↵</span>}
+            <FaPaperPlane /> Send{" "}
+            {!isMobile && <span className="keyboard-shortcut">⌘↵</span>}
           </button>
         </div>
       </div>
