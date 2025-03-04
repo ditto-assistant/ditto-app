@@ -10,6 +10,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal";
+import { usePromptStorage } from "@/hooks/usePromptStorage";
 import { toast } from "react-hot-toast";
 /**
  * A component that allows the user to send a message to the agent
@@ -53,6 +54,9 @@ export default function SendMessage({
     setIsWaitingForResponse,
     registerSubmitCallback
   } = useCompose();
+  
+  // Use prompt storage to save and clear prompts
+  const { clearPrompt } = usePromptStorage();
 
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
@@ -131,7 +135,8 @@ export default function SendMessage({
       finalTranscriptRef.current = "";
       resizeTextArea();
       
-      // The prompt will be cleared automatically when handleSubmit is called
+      // Clear the saved prompt from storage
+      clearPrompt();
 
       // Add optimistic message to the UI immediately
       console.log("🚀 [SendMessage] Creating optimistic message");
