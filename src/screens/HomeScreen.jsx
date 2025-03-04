@@ -6,15 +6,19 @@ import dittoIcon from "/icons/ditto-icon-clear.png";
 import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
-import { FaLaptopCode } from "react-icons/fa";
-import MiniFocusOverlay from "@/components/MiniFocusOverlay";
-import ScriptActionsOverlay from "@/components/ScriptActionsOverlay";
+import { FaLaptopCode, FaPlay, FaPen, FaTimes } from "react-icons/fa";
+// MiniFocusOverlay is no longer used
+// import MiniFocusOverlay from "@/components/MiniFocusOverlay";
+// ScriptActionsOverlay is no longer used
+// import ScriptActionsOverlay from "@/components/ScriptActionsOverlay";
+import SlidingMenu from "@/components/ui/SlidingMenu";
 import ChatFeed from "@/components/ChatFeed";
 import SendMessage from "@/components/SendMessage";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useModal } from "@/hooks/useModal";
 import { useScripts } from "@/hooks/useScripts.tsx";
 import { usePlatform } from "@/hooks/usePlatform";
+import useWhatsNew from "@/hooks/useWhatsNew";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
@@ -31,6 +35,7 @@ export default function HomeScreen() {
     return !localStorage.getItem("hasSeenTOS");
   });
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const modal = useModal();
   const openSettingsModal = modal.createOpenHandler("settings");
   const openFeedbackModal = modal.createOpenHandler("feedback");
@@ -43,8 +48,17 @@ export default function HomeScreen() {
     handleDeselectScript,
     saveScript,
   } = useScripts();
+  const { openWhatsNew } = useWhatsNew();
 
   const appBodyRef = useRef(null);
+
+  // Show the What's New dialog for the UI redesign
+  useEffect(() => {
+    // Show the What's New dialog for version 0.11.55
+    setTimeout(() => {
+      openWhatsNew("0.11.55");
+    }, 500);
+  }, [openWhatsNew]);
 
   useEffect(() => {
     // Update the existing useEffect that handles viewport height
@@ -240,7 +254,7 @@ export default function HomeScreen() {
   const [showScriptActions, setShowScriptActions] = useState(false);
 
   const handleScriptNameClick = () => {
-    setShowScriptActions(true);
+    setShowScriptActions(!showScriptActions);
   };
 
   useEffect(() => {
@@ -300,83 +314,143 @@ export default function HomeScreen() {
     }
   };
 
+  // Hover and click handling for the menu
+  const logoButtonRef = useRef(null);
+  const scriptIndicatorRef = useRef(null);
+  
+  const handleHoverStart = () => {
+    if (window.innerWidth > 768) { // Only trigger on desktop
+      setIsMenuOpen(true);
+    }
+  };
+  
+  const handleHoverEnd = () => {
+    if (window.innerWidth > 768) { // Only trigger on desktop
+      // Use a short delay to prevent menu from closing immediately
+      // when moving cursor from button to menu
+      setTimeout(() => {
+        if (!document.querySelector(".sliding-menu:hover")) {
+          setIsMenuOpen(false);
+        }
+      }, 100);
+    }
+  };
+
   return (
     <div className="app" onClick={handleCloseMediaOptions}>
-      <header className="app-header">
-        <motion.div
-          className="ditto-icon-button"
-          whileTap={{ scale: 0.9 }}
-          whileHover={{
-            scale: 1.1,
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          }}
-          onClick={openFeedbackModal}
-          onKeyDown={(e) => handleKeyDown(e, openFeedbackModal)}
-          aria-label="Feedback"
-          role="button"
-          tabIndex={0}
-        >
-          <MdFeedback className="icon" />
-        </motion.div>
+      <div className="floating-header">
+        {/* Ditto Logo Button with sliding menu */}
+        <div className="ditto-menu-container">
+          <motion.div
+            ref={logoButtonRef}
+            className="ditto-logo-button"
+            whileTap={{ scale: 0.9 }}
+            whileHover={{
+              scale: 1.1,
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+            onMouseEnter={handleHoverStart}
+            onMouseLeave={handleHoverEnd}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onKeyDown={(e) =>
+              handleKeyDown(e, () => setIsMenuOpen(!isMenuOpen))
+            }
+            aria-label="Menu"
+            role="button"
+            tabIndex={0}
+          >
+            <img src={dittoIcon} alt="Ditto" className="ditto-icon-circular" />
+          </motion.div>
 
-        {selectedScript ? (
-          <MiniFocusOverlay
-            scriptName={selectedScript.script}
-            onPlay={handlePlayScript}
-            onDeselect={handleDeselectScript}
-            onOverlayTrigger={handleScriptNameClick}
+          {/* Sliding menu using the reusable component */}
+          <SlidingMenu
+            isOpen={isMenuOpen}
+            onClose={() => setIsMenuOpen(false)}
+            position="left"
+            triggerRef={logoButtonRef}
+            menuItems={[
+              {
+                icon: <MdFeedback className="icon" />,
+                text: "Feedback",
+                onClick: openFeedbackModal
+              },
+              {
+                icon: <FaLaptopCode className="icon" />,
+                text: "Scripts",
+                onClick: openScriptsOverlay
+              },
+              {
+                icon: <IoSettingsOutline className="icon" />,
+                text: "Settings",
+                onClick: openSettingsModal
+              }
+            ]}
           />
-        ) : (
-          <motion.div
-            className="app-title-container"
-            whileHover={{
-              scale: 1.02,
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <img src={dittoIcon} alt="Ditto Icon" className="ditto-icon" />
-            <h1 className="app-title">Ditto</h1>
-          </motion.div>
-        )}
-
-        <div className="header-buttons">
-          <motion.div
-            className="ditto-icon-button"
-            whileTap={{ scale: 0.9 }}
-            whileHover={{
-              scale: 1.1,
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            }}
-            onClick={openScriptsOverlay}
-            onKeyDown={(e) => handleKeyDown(e, openScriptsOverlay)}
-            aria-label="Scripts"
-            role="button"
-            tabIndex={0}
-          >
-            <FaLaptopCode className="icon" />
-          </motion.div>
-
-          <motion.div
-            className="ditto-icon-button"
-            whileTap={{ scale: 0.9 }}
-            whileHover={{
-              scale: 1.1,
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            }}
-            onClick={openSettingsModal}
-            onKeyDown={(e) => handleKeyDown(e, openSettingsModal)}
-            aria-label="Settings"
-            role="button"
-            tabIndex={0}
-          >
-            <IoSettingsOutline className="icon" />
-          </motion.div>
         </div>
-      </header>
+
+        {/* Script Indicator - only shows when script is selected */}
+        <AnimatePresence>
+          {selectedScript && (
+            <div className="script-indicator-container">
+              <motion.div
+                className="floating-script-indicator"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleScriptNameClick}
+                ref={scriptIndicatorRef}
+              >
+                <span className="script-name">{selectedScript.script}</span>
+              </motion.div>
+              
+              {/* Script actions using the sliding menu component */}
+              <SlidingMenu
+                isOpen={showScriptActions}
+                onClose={() => setShowScriptActions(false)}
+                position="right"
+                triggerRef={scriptIndicatorRef}
+                menuItems={[
+                  {
+                    icon: <FaPlay className="icon" />,
+                    text: "Launch Script",
+                    onClick: handlePlayScript
+                  },
+                  {
+                    icon: <FaPen className="icon" />,
+                    text: "Edit Script",
+                    onClick: () => {
+                      setFullScreenEdit({
+                        name: selectedScript.script,
+                        content: selectedScript.contents,
+                        scriptType: selectedScript.scriptType,
+                        onSaveCallback: async (updatedContent) => {
+                          try {
+                            await saveScript(
+                              updatedContent,
+                              selectedScript.scriptType,
+                              selectedScript.script
+                            );
+                            setFullScreenEdit(null);
+                          } catch (e) {
+                            console.error("Error updating script:", e);
+                          }
+                        }
+                      });
+                    }
+                  },
+                  {
+                    icon: <FaTimes className="icon" />,
+                    text: "Deselect Script",
+                    onClick: handleDeselectScript
+                  }
+                ]}
+              />
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
       {/* Status bar has been removed */}
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="app-content-wrapper">
@@ -447,33 +521,7 @@ export default function HomeScreen() {
         />
       )}
 
-      <AnimatePresence>
-        {showScriptActions && selectedScript && (
-          <ScriptActionsOverlay
-            scriptName={selectedScript.script}
-            script={{
-              name: selectedScript.script,
-              content: selectedScript.contents,
-              scriptType: selectedScript.scriptType,
-            }}
-            onPlay={handlePlayScript}
-            onEdit={async (updatedContent) => {
-              try {
-                // Use the scripts manager to update the script
-                await saveScript(
-                  updatedContent,
-                  selectedScript.scriptType,
-                  selectedScript.script,
-                );
-              } catch (e) {
-                console.error("Error updating script:", e);
-              }
-            }}
-            onDeselect={handleDeselectScript}
-            onClose={() => setShowScriptActions(false)}
-          />
-        )}
-      </AnimatePresence>
+      {/* ScriptActionsOverlay has been removed and replaced with the SlidingMenu in the floating-script-indicator */}
 
       {fullScreenEdit && (
         <FullScreenEditor
