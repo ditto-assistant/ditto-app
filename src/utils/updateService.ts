@@ -40,7 +40,7 @@ export const UPDATE_ERROR = "update-error";
 
 // Create a custom event for updates
 // Using comma after type parameter to prevent JSX parsing issues
-const createUpdateEvent = <T,>(type: string, detail: T): CustomEvent<T> => {
+const createUpdateEvent = <T>(type: string, detail: T): CustomEvent<T> => {
   return new CustomEvent(type, { detail });
 };
 
@@ -79,7 +79,7 @@ export const initUpdateService = () => {
       onOfflineReady() {
         console.log("App ready to work offline");
       },
-      onRegistered(registration) {
+      onRegistered(registration: ServiceWorkerRegistration | undefined) {
         // Check for updates periodically
         if (registration) {
           setInterval(
@@ -90,7 +90,7 @@ export const initUpdateService = () => {
           ); // Check every hour
         }
       },
-      onRegisterError(error) {
+      onRegisterError(error: Error) {
         console.error("Service worker registration error:", error);
         state.status = "update-error";
         window.dispatchEvent(createUpdateEvent(UPDATE_ERROR, { error }));

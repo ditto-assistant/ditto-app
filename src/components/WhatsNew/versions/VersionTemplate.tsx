@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 // Feature types
-export type FeatureType = 'new' | 'improved' | 'fixed';
+export type FeatureType = "new" | "improved" | "fixed";
 
 // Feature item interface
 export interface Feature {
@@ -19,11 +19,11 @@ export interface Section {
 // Icons for each feature type
 export const FeatureIcon = ({ type }: { type: FeatureType }) => {
   switch (type) {
-    case 'new':
+    case "new":
       return <span>✨</span>;
-    case 'improved':
+    case "improved":
       return <span>⚡️</span>;
-    case 'fixed':
+    case "fixed":
       return <span>🐛</span>;
     default:
       return null;
@@ -31,11 +31,7 @@ export const FeatureIcon = ({ type }: { type: FeatureType }) => {
 };
 
 // Feature item component
-export const FeatureItem = ({ 
-  type, 
-  title, 
-  description 
-}: Feature) => (
+export const FeatureItem = ({ type, title, description }: Feature) => (
   <li className={`whats-new-feature-item feature-${type}`}>
     <div className="whats-new-feature-icon">
       <FeatureIcon type={type} />
@@ -66,13 +62,13 @@ export const VersionSection = ({ title, features }: Section) => (
 
 /**
  * Instructions for creating a new version component:
- * 
+ *
  * 1. Create a new file named V{version}.tsx
  *    (e.g., V0_11_55.tsx for version 0.11.55)
- * 
+ *
  * 2. Import the necessary components:
  *    import { VersionSection } from './VersionTemplate';
- * 
+ *
  * 3. Define your sections and features:
  *    const sections = [
  *      {
@@ -86,7 +82,7 @@ export const VersionSection = ({ title, features }: Section) => (
  *        ]
  *      }
  *    ];
- * 
+ *
  * 4. Create and export your component:
  *    const V0_11_55 = () => (
  *      <div>
@@ -96,7 +92,7 @@ export const VersionSection = ({ title, features }: Section) => (
  *      </div>
  *    );
  *    export default V0_11_55;
- * 
+ *
  * 5. Add the component to the imports and versionComponents map in WhatsNew.tsx:
  *    import V0_11_55 from './versions/V0_11_55';
  *    const versionComponents = {

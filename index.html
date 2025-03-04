@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-app-version="2">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
@@ -96,34 +96,16 @@
         }
       });
       
-      // Clean up any old service workers
+      // Ensure any old service workers are unregistered
       if ("serviceWorker" in navigator) {
-        const appVersion =
-          document.documentElement.getAttribute("data-app-version");
-        if (appVersion === "2") {
-          // New version: Vite PWA registration will be handled in the app code
-          console.log(
-            "New app version detected. Service worker will be registered by the app."
-          );
-        } else {
-          // Old version: unregister old SW and register the cleanup worker
-          navigator.serviceWorker
-            .getRegistrations()
-            .then(function (registrations) {
-              for (let registration of registrations) {
-                registration.unregister();
-              }
-            })
-            .then(function () {
-              return navigator.serviceWorker.register("/worker.js");
-            })
-            .then(function (reg) {
-              console.log("Cleanup worker registered:", reg);
-            })
-            .catch(function (err) {
-              console.log("SW registration failed:", err);
-            });
-        }
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          for (let registration of registrations) {
+            // Unregister any non-Vite PWA service workers
+            if (!registration.scriptURL.includes('sw.js')) {
+              registration.unregister();
+            }
+          }
+        });
       }
     </script>
   </head>

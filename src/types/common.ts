@@ -10,7 +10,12 @@ export type FetchHook<T> = Result<T> & {
 
 // Add UpdateServiceState to common types
 export interface UpdateServiceState {
-  status: 'idle' | 'update-available' | 'update-ready' | 'update-error' | 'outdated';
+  status:
+    | "idle"
+    | "update-available"
+    | "update-ready"
+    | "update-error"
+    | "outdated";
   updateVersion?: string;
   currentVersion: string;
   lastCheckedVersion?: string;
@@ -20,7 +25,7 @@ export interface UpdateServiceState {
 
 // Add WhatsNew related types
 export interface WhatsNewFeature {
-  type: 'new' | 'improved' | 'fixed';
+  type: "new" | "improved" | "fixed";
   title: string;
   description: string;
 }

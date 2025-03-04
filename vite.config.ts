@@ -11,10 +11,9 @@ export default defineConfig({
     // }),
     react(),
     VitePWA({
-      srcDir: "src",
-      filename: "sw.js",
       // We'll handle registration ourselves for better control
       registerType: "prompt",
+      injectRegister: false, // Don't auto-register
       manifest: {
         name: "Ditto",
         short_name: "Ditto",
@@ -33,17 +32,18 @@ export default defineConfig({
           },
         ],
       },
-      strategies: "injectManifest",
-      injectRegister: false, // Don't auto-register
+      // Use generateSW strategy (default)
       devOptions: {
         enabled: true,
         type: "module",
       },
       workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,json}"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: false, // Don't skip waiting by default, we'll control this
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/], // Don't cache API responses
         runtimeCaching: [
           {
@@ -65,6 +65,41 @@ export default defineConfig({
               expiration: {
                 maxEntries: 30,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) =>
+              request.destination === "script" ||
+              request.url.includes("assets/"),
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "js-assets",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => request.destination === "style",
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "styles",
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => request.destination === "image",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images",
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
             },
           },
@@ -90,37 +125,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),
-        worker: resolve(__dirname, "src/worker.js"),
       },
       output: {
-        entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === "worker"
-            ? "worker.js"
-            : "assets/[name]-[hash].js";
-        },
-        manualChunks: (id) => {
-          if (id.includes("node_modules")) {
-            if (id.includes("framer-motion")) return "framer-motion";
-            if (id.includes("firebase")) return "firebase";
-            if (id.includes("@mui")) {
-              if (id.includes("@mui/material")) return "mui-material";
-              if (id.includes("@mui/icons")) return "mui-icons";
-              return "mui-other";
-            }
-            if (id.includes("ace-builds")) {
-              if (id.includes("theme")) return "ace-themes";
-              if (id.includes("mode")) return "ace-modes";
-              if (id.includes("snippets")) return "ace-snippets";
-              if (id.includes("react-ace")) return "react-ace";
-              if (id.includes("ext-language_tools"))
-                return "ace-ext-language_tools";
-              if (id.includes("ext-searchbox")) return "ace-ext-searchbox";
-              return "ace-core";
-            }
-            if (id.includes("react-ace")) return "react-ace";
-            if (id.includes("react-icons")) return "icons";
-          }
-        },
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
       },
     },
     chunkSizeWarningLimit: 1000,
