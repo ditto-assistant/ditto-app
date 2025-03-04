@@ -317,15 +317,17 @@ export default function HomeScreen() {
   // Hover and click handling for the menu
   const logoButtonRef = useRef(null);
   const scriptIndicatorRef = useRef(null);
-  
+
   const handleHoverStart = () => {
-    if (window.innerWidth > 768) { // Only trigger on desktop
+    if (window.innerWidth > 768) {
+      // Only trigger on desktop
       setIsMenuOpen(true);
     }
   };
-  
+
   const handleHoverEnd = () => {
-    if (window.innerWidth > 768) { // Only trigger on desktop
+    if (window.innerWidth > 768) {
+      // Only trigger on desktop
       // Use a short delay to prevent menu from closing immediately
       // when moving cursor from button to menu
       setTimeout(() => {
@@ -373,18 +375,18 @@ export default function HomeScreen() {
               {
                 icon: <MdFeedback className="icon" />,
                 text: "Feedback",
-                onClick: openFeedbackModal
+                onClick: openFeedbackModal,
               },
               {
                 icon: <FaLaptopCode className="icon" />,
                 text: "Scripts",
-                onClick: openScriptsOverlay
+                onClick: openScriptsOverlay,
               },
               {
                 icon: <IoSettingsOutline className="icon" />,
                 text: "Settings",
-                onClick: openSettingsModal
-              }
+                onClick: openSettingsModal,
+              },
             ]}
           />
         </div>
@@ -404,7 +406,7 @@ export default function HomeScreen() {
               >
                 <span className="script-name">{selectedScript.script}</span>
               </motion.div>
-              
+
               {/* Script actions using the sliding menu component */}
               <SlidingMenu
                 isOpen={showScriptActions}
@@ -415,7 +417,7 @@ export default function HomeScreen() {
                   {
                     icon: <FaPlay className="icon" />,
                     text: "Launch Script",
-                    onClick: handlePlayScript
+                    onClick: handlePlayScript,
                   },
                   {
                     icon: <FaPen className="icon" />,
@@ -430,21 +432,21 @@ export default function HomeScreen() {
                             await saveScript(
                               updatedContent,
                               selectedScript.scriptType,
-                              selectedScript.script
+                              selectedScript.script,
                             );
                             setFullScreenEdit(null);
                           } catch (e) {
                             console.error("Error updating script:", e);
                           }
-                        }
+                        },
                       });
-                    }
+                    },
                   },
                   {
                     icon: <FaTimes className="icon" />,
                     text: "Deselect Script",
-                    onClick: handleDeselectScript
-                  }
+                    onClick: handleDeselectScript,
+                  },
                 ]}
               />
             </div>

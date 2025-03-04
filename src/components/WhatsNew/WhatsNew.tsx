@@ -45,9 +45,7 @@ const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
 
   return (
     <Modal id="whatsNew" title={`What's New in v${version}`}>
-      <div className="whats-new-content">
-        {content}
-      </div>
+      <div className="whats-new-content">{content}</div>
     </Modal>
   );
 };

@@ -66,7 +66,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
       initial: { opacity: 0, x: initialX },
       animate: { opacity: 1, x: 0 },
       exit: { opacity: 0, x: initialX },
-      transition: { type: "spring", damping: 25, stiffness: 300 }
+      transition: { type: "spring", damping: 25, stiffness: 300 },
     };
   };
 
