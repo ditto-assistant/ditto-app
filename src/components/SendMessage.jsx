@@ -188,7 +188,10 @@ export default function SendMessage({
           e.preventDefault();
           setMessage((prevMessage) => prevMessage + "\n");
           resizeTextArea();
-        } else if (!e.shiftKey) {
+        } else if (e.shiftKey) {
+          // Allow shift+enter for newlines
+          resizeTextArea();
+        } else {
           e.preventDefault();
           handleSubmit();
         }
@@ -199,15 +202,21 @@ export default function SendMessage({
   const resizeTextArea = () => {
     const textArea = textAreaRef.current;
     if (textArea) {
-      textArea.style.height = "auto";
-      textArea.style.height = `${Math.min(textArea.scrollHeight, 200)}px`;
+      // Reset height to default to accurately calculate scrollHeight
+      textArea.style.height = "24px";
+      
+      // Calculate new height (min 24px, max 200px)
+      const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
+      textArea.style.height = `${newHeight}px`;
 
+      // Update overflow based on content height
       if (textArea.scrollHeight >= 200) {
         textArea.style.overflowY = "auto";
       } else {
         textArea.style.overflowY = "hidden";
       }
 
+      // Adjust image preview position if present
       const imagePreview = document.querySelector(".image-preview");
       if (imagePreview) {
         imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
