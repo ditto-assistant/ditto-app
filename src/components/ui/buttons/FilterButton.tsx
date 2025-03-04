@@ -1,6 +1,5 @@
 import React from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import "./FilterButton.css";
 
 interface FilterButtonProps
   extends Omit<HTMLMotionProps<"button">, "children"> {

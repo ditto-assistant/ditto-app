@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { ModalButton } from "./ModalButton";
 import { usePlatform } from "../../../hooks/usePlatform";
-import "./SubmitButton.css";
 
 interface SubmitButtonProps
   extends Omit<React.ComponentProps<typeof ModalButton>, "children"> {

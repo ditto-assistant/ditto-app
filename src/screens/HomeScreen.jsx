@@ -7,10 +7,6 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
 import { FaLaptopCode, FaPlay, FaPen, FaTimes } from "react-icons/fa";
-// MiniFocusOverlay is no longer used
-// import MiniFocusOverlay from "@/components/MiniFocusOverlay";
-// ScriptActionsOverlay is no longer used
-// import ScriptActionsOverlay from "@/components/ScriptActionsOverlay";
 import SlidingMenu from "@/components/ui/SlidingMenu";
 import ChatFeed from "@/components/ChatFeed";
 import SendMessage from "@/components/SendMessage";
@@ -41,7 +37,7 @@ export default function HomeScreen() {
   const openFeedbackModal = modal.createOpenHandler("feedback");
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const openScriptsOverlay = modal.createOpenHandler("scripts");
-  const { isIOS, isPWA } = usePlatform();
+  const { isIOS, isPWA, isMobile } = usePlatform();
   const {
     selectedScript,
     setSelectedScript,
@@ -320,14 +316,14 @@ export default function HomeScreen() {
   const [menuPinned, setMenuPinned] = useState(false);
 
   const handleHoverStart = () => {
-    if (window.innerWidth > 768 && !menuPinned) {
+    if (!isMobile && !menuPinned) {
       // Only trigger on desktop when not pinned
       setIsMenuOpen(true);
     }
   };
 
   const handleHoverEnd = () => {
-    if (window.innerWidth > 768 && !menuPinned) {
+    if (!isMobile && !menuPinned) {
       // Only trigger on desktop when not pinned
       // Use a short delay to prevent menu from closing immediately
       // when moving cursor from button to menu
@@ -344,7 +340,7 @@ export default function HomeScreen() {
   };
 
   const handleLogoClick = () => {
-    if (window.innerWidth > 768) {
+    if (!isMobile) {
       // On desktop, clicking toggles pinned state
       if (isMenuOpen) {
         // If already open, toggle the pin state
