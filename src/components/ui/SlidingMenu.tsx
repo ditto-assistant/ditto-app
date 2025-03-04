@@ -12,9 +12,11 @@ interface SlidingMenuProps {
   menuItems: MenuItem[];
   isOpen: boolean;
   onClose: () => void;
-  position?: "left" | "right";
+  position?: "left" | "right" | "center";
   triggerRef?: React.RefObject<HTMLElement>;
   isPinned?: boolean;
+  menuPosition?: "top" | "bottom";
+  menuTitle?: string;
 }
 
 const SlidingMenu: React.FC<SlidingMenuProps> = ({
@@ -24,6 +26,8 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   position = "left",
   triggerRef,
   isPinned = false,
+  menuPosition = "top",
+  menuTitle,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +71,17 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   }, [isOpen, onClose, triggerRef]);
 
   const getMenuAnimation = () => {
+    // For bottom-aligned menus, animate vertically
+    if (menuPosition === "bottom") {
+      return {
+        initial: { opacity: 0, y: 50 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: 50 },
+        transition: { type: "spring", damping: 25, stiffness: 300 },
+      };
+    }
+    
+    // For standard top menus, animate horizontally
     const initialX = position === "left" ? -50 : 50;
     return {
       initial: { opacity: 0, x: initialX },
@@ -82,12 +97,17 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${isPinned ? "pinned" : ""}`}
+          className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${isPinned ? "pinned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
           ref={menuRef}
           onMouseEnter={handleMenuHover}
           onMouseLeave={handleMenuLeave}
           {...menuAnimation}
         >
+          {menuTitle && (
+            <div className="menu-title">
+              {menuTitle}
+            </div>
+          )}
           {menuItems.map((item, index) => (
             <motion.div
               key={index}

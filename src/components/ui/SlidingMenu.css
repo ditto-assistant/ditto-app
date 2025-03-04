@@ -11,6 +11,12 @@
   z-index: 1001;
 }
 
+/* Bottom-aligned menu (for bottom buttons bar) */
+.sliding-menu.bottom-aligned {
+  top: auto;
+  bottom: 60px;
+}
+
 /* Pinned menu indicator */
 .sliding-menu.pinned::before {
   content: "";
@@ -22,10 +28,50 @@
   background: linear-gradient(90deg, var(--primary) 0%, #5b6eae 100%);
 }
 
+/* Pinned indicator for bottom-aligned menus */
+.sliding-menu.bottom-aligned.pinned::before {
+  top: auto;
+  bottom: 0;
+}
+
 /* Right-aligned menu variant */
 .sliding-menu.right-aligned {
   left: auto;
   right: 0;
+}
+
+/* Right-aligned + bottom-aligned for script button */
+.sliding-menu.right-aligned.bottom-aligned {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  transform: translateX(-40px);
+}
+
+/* Center-aligned menu variant */
+.sliding-menu.center-aligned {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+}
+
+/* Center-aligned + bottom-aligned adjustment */
+.sliding-menu.center-aligned.bottom-aligned {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  transform: translateX(-90px);
+}
+
+/* Menu title */
+.menu-title {
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--primary);
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
 }
 
 /* Menu items */
@@ -36,6 +82,7 @@
   cursor: pointer;
   transition: background-color 0.2s;
 }
+
 
 .menu-item .icon {
   margin-right: 12px;

@@ -7,6 +7,10 @@ import {
   FaTimes,
   FaPaperPlane,
   FaExpand,
+  FaPlay,
+  FaPen,
+  FaCode,
+  FaScroll,
 } from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
@@ -18,6 +22,13 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal";
 import { usePromptStorage } from "@/hooks/usePromptStorage";
+import { useScripts } from "@/hooks/useScripts.tsx";
+import { useModal } from "@/hooks/useModal";
+import SlidingMenu from "@/components/ui/SlidingMenu";
+import { IoSettingsOutline } from "react-icons/io5";
+import { MdFeedback } from "react-icons/md";
+import { FaLaptopCode } from "react-icons/fa";
+import { DITTO_AVATAR } from "@/constants";
 import { toast } from "react-hot-toast";
 /**
  * A component that allows the user to send a message to the agent
@@ -38,6 +49,8 @@ export default function SendMessage({
   onOpenMediaOptions,
   onCloseMediaOptions,
   onStop,
+  selectedScript,
+  onDeselectScript,
 }) {
   const [image, setImage] = useState(capturedImage || "");
   const textAreaRef = useRef(null);
@@ -62,6 +75,20 @@ export default function SendMessage({
   const { clearPrompt } = usePromptStorage();
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
+  
+  // Ditto logo button state and refs
+  const logoButtonRef = useRef(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPinned, setMenuPinned] = useState(false);
+  const modal = useModal();
+  const openSettingsModal = modal.createOpenHandler("settings");
+  const openFeedbackModal = modal.createOpenHandler("feedback");
+  const openScriptsOverlay = modal.createOpenHandler("scripts");
+  
+  // Script indicator state and refs
+  const scriptIndicatorRef = useRef(null);
+  const [showScriptActions, setShowScriptActions] = useState(false);
+  const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -271,6 +298,67 @@ export default function SendMessage({
     onCameraOpen();
     onCloseMediaOptions();
   };
+  
+  // Ditto logo button handlers
+  const handleHoverStart = () => {
+    if (!isMobile && !menuPinned) {
+      // Only trigger on desktop when not pinned
+      setIsMenuOpen(true);
+    }
+  };
+
+  const handleHoverEnd = () => {
+    if (!isMobile && !menuPinned) {
+      // Only trigger on desktop when not pinned
+      // Use a short delay to prevent menu from closing immediately
+      // when moving cursor from button to menu
+      setTimeout(() => {
+        // Check if neither the menu nor the logo button is being hovered
+        if (
+          !document.querySelector(".sliding-menu:hover") &&
+          !logoButtonRef.current?.matches(":hover")
+        ) {
+          setIsMenuOpen(false);
+        }
+      }, 100);
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (!isMobile) {
+      // On desktop, clicking toggles pinned state
+      if (isMenuOpen) {
+        // If already open, toggle the pin state
+        setMenuPinned(!menuPinned);
+      } else {
+        // If closed, open and pin
+        setIsMenuOpen(true);
+        setMenuPinned(true);
+      }
+    } else {
+      // On mobile, just toggle menu open/closed
+      setIsMenuOpen(!isMenuOpen);
+    }
+  };
+  
+  // Script indicator handlers
+  const handleScriptNameClick = () => {
+    setShowScriptActions(!showScriptActions);
+  };
+
+  const handlePlayScript = () => {
+    if (selectedScript) {
+      openDittoCanvas();
+    }
+  };
+  
+  // Handle accessibility keyboard events for buttons
+  const handleButtonKeyDown = (event, callback) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      callback();
+    }
+  };
 
   return (
     <>
@@ -319,13 +407,131 @@ export default function SendMessage({
               onChange={handleImageUpload}
             />
           </div>
-          <button
-            className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
-            type="submit"
-            disabled={isWaitingForResponse}
-          >
-            <FaPaperPlane />
-          </button>
+          
+          {/* Ditto logo button - centered */}
+          <div className="center-button-container">
+            <motion.div
+              ref={logoButtonRef}
+              className="ditto-logo-button"
+              whileTap={{ scale: 0.9 }}
+              whileHover={{
+                scale: 1.1,
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+              }}
+              onMouseEnter={handleHoverStart}
+              onMouseLeave={handleHoverEnd}
+              onClick={handleLogoClick}
+              onKeyDown={(e) => handleButtonKeyDown(e, handleLogoClick)}
+              aria-label="Menu"
+              role="button"
+              tabIndex={0}
+            >
+              <img src={DITTO_AVATAR} alt="Ditto" className="ditto-icon-circular" />
+            </motion.div>
+            
+            {/* Sliding menu for logo button - fixed center position */}
+            <div style={{ position: 'relative', width: '0', height: '0' }}>
+              <SlidingMenu
+                isOpen={isMenuOpen}
+                onClose={() => {
+                  setIsMenuOpen(false);
+                  setMenuPinned(false);
+                }}
+                position="center"
+                triggerRef={logoButtonRef}
+                isPinned={menuPinned}
+                menuPosition="bottom"
+                menuItems={[
+                {
+                  icon: <MdFeedback className="icon" />,
+                  text: "Feedback",
+                  onClick: openFeedbackModal,
+                },
+                {
+                  icon: <FaLaptopCode className="icon" />,
+                  text: "Scripts",
+                  onClick: openScriptsOverlay,
+                },
+                {
+                  icon: <IoSettingsOutline className="icon" />,
+                  text: "Settings",
+                  onClick: openSettingsModal,
+                },
+              ]}
+              />
+            </div>
+          </div>
+          
+          {/* Script indicator */}
+          <div className="right-buttons">
+            {selectedScript && (
+              <div className="script-indicator-container">
+                <motion.div
+                  className="script-icon-button"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleScriptNameClick}
+                  ref={scriptIndicatorRef}
+                  title={selectedScript.script}
+                >
+                  <FaCode />
+                </motion.div>
+                
+                {/* Script actions menu */}
+                <div style={{ position: 'relative', width: '0', height: '0' }}>
+                  <SlidingMenu
+                    isOpen={showScriptActions}
+                    onClose={() => setShowScriptActions(false)}
+                    position="right"
+                    triggerRef={scriptIndicatorRef}
+                    menuPosition="bottom"
+                    menuTitle={selectedScript.script}
+                    menuItems={[
+                    {
+                      icon: <FaPlay className="icon" />,
+                      text: "Launch Script",
+                      onClick: handlePlayScript,
+                    },
+                    {
+                      icon: <FaPen className="icon" />,
+                      text: "Edit Script",
+                      onClick: () => {
+                        if (selectedScript) {
+                          const event = new CustomEvent("editScript", {
+                            detail: {
+                              script: {
+                                name: selectedScript.script,
+                                content: selectedScript.contents,
+                                scriptType: selectedScript.scriptType,
+                              },
+                            },
+                          });
+                          window.dispatchEvent(event);
+                        }
+                      },
+                    },
+                    {
+                      icon: <FaTimes className="icon" />,
+                      text: "Deselect Script",
+                      onClick: onDeselectScript,
+                    },
+                  ]}
+                  />
+                </div>
+              </div>
+            )}
+            
+            <button
+              className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
+              type="submit"
+              disabled={isWaitingForResponse}
+            >
+              <FaPaperPlane />
+            </button>
+          </div>
         </div>
 
         {image && (

@@ -83,6 +83,66 @@
   align-items: center;
 }
 
+/* Center button container for Ditto logo */
+.center-button-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Right buttons container */
+.right-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Script indicator container */
+.script-indicator-container {
+  position: relative;
+}
+
+/* Ditto logo button - from HomeScreen.css but adapted for the bottom bar */
+.ditto-logo-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Make the ditto icon circular */
+.ditto-icon-circular {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Script icon button */
+.script-icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+}
+
 /* Use icon-button class from buttons.css */
 .action-button {
   color: var(--interactive-active);
@@ -392,7 +452,7 @@
 }
 
 /* Add media query for small screens */
-@media screen and (max-width: 380px) {
+@media screen and (max-width: 480px) {
   .form {
     padding: var(--spacing-xs) var(--spacing-sm);
     margin: 0;
@@ -430,6 +490,34 @@
     font-size: 15px;
     width: 32px;
     height: 32px;
+  }
+  
+  /* Adjust bottom bar for mobile */
+  .bottom-buttons-bar {
+    padding: 6px 5px;
+  }
+  
+  /* Make the ditto logo button smaller on mobile */
+  .ditto-logo-button {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .ditto-icon-circular {
+    width: 26px;
+    height: 26px;
+  }
+  
+  /* Make script icon button smaller on mobile */
+  .script-icon-button {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  /* Right buttons container should be tighter on mobile */
+  .right-buttons {
+    gap: 8px;
   }
 
   .fullscreen-header {

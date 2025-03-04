@@ -4,9 +4,9 @@ import {
   applyUpdate,
   UPDATE_READY,
   UPDATE_ERROR,
-  UpdateServiceState,
 } from "@/utils/updateService";
 import "./UpdateNotification.css";
+import { UpdateServiceState } from "@/types/common";
 
 const UpdateNotification = () => {
   const [updateState, setUpdateState] =

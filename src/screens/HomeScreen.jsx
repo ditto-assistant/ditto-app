@@ -48,13 +48,7 @@ export default function HomeScreen() {
 
   const appBodyRef = useRef(null);
 
-  // Show the What's New dialog for the UI redesign
-  useEffect(() => {
-    // Show the What's New dialog for version 0.11.56
-    setTimeout(() => {
-      openWhatsNew("0.11.56");
-    }, 500);
-  }, [openWhatsNew]);
+  // What's New dialog is handled in App.tsx
 
   useEffect(() => {
     // Update the existing useEffect that handles viewport height
@@ -358,121 +352,7 @@ export default function HomeScreen() {
 
   return (
     <div className="app" onClick={handleCloseMediaOptions}>
-      <div className="floating-header">
-        {/* Ditto Logo Button with sliding menu */}
-        <div className="ditto-menu-container">
-          <motion.div
-            ref={logoButtonRef}
-            className="ditto-logo-button"
-            whileTap={{ scale: 0.9 }}
-            whileHover={{
-              scale: 1.1,
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            }}
-            onMouseEnter={handleHoverStart}
-            onMouseLeave={handleHoverEnd}
-            onClick={handleLogoClick}
-            onKeyDown={(e) => handleKeyDown(e, handleLogoClick)}
-            aria-label="Menu"
-            role="button"
-            tabIndex={0}
-          >
-            <img src={dittoIcon} alt="Ditto" className="ditto-icon-circular" />
-          </motion.div>
-
-          {/* Sliding menu using the reusable component */}
-          <SlidingMenu
-            isOpen={isMenuOpen}
-            onClose={() => {
-              setIsMenuOpen(false);
-              setMenuPinned(false);
-            }}
-            position="left"
-            triggerRef={logoButtonRef}
-            isPinned={menuPinned}
-            menuItems={[
-              {
-                icon: <MdFeedback className="icon" />,
-                text: "Feedback",
-                onClick: openFeedbackModal,
-              },
-              {
-                icon: <FaLaptopCode className="icon" />,
-                text: "Scripts",
-                onClick: openScriptsOverlay,
-              },
-              {
-                icon: <IoSettingsOutline className="icon" />,
-                text: "Settings",
-                onClick: openSettingsModal,
-              },
-            ]}
-          />
-        </div>
-
-        {/* Script Indicator - only shows when script is selected */}
-        <AnimatePresence>
-          {selectedScript && (
-            <div className="script-indicator-container">
-              <motion.div
-                className="floating-script-indicator"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleScriptNameClick}
-                ref={scriptIndicatorRef}
-              >
-                <span className="script-name">{selectedScript.script}</span>
-              </motion.div>
-
-              {/* Script actions using the sliding menu component */}
-              <SlidingMenu
-                isOpen={showScriptActions}
-                onClose={() => setShowScriptActions(false)}
-                position="right"
-                triggerRef={scriptIndicatorRef}
-                menuItems={[
-                  {
-                    icon: <FaPlay className="icon" />,
-                    text: "Launch Script",
-                    onClick: handlePlayScript,
-                  },
-                  {
-                    icon: <FaPen className="icon" />,
-                    text: "Edit Script",
-                    onClick: () => {
-                      setFullScreenEdit({
-                        name: selectedScript.script,
-                        content: selectedScript.contents,
-                        scriptType: selectedScript.scriptType,
-                        onSaveCallback: async (updatedContent) => {
-                          try {
-                            await saveScript(
-                              updatedContent,
-                              selectedScript.scriptType,
-                              selectedScript.script,
-                            );
-                            setFullScreenEdit(null);
-                          } catch (e) {
-                            console.error("Error updating script:", e);
-                          }
-                        },
-                      });
-                    },
-                  },
-                  {
-                    icon: <FaTimes className="icon" />,
-                    text: "Deselect Script",
-                    onClick: handleDeselectScript,
-                  },
-                ]}
-              />
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* Floating header has been moved to the bottom buttons bar */}
       {/* Status bar has been removed */}
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="app-content-wrapper">
@@ -494,6 +374,8 @@ export default function HomeScreen() {
               onStop={() => {
                 balance.refetch();
               }}
+              selectedScript={selectedScript}
+              onDeselectScript={handleDeselectScript}
             />
           </div>
         </div>
