@@ -1,4 +1,4 @@
-import { DEFAULT_PREFERENCES, TOOLS } from "../constants";
+import { TOOLS } from "@/constants";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { ToolPreferences } from "@/types/llm";
 import { useState, useEffect } from "react";

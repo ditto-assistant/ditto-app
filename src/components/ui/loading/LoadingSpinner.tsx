@@ -1,4 +1,4 @@
-import "../styles/animations.css";
+import "../../../styles/animations.css";
 import "./LoadingSpinner.css";
 
 export default function FullScreenSpinner({ text }: { text?: string }) {

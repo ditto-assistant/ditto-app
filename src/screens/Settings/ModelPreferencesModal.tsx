@@ -5,7 +5,7 @@ import {
   MdExpandLess,
   MdFilterAlt,
 } from "react-icons/md";
-import { DEFAULT_MODELS, IMAGE_GENERATION_MODELS } from "../constants";
+import { DEFAULT_MODELS, IMAGE_GENERATION_MODELS } from "@/constants";
 import {
   FaBolt,
   FaClock,
@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 import { SiOpenai } from "react-icons/si";
 import { TbBrandMeta } from "react-icons/tb";
-import { ModelOption, Model, ModelPreferences, Vendor } from "../types/llm";
+import { ModelOption, Model, ModelPreferences, Vendor } from "@/types/llm";
 import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 import { useModelPreferences } from "@/hooks/useModelPreferences";

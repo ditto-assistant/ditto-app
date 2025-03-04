@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, TextField, Slider } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { useNavigate } from "react-router";
 

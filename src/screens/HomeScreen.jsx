@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, Suspense } from "react";
-import FullScreenSpinner from "@/components/LoadingSpinner";
+import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
 import TermsOfService from "@/components/TermsOfService";
 import dittoIcon from "/icons/ditto-icon-clear.png";

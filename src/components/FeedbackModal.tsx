@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { BASE_URL } from "@/firebaseConfig";
 import { getDeviceID, APP_VERSION } from "@/utils/deviceId";
 import { useAuth, useAuthToken } from "@/hooks/useAuth";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { SubmitButton } from "@/components/ui/buttons/SubmitButton";
 import SocialLinks from "@/components/ui/links/SocialLinks";

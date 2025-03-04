@@ -3,10 +3,10 @@ import {
   removeUserFromFirestore,
   deleteAllUserScriptsFromFirestore,
 } from "@/control/firebase";
-import packageJson from "../../package.json";
+import packageJson from "../../../package.json";
 import { useBalance } from "@/hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { clearStorage } from "@/utils/deviceId";
 import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
@@ -17,9 +17,9 @@ import "./Settings.css";
 import toast from "react-hot-toast";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useMemo } from "react";
-import ModelPreferencesModal from "@/components/ModelPreferencesModal";
-import MemoryControlsModal from "@/components/MemoryControlsModal";
-import AgentToolsModal from "@/components/AgentToolsModal";
+import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
+import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
+import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
 
 export default function Settings() {
   const balance = useBalance();

@@ -8,7 +8,7 @@ import {
 } from "react-router";
 import { Toaster } from "react-hot-toast";
 import { createPortal } from "react-dom";
-import FullScreenSpinner from "@/components/LoadingSpinner";
+import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
 import AuthenticatedRoute from "@/hooks/AuthenticatedRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { BalanceProvider } from "@/hooks/useBalance";
@@ -35,7 +35,6 @@ const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
 const Settings = lazy(() => import("@/screens/Settings"));
 const Checkout = lazy(() => import("@/screens/Checkout"));
 const CheckoutSuccess = lazy(() => import("@/screens/CheckoutSuccess"));
-const LLMTest = lazy(() => import("@/api/LLMTest"));
 const ScriptsOverlay = lazy(
   () => import("@/screens/ScriptsModal/ScriptsOverlay")
 );
@@ -44,7 +43,6 @@ const ConfirmationDialog = lazy(
 );
 const MemoryNetworkModal = lazy(() => import("@/components/MemoryNetwork"));
 const MemoryNodeModal = lazy(() => import("@/components/MemoryNodeModal"));
-const ComposeModal = lazy(() => import("@/components/ComposeModal"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -65,7 +63,6 @@ const router = createBrowserRouter(
           <Route index element={<Checkout />} />
           <Route path="success" element={<CheckoutSuccess />} />
         </Route>
-        <Route path="llm-test" element={<LLMTest />} />
       </Route>
     </Route>
   )
@@ -134,10 +131,10 @@ function App() {
                                     document.getElementById("toast-root") ||
                                       document.body
                                   )}
-                                  {/* <ReactQueryDevtools
-                                    buttonPosition="bottom-left"
+                                  <ReactQueryDevtools
+                                    buttonPosition="top-right"
                                     initialIsOpen={false}
-                                  /> */}
+                                  />
                                 </ComposeProvider>
                               </PromptStorageProvider>
                             </ModalProvider>
