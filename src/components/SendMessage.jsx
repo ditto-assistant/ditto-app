@@ -38,7 +38,12 @@ export default function SendMessage({
   const { openImageViewer } = useImageViewerHandler();
   const balance = useBalance();
   const { isMobile } = usePlatform();
-  const { refetch } = useConversationHistory();
+  const { 
+    refetch, 
+    addOptimisticMessage, 
+    updateOptimisticResponse, 
+    finalizeOptimisticMessage 
+  } = useConversationHistory();
 
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
@@ -111,16 +116,40 @@ export default function SendMessage({
       finalTranscriptRef.current = "";
       resizeTextArea();
 
-      await sendPrompt(
-        userID,
-        firstName,
-        messageToSend,
-        imageURI,
-        null,
-        preferences.data,
-        refetch,
-        balance.hasPremium ?? false
-      );
+      // Add optimistic message to the UI immediately
+      console.log("🚀 [SendMessage] Creating optimistic message");
+      const optimisticId = addOptimisticMessage(messageToSend, imageURI);
+
+      // Pass streaming callback to update UI in real time
+      const streamingCallback = (chunk) => {
+        console.log(`🔄 [SendMessage] Received streaming chunk of ${chunk.length} chars, updating optimistic message: ${optimisticId}`);
+        updateOptimisticResponse(optimisticId, chunk);
+      };
+
+      try {
+        console.log("🚀 [SendMessage] Sending prompt with optimistic ID:", optimisticId);
+        
+        // Pass the optimistic ID and streaming callback to sendPrompt
+        await sendPrompt(
+          userID,
+          firstName,
+          messageToSend,
+          imageURI,
+          null,
+          preferences.data,
+          refetch,
+          balance.hasPremium ?? false,
+          streamingCallback,
+          optimisticId,
+          finalizeOptimisticMessage
+        );
+        
+        console.log("✅ [SendMessage] Prompt completed successfully");
+      } catch (error) {
+        console.error("❌ [SendMessage] Error in sendPrompt:", error);
+        // If there was an error, we should finalize the optimistic message with an error state
+        finalizeOptimisticMessage(optimisticId, "Sorry, an error occurred while processing your request. Please try again.");
+      }
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {

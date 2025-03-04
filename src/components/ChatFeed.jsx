@@ -508,6 +508,7 @@ export default function ChatFeed({
                       }
                       isUser={true}
                       isLast={isLast}
+                      isOptimistic={message.isOptimistic}
                       bubbleStyles={bubbleStyles}
                       onAvatarClick={(e) => handleAvatarClick(e, promptId)}
                       showMenu={isPromptActive}
@@ -529,6 +530,7 @@ export default function ChatFeed({
                       }
                       isUser={false}
                       isLast={isLast}
+                      isOptimistic={message.isOptimistic}
                       bubbleStyles={bubbleStyles}
                       onAvatarClick={(e) => handleAvatarClick(e, responseId)}
                       showMenu={isResponseActive}

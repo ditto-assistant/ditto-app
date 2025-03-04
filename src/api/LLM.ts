@@ -59,7 +59,7 @@ export async function promptLLM(
         userPrompt,
         systemPrompt,
         model,
-        imageURL,
+        imageURL
       };
       const response = await fetch(routes.prompt, {
         method: "POST",
@@ -83,15 +83,22 @@ export async function promptLLM(
       // Handle the response stream
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
+      
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+        
         const chunk = decoder.decode(value, { stream: true });
+        
+        // Process the response as a whole for now
         if (textCallback) {
           textCallback(chunk);
         }
+        
         responseMessage += chunk;
       }
+      
+      console.log(`✅ [LLM] Completed streaming, total length: ${responseMessage.length} chars`);
       return responseMessage;
     } catch (error) {
       console.error("Error in promptLLM:", error);

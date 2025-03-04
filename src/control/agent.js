@@ -30,10 +30,13 @@ import { searchExamples } from "@/api/searchExamples";
  * @param {string} firstName - The user's first name.
  * @param {string} prompt - The user's prompt.
  * @param {string} image - The user's image.
- * @param {function} updateConversation - A function that updates the conversation.
+ * @param {function} updateConversation - A function that updates the conversation (deprecated).
  * @param {ModelPreferences} preferences - The user's preferences.
- * @param {boolean} refetch - Whether to refetch the conversation history.
+ * @param {function} refetch - Whether to refetch the conversation history.
  * @param {boolean} isPremiumUser - Whether the user is a premium user.
+ * @param {function} streamingCallback - A callback for streaming response chunks.
+ * @param {string} optimisticId - The ID of the optimistic message update.
+ * @param {function} finalizeMessage - A function to finalize a message.
  */
 export const sendPrompt = async (
   userID,
@@ -43,7 +46,10 @@ export const sendPrompt = async (
   updateConversation,
   preferences,
   refetch,
-  isPremiumUser = false
+  isPremiumUser = false,
+  streamingCallback = null,
+  optimisticId = null,
+  finalizeMessage = null
 ) => {
   try {
     // Create a thinking indicator in localStorage to show we're processing
@@ -53,9 +59,6 @@ export const sendPrompt = async (
       timestamp: Date.now(),
     };
     localStorage.setItem("thinking", JSON.stringify(thinkingObject));
-
-    // With our new backend-driven approach, we don't need to manually update the conversation UI
-    // The refetch in the useConversationHistory hook will handle this
 
     // Create prompt in backend
     const { ok: pairID, err } = await createPrompt(prompt);
@@ -122,24 +125,40 @@ export const sendPrompt = async (
       }
     }
 
+    // Create a simple callback to update the optimistic message
+    const textCallback = streamingCallback ? 
+      (text) => streamingCallback(text) : 
+      null;
+    
+    // Get the response from the LLM
     let response = await promptLLM(
       constructedPrompt,
       systemTemplate(),
       mainAgentModel,
-      image
+      image,
+      textCallback
     );
+    
     const toolTriggers = [
       "<OPENSCAD>",
       "<HTML_SCRIPT>",
       "<IMAGE_GENERATION>",
       "<GOOGLE_SEARCH>",
     ];
+    
     let toolTriggered = false;
     for (const trigger of toolTriggers) {
       if (response.includes(trigger)) {
         // Remove closing tag that matches the trigger
         response = response.replace(`</${trigger.slice(1)}`, "");
         toolTriggered = true;
+        
+        // If we have an optimistic message, finalize it with the current response
+        // before tool processing begins
+        if (optimisticId && finalizeMessage) {
+          finalizeMessage(optimisticId, response);
+        }
+        
         await processResponse(
           response,
           prompt,
@@ -149,37 +168,32 @@ export const sendPrompt = async (
           scriptName,
           image,
           memories,
-          updateConversation,
+          null, // Remove updateConversation
           preferences,
-          refetch
+          refetch,
+          optimisticId,
+          finalizeMessage
         );
         break;
       }
     }
+    
     // If no tool was triggered, handle the complete response
     if (!toolTriggered) {
+        // Save the response to the backend
       await saveResponse(pairID, response);
-      // Update conversation with docId and pairID if updateConversation is provided
-      // Otherwise, rely on refetch to update the UI
-      if (updateConversation) {
-        updateConversation((prevState) => {
-          const messages = [...prevState.messages];
-          messages[messages.length - 2] = {
-            ...messages[messages.length - 2],
-            pairID,
-          };
-          messages[messages.length - 1] = {
-            ...messages[messages.length - 1],
-            text: response,
-            isTyping: false,
-            docId: pairID,
-            pairID: pairID,
-          };
-          return { ...prevState, messages };
-        });
+      
+      // Finalize the optimistic message if we have one
+      // Note: finalizeMessage already includes a refetch, so we don't need to do it again
+      if (optimisticId && finalizeMessage) {
+        finalizeMessage(optimisticId, response);
       } else if (refetch) {
-        // If updateConversation is not provided but refetch is, use refetch
-        refetch();
+        // Only refetch if we're not using optimistic updates (fallback)
+        // Small delay to ensure the previous operations complete
+        setTimeout(() => {
+          console.log("🔄 [Agent] Triggering fallback refetch (no optimistic update)");
+          refetch();
+        }, 300); 
       }
     }
 
@@ -247,7 +261,9 @@ export const processResponse = async (
   memories,
   updateConversation,
   preferences,
-  refetch
+  refetch,
+  optimisticId = null,
+  finalizeMessage = null
 ) => {
   console.log("%c" + response, "color: yellow");
 
@@ -255,7 +271,11 @@ export const processResponse = async (
   if (response.includes("402") || response.includes("Payment Required")) {
     const errorMessage =
       "Error: Payment Required. Please check your token balance.";
-    if (updateConversation) {
+    
+    // Update optimistic message if available
+    if (optimisticId && finalizeMessage) {
+      finalizeMessage(optimisticId, errorMessage);
+    } else if (updateConversation) {
       updateConversation((prevState) => ({
         ...prevState,
         messages: prevState.messages.map((msg, i) =>
@@ -275,13 +295,37 @@ export const processResponse = async (
     pairID,
     status,
     type,
-    finalResponse = null
+    finalResponse = null,
+    optimisticId = null,
+    finalizeMessage = null
   ) => {
     try {
+      // For completed responses with a final result
       if (status === "complete" && finalResponse) {
         await saveResponse(pairID, finalResponse);
 
-        if (updateConversation) {
+        // Update optimistic message if available
+        if (optimisticId && finalizeMessage) {
+          // Mark as final message with a flag that will allow cleanup
+          finalizeMessage(optimisticId, finalResponse);
+          
+          // Trigger a refetch after saving the final tool response
+          setTimeout(() => {
+            console.log(`🔄 [Agent] Triggering refetch after tool completion: ${optimisticId}`);
+            refetch();
+            
+            // Remove the optimistic message after the refetch completes
+            setTimeout(() => {
+              console.log(`🧹 [Agent] Removing tool message after refetch: ${optimisticId}`);
+              if (finalizeMessage) {
+                // Force message removal by sending special finalizing signal
+                // This will be handled by useConversationHistory
+                finalizeMessage(optimisticId, finalResponse, true);
+              }
+            }, 1000);
+          }, 800);
+        } else if (updateConversation) {
+          // Legacy update pattern
           updateConversation((prevState) => {
             const messages = [...prevState.messages];
             messages[messages.length - 2] = {
@@ -308,8 +352,22 @@ export const processResponse = async (
 
         saveToLocalStorage(prompt, finalResponse, Date.now(), pairID);
       } else {
+        // For in-progress status updates
         const statusText = status.endsWith("...") ? status : `${status}`;
-        if (updateConversation) {
+        
+        // Update optimistic message with status if available
+        if (optimisticId && finalizeMessage) {
+          // For in-progress updates, we want to show both the response and the status
+          const currentText = finalResponse || response;
+          const statusLine = `\n\n*${type ? `${type}: ` : ''}${statusText}*`;
+          
+          // Remove any previous status messages
+          const textWithoutStatus = currentText.replace(/\n\n\*(?:.*?): .*?\*$/s, '');
+          
+          // Keep isOptimistic flag true during tool processing to prevent premature removal
+          finalizeMessage(optimisticId, textWithoutStatus + statusLine);
+        } else if (updateConversation) {
+          // Legacy update pattern
           updateConversation((prevState) => {
             const messages = [...prevState.messages];
             messages[messages.length - 1] = {
@@ -336,7 +394,10 @@ export const processResponse = async (
       await updateMessageWithToolStatus(
         pairID,
         "Generating OpenSCAD Script...",
-        "openscad"
+        "openscad",
+        null,
+        optimisticId,
+        finalizeMessage
       );
       const finalResponse = await handleScriptGeneration({
         response,
@@ -357,7 +418,9 @@ export const processResponse = async (
         pairID,
         "complete",
         "openscad",
-        finalResponse
+        finalResponse,
+        optimisticId,
+        finalizeMessage
       );
       return finalResponse;
     }
@@ -367,7 +430,10 @@ export const processResponse = async (
       await updateMessageWithToolStatus(
         pairID,
         "Generating HTML Script...",
-        "html"
+        "html",
+        null,
+        optimisticId,
+        finalizeMessage
       );
       const finalResponse = await handleScriptGeneration({
         response,
@@ -388,27 +454,45 @@ export const processResponse = async (
         pairID,
         "complete",
         "html",
-        finalResponse
+        finalResponse,
+        optimisticId,
+        finalizeMessage
       );
       return finalResponse;
     }
 
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
-      await updateMessageWithToolStatus(pairID, "Generating Image", "image");
+      await updateMessageWithToolStatus(
+        pairID, 
+        "Generating Image", 
+        "image",
+        null,
+        optimisticId,
+        finalizeMessage
+      );
       const finalResponse = await handleImageGeneration(response, preferences);
       await updateMessageWithToolStatus(
         pairID,
         "complete",
         "image",
-        finalResponse
+        finalResponse,
+        optimisticId,
+        finalizeMessage
       );
       return finalResponse;
     }
 
     // Handle Google search
     if (response.includes("<GOOGLE_SEARCH>")) {
-      await updateMessageWithToolStatus(pairID, "Searching Google", "search");
+      await updateMessageWithToolStatus(
+        pairID, 
+        "Searching Google", 
+        "search",
+        null,
+        optimisticId,
+        finalizeMessage
+      );
       const finalResponse = await handleGoogleSearch(
         response,
         prompt,
@@ -418,7 +502,9 @@ export const processResponse = async (
         pairID,
         "complete",
         "search",
-        finalResponse
+        finalResponse,
+        optimisticId,
+        finalizeMessage
       );
       return finalResponse;
     }
@@ -429,7 +515,14 @@ export const processResponse = async (
   } catch (error) {
     console.error("Error in processResponse:", error);
     const errorMessage = "An error occurred while processing your request.";
-    await updateMessageWithToolStatus(pairID, "failed", null, errorMessage);
+    await updateMessageWithToolStatus(
+      pairID, 
+      "failed", 
+      null, 
+      errorMessage,
+      optimisticId,
+      finalizeMessage
+    );
     return errorMessage;
   }
 };

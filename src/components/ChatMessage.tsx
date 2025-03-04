@@ -85,6 +85,7 @@ interface ChatMessageProps {
   timestamp: number;
   isUser: boolean;
   isLast?: boolean;
+  isOptimistic?: boolean;
   bubbleStyles?: {
     text?: {
       fontSize?: number;
@@ -108,6 +109,7 @@ export default function ChatMessage({
   timestamp,
   isUser,
   isLast = false,
+  isOptimistic = false,
   bubbleStyles = {
     text: { fontSize: 14 },
     chatbubble: { borderRadius: 20, padding: 10 },
@@ -151,14 +153,14 @@ export default function ChatMessage({
 
   return (
     <motion.div
-      className={`message-container ${isUser ? "user" : "ditto"}`}
+      className={`message-container ${isUser ? "user" : "ditto"} ${isOptimistic ? "optimistic" : ""}`}
       initial={isLast ? { opacity: 0, y: 10, scale: 0.95 } : false}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2, ease: "easeInOut" }}
     >
       <div className="message-content">
         <div
-          className={`message-bubble ${isUser ? "user" : "ditto"} content-ready`}
+          className={`message-bubble ${isUser ? "user" : "ditto"} content-ready ${isOptimistic ? "optimistic" : ""}`}
           style={{
             ...bubbleStyles.chatbubble,
             backgroundColor: isUser ? "#007AFF" : "#1C1C1E",
@@ -174,8 +176,24 @@ export default function ChatMessage({
               {toolLabels[toolType].text}
             </div>
           )}
-          <MarkdownRenderer content={content} />
-          <div className="message-timestamp">{formatTimestamp(timestamp)}</div>
+          {isOptimistic && !isUser && content === "" ? (
+            <div className="optimistic-placeholder">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          ) : (
+            <MarkdownRenderer content={content} />
+          )}
+          <div className="message-timestamp">
+            {isOptimistic ? (
+              content === "" ? "Thinking..." : "Streaming..."
+            ) : (
+              formatTimestamp(timestamp)
+            )}
+          </div>
         </div>
       </div>
 
