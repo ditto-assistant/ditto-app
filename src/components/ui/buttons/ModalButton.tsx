@@ -43,7 +43,7 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
       {...props}
     >
       {isLoading ? (
-        <div className="button-spinner" />
+        <div className="spinner button" />
       ) : (
         <>
           {icon && <span className="button-icon">{icon}</span>}

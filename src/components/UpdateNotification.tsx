@@ -79,9 +79,11 @@ const UpdateNotification = () => {
         return "Please update the app to continue.";
     }
   };
-  
+
   // Check if any lazy components might be stale
-  const mightHaveStaleLazyComponents = updateState.justUpdated || localStorage.getItem("force-reload-lazy") === "true";
+  const mightHaveStaleLazyComponents =
+    updateState.justUpdated ||
+    localStorage.getItem("force-reload-lazy") === "true";
 
   const isForced = updateState.status === "outdated";
 
@@ -93,7 +95,10 @@ const UpdateNotification = () => {
           {getMessage()}
           {mightHaveStaleLazyComponents && (
             <div className="update-note">
-              <small>If you notice incorrect version numbers, please refresh the page.</small>
+              <small>
+                If you notice incorrect version numbers, please refresh the
+                page.
+              </small>
             </div>
           )}
         </div>

@@ -1,19 +1,24 @@
 /* Common component styles for Ditto app */
 @import "./variables.css";
 
-/* Common header styles */
-.app-header {
+/* Header base class - shared styles for all headers */
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
+  position: relative;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* App header variant */
+.header.app {
   padding: 10px 16px;
   background-color: var(--header-background);
   backdrop-filter: blur(10px);
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
-  position: relative;
   height: 60px;
-  box-sizing: border-box;
 }
 
 /* Common title container styles */
@@ -43,24 +48,11 @@
   transform: scale(0.98);
 }
 
-/* Common icon button styles */
-.app-icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* App-specific icon button */
+.icon-button.app {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.2s ease;
   z-index: 10;
-}
-
-.app-icon-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Common icon styles */
@@ -85,14 +77,11 @@
   flex-direction: column;
 }
 
-.editor-header {
+.header.editor {
   background-color: var(--background-editor-header);
   padding: 0 var(--spacing-md);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-dark);
   height: 64px;
+  border-bottom-color: var(--border-dark);
 }
 
 /* Filter Group styles */
@@ -116,14 +105,14 @@
   gap: 8px;
 }
 
-/* Mobile styles */
+/* Mobile styles - using standardized breakpoints */
 @media (max-width: 768px) {
-  .app-header {
+  .header.app {
     padding: 0 var(--spacing-sm);
     height: 56px;
   }
 
-  .app-icon-button {
+  .icon-button.app {
     width: 36px;
     height: 36px;
     min-width: 36px;
@@ -148,23 +137,20 @@
 }
 
 /* Modal Header styles */
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.header.modal {
   padding: 1rem;
   background: var(--background-tertiary);
-  border-bottom: 1px solid var(--border-dark);
+  border-bottom-color: var(--border-dark);
   user-select: none;
   cursor: grab;
   touch-action: none;
 }
 
-.modal-header:active {
+.header.modal:active {
   cursor: grabbing;
 }
 
-.modal-header h3 {
+.header.modal h3 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 500;

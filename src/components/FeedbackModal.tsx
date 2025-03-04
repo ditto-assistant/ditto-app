@@ -15,9 +15,6 @@ import { Result } from "@/types/common";
 import { usePlatform } from "@/hooks/usePlatform";
 
 type FeedbackType = "bug" | "feature-request";
-interface FeedbackModalProps {
-  feedbackType?: FeedbackType;
-}
 
 type FeedbackState = Result<boolean>;
 
@@ -37,12 +34,10 @@ async function submitFeedback(_: FeedbackState, formData: FormData) {
   }
 }
 
-export default function FeedbackModal({
-  feedbackType = "bug",
-}: FeedbackModalProps) {
+export default function FeedbackModal() {
   const { isMobile } = usePlatform();
   const { createCloseHandler } = useModal();
-  const [selectedType, setSelectedType] = useState(feedbackType);
+  const [selectedType, setSelectedType] = useState<FeedbackType>("bug");
   const createSelectTypeCallback = useCallback(
     (type: FeedbackType) => () => setSelectedType(type),
     [],
@@ -87,7 +82,7 @@ export default function FeedbackModal({
             <button
               type="button"
               onClick={createSelectTypeCallback("bug")}
-              className={`modal-feedback-button feedback-bug-button ${
+              className={`ditto-button secondary modal-feedback-button feedback-bug-button ${
                 selectedType === "bug" ? "selected" : ""
               }`}
             >
@@ -97,7 +92,7 @@ export default function FeedbackModal({
             <button
               type="button"
               onClick={createSelectTypeCallback("feature-request")}
-              className={`modal-feedback-button feedback-feature-button ${
+              className={`ditto-button secondary modal-feedback-button feedback-feature-button ${
                 selectedType === "feature-request" ? "selected" : ""
               }`}
             >

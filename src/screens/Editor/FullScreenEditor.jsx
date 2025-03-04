@@ -825,14 +825,14 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
   return (
     <div className="editor-container">
       <motion.div
-        className="editor-header"
+        className="header editor"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
         <div className="header-left">
           <Tooltip title="Back">
-            <IconButton onClick={handleClose} className="icon-button">
+            <IconButton onClick={handleClose} className="icon-button app">
               <FaArrowLeft />
             </IconButton>
           </Tooltip>
@@ -847,14 +847,14 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
           <Tooltip title="Chat">
             <IconButton
               onClick={() => setShowScriptChat((prev) => !prev)}
-              className={`icon-button ${showScriptChat ? "active" : ""}`}
+              className={`icon-button app ${showScriptChat ? "active" : ""}`}
             >
               <FaComments size={16} />
             </IconButton>
           </Tooltip>
           <div className="divider" />
           <Tooltip title="Run">
-            <IconButton onClick={handleRunPreview} className="icon-button">
+            <IconButton onClick={handleRunPreview} className="icon-button app">
               <FaPlay size={16} />
             </IconButton>
           </Tooltip>

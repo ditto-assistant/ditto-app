@@ -274,13 +274,12 @@ export default function SendMessage({
 
   return (
     <>
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form" onSubmit={handleSubmit} onPaste={handlePaste}>
         <div className="input-wrapper">
           <textarea
             ref={textAreaRef}
             onKeyDown={handleKeyDown}
             onInput={resizeTextArea}
-            onPaste={handlePaste}
             className="text-area"
             type="text"
             value={message}
@@ -300,10 +299,16 @@ export default function SendMessage({
 
         <div className="bottom-buttons-bar">
           <div className="action-buttons">
-            <div className="action-button" onClick={handlePlusClick}>
+            <div
+              className="icon-button action-button"
+              onClick={handlePlusClick}
+            >
               <FaPlus />
             </div>
-            <div className="action-button" onClick={openComposeModal}>
+            <div
+              className="icon-button action-button"
+              onClick={openComposeModal}
+            >
               <FaExpand />
             </div>
             <input
@@ -315,7 +320,7 @@ export default function SendMessage({
             />
           </div>
           <button
-            className={`submit ${isWaitingForResponse ? "disabled" : ""}`}
+            className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
             type="submit"
             disabled={isWaitingForResponse}
           >

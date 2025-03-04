@@ -154,12 +154,13 @@ export const FullscreenComposeModal: React.FC = () => {
   return createPortal(
     <div className="fullscreen-compose-overlay">
       <div className="fullscreen-compose-container">
-        <div className="fullscreen-compose-header">
-          <h2>Compose Message</h2>
-          <FaTimes
-            className="fullscreen-compose-close"
-            onClick={closeComposeModal}
-          />
+        <div className="header modal fullscreen-compose-header">
+          <h3>Compose Message</h3>
+          <div className="modal-controls">
+            <div className="modal-control close" onClick={closeComposeModal}>
+              <FaTimes size={20} />
+            </div>
+          </div>
         </div>
         <textarea
           ref={textAreaRef}
@@ -170,7 +171,7 @@ export const FullscreenComposeModal: React.FC = () => {
         />
         <div className="fullscreen-compose-footer">
           <button
-            className={`fullscreen-compose-send-button ${isWaitingForResponse ? "disabled" : ""}`}
+            className={`ditto-button primary fullscreen-compose-send-button ${isWaitingForResponse ? "disabled" : ""}`}
             onClick={() => {
               // Execute the submit handler
               if (message.trim()) {
@@ -179,8 +180,10 @@ export const FullscreenComposeModal: React.FC = () => {
             }}
             disabled={isWaitingForResponse}
           >
-            <FaPaperPlane /> Send{" "}
-            {!isMobile && <span className="keyboard-shortcut">⌘↵</span>}
+            <span className="button-icon">
+              <FaPaperPlane />
+            </span>{" "}
+            Send {!isMobile && <span className="shortcut-hint">⌘↵</span>}
           </button>
         </div>
       </div>

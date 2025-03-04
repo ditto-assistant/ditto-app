@@ -4,6 +4,8 @@
   min-height: 300px;
   flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .danger-description {
@@ -23,6 +25,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .balance-item {
@@ -42,6 +45,7 @@
   align-items: center;
   width: 100%;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .memory-manager-container {
@@ -62,8 +66,7 @@
   background-color: #2f3136;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
-  position: relative;
-  bottom: 0;
+  margin-top: auto;
 }
 
 .footer-divider {

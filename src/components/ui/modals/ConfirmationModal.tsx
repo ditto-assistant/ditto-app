@@ -6,11 +6,9 @@ import { motion } from "framer-motion";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import { ModalButton } from "../buttons/ModalButton";
 
-interface ConfirmationModalProps {
-  id: ModalId;
-}
+const id: ModalId = "confirmationDialog";
 
-export default function ConfirmationModal({ id }: ConfirmationModalProps) {
+export default function ConfirmationModal() {
   const { getModalState, createCloseHandler } = useModal();
   const { config, hideConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler(id);

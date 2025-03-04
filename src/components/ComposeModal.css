@@ -20,33 +20,12 @@
   overflow: hidden;
 }
 
+/* Use header.modal class from components.css */
 .fullscreen-compose-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--border-light);
-  background-color: var(--background-secondary);
+  background-color: var(--background-tertiary);
 }
 
-.fullscreen-compose-header h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.fullscreen-compose-close {
-  font-size: 20px;
-  color: var(--interactive-active);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.fullscreen-compose-close:hover {
-  color: var(--primary-color);
-  transform: scale(1.1);
-}
+/* Removed fullscreen-compose-close - using modal-control from components.css */
 
 .fullscreen-compose-textarea {
   flex: 1;
@@ -74,22 +53,15 @@
   z-index: 10;
 }
 
+/* Use ditto-button class from buttons.css */
 .fullscreen-compose-send-button {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--primary-active);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
 }
 
+/* Reuse shortcut-hint class from buttons.css */
 .keyboard-shortcut {
   font-size: 12px;
   opacity: 0.8;
@@ -99,29 +71,7 @@
   border-radius: 4px;
 }
 
-.fullscreen-compose-send-button:hover {
-  background-color: var(--primary-hover);
-}
-
-.fullscreen-compose-send-button:active {
-  transform: scale(0.98);
-}
-
-.fullscreen-compose-send-button.disabled {
-  background-color: var(--background-tertiary);
-  color: var(--text-muted);
-  cursor: not-allowed;
-}
-
 @media screen and (max-width: 380px) {
-  .fullscreen-compose-header {
-    padding: 12px;
-  }
-
-  .fullscreen-compose-header h2 {
-    font-size: 16px;
-  }
-
   .fullscreen-compose-textarea {
     padding: 12px;
     font-size: 15px;

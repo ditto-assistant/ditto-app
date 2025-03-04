@@ -1,3 +1,16 @@
+/* 
+  Main CSS variables for Ditto app
+  Note: iOS-specific variables (safe areas) are defined in platform/ios.css 
+*/
+
+/* Media query breakpoint values - these are just for documentation
+   Use these standard breakpoints in all media queries:
+   - Mobile: max-width: 480px
+   - Tablet: max-width: 768px
+   - Desktop: min-width: 769px
+   - Large Desktop: min-width: 1200px
+*/
+
 :root {
   /* Primary colors */
   --primary: #5865f2;
@@ -76,10 +89,4 @@
   --z-index-dropdown: 1000;
   --z-index-modal: 2000;
   --z-index-overlay: 3000;
-
-  /* iOS safe area variables - simplified */
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
 }

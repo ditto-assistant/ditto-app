@@ -83,45 +83,21 @@
   align-items: center;
 }
 
+/* Use icon-button class from buttons.css */
 .action-button {
   color: var(--interactive-active);
-  cursor: pointer;
-  transition:
-    color var(--transition-normal),
-    transform 0.2s ease;
   font-size: 17px;
-  background-color: var(--background-secondary);
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.action-button:hover {
-  color: var(--primary-color);
-  transform: scale(1.05);
-}
-
-.action-button:active {
-  transform: scale(0.95);
-}
-
+/* Use icon-button class from buttons.css with custom styling */
 .submit {
   background-color: var(--primary-active);
-  border: none;
-  border-radius: 50%;
   color: var(--interactive-active);
-  padding: 0;
-  cursor: pointer;
-  transition: all var(--transition-normal);
   height: 36px;
   width: 36px;
   min-height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin: 0;
   align-self: center;
 }
@@ -141,10 +117,6 @@
 
 .submit:not(.disabled):hover {
   background-color: var(--primary-hover);
-}
-
-.submit:not(.disabled):active {
-  background-color: var(--primary-color);
 }
 
 .image-preview {
@@ -344,14 +316,7 @@
   animation: slide-up 0.3s ease;
 }
 
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
+/* Removed duplicate slide-up animation - should be in animations.css */
 
 .fullscreen-header {
   display: flex;
@@ -367,16 +332,10 @@
   font-weight: 600;
 }
 
+/* Use modal-control class from components.css */
 .close-button {
   font-size: 20px;
   color: var(--interactive-active);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.close-button:hover {
-  color: var(--primary-color);
-  transform: scale(1.1);
 }
 
 .fullscreen-text-area {

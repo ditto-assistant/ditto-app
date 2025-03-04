@@ -77,11 +77,26 @@ export default function ModelPreferencesModal() {
   );
 
   const { isMobile } = usePlatform();
+  const [isCompactView, setIsCompactView] = useState(false);
+
+  // Check if we should use compact view based on screen width
+  useEffect(() => {
+    const checkViewportWidth = () => {
+      setIsCompactView(window.innerWidth < 1100);
+    };
+
+    checkViewportWidth();
+    window.addEventListener("resize", checkViewportWidth);
+
+    return () => {
+      window.removeEventListener("resize", checkViewportWidth);
+    };
+  }, []);
 
   // State for mobile filter section visibility
   const [isFilterSectionExpanded, setIsFilterSectionExpanded] = useState(false);
 
-  // State for collapsible filter groups - collapsed by default on mobile, expanded on desktop
+  // State for collapsible filter groups - collapsed by default on mobile/compact view, expanded on desktop
   const [expandedFilters, setExpandedFilters] = useState<{
     speed: boolean;
     pricing: boolean;
@@ -91,18 +106,19 @@ export default function ModelPreferencesModal() {
     dimensions: boolean;
     quality: boolean;
   }>({
-    speed: !isMobile,
-    pricing: !isMobile,
-    features: !isMobile,
-    vendor: !isMobile,
-    provider: !isMobile,
-    dimensions: !isMobile,
-    quality: !isMobile,
+    speed: !isMobile && !isCompactView,
+    pricing: !isMobile && !isCompactView,
+    features: !isMobile && !isCompactView,
+    vendor: !isMobile && !isCompactView,
+    provider: !isMobile && !isCompactView,
+    dimensions: !isMobile && !isCompactView,
+    quality: !isMobile && !isCompactView,
   });
 
-  // Update expanded filters when mobile state changes
+  // Update expanded filters when mobile or compact view state changes
   useEffect(() => {
-    if (!isMobile) {
+    const isCollapsedLayout = isMobile || isCompactView;
+    if (!isCollapsedLayout) {
       setExpandedFilters({
         speed: true,
         pricing: true,
@@ -123,7 +139,7 @@ export default function ModelPreferencesModal() {
         quality: false,
       });
     }
-  }, [isMobile]);
+  }, [isMobile, isCompactView]);
 
   const faFireStyle = useMemo(() => ({ color: "#FF0000" }), []);
   const faCrownStyle = useMemo(() => ({ opacity: 0.5 }), []);
@@ -605,6 +621,12 @@ export default function ModelPreferencesModal() {
                 }}
               >
                 {getSpeedIcon(model.speedLevel)}
+                {!isMobile && isCompactView && (
+                  <span className="badge-text">
+                    {model.speedLevel.charAt(0).toUpperCase() +
+                      model.speedLevel.slice(1)}
+                  </span>
+                )}
               </span>
             )}
             {model.isFree && (
@@ -615,6 +637,9 @@ export default function ModelPreferencesModal() {
                 }}
               >
                 {MemoizedFaCrownFree}
+                {!isMobile && isCompactView && (
+                  <span className="badge-text">Free</span>
+                )}
               </span>
             )}
             {model.isPremium && (
@@ -625,6 +650,9 @@ export default function ModelPreferencesModal() {
                 }}
               >
                 {MemoizedFaCrownPremium}
+                {!isMobile && isCompactView && (
+                  <span className="badge-text">Premium</span>
+                )}
               </span>
             )}
             {model.supports?.imageAttachments && (
@@ -635,6 +663,9 @@ export default function ModelPreferencesModal() {
                 }}
               >
                 {MemoizedFaImage}
+                {!isMobile && isCompactView && (
+                  <span className="badge-text">Image</span>
+                )}
               </span>
             )}
           </div>
@@ -655,10 +686,12 @@ export default function ModelPreferencesModal() {
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
+      isMobile,
+      isCompactView,
     ],
   );
 
-  // Compact version of renderImageModelCard for mobile
+  // Compact version of renderImageModelCard for mobile and compact view
   const renderCompactImageModelCard = useCallback(
     (model: ModelOption) => {
       if (!preferences) return null;
@@ -703,6 +736,9 @@ export default function ModelPreferencesModal() {
                 }}
               >
                 {MemoizedFaCrownPremium}
+                {!isMobile && isCompactView && (
+                  <span className="badge-text">Premium</span>
+                )}
               </span>
             )}
             {model.id.includes("hd") && (
@@ -712,7 +748,7 @@ export default function ModelPreferencesModal() {
                   backgroundColor: "#FAA61A",
                 }}
               >
-                HD
+                {!isMobile && isCompactView ? "HD Quality" : "HD"}
               </span>
             )}
           </div>
@@ -754,6 +790,8 @@ export default function ModelPreferencesModal() {
       handleModelChange,
       preferences,
       MemoizedFaCrownPremium,
+      isMobile,
+      isCompactView,
     ],
   );
 
@@ -808,9 +846,9 @@ export default function ModelPreferencesModal() {
 
       {activeSection !== "image" ? (
         <div className="two-column-layout">
-          {isMobile && (
+          {(isMobile || isCompactView) && (
             <>
-              {/* Selected model indicator for mobile */}
+              {/* Selected model indicator for mobile/compact view */}
               {renderSelectedModelIndicator()}
 
               {/* MARK: - Filter Chips */}
@@ -864,12 +902,58 @@ export default function ModelPreferencesModal() {
             </>
           )}
 
-          <div className={`filter-section ${isMobile ? "mobile" : ""}`}>
+          <div
+            className={`filter-section ${isMobile || isCompactView ? "mobile" : ""}`}
+          >
             <div
-              className={`filter-section-content ${isMobile ? (isFilterSectionExpanded ? "expanded" : "") : "expanded"}`}
+              className={`filter-section-content ${isMobile || isCompactView ? (isFilterSectionExpanded ? "expanded" : "") : "expanded"}`}
             >
               {/* Desktop selected model indicator */}
-              {!isMobile && renderSelectedModelIndicator()}
+              {!isMobile && !isCompactView && (
+                <>
+                  {renderSelectedModelIndicator()}
+
+                  {/* Add desktop quick filters */}
+                  <div className="desktop-quick-filters">
+                    {/* Free filter */}
+                    <button
+                      onClick={() => handleQuickFilterSelect("pricing", "free")}
+                      className={`quick-filter-chip ${activeFilters.pricing === "free" ? "active" : ""}`}
+                    >
+                      {MemoizedFaCrownFree} Free
+                    </button>
+
+                    {/* Fast filter */}
+                    <button
+                      onClick={() => handleQuickFilterSelect("speed", "fast")}
+                      className={`quick-filter-chip ${activeFilters.speed === "fast" ? "active" : ""}`}
+                    >
+                      {getSpeedIcon("fast")} Fast
+                    </button>
+
+                    {/* Smart (medium) filter */}
+                    <button
+                      onClick={() => handleQuickFilterSelect("speed", "medium")}
+                      className={`quick-filter-chip ${activeFilters.speed === "medium" ? "active" : ""}`}
+                    >
+                      {getSpeedIcon("medium")} Smart
+                    </button>
+
+                    {/* Image support filter */}
+                    <button
+                      onClick={() =>
+                        handleQuickFilterSelect(
+                          "imageSupport",
+                          !activeFilters.imageSupport,
+                        )
+                      }
+                      className={`quick-filter-chip ${activeFilters.imageSupport ? "active" : ""}`}
+                    >
+                      {MemoizedFaImage} Image
+                    </button>
+                  </div>
+                </>
+              )}
 
               {/* Speed filter group */}
               <div className="filter-group">
@@ -1064,7 +1148,7 @@ export default function ModelPreferencesModal() {
           <div className="model-grid-container">
             <div className="model-grid">
               {filteredModels.length > 0 ? (
-                isMobile ? (
+                isMobile || isCompactView ? (
                   filteredModels.map(renderCompactModelCard)
                 ) : (
                   filteredModels.map(renderModelCard)
@@ -1079,9 +1163,9 @@ export default function ModelPreferencesModal() {
         </div>
       ) : (
         <div className="two-column-layout">
-          {isMobile && (
+          {(isMobile || isCompactView) && (
             <>
-              {/* Selected model indicator for mobile */}
+              {/* Selected model indicator for mobile/compact view */}
               {renderSelectedModelIndicator()}
 
               {/* Quick filter chips for image models */}
@@ -1121,12 +1205,44 @@ export default function ModelPreferencesModal() {
             </>
           )}
 
-          <div className={`filter-section ${isMobile ? "mobile" : ""}`}>
+          <div
+            className={`filter-section ${isMobile || isCompactView ? "mobile" : ""}`}
+          >
             <div
-              className={`filter-section-content ${isMobile ? (isFilterSectionExpanded ? "expanded" : "") : "expanded"}`}
+              className={`filter-section-content ${isMobile || isCompactView ? (isFilterSectionExpanded ? "expanded" : "") : "expanded"}`}
             >
               {/* Desktop selected model indicator */}
-              {!isMobile && renderSelectedModelIndicator()}
+              {!isMobile && !isCompactView && (
+                <>
+                  {renderSelectedModelIndicator()}
+
+                  {/* Add desktop quick filters for image models */}
+                  <div className="desktop-quick-filters">
+                    {/* OpenAI filter */}
+                    <button
+                      onClick={() => toggleImageFilter("provider", "openai")}
+                      className={`quick-filter-chip ${imageFilters.provider === "openai" ? "active" : ""}`}
+                    >
+                      <SiOpenai /> OpenAI
+                    </button>
+
+                    {/* Quality quick filters */}
+                    {[
+                      { id: "hd", label: "HD" },
+                      { id: "medium", label: "Medium" },
+                      { id: "low", label: "Low" },
+                    ].map(({ id, label }) => (
+                      <button
+                        key={id}
+                        onClick={() => toggleImageFilter("quality", id)}
+                        className={`quick-filter-chip ${imageFilters.quality === id ? "active" : ""}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               {/* Provider filter */}
               <div className="filter-group">
@@ -1239,7 +1355,7 @@ export default function ModelPreferencesModal() {
           <div className="model-grid-container">
             <div className="model-grid">
               {filteredImageModels.length > 0 ? (
-                isMobile ? (
+                isMobile || isCompactView ? (
                   filteredImageModels.map(renderCompactImageModelCard)
                 ) : (
                   filteredImageModels.map(renderImageModelCard)

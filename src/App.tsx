@@ -126,7 +126,7 @@ const modalRegistry: ModalRegistry = {
     component: <DittoCanvasModal />,
   },
   confirmationDialog: {
-    component: <ConfirmationDialog id="confirmationDialog" />,
+    component: <ConfirmationDialog />,
   },
   memoryNodeViewer: {
     component: <MemoryNodeModal />,
@@ -142,7 +142,8 @@ function App() {
   // Clear the force-reload-lazy flag once App has mounted
   // This ensures we only force reload once per app update
   useEffect(() => {
-    const forceReloadLazy = localStorage.getItem("force-reload-lazy") === "true";
+    const forceReloadLazy =
+      localStorage.getItem("force-reload-lazy") === "true";
     if (forceReloadLazy) {
       console.log("App mounted after update - clearing force-reload-lazy flag");
       localStorage.removeItem("force-reload-lazy");

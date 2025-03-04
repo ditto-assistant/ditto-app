@@ -11,26 +11,11 @@
   margin-bottom: 20px;
 }
 
+/* Use ditto-button secondary class from buttons.css */
 .modal-feedback-button {
   flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 20px;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  cursor: pointer;
   font-size: 15px;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modal-feedback-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
 }
 
 .feedback-icon {

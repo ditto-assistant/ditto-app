@@ -24,6 +24,12 @@ const sections: Section[] = [
         description:
           "Removed redundant CSS rules and simplified style definitions to improve page load performance and reduce CSS bundle size.",
       },
+      {
+        type: "new",
+        title: "Component Base Classes",
+        description:
+          "Introduced reusable base classes with class specificity for UI elements like headers (.header.app), buttons (.icon-button.app), and spinners (.spinner.button).",
+      },
     ],
   },
   {
@@ -46,6 +52,12 @@ const sections: Section[] = [
         title: "Mobile Experience",
         description:
           "Enhanced mobile-specific styles for better touch interactions and improved usability on smaller screens.",
+      },
+      {
+        type: "new",
+        title: "Media Query Standardization",
+        description:
+          "Added standardized breakpoints for responsive design across all components (mobile: 480px, tablet: 768px, desktop: 769px), making our CSS more maintainable.",
       },
     ],
   },

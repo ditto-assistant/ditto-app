@@ -153,6 +153,11 @@ export default function Settings() {
           LOG OUT
         </ModalButton>
       </div>
+      <footer className="settings-footer">
+        <div className="version-container">
+          <small>Version: {packageJson.version}</small>
+        </div>
+      </footer>
     </div>
   );
 
@@ -213,11 +218,7 @@ export default function Settings() {
       tabs={modalTabs}
       defaultTabId="general"
     >
-      <footer className="settings-footer">
-        <div className="version-container">
-          <small>Version: {packageJson.version}</small>
-        </div>
-      </footer>
+      {/* Footer will be conditionally rendered in each tab's content */}
     </Modal>
   );
 }
