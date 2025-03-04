@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./ChatFeed.css";
-import { motion } from "framer-motion";
-import { FiCopy } from "react-icons/fi";
-import { FaBrain, FaTrash, FaChevronDown } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
 import { toast } from "react-hot-toast";
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork";
@@ -18,7 +16,6 @@ const triggerHapticFeedback = () => {
 
 const CustomScrollToBottom = ({
   children,
-  className,
   onScroll,
   onScrollComplete,
   className: containerClassName,
@@ -72,8 +69,11 @@ const CustomScrollToBottom = ({
         }, 200);
       };
 
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.addEventListener(
+      // Store the ref value in a variable to avoid issues in cleanup function
+      const currentScrollContainer = scrollContainerRef.current;
+
+      if (currentScrollContainer) {
+        currentScrollContainer.addEventListener(
           "scroll",
           trackUserScrolling
         );
@@ -85,7 +85,7 @@ const CustomScrollToBottom = ({
         }
       };
 
-      const images = scrollContainerRef.current.querySelectorAll("img");
+      const images = currentScrollContainer.querySelectorAll("img");
       images.forEach((img) => {
         if (!img.complete) {
           img.addEventListener("load", handleImageLoad);
@@ -93,13 +93,13 @@ const CustomScrollToBottom = ({
       });
 
       return () => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.removeEventListener(
+        if (currentScrollContainer) {
+          currentScrollContainer.removeEventListener(
             "scroll",
             trackUserScrolling
           );
 
-          const images = scrollContainerRef.current.querySelectorAll("img");
+          const images = currentScrollContainer.querySelectorAll("img");
           images.forEach((img) => {
             img.removeEventListener("load", handleImageLoad);
           });
@@ -129,8 +129,11 @@ const CustomScrollToBottom = ({
       }, 150);
     };
 
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.addEventListener("scroll", setScrolling);
+    // Store the ref value in a variable to avoid issues in cleanup function
+    const currentScrollContainer = scrollContainerRef.current;
+
+    if (currentScrollContainer) {
+      currentScrollContainer.addEventListener("scroll", setScrolling);
     }
 
     const handleResize = () => {
@@ -172,8 +175,8 @@ const CustomScrollToBottom = ({
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.removeEventListener("scroll", setScrolling);
+      if (currentScrollContainer) {
+        currentScrollContainer.removeEventListener("scroll", setScrolling);
       }
       clearTimeout(scrollTimeout);
     };
@@ -352,16 +355,34 @@ export default function ChatFeed({
       if (!shouldFetchNext) return;
 
       try {
+        // Get initial scroll position
+        const scrollContainer = document.querySelector(".messages-scroll-view");
+        let prevHeight = 0;
+        
+        if (scrollContainer) {
+          prevHeight = scrollContainer.scrollHeight;
+        }
+        
         console.log("Fetching older messages...");
         await fetchNextPage();
-
         console.log("Fetch complete");
-
+        
+        // Set a reasonable timeout to ensure DOM is updated
         setTimeout(() => {
+          if (scrollContainer) {
+            // Get the new scroll height and calculate difference
+            const newHeight = scrollContainer.scrollHeight;
+            const heightDifference = newHeight - prevHeight;
+            
+            // Position just below the new content
+            if (heightDifference > 0) {
+              scrollContainer.scrollTop = heightDifference;
+            }
+          }
+          
           fetchingRef.current = false;
           setShouldFetchNext(false);
-          console.log("Fetch state reset");
-        }, 500);
+        }, 150);
       } catch (error) {
         console.error("Error loading more messages:", error);
         fetchingRef.current = false;
