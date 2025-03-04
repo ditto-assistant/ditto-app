@@ -26,23 +26,59 @@ import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer";
 import { ConversationProvider } from "./hooks/useConversationHistory";
 import { ComposeProvider } from "@/components/ComposeModal";
 import { PromptStorageProvider } from "@/hooks/usePromptStorage";
+import { initUpdateService } from "@/utils/updateService";
+import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler";
+import UpdateNotification from "@/components/UpdateNotification";
+import WhatsNew from "@/components/WhatsNew/WhatsNew";
+import useWhatsNew from "@/hooks/useWhatsNew";
 
-const DittoCanvasModal = lazy(() => import("@/components/DittoCanvasModal"));
-const Login = lazy(() => import("@/screens/Login"));
-const FeedbackModal = lazy(() => import("@/components/FeedbackModal"));
-const ImageViewer = lazy(() => import("@/components/ImageViewer"));
-const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
-const Settings = lazy(() => import("@/screens/Settings"));
-const Checkout = lazy(() => import("@/screens/Checkout"));
-const CheckoutSuccess = lazy(() => import("@/screens/CheckoutSuccess"));
-const ScriptsOverlay = lazy(
+// Initialize update service
+initUpdateService();
+
+// Create error boundary wrapper
+const AppErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  const { ErrorBoundaryWrapper, isOutdated } = useLazyLoadErrorHandler();
+
+  // If we detected an outdated version from a lazy loading error,
+  // we don't render the children to prevent further errors
+  if (isOutdated) {
+    return <UpdateNotification />;
+  }
+
+  return <ErrorBoundaryWrapper>{children}</ErrorBoundaryWrapper>;
+};
+
+// Wrap lazy components with error boundary
+const loadE = <T extends React.ComponentType<unknown>>(
+  importFn: () => Promise<{ default: T }>
+) => {
+  return lazy(async () => {
+    try {
+      return await importFn();
+    } catch (error) {
+      // This will be caught by the ErrorBoundary
+      console.error("Failed to load component:", error);
+      throw error;
+    }
+  });
+};
+
+const DittoCanvasModal = loadE(() => import("@/components/DittoCanvasModal"));
+const Login = loadE(() => import("@/screens/Login"));
+const FeedbackModal = loadE(() => import("@/components/FeedbackModal"));
+const ImageViewer = loadE(() => import("@/components/ImageViewer"));
+const HomeScreen = loadE(() => import("@/screens/HomeScreen"));
+const Settings = loadE(() => import("@/screens/Settings"));
+const Checkout = loadE(() => import("@/screens/Checkout"));
+const CheckoutSuccess = loadE(() => import("@/screens/CheckoutSuccess"));
+const ScriptsOverlay = loadE(
   () => import("@/screens/ScriptsModal/ScriptsOverlay")
 );
-const ConfirmationDialog = lazy(
+const ConfirmationDialog = loadE(
   () => import("@/components/ui/modals/ConfirmationModal")
 );
-const MemoryNetworkModal = lazy(() => import("@/components/MemoryNetwork"));
-const MemoryNodeModal = lazy(() => import("@/components/MemoryNodeModal"));
+const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"));
+const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -98,6 +134,8 @@ const modalRegistry: ModalRegistry = {
 } as const;
 
 function App() {
+  const { isWhatsNewOpen, closeWhatsNew, currentVersion } = useWhatsNew();
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -114,7 +152,16 @@ function App() {
                             <ModalProvider registry={modalRegistry}>
                               <PromptStorageProvider>
                                 <ComposeProvider>
-                                  <RouterProvider router={router} />
+                                  <AppErrorBoundary>
+                                    <RouterProvider router={router} />
+                                  </AppErrorBoundary>
+                                  <UpdateNotification />
+                                  <WhatsNew
+                                    isOpen={isWhatsNewOpen}
+                                    onClose={closeWhatsNew}
+                                    forceVersion={currentVersion || undefined}
+                                  />
+
                                   {createPortal(
                                     <Toaster
                                       position="bottom-center"

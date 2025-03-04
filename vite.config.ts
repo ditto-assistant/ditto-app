@@ -13,7 +13,8 @@ export default defineConfig({
     VitePWA({
       srcDir: "src",
       filename: "sw.js",
-      registerType: "autoUpdate",
+      // We'll handle registration ourselves for better control
+      registerType: "prompt",
       manifest: {
         name: "Ditto",
         short_name: "Ditto",
@@ -32,11 +33,42 @@ export default defineConfig({
           },
         ],
       },
+      strategies: "injectManifest",
+      injectRegister: false, // Don't auto-register
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
       workbox: {
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
+        skipWaiting: false, // Don't skip waiting by default, we'll control this
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        navigateFallbackDenylist: [/^\/api/], // Don't cache API responses
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "google-fonts-css",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-webfonts",
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+        ],
       },
     }),
   ],
