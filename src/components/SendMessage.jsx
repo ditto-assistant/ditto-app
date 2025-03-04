@@ -528,6 +528,7 @@ export default function SendMessage({
               className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
               type="submit"
               disabled={isWaitingForResponse}
+              aria-label="Send message"
             >
               <FaPaperPlane />
             </button>

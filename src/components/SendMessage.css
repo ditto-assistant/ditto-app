@@ -151,31 +151,33 @@
   height: 36px;
 }
 
-/* Use icon-button class from buttons.css with custom styling */
-.submit {
-  background-color: var(--primary-active);
-  color: var(--interactive-active);
+/* Override icon-button class from buttons.css with custom styling */
+.icon-button.submit {
+  background-color: var(--primary);
+  color: white;
   height: 36px;
   width: 36px;
   min-height: 36px;
   margin: 0;
   align-self: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.submit svg {
+.icon-button.submit svg {
   width: 16px;
   height: 16px;
-  color: var(--interactive-active);
+  color: white;
 }
 
-.submit.disabled {
+.icon-button.submit.disabled {
   background-color: var(--background-secondary);
   color: var(--text-muted);
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.submit:not(.disabled):hover {
+.icon-button.submit:not(.disabled):hover {
   background-color: var(--primary-hover);
 }
 
@@ -513,6 +515,12 @@
     width: 32px;
     height: 32px;
     font-size: 14px;
+  }
+  
+  /* Make submit button smaller on mobile */
+  .icon-button.submit {
+    width: 32px;
+    height: 32px;
   }
   
   /* Right buttons container should be tighter on mobile */
