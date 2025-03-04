@@ -1,4 +1,10 @@
-import { useContext, createContext, useState, useEffect, useCallback, useRef } from "react";
+import {
+  useContext,
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -6,7 +12,7 @@ import {
   getPromptFromFirestore,
   clearPromptFromFirestore,
 } from "@/control/firebase";
-import { debounce } from "lodash"; // Make sure lodash is installed
+import { debounce, DebouncedFunction } from "@/utils/debounce";
 
 interface PromptData {
   prompt: string;
@@ -21,17 +27,25 @@ interface PromptStorageContextType {
   clearPrompt: () => void;
 }
 
-const PromptStorageContext = createContext<PromptStorageContextType | undefined>(undefined);
+const PromptStorageContext = createContext<
+  PromptStorageContextType | undefined
+>(undefined);
 
 export function usePromptStorage() {
   const context = useContext(PromptStorageContext);
   if (context === undefined) {
-    throw new Error("usePromptStorage must be used within a PromptStorageProvider");
+    throw new Error(
+      "usePromptStorage must be used within a PromptStorageProvider"
+    );
   }
   return context;
 }
 
-export function PromptStorageProvider({ children }: { children: React.ReactNode }) {
+export function PromptStorageProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const value = usePromptStorageData();
   return (
     <PromptStorageContext.Provider value={value}>
@@ -43,7 +57,9 @@ export function PromptStorageProvider({ children }: { children: React.ReactNode 
 function usePromptStorageData(): PromptStorageContextType {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [debounceSave] = useState(() => 
+  const [debounceSave] = useState<
+    DebouncedFunction<(userId: string, prompt: string, image?: string) => void>
+  >(() =>
     debounce((userId: string, prompt: string, image: string = "") => {
       savePromptToFirestore(userId, prompt, image);
     }, 1000)
@@ -69,21 +85,27 @@ function usePromptStorageData(): PromptStorageContextType {
 
   // Mutation to save prompt
   const saveMutation = useMutation({
-    mutationFn: async ({ prompt, image = "" }: { prompt: string; image?: string }) => {
+    mutationFn: async ({
+      prompt,
+      image = "",
+    }: {
+      prompt: string;
+      image?: string;
+    }) => {
       if (!user?.uid) throw new Error("No user");
-      
+
       // If the prompt is empty, clear it from Firestore
       if (prompt.trim() === "" && (!image || image === "")) {
         await clearPromptFromFirestore(user.uid);
         return { prompt: "", image: "" };
       }
-      
+
       // Optimistically update local state immediately
       const updatedData = { prompt, image };
-      
+
       // Debounce the actual save to Firestore
       debounceSave(user.uid, prompt, image);
-      
+
       return updatedData;
     },
     onSuccess: (data) => {
@@ -102,15 +124,20 @@ function usePromptStorageData(): PromptStorageContextType {
       queryClient.setQueryData(["promptStorage", user?.uid], data);
     },
   });
+  const { mutate: savePromptMutate } = saveMutation;
+  const { mutate: clearPromptMutate } = clearMutation;
 
   // Wrapper functions for mutations
-  const savePrompt = useCallback((prompt: string, image: string = "") => {
-    saveMutation.mutate({ prompt, image });
-  }, [saveMutation]);
+  const savePrompt = useCallback(
+    (prompt: string, image: string = "") => {
+      savePromptMutate({ prompt, image });
+    },
+    [savePromptMutate]
+  );
 
   const clearPrompt = useCallback(() => {
-    clearMutation.mutate();
-  }, [clearMutation]);
+    clearPromptMutate();
+  }, [clearPromptMutate]);
 
   return {
     promptData: query.data || null,
