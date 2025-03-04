@@ -96,12 +96,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
 
   // Enhanced debug logging for message state (disabled in production)
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production' && (serverMessages.length > 0 || optimisticMessages.length > 0)) {
-      console.log("📊 [Messages State]", {
-        serverMessageCount: serverMessages.length,
-        optimisticMessageCount: optimisticMessages.length,
-      });
-    }
+    // Removed verbose logging
   }, [serverMessages, optimisticMessages]);
 
   // Keep track of which messages have been finalized to avoid premature cleanup
@@ -118,15 +113,8 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       (msg) => msg.isOptimistic === true
     );
     if (hasActiveOptimisticMessages) {
-      console.log(
-        "🔄 [Cleanup] Skipping cleanup - active optimistic messages exist"
-      );
       return;
     }
-
-    console.log(
-      "🔄 [Cleanup] Checking for finalized messages to clean up after server update"
-    );
 
     // Find and remove optimistic messages that have been finalized and saved to server
     // Only remove finalized messages (isOptimistic === false) that exist on the server
@@ -139,9 +127,6 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     );
 
     if (messagesToRemove.length > 0) {
-      console.log(
-        `🧹 [Cleanup] Removing ${messagesToRemove.length} finalized messages that exist on server`
-      );
       setOptimisticMessages((prev) =>
         prev.filter(
           (msg) => !messagesToRemove.some((toRemove) => toRemove.id === msg.id)
@@ -162,24 +147,11 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         const isStale =
           msg.isOptimistic === true &&
           (msg.timestamp ? msg.timestamp.getTime() : 0) < twoMinutesAgo;
-        if (isStale) {
-          console.log("🧹 [Cleanup] Found stale optimistic message:", {
-            id: msg.id,
-            age:
-              Math.floor(
-                (Date.now() - (msg.timestamp ? msg.timestamp.getTime() : 0)) /
-                  1000
-              ) + "s",
-          });
-        }
         return isStale;
       });
 
       // If we have stale messages, remove them
       if (staleMessages.length > 0) {
-        console.log(
-          `🧹 [Cleanup] Removing ${staleMessages.length} stale optimistic messages`
-        );
         setOptimisticMessages((prev) =>
           prev.filter(
             (msg) => !staleMessages.some((stale) => stale.id === msg.id)
@@ -198,9 +170,6 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       });
 
       if (finalizedMessages.length > 0) {
-        console.log(
-          `🧹 [Cleanup] Removing ${finalizedMessages.length} finalized transitional messages`
-        );
         setOptimisticMessages((prev) =>
           prev.filter(
             (msg) => !finalizedMessages.some((final) => final.id === msg.id)
@@ -217,10 +186,6 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     if (optMsg.isOptimistic === false) {
       // If we've marked it as no longer optimistic but it's still in our array,
       // keep it for this render cycle to prevent flickering
-      console.log(
-        "🔄 [Filtering] Keeping finalized message in optimistic array",
-        { id: optMsg.id }
-      );
       return true;
     }
 
@@ -229,9 +194,6 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       // Match only by exact ID (not by content)
       // This ensures uniquely generated message IDs don't get filtered out
       if (serverMsg.id === optMsg.id) {
-        console.log("🔍 [Filtering] Removing optimistic message - ID match", {
-          id: optMsg.id,
-        });
         return true;
       }
 
@@ -249,13 +211,6 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     (userPrompt: string, imageURL?: string): string => {
       const timestamp = Date.now();
       const tempPairId = `optimistic-${timestamp}`;
-
-      console.log("🌟 [OptimisticUpdate] Adding optimistic message", {
-        tempPairId,
-        userPrompt:
-          userPrompt.substring(0, 50) + (userPrompt.length > 50 ? "..." : ""),
-        hasImage: !!imageURL,
-      });
 
       const newOptimisticMessages: OptimisticMemory[] = [
         {
@@ -281,21 +236,9 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   // Update the streaming response of an optimistic message
   const updateOptimisticResponse = useCallback(
     (pairId: string, responseChunk: string) => {
-      console.log("🌊 [OptimisticUpdate] Streaming chunk received", {
-        pairId,
-        chunkLength: responseChunk.length,
-        chunkPreview:
-          responseChunk.substring(0, 20) +
-          (responseChunk.length > 20 ? "..." : ""),
-      });
-
       setOptimisticMessages((prev) => {
         const messageExists = prev.some((msg) => msg.id === pairId);
         if (!messageExists) {
-          console.warn(
-            "⚠️ [OptimisticUpdate] No message found with ID:",
-            pairId
-          );
           return prev;
         }
 
@@ -320,33 +263,15 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     (pairId: string, finalResponse: string, forceRemove = false) => {
       // Handle force remove signal from tool completion
       if (forceRemove) {
-        console.log(`🧹 [OptimisticUpdate] Force removing message: ${pairId}`);
         setOptimisticMessages((prev) =>
           prev.filter((msg) => msg.id !== pairId)
         );
         return;
       }
 
-      console.log("✅ [OptimisticUpdate] Finalizing message", {
-        pairId,
-        responseLength: finalResponse.length,
-        responsePreview:
-          finalResponse.substring(0, 30) +
-          (finalResponse.length > 30 ? "..." : ""),
-        hasToolMarker:
-          finalResponse.includes("<OPENSCAD>") ||
-          finalResponse.includes("<HTML_SCRIPT>") ||
-          finalResponse.includes("<IMAGE_GENERATION>") ||
-          finalResponse.includes("<GOOGLE_SEARCH>"),
-      });
-
       setOptimisticMessages((prev) => {
         const messageExists = prev.some((msg) => msg.id === pairId);
         if (!messageExists) {
-          console.warn(
-            "⚠️ [OptimisticUpdate] No message found to finalize with ID:",
-            pairId
-          );
           return prev;
         }
 
@@ -384,16 +309,10 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       if (!hasTool) {
         // For regular responses without tools, trigger refetch and cleanup
         setTimeout(() => {
-          console.log(
-            `🔄 [OptimisticUpdate] Triggering delayed refetch after finalizing: ${pairId}`
-          );
           refetch();
 
           // Only remove after refetch for non-tool responses
           setTimeout(() => {
-            console.log(
-              `🧹 [Cleanup] Removing optimistic message after refetch: ${pairId}`
-            );
             setOptimisticMessages((prev) =>
               prev.filter((msg) => msg.id !== pairId)
             );
