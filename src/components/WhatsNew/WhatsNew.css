@@ -1,8 +1,19 @@
-.whats-new-modal {
+.whatsNew.modal.container {
   min-width: 500px;
   max-width: 700px;
   width: 90%;
   max-height: 80vh;
+}
+
+.whats-new-generic {
+  text-align: center;
+  padding: 40px 20px;
+  color: #e8e8e8;
+}
+
+.whats-new-generic p {
+  margin: 10px 0;
+  line-height: 1.5;
 }
 
 .whats-new-container {

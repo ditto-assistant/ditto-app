@@ -30,7 +30,6 @@ import { initUpdateService } from "@/utils/updateService";
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler";
 import UpdateNotification from "@/components/UpdateNotification";
 import WhatsNew from "@/components/WhatsNew/WhatsNew";
-import useWhatsNew from "@/hooks/useWhatsNew";
 
 // Initialize update service
 initUpdateService();
@@ -129,13 +128,14 @@ const modalRegistry: ModalRegistry = {
   memoryNodeViewer: {
     component: <MemoryNodeModal />,
   },
+  whatsNew: {
+    component: <WhatsNew />,
+  },
   // No need to register fullscreenCompose in the registry anymore
   // We'll handle it directly in SendMessage component
 } as const;
 
 function App() {
-  const { isWhatsNewOpen, closeWhatsNew, currentVersion } = useWhatsNew();
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -156,11 +156,6 @@ function App() {
                                     <RouterProvider router={router} />
                                   </AppErrorBoundary>
                                   <UpdateNotification />
-                                  <WhatsNew
-                                    isOpen={isWhatsNewOpen}
-                                    onClose={closeWhatsNew}
-                                    forceVersion={currentVersion || undefined}
-                                  />
 
                                   {createPortal(
                                     <Toaster

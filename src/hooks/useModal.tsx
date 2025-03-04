@@ -20,7 +20,8 @@ export type ModalId =
   | "dittoCanvas"
   | "confirmationDialog"
   | "memoryNodeViewer"
-  | "fullscreenCompose";
+  | "fullscreenCompose"
+  | "whatsNew";
 
 type ModalRegistration = {
   component: ReactNode;
