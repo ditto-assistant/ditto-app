@@ -1,0 +1,137 @@
+@import "../styles/variables.css";
+
+.fullscreen-compose-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--background-primary);
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+}
+
+.fullscreen-compose-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.fullscreen-compose-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+  background-color: var(--background-secondary);
+}
+
+.fullscreen-compose-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.fullscreen-compose-close {
+  font-size: 20px;
+  color: var(--interactive-active);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fullscreen-compose-close:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+.fullscreen-compose-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  width: 100%;
+  font-family: inherit;
+}
+
+.fullscreen-compose-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  border-top: 1px solid var(--border-light);
+  background-color: var(--background-secondary);
+  width: 100%;
+}
+
+.fullscreen-compose-send-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--primary-active);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.keyboard-shortcut {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-left: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.fullscreen-compose-send-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.fullscreen-compose-send-button:active {
+  transform: scale(0.98);
+}
+
+.fullscreen-compose-send-button.disabled {
+  background-color: var(--background-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+
+
+@media screen and (max-width: 380px) {
+  .fullscreen-compose-header {
+    padding: 12px;
+  }
+  
+  .fullscreen-compose-header h2 {
+    font-size: 16px;
+  }
+  
+  .fullscreen-compose-textarea {
+    padding: 12px;
+    font-size: 15px;
+  }
+  
+  .fullscreen-compose-footer {
+    padding: 12px;
+  }
+  
+  .fullscreen-compose-send-button {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}

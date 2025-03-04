@@ -8,9 +8,8 @@
   width: 100%;
   background-color: var(--background-input);
   position: relative;
-  gap: var(--spacing-sm);
   z-index: 10;
-  align-items: center;
+  flex-direction: column;
   padding: 8px 12px;
   border-radius: 8px;
   margin-bottom: var(--safe-area-bottom, 0px);
@@ -44,6 +43,7 @@
   display: flex;
   align-items: center;
   height: 100%;
+  margin-bottom: 6px;
 }
 
 .text-area {
@@ -57,6 +57,8 @@
   font-size: 16px;
   max-height: 200px;
   min-height: 44px;
+  width: 100%;
+  border-radius: 6px;
 }
 
 .text-area:focus {
@@ -64,60 +66,57 @@
   box-shadow: 0 0 3px var(--primary-color);
 }
 
-/* Remove duplicated iOS-specific styles - now in platform/ios.css */
-
-.icons-wrapper {
-  position: absolute;
-  right: var(--spacing-sm);
+/* Bottom action buttons bar */
+.bottom-buttons-bar {
   display: flex;
+  width: 100%;
+  justify-content: space-between;
   align-items: center;
-  height: 100%;
+  padding: 6px 10px;
 }
 
-.mic,
-.plus-button {
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-button {
   color: var(--interactive-active);
   cursor: pointer;
-  transition: color var(--transition-normal);
-  margin-left: var(--spacing-md);
-  font-size: 20px;
+  transition:
+    color var(--transition-normal),
+    transform 0.2s ease;
+  font-size: 17px;
+  background-color: var(--background-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.mic:hover,
-.plus-button:hover {
+.action-button:hover {
   color: var(--primary-color);
+  transform: scale(1.05);
 }
 
-.mic.listening {
-  animation: pulse 1s infinite;
-  color: var(--status-danger);
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.1);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+.action-button:active {
+  transform: scale(0.95);
 }
 
 .submit {
   background-color: var(--primary-active);
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: 50%;
   color: var(--interactive-active);
   padding: 0;
   cursor: pointer;
   transition: all var(--transition-normal);
-  height: 44px;
-  width: 44px;
-  min-height: 44px;
+  height: 36px;
+  width: 36px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,8 +125,8 @@
 }
 
 .submit svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: var(--interactive-active);
 }
 
@@ -277,8 +276,8 @@
   animation: scaleIn 0.3s ease;
 }
 
-/* Updated styles for the media options overlay */
-.media-options-overlay {
+/* Action menu styles (replaces media options) */
+.action-menu-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -286,75 +285,149 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
-  align-items: flex-end;
   z-index: 1000;
+  align-items: center;
 }
 
-.media-options-content {
+.action-menu {
   background-color: #2f3136;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  padding: 20px;
-  width: 100%;
-  max-width: 500px;
+  padding: 16px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  width: auto;
+  margin-left: 16px;
 }
 
-.media-option {
+.action-menu-item {
   background-color: #40444b;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   color: white;
-  padding: 15px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
-.media-option:last-of-type {
-  margin-bottom: 20px;
-  /* Add space between options and cancel button */
-}
-
-.media-option:hover {
-  background-color: #4a4d57;
-}
-
-.media-option svg {
-  margin-right: 10px;
-}
-
-/* Updated styles for the cancel button */
-.cancel-button {
-  background-color: transparent;
-  border: 2px solid #7289da;
-  border-radius: 10px;
-  color: #7289da;
-  padding: 12px;
-  margin-top: 10px;
+  padding: 12px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.action-menu-item:hover {
+  background-color: #4a4d57;
+  transform: translateX(2px);
+}
+
+.action-menu-item:active {
+  transform: translateX(4px) scale(0.98);
+}
+
+.action-menu-item svg {
+  font-size: 18px;
+}
+
+/* Fullscreen message modal styles */
+.fullscreen-message-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--background-primary);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  animation: slide-up 0.3s ease;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.fullscreen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.fullscreen-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-button {
+  font-size: 20px;
+  color: var(--interactive-active);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+.fullscreen-text-area {
+  flex: 1;
+  border: none;
+  background-color: var(--background-primary);
+  color: var(--interactive-active);
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.6;
+  resize: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.fullscreen-text-area:focus {
+  outline: none;
+}
+
+.fullscreen-footer {
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-light);
+}
+
+.fullscreen-submit {
+  background-color: var(--primary-active);
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: white;
+  padding: 12px 24px;
   font-size: 16px;
   font-weight: 600;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
-.cancel-button:hover {
-  background-color: rgba(114, 137, 218, 0.1);
-  color: #ffffff;
-  border-color: #ffffff;
+.fullscreen-submit:hover {
+  background-color: var(--primary-hover);
 }
 
-.cancel-button:active {
+.fullscreen-submit:active {
   transform: scale(0.98);
+}
+
+.fullscreen-submit:disabled {
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
 }
 
 /* Add media query for small screens */
@@ -362,31 +435,57 @@
   .form {
     padding: var(--spacing-xs) var(--spacing-sm);
     margin: 0;
-    gap: var(--spacing-xs);
+  }
+
+  .input-wrapper {
+    margin-bottom: 3px;
   }
 
   .text-area {
     padding: var(--spacing-xs) var(--spacing-sm);
-    padding-right: 40px;
     font-size: 14px;
     margin: 0;
+    min-height: 40px;
   }
 
   .submit {
-    height: 38px;
-    width: 38px; /* Keep it square for mobile */
+    height: 32px;
+    width: 32px; /* Keep it square for mobile */
     min-width: unset; /* Remove min-width constraint */
-    font-size: 14px;
+    min-height: 32px;
   }
 
-  .icons-wrapper {
-    right: var(--spacing-xs);
+  .submit svg {
+    width: 14px;
+    height: 14px;
   }
 
-  .mic,
-  .plus-button {
-    margin-left: var(--spacing-xs);
-    font-size: 18px;
+  .action-buttons {
+    gap: 8px;
+  }
+
+  .action-button {
+    font-size: 15px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .fullscreen-header {
+    padding: 12px;
+  }
+
+  .fullscreen-text-area {
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .fullscreen-footer {
+    padding: 12px;
+  }
+
+  .fullscreen-submit {
+    padding: 10px 20px;
+    font-size: 15px;
   }
 }
 

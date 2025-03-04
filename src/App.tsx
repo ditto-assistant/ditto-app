@@ -24,6 +24,7 @@ import { ConfirmationDialogProvider } from "@/hooks/useConfirmationDialog";
 import { MemoryNetworkProvider } from "@/hooks/useMemoryNetwork";
 import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer";
 import { ConversationProvider } from "./hooks/useConversationHistory";
+import { ComposeProvider } from "@/components/ComposeModal";
 
 const DittoCanvasModal = lazy(() => import("@/components/DittoCanvasModal"));
 const Login = lazy(() => import("@/screens/Login"));
@@ -41,6 +42,7 @@ const ConfirmationDialog = lazy(
 );
 const MemoryNetworkModal = lazy(() => import("@/components/MemoryNetwork"));
 const MemoryNodeModal = lazy(() => import("@/components/MemoryNodeModal"));
+const ComposeModal = lazy(() => import("@/components/ComposeModal"));
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter(
@@ -91,6 +93,8 @@ const modalRegistry: ModalRegistry = {
   memoryNodeViewer: {
     component: <MemoryNodeModal />,
   },
+  // No need to register fullscreenCompose in the registry anymore
+  // We'll handle it directly in SendMessage component
 } as const;
 
 function App() {
@@ -108,27 +112,29 @@ function App() {
                         <MemoryNodeViewerProvider>
                           <ConversationProvider>
                             <ModalProvider registry={modalRegistry}>
-                              <RouterProvider router={router} />
-                              {createPortal(
-                                <Toaster
-                                  position="bottom-center"
-                                  toastOptions={{
-                                    style: {
-                                      background: "#333",
-                                      color: "#fff",
-                                      borderRadius: "8px",
-                                      padding: "12px 16px",
-                                      zIndex: 10000,
-                                    },
-                                  }}
-                                />,
-                                document.getElementById("toast-root") ||
-                                  document.body
-                              )}
-                              <ReactQueryDevtools
-                                buttonPosition="bottom-left"
-                                initialIsOpen={false}
-                              />
+                              <ComposeProvider>
+                                <RouterProvider router={router} />
+                                {createPortal(
+                                  <Toaster
+                                    position="bottom-center"
+                                    toastOptions={{
+                                      style: {
+                                        background: "#333",
+                                        color: "#fff",
+                                        borderRadius: "8px",
+                                        padding: "12px 16px",
+                                        zIndex: 10000,
+                                      },
+                                    }}
+                                  />,
+                                  document.getElementById("toast-root") ||
+                                    document.body
+                                )}
+                                {/* <ReactQueryDevtools
+                                  buttonPosition="bottom-left"
+                                  initialIsOpen={false}
+                                /> */}
+                              </ComposeProvider>
                             </ModalProvider>
                           </ConversationProvider>
                         </MemoryNodeViewerProvider>

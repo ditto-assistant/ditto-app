@@ -1,6 +1,6 @@
 import "./SendMessage.css";
 import { useState, useEffect, useRef } from "react";
-import { FaPlus, FaImage, FaCamera, FaTimes, FaPaperPlane } from "react-icons/fa";
+import { FaPlus, FaImage, FaCamera, FaTimes, FaPaperPlane, FaExpand } from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,7 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
 import { useBalance } from "@/hooks/useBalance";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal";
 import { toast } from "react-hot-toast";
 /**
  * A component that allows the user to send a message to the agent
@@ -30,9 +31,7 @@ export default function SendMessage({
   onCloseMediaOptions,
   onStop,
 }) {
-  const [message, setMessage] = useState("");
   const [image, setImage] = useState(capturedImage || "");
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const textAreaRef = useRef(null);
   const preferences = useModelPreferences();
   const { openImageViewer } = useImageViewerHandler();
@@ -44,9 +43,24 @@ export default function SendMessage({
     updateOptimisticResponse, 
     finalizeOptimisticMessage 
   } = useConversationHistory();
+  
+  // Use the compose context instead of local state
+  const { 
+    message, 
+    setMessage, 
+    openComposeModal, 
+    isWaitingForResponse, 
+    setIsWaitingForResponse,
+    registerSubmitCallback
+  } = useCompose();
 
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
+  
+  // Register our submit handler with the compose context
+  useEffect(() => {
+    registerSubmitCallback(() => handleSubmit());
+  }, [registerSubmitCallback]);
 
   useEffect(() => {
     if (capturedImage) {
@@ -115,6 +129,8 @@ export default function SendMessage({
       setImage("");
       finalTranscriptRef.current = "";
       resizeTextArea();
+      
+      // The modal will be closed automatically after handleSubmit completes
 
       // Add optimistic message to the UI immediately
       console.log("🚀 [SendMessage] Creating optimistic message");
@@ -191,7 +207,7 @@ export default function SendMessage({
         textArea.style.overflowY = "hidden";
       }
 
-      const imagePreview = document.querySelector(".ImagePreview");
+      const imagePreview = document.querySelector(".image-preview");
       if (imagePreview) {
         imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
       }
@@ -240,105 +256,112 @@ export default function SendMessage({
     onCameraOpen();
     onCloseMediaOptions();
   };
+  
 
   return (
-    <form className="form" onSubmit={handleSubmit}>
-      <div className="input-wrapper">
-        <textarea
-          ref={textAreaRef}
-          onKeyDown={handleKeyDown}
-          onInput={resizeTextArea}
-          onPaste={handlePaste}
-          className="text-area"
-          type="text"
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-            if (e.target.value.trim() === "") {
-              finalTranscriptRef.current = "";
-            }
-          }}
-          rows={3}
-          style={{
-            overflowY: "hidden",
-            marginRight: "-5px",
-          }}
-        />
-        <div className="icons-wrapper">
-          <FaPlus className="plus-button" onClick={handlePlusClick} />
-          <input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleImageUpload}
-          />
-        </div>
-      </div>
-      <button
-        className={`submit ${isWaitingForResponse ? "disabled" : ""}`}
-        type="submit"
-        disabled={isWaitingForResponse}
-      >
-        <FaPaperPlane />
-      </button>
-
-      {image && (
-        <div className="image-preview" onClick={() => openImageViewer(image)}>
-          <img src={image} alt="Preview" />
-          <FaTimes
-            className="remove-image"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClearImage();
+    <>
+      <form className="form" onSubmit={handleSubmit}>
+        <div className="input-wrapper">
+          <textarea
+            ref={textAreaRef}
+            onKeyDown={handleKeyDown}
+            onInput={resizeTextArea}
+            onPaste={handlePaste}
+            className="text-area"
+            type="text"
+            value={message}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              if (e.target.value.trim() === "") {
+                finalTranscriptRef.current = "";
+              }
+            }}
+            rows={3}
+            style={{
+              overflowY: "hidden",
+              marginRight: "-5px",
             }}
           />
         </div>
-      )}
-
-      <AnimatePresence>
-        {showMediaOptions && (
-          <motion.div
-            className="media-options-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onCloseMediaOptions}
+        
+        <div className="bottom-buttons-bar">
+          <div className="action-buttons">
+            <div className="action-button" onClick={handlePlusClick}>
+              <FaPlus />
+            </div>
+            <div className="action-button" onClick={openComposeModal}>
+              <FaExpand />
+            </div>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageUpload}
+            />
+          </div>
+          <button
+            className={`submit ${isWaitingForResponse ? "disabled" : ""}`}
+            type="submit"
+            disabled={isWaitingForResponse}
           >
-            <motion.div
-              className="media-options-content"
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 15, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                className="media-option"
-                onClick={handleGalleryClick}
-              >
-                <FaImage /> Photo Gallery
-              </button>
-              <button
-                type="button"
-                className="media-option"
-                onClick={handleCameraClick}
-              >
-                <FaCamera /> Camera
-              </button>
-              <button
-                type="button"
-                className="cancel-button"
-                onClick={onCloseMediaOptions}
-              >
-                Cancel
-              </button>
-            </motion.div>
-          </motion.div>
+            <FaPaperPlane />
+          </button>
+        </div>
+
+        {image && (
+          <div className="image-preview" onClick={() => openImageViewer(image)}>
+            <img src={image} alt="Preview" />
+            <FaTimes
+              className="remove-image"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClearImage();
+              }}
+            />
+          </div>
         )}
-      </AnimatePresence>
-      <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-    </form>
+
+        <AnimatePresence>
+          {showMediaOptions && (
+            <motion.div
+              className="action-menu-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onCloseMediaOptions}
+            >
+              <motion.div
+                className="action-menu"
+                initial={{ x: "-100%", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "-100%", opacity: 0 }}
+                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="action-menu-item"
+                  onClick={handleGalleryClick}
+                >
+                  <FaImage /> Photo Gallery
+                </button>
+                <button
+                  type="button"
+                  className="action-menu-item"
+                  onClick={handleCameraClick}
+                >
+                  <FaCamera /> Camera
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+      </form>
+      
+      <FullscreenComposeModal />
+    </>
   );
 }
