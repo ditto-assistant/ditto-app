@@ -112,16 +112,23 @@
   border: none;
   border-radius: var(--border-radius-md);
   color: var(--interactive-active);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 0;
   cursor: pointer;
   transition: all var(--transition-normal);
-  height: 44px; /* Fixed height for consistency */
-  min-height: 44px; /* Minimum touch target size */
+  height: 44px;
+  width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
-  align-self: stretch;
+  align-self: center;
+}
+
+.submit svg {
+  width: 18px;
+  height: 18px;
+  color: var(--interactive-active);
 }
 
 .submit.disabled {
@@ -366,9 +373,10 @@
   }
 
   .submit {
-    padding: var(--spacing-xs) var(--spacing-sm);
+    height: 38px;
+    width: 38px; /* Keep it square for mobile */
+    min-width: unset; /* Remove min-width constraint */
     font-size: 14px;
-    min-width: 60px;
   }
 
   .icons-wrapper {

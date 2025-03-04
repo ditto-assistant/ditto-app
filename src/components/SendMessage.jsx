@@ -1,6 +1,6 @@
 import "./SendMessage.css";
 import { useState, useEffect, useRef } from "react";
-import { FaPlus, FaImage, FaCamera, FaTimes } from "react-icons/fa";
+import { FaPlus, FaImage, FaCamera, FaTimes, FaPaperPlane } from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -246,12 +246,13 @@ export default function SendMessage({
           />
         </div>
       </div>
-      <input
+      <button
         className={`submit ${isWaitingForResponse ? "disabled" : ""}`}
         type="submit"
-        value="Send"
         disabled={isWaitingForResponse}
-      />
+      >
+        <FaPaperPlane />
+      </button>
 
       {image && (
         <div className="image-preview" onClick={() => openImageViewer(image)}>
