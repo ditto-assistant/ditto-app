@@ -125,12 +125,13 @@ export default function SendMessage({
         }
       }
 
+      // Clear the input message state
       setMessage("");
       setImage("");
       finalTranscriptRef.current = "";
       resizeTextArea();
       
-      // The modal will be closed automatically after handleSubmit completes
+      // The prompt will be cleared automatically when handleSubmit is called
 
       // Add optimistic message to the UI immediately
       console.log("🚀 [SendMessage] Creating optimistic message");

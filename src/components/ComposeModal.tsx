@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useRef, useEffect } from "r
 import { FaPaperPlane, FaTimes } from "react-icons/fa";
 import { createPortal } from "react-dom";
 import { usePlatform } from "@/hooks/usePlatform";
+import { usePromptStorage } from "@/hooks/usePromptStorage";
 import "./ComposeModal.css";
 
 
@@ -27,9 +28,17 @@ interface ComposeProviderProps {
 }
 
 export const ComposeProvider: React.FC<ComposeProviderProps> = ({ children }) => {
+  const { promptData, savePrompt, clearPrompt } = usePromptStorage();
   const [message, setMessage] = useState("");
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
+  
+  // Load saved prompt from storage when component mounts
+  useEffect(() => {
+    if (promptData && promptData.prompt) {
+      setMessage(promptData.prompt);
+    }
+  }, [promptData]);
   
   // Callback function to be overridden by SendMessage component
   const submitCallbackRef = useRef<(() => void) | null>(null);
@@ -41,17 +50,23 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({ children }) =>
   const handleSubmit = () => {
     if (submitCallbackRef.current) {
       submitCallbackRef.current();
+      clearPrompt();
       closeComposeModal();
     }
+  };
+  
+  // Update message and save to storage
+  const handleSetMessage = (newMessage: string) => {
+    setMessage(newMessage);
+    savePrompt(newMessage);
   };
   
   const openComposeModal = () => setIsComposeModalOpen(true);
   const closeComposeModal = () => setIsComposeModalOpen(false);
   
-  
   const value = {
     message,
-    setMessage,
+    setMessage: handleSetMessage,
     isComposeModalOpen,
     openComposeModal,
     closeComposeModal,

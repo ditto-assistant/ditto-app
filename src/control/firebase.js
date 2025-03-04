@@ -933,3 +933,92 @@ export const revertScriptToVersion = async (
     throw e;
   }
 };
+
+/**
+ * Saves the user's prompt to Firestore.
+ * @param {string} userID - The user's ID.
+ * @param {string} prompt - The prompt text to save.
+ * @param {string} [image] - Optional base64 encoded image.
+ */
+export const savePromptToFirestore = async (userID, prompt, image = "") => {
+  try {
+    const querySnapshot = await getDocs(
+      collection(db, "users", userID, "drafts")
+    );
+    
+    if (!querySnapshot.empty) {
+      // Update existing draft
+      querySnapshot.forEach((doc) => {
+        updateDoc(doc.ref, {
+          prompt: prompt,
+          image: image,
+          timestamp: new Date(),
+        });
+      });
+    } else {
+      // Create new draft
+      await addDoc(collection(db, "users", userID, "drafts"), {
+        prompt: prompt,
+        image: image,
+        timestamp: new Date(),
+      });
+    }
+    
+    if (mode === "development") {
+      console.log("User prompt saved to Firestore");
+    }
+  } catch (e) {
+    console.error("Error saving prompt to Firestore: ", e);
+  }
+};
+
+/**
+ * Gets the user's saved prompt from Firestore.
+ * @param {string} userID - The user's ID.
+ * @returns {Promise<{prompt: string, image: string} | null>}
+ */
+export const getPromptFromFirestore = async (userID) => {
+  try {
+    const querySnapshot = await getDocs(
+      collection(db, "users", userID, "drafts")
+    );
+    
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      const data = doc.data();
+      return {
+        prompt: data.prompt || "",
+        image: data.image || "",
+      };
+    }
+    
+    return null;
+  } catch (e) {
+    console.error("Error getting prompt from Firestore: ", e);
+    return null;
+  }
+};
+
+/**
+ * Clears the user's saved prompt from Firestore.
+ * @param {string} userID - The user's ID.
+ */
+export const clearPromptFromFirestore = async (userID) => {
+  try {
+    const querySnapshot = await getDocs(
+      collection(db, "users", userID, "drafts")
+    );
+    
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((doc) => {
+        deleteDoc(doc.ref);
+      });
+    }
+    
+    if (mode === "development") {
+      console.log("User prompt cleared from Firestore");
+    }
+  } catch (e) {
+    console.error("Error clearing prompt from Firestore: ", e);
+  }
+};
