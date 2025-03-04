@@ -7,6 +7,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
 } from "firebase/auth";
 import {
   saveUserToFirestore,
@@ -52,6 +54,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
   const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
   const [showTOS, setShowTOS] = useState(false);
+  const [isViewingTOS, setIsViewingTOS] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -134,10 +137,16 @@ const Login = () => {
       localStorage.setItem("lastName", lastName);
       localStorage.removeItem("hasSeenTOS");
 
-      // Show TOS immediately after signup
-      setShowTOS(true);
-
-      // Don't switch back to sign-in mode or clear fields until user accepts TOS
+      // TOS is already shown by handleSignUpClick, so we don't need to show it again
+      // setShowTOS(true);
+      
+      // Switch back to sign-in mode and clear fields after successful signup
+      setIsCreatingAccount(false);
+      setEmail("");
+      setPassword("");
+      setRetypePassword("");
+      setFirstName("");
+      setLastName("");
     } catch (error) {
       console.error("Error creating account:", error.message);
       alert("Error creating account. Please try again.");
@@ -228,7 +237,21 @@ const Login = () => {
   };
 
   const handleSignUpClick = () => {
+    // Validate form fields before showing TOS
+    if (!email || !password || !retypePassword || !firstName || !lastName) {
+      alert("Please fill out all fields before signing up.");
+      return;
+    }
+    
+    if (password !== retypePassword) {
+      alert("Passwords do not match. Please try again.");
+      return;
+    }
+    
+    // If all validations pass, show TOS
     setShowTOS(true);
+    // This is not just viewing TOS, it's part of the signup process
+    setIsViewingTOS(false);
   };
 
   return (
@@ -284,7 +307,7 @@ const Login = () => {
         </button>
         {!isCreatingAccount && (
           <button onClick={handleGoogleSignIn} style={styles.googleButton}>
-            <FcGoogle style={styles.googleIcon} /> Sign in with Google
+            <FcGoogle style={styles.googleIcon} /> Continue with Google
           </button>
         )}
         <p style={styles.text}>
@@ -306,15 +329,24 @@ const Login = () => {
         )}
         <p style={styles.tosText}>
           By signing up, you agree to our{" "}
-          <span style={styles.link} onClick={() => setShowTOS(true)}>
+          <span style={styles.link} onClick={() => {
+            // When clicking Terms of Service link directly, it's just for viewing
+            setShowTOS(true);
+            // Set isNewAccount to false when just viewing the TOS
+            setIsViewingTOS(true);
+          }}>
             Terms of Service
           </span>
         </p>
       </div>
       {showTOS && (
         <TermsOfService
-          onClose={() => setShowTOS(false)}
-          isNewAccount={false}
+          onClose={() => {
+            setShowTOS(false);
+            setIsViewingTOS(false);
+          }}
+          isNewAccount={!isViewingTOS && isCreatingAccount}
+          onAccept={handleSignUp}
         />
       )}
     </div>

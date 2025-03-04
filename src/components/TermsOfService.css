@@ -54,19 +54,57 @@
   line-height: 1.6;
 }
 
-.tos-content h3 {
-  color: #7289da;
-  margin-top: 0;
-}
-
-.tos-content h4 {
-  color: #fff;
-  margin: 20px 0 10px;
-}
-
-.tos-content p {
-  margin: 10px 0;
+/* Markdown specific styling for TOS */
+.tos-content .markdown-content {
   color: #dcddde;
+}
+
+.tos-content .markdown-content h1 {
+  display: none; /* Hide the first h1 as we already have a header */
+}
+
+.tos-content .markdown-content h2 {
+  color: #7289da;
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.tos-content .markdown-content h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.tos-content .markdown-content p {
+  margin: 0.75rem 0;
+  color: #dcddde;
+  font-size: 0.95rem;
+}
+
+.tos-content .markdown-content ul,
+.tos-content .markdown-content ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.tos-content .markdown-content li {
+  margin: 0.5rem 0;
+  color: #dcddde;
+}
+
+.tos-content .markdown-content a {
+  color: #7289da;
+  text-decoration: none;
+}
+
+.tos-content .markdown-content a:hover {
+  text-decoration: underline;
+}
+
+.tos-content .markdown-content strong {
+  color: #fff;
+  font-weight: 600;
 }
 
 .tos-footer {
@@ -133,5 +171,18 @@
 
   .tos-content {
     padding: 15px;
+  }
+  
+  .tos-content .markdown-content h2 {
+    font-size: 1.1rem;
+  }
+  
+  .tos-content .markdown-content h3 {
+    font-size: 1rem;
+  }
+  
+  .tos-content .markdown-content p,
+  .tos-content .markdown-content li {
+    font-size: 0.9rem;
   }
 }
