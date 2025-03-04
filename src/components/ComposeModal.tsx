@@ -112,10 +112,15 @@ export const FullscreenComposeModal: React.FC = () => {
   const { isMobile } = usePlatform();
 
   useEffect(() => {
-    // Focus textarea when modal opens
+    // Focus textarea when modal opens and position cursor at the end of the text
     if (isComposeModalOpen && textAreaRef.current) {
       setTimeout(() => {
-        textAreaRef.current?.focus();
+        const textarea = textAreaRef.current;
+        if (!textarea) return;
+        textarea.focus();
+        // Place cursor at the end of the text
+        const textLength = textarea.value.length;
+        textarea.setSelectionRange(textLength, textLength);
       }, 100);
     }
 

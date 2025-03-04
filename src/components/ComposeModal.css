@@ -69,6 +69,9 @@
   border-top: 1px solid var(--border-light);
   background-color: var(--background-secondary);
   width: 100%;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .fullscreen-compose-send-button {
