@@ -13,9 +13,6 @@ const getToolsModule = (
   if (toolPreferences.googleSearch) {
     enabledTools.push(TOOLS.googleSearch);
   }
-  if (toolPreferences.googleHome) {
-    enabledTools.push(TOOLS.googleHome);
-  }
   if (toolPreferences.htmlScript) {
     enabledTools.push(TOOLS.webApps);
   }
