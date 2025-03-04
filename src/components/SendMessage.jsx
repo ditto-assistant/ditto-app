@@ -1,5 +1,5 @@
 import "./SendMessage.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   FaPlus,
   FaImage,
@@ -51,8 +51,6 @@ export default function SendMessage({
     updateOptimisticResponse,
     finalizeOptimisticMessage,
   } = useConversationHistory();
-
-  // Use the compose context instead of local state
   const {
     message,
     setMessage,
@@ -61,17 +59,107 @@ export default function SendMessage({
     setIsWaitingForResponse,
     registerSubmitCallback,
   } = useCompose();
-
-  // Use prompt storage to save and clear prompts
   const { clearPrompt } = usePromptStorage();
-
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      if (event) event.preventDefault();
+      if (isWaitingForResponse) return;
+      if (message === "" && !finalTranscriptRef.current && !image) return;
+      setIsWaitingForResponse(true);
+      try {
+        const userID = auth.currentUser?.uid;
+        if (!userID) {
+          toast.error("Please log in to send a message");
+          setIsWaitingForResponse(false);
+          return;
+        }
+        if (!preferences.data) {
+          toast.error("Please set your model preferences");
+          setIsWaitingForResponse(false);
+          return;
+        }
+        const firstName = localStorage.getItem("firstName") || "";
+        let messageToSend = finalTranscriptRef.current || message;
+        let imageURI = "";
+        if (image) {
+          try {
+            imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
+            messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+          } catch (uploadError) {
+            console.error("Error uploading image:", uploadError);
+            toast.error("Failed to upload image");
+          }
+        }
+        clearPrompt();
+        setMessage("");
+        setImage("");
+        finalTranscriptRef.current = "";
+        resizeTextArea();
+        console.log("🚀 [SendMessage] Creating optimistic message");
+        const timestamp = Date.now().toString();
+        const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`;
+        const optimisticMessageId = addOptimisticMessage(
+          messageToSend,
+          imageURI,
+          optimisticId
+        );
+        const streamingCallback = (chunk) => {
+          updateOptimisticResponse(optimisticMessageId, chunk);
+        };
+        try {
+          await sendPrompt(
+            userID,
+            firstName,
+            messageToSend,
+            imageURI,
+            null,
+            preferences.data,
+            refetch,
+            balance.hasPremium ?? false,
+            streamingCallback,
+            optimisticMessageId,
+            finalizeOptimisticMessage
+          );
+          console.log("✅ [SendMessage] Prompt completed successfully");
+        } catch (error) {
+          console.error("❌ [SendMessage] Error in sendPrompt:", error);
+          finalizeOptimisticMessage(
+            optimisticMessageId,
+            "Sorry, an error occurred while processing your request. Please try again."
+          );
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        setIsWaitingForResponse(false);
+        onStop();
+      }
+    },
+    [
+      isWaitingForResponse,
+      message,
+      finalTranscriptRef,
+      image,
+      preferences.data,
+      refetch,
+      balance.hasPremium,
+      addOptimisticMessage,
+      finalizeOptimisticMessage,
+      updateOptimisticResponse,
+      clearPrompt,
+      onStop,
+      setIsWaitingForResponse,
+      setMessage,
+    ]
+  );
 
   // Register our submit handler with the compose context
   useEffect(() => {
     registerSubmitCallback(() => handleSubmit());
-  }, [registerSubmitCallback]);
+  }, [registerSubmitCallback, handleSubmit]);
 
   useEffect(() => {
     if (capturedImage) {
@@ -97,108 +185,6 @@ export default function SendMessage({
   const handleClearImage = () => {
     setImage("");
     onClearCapturedImage();
-  };
-
-  const handleSubmit = async (event) => {
-    if (event) event.preventDefault();
-
-    if (isWaitingForResponse) return;
-
-    if (message === "" && !finalTranscriptRef.current && !image) return;
-
-    setIsWaitingForResponse(true);
-
-    try {
-      const userID = auth.currentUser?.uid;
-
-      if (!userID) {
-        toast.error("Please log in to send a message");
-        setIsWaitingForResponse(false);
-        return;
-      }
-      if (!preferences.data) {
-        toast.error("Please set your model preferences");
-        setIsWaitingForResponse(false);
-        return;
-      }
-
-      const firstName = localStorage.getItem("firstName") || "";
-      let messageToSend = finalTranscriptRef.current || message;
-      let imageURI = "";
-
-      if (image) {
-        try {
-          imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
-          messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
-        } catch (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          toast.error("Failed to upload image");
-        }
-      }
-
-      // Clear the input message state
-      setMessage("");
-      setImage("");
-      finalTranscriptRef.current = "";
-      resizeTextArea();
-
-      // Clear the saved prompt from storage
-      clearPrompt();
-
-      // Add optimistic message to the UI immediately
-      console.log("🚀 [SendMessage] Creating optimistic message");
-      const timestamp = Date.now().toString();
-      const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`;
-      const optimisticMessageId = addOptimisticMessage(
-        messageToSend,
-        imageURI,
-        optimisticId
-      );
-
-      // Pass streaming callback to update UI in real time
-      const streamingCallback = (chunk) => {
-        console.log(
-          `🔄 [SendMessage] Received streaming chunk of ${chunk.length} chars, updating optimistic message: ${optimisticId}`
-        );
-        updateOptimisticResponse(optimisticMessageId, chunk);
-      };
-
-      try {
-        console.log(
-          "🚀 [SendMessage] Sending prompt with optimistic ID:",
-          optimisticMessageId
-        );
-
-        // Pass the optimistic ID and streaming callback to sendPrompt
-        await sendPrompt(
-          userID,
-          firstName,
-          messageToSend,
-          imageURI,
-          null,
-          preferences.data,
-          refetch,
-          balance.hasPremium ?? false,
-          streamingCallback,
-          optimisticMessageId,
-          finalizeOptimisticMessage
-        );
-
-        console.log("✅ [SendMessage] Prompt completed successfully");
-      } catch (error) {
-        console.error("❌ [SendMessage] Error in sendPrompt:", error);
-        // If there was an error, we should finalize the optimistic message with an error state
-        finalizeOptimisticMessage(
-          optimisticMessageId,
-          "Sorry, an error occurred while processing your request. Please try again."
-        );
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setIsWaitingForResponse(false);
-      onStop();
-    }
   };
 
   const handleKeyDown = (e) => {
@@ -228,21 +214,14 @@ export default function SendMessage({
   const resizeTextArea = () => {
     const textArea = textAreaRef.current;
     if (textArea) {
-      // Reset height to default to accurately calculate scrollHeight
       textArea.style.height = "24px";
-
-      // Calculate new height (min 24px, max 200px)
       const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
       textArea.style.height = `${newHeight}px`;
-
-      // Update overflow based on content height
       if (textArea.scrollHeight >= 200) {
         textArea.style.overflowY = "auto";
       } else {
         textArea.style.overflowY = "hidden";
       }
-
-      // Adjust image preview position if present
       const imagePreview = document.querySelector(".image-preview");
       if (imagePreview) {
         imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
