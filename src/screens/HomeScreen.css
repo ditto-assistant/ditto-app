@@ -38,7 +38,6 @@ body:not(.login-page) {
   flex: 1;
   height: 100%;
   overflow: hidden;
-  padding-top: 10px; /* Add some padding at the top now that there's no header */
 }
 
 /* New floating header styles */

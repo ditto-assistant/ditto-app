@@ -54,9 +54,9 @@ export default function HomeScreen() {
 
   // Show the What's New dialog for the UI redesign
   useEffect(() => {
-    // Show the What's New dialog for version 0.11.55
+    // Show the What's New dialog for version 0.11.56
     setTimeout(() => {
-      openWhatsNew("0.11.55");
+      openWhatsNew("0.11.56");
     }, 500);
   }, [openWhatsNew]);
 
@@ -317,24 +317,44 @@ export default function HomeScreen() {
   // Hover and click handling for the menu
   const logoButtonRef = useRef(null);
   const scriptIndicatorRef = useRef(null);
+  const [menuPinned, setMenuPinned] = useState(false);
 
   const handleHoverStart = () => {
-    if (window.innerWidth > 768) {
-      // Only trigger on desktop
+    if (window.innerWidth > 768 && !menuPinned) {
+      // Only trigger on desktop when not pinned
       setIsMenuOpen(true);
     }
   };
 
   const handleHoverEnd = () => {
-    if (window.innerWidth > 768) {
-      // Only trigger on desktop
+    if (window.innerWidth > 768 && !menuPinned) {
+      // Only trigger on desktop when not pinned
       // Use a short delay to prevent menu from closing immediately
       // when moving cursor from button to menu
       setTimeout(() => {
-        if (!document.querySelector(".sliding-menu:hover")) {
+        // Check if neither the menu nor the logo button is being hovered
+        if (!document.querySelector(".sliding-menu:hover") && 
+            !logoButtonRef.current?.matches(":hover")) {
           setIsMenuOpen(false);
         }
       }, 100);
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (window.innerWidth > 768) {
+      // On desktop, clicking toggles pinned state
+      if (isMenuOpen) {
+        // If already open, toggle the pin state
+        setMenuPinned(!menuPinned);
+      } else {
+        // If closed, open and pin
+        setIsMenuOpen(true);
+        setMenuPinned(true);
+      }
+    } else {
+      // On mobile, just toggle menu open/closed
+      setIsMenuOpen(!isMenuOpen);
     }
   };
 
@@ -354,9 +374,9 @@ export default function HomeScreen() {
             }}
             onMouseEnter={handleHoverStart}
             onMouseLeave={handleHoverEnd}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={handleLogoClick}
             onKeyDown={(e) =>
-              handleKeyDown(e, () => setIsMenuOpen(!isMenuOpen))
+              handleKeyDown(e, handleLogoClick)
             }
             aria-label="Menu"
             role="button"
@@ -368,9 +388,13 @@ export default function HomeScreen() {
           {/* Sliding menu using the reusable component */}
           <SlidingMenu
             isOpen={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
+            onClose={() => {
+              setIsMenuOpen(false);
+              setMenuPinned(false);
+            }}
             position="left"
             triggerRef={logoButtonRef}
+            isPinned={menuPinned}
             menuItems={[
               {
                 icon: <MdFeedback className="icon" />,

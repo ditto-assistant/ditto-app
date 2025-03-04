@@ -1460,7 +1460,6 @@ ul.chat-bubble-list {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding-top: 10px;
   height: 100%;
   overflow-y: auto;
   position: relative;

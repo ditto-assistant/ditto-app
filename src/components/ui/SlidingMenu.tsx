@@ -14,6 +14,7 @@ interface SlidingMenuProps {
   onClose: () => void;
   position?: "left" | "right";
   triggerRef?: React.RefObject<HTMLElement>;
+  isPinned?: boolean;
 }
 
 const SlidingMenu: React.FC<SlidingMenuProps> = ({
@@ -22,21 +23,25 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   onClose,
   position = "left",
   triggerRef,
+  isPinned = false,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Handle hover events for the menu itself
   const handleMenuHover = () => {
     // Keep menu open while hovering over it
-    // No action needed, just capture the event
+    // This is important for desktop hover behavior
   };
 
   const handleMenuLeave = () => {
-    // Only apply hover behavior on desktop
-    if (window.innerWidth > 768) {
-      // Small delay before closing
+    // Only apply hover behavior on desktop and when not pinned
+    if (window.innerWidth > 768 && !isPinned) {
+      // Small delay before closing to allow movement between menu and button
       setTimeout(() => {
-        onClose();
+        // Check if user hasn't moved back to the trigger button
+        if (triggerRef && !triggerRef.current?.matches(':hover')) {
+          onClose();
+        }
       }, 150);
     }
   };
@@ -50,6 +55,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         !menuRef.current.contains(event.target as Node) &&
         (!triggerRef || !triggerRef.current?.contains(event.target as Node))
       ) {
+        // Always close when clicking outside, even if pinned
         onClose();
       }
     };
@@ -76,7 +82,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`sliding-menu ${position === "right" ? "right-aligned" : ""}`}
+          className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${isPinned ? "pinned" : ""}`}
           ref={menuRef}
           onMouseEnter={handleMenuHover}
           onMouseLeave={handleMenuLeave}
