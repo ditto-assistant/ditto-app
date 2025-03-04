@@ -24,7 +24,7 @@ export function usePlatform() {
   const hasTouchScreen = navigator.maxTouchPoints > 0;
   const isMobileUserAgent =
     /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-      userAgent
+      userAgent,
     );
   const isMobile = hasTouchScreen && isMobileUserAgent;
   const isPWA = window.matchMedia("(display-mode: standalone)").matches;
@@ -91,7 +91,7 @@ export function usePlatformContext() {
 
   if (!context) {
     throw new Error(
-      "usePlatformContext must be used within a PlatformProvider"
+      "usePlatformContext must be used within a PlatformProvider",
     );
   }
 

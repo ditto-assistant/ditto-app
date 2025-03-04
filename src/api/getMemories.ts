@@ -37,15 +37,15 @@ export interface MemoriesV2Response {
 
 export async function getMemories(
   params: GetMemoriesV2Request,
-  accept: "application/json"
+  accept: "application/json",
 ): Promise<Result<MemoriesV2Response>>;
 export async function getMemories(
   params: GetMemoriesV2Request,
-  accept: "text/plain"
+  accept: "text/plain",
 ): Promise<Result<string>>;
 export async function getMemories(
   params: GetMemoriesV2Request,
-  accept: "application/json" | "text/plain"
+  accept: "application/json" | "text/plain",
 ): Promise<Result<MemoriesV2Response | string>> {
   if (!params.longTerm && !params.shortTerm) {
     return { err: "No memories requested" };

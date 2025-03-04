@@ -91,24 +91,24 @@ export interface ScriptsManagerReturnType {
 
   // Data manipulation methods
   setSelectedScript: (
-    script: ScriptObject | Partial<SelectedScriptInfo> | null
+    script: ScriptObject | Partial<SelectedScriptInfo> | null,
   ) => void;
   handleDeselectScript: () => void;
   saveScript: (
     content: string,
     scriptType: ScriptType,
-    name: string
+    name: string,
   ) => Promise<void>;
   deleteScript: (
     scriptType: ScriptType,
     name: string,
-    deleteAllVersions?: boolean
+    deleteAllVersions?: boolean,
   ) => Promise<void>;
   renameScript: (
     timestampString: string,
     scriptType: ScriptType,
     oldName: string,
-    newName: string
+    newName: string,
   ) => Promise<void>;
   revertScript: (scriptType: ScriptType, name: string) => Promise<void>;
   refreshScripts: () => void;
@@ -153,7 +153,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       },
       enabled: !!userId,
       staleTime: 30000, // 30 seconds
-    }
+    },
   );
 
   // Fetch timestamps for scripts
@@ -190,7 +190,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       return getVersionsOfScriptFromFirestore(
         userId,
         selectedScript?.scriptType,
-        selectedScript?.script
+        selectedScript?.script,
       );
     },
     enabled:
@@ -255,7 +255,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         timestampString,
         scriptType,
         oldName,
-        newName
+        newName,
       ),
     onSuccess: (_, variables) => {
       // If we rename the currently selected script, update its name
@@ -321,7 +321,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         handleDeselectScript();
       }
     },
-    [handleDeselectScript]
+    [handleDeselectScript],
   );
 
   const refreshScriptQueries = useCallback(
@@ -356,7 +356,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         }
       }
     },
-    [userId, queryClient, selectedScript]
+    [userId, queryClient, selectedScript],
   );
 
   // Function to refresh all scripts data

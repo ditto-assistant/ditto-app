@@ -23,16 +23,16 @@ export const useMemoryDeletion = (updateConversation) => {
             updateConversation((prevState) => ({
               ...prevState,
               messages: prevState.messages.filter(
-                (msg) => msg.pairID !== docId
+                (msg) => msg.pairID !== docId,
               ),
             }));
 
             const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
             const responses = JSON.parse(
-              localStorage.getItem("responses") || "[]"
+              localStorage.getItem("responses") || "[]",
             );
             const timestamps = JSON.parse(
-              localStorage.getItem("timestamps") || "[]"
+              localStorage.getItem("timestamps") || "[]",
             );
             const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
 
@@ -64,7 +64,7 @@ export const useMemoryDeletion = (updateConversation) => {
         }
       }
     },
-    [updateConversation, user]
+    [updateConversation, user],
   );
 
   const confirmMemoryDeletion = useCallback(
@@ -103,7 +103,7 @@ export const useMemoryDeletion = (updateConversation) => {
         onConfirm: () => deleteMemory(docId, options),
       });
     },
-    [showConfirmationDialog, deleteMemory, user]
+    [showConfirmationDialog, deleteMemory, user],
   );
 
   return {

@@ -26,16 +26,16 @@ const OpenSCADViewer = ({ script, onClose }) => {
 
       // Update localStorage
       const openSCADScripts = JSON.parse(
-        localStorage.getItem("openSCAD") || "[]"
+        localStorage.getItem("openSCAD") || "[]",
       );
       const updatedScripts = openSCADScripts.map((s) =>
-        s.name === script.name ? { ...s, content } : s
+        s.name === script.name ? { ...s, content } : s,
       );
       localStorage.setItem("openSCAD", JSON.stringify(updatedScripts));
 
       // Update workingOnScript if this is the current script
       const workingOnScript = JSON.parse(
-        localStorage.getItem("workingOnScript")
+        localStorage.getItem("workingOnScript"),
       );
       if (workingOnScript && workingOnScript.script === script.name) {
         localStorage.setItem(
@@ -44,7 +44,7 @@ const OpenSCADViewer = ({ script, onClose }) => {
             script: script.name,
             contents: content,
             scriptType: "openSCAD",
-          })
+          }),
         );
       }
 

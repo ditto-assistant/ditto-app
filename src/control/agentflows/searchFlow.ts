@@ -13,7 +13,7 @@ export const handleGoogleSearch = async (
   response: string,
   prompt: string,
   preferences: ModelPreferences,
-  streamingCallback: ((text: string) => void) | null = null
+  streamingCallback: ((text: string) => void) | null = null,
 ) => {
   // Get the entire content after <GOOGLE_SEARCH> tag
   const afterTag = response.split("<GOOGLE_SEARCH>")[1];
@@ -59,7 +59,7 @@ export const handleGoogleSearch = async (
       if (streamingCallback) {
         streamingCallback(text);
       }
-    }
+    },
   );
 
   console.log("%c" + finalResponse, "color: yellow");

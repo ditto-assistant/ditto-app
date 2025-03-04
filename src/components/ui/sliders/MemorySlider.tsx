@@ -24,7 +24,7 @@ interface MemorySliderProps {
 
 function useDebounce<T>(
   callback: (...args: T[]) => void,
-  delay: number
+  delay: number,
 ): [(...args: T[]) => void, boolean] {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +41,7 @@ function useDebounce<T>(
         console.log("debouncedCallback", args);
       }, delay);
     },
-    [callback, delay]
+    [callback, delay],
   );
 
   return [debouncedCallback, isSaving];
@@ -71,7 +71,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
       setLocalValues(newValues);
       debouncedOnChange(newValues);
     },
-    [localValues, debouncedOnChange]
+    [localValues, debouncedOnChange],
   );
 
   const handleAddChain = useCallback(() => {

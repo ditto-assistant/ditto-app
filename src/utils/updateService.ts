@@ -39,10 +39,9 @@ export const UPDATE_READY = "update-ready";
 export const UPDATE_ERROR = "update-error";
 
 // Create a custom event for updates
-// Using comma after type parameter to prevent JSX parsing issues
-const createUpdateEvent = <T>(type: string, detail: T): CustomEvent<T> => {
-  return new CustomEvent(type, { detail });
-};
+function createUpdateEvent<T>(type: string, detail: T): CustomEvent<T> {
+  return new CustomEvent(type, { detail }) as CustomEvent<T>;
+}
 
 // Initialize service state
 const initialState: UpdateServiceState = {
@@ -86,7 +85,7 @@ export const initUpdateService = () => {
             () => {
               registration.update().catch(console.error);
             },
-            60 * 60 * 1000
+            60 * 60 * 1000,
           ); // Check every hour
         }
       },
@@ -131,7 +130,7 @@ export const handleLazyLoadError = (error: Error | unknown): boolean => {
         error,
         outdated: true,
         message: "App is outdated and needs to be updated",
-      })
+      }),
     );
     return true;
   }

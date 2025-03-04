@@ -35,7 +35,7 @@ interface ConversationContextType {
   finalizeOptimisticMessage: (
     pairId: string,
     finalResponse: string,
-    forceRemove?: boolean
+    forceRemove?: boolean,
   ) => void;
   clearOptimisticMessages: () => void;
 }
@@ -91,7 +91,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   // Memoize server messages to prevent unnecessary re-renders
   const serverMessages = useMemo(
     () => data?.pages.flatMap((page) => page.messages) || [],
-    [data?.pages]
+    [data?.pages],
   );
 
   // Enhanced debug logging for message state (disabled in production)
@@ -110,7 +110,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     // If we have any non-finalized optimistic messages, don't do cleanup yet
     // This ensures tool responses stay visible during processing
     const hasActiveOptimisticMessages = optimisticMessages.some(
-      (msg) => msg.isOptimistic === true
+      (msg) => msg.isOptimistic === true,
     );
     if (hasActiveOptimisticMessages) {
       return;
@@ -123,14 +123,14 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         // Only consider non-optimistic messages for removal
         optMsg.isOptimistic === false &&
         // And only if they exist on the server
-        serverMessages.some((serverMsg) => serverMsg.prompt === optMsg.prompt)
+        serverMessages.some((serverMsg) => serverMsg.prompt === optMsg.prompt),
     );
 
     if (messagesToRemove.length > 0) {
       setOptimisticMessages((prev) =>
         prev.filter(
-          (msg) => !messagesToRemove.some((toRemove) => toRemove.id === msg.id)
-        )
+          (msg) => !messagesToRemove.some((toRemove) => toRemove.id === msg.id),
+        ),
       );
     }
   }, [serverMessages, optimisticMessages]);
@@ -154,8 +154,8 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       if (staleMessages.length > 0) {
         setOptimisticMessages((prev) =>
           prev.filter(
-            (msg) => !staleMessages.some((stale) => stale.id === msg.id)
-          )
+            (msg) => !staleMessages.some((stale) => stale.id === msg.id),
+          ),
         );
       }
 
@@ -172,8 +172,8 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       if (finalizedMessages.length > 0) {
         setOptimisticMessages((prev) =>
           prev.filter(
-            (msg) => !finalizedMessages.some((final) => final.id === msg.id)
-          )
+            (msg) => !finalizedMessages.some((final) => final.id === msg.id),
+          ),
         );
       }
     }
@@ -230,7 +230,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       setOptimisticMessages((prev) => [...newOptimisticMessages, ...prev]);
       return tempPairId;
     },
-    []
+    [],
   );
 
   // Update the streaming response of an optimistic message
@@ -250,11 +250,11 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
                   (msg.streamingResponse || "") + responseChunk,
                 response: (msg.streamingResponse || "") + responseChunk,
               }
-            : msg
+            : msg,
         );
       });
     },
-    []
+    [],
   );
 
   // Finalize an optimistic message by setting its final response
@@ -264,7 +264,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       // Handle force remove signal from tool completion
       if (forceRemove) {
         setOptimisticMessages((prev) =>
-          prev.filter((msg) => msg.id !== pairId)
+          prev.filter((msg) => msg.id !== pairId),
         );
         return;
       }
@@ -294,7 +294,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
                 // during tool processing
                 isOptimistic: hasTool,
               }
-            : msg
+            : msg,
         );
       });
 
@@ -314,13 +314,13 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
           // Only remove after refetch for non-tool responses
           setTimeout(() => {
             setOptimisticMessages((prev) =>
-              prev.filter((msg) => msg.id !== pairId)
+              prev.filter((msg) => msg.id !== pairId),
             );
           }, 1000); // Wait 1 second after refetch to ensure data is loaded
         }, 800);
       }
     },
-    [refetch]
+    [refetch],
   );
 
   // Clear all optimistic messages
@@ -352,7 +352,7 @@ export function useConversationHistory() {
   const context = useContext(ConversationContext);
   if (!context) {
     throw new Error(
-      "useConversationHistory must be used within a ConversationProvider"
+      "useConversationHistory must be used within a ConversationProvider",
     );
   }
   return context;

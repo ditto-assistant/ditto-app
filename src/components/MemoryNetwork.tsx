@@ -88,7 +88,7 @@ const TableView: React.FC<{
         ...memory,
         level: 0, // Set a default level since it's required
       },
-      deleteAdapter
+      deleteAdapter,
     );
   };
 
@@ -279,7 +279,7 @@ export default function MemoryNetworkModal() {
         toast.error("Failed to delete memory");
       }
     },
-    [confirmMemoryDeletion, deleteMemory]
+    [confirmMemoryDeletion, deleteMemory],
   );
 
   // Handle tab changes
@@ -312,7 +312,7 @@ export default function MemoryNetworkModal() {
           memory: Memory,
           parentNodeId: string | null = null,
           depth = 0,
-          parentPath = ""
+          parentPath = "",
         ) => {
           if (!memory) return null;
           // Use a consistent node ID pattern for the visualization
@@ -390,7 +390,7 @@ export default function MemoryNetworkModal() {
                     depth + 1,
                     parentPath
                       ? `${parentPath}-${depth}-${index}`
-                      : `root-${depth}-${index}`
+                      : `root-${depth}-${index}`,
                   );
                   // No need to do anything with the return value now as we're storing directly in memoryMap
                 }
@@ -545,7 +545,7 @@ export default function MemoryNetworkModal() {
           const networkInstance = new Network(
             container,
             { nodes, edges },
-            networkOptions
+            networkOptions,
           );
 
           // Set stabilizing flag
@@ -578,7 +578,7 @@ export default function MemoryNetworkModal() {
               } catch (error) {
                 console.error("Error handling node click:", error);
               }
-            }
+            },
           );
 
           // Handle stabilization completion

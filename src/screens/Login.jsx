@@ -68,7 +68,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const user = userCredential.user;
 
@@ -114,14 +114,14 @@ const Login = () => {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const user = userCredential.user;
 
       // Send email verification
       await sendEmailVerification(user);
       setVerificationMessage(
-        "A verification email has been sent to your email address. Please verify your email and then sign in."
+        "A verification email has been sent to your email address. Please verify your email and then sign in.",
       );
 
       // Call the function to save user data to Firestore
@@ -174,27 +174,27 @@ const Login = () => {
       if (conversationHistory) {
         localStorage.setItem(
           "prompts",
-          JSON.stringify(conversationHistory.prompts)
+          JSON.stringify(conversationHistory.prompts),
         );
         localStorage.setItem(
           "responses",
-          JSON.stringify(conversationHistory.responses)
+          JSON.stringify(conversationHistory.responses),
         );
         localStorage.setItem(
           "timestamps",
-          JSON.stringify(conversationHistory.timestamps)
+          JSON.stringify(conversationHistory.timestamps),
         );
         localStorage.setItem(
           "pairIDs",
-          JSON.stringify(conversationHistory.pairIDs)
+          JSON.stringify(conversationHistory.pairIDs),
         );
         localStorage.setItem(
           "memoryIDs",
-          JSON.stringify(conversationHistory.memoryIDs)
+          JSON.stringify(conversationHistory.memoryIDs),
         );
         localStorage.setItem(
           "histCount",
-          conversationHistory.prompts.length.toString()
+          conversationHistory.prompts.length.toString(),
         );
         localStorage.setItem("status_bar_fiat_balance", "m");
 
@@ -207,7 +207,7 @@ const Login = () => {
         userID,
         email,
         user.displayName?.split(" ")[0],
-        user.displayName?.split(" ")[1]
+        user.displayName?.split(" ")[1],
       );
 
       // If it's a new user, show TOS before proceeding

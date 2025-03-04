@@ -6,10 +6,10 @@ import { promptLLM, promptLLMV2 } from "./LLM";
  */
 const LLMTest: React.FC = () => {
   const [userPrompt, setUserPrompt] = useState(
-    "Tell me about a fun adventure in 5 sentences."
+    "Tell me about a fun adventure in 5 sentences.",
   );
   const [systemPrompt, setSystemPrompt] = useState(
-    "You are a helpful AI assistant."
+    "You are a helpful AI assistant.",
   );
   const [model, setModel] = useState("gemini-1.5-flash");
   const [v1Response, setV1Response] = useState("");
@@ -27,13 +27,13 @@ const LLMTest: React.FC = () => {
         "",
         (text) => {
           setV1Response((prev) => prev + text);
-        }
+        },
       );
       console.log("V1 final response:", response);
     } catch (error) {
       console.error("Error in V1 test:", error);
       setV1Response(
-        "Error: " + (error instanceof Error ? error.message : String(error))
+        "Error: " + (error instanceof Error ? error.message : String(error)),
       );
     } finally {
       setIsLoading(false);
@@ -51,13 +51,13 @@ const LLMTest: React.FC = () => {
         "",
         (text) => {
           setV2Response((prev) => prev + text);
-        }
+        },
       );
       console.log("V2 final response:", response);
     } catch (error) {
       console.error("Error in V2 test:", error);
       setV2Response(
-        "Error: " + (error instanceof Error ? error.message : String(error))
+        "Error: " + (error instanceof Error ? error.message : String(error)),
       );
     } finally {
       setIsLoading(false);

@@ -3,7 +3,7 @@ import type { Tool, ToolPreferences } from "../../types/llm";
 
 const getToolsModule = (
   scriptType: string | null,
-  toolPreferences: ToolPreferences
+  toolPreferences: ToolPreferences,
 ): Tool[] => {
   const enabledTools = [];
 
@@ -75,7 +75,7 @@ export const mainTemplate = (
   usersPrompt: string,
   workingOnScriptName: string | null = null,
   workingOnScriptType: string | null = null,
-  toolPreferences: ToolPreferences
+  toolPreferences: ToolPreferences,
 ) => {
   const tools = getToolsModule(workingOnScriptType, toolPreferences);
 
@@ -86,9 +86,7 @@ export const mainTemplate = (
 ${tools
   .map(
     (tool, index) =>
-      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${
-        tool.trigger
-      })`
+      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`,
   )
   .join("\n")}`
       : "";
@@ -142,13 +140,13 @@ Ditto:`;
 
   prompt = prompt.replace(
     "<!time>",
-    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM"),
   );
   prompt = prompt.replace("<!memories>", memories);
   prompt = prompt.replace("<!examples>", examples);
   prompt = prompt.replace(
     "<!working_on_script_module>",
-    workingOnScriptModule(workingOnScriptName || "", workingOnScriptType || "")
+    workingOnScriptModule(workingOnScriptName || "", workingOnScriptType || ""),
   );
   prompt = prompt.replace("<!users_name>", firstName);
   prompt = prompt.replace("<!timestamp>", timestamp);

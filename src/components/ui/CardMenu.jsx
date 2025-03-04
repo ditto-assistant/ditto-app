@@ -119,7 +119,7 @@ const CardMenu = ({ children, style, onDelete }) => {
         })}
       </motion.div>
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 };
 

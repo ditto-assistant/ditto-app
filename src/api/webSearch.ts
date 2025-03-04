@@ -4,7 +4,7 @@ import { getToken } from "./auth";
 
 export async function webSearch(
   query: string,
-  numResults = 5
+  numResults = 5,
 ): Promise<Result<string>> {
   const tok = await getToken();
   if (tok.err) {

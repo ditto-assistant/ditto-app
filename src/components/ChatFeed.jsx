@@ -93,7 +93,7 @@ const CustomScrollToBottom = ({
         if (currentScrollContainer) {
           currentScrollContainer.removeEventListener(
             "scroll",
-            trackUserScrolling
+            trackUserScrolling,
           );
 
           const images = currentScrollContainer.querySelectorAll("img");
@@ -440,7 +440,7 @@ export default function ChatFeed({
       (err) => {
         console.error("Could not copy text: ", err);
         toast.error("Failed to copy text");
-      }
+      },
     );
   };
 

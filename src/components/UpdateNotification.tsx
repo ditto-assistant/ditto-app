@@ -24,7 +24,7 @@ const UpdateNotification = () => {
     };
 
     const handleUpdateError = (
-      event: CustomEvent<{ outdated: boolean; message: string }>
+      event: CustomEvent<{ outdated: boolean; message: string }>,
     ) => {
       if (event.detail.outdated) {
         setUpdateState({
@@ -44,11 +44,11 @@ const UpdateNotification = () => {
     return () => {
       window.removeEventListener(
         UPDATE_READY,
-        handleUpdateReady as EventListener
+        handleUpdateReady as EventListener,
       );
       window.removeEventListener(
         UPDATE_ERROR,
-        handleUpdateError as EventListener
+        handleUpdateError as EventListener,
       );
     };
   }, []);

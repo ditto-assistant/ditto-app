@@ -17,7 +17,7 @@ function MemoryControlsModal() {
         },
       });
     },
-    [preferences, updatePreferences]
+    [preferences, updatePreferences],
   );
 
   const handleLongTermChange = useCallback(
@@ -32,7 +32,7 @@ function MemoryControlsModal() {
         });
       }
     },
-    [preferences, updatePreferences]
+    [preferences, updatePreferences],
   );
 
   if (!preferences) return null;

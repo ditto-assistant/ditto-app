@@ -253,7 +253,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 2",
     isPremium: true,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-2")
+      size.supportedModels.includes("dall-e-2"),
     ),
   },
   {
@@ -261,7 +261,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 3",
     isPremium: true,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-3")
+      size.supportedModels.includes("dall-e-3"),
     ),
   },
   {
@@ -269,7 +269,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 3 HD",
     isPremium: true,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-3")
+      size.supportedModels.includes("dall-e-3"),
     ),
   },
 ] as const;

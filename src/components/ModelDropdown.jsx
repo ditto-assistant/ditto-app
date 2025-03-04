@@ -183,7 +183,7 @@ const ModelDropdown = ({
               </div>
             ))}
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

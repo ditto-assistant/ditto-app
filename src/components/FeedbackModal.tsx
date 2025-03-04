@@ -45,7 +45,7 @@ export default function FeedbackModal({
   const [selectedType, setSelectedType] = useState(feedbackType);
   const createSelectTypeCallback = useCallback(
     (type: FeedbackType) => () => setSelectedType(type),
-    []
+    [],
   );
   const auth = useAuth();
   const token = useAuthToken();

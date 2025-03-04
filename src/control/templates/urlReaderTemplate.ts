@@ -4,7 +4,7 @@ export const urlReaderSystemTemplate = () => {
 
 export const urlReaderTemplate = (
   usersPrompt: string,
-  websiteContents: string
+  websiteContents: string,
 ) => {
   return `You will be given a user's prompt and a website's contents. You will need to read the information from the website and summarize it for the user.
 

@@ -35,7 +35,7 @@ export function usePromptStorage() {
   const context = useContext(PromptStorageContext);
   if (context === undefined) {
     throw new Error(
-      "usePromptStorage must be used within a PromptStorageProvider"
+      "usePromptStorage must be used within a PromptStorageProvider",
     );
   }
   return context;
@@ -62,7 +62,7 @@ function usePromptStorageData(): PromptStorageContextType {
   >(() =>
     debounce((userId: string, prompt: string, image: string = "") => {
       savePromptToFirestore(userId, prompt, image);
-    }, 1000)
+    }, 1000),
   );
 
   // Cancel debounced function on unmount
@@ -132,7 +132,7 @@ function usePromptStorageData(): PromptStorageContextType {
     (prompt: string, image: string = "") => {
       savePromptMutate({ prompt, image });
     },
-    [savePromptMutate]
+    [savePromptMutate],
   );
 
   const clearPrompt = useCallback(() => {

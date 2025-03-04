@@ -39,7 +39,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
     window.dispatchEvent(
       new CustomEvent("memoryDeleted", {
         detail: { newHistCount: 0 },
-      })
+      }),
     );
 
     onSuccess?.();

@@ -26,7 +26,7 @@ export const deleteConversation = async (userID, docId) => {
 
         // Delete any found images
         const deletePromises = imageUrls.map((imagePath) =>
-          deleteImageFromFirebaseStorage(imagePath)
+          deleteImageFromFirebaseStorage(imagePath),
         );
 
         if (deletePromises.length > 0) {

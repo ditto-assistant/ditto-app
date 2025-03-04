@@ -16,7 +16,7 @@ export function useModelPreferences() {
   const context = useContext(ModelPreferencesContext);
   if (context === undefined) {
     throw new Error(
-      "useModelPreferences must be used within a ModelPreferencesProvider"
+      "useModelPreferences must be used within a ModelPreferencesProvider",
     );
   }
   return context;
@@ -44,7 +44,7 @@ function useModels() {
     queryFn: async () => {
       if (!user?.uid) throw new Error("No user");
       const prefs = (await getModelPreferencesFromFirestore(
-        user.uid
+        user.uid,
       )) as ModelPreferences | null;
       if (!prefs) return DEFAULT_PREFERENCES;
 

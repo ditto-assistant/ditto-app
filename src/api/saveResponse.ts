@@ -11,7 +11,7 @@ interface SaveResponseRequest {
 // Saves the LLM response.
 export async function saveResponse(
   pairID: string,
-  response: string
+  response: string,
 ): Promise<Result<void>> {
   const tok = await getToken();
   if (tok.err) {

@@ -6,12 +6,12 @@ import { ModelPreferences } from "@/types/llm";
  */
 export const handleImageGeneration = async (
   response: string,
-  preferences: ModelPreferences
+  preferences: ModelPreferences,
 ) => {
   const query = response.split("<IMAGE_GENERATION>")[1];
   const imageURL = await openaiImageGeneration(
     query,
-    preferences.imageGeneration
+    preferences.imageGeneration,
   );
   return `Image Task: ${query}\n![DittoImage](${imageURL})`;
 };

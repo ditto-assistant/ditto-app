@@ -138,7 +138,7 @@ export default function ScriptsOverlay() {
   const handleDeleteScript = async (
     category,
     currentScript,
-    deleteAllVersions = true
+    deleteAllVersions = true,
   ) => {
     const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
 
@@ -146,7 +146,7 @@ export default function ScriptsOverlay() {
       if (deleteAllVersions) {
         const relatedScripts = scripts[category].filter(
           (script) =>
-            getBaseNameAndVersion(script.name).baseName === baseScriptName
+            getBaseNameAndVersion(script.name).baseName === baseScriptName,
         );
 
         for (const script of relatedScripts) {
@@ -161,7 +161,7 @@ export default function ScriptsOverlay() {
         // Update version overlay if it's open
         if (versionOverlay) {
           const remainingVersions = versionOverlay.versions.filter(
-            (script) => script.name !== currentScript.name
+            (script) => script.name !== currentScript.name,
           );
 
           if (remainingVersions.length === 0) {
@@ -197,7 +197,7 @@ export default function ScriptsOverlay() {
       window.dispatchEvent(
         new CustomEvent("editScript", {
           detail: { script },
-        })
+        }),
       );
     } else if (script.scriptType === "openSCAD") {
       setOpenScadViewer(script);
@@ -347,7 +347,7 @@ export default function ScriptsOverlay() {
       const normalizedSearch = searchTerm.toLowerCase();
       filteredScripts = filteredScripts.filter((script) => {
         const baseName = getBaseName(
-          script.name.replace(/ /g, "")
+          script.name.replace(/ /g, ""),
         ).toLowerCase();
         return baseName.includes(normalizedSearch);
       });
@@ -420,7 +420,7 @@ export default function ScriptsOverlay() {
       // Check for multiple versions by looking at the base name
       const hasMultipleVersions =
         scriptsForCategory.filter(
-          (script) => getBaseName(script.name.replace(/ /g, "")) === baseName
+          (script) => getBaseName(script.name.replace(/ /g, "")) === baseName,
         ).length > 1;
 
       if (!cardRefs.current[currentScript.id]) {
@@ -428,7 +428,7 @@ export default function ScriptsOverlay() {
       }
 
       const { baseName: scriptBaseName, version } = getBaseNameAndVersion(
-        currentScript.name
+        currentScript.name,
       );
 
       return (
@@ -484,7 +484,7 @@ export default function ScriptsOverlay() {
           <div className="timestamp-container">
             <span className="timestamp">
               {formatTimestamp(
-                getLocalTimestamps(category)[currentScript.name]?.timestamp
+                getLocalTimestamps(category)[currentScript.name]?.timestamp,
               )}
             </span>
           </div>
@@ -567,7 +567,7 @@ export default function ScriptsOverlay() {
                     }
                     const versions = scripts[activeTab].filter(
                       (script) =>
-                        getBaseName(script.name.replace(/ /g, "")) === baseName
+                        getBaseName(script.name.replace(/ /g, "")) === baseName,
                     );
                     setVersionOverlay({
                       baseScriptName: baseName,
@@ -718,7 +718,7 @@ export default function ScriptsOverlay() {
                   className="edit-selected-button"
                   onClick={() => {
                     const script = scripts[activeTab]?.find(
-                      (s) => s.name === selectedScript.script
+                      (s) => s.name === selectedScript.script,
                     );
                     if (script) handleEditScript(script);
                   }}
@@ -824,10 +824,10 @@ export default function ScriptsOverlay() {
             }
             onSave={() => {
               const nameInput = document.getElementById(
-                `${activeTab}-name-input`
+                `${activeTab}-name-input`,
               ).value;
               const contentInput = document.getElementById(
-                `${activeTab}-content-input`
+                `${activeTab}-content-input`,
               ).value;
               handleSaveScript(activeTab, nameInput, contentInput);
             }}

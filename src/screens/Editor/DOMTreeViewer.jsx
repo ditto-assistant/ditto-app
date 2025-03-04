@@ -17,15 +17,15 @@ import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 if (import.meta.env.PROD) {
   ace.config.set(
     "basePath",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/"
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
   );
   ace.config.setModuleUrl(
     "ace/mode/html_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js"
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js",
   );
   ace.config.setModuleUrl(
     "ace/mode/javascript_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js",
   );
 }
 
@@ -310,7 +310,7 @@ const DOMTreeViewer = ({
     networkRef.current = new Network(
       containerRef.current,
       { nodes, edges },
-      options
+      options,
     );
 
     networkRef.current.on("click", (params) => {
@@ -413,7 +413,7 @@ const DOMTreeViewer = ({
         // Replace the old node with the new content
         nodeToUpdate.parentNode.replaceChild(
           tempContainer.firstChild,
-          nodeToUpdate
+          nodeToUpdate,
         );
 
         // Get the updated HTML content

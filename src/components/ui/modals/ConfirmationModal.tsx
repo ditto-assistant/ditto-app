@@ -95,6 +95,6 @@ export default function ConfirmationModal({ id }: ConfirmationModalProps) {
         </div>
       </motion.div>
     </motion.div>,
-    document.getElementById("modal-root")!
+    document.getElementById("modal-root")!,
   );
 }

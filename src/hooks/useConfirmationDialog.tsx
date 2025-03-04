@@ -44,7 +44,7 @@ export function useConfirmationDialog() {
 
   if (context === undefined) {
     throw new Error(
-      "useConfirmationDialog must be used within a ConfirmationDialogProvider"
+      "useConfirmationDialog must be used within a ConfirmationDialogProvider",
     );
   }
 

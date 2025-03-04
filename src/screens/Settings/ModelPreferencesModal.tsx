@@ -73,7 +73,7 @@ export default function ModelPreferencesModal() {
     quality: null,
   });
   const [expandedImageModel, setExpandedImageModel] = useState<Model | null>(
-    null
+    null,
   );
 
   const { isMobile } = usePlatform();
@@ -130,7 +130,7 @@ export default function ModelPreferencesModal() {
   const MemoizedFaImage = useMemo(() => <FaImage />, []);
   const MemoizedFaCrownFree = useMemo(
     () => <FaCrown style={faCrownStyle} />,
-    [faCrownStyle]
+    [faCrownStyle],
   );
   const MemoizedFaCrownPremium = useMemo(() => <FaCrown />, []);
 
@@ -138,7 +138,7 @@ export default function ModelPreferencesModal() {
     (key: keyof ModelPreferences, value: any) => {
       updatePreferences({ [key]: value });
     },
-    [updatePreferences]
+    [updatePreferences],
   );
 
   const toggleFilter = useCallback(
@@ -148,7 +148,7 @@ export default function ModelPreferencesModal() {
         [filterType]: prev[filterType] === value ? null : value,
       }));
     },
-    []
+    [],
   );
 
   // Toggle filter group expansion
@@ -159,7 +159,7 @@ export default function ModelPreferencesModal() {
         [filterGroup]: !prev[filterGroup],
       }));
     },
-    []
+    [],
   );
 
   const getSpeedIcon = useCallback(
@@ -177,7 +177,7 @@ export default function ModelPreferencesModal() {
           return null;
       }
     },
-    [faFireStyle]
+    [faFireStyle],
   );
 
   const getVendorIcon = useCallback((vendor: Vendor) => {
@@ -206,17 +206,17 @@ export default function ModelPreferencesModal() {
 
       if (modelType === "imageGeneration") {
         const selectedModel = IMAGE_GENERATION_MODELS.find(
-          (model) => model.id === preferences.imageGeneration.model
+          (model) => model.id === preferences.imageGeneration.model,
         );
         return selectedModel;
       }
 
       const selectedModel = DEFAULT_MODELS.find(
-        (model) => model.id === preferences[modelType]
+        (model) => model.id === preferences[modelType],
       );
       return selectedModel;
     },
-    [preferences]
+    [preferences],
   );
 
   const renderModelCard = useCallback(
@@ -228,7 +228,7 @@ export default function ModelPreferencesModal() {
           onClick={() =>
             handleModelChange(
               activeSection === "main" ? "mainModel" : "programmerModel",
-              model.id
+              model.id,
             )
           }
           className={`model-card ${
@@ -308,7 +308,7 @@ export default function ModelPreferencesModal() {
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
-    ]
+    ],
   );
 
   const filteredModels = useMemo(() => {
@@ -316,12 +316,12 @@ export default function ModelPreferencesModal() {
 
     // Filter tagged/untagged models
     filtered = filtered.filter((model) =>
-      showTaggedModels ? model.isTaggedModel : !model.isTaggedModel
+      showTaggedModels ? model.isTaggedModel : !model.isTaggedModel,
     );
 
     if (activeFilters.speed) {
       filtered = filtered.filter(
-        (model) => model.speedLevel === activeFilters.speed
+        (model) => model.speedLevel === activeFilters.speed,
       );
     }
 
@@ -337,7 +337,7 @@ export default function ModelPreferencesModal() {
 
     if (activeFilters.vendor) {
       filtered = filtered.filter(
-        (model) => model.vendor === activeFilters.vendor
+        (model) => model.vendor === activeFilters.vendor,
       );
     }
 
@@ -355,16 +355,14 @@ export default function ModelPreferencesModal() {
           }`}
           onClick={() => {
             setExpandedImageModel(
-              expandedImageModel === model.id ? null : model.id
+              expandedImageModel === model.id ? null : model.id,
             );
           }}
         >
           <div className="model-card-content">
             <div className="model-name-with-arrow">
               <MdKeyboardArrowRight
-                className={`dropdown-arrow ${
-                  expandedImageModel === model.id ? "rotated" : ""
-                }`}
+                className={`dropdown-arrow ${expandedImageModel === model.id ? "rotated" : ""}`}
               />
               <span className="model-name">{model.name}</span>
             </div>
@@ -434,7 +432,7 @@ export default function ModelPreferencesModal() {
       handleModelChange,
       preferences,
       MemoizedFaCrownPremium,
-    ]
+    ],
   );
 
   const filteredImageModels = useMemo(() => {
@@ -442,7 +440,7 @@ export default function ModelPreferencesModal() {
 
     if (imageFilters.provider) {
       filtered = filtered.filter(
-        (model) => model.vendor === imageFilters.provider
+        (model) => model.vendor === imageFilters.provider,
       );
     }
 
@@ -470,7 +468,7 @@ export default function ModelPreferencesModal() {
         [filterType]: prev[filterType] === value ? null : value,
       }));
     },
-    []
+    [],
   );
 
   // Render selected model indicator
@@ -580,7 +578,7 @@ export default function ModelPreferencesModal() {
           onClick={() =>
             handleModelChange(
               activeSection === "main" ? "mainModel" : "programmerModel",
-              model.id
+              model.id,
             )
           }
           className={`model-card ${isSelected ? "selected" : ""}`}
@@ -657,7 +655,7 @@ export default function ModelPreferencesModal() {
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
-    ]
+    ],
   );
 
   // Compact version of renderImageModelCard for mobile
@@ -674,7 +672,7 @@ export default function ModelPreferencesModal() {
           className={`model-card ${isSelected ? "selected" : ""} ${isExpanded ? "expanded" : ""}`}
           onClick={() => {
             setExpandedImageModel(
-              expandedImageModel === model.id ? null : model.id
+              expandedImageModel === model.id ? null : model.id,
             );
           }}
         >
@@ -756,7 +754,7 @@ export default function ModelPreferencesModal() {
       handleModelChange,
       preferences,
       MemoizedFaCrownPremium,
-    ]
+    ],
   );
 
   // Toggle filter section visibility for mobile
@@ -783,7 +781,7 @@ export default function ModelPreferencesModal() {
         };
       });
     },
-    []
+    [],
   );
 
   if (!preferences) return null;
@@ -796,9 +794,7 @@ export default function ModelPreferencesModal() {
             <button
               key={section}
               onClick={() => setActiveSection(section as typeof activeSection)}
-              className={`section-tab ${
-                activeSection === section ? "active-tab" : ""
-              }`}
+              className={`section-tab ${activeSection === section ? "active-tab" : ""}`}
             >
               {section === "main"
                 ? "Main Agent"
@@ -848,7 +844,7 @@ export default function ModelPreferencesModal() {
                   onClick={() =>
                     handleQuickFilterSelect(
                       "imageSupport",
-                      !activeFilters.imageSupport
+                      !activeFilters.imageSupport,
                     )
                   }
                   className={`quick-filter-chip ${activeFilters.imageSupport ? "active" : ""}`}
@@ -988,7 +984,7 @@ export default function ModelPreferencesModal() {
                       onClick={() =>
                         toggleFilter(
                           "imageSupport",
-                          !activeFilters.imageSupport
+                          !activeFilters.imageSupport,
                         )
                       }
                       className={`filter-button ${activeFilters.imageSupport ? "active" : ""}`}

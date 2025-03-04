@@ -185,6 +185,6 @@ export const FullscreenComposeModal: React.FC = () => {
         </div>
       </div>
     </div>,
-    document.getElementById("modal-root") || document.body
+    document.getElementById("modal-root") || document.body,
   );
 };

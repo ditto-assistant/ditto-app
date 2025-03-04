@@ -19,7 +19,7 @@ export function useImageViewer() {
   const context = useContext(ImageViewerContext);
   if (!context) {
     throw new Error(
-      "useImageViewer must be used within an ImageViewerProvider"
+      "useImageViewer must be used within an ImageViewerProvider",
     );
   }
   return context;

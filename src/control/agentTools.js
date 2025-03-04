@@ -13,7 +13,7 @@ export const openHTMLScriptInNewWindow = (script) => {
     scriptWindow = window.open(
       "",
       "_blank",
-      "width=800,height=600,resizable=yes"
+      "width=800,height=600,resizable=yes",
     );
     scriptWindow.document.open();
     scriptWindow.document.write(script);
@@ -29,7 +29,7 @@ export const downloadHTMLScript = (script, scriptName = "") => {
   // openHTMLScriptInNewWindow(script);
   localStorage.setItem(
     "latestWorkingOnScript",
-    JSON.stringify({ script, scriptName })
+    JSON.stringify({ script, scriptName }),
   );
   console.log("Opened HTML script in new window...");
   // print script in blue

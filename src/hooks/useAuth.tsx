@@ -49,7 +49,7 @@ function useAuthState() {
           (error) => {
             unsubscribe();
             reject(error);
-          }
+          },
         );
       });
     },

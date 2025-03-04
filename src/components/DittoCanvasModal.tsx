@@ -20,7 +20,7 @@ export default function DittoCanvasModal() {
   // Find the actual script object from the scripts collection
   const scriptObject = selectedScript
     ? scripts[selectedScript.scriptType]?.find(
-        (script: ScriptObject) => script.name === selectedScript.script
+        (script: ScriptObject) => script.name === selectedScript.script,
       )
     : null;
 

@@ -45,15 +45,15 @@ import "./FullScreenEditor.css"; // Import the CSS file
 if (import.meta.env.PROD) {
   ace.config.set(
     "basePath",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/"
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
   );
   ace.config.setModuleUrl(
     "ace/mode/html_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js"
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js",
   );
   ace.config.setModuleUrl(
     "ace/mode/javascript_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js",
   );
 }
 
@@ -224,7 +224,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               .slice(-20)
               .map(
                 (h) =>
-                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
+                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
               )
               .join("\n")
           : "";
@@ -269,7 +269,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       const response = await updaterAgent(
         usersPrompt,
         code,
-        preferences.programmerModel
+        preferences.programmerModel,
       );
 
       // Log the response in yellow
@@ -649,7 +649,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
     if (messageToDelete.role === "user") {
       // Remove from history if it exists
       setScriptChatHistory((prev) =>
-        prev.filter((h) => h.timestamp !== messageToDelete.timestamp)
+        prev.filter((h) => h.timestamp !== messageToDelete.timestamp),
       );
     }
     setScriptChatMessages((prev) => prev.filter((_, i) => i !== index));
@@ -753,7 +753,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
           webApps: localWebApps,
           openSCAD: localOpenSCAD,
         },
-      })
+      }),
     );
 
     setShowLoadingSpinner(false); // Hide the loading spinner
@@ -1176,9 +1176,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               >
                 <Tooltip title="Settings">
                   <IconButton
-                    className={`icon-button settings-button ${
-                      showMemoryOverlay ? "active" : ""
-                    }`}
+                    className={`icon-button settings-button ${showMemoryOverlay ? "active" : ""}`}
                     onClick={() => setShowMemoryOverlay((prev) => !prev)}
                   >
                     <FaBrain size={16} />
@@ -1292,7 +1290,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                         components={{
                           code({ inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(
-                              className || ""
+                              className || "",
                             );
                             return !inline && match ? (
                               <SyntaxHighlighter
@@ -1366,7 +1364,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                               codeViewerOverlay
                                 .split("```html\n")[1]
                                 .split("```")[0]
-                                .trim()
+                                .trim(),
                             );
                             toast.success("Copied!");
                             setCodeViewerOverlay(null);

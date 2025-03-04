@@ -83,7 +83,7 @@ export default function HomeScreen() {
       if (viewportMeta) {
         viewportMeta.setAttribute(
           "content",
-          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no",
         );
       }
 
@@ -282,12 +282,12 @@ export default function HomeScreen() {
 
     window.addEventListener(
       "closeFullScreenEditor",
-      handleCloseFullScreenEditor
+      handleCloseFullScreenEditor,
     );
     return () => {
       window.removeEventListener(
         "closeFullScreenEditor",
-        handleCloseFullScreenEditor
+        handleCloseFullScreenEditor,
       );
     };
   }, []);
@@ -463,7 +463,7 @@ export default function HomeScreen() {
                 await saveScript(
                   updatedContent,
                   selectedScript.scriptType,
-                  selectedScript.script
+                  selectedScript.script,
                 );
               } catch (e) {
                 console.error("Error updating script:", e);

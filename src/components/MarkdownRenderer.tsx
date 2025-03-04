@@ -132,7 +132,6 @@ const MarkdownRenderer = ({
                   {/* Scrollable code container */}
                   <div className="code-container">
                     <SyntaxHighlighter
-                      style={vscDarkPlus}
                       language={language}
                       PreTag="pre"
                       wrapLines={true}
@@ -143,7 +142,9 @@ const MarkdownRenderer = ({
                         borderRadius: "6px",
                         minWidth: "min-content",
                       }}
-                      {...props}
+                      style={
+                        vscDarkPlus as { [key: string]: React.CSSProperties }
+                      }
                     >
                       {code}
                     </SyntaxHighlighter>

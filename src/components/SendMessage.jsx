@@ -104,7 +104,7 @@ export default function SendMessage({
         const optimisticMessageId = addOptimisticMessage(
           messageToSend,
           imageURI,
-          optimisticId
+          optimisticId,
         );
         const streamingCallback = (chunk) => {
           updateOptimisticResponse(optimisticMessageId, chunk);
@@ -121,14 +121,14 @@ export default function SendMessage({
             balance.hasPremium ?? false,
             streamingCallback,
             optimisticMessageId,
-            finalizeOptimisticMessage
+            finalizeOptimisticMessage,
           );
           console.log("✅ [SendMessage] Prompt completed successfully");
         } catch (error) {
           console.error("❌ [SendMessage] Error in sendPrompt:", error);
           finalizeOptimisticMessage(
             optimisticMessageId,
-            "Sorry, an error occurred while processing your request. Please try again."
+            "Sorry, an error occurred while processing your request. Please try again.",
           );
         }
       } catch (error) {
@@ -153,7 +153,7 @@ export default function SendMessage({
       onStop,
       setIsWaitingForResponse,
       setMessage,
-    ]
+    ],
   );
 
   // Register our submit handler with the compose context

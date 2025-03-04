@@ -48,7 +48,7 @@ export default function Modal({
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0 });
   const [resizeEdge, setResizeEdge] = useState<string | null>(null);
   const [activeTabId, setActiveTabId] = useState<string | undefined>(
-    defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined)
+    defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined),
   );
   const closeModal = createCloseHandler(id);
   const bringToFront = createBringToFrontHandler(id);
@@ -67,7 +67,7 @@ export default function Modal({
 
   const handleStartResize = (
     e: React.MouseEvent | React.TouchEvent,
-    edge: string
+    edge: string,
   ) => {
     setIsResizing(true);
     setResizeEdge(edge);
@@ -110,7 +110,7 @@ export default function Modal({
       x: number,
       y: number,
       width: number,
-      height: number
+      height: number,
     ) => {
       const maxX = window.innerWidth - width;
       const maxY = window.innerHeight - height;
@@ -154,7 +154,7 @@ export default function Modal({
           newX,
           newY,
           size.width,
-          size.height
+          size.height,
         );
         setLocalTransform({
           x: boundedPos.x - position.x,
@@ -190,7 +190,7 @@ export default function Modal({
             newX,
             newY,
             boundedSize.width,
-            boundedSize.height
+            boundedSize.height,
           );
           setPosition(boundedPos);
         }
@@ -370,6 +370,6 @@ export default function Modal({
         )}
       </div>
     </div>,
-    document.getElementById("modal-root")!
+    document.getElementById("modal-root")!,
   );
 }

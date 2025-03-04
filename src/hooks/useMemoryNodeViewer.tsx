@@ -19,7 +19,7 @@ interface MemoryNodeViewerContextType {
   setNodeData: (data: MemoryWithLevel | null) => void;
   onDelete?: (node: MemoryWithLevel) => void;
   setOnDelete: (
-    callback: ((node: MemoryWithLevel) => void) | undefined
+    callback: ((node: MemoryWithLevel) => void) | undefined,
   ) => void;
 }
 
@@ -56,7 +56,7 @@ export function useMemoryNodeViewer() {
 
   if (context === undefined) {
     throw new Error(
-      "useMemoryNodeViewer must be used within a MemoryNodeViewerProvider"
+      "useMemoryNodeViewer must be used within a MemoryNodeViewerProvider",
     );
   }
 
@@ -67,7 +67,7 @@ export function useMemoryNodeViewer() {
   const showMemoryNode = useCallback(
     (
       node: MemoryWithLevel,
-      deleteCallback?: (node: MemoryWithLevel) => void
+      deleteCallback?: (node: MemoryWithLevel) => void,
     ) => {
       context.setNodeData(node);
       if (deleteCallback) {
@@ -75,7 +75,7 @@ export function useMemoryNodeViewer() {
       }
       openModal();
     },
-    [context, openModal]
+    [context, openModal],
   );
 
   const hideMemoryNode = useCallback(() => {

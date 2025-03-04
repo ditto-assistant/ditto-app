@@ -55,7 +55,7 @@ export async function promptLLM(
   systemPrompt: string,
   model: Model = "gemini-1.5-flash",
   imageURL: string = "",
-  textCallback: TextCallback | null = null
+  textCallback: TextCallback | null = null,
 ): Promise<string> {
   console.log("Sending prompt to LLM: ", model);
   let responseMessage = "";
@@ -116,7 +116,7 @@ export async function promptLLM(
       }
 
       console.log(
-        `✅ [LLM] Completed streaming, total length: ${responseMessage.length} chars`
+        `✅ [LLM] Completed streaming, total length: ${responseMessage.length} chars`,
       );
       return responseMessage;
     } catch (error) {
@@ -149,7 +149,7 @@ export async function promptLLM(
  */
 export async function openaiImageGeneration(
   prompt: string,
-  preferences: ImageGenerationPreferences = DEFAULT_PREFERENCES.imageGeneration
+  preferences: ImageGenerationPreferences = DEFAULT_PREFERENCES.imageGeneration,
 ): Promise<string> {
   const tok = await getToken();
   if (tok.err) {
@@ -193,7 +193,7 @@ export async function promptLLMV2(
   systemPrompt: string,
   model: Model = "gemini-1.5-flash",
   imageURL: string = "",
-  textCallback: TextCallback | null = null
+  textCallback: TextCallback | null = null,
 ): Promise<string> {
   console.log("Sending prompt to LLM V2: ", model);
   let responseMessage = "";
@@ -278,7 +278,7 @@ export async function promptLLMV2(
       }
 
       console.log(
-        `✅ [LLM V2] Completed streaming, total length: ${responseMessage.length} chars`
+        `✅ [LLM V2] Completed streaming, total length: ${responseMessage.length} chars`,
       );
       return responseMessage;
     } catch (error) {

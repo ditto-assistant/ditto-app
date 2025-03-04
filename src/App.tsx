@@ -50,7 +50,7 @@ const AppErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 
 // Wrap lazy components with error boundary
 const loadE = <T extends React.ComponentType<unknown>>(
-  importFn: () => Promise<{ default: T }>
+  importFn: () => Promise<{ default: T }>,
 ) => {
   return lazy(async () => {
     try {
@@ -72,10 +72,10 @@ const Settings = loadE(() => import("@/screens/Settings"));
 const Checkout = loadE(() => import("@/screens/Checkout"));
 const CheckoutSuccess = loadE(() => import("@/screens/CheckoutSuccess"));
 const ScriptsOverlay = loadE(
-  () => import("@/screens/ScriptsModal/ScriptsOverlay")
+  () => import("@/screens/ScriptsModal/ScriptsOverlay"),
 );
 const ConfirmationDialog = loadE(
-  () => import("@/components/ui/modals/ConfirmationModal")
+  () => import("@/components/ui/modals/ConfirmationModal"),
 );
 const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"));
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"));
@@ -100,8 +100,8 @@ const router = createBrowserRouter(
           <Route path="success" element={<CheckoutSuccess />} />
         </Route>
       </Route>
-    </Route>
-  )
+    </Route>,
+  ),
 );
 
 const modalRegistry: ModalRegistry = {
@@ -176,7 +176,7 @@ function App() {
                                       }}
                                     />,
                                     document.getElementById("toast-root") ||
-                                      document.body
+                                      document.body,
                                   )}
                                   <ReactQueryDevtools
                                     buttonPosition="top-right"

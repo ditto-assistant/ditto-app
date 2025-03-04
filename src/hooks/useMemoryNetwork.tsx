@@ -47,7 +47,7 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
         setLoading,
         deleteMemory: (memoryId: string) => {
           setMemories((prevMemories) =>
-            filterMemoryById(prevMemories, memoryId)
+            filterMemoryById(prevMemories, memoryId),
           );
         },
         fetchMemories: async (memory) => {
@@ -70,7 +70,7 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
                 },
                 stripImages: false,
               },
-              "application/json"
+              "application/json",
             );
 
             if (memoriesResponse.err) {
@@ -107,7 +107,7 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
                   id: child.id,
                   childCount: child.children?.length || 0,
                 })),
-              }))
+              })),
             );
 
             setMemories(networkData);
@@ -129,7 +129,7 @@ export function useMemoryNetwork() {
   const context = useContext(MemoryNetworkContext);
   if (context === undefined) {
     throw new Error(
-      "useMemoryNetwork must be used within a MemoryNetworkProvider"
+      "useMemoryNetwork must be used within a MemoryNetworkProvider",
     );
   }
   const { createOpenHandler, createCloseHandler } = useModal();

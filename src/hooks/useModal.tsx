@@ -91,7 +91,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
     case "CLOSE_ALL": {
       // Only update if there are open modals
       const hasOpenModals = Object.values(state.modals).some(
-        (modal) => modal?.isOpen
+        (modal) => modal?.isOpen,
       );
       if (!hasOpenModals) return state;
 
@@ -99,7 +99,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
         Object.entries(state.modals).map(([id, modal]) => [
           id,
           { ...modal, isOpen: false },
-        ])
+        ]),
       );
       return { ...state, modals: closedModals };
     }
@@ -115,7 +115,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
 
       const maxZIndex = otherModals.reduce(
         (max, modal) => Math.max(max, modal?.zIndex || 0),
-        0
+        0,
       );
 
       // Only update if the modal's z-index isn't already higher than others
@@ -166,7 +166,7 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
         close: () => void;
         bringToFront: () => void;
       }
-    >()
+    >(),
   );
 
   // Function to get or create a stable handler for a modal
@@ -193,7 +193,7 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
       }
       return stableHandlers.current.get(id)!;
     },
-    [registry]
+    [registry],
   );
 
   // Factory functions that return stable handler references
@@ -201,28 +201,28 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
     (id: ModalId) => {
       return getOrCreateHandlers(id).open;
     },
-    [getOrCreateHandlers]
+    [getOrCreateHandlers],
   );
 
   const createCloseHandler = useCallback(
     (id: ModalId) => {
       return getOrCreateHandlers(id).close;
     },
-    [getOrCreateHandlers]
+    [getOrCreateHandlers],
   );
 
   const createBringToFrontHandler = useCallback(
     (id: ModalId) => {
       return getOrCreateHandlers(id).bringToFront;
     },
-    [getOrCreateHandlers]
+    [getOrCreateHandlers],
   );
 
   const closeAllModals = useCallback(() => dispatch({ type: "CLOSE_ALL" }), []);
 
   const getModalState = useCallback(
     (id: ModalId) => state.modals[id],
-    [state.modals]
+    [state.modals],
   );
 
   // Memoize the context value to prevent unnecessary rerenders
@@ -240,7 +240,7 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
       createBringToFrontHandler,
       closeAllModals,
       getModalState,
-    ]
+    ],
   );
 
   return (

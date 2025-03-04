@@ -49,7 +49,7 @@ export const sendPrompt = async (
   isPremiumUser = false,
   streamingCallback = null,
   optimisticId = null,
-  finalizeMessage = null
+  finalizeMessage = null,
 ) => {
   try {
     // Create a thinking indicator in localStorage to show we're processing
@@ -83,7 +83,7 @@ export const sendPrompt = async (
           },
           stripImages: true,
         },
-        "text/plain"
+        "text/plain",
       ),
       searchExamples(pairID),
       fetchScriptDetails(),
@@ -111,7 +111,7 @@ export const sendPrompt = async (
       prompt,
       scriptName,
       scriptType,
-      preferences.tools
+      preferences.tools,
     );
 
     console.log("%c" + constructedPrompt, "color: green");
@@ -136,7 +136,7 @@ export const sendPrompt = async (
       systemTemplate(),
       mainAgentModel,
       image,
-      textCallback
+      textCallback,
     );
 
     const toolTriggers = [
@@ -172,7 +172,7 @@ export const sendPrompt = async (
           preferences,
           refetch,
           optimisticId,
-          finalizeMessage
+          finalizeMessage,
         );
         break;
       }
@@ -192,7 +192,7 @@ export const sendPrompt = async (
         // Small delay to ensure the previous operations complete
         setTimeout(() => {
           console.log(
-            "🔄 [Agent] Triggering fallback refetch (no optimistic update)"
+            "🔄 [Agent] Triggering fallback refetch (no optimistic update)",
           );
           refetch();
         }, 300);
@@ -265,7 +265,7 @@ export const processResponse = async (
   preferences,
   refetch,
   optimisticId = null,
-  finalizeMessage = null
+  finalizeMessage = null,
 ) => {
   console.log("%c" + response, "color: yellow");
 
@@ -283,7 +283,7 @@ export const processResponse = async (
         messages: prevState.messages.map((msg, i) =>
           i === prevState.messages.length - 1
             ? { ...msg, text: errorMessage, isTyping: false, isError: true }
-            : msg
+            : msg,
         ),
       }));
     } else if (refetch) {
@@ -300,7 +300,7 @@ export const processResponse = async (
     finalResponse = null,
     optimisticId = null,
     finalizeMessage = null,
-    isStreaming = false
+    isStreaming = false,
   ) => {
     try {
       // For completed responses with a final result
@@ -315,14 +315,14 @@ export const processResponse = async (
           // Trigger a refetch after saving the final tool response
           setTimeout(() => {
             console.log(
-              `🔄 [Agent] Triggering refetch after tool completion: ${optimisticId}`
+              `🔄 [Agent] Triggering refetch after tool completion: ${optimisticId}`,
             );
             refetch();
 
             // Remove the optimistic message after the refetch completes
             setTimeout(() => {
               console.log(
-                `🧹 [Agent] Removing tool message after refetch: ${optimisticId}`
+                `🧹 [Agent] Removing tool message after refetch: ${optimisticId}`,
               );
               if (finalizeMessage) {
                 // Force message removal by sending special finalizing signal
@@ -371,7 +371,7 @@ export const processResponse = async (
           // Remove any previous status messages
           const textWithoutStatus = currentText.replace(
             /\n\n\*(?:.*?): .*?\*$/s,
-            ""
+            "",
           );
 
           // Keep isOptimistic flag true during tool processing to prevent premature removal
@@ -407,7 +407,7 @@ export const processResponse = async (
         "openscad",
         null,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       const finalResponse = await handleScriptGeneration({
         response,
@@ -430,7 +430,7 @@ export const processResponse = async (
         "openscad",
         finalResponse,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       return finalResponse;
     }
@@ -443,7 +443,7 @@ export const processResponse = async (
         "html",
         null,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       const finalResponse = await handleScriptGeneration({
         response,
@@ -466,7 +466,7 @@ export const processResponse = async (
         "html",
         finalResponse,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       return finalResponse;
     }
@@ -479,7 +479,7 @@ export const processResponse = async (
         "image",
         null,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       const finalResponse = await handleImageGeneration(response, preferences);
       await updateMessageWithToolStatus(
@@ -488,7 +488,7 @@ export const processResponse = async (
         "image",
         finalResponse,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       return finalResponse;
     }
@@ -501,7 +501,7 @@ export const processResponse = async (
         "search",
         null,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
 
       // Start with the response that contains the first agent's output
@@ -523,7 +523,7 @@ export const processResponse = async (
             optimisticId,
             lastResponse + "\n\n" + cumulativeStreamedText,
             false, // Not final yet
-            true // Indicate this is a streaming update
+            true, // Indicate this is a streaming update
           );
         }
       };
@@ -533,7 +533,7 @@ export const processResponse = async (
         response,
         prompt,
         preferences,
-        streamingCallback // Pass the streaming callback
+        streamingCallback, // Pass the streaming callback
       );
 
       await updateMessageWithToolStatus(
@@ -542,7 +542,7 @@ export const processResponse = async (
         "search",
         finalResponse,
         optimisticId,
-        finalizeMessage
+        finalizeMessage,
       );
       return finalResponse;
     }
@@ -559,7 +559,7 @@ export const processResponse = async (
       null,
       errorMessage,
       optimisticId,
-      finalizeMessage
+      finalizeMessage,
     );
     return errorMessage;
   }
