@@ -39,7 +39,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
       // Small delay before closing to allow movement between menu and button
       setTimeout(() => {
         // Check if user hasn't moved back to the trigger button
-        if (triggerRef && !triggerRef.current?.matches(':hover')) {
+        if (triggerRef && !triggerRef.current?.matches(":hover")) {
           onClose();
         }
       }, 150);

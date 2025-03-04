@@ -333,8 +333,10 @@ export default function HomeScreen() {
       // when moving cursor from button to menu
       setTimeout(() => {
         // Check if neither the menu nor the logo button is being hovered
-        if (!document.querySelector(".sliding-menu:hover") && 
-            !logoButtonRef.current?.matches(":hover")) {
+        if (
+          !document.querySelector(".sliding-menu:hover") &&
+          !logoButtonRef.current?.matches(":hover")
+        ) {
           setIsMenuOpen(false);
         }
       }, 100);
@@ -375,9 +377,7 @@ export default function HomeScreen() {
             onMouseEnter={handleHoverStart}
             onMouseLeave={handleHoverEnd}
             onClick={handleLogoClick}
-            onKeyDown={(e) =>
-              handleKeyDown(e, handleLogoClick)
-            }
+            onKeyDown={(e) => handleKeyDown(e, handleLogoClick)}
             aria-label="Menu"
             role="button"
             tabIndex={0}

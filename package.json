@@ -23,11 +23,7 @@
     "remark-gfm": "^4.0.1",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
-    "vite-plugin-pwa": "^0.21.1",
-    "workbox-expiration": "^7.3.0",
-    "workbox-precaching": "^7.3.0",
-    "workbox-routing": "^7.3.0",
-    "workbox-strategies": "^7.3.0"
+    "vite-plugin-pwa": "^0.21.1"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.66.1",
