@@ -49,6 +49,7 @@ export const routes = {
 
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
+  promptV2: BASE_URL + "/api/v2/prompt",
 };
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

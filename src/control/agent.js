@@ -1,4 +1,4 @@
-import { promptLLM } from "../api/LLM";
+import { promptLLM, promptLLMV2 } from "../api/LLM";
 import {
   mainTemplate,
   systemTemplate,
@@ -130,8 +130,8 @@ export const sendPrompt = async (
       (text) => streamingCallback(text) : 
       null;
     
-    // Get the response from the LLM
-    let response = await promptLLM(
+    // Get the response from the LLM using the V2 endpoint with SSE streaming
+    let response = await promptLLMV2(
       constructedPrompt,
       systemTemplate(),
       mainAgentModel,
@@ -297,7 +297,8 @@ export const processResponse = async (
     type,
     finalResponse = null,
     optimisticId = null,
-    finalizeMessage = null
+    finalizeMessage = null,
+    isStreaming = false
   ) => {
     try {
       // For completed responses with a final result
@@ -493,11 +494,39 @@ export const processResponse = async (
         optimisticId,
         finalizeMessage
       );
+      
+      // Start with the response that contains the first agent's output
+      // This will show any content after the <GOOGLE_SEARCH> tag
+      const lastResponse = response;
+      
+      // For tracking the cumulative streamed text so far
+      let cumulativeStreamedText = "";
+      
+      // Set up a streaming callback that updates the message in real-time
+      const streamingCallback = (text) => {
+        if (optimisticId && finalizeMessage) {
+          // Append the new chunk to our cumulative text
+          cumulativeStreamedText += text;
+          
+          // For the Google search agent, we want to stream its response
+          // after the query part, appending to the existing message
+          finalizeMessage(
+            optimisticId, 
+            lastResponse + "\n\n" + cumulativeStreamedText,
+            false,  // Not final yet
+            true    // Indicate this is a streaming update
+          );
+        }
+      };
+      
+      // Call Google search with streaming capability
       const finalResponse = await handleGoogleSearch(
         response,
         prompt,
-        preferences
+        preferences,
+        streamingCallback  // Pass the streaming callback
       );
+      
       await updateMessageWithToolStatus(
         pairID,
         "complete",

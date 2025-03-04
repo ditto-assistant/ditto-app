@@ -1,4 +1,4 @@
-import { promptLLM } from "../../api/LLM";
+import { promptLLM, promptLLMV2 } from "../../api/LLM";
 import {
   programmerAgentPlanner,
   programmerAgentTaskCoder,
@@ -14,21 +14,21 @@ export default async function updaterAgent(
 ) {
   try {
     // Step 1: Design tasks using the planner
-    const taskWriteup = await promptLLM(
+    const taskWriteup = await promptLLMV2(
       programmerAgentPlanner(prompt, scriptContents),
       htmlSystemTemplate(),
       programmerModel
     ); // The somewhat important model, which plans the tasks
 
     // Step 2: Generate code snippets from task writeup
-    const codeSnippets = await promptLLM(
+    const codeSnippets = await promptLLMV2(
       programmerAgentTaskCoder(taskWriteup, scriptContents),
       htmlSystemTemplate(),
       programmerModel
     ); // The most important model, which does the actual coding
 
     // Step 3: Apply code snippets to script
-    let finalScript = await promptLLM(
+    let finalScript = await promptLLMV2(
       programmerAgentTaskApplier(codeSnippets, scriptContents),
       htmlSystemTemplate(),
       "gemini-1.5-flash"
@@ -64,7 +64,7 @@ export default async function updaterAgent(
 
       // Use continuer to complete the script
       console.log("Using the continuer...");
-      const continuedScript = await promptLLM(
+      const continuedScript = await promptLLMV2(
         programmerAgentContinuer(codeSnippets, snippedToNewline),
         htmlSystemTemplate()
       ); // default to gemini-1.5-flash for continuer

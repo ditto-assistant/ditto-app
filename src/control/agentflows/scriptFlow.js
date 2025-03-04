@@ -1,5 +1,5 @@
 import { saveScriptToFirestore } from "../firebase";
-import { promptLLM } from "../../api/LLM";
+import { promptLLM, promptLLMV2 } from "../../api/LLM";
 import updaterAgent from "../agentflows/updaterAgentFlow";
 import {
   scriptToNameTemplate,
@@ -50,7 +50,7 @@ export const handleScriptGeneration = async ({
   let scriptResponse = "";
 
   if (scriptContents === "") {
-    scriptResponse = await promptLLM(
+    scriptResponse = await promptLLMV2(
       constructedPrompt,
       systemTemplateFunction(),
       preferences.programmerModel,
@@ -87,7 +87,7 @@ export const generateScriptName = async (script, query) => {
   const scriptToNameConstructedPrompt = scriptToNameTemplate(script, query);
   console.log("%c" + scriptToNameConstructedPrompt, "color: green");
 
-  let scriptToNameResponse = await promptLLM(
+  let scriptToNameResponse = await promptLLMV2(
     scriptToNameConstructedPrompt,
     scriptToNameSystemTemplate(),
     "mistral-nemo"
@@ -96,7 +96,7 @@ export const generateScriptName = async (script, query) => {
   // Handle errors and retries
   if (scriptToNameResponse.includes("error sending request")) {
     console.log("API error detected, retrying script name generation...");
-    scriptToNameResponse = await promptLLM(
+    scriptToNameResponse = await promptLLMV2(
       scriptToNameConstructedPrompt,
       scriptToNameSystemTemplate(),
       "mistral-nemo"

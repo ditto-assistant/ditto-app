@@ -35,6 +35,7 @@ const HomeScreen = lazy(() => import("@/screens/HomeScreen"));
 const Settings = lazy(() => import("@/screens/Settings"));
 const Checkout = lazy(() => import("@/screens/Checkout"));
 const CheckoutSuccess = lazy(() => import("@/screens/CheckoutSuccess"));
+const LLMTest = lazy(() => import("@/api/LLMTest"));
 const ScriptsOverlay = lazy(
   () => import("@/screens/ScriptsModal/ScriptsOverlay")
 );
@@ -64,6 +65,7 @@ const router = createBrowserRouter(
           <Route index element={<Checkout />} />
           <Route path="success" element={<CheckoutSuccess />} />
         </Route>
+        <Route path="llm-test" element={<LLMTest />} />
       </Route>
     </Route>
   )
