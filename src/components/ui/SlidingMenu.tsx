@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./SlidingMenu.css";
+import { usePlatform } from "@/hooks/usePlatform";
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -30,16 +31,11 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   menuTitle,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Handle hover events for the menu itself
-  const handleMenuHover = () => {
-    // Keep menu open while hovering over it
-    // This is important for desktop hover behavior
-  };
+  const { isMobile } = usePlatform();
 
   const handleMenuLeave = () => {
     // Only apply hover behavior on desktop and when not pinned
-    if (window.innerWidth > 768 && !isPinned) {
+    if (!isMobile && !isPinned) {
       // Small delay before closing to allow movement between menu and button
       setTimeout(() => {
         // Check if user hasn't moved back to the trigger button
@@ -80,7 +76,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         transition: { type: "spring", damping: 25, stiffness: 300 },
       };
     }
-    
+
     // For standard top menus, animate horizontally
     const initialX = position === "left" ? -50 : 50;
     return {
@@ -99,15 +95,10 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         <motion.div
           className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${isPinned ? "pinned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
           ref={menuRef}
-          onMouseEnter={handleMenuHover}
           onMouseLeave={handleMenuLeave}
           {...menuAnimation}
         >
-          {menuTitle && (
-            <div className="menu-title">
-              {menuTitle}
-            </div>
-          )}
+          {menuTitle && <div className="menu-title">{menuTitle}</div>}
           {menuItems.map((item, index) => (
             <motion.div
               key={index}

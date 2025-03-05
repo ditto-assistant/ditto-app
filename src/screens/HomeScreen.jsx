@@ -2,19 +2,13 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
 import TermsOfService from "@/components/TermsOfService";
-import dittoIcon from "/icons/ditto-icon-clear.png";
-import { IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdFlipCameraIos, MdFeedback } from "react-icons/md";
-import { FaLaptopCode, FaPlay, FaPen, FaTimes } from "react-icons/fa";
-import SlidingMenu from "@/components/ui/SlidingMenu";
+import { MdFlipCameraIos } from "react-icons/md";
 import ChatFeed from "@/components/ChatFeed";
 import SendMessage from "@/components/SendMessage";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
-import { useModal } from "@/hooks/useModal";
-import { useScripts } from "@/hooks/useScripts.tsx";
+import { useScripts } from "@/hooks/useScripts";
 import { usePlatform } from "@/hooks/usePlatform";
-import useWhatsNew from "@/hooks/useWhatsNew";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
@@ -31,20 +25,13 @@ export default function HomeScreen() {
     return !localStorage.getItem("hasSeenTOS");
   });
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const modal = useModal();
-  const openSettingsModal = modal.createOpenHandler("settings");
-  const openFeedbackModal = modal.createOpenHandler("feedback");
-  const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
-  const openScriptsOverlay = modal.createOpenHandler("scripts");
-  const { isIOS, isPWA, isMobile } = usePlatform();
+  const { isIOS, isPWA } = usePlatform();
   const {
     selectedScript,
     setSelectedScript,
     handleDeselectScript,
     saveScript,
   } = useScripts();
-  const { openWhatsNew } = useWhatsNew();
 
   const appBodyRef = useRef(null);
 
@@ -230,23 +217,6 @@ export default function HomeScreen() {
     };
   }, []);
 
-  // Functions for play, edit, and deselect actions
-  const handlePlayScript = () => {
-    try {
-      if (selectedScript) {
-        openDittoCanvas();
-      }
-    } catch (error) {
-      console.error("Error playing script:", error);
-    }
-  };
-
-  const [showScriptActions, setShowScriptActions] = useState(false);
-
-  const handleScriptNameClick = () => {
-    setShowScriptActions(!showScriptActions);
-  };
-
   useEffect(() => {
     const handleEditScript = (event) => {
       const { script } = event.detail;
@@ -295,60 +265,6 @@ export default function HomeScreen() {
       );
     };
   }, []);
-
-  // Handle keyboard events for accessibility
-  const handleKeyDown = (event, callback) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      callback();
-    }
-  };
-
-  // Hover and click handling for the menu
-  const logoButtonRef = useRef(null);
-  const scriptIndicatorRef = useRef(null);
-  const [menuPinned, setMenuPinned] = useState(false);
-
-  const handleHoverStart = () => {
-    if (!isMobile && !menuPinned) {
-      // Only trigger on desktop when not pinned
-      setIsMenuOpen(true);
-    }
-  };
-
-  const handleHoverEnd = () => {
-    if (!isMobile && !menuPinned) {
-      // Only trigger on desktop when not pinned
-      // Use a short delay to prevent menu from closing immediately
-      // when moving cursor from button to menu
-      setTimeout(() => {
-        // Check if neither the menu nor the logo button is being hovered
-        if (
-          !document.querySelector(".sliding-menu:hover") &&
-          !logoButtonRef.current?.matches(":hover")
-        ) {
-          setIsMenuOpen(false);
-        }
-      }, 100);
-    }
-  };
-
-  const handleLogoClick = () => {
-    if (!isMobile) {
-      // On desktop, clicking toggles pinned state
-      if (isMenuOpen) {
-        // If already open, toggle the pin state
-        setMenuPinned(!menuPinned);
-      } else {
-        // If closed, open and pin
-        setIsMenuOpen(true);
-        setMenuPinned(true);
-      }
-    } else {
-      // On mobile, just toggle menu open/closed
-      setIsMenuOpen(!isMenuOpen);
-    }
-  };
 
   return (
     <div className="app" onClick={handleCloseMediaOptions}>

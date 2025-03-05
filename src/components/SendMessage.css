@@ -1,7 +1,20 @@
 @import "../styles/variables.css";
 @import "@/styles/animations.css";
 
-/* Form styles */
+/* 
+ * SendMessage Component Styles
+ * Structure:
+ * 1. Form container
+ * 2. Input area
+ * 3. Button bar
+ * 4. Action buttons
+ * 5. Image preview and media
+ * 6. Overlays and menus
+ * 7. Fullscreen mode
+ * 8. Responsive styles
+ */
+
+/* ===== 1. Form container ===== */
 .form {
   display: flex;
   flex: 1;
@@ -10,15 +23,13 @@
   position: relative;
   z-index: 10;
   flex-direction: column;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-bottom: var(--safe-area-bottom, 0px);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--safe-area-bottom, 0);
 }
 
-/* Ensure the form doesn't overlap with chat content */
 .app-footer .form {
   margin-top: 0;
-  margin-bottom: var(--safe-area-bottom, 0px);
 }
 
 .contents {
@@ -37,6 +48,7 @@
   position: relative;
 }
 
+/* ===== 2. Input area ===== */
 .input-wrapper {
   position: relative;
   width: 100%;
@@ -59,16 +71,20 @@
   min-height: 24px;
   height: 24px;
   width: 100%;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   overflow-y: hidden;
+  transition:
+    border var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .text-area:focus {
-  border: 1px solid var(--primary-color);
-  box-shadow: 0 0 3px var(--primary-color);
+  outline: none;
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 3px var(--primary);
 }
 
-/* Bottom action buttons bar */
+/* ===== 3. Button bar ===== */
 .bottom-buttons-bar {
   display: flex;
   width: 100%;
@@ -100,12 +116,13 @@
   gap: 12px;
 }
 
+/* ===== 4. Action buttons ===== */
 /* Script indicator container */
 .script-indicator-container {
   position: relative;
 }
 
-/* Ditto logo button - from HomeScreen.css but adapted for the bottom bar */
+/* Ditto logo button */
 .ditto-logo-button {
   width: 42px;
   height: 42px;
@@ -118,6 +135,7 @@
   cursor: pointer;
   overflow: hidden;
   z-index: 10;
+  transition: all var(--transition-normal);
 }
 
 /* Make the ditto icon circular */
@@ -139,22 +157,24 @@
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  color: white;
+  color: var(--text-white);
   font-size: 16px;
+  transition: all var(--transition-normal);
 }
 
-/* Use icon-button class from buttons.css */
+/* Action button - reusing icon-button styles */
 .action-button {
   color: var(--interactive-active);
   font-size: 17px;
   width: 36px;
   height: 36px;
+  transition: all var(--transition-normal);
 }
 
-/* Override icon-button class from buttons.css with custom styling */
+/* Submit button */
 .icon-button.submit {
   background-color: var(--primary);
-  color: white;
+  color: var(--text-white);
   height: 36px;
   width: 36px;
   min-height: 36px;
@@ -162,12 +182,16 @@
   align-self: center;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
 }
 
 .icon-button.submit svg {
   width: 16px;
   height: 16px;
-  color: white;
+  color: var(--text-white);
 }
 
 .icon-button.submit.disabled {
@@ -181,18 +205,19 @@
   background-color: var(--primary-hover);
 }
 
+/* ===== 5. Image preview and media ===== */
 .image-preview {
   position: absolute;
   background-color: rgba(0, 0, 0, 0.5);
-  padding: 5px;
-  border-radius: 8px;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-md);
   display: flex;
   align-items: center;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   max-width: 90%;
   z-index: 2;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   bottom: 100%;
   left: 0;
   margin-bottom: 10px;
@@ -202,18 +227,18 @@
   width: 50px;
   height: 50px;
   object-fit: cover;
-  border-radius: 5px;
+  border-radius: var(--border-radius-sm);
   margin-right: 10px;
 }
 
 .remove-image {
-  color: white;
+  color: var(--text-white);
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--transition-quick);
 }
 
 .remove-image:hover {
-  color: #ff5050;
+  color: var(--status-danger);
 }
 
 .camera-overlay {
@@ -226,7 +251,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 3000;
+  z-index: var(--z-index-overlay);
 }
 
 .camera-container {
@@ -235,8 +260,8 @@
   align-items: center;
   max-width: 90%;
   max-height: 90%;
-  background-color: #2f3136;
-  border-radius: 10px;
+  background-color: var(--background-secondary);
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
 }
 
@@ -244,7 +269,6 @@
   width: 100%;
   height: auto;
   max-height: calc(90vh - 100px);
-  /* Adjust based on your needs */
   object-fit: contain;
 }
 
@@ -254,40 +278,40 @@
   align-items: center;
   width: 100%;
   padding: 15px;
-  background-color: #40444b;
+  background-color: var(--background-input);
 }
 
 .flip-camera-icon {
-  color: white;
+  color: var(--text-white);
   font-size: 30px;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--transition-quick);
 }
 
 .flip-camera-icon:hover {
-  color: #7289da;
+  color: var(--primary);
 }
 
 .camera-snap,
 .camera-close {
-  background-color: #7289da;
-  color: white;
+  background-color: var(--primary);
+  color: var(--text-white);
   border: none;
   border-radius: 20px;
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--transition-quick);
 }
 
 .camera-snap:hover,
 .camera-close:hover {
-  background-color: #5b6eae;
+  background-color: var(--primary-hover);
 }
 
 .camera-snap:active,
 .camera-close:active {
-  background-color: #4a5899;
+  background-color: var(--primary-active);
 }
 
 .fullscreen-image-overlay {
@@ -300,19 +324,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 5000;
-  animation: fadeIn 0.3s ease;
+  z-index: var(--z-index-overlay);
+  animation: fadeIn var(--transition-normal);
 }
 
 .fullscreen-image-overlay img {
   max-width: 90%;
   max-height: 90%;
   object-fit: contain;
-  border-radius: 8px;
-  animation: scaleIn 0.3s ease;
+  border-radius: var(--border-radius-md);
+  animation: scaleIn var(--transition-normal);
 }
 
-/* Action menu styles (replaces media options) */
+/* ===== 6. Overlays and menus ===== */
 .action-menu-overlay {
   position: fixed;
   top: 0;
@@ -321,30 +345,30 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  z-index: 1000;
+  z-index: var(--z-index-dropdown);
   align-items: center;
 }
 
 .action-menu {
-  background-color: #2f3136;
-  padding: 16px;
-  border-radius: 10px;
+  background-color: var(--background-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-lg);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   width: auto;
-  margin-left: 16px;
+  margin-left: var(--spacing-md);
 }
 
 .action-menu-item {
-  background-color: #40444b;
+  background-color: var(--background-input);
   border: none;
-  border-radius: 8px;
-  color: white;
+  border-radius: var(--border-radius-md);
+  color: var(--text-white);
   padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-quick);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -352,7 +376,7 @@
 }
 
 .action-menu-item:hover {
-  background-color: #4a4d57;
+  background-color: var(--hover-element);
   transform: translateX(2px);
 }
 
@@ -364,7 +388,7 @@
   font-size: 18px;
 }
 
-/* Fullscreen message modal styles */
+/* ===== 7. Fullscreen mode ===== */
 .fullscreen-message-modal {
   position: fixed;
   top: 0;
@@ -372,29 +396,27 @@
   width: 100%;
   height: 100%;
   background-color: var(--background-primary);
-  z-index: 2000;
+  z-index: var(--z-index-modal);
   display: flex;
   flex-direction: column;
-  animation: slide-up 0.3s ease;
+  animation: slide-up var(--transition-normal);
 }
-
-/* Removed duplicate slide-up animation - should be in animations.css */
 
 .fullscreen-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--border-light);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .fullscreen-header h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+  color: var(--text-normal);
 }
 
-/* Use modal-control class from components.css */
 .close-button {
   font-size: 20px;
   color: var(--interactive-active);
@@ -418,25 +440,25 @@
 }
 
 .fullscreen-footer {
-  padding: 16px;
+  padding: var(--spacing-md);
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-color);
 }
 
 .fullscreen-submit {
   background-color: var(--primary-active);
   border: none;
   border-radius: var(--border-radius-md);
-  color: white;
+  color: var(--text-white);
   padding: 12px 24px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-quick);
 }
 
 .fullscreen-submit:hover {
@@ -453,7 +475,7 @@
   cursor: not-allowed;
 }
 
-/* Add media query for small screens */
+/* ===== 8. Responsive styles ===== */
 @media screen and (max-width: 480px) {
   .form {
     padding: var(--spacing-xs) var(--spacing-sm);
@@ -474,8 +496,8 @@
 
   .submit {
     height: 32px;
-    width: 32px; /* Keep it square for mobile */
-    min-width: unset; /* Remove min-width constraint */
+    width: 32px;
+    min-width: unset;
     min-height: 32px;
   }
 
@@ -485,7 +507,7 @@
   }
 
   .action-buttons {
-    gap: 8px;
+    gap: var(--spacing-sm);
   }
 
   .action-button {
@@ -493,39 +515,34 @@
     width: 32px;
     height: 32px;
   }
-  
-  /* Adjust bottom bar for mobile */
+
   .bottom-buttons-bar {
     padding: 6px 5px;
   }
-  
-  /* Make the ditto logo button smaller on mobile */
+
   .ditto-logo-button {
     width: 38px;
     height: 38px;
   }
-  
+
   .ditto-icon-circular {
     width: 26px;
     height: 26px;
   }
-  
-  /* Make script icon button smaller on mobile */
+
   .script-icon-button {
     width: 32px;
     height: 32px;
     font-size: 14px;
   }
-  
-  /* Make submit button smaller on mobile */
+
   .icon-button.submit {
     width: 32px;
     height: 32px;
   }
-  
-  /* Right buttons container should be tighter on mobile */
+
   .right-buttons {
-    gap: 8px;
+    gap: var(--spacing-sm);
   }
 
   .fullscreen-header {

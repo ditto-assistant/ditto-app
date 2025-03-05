@@ -14,7 +14,7 @@ import "./ComposeModal.css";
 // Define context types
 interface ComposeContextType {
   message: string;
-  setMessage: (message: string) => void;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
   isComposeModalOpen: boolean;
   openComposeModal: () => void;
   closeComposeModal: () => void;
@@ -35,7 +35,7 @@ interface ComposeProviderProps {
 export const ComposeProvider: React.FC<ComposeProviderProps> = ({
   children,
 }) => {
-  const { promptData, savePrompt, clearPrompt } = usePromptStorage();
+  const { promptData, savePrompt } = usePromptStorage();
   const [message, setMessage] = useState("");
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
@@ -47,44 +47,45 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({
     }
   }, [promptData]);
 
-  // Callback function to be overridden by SendMessage component
-  const submitCallbackRef = useRef<(() => void) | null>(null);
+  const submitCallback = useRef<() => void | null>(null);
 
   const registerSubmitCallback = (callback: () => void) => {
-    submitCallbackRef.current = callback;
+    submitCallback.current = callback;
   };
 
   const handleSubmit = () => {
-    if (submitCallbackRef.current) {
-      submitCallbackRef.current();
-      clearPrompt();
-      closeComposeModal();
+    if (submitCallback.current) {
+      submitCallback.current();
     }
+    closeComposeModal();
   };
 
-  // Update message and save to storage
-  const handleSetMessage = (newMessage: string) => {
-    setMessage(newMessage);
-    savePrompt(newMessage);
-  };
+  // Save message to local storage when it changes
+  useEffect(() => {
+    if (message.trim()) {
+      savePrompt(message);
+    }
+  }, [message, savePrompt]);
 
   const openComposeModal = () => setIsComposeModalOpen(true);
   const closeComposeModal = () => setIsComposeModalOpen(false);
 
-  const value = {
-    message,
-    setMessage: handleSetMessage,
-    isComposeModalOpen,
-    openComposeModal,
-    closeComposeModal,
-    handleSubmit,
-    isWaitingForResponse,
-    registerSubmitCallback,
-    setIsWaitingForResponse,
-  };
-
   return (
-    <ComposeContext.Provider value={value}>{children}</ComposeContext.Provider>
+    <ComposeContext.Provider
+      value={{
+        message,
+        setMessage,
+        isComposeModalOpen,
+        openComposeModal,
+        closeComposeModal,
+        handleSubmit,
+        isWaitingForResponse,
+        setIsWaitingForResponse,
+        registerSubmitCallback,
+      }}
+    >
+      {children}
+    </ComposeContext.Provider>
   );
 };
 

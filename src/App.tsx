@@ -31,34 +31,23 @@ import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler";
 import UpdateNotification from "@/components/UpdateNotification";
 import WhatsNew from "@/components/WhatsNew/WhatsNew";
 
-// Initialize update service
 initUpdateService();
 
-// Create error boundary wrapper
 const AppErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   const { ErrorBoundaryWrapper, isOutdated } = useLazyLoadErrorHandler();
-
-  // If we detected an outdated version from a lazy loading error,
-  // we don't render the children to prevent further errors
   if (isOutdated) {
     return <UpdateNotification />;
   }
-
   return <ErrorBoundaryWrapper>{children}</ErrorBoundaryWrapper>;
 };
 
-// Wrap lazy components with error boundary
 const loadE = <T extends React.ComponentType<unknown>>(
   importFn: () => Promise<{ default: T }>,
 ) => {
   return lazy(async () => {
     try {
-      // Simply load the component directly
-      // The cache busting is now handled by the service worker
-      // and localStorage forced refreshes
       return await importFn();
     } catch (error) {
-      // This will be caught by the ErrorBoundary
       console.error("Failed to load component:", error);
       throw error;
     }
@@ -134,13 +123,9 @@ const modalRegistry: ModalRegistry = {
   whatsNew: {
     component: <WhatsNew />,
   },
-  // No need to register fullscreenCompose in the registry anymore
-  // We'll handle it directly in SendMessage component
 } as const;
 
 function App() {
-  // Clear the force-reload-lazy flag once App has mounted
-  // This ensures we only force reload once per app update
   useEffect(() => {
     const forceReloadLazy =
       localStorage.getItem("force-reload-lazy") === "true";

@@ -30,7 +30,6 @@ import { searchExamples } from "@/api/searchExamples";
  * @param {string} firstName - The user's first name.
  * @param {string} prompt - The user's prompt.
  * @param {string} image - The user's image.
- * @param {function} updateConversation - A function that updates the conversation (deprecated).
  * @param {ModelPreferences} preferences - The user's preferences.
  * @param {function} refetch - Whether to refetch the conversation history.
  * @param {boolean} isPremiumUser - Whether the user is a premium user.
@@ -43,7 +42,6 @@ export const sendPrompt = async (
   firstName,
   prompt,
   image,
-  updateConversation,
   preferences,
   refetch,
   isPremiumUser = false,
@@ -168,7 +166,6 @@ export const sendPrompt = async (
           scriptName,
           image,
           memories,
-          null, // Remove updateConversation
           preferences,
           refetch,
           optimisticId,
@@ -209,24 +206,7 @@ export const sendPrompt = async (
     // Remove thinking indicator
     localStorage.removeItem("thinking");
 
-    // For backward compatibility, if updateConversation is provided
-    if (updateConversation) {
-      updateConversation((prevState) => ({
-        ...prevState,
-        is_typing: false,
-        messages: prevState.messages.map((msg, i) => {
-          if (i === prevState.messages.length - 1 && msg.isTyping) {
-            return {
-              ...msg,
-              text: "Sorry, something went wrong. Please try again.",
-              isTyping: false,
-            };
-          }
-          return msg;
-        }),
-      }));
-    } else if (refetch) {
-      // If updateConversation is not provided but refetch is, use refetch
+    if (refetch) {
       refetch();
     }
 
@@ -261,7 +241,6 @@ export const processResponse = async (
   scriptName,
   image,
   memories,
-  updateConversation,
   preferences,
   refetch,
   optimisticId = null,
@@ -277,17 +256,7 @@ export const processResponse = async (
     // Update optimistic message if available
     if (optimisticId && finalizeMessage) {
       finalizeMessage(optimisticId, errorMessage);
-    } else if (updateConversation) {
-      updateConversation((prevState) => ({
-        ...prevState,
-        messages: prevState.messages.map((msg, i) =>
-          i === prevState.messages.length - 1
-            ? { ...msg, text: errorMessage, isTyping: false, isError: true }
-            : msg,
-        ),
-      }));
     } else if (refetch) {
-      // If updateConversation is not provided but refetch is, use refetch
       refetch();
     }
     return errorMessage;
@@ -331,29 +300,7 @@ export const processResponse = async (
               }
             }, 1000);
           }, 800);
-        } else if (updateConversation) {
-          // Legacy update pattern
-          updateConversation((prevState) => {
-            const messages = [...prevState.messages];
-            messages[messages.length - 2] = {
-              ...messages[messages.length - 2],
-              pairID: pairID,
-            };
-            messages[messages.length - 1] = {
-              ...messages[messages.length - 1],
-              text: finalResponse,
-              toolType: type,
-              isTyping: false,
-              showToolBadge: true,
-              docId: pairID,
-              pairID: pairID,
-              toolStatus: null,
-              showTypingDots: false,
-            };
-            return { ...prevState, messages };
-          });
         } else if (refetch) {
-          // If updateConversation is not provided but refetch is, use refetch
           refetch();
         }
 
@@ -376,21 +323,6 @@ export const processResponse = async (
 
           // Keep isOptimistic flag true during tool processing to prevent premature removal
           finalizeMessage(optimisticId, textWithoutStatus + statusLine);
-        } else if (updateConversation) {
-          // Legacy update pattern
-          updateConversation((prevState) => {
-            const messages = [...prevState.messages];
-            messages[messages.length - 1] = {
-              ...messages[messages.length - 1],
-              text: finalResponse || response,
-              toolStatus: status !== "complete" ? statusText : null,
-              toolType: type,
-              isTyping: false,
-              showToolBadge: true,
-              showTypingDots: status !== "complete" && status !== "failed",
-            };
-            return { ...prevState, messages };
-          });
         }
       }
     } catch (error) {
