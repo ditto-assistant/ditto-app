@@ -75,7 +75,7 @@ export default function SendMessage({
   const { clearPrompt } = usePromptStorage();
   const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
-  
+
   // Ditto logo button state and refs
   const logoButtonRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,7 +84,7 @@ export default function SendMessage({
   const openSettingsModal = modal.createOpenHandler("settings");
   const openFeedbackModal = modal.createOpenHandler("feedback");
   const openScriptsOverlay = modal.createOpenHandler("scripts");
-  
+
   // Script indicator state and refs
   const scriptIndicatorRef = useRef(null);
   const [showScriptActions, setShowScriptActions] = useState(false);
@@ -142,7 +142,6 @@ export default function SendMessage({
             firstName,
             messageToSend,
             imageURI,
-            null,
             preferences.data,
             refetch,
             balance.hasPremium ?? false,
@@ -298,7 +297,7 @@ export default function SendMessage({
     onCameraOpen();
     onCloseMediaOptions();
   };
-  
+
   // Ditto logo button handlers
   const handleHoverStart = () => {
     if (!isMobile && !menuPinned) {
@@ -340,7 +339,7 @@ export default function SendMessage({
       setIsMenuOpen(!isMenuOpen);
     }
   };
-  
+
   // Script indicator handlers
   const handleScriptNameClick = () => {
     setShowScriptActions(!showScriptActions);
@@ -351,7 +350,7 @@ export default function SendMessage({
       openDittoCanvas();
     }
   };
-  
+
   // Handle accessibility keyboard events for buttons
   const handleButtonKeyDown = (event, callback) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -407,7 +406,7 @@ export default function SendMessage({
               onChange={handleImageUpload}
             />
           </div>
-          
+
           {/* Ditto logo button - centered */}
           <div className="center-button-container">
             <motion.div
@@ -427,11 +426,15 @@ export default function SendMessage({
               role="button"
               tabIndex={0}
             >
-              <img src={DITTO_AVATAR} alt="Ditto" className="ditto-icon-circular" />
+              <img
+                src={DITTO_AVATAR}
+                alt="Ditto"
+                className="ditto-icon-circular"
+              />
             </motion.div>
-            
+
             {/* Sliding menu for logo button - fixed center position */}
-            <div style={{ position: 'relative', width: '0', height: '0' }}>
+            <div style={{ position: "relative", width: "0", height: "0" }}>
               <SlidingMenu
                 isOpen={isMenuOpen}
                 onClose={() => {
@@ -443,26 +446,26 @@ export default function SendMessage({
                 isPinned={menuPinned}
                 menuPosition="bottom"
                 menuItems={[
-                {
-                  icon: <MdFeedback className="icon" />,
-                  text: "Feedback",
-                  onClick: openFeedbackModal,
-                },
-                {
-                  icon: <FaLaptopCode className="icon" />,
-                  text: "Scripts",
-                  onClick: openScriptsOverlay,
-                },
-                {
-                  icon: <IoSettingsOutline className="icon" />,
-                  text: "Settings",
-                  onClick: openSettingsModal,
-                },
-              ]}
+                  {
+                    icon: <MdFeedback className="icon" />,
+                    text: "Feedback",
+                    onClick: openFeedbackModal,
+                  },
+                  {
+                    icon: <FaLaptopCode className="icon" />,
+                    text: "Scripts",
+                    onClick: openScriptsOverlay,
+                  },
+                  {
+                    icon: <IoSettingsOutline className="icon" />,
+                    text: "Settings",
+                    onClick: openSettingsModal,
+                  },
+                ]}
               />
             </div>
           </div>
-          
+
           {/* Script indicator */}
           <div className="right-buttons">
             {selectedScript && (
@@ -479,9 +482,9 @@ export default function SendMessage({
                 >
                   <FaCode />
                 </motion.div>
-                
+
                 {/* Script actions menu */}
-                <div style={{ position: 'relative', width: '0', height: '0' }}>
+                <div style={{ position: "relative", width: "0", height: "0" }}>
                   <SlidingMenu
                     isOpen={showScriptActions}
                     onClose={() => setShowScriptActions(false)}
@@ -490,40 +493,40 @@ export default function SendMessage({
                     menuPosition="bottom"
                     menuTitle={selectedScript.script}
                     menuItems={[
-                    {
-                      icon: <FaPlay className="icon" />,
-                      text: "Launch Script",
-                      onClick: handlePlayScript,
-                    },
-                    {
-                      icon: <FaPen className="icon" />,
-                      text: "Edit Script",
-                      onClick: () => {
-                        if (selectedScript) {
-                          const event = new CustomEvent("editScript", {
-                            detail: {
-                              script: {
-                                name: selectedScript.script,
-                                content: selectedScript.contents,
-                                scriptType: selectedScript.scriptType,
-                              },
-                            },
-                          });
-                          window.dispatchEvent(event);
-                        }
+                      {
+                        icon: <FaPlay className="icon" />,
+                        text: "Launch Script",
+                        onClick: handlePlayScript,
                       },
-                    },
-                    {
-                      icon: <FaTimes className="icon" />,
-                      text: "Deselect Script",
-                      onClick: onDeselectScript,
-                    },
-                  ]}
+                      {
+                        icon: <FaPen className="icon" />,
+                        text: "Edit Script",
+                        onClick: () => {
+                          if (selectedScript) {
+                            const event = new CustomEvent("editScript", {
+                              detail: {
+                                script: {
+                                  name: selectedScript.script,
+                                  content: selectedScript.contents,
+                                  scriptType: selectedScript.scriptType,
+                                },
+                              },
+                            });
+                            window.dispatchEvent(event);
+                          }
+                        },
+                      },
+                      {
+                        icon: <FaTimes className="icon" />,
+                        text: "Deselect Script",
+                        onClick: onDeselectScript,
+                      },
+                    ]}
                   />
                 </div>
               </div>
             )}
-            
+
             <button
               className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
               type="submit"

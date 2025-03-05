@@ -1,6 +1,6 @@
 {
   "name": "ditto-pwa",
-  "version": "0.11.61",
+  "version": "0.11.62",
   "private": true,
   "type": "module",
   "dependencies": {
@@ -56,7 +56,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json,css}\" --config .prettierrc",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,md,json,css}\" --config .prettierrc",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint-fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
+    "lint-fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "generate:whats-new": "bun scripts/generate-whats-new.ts"
   },
   "browserslist": {
     "production": [
