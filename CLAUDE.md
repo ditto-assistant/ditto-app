@@ -14,7 +14,8 @@
 1. Bump version in `package.json`
 2. Run: `bun run generate:whats-new` to create new version file
 3. Edit the newly generated file at `src/components/WhatsNew/versions/Vx_xx_xx.tsx`
-4. Create descriptive commit (if no files are staged, prompt the user)
+4. Run: `bun run format` to ensure consistent formatting
+5. Create descriptive commit (if no files are staged, prompt the user)
 
 ## Code Style Guidelines
 
