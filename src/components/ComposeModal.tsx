@@ -153,9 +153,9 @@ export const FullscreenComposeModal: React.FC = () => {
   if (!isComposeModalOpen) return null;
 
   return createPortal(
-    <div className="fullscreen-compose-overlay">
-      <div className="fullscreen-compose-container">
-        <div className="header modal fullscreen-compose-header">
+    <div className="modal container fullscreen compose-modal">
+      <div className="modal content">
+        <div className="header modal fullscreen">
           <h3>Compose Message</h3>
           <div className="modal-controls">
             <div className="modal-control close" onClick={closeComposeModal}>
@@ -163,16 +163,20 @@ export const FullscreenComposeModal: React.FC = () => {
             </div>
           </div>
         </div>
-        <textarea
-          ref={textAreaRef}
-          className="fullscreen-compose-textarea"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message here..."
-        />
-        <div className="fullscreen-compose-footer">
+        <div className="modal wrapper">
+          <div className="modal body">
+            <textarea
+              ref={textAreaRef}
+              className="compose-textarea"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message here..."
+            />
+          </div>
+        </div>
+        <div className="modal footer">
           <button
-            className={`ditto-button primary fullscreen-compose-send-button ${isWaitingForResponse ? "disabled" : ""}`}
+            className={`ditto-button primary ${isWaitingForResponse ? "disabled" : ""}`}
             onClick={() => {
               // Execute the submit handler
               if (message.trim()) {

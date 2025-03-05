@@ -435,9 +435,20 @@
   background-color: rgba(240, 71, 71, 0.05);
 }
 
-.modal-footer {
+.modal-footer,
+.modal.footer {
   width: 100%;
   position: relative;
+}
+
+/* Modal footer with actions */
+.modal.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  border-top: 1px solid var(--border-light);
+  background-color: var(--background-secondary);
+  width: 100%;
 }
 
 /* Improve button touch responsiveness */

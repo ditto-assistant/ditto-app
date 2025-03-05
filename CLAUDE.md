@@ -9,6 +9,13 @@
 - Fix linting: `bun lint-fix` or `eslint . --ext .ts,.tsx,.js,.jsx --fix`
 - Format: `bun run format` or `prettier --write "**/*.{ts,tsx,js,jsx,md,json,css}" --config .prettierrc`
 
+## Version Update Flow
+
+1. Bump version in `package.json`
+2. Run: `bun run generate:whats-new` to create new version file
+3. Edit the newly generated file at `src/components/WhatsNew/versions/Vx_xx_xx.tsx`
+4. Create descriptive commit (if no files are staged, prompt the user)
+
 ## Code Style Guidelines
 
 - **Formatting**: 2 spaces, double quotes, ES5 trailing commas

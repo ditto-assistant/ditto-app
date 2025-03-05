@@ -103,8 +103,8 @@ export const initUpdateService = () => {
             () => {
               registration.update().catch(console.error);
             },
-            60 * 60 * 1000,
-          ); // Check every hour
+            15 * 60 * 1000,
+          ); // Check every 15 minutes
         }
       },
       onRegisterError(error: Error) {

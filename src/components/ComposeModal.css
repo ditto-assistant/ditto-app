@@ -1,33 +1,11 @@
 @import "../styles/variables.css";
 
-.fullscreen-compose-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--background-primary);
-  z-index: 5000;
-  display: flex;
-  flex-direction: column;
+/* Modal compose styles */
+.compose-modal .modal.body {
+  padding: 0; /* Remove padding from modal body */
 }
 
-.fullscreen-compose-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* Use header.modal class from components.css */
-.fullscreen-compose-header {
-  background-color: var(--background-tertiary);
-}
-
-/* Removed fullscreen-compose-close - using modal-control from components.css */
-
-.fullscreen-compose-textarea {
+.compose-textarea {
   flex: 1;
   border: none;
   outline: none;
@@ -38,51 +16,19 @@
   font-size: 16px;
   line-height: 1.6;
   width: 100%;
+  height: 100%;
   font-family: inherit;
 }
 
-.fullscreen-compose-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px;
-  border-top: 1px solid var(--border-light);
-  background-color: var(--background-secondary);
-  width: 100%;
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-}
-
-/* Use ditto-button class from buttons.css */
-.fullscreen-compose-send-button {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Reuse shortcut-hint class from buttons.css */
-.keyboard-shortcut {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-left: 8px;
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 2px 4px;
-  border-radius: 4px;
-}
+/* Using .modal.footer from components.css */
 
 @media screen and (max-width: 380px) {
-  .fullscreen-compose-textarea {
+  .compose-textarea {
     padding: 12px;
     font-size: 15px;
   }
 
-  .fullscreen-compose-footer {
+  .modal.footer {
     padding: 12px;
-  }
-
-  .fullscreen-compose-send-button {
-    padding: 10px 20px;
-    font-size: 15px;
   }
 }
