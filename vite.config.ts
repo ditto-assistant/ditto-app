@@ -21,20 +21,26 @@ export default defineConfig({
         theme_color: "#000000",
         icons: [
           {
-            src: "icons/ditto-icon-192.png",
+            src: "icons/round/favicon-64x64.png",
+            sizes: "64x64",
+            type: "image/png",
+          },
+          {
+            src: "icons/round/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "icons/ditto-icon.png",
-            sizes: "1024x1024",
+            src: "icons/round/ditto-icon-512x512.png",
+            sizes: "512x512",
             type: "image/png",
+            purpose: "any",
           },
           {
-            src: "icons/ditto-icon-square.png",
-            sizes: "1024x1024",
+            src: "icons/square/ditto-icon-512x512.png",
+            sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable",
+            purpose: "maskable",
           },
         ],
       },

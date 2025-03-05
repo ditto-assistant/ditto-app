@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/icons/round/favicon.ico" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
@@ -16,7 +16,38 @@
     <meta name="apple-touch-fullscreen" content="yes" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Hey Ditto!" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link
+      rel="apple-touch-icon"
+      href="/icons/square/apple-touch-icon-180x180.png"
+      sizes="180x180"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="/icons/square/apple-splash-dark.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="/icons/square/apple-touch-icon-152x152.png"
+      sizes="152x152"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="/icons/square/apple-touch-icon-167x167.png"
+      sizes="167x167"
+    />
+    <link rel="mask-icon" href="/icons/clear/mask-icon.svg" color="#000000" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/icons/round/favicon-32x32.png"
+      sizes="32x32"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/icons/round/favicon-16x16.png"
+      sizes="16x16"
+    />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Ditto</title>
     <script>
@@ -31,44 +62,45 @@
       // Initialize error handler for lazy loading errors
       window.lazyLoadErrorHandler = (error) => {
         console.error("Lazy loading error detected:", error);
-        
+
         // Check if error is related to outdated app version
-        const isChunkError = 
-          (error?.message && (
-            error.message.includes('Loading chunk') ||
-            error.message.includes('Failed to fetch dynamically imported module') ||
-            error.message.includes('Unexpected token')
-          )) || 
-          (error?.name === 'ChunkLoadError');
-        
+        const isChunkError =
+          (error?.message &&
+            (error.message.includes("Loading chunk") ||
+              error.message.includes(
+                "Failed to fetch dynamically imported module",
+              ) ||
+              error.message.includes("Unexpected token"))) ||
+          error?.name === "ChunkLoadError";
+
         if (isChunkError) {
-          const event = new CustomEvent('update-error', { 
-            detail: { 
-              error, 
+          const event = new CustomEvent("update-error", {
+            detail: {
+              error,
               outdated: true,
-              message: 'App is outdated and needs to be updated'
-            }
+              message: "App is outdated and needs to be updated",
+            },
           });
           window.dispatchEvent(event);
-          
+
           // Show a basic error message if the app hasn't loaded yet
-          if (!document.getElementById('root').hasChildNodes()) {
-            const errorDiv = document.createElement('div');
-            errorDiv.style.position = 'fixed';
-            errorDiv.style.top = '0';
-            errorDiv.style.left = '0';
-            errorDiv.style.right = '0';
-            errorDiv.style.bottom = '0';
-            errorDiv.style.backgroundColor = '#2a2b30';
-            errorDiv.style.color = '#fff';
-            errorDiv.style.padding = '20px';
-            errorDiv.style.display = 'flex';
-            errorDiv.style.flexDirection = 'column';
-            errorDiv.style.alignItems = 'center';
-            errorDiv.style.justifyContent = 'center';
-            errorDiv.style.textAlign = 'center';
-            errorDiv.style.zIndex = '9999';
-            
+          if (!document.getElementById("root").hasChildNodes()) {
+            const errorDiv = document.createElement("div");
+            errorDiv.style.position = "fixed";
+            errorDiv.style.top = "0";
+            errorDiv.style.left = "0";
+            errorDiv.style.right = "0";
+            errorDiv.style.bottom = "0";
+            errorDiv.style.backgroundColor = "#2a2b30";
+            errorDiv.style.color = "#fff";
+            errorDiv.style.padding = "20px";
+            errorDiv.style.display = "flex";
+            errorDiv.style.flexDirection = "column";
+            errorDiv.style.alignItems = "center";
+            errorDiv.style.justifyContent = "center";
+            errorDiv.style.textAlign = "center";
+            errorDiv.style.zIndex = "9999";
+
             errorDiv.innerHTML = `
               <h2>App Update Required</h2>
               <p>Your app version is out of date. Please refresh to update to the latest version.</p>
@@ -77,35 +109,37 @@
                 Update Now
               </button>
             `;
-            
-            errorDiv.querySelector('button').addEventListener('click', () => {
+
+            errorDiv.querySelector("button").addEventListener("click", () => {
               window.location.reload(true);
             });
-            
+
             document.body.appendChild(errorDiv);
           }
         }
-        
+
         return isChunkError;
       };
-      
+
       // Make global error handling available before React loads
-      window.addEventListener('error', (event) => {
+      window.addEventListener("error", (event) => {
         if (event.error) {
           window.lazyLoadErrorHandler(event.error);
         }
       });
-      
+
       // Ensure any old service workers are unregistered
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function (registrations) {
-          for (let registration of registrations) {
-            // Unregister any non-Vite PWA service workers
-            if (!registration.scriptURL.includes('sw.js')) {
-              registration.unregister();
+        navigator.serviceWorker
+          .getRegistrations()
+          .then(function (registrations) {
+            for (let registration of registrations) {
+              // Unregister any non-Vite PWA service workers
+              if (!registration.scriptURL.includes("sw.js")) {
+                registration.unregister();
+              }
             }
-          }
-        });
+          });
       }
     </script>
   </head>

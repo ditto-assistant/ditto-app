@@ -9,7 +9,7 @@ export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png";
 export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png";
 export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png";
 export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png";
-export const DITTO_AVATAR = "/icons/ditto-icon-clear-192.png";
+export const DITTO_AVATAR = "/icons/clear/ditto-icon-192x192.png";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
