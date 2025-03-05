@@ -1,5 +1,5 @@
 import { saveScriptToFirestore } from "../firebase";
-import { promptLLM, promptLLMV2 } from "../../api/LLM";
+import { promptLLMV2 } from "../../api/LLM";
 import updaterAgent from "../agentflows/updaterAgentFlow";
 import {
   scriptToNameTemplate,

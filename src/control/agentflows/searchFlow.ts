@@ -1,5 +1,5 @@
 import { webSearch } from "../../api/webSearch";
-import { promptLLM, promptLLMV2 } from "../../api/LLM";
+import { promptLLMV2 } from "../../api/LLM";
 import {
   googleSearchTemplate,
   googleSearchSystemTemplate,

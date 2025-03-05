@@ -12,6 +12,7 @@ export default [
       "**/websocket-server/**",
       "**/node_modules/**",
       "**/dist/**",
+      "**/dev-dist/**",
       "**/build/**",
       "**/coverage/**",
       "**/*.d.ts",
