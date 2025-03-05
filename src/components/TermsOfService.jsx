@@ -14,7 +14,7 @@ const TermsOfService = ({ onClose, isNewAccount = false, onAccept }) => {
     if (isNewAccount) {
       // Set hasSeenTOS in localStorage when accepting during account creation
       localStorage.setItem("hasSeenTOS", "true");
-      
+
       // Call the onAccept callback if provided (for sign-up process)
       if (onAccept) {
         onAccept();

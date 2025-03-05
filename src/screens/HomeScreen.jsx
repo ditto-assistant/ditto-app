@@ -45,9 +45,11 @@ export default function HomeScreen() {
     if (forceReloadLazy) {
       console.log("App mounted after update - clearing force-reload-lazy flag");
       localStorage.removeItem("force-reload-lazy");
-      
+
       // Show What's New modal when app is reloaded after update
-      const storedVersionToShow = localStorage.getItem("show-whats-new-version");
+      const storedVersionToShow = localStorage.getItem(
+        "show-whats-new-version",
+      );
       if (storedVersionToShow) {
         // Use the stored version that was saved before the update
         openWhatsNew(storedVersionToShow);

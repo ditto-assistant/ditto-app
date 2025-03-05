@@ -139,7 +139,7 @@ const Login = () => {
 
       // TOS is already shown by handleSignUpClick, so we don't need to show it again
       // setShowTOS(true);
-      
+
       // Switch back to sign-in mode and clear fields after successful signup
       setIsCreatingAccount(false);
       setEmail("");
@@ -242,12 +242,12 @@ const Login = () => {
       alert("Please fill out all fields before signing up.");
       return;
     }
-    
+
     if (password !== retypePassword) {
       alert("Passwords do not match. Please try again.");
       return;
     }
-    
+
     // If all validations pass, show TOS
     setShowTOS(true);
     // This is not just viewing TOS, it's part of the signup process
@@ -329,12 +329,15 @@ const Login = () => {
         )}
         <p style={styles.tosText}>
           By signing up, you agree to our{" "}
-          <span style={styles.link} onClick={() => {
-            // When clicking Terms of Service link directly, it's just for viewing
-            setShowTOS(true);
-            // Set isNewAccount to false when just viewing the TOS
-            setIsViewingTOS(true);
-          }}>
+          <span
+            style={styles.link}
+            onClick={() => {
+              // When clicking Terms of Service link directly, it's just for viewing
+              setShowTOS(true);
+              // Set isNewAccount to false when just viewing the TOS
+              setIsViewingTOS(true);
+            }}
+          >
             Terms of Service
           </span>
         </p>

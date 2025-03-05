@@ -62,7 +62,10 @@ const UpdateNotification = () => {
   const handleUpdate = () => {
     // Store current version to show What's New after update completes
     if (updateState.currentVersion) {
-      localStorage.setItem("show-whats-new-version", updateState.currentVersion);
+      localStorage.setItem(
+        "show-whats-new-version",
+        updateState.currentVersion,
+      );
     }
     applyUpdate();
   };

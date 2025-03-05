@@ -126,7 +126,6 @@ const modalRegistry: ModalRegistry = {
 } as const;
 
 function App() {
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
