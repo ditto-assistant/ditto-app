@@ -9,6 +9,8 @@ import SendMessage from "@/components/SendMessage";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useScripts } from "@/hooks/useScripts";
 import { usePlatform } from "@/hooks/usePlatform";
+import useWhatsNew from "@/hooks/useWhatsNew";
+import { getUpdateState } from "@/utils/updateService";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
 const MEMORY_DELETED_EVENT = "memoryDeleted";
@@ -32,10 +34,33 @@ export default function HomeScreen() {
     handleDeselectScript,
     saveScript,
   } = useScripts();
+  const { openWhatsNew } = useWhatsNew();
 
   const appBodyRef = useRef(null);
 
-  // What's New dialog is handled in App.tsx
+  // Handle showing What's New modal when app is reloaded after update
+  useEffect(() => {
+    const forceReloadLazy =
+      localStorage.getItem("force-reload-lazy") === "true";
+    if (forceReloadLazy) {
+      console.log("App mounted after update - clearing force-reload-lazy flag");
+      localStorage.removeItem("force-reload-lazy");
+      
+      // Show What's New modal when app is reloaded after update
+      const storedVersionToShow = localStorage.getItem("show-whats-new-version");
+      if (storedVersionToShow) {
+        // Use the stored version that was saved before the update
+        openWhatsNew(storedVersionToShow);
+        localStorage.removeItem("show-whats-new-version");
+      } else {
+        // Fallback to current version from updateState
+        const updateState = getUpdateState();
+        if (updateState.currentVersion) {
+          openWhatsNew(updateState.currentVersion);
+        }
+      }
+    }
+  }, [openWhatsNew]);
 
   useEffect(() => {
     // Update the existing useEffect that handles viewport height
