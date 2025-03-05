@@ -30,6 +30,12 @@ export default defineConfig({
             sizes: "1024x1024",
             type: "image/png",
           },
+          {
+            src: "icons/ditto-icon-square.png",
+            sizes: "1024x1024",
+            type: "image/png",
+            purpose: "any maskable",
+          },
         ],
       },
       // Use generateSW strategy (default)
