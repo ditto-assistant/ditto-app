@@ -163,7 +163,15 @@ export const FullscreenComposeModal: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="modal wrapper">
+        <form 
+          className="modal wrapper"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (message.trim()) {
+              handleSubmit();
+            }
+          }}
+        >
           <div className="modal body">
             <textarea
               ref={textAreaRef}
@@ -171,26 +179,23 @@ export const FullscreenComposeModal: React.FC = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type your message here..."
+              spellCheck="true"
+              autoFocus
             />
           </div>
-        </div>
-        <div className="modal footer">
-          <button
-            className={`ditto-button primary ${isWaitingForResponse ? "disabled" : ""}`}
-            onClick={() => {
-              // Execute the submit handler
-              if (message.trim()) {
-                handleSubmit();
-              }
-            }}
-            disabled={isWaitingForResponse}
-          >
-            <span className="button-icon">
-              <FaPaperPlane />
-            </span>{" "}
-            Send {!isMobile && <span className="shortcut-hint">⌘↵</span>}
-          </button>
-        </div>
+          <div className="modal footer">
+            <button
+              type="submit"
+              className={`ditto-button primary ${isWaitingForResponse ? "disabled" : ""}`}
+              disabled={isWaitingForResponse || !message.trim()}
+            >
+              <span className="button-icon">
+                <FaPaperPlane />
+              </span>{" "}
+              Send {!isMobile && <span className="shortcut-hint">⌘↵</span>}
+            </button>
+          </div>
+        </form>
       </div>
     </div>,
     document.getElementById("modal-root") || document.body,

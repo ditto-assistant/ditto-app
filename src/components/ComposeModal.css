@@ -3,6 +3,25 @@
 /* Modal compose styles */
 .compose-modal .modal.body {
   padding: 0; /* Remove padding from modal body */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  max-height: none; /* Override the max-height from modal.body */
+}
+
+.compose-modal .modal.content {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.compose-modal .modal.wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; /* Important for preventing overflow issues */
 }
 
 .compose-textarea {
@@ -16,19 +35,55 @@
   font-size: 16px;
   line-height: 1.6;
   width: 100%;
-  height: 100%;
+  min-height: 200px; /* Ensure minimum height */
   font-family: inherit;
+  overflow-y: auto;
 }
 
-/* Using .modal.footer from components.css */
+/* Footer with send button positioning */
+.compose-modal .modal.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  border-top: 1px solid var(--border-light);
+  background-color: var(--background-secondary);
+  width: 100%;
+  position: sticky;
+  bottom: 0;
+  z-index: 10; /* Ensure it's above the textarea */
+}
 
-@media screen and (max-width: 380px) {
+/* Send button styling */
+.compose-modal .ditto-button.primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600; /* Make the button text more visible */
+}
+
+@media screen and (max-width: 480px) {
   .compose-textarea {
     padding: 12px;
     font-size: 15px;
+    min-height: 150px; /* Smaller minimum height on mobile */
   }
 
-  .modal.footer {
+  .compose-modal .modal.footer {
     padding: 12px;
+  }
+  
+  .compose-modal .ditto-button.primary {
+    padding: 8px 16px;
+  }
+}
+
+/* iOS safe area support */
+@supports (-webkit-touch-callout: none) {
+  .compose-modal .modal.footer {
+    padding-bottom: max(16px, var(--safe-area-bottom));
+    padding-left: max(16px, var(--safe-area-left));
+    padding-right: max(16px, var(--safe-area-right));
   }
 }

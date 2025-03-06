@@ -59,9 +59,9 @@
 /* Center-aligned + bottom-aligned adjustment */
 .sliding-menu.center-aligned.bottom-aligned {
   position: absolute;
-  bottom: 60px;
-  left: 0;
-  transform: translateX(-90px);
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Menu title */
