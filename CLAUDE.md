@@ -15,7 +15,7 @@
 2. Run: `bun run generate:whats-new` to create new version file
 3. Edit the newly generated file at `src/components/WhatsNew/versions/Vx_xx_xx.tsx`
 4. Run: `bun run format` to ensure consistent formatting
-5. Run: `bun run depcheck` to check for unused dependencies 
+5. Run: `bun run depcheck` to check for unused dependencies
 6. Use `git add .` to stage all changes
 7. Create descriptive commit (if no files are staged, prompt the user)
 

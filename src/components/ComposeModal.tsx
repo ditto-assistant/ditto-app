@@ -163,7 +163,7 @@ export const FullscreenComposeModal: React.FC = () => {
             </div>
           </div>
         </div>
-        <form 
+        <form
           className="modal wrapper"
           onSubmit={(e) => {
             e.preventDefault();

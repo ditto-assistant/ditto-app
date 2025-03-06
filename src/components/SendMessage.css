@@ -206,24 +206,24 @@
     gap: 8px;
     border-radius: 20px;
   }
-  
+
   .action-button,
   .icon-button.submit,
   .script-icon-button {
     width: 28px;
     height: 28px;
   }
-  
+
   .ditto-logo-button {
     width: 34px;
     height: 34px;
   }
-  
+
   .ditto-icon-circular {
     width: 24px;
     height: 24px;
   }
-  
+
   .icon-button.submit svg,
   .action-button svg,
   .script-icon-button svg {

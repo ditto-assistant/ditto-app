@@ -95,13 +95,13 @@ export default function SendMessage({
       if (event) event.preventDefault();
       if (isWaitingForResponse) return;
       if (message === "" && !finalTranscriptRef.current && !image) return;
-      
+
       // Close the menu if it's open
       if (isMenuOpen) {
         setIsMenuOpen(false);
         setMenuPinned(false);
       }
-      
+
       setIsWaitingForResponse(true);
       try {
         const userID = auth.currentUser?.uid;
@@ -336,7 +336,7 @@ export default function SendMessage({
   const handleLogoClick = () => {
     // Always toggle the menu open/closed
     setIsMenuOpen(!isMenuOpen);
-    
+
     // On desktop, also handle pinning
     if (!isMobile && !isMenuOpen) {
       setMenuPinned(true);
@@ -398,7 +398,7 @@ export default function SendMessage({
             >
               <FaExpand />
             </div>
-            
+
             {/* Add Media button next to full screen */}
             <div
               className="icon-button action-button add-media-button"
@@ -407,7 +407,7 @@ export default function SendMessage({
             >
               <FaPlus />
             </div>
-            
+
             {/* Center Ditto logo button */}
             <div className="ditto-button-container">
               <motion.div
@@ -433,7 +433,7 @@ export default function SendMessage({
                   className="ditto-icon-circular"
                 />
               </motion.div>
-              
+
               {/* Hidden sliding menu container for Ditto logo */}
               <div className="ditto-menu-container">
                 <SlidingMenu
@@ -467,7 +467,7 @@ export default function SendMessage({
                 />
               </div>
             </div>
-            
+
             {/* Script indicator button (shows only when a script is selected) */}
             {selectedScript && (
               <motion.div
@@ -483,7 +483,7 @@ export default function SendMessage({
                 <FaCode />
               </motion.div>
             )}
-            
+
             {/* Send button on the right */}
             <button
               className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
@@ -493,7 +493,7 @@ export default function SendMessage({
             >
               <FaPaperPlane />
             </button>
-            
+
             <input
               id="image-upload"
               type="file"
@@ -502,7 +502,7 @@ export default function SendMessage({
               onChange={handleImageUpload}
             />
           </div>
-          
+
           {/* Hidden sliding menu container for script actions */}
           {selectedScript && (
             <div style={{ position: "relative", width: "0", height: "0" }}>
