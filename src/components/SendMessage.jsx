@@ -10,7 +10,6 @@ import {
   FaPlay,
   FaPen,
   FaCode,
-  FaScroll,
 } from "react-icons/fa";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";

@@ -81,6 +81,8 @@ function usePromptStorageData(): PromptStorageContextType {
       return data || { prompt: "", image: "" };
     },
     enabled: !!user,
+    staleTime: 2000,
+    refetchOnWindowFocus: true,
   });
 
   // Mutation to save prompt

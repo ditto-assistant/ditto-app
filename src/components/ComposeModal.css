@@ -14,6 +14,8 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: -webkit-fill-available; /* Fix for iOS */
+  padding-bottom: var(--safe-area-bottom, 0px); /* Respect iOS safe area */
 }
 
 .compose-modal .modal.wrapper {
@@ -48,8 +50,7 @@
   border-top: 1px solid var(--border-light);
   background-color: var(--background-secondary);
   width: 100%;
-  position: sticky;
-  bottom: 0;
+  position: relative; /* Changed from sticky to relative */
   z-index: 10; /* Ensure it's above the textarea */
 }
 
@@ -81,6 +82,15 @@
 
 /* iOS safe area support */
 @supports (-webkit-touch-callout: none) {
+  .compose-modal .modal.content {
+    height: -webkit-fill-available;
+  }
+
+  .compose-modal form.modal.wrapper {
+    /* Make form element adapt to virtual keyboard */
+    padding-bottom: 0;
+  }
+
   .compose-modal .modal.footer {
     padding-bottom: max(16px, var(--safe-area-bottom));
     padding-left: max(16px, var(--safe-area-left));
