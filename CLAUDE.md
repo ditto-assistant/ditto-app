@@ -1,5 +1,26 @@
 # Ditto App - Development Guide
 
+## Business Overview
+
+Ditto Teams is an AI-powered platform for individuals and small businesses that facilitates ideation, creativity, and emotional support. Our core technology is built around advanced long-term memory algorithms that improve the relevancy of every interaction with Ditto, creating truly personalized experiences that evolve over time. 
+
+The application integrates into everyday workflows through various communication channels (email, SMS, messaging platforms) and features:
+
+- **Advanced long-term memory algorithms** that continuously improve interaction relevance
+- AI-powered brainstorming with personalized prompts
+- Emotional support features for processing thoughts and challenges
+- Collaborative workspaces for team productivity
+- Customizable knowledge base integration
+- Automatic knowledge base creation for small businesses
+
+## Licensing Model
+
+Ditto uses a dual-licensing approach:
+- **Apache License 2.0**: For individuals and businesses with <$1M annual revenue
+- **Commercial License**: Required for organizations with >$1M annual revenue
+
+Contributions to the repository are covered under MIT-0 (MIT No Attribution) Contributor License Agreement.
+
 ## Essential Commands
 
 - Build: `bun run build` or `vite build`
@@ -71,3 +92,10 @@
   - `SendMessage.jsx` shows the correct pattern for keyboard-aware text inputs
 - **Modal Positioning**: For full-screen modals, avoid fixed positioning for footer elements on iOS
 - **Platform Detection**: Use `usePlatform` hook (`const { isMobile } = usePlatform()`) for platform-specific logic
+
+## Project Roadmap
+
+- MVP Development (Q1 2025): Core AI capabilities, memory algorithms, chat interface, brainstorming tools
+- Enhanced Features (Q2 2025): Collaborative workspaces, emotional intelligence components
+- Scaling and Optimization (Q3 2025): Advanced AI features, task automation, cross-platform integrations
+- Community and Open Source Initiatives (Q4 2025): Building open-source community, expanding integrations
