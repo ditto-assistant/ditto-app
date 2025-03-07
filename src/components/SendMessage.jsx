@@ -1,98 +1,204 @@
 import "./SendMessage.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  FaMicrophone,
   FaPlus,
   FaImage,
   FaCamera,
   FaTimes,
+  FaPaperPlane,
+  FaExpand,
+  FaPlay,
+  FaPen,
+  FaCode,
 } from "react-icons/fa";
-import { MdFlipCameraIos } from "react-icons/md";
 import { sendPrompt } from "../control/agent";
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
-import sharedMic from "../sharedMic";
-import { firebaseConfig } from "../firebaseConfig";
-import { useDittoActivation } from "@/hooks/useDittoActivation";
-import { useIntentRecognition } from "@/hooks/useIntentRecognition";
-import { textEmbed } from "../api/LLM";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
-
-const INACTIVITY_TIMEOUT = 2000; // 2 seconds
-
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
+import { useBalance } from "@/hooks/useBalance";
+import { usePlatform } from "@/hooks/usePlatform";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal";
+import { usePromptStorage } from "@/hooks/usePromptStorage";
+import { useScripts } from "@/hooks/useScripts.tsx";
+import { useModal } from "@/hooks/useModal";
+import SlidingMenu from "@/components/ui/SlidingMenu";
+import { IoSettingsOutline } from "react-icons/io5";
+import { MdFeedback } from "react-icons/md";
+import { FaLaptopCode } from "react-icons/fa";
+import { DITTO_AVATAR } from "@/constants";
+import { toast } from "react-hot-toast";
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
- * @param {function(imageUrl: string): void} props.onImageEnlarge - A function that enlarges an image
  * @param {function(): void} props.onCameraOpen - A function that opens the camera
  * @param {string} props.capturedImage - The URL of the captured image
  * @param {function(): void} props.onClearCapturedImage - A function that clears the captured image
  * @param {boolean} props.showMediaOptions - Whether the media options are shown
  * @param {function(): void} props.onOpenMediaOptions - A function that opens the media options
  * @param {function(): void} props.onCloseMediaOptions - A function that closes the media options
- * @param {function} props.updateConversation - A function that updates the conversation
- * @param {function} props.onFocus - A function that handles the focus event
- * @param {function(): void} props.onBlur - A function that handles the blur event
  * @param {function(): void} props.onStop - A function that handles the stop event
  */
 export default function SendMessage({
-  onImageEnlarge,
   onCameraOpen,
   capturedImage,
   onClearCapturedImage,
   showMediaOptions,
   onOpenMediaOptions,
   onCloseMediaOptions,
-  updateConversation,
-  onFocus,
-  onBlur,
   onStop,
 }) {
-  const [message, setMessage] = useState("");
-  const [image, setImage] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isFrontCamera, setIsFrontCamera] = useState(true);
+  const [image, setImage] = useState(capturedImage || "");
   const textAreaRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const finalTranscriptRef = useRef("");
-  const videoRef = useRef();
+  const preferences = useModelPreferences();
+  const { openImageViewer } = useImageViewerHandler();
+  const balance = useBalance();
+  const { isMobile } = usePlatform();
+  const {
+    refetch,
+    addOptimisticMessage,
+    updateOptimisticResponse,
+    finalizeOptimisticMessage,
+  } = useConversationHistory();
+  const {
+    message,
+    setMessage,
+    openComposeModal,
+    isWaitingForResponse,
+    setIsWaitingForResponse,
+    registerSubmitCallback,
+  } = useCompose();
+  const { clearPrompt } = usePromptStorage();
   const canvasRef = useRef();
-  const isMobile = useRef(false);
-  const wsRef = useRef(null);
-  const inactivityTimeoutRef = useRef(null);
-  const { model, isLoaded: dittoActivationLoaded } = useDittoActivation();
-  const { isLoaded: intentRecognitionLoaded, models: intentRecognitionModels } =
-    useIntentRecognition();
-  const [isImageEnlarged, setIsImageEnlarged] = useState(false);
-  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
-  const { preferences } = useModelPreferences();
 
-  useEffect(() => {
-    isMobile.current = checkIfMobile();
-  }, []);
+  // Ditto logo button state and refs
+  const logoButtonRef = useRef(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPinned, setMenuPinned] = useState(false);
+  const modal = useModal();
+  const openSettingsModal = modal.createOpenHandler("settings");
+  const openFeedbackModal = modal.createOpenHandler("feedback");
+  const openScriptsOverlay = modal.createOpenHandler("scripts");
 
-  const checkIfMobile = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return (
-      /android/i.test(userAgent) ||
-      (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream)
-    );
-  };
+  // Script indicator state and refs
+  const scriptIndicatorRef = useRef(null);
+  const [showScriptActions, setShowScriptActions] = useState(false);
+  const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
+  const { selectedScript, setSelectedScript, handleDeselectScript } =
+    useScripts();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (model.activated) {
-        localStorage.setItem("transcribingFromDitto", "true");
-        model.activated = false;
-        handleMicClick();
+  const handleSubmit = useCallback(
+    async (event) => {
+      if (event) event.preventDefault();
+      if (isWaitingForResponse) return;
+      if (message === "" && !image) return;
+
+      // Close the menu if it's open
+      if (isMenuOpen) {
+        setIsMenuOpen(false);
+        setMenuPinned(false);
       }
-    }, 100);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [dittoActivationLoaded]);
+
+      setIsWaitingForResponse(true);
+      try {
+        const userID = auth.currentUser?.uid;
+        if (!userID) {
+          toast.error("Please log in to send a message");
+          setIsWaitingForResponse(false);
+          return;
+        }
+        if (!preferences.data) {
+          toast.error("Please set your model preferences");
+          setIsWaitingForResponse(false);
+          return;
+        }
+        const firstName = localStorage.getItem("firstName") || "";
+        let messageToSend = message;
+        let imageURI = "";
+        if (image) {
+          try {
+            imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
+            messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+          } catch (uploadError) {
+            console.error("Error uploading image:", uploadError);
+            toast.error("Failed to upload image");
+          }
+        }
+        clearPrompt();
+        setMessage("");
+        setImage("");
+        resizeTextArea();
+        console.log("🚀 [SendMessage] Creating optimistic message");
+        const timestamp = Date.now().toString();
+        const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`;
+        const optimisticMessageId = addOptimisticMessage(
+          messageToSend,
+          imageURI,
+          optimisticId,
+        );
+        const streamingCallback = (chunk) => {
+          updateOptimisticResponse(optimisticMessageId, chunk);
+        };
+        const openScriptCallback = (script) => {
+          setSelectedScript(script);
+          openDittoCanvas();
+        };
+        try {
+          await sendPrompt(
+            userID,
+            firstName,
+            messageToSend,
+            imageURI,
+            preferences.data,
+            refetch,
+            balance.hasPremium ?? false,
+            streamingCallback,
+            optimisticMessageId,
+            finalizeOptimisticMessage,
+            openScriptCallback,
+            selectedScript,
+          );
+          console.log("✅ [SendMessage] Prompt completed successfully");
+        } catch (error) {
+          console.error("❌ [SendMessage] Error in sendPrompt:", error);
+          finalizeOptimisticMessage(
+            optimisticMessageId,
+            "Sorry, an error occurred while processing your request. Please try again.",
+          );
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        setIsWaitingForResponse(false);
+        onStop();
+      }
+    },
+    [
+      isWaitingForResponse,
+      message,
+      image,
+      isMenuOpen,
+      setIsWaitingForResponse,
+      preferences.data,
+      clearPrompt,
+      setMessage,
+      addOptimisticMessage,
+      updateOptimisticResponse,
+      selectedScript,
+      setSelectedScript,
+      openDittoCanvas,
+      refetch,
+      balance.hasPremium,
+      finalizeOptimisticMessage,
+      onStop,
+    ],
+  );
+
+  // Register our submit handler with the compose context
+  useEffect(() => {
+    registerSubmitCallback(() => handleSubmit());
+  }, [registerSubmitCallback, handleSubmit]);
 
   useEffect(() => {
     if (capturedImage) {
@@ -100,148 +206,18 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
-  const handleMicClick = async () => {
-    if (isListening) {
-      stopRecording();
-    } else {
-      try {
-        finalTranscriptRef.current = "";
-        setMessage("");
-
-        const stream = await sharedMic.getMicStream();
-        wsRef.current = new WebSocket(firebaseConfig.webSocketURL);
-
-        wsRef.current.onopen = () => {
-          const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: "audio/webm;codecs=opus",
-          });
-
-          mediaRecorder.ondataavailable = (event) => {
-            if (
-              event.data.size > 0 &&
-              wsRef.current &&
-              wsRef.current.readyState === WebSocket.OPEN
-            ) {
-              wsRef.current.send(event.data);
-            }
-          };
-
-          mediaRecorder.onstop = () => {
-            console.log("Media Recording stopped");
-            stopRecording();
-          };
-
-          mediaRecorder.start(100);
-          mediaRecorderRef.current = mediaRecorder;
-          setIsListening(true);
-        };
-
-        wsRef.current.onmessage = (event) => {
-          clearTimeout(inactivityTimeoutRef.current);
-
-          const receivedText = JSON.parse(event.data);
-          if (receivedText.isFinal) {
-            finalTranscriptRef.current += receivedText.transcript + " ";
-            setMessage(finalTranscriptRef.current);
-          } else {
-            setMessage(finalTranscriptRef.current + receivedText.transcript);
-          }
-          resizeTextArea();
-
-          if (localStorage.getItem("transcribingFromDitto") === "true") {
-            inactivityTimeoutRef.current = setTimeout(() => {
-              stopRecording();
-              handleSubmit();
-            }, INACTIVITY_TIMEOUT);
-          }
-        };
-
-        wsRef.current.onclose = () => stopRecording();
-        wsRef.current.onerror = (error) => {
-          console.error("WebSocket error:", error);
-          stopRecording();
-        };
-      } catch (error) {
-        console.error("Error accessing microphone:", error);
-      }
-    }
-  };
-
-  const stopRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
-    sharedMic.stopMicStream();
-    if (model.isListening) {
-      model.startListening();
-    }
-    mediaRecorderRef.current = null;
-    wsRef.current = null;
-    setIsListening(false);
-    localStorage.removeItem("transcribingFromDitto");
-  };
+  useEffect(() => {
+    resizeTextArea();
+  }, []);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleCameraOpen = () => {
-    setIsCameraOpen(true);
-    startCamera(isFrontCamera);
-    document.body.style.overflow = "hidden"; // Prevent scrolling when camera is open
-  };
-
-  const startCamera = (useFrontCamera) => {
-    navigator.mediaDevices
-      .getUserMedia({
-        video: { facingMode: useFrontCamera ? "user" : "environment" },
-      })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => {
-        console.error("Error accessing the camera: ", err);
-      });
-  };
-
-  const handleSnap = () => {
-    if (canvasRef.current && videoRef.current) {
-      const context = canvasRef.current.getContext("2d");
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      context.drawImage(videoRef.current, 0, 0);
-      const imageDataURL = canvasRef.current.toDataURL("image/png");
-      setImage(imageDataURL);
-      handleCameraClose();
-    }
-  };
-
-  const handleCameraClose = () => {
-    setIsCameraOpen(false);
-    stopCameraFeed();
-    document.body.style.overflow = ""; // Restore scrolling
-  };
-
-  const stopCameraFeed = () => {
-    const stream = videoRef.current?.srcObject;
-    if (stream) {
-      const tracks = stream.getTracks();
-      tracks.forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -250,77 +226,23 @@ export default function SendMessage({
     onClearCapturedImage();
   };
 
-  const toggleCamera = () => {
-    setIsFrontCamera(!isFrontCamera);
-    stopCameraFeed();
-    startCamera(!isFrontCamera);
-  };
-
-  const handleSubmit = async (event) => {
-    if (event) event.preventDefault();
-
-    const thinkingObjectString = localStorage.getItem("thinking");
-    const isThinking = thinkingObjectString !== null;
-
-    if (isWaitingForResponse) return;
-
-    if ((message !== "" || finalTranscriptRef.current) && !isThinking) {
-      setIsWaitingForResponse(true);
-      try {
-        const userID = auth.currentUser.uid;
-        const firstName = localStorage.getItem("firstName");
-        let messageToSend = finalTranscriptRef.current || message;
-        let imageURI = "";
-        if (image) {
-          imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
-          messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
-        }
-        setMessage("");
-        setImage("");
-        finalTranscriptRef.current = "";
-        resizeTextArea();
-        if (isListening) {
-          stopRecording();
-        }
-
-        let userPromptEmbedding = await textEmbed(messageToSend);
-
-        await sendPrompt(
-          userID,
-          firstName,
-          messageToSend,
-          imageURI,
-          userPromptEmbedding,
-          updateConversation,
-          preferences
-        );
-      } catch (error) {
-        console.error("Error sending message:", error);
-      } finally {
-        setIsWaitingForResponse(false);
-        onStop();
-      }
-    }
-  };
-
   const handleKeyDown = (e) => {
-    if (isMobile.current) {
-      // On mobile, Enter always creates a new line
+    if (isMobile) {
       if (e.key === "Enter") {
         e.preventDefault();
         setMessage((prevMessage) => prevMessage + "\n");
         resizeTextArea();
       }
     } else {
-      // On web
       if (e.key === "Enter") {
         if (e.ctrlKey || e.metaKey) {
-          // Ctrl+Enter or Cmd+Enter adds a new line
           e.preventDefault();
           setMessage((prevMessage) => prevMessage + "\n");
           resizeTextArea();
-        } else if (!e.shiftKey) {
-          // Enter (without Shift) submits the form
+        } else if (e.shiftKey) {
+          // Allow shift+enter for newlines
+          resizeTextArea();
+        } else {
           e.preventDefault();
           handleSubmit();
         }
@@ -331,16 +253,15 @@ export default function SendMessage({
   const resizeTextArea = () => {
     const textArea = textAreaRef.current;
     if (textArea) {
-      textArea.style.height = "auto";
-      textArea.style.height = `${Math.min(textArea.scrollHeight, 200)}px`;
-
+      textArea.style.height = "24px";
+      const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
+      textArea.style.height = `${newHeight}px`;
       if (textArea.scrollHeight >= 200) {
         textArea.style.overflowY = "auto";
       } else {
         textArea.style.overflowY = "hidden";
       }
-
-      const imagePreview = document.querySelector(".ImagePreview");
+      const imagePreview = document.querySelector(".image-preview");
       if (imagePreview) {
         imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
       }
@@ -355,7 +276,6 @@ export default function SendMessage({
 
   useEffect(() => resizeTextArea(), [message, image]);
 
-  // Add this new function to handle pasted data
   const handlePaste = (event) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
@@ -372,172 +292,315 @@ export default function SendMessage({
     }
   };
 
-  const toggleImageEnlarge = (e) => {
-    e.stopPropagation();
-    onImageEnlarge(image);
-  };
-
-  const toggleImageFullscreen = (e) => {
-    e.stopPropagation();
-    setIsImageFullscreen(!isImageFullscreen);
-  };
-
-  const handleClickOutside = () => {
-    if (isImageFullscreen) {
-      setIsImageFullscreen(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [isImageFullscreen]);
-
   const handlePlusClick = (e) => {
     e.stopPropagation();
     onOpenMediaOptions();
   };
 
   const handleGalleryClick = (e) => {
-    e.preventDefault(); // Add this line
+    e.preventDefault();
     e.stopPropagation();
     document.getElementById("image-upload").click();
     onCloseMediaOptions();
   };
 
   const handleCameraClick = (e) => {
-    e.preventDefault(); // Add this line
+    e.preventDefault();
     e.stopPropagation();
     onCameraOpen();
     onCloseMediaOptions();
   };
 
-  return (
-    <form className="Form" onSubmit={handleSubmit}>
-      <div className="InputWrapper">
-        <textarea
-          ref={textAreaRef}
-          onKeyDown={handleKeyDown}
-          onInput={resizeTextArea}
-          onPaste={handlePaste}
-          className="TextArea"
-          type="text"
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-            if (e.target.value.trim() === "") {
-              finalTranscriptRef.current = "";
-            }
-          }}
-          rows={1}
-          style={{
-            overflowY: "hidden",
-            marginRight: "-5px",
-          }}
-          onFocus={() => setIsImageEnlarged(false)}
-        />
-        <div className="IconsWrapper">
-          <FaMicrophone
-            className={`Mic ${isListening ? "listening" : ""}`}
-            onClick={handleMicClick}
-          />
-          <FaPlus className="PlusButton" onClick={handlePlusClick} />
-          <input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleImageUpload}
-          />
-        </div>
-      </div>
-      <input
-        className={`Submit ${isWaitingForResponse ? "disabled" : ""}`}
-        type="submit"
-        value="Send"
-        disabled={isWaitingForResponse}
-      />
+  // Ditto logo button handlers
+  const handleHoverStart = () => {
+    if (!isMobile && !menuPinned) {
+      // Only trigger on desktop when not pinned
+      setIsMenuOpen(true);
+    }
+  };
 
-      {image && (
-        <div className="ImagePreview" onClick={toggleImageEnlarge}>
-          <img src={image} alt="Preview" />
-          <FaTimes
-            className="RemoveImage"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClearImage();
+  const handleHoverEnd = () => {
+    if (!isMobile && !menuPinned) {
+      // Only trigger on desktop when not pinned
+      // Use a short delay to prevent menu from closing immediately
+      // when moving cursor from button to menu
+      setTimeout(() => {
+        // Check if neither the menu nor the logo button is being hovered
+        if (
+          !document.querySelector(".sliding-menu:hover") &&
+          !logoButtonRef.current?.matches(":hover")
+        ) {
+          setIsMenuOpen(false);
+        }
+      }, 100);
+    }
+  };
+
+  const handleLogoClick = () => {
+    // Always toggle the menu open/closed
+    setIsMenuOpen(!isMenuOpen);
+
+    // On desktop, also handle pinning
+    if (!isMobile && !isMenuOpen) {
+      setMenuPinned(true);
+    }
+  };
+
+  // Script indicator handlers
+  const handleScriptNameClick = () => {
+    setShowScriptActions(!showScriptActions);
+  };
+
+  const handlePlayScript = () => {
+    if (selectedScript) {
+      openDittoCanvas();
+    }
+  };
+
+  // Handle accessibility keyboard events for buttons
+  const handleButtonKeyDown = (event, callback) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      callback();
+    }
+  };
+
+  return (
+    <>
+      <form className="form" onSubmit={handleSubmit} onPaste={handlePaste}>
+        <div className="input-wrapper">
+          <textarea
+            ref={textAreaRef}
+            onKeyDown={handleKeyDown}
+            onInput={resizeTextArea}
+            className="text-area"
+            type="text"
+            value={message}
+            onChange={(e) => {
+              setMessage(e.target.value);
+            }}
+            placeholder="Message Ditto"
+            rows={3}
+            style={{
+              overflowY: "hidden",
+              marginRight: "-5px",
             }}
           />
         </div>
-      )}
 
-      <AnimatePresence>
-        {showMediaOptions && (
-          <motion.div
-            className="MediaOptionsOverlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onCloseMediaOptions}
-          >
-            <motion.div
-              className="MediaOptionsContent"
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 15, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
+        <div className="bottom-buttons-bar">
+          <div className="button-hub">
+            {/* Full screen button on the left */}
+            <div
+              className="icon-button action-button expand-button"
+              onClick={openComposeModal}
+              aria-label="Expand message"
             >
-              <button
-                type="button" // Add this
-                className="MediaOption"
-                onClick={handleGalleryClick}
-              >
-                <FaImage /> Photo Gallery
-              </button>
-              <button
-                type="button" // Add this
-                className="MediaOption"
-                onClick={handleCameraClick}
-              >
-                <FaCamera /> Camera
-              </button>
-              <button
-                type="button" // Add this
-                className="CancelButton"
-                onClick={onCloseMediaOptions}
-              >
-                Cancel
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <FaExpand />
+            </div>
 
-      {isImageEnlarged && (
-        <div className="EnlargedImageOverlay" onClick={toggleImageEnlarge}>
-          <div
-            className="EnlargedImageContainer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img src={image} alt="Enlarged Preview" />
+            {/* Add Media button next to full screen */}
+            <div
+              className="icon-button action-button add-media-button"
+              onClick={handlePlusClick}
+              aria-label="Add media"
+            >
+              <FaPlus />
+            </div>
+
+            {/* Center Ditto logo button */}
+            <div className="ditto-button-container">
+              <motion.div
+                ref={logoButtonRef}
+                className="ditto-logo-button"
+                whileTap={{ scale: 0.9 }}
+                whileHover={{
+                  scale: 1.1,
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                }}
+                onMouseEnter={handleHoverStart}
+                onMouseLeave={handleHoverEnd}
+                onClick={handleLogoClick}
+                onKeyDown={(e) => handleButtonKeyDown(e, handleLogoClick)}
+                aria-label="Menu"
+                role="button"
+                tabIndex={0}
+              >
+                <img
+                  src={DITTO_AVATAR}
+                  alt="Ditto"
+                  className="ditto-icon-circular"
+                />
+              </motion.div>
+
+              {/* Hidden sliding menu container for Ditto logo */}
+              <div className="ditto-menu-container">
+                <SlidingMenu
+                  isOpen={isMenuOpen}
+                  onClose={() => {
+                    setIsMenuOpen(false);
+                    setMenuPinned(false);
+                  }}
+                  position="center"
+                  triggerRef={logoButtonRef}
+                  isPinned={menuPinned}
+                  menuPosition="bottom"
+                  menuTitle="Ditto Options"
+                  menuItems={[
+                    {
+                      icon: <MdFeedback className="icon" />,
+                      text: "Feedback",
+                      onClick: openFeedbackModal,
+                    },
+                    {
+                      icon: <FaLaptopCode className="icon" />,
+                      text: "Scripts",
+                      onClick: openScriptsOverlay,
+                    },
+                    {
+                      icon: <IoSettingsOutline className="icon" />,
+                      text: "Settings",
+                      onClick: openSettingsModal,
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Script indicator button (shows only when a script is selected) */}
+            {selectedScript && (
+              <motion.div
+                className="script-icon-button"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleScriptNameClick}
+                ref={scriptIndicatorRef}
+                title={selectedScript.script}
+              >
+                <FaCode />
+              </motion.div>
+            )}
+
+            {/* Send button on the right */}
+            <button
+              className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
+              type="submit"
+              disabled={isWaitingForResponse}
+              aria-label="Send message"
+            >
+              <FaPaperPlane />
+            </button>
+
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageUpload}
+            />
           </div>
-        </div>
-      )}
 
-      {isImageFullscreen && (
-        <div className="FullscreenImageOverlay" onClick={handleClickOutside}>
-          <img
-            src={image}
-            alt="Fullscreen Preview"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {/* Hidden sliding menu container for script actions */}
+          {selectedScript && (
+            <div style={{ position: "relative", width: "0", height: "0" }}>
+              <SlidingMenu
+                isOpen={showScriptActions}
+                onClose={() => setShowScriptActions(false)}
+                position="right"
+                triggerRef={scriptIndicatorRef}
+                menuPosition="bottom"
+                menuTitle={selectedScript.script}
+                menuItems={[
+                  {
+                    icon: <FaPlay className="icon" />,
+                    text: "Launch Script",
+                    onClick: handlePlayScript,
+                  },
+                  {
+                    icon: <FaPen className="icon" />,
+                    text: "Edit Script",
+                    onClick: () => {
+                      if (selectedScript) {
+                        const event = new CustomEvent("editScript", {
+                          detail: {
+                            script: {
+                              name: selectedScript.script,
+                              content: selectedScript.contents,
+                              scriptType: selectedScript.scriptType,
+                            },
+                          },
+                        });
+                        window.dispatchEvent(event);
+                      }
+                    },
+                  },
+                  {
+                    icon: <FaTimes className="icon" />,
+                    text: "Deselect Script",
+                    onClick: handleDeselectScript,
+                  },
+                ]}
+              />
+            </div>
+          )}
         </div>
-      )}
 
-      <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-    </form>
+        {image && (
+          <div className="image-preview" onClick={() => openImageViewer(image)}>
+            <img src={image} alt="Preview" />
+            <FaTimes
+              className="remove-image"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClearImage();
+              }}
+            />
+          </div>
+        )}
+
+        <AnimatePresence>
+          {showMediaOptions && (
+            <motion.div
+              className="action-menu-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onCloseMediaOptions}
+            >
+              <motion.div
+                className="action-menu"
+                initial={{ x: "-100%", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "-100%", opacity: 0 }}
+                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="action-menu-item"
+                  onClick={handleGalleryClick}
+                >
+                  <FaImage /> Photo Gallery
+                </button>
+                <button
+                  type="button"
+                  className="action-menu-item"
+                  onClick={handleCameraClick}
+                >
+                  <FaCamera /> Camera
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+      </form>
+
+      <FullscreenComposeModal />
+    </>
   );
 }

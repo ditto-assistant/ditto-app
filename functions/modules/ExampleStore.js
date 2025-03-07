@@ -25,19 +25,19 @@ class ExampleStore {
               const exampleEmbedding = example.promptEmbedding;
               const similarity = calculateCosineSimilarity(
                 embedding,
-                exampleEmbedding
+                exampleEmbedding,
               );
               return { example, similarity };
-            })
+            }),
           );
           return { category, similarities: categorySimilarities };
-        })
+        }),
       );
       const flattenedSimilarities = similarities.flatMap(
-        (category) => category.similarities
+        (category) => category.similarities,
       );
       let sortedSimilarities = flattenedSimilarities.sort(
-        (a, b) => b.similarity - a.similarity
+        (a, b) => b.similarity - a.similarity,
       );
       sortedSimilarities.map((item) => item.example);
       // top k examples

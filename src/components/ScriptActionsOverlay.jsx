@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaPlay, FaPen, FaTimes } from "react-icons/fa";
-import FullScreenEditor from "./FullScreenEditor";
+import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import "./ScriptActionsOverlay.css";
 
 function ScriptActionsOverlay({
@@ -24,13 +24,14 @@ function ScriptActionsOverlay({
         overlayContentRef.current &&
         !overlayContentRef.current.contains(event.target)
       ) {
-        handleClose();
+        setIsVisible(false);
+        setTimeout(onClose, 300);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  });
 
   const handleClose = () => {
     setIsVisible(false);

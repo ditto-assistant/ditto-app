@@ -44,7 +44,7 @@ function ModelPreferencesSelectors({
 
   const handleModelChange = (
     key: keyof ModelPreferences,
-    value: (typeof preferences)[keyof ModelPreferences]
+    value: (typeof preferences)[keyof ModelPreferences],
   ) => {
     updatePreferences({ [key]: value });
     setOpenDropdown(null);

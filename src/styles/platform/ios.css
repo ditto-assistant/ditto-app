@@ -1,0 +1,197 @@
+/* iOS-specific styles for Ditto app */
+
+/* Base iOS support */
+@supports (-webkit-touch-callout: none) {
+  html,
+  body {
+    height: -webkit-fill-available;
+  }
+
+  #root {
+    min-height: -webkit-fill-available;
+    height: -webkit-fill-available;
+  }
+
+  /* App container */
+  .app {
+    /* Use the full height of the viewport on iOS */
+    height: -webkit-fill-available;
+    /* Direct application of safe area insets */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Header adjustments for notch */
+  .app-header {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Footer adjustments for home indicator and iOS Safari bottom bar */
+  .app-footer {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    position: fixed; /* Keep fixed positioning for iOS Safari */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 300;
+  }
+
+  /* Input field adjustments */
+  .form {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Content wrapper adjustments for iOS */
+  .app-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* No padding - footer is fixed */
+  }
+
+  /* Make sure body fills available space but doesn't overlap footer */
+  .app-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: calc(
+      80px + env(safe-area-inset-bottom, 0px)
+    ); /* Adjust for fixed footer */
+  }
+
+  /* Chat feed adjustments to account for fixed footer */
+  .chat-feed {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Fix for follow button and bottom spacer in chat feed */
+  .follow-button {
+    bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+    position: fixed !important;
+    z-index: 2000 !important; /* Very high z-index to ensure it's above all other elements */
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Hardware acceleration for smoother performance */
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    pointer-events: auto !important;
+    /* Only activate on tap, not during scrolling */
+    touch-action: manipulation !important;
+  }
+
+  /* Specific iPad handling with more precise device targeting */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .follow-button {
+      /* Position higher on iPad */
+      bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
+  /* iPad Mini specific fix (smaller screen) */
+  @media (min-width: 744px) and (max-width: 767px),
+    (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+    .follow-button {
+      /* More aggressive positioning for iPad Mini */
+      bottom: calc(170px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
+  /* Different spacing for PWA mode vs Safari */
+  @media all and (display-mode: standalone) {
+    .follow-button {
+      /* In PWA mode, no browser chrome to account for */
+      bottom: 140px !important;
+    }
+
+    /* In PWA mode less bottom padding needed */
+    .bottom-spacer {
+      height: 70px !important;
+    }
+  }
+
+  /* Safari browser mode */
+  @media not all and (display-mode: standalone) {
+    .follow-button {
+      /* In Safari, account for browser chrome */
+      bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* In Safari more bottom padding needed */
+    .bottom-spacer {
+      height: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
+  /* Ensure bottom spacer provides enough room but not excessive */
+  .bottom-spacer {
+    display: block !important;
+    position: relative;
+    width: 100%;
+  }
+
+  /* Fix for iOS Safari in standalone PWA mode */
+  @media all and (display-mode: standalone) {
+    body {
+      /* Disable bouncing/scrolling in PWA mode */
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* PWA-specific app container adjustments */
+    .app {
+      /* Remove any extra spacing in PWA mode */
+      padding-bottom: 0;
+      /* Ensure content uses the full height */
+      height: 100%;
+    }
+
+    /* Direct application of safe areas to header in PWA mode */
+    .app-header {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* Footer adjustments for PWA mode */
+    .app-footer {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 1000 !important;
+      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    }
+
+    /* Bottom area spacing for PWA mode */
+    .form {
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    /* Fix for modal buttons in PWA mode */
+    .modal-close-button,
+    .modal-maximize-button {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+    }
+  }
+
+  /* Disable pinch zoom */
+  body {
+    touch-action: pan-y;
+  }
+
+  /* Prevent text field zoom on focus in iOS */
+  input,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* CSS Variables for iOS safe areas - use these in component styles */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}

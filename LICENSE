@@ -8,17 +8,51 @@ For individuals and companies with annual revenue less than $1 million USD, this
 2. Commercial License (for Large Organizations)
 For organizations with annual revenue exceeding $1 million USD, a commercial license is required. Please contact peyton@omniaura.co to obtain appropriate licensing for your organization.
 
+Revenue Determination
+- "Annual revenue" is defined as the total gross revenue of the legal entity using the software during the most recent completed fiscal year
+- For subsidiaries that are majority-owned by a parent company, the relevant revenue is that of the subsidiary, not the parent company, provided the subsidiary operates independently with separate management, finances, and operations
+- For complex corporate structures, revenue is determined at the level of the legal entity directly using or benefiting from the software
+- Revenue verification may be requested annually by Omni Aura LLC, requiring certification by an officer of the company or documentation such as tax filings or audited financial statements
+- Organizations must comply with verification requests within 30 days or risk license termination
+
+License Transition
+- Organizations that cross the $1M USD annual revenue threshold have a 90-day grace period from the end of the fiscal year to obtain a commercial license
+- During this transition period, the Apache License 2.0 continues to apply
+- No retroactive fees will be charged for use during the period when the organization qualified for the Apache License
+- Organizations that temporarily exceed the threshold but fall below it in subsequent years may revert to the Apache License after providing verification of current revenue
+
+Special Cases
+- Non-profit organizations, educational institutions, and open-source projects may qualify for special licensing terms regardless of revenue size by contacting peyton@omniaura.co
+- Software-as-a-Service (SaaS) or hosted service providers using this software must obtain a commercial license if their revenue exceeds $1M USD, even if the software is not directly distributed
+- Free and open source projects may apply for an exemption from commercial licensing requirements
+
+Derivative Works
+- Derivative works created by Apache License 2.0 users must be distributed under the same dual license terms
+- Commercial licensees receive additional rights regarding distribution of derivative works as specified in their commercial license agreement
+- Contributions to the main repository are subject to the project's Contributor License Agreement (MIT-0 / MIT No Attribution)
+
 Usage Terms
 - Individual developers and small businesses (revenue < $1M USD annually) may freely use this software under Apache 2.0
 - Organizations exceeding $1M USD in annual revenue must obtain a commercial license
 - All users must maintain and display copyright and license notices
 - Usage of the Omni Aura name and logos requires explicit permission
 
+Enforcement and Compliance
+- Failure to obtain a required commercial license constitutes copyright infringement
+- Users found in violation may be liable for license fees, statutory damages, and legal costs
+- Omni Aura LLC reserves the right to audit compliance through reasonable means including requiring revenue verification
+- License rights will terminate automatically if terms are violated and not remedied within 30 days of notification
+
 Commercial Licensing
 For commercial licensing inquiries:
 - Email: peyton@omniaura.co
 - Include your organization name and intended use case
 - Commercial terms will be provided within 5 business days
+
+Governing Law and Dispute Resolution
+- This license agreement shall be governed by the laws of the State of Alabama, USA, without regard to its conflict of law provisions
+- Any disputes arising from this license shall be resolved through binding arbitration in Alabama according to the rules of the American Arbitration Association
+- The prevailing party in any dispute shall be entitled to recover reasonable attorney's fees and costs
 
 Copyright 2025 Omni Aura LLC
 

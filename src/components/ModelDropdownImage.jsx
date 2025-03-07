@@ -23,7 +23,6 @@ const ModelDropdownImage = ({
   value,
   onChange,
   hasEnoughBalance,
-  inMemoryOverlay = false,
   isOpen,
   onOpenChange,
 }) => {
@@ -31,7 +30,7 @@ const ModelDropdownImage = ({
   const dropdownRef = useRef(null);
 
   const selectedModel = IMAGE_GENERATION_MODELS.find(
-    (model) => model.id === value.model
+    (model) => model.id === value.model,
   );
 
   const handleClick = (e) => {
@@ -130,7 +129,7 @@ const ModelDropdownImage = ({
                   onClick={() => {
                     if (!(model.isPremium && !hasEnoughBalance)) {
                       setExpandedModel(
-                        expandedModel === model.id ? null : model.id
+                        expandedModel === model.id ? null : model.id,
                       );
                     }
                   }}
@@ -199,7 +198,7 @@ const ModelDropdownImage = ({
               </div>
             ))}
           </motion.div>,
-          document.body
+          document.body,
         )}
     </div>
   );

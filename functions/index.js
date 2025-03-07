@@ -28,7 +28,7 @@ app.use(
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  }),
 );
 
 // Apply middleware
@@ -69,7 +69,7 @@ app.post("/get-memories", authenticateUser, async (req, res) => {
   try {
     const { userId, vector, k = 5 } = req.body;
     console.log(
-      `Request parameters: userId=${userId}, k=${k}, vector length=${vector?.length}`
+      `Request parameters: userId=${userId}, k=${k}, vector length=${vector?.length}`,
     );
     // Validate vector dimensions
     if (vector.length > 2048) {
@@ -82,7 +82,7 @@ app.post("/get-memories", authenticateUser, async (req, res) => {
     // Validate k (number of neighbors)
     if (k > 1000) {
       console.log(
-        "Number of requested neighbors exceeds maximum allowed (1000)"
+        "Number of requested neighbors exceeds maximum allowed (1000)",
       );
       return res.status(400).json({
         error: "Number of requested neighbors exceeds maximum allowed (1000)",
@@ -123,7 +123,7 @@ app.post("/get-memories", authenticateUser, async (req, res) => {
       // COSINE distance ranges from 0 (identical) to 2 (opposite)
       const similarityScore = 1 - (data.vector_distance || 0);
       console.log(
-        `Processing document ${doc.id}, similarity score: ${similarityScore}`
+        `Processing document ${doc.id}, similarity score: ${similarityScore}`,
       );
       memories.push({
         id: doc.id,

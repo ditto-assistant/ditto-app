@@ -11,9 +11,9 @@ export default defineConfig({
     // }),
     react(),
     VitePWA({
-      srcDir: "src",
-      filename: "sw.js",
-      registerType: "autoUpdate",
+      // We'll handle registration ourselves for better control
+      registerType: "prompt",
+      injectRegister: false, // Don't auto-register
       manifest: {
         name: "Ditto",
         short_name: "Ditto",
@@ -21,17 +21,101 @@ export default defineConfig({
         theme_color: "#000000",
         icons: [
           {
-            src: "maskable_icon.png",
+            src: "icons/round/favicon-64x64.png",
+            sizes: "64x64",
+            type: "image/png",
+          },
+          {
+            src: "icons/round/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "icons/round/ditto-icon-512x512.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "icons/square/ditto-icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
+      // Use generateSW strategy (default)
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
       workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,json}"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
+        skipWaiting: false, // Don't skip waiting by default, we'll control this
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api/], // Don't cache API responses
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "google-fonts-css",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-webfonts",
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) =>
+              request.destination === "script" ||
+              request.url.includes("assets/"),
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "js-assets",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => request.destination === "style",
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "styles",
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => request.destination === "image",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images",
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+        ],
       },
     }),
   ],
@@ -53,44 +137,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),
-        worker: resolve(__dirname, "src/worker.js"),
       },
       output: {
-        entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === "worker"
-            ? "worker.js"
-            : "assets/[name]-[hash].js";
-        },
-        manualChunks: (id) => {
-          if (id.includes("node_modules")) {
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-router-dom") ||
-              id.includes("@emotion") ||
-              id.includes("scheduler") ||
-              id.includes("object-assign") ||
-              id.includes("framer-motion")
-            ) {
-              return "react-vendor";
-            }
-            if (id.includes("firebase")) return "firebase";
-            if (id.includes("@tensorflow")) return "tensorflow";
-            if (id.includes("@huggingface")) return "huggingface";
-            if (id.includes("@mui")) return "mui";
-            if (id.includes("ace-builds") || id.includes("react-ace"))
-              return "ace";
-            if (id.includes("workbox")) return "workbox";
-            if (id.includes("react-icons")) return "icons";
-            return "vendor"; // all other node_modules
-          }
-          if (id.includes("src/screens")) {
-            return "screens";
-          }
-          if (id.includes("src/components")) {
-            return "components";
-          }
-        },
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
       },
     },
     chunkSizeWarningLimit: 1000,
@@ -104,7 +154,7 @@ export default defineConfig({
     include: [
       "react",
       "react-dom",
-      "react-router-dom",
+      "react-router",
       "firebase/app",
       "firebase/auth",
       "firebase/firestore",

@@ -16,7 +16,7 @@ build-dev:
 bs: build-dev serve
 
 format:
-	prettier --write **/*.{ts,tsx,js,jsx,md,json,css}
+	bun run format
 
 # push a new tag to the remote repository
 tag-latest:
@@ -45,3 +45,8 @@ gh-release:
 create-release: tag-latest gh-release
 alias cr := create-release
 
+lint:
+	bun lint
+
+lint-fix:
+	bun lint-fix

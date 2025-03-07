@@ -1,0 +1,123 @@
+.update-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 320px;
+  border-radius: 12px;
+  background-color: #2a2b30;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  animation: slide-in 0.3s ease-out;
+}
+
+.update-notification.forced {
+  bottom: 0;
+  right: 0;
+  left: 0;
+  max-width: 100%;
+  border-radius: 0;
+  animation: slide-up 0.3s ease-out;
+  background-color: rgba(42, 43, 48, 0.95);
+  backdrop-filter: blur(5px);
+}
+
+.update-notification-content {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+
+.update-notification.forced .update-notification-content {
+  max-width: 600px;
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.update-notification-icon {
+  margin-right: 12px;
+  font-size: 1.5rem;
+}
+
+.update-notification-message {
+  flex: 1;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: #e8e8e8;
+}
+
+.update-notification.forced .update-notification-message {
+  flex-basis: 100%;
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.update-notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.update-notification.forced .update-notification-actions {
+  justify-content: center;
+}
+
+.update-button {
+  background-color: #6e56cf;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.update-button:hover {
+  background-color: #7c66d6;
+}
+
+.update-notification.forced .update-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+.dismiss-button {
+  background-color: transparent;
+  color: #aaa;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.dismiss-button:hover {
+  color: #e8e8e8;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

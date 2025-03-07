@@ -1,0 +1,256 @@
+/* Common button styles for Ditto app */
+@import "./animations.css";
+
+/* Base button styles */
+.ditto-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: 12px 20px;
+  border-radius: var(--border-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 1px solid transparent;
+  text-transform: uppercase;
+}
+
+/* Button sizes */
+.ditto-button.small {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.ditto-button.large {
+  padding: 14px 24px;
+  font-size: 16px;
+}
+
+/* Button widths */
+.ditto-button.full-width {
+  width: 100%;
+}
+
+.ditto-button.fixed-width {
+  width: 100%;
+  max-width: 280px;
+}
+
+/* Button states */
+.ditto-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button variants */
+.ditto-button.primary {
+  background: linear-gradient(
+    135deg,
+    var(--primary-hover) 0%,
+    var(--primary) 100%
+  );
+  color: var(--text-white);
+}
+
+.ditto-button.primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ditto-button.primary:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+.ditto-button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.ditto-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ditto-button.secondary:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ditto-button.danger {
+  background: linear-gradient(135deg, var(--status-danger) 0%, #ab2123 100%);
+  color: var(--text-white);
+}
+
+.ditto-button.danger:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ditto-button.danger:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+.ditto-button.ghost {
+  background: transparent;
+  color: var(--interactive-normal);
+}
+
+.ditto-button.ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-white);
+}
+
+.ditto-button.ghost:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Icon button base class for all circular icon buttons */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.icon-button:active {
+  transform: scale(1);
+}
+
+/* Ditto icon button - specific size variant */
+.icon-button.ditto {
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+/* Button icon */
+.button-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+/* Button loading spinner - specific variant of spinner */
+.spinner.button {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+/* Removed legacy .button-spinner class as it's redundant with .spinner.button */
+
+/* Keyboard shortcut hint */
+.shortcut-hint {
+  font-size: 14px;
+  opacity: 0.7;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: absolute;
+  right: 12px;
+}
+
+/* Submit button specific styles */
+.submit-button {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* Filter button styles */
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+}
+
+.filter-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-button.active {
+  border-color: transparent;
+}
+
+.filter-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Social link styles */
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 40px;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-white);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--transition-normal);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 var(--spacing-md);
+}
+
+.social-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Media queries for responsive design - using standardized breakpoints */
+@media (max-width: 480px) {
+  .ditto-button.fixed-width {
+    max-width: 100%;
+  }
+
+  .filter-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .filter-icon {
+    font-size: 14px;
+  }
+
+  .social-link {
+    font-size: 13px;
+    padding: 0 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

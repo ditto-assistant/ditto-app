@@ -6,6 +6,7 @@ import {
   getModelPreferencesFromFirestore,
 } from "@/control/firebase";
 import { DEFAULT_PREFERENCES } from "@/constants";
+import { ModelPreferences } from "@/types/llm";
 
 const ModelPreferencesContext = createContext<
   ReturnType<typeof useModels> | undefined
@@ -15,7 +16,7 @@ export function useModelPreferences() {
   const context = useContext(ModelPreferencesContext);
   if (context === undefined) {
     throw new Error(
-      "useModelPreferences must be used within a ModelPreferencesProvider"
+      "useModelPreferences must be used within a ModelPreferencesProvider",
     );
   }
   return context;
@@ -41,19 +42,35 @@ function useModels() {
   const query = useQuery({
     queryKey: ["modelPreferences", user?.uid],
     queryFn: async () => {
-      if (!user) throw new Error("No user");
-      const prefs = await getModelPreferencesFromFirestore(user.uid);
-      return prefs || DEFAULT_PREFERENCES;
+      if (!user?.uid) throw new Error("No user");
+      const prefs = (await getModelPreferencesFromFirestore(
+        user.uid,
+      )) as ModelPreferences | null;
+      if (!prefs) return DEFAULT_PREFERENCES;
+
+      return {
+        ...DEFAULT_PREFERENCES,
+        ...prefs,
+        memory: {
+          ...DEFAULT_PREFERENCES.memory,
+          ...prefs.memory,
+        },
+      };
     },
     enabled: !!user,
   });
 
   const mutation = useMutation({
-    mutationFn: async (newPreferences: Partial<typeof DEFAULT_PREFERENCES>) => {
-      if (!user) throw new Error("No user");
+    mutationFn: async (newPreferences: Partial<ModelPreferences>) => {
+      if (!user?.uid) throw new Error("No user");
+      const currentPrefs = query.data || DEFAULT_PREFERENCES;
       const updatedPreferences = {
-        ...(query.data || DEFAULT_PREFERENCES),
+        ...currentPrefs,
         ...newPreferences,
+        memory: {
+          ...currentPrefs.memory,
+          ...(newPreferences.memory || {}),
+        },
       };
       await saveModelPreferencesToFirestore(user.uid, updatedPreferences);
       return updatedPreferences;

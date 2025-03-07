@@ -16,7 +16,7 @@ const sendGoogleSdkCommand = async (prompt) => {
     const data = {
       command: prompt,
     };
-    const response = await fetch(url, {
+    await fetch(url, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),
@@ -72,7 +72,7 @@ const getForecast = async () => {
       if (service.entity_id.includes("forecast")) {
         forecastId = index;
         console.log(
-          `Found and saved HA Forecast State ID: ${service.entity_id}`
+          `Found and saved HA Forecast State ID: ${service.entity_id}`,
         );
       }
     });

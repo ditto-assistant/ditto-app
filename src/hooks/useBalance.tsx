@@ -15,7 +15,7 @@ export function useBalance() {
 }
 
 const BalanceContext = createContext<ReturnType<typeof useBal> | undefined>(
-  undefined
+  undefined,
 );
 
 export function BalanceProvider({ children }: { children: React.ReactNode }) {

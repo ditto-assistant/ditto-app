@@ -1,0 +1,99 @@
+@import "../styles/variables.css";
+
+/* Modal compose styles */
+.compose-modal .modal.body {
+  padding: 0; /* Remove padding from modal body */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  max-height: none; /* Override the max-height from modal.body */
+}
+
+.compose-modal .modal.content {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: -webkit-fill-available; /* Fix for iOS */
+  padding-bottom: var(--safe-area-bottom, 0px); /* Respect iOS safe area */
+}
+
+.compose-modal .modal.wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; /* Important for preventing overflow issues */
+}
+
+.compose-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  width: 100%;
+  min-height: 200px; /* Ensure minimum height */
+  font-family: inherit;
+  overflow-y: auto;
+}
+
+/* Footer with send button positioning */
+.compose-modal .modal.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  border-top: 1px solid var(--border-light);
+  background-color: var(--background-secondary);
+  width: 100%;
+  position: relative; /* Changed from sticky to relative */
+  z-index: 10; /* Ensure it's above the textarea */
+}
+
+/* Send button styling */
+.compose-modal .ditto-button.primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600; /* Make the button text more visible */
+}
+
+@media screen and (max-width: 480px) {
+  .compose-textarea {
+    padding: 12px;
+    font-size: 15px;
+    min-height: 150px; /* Smaller minimum height on mobile */
+  }
+
+  .compose-modal .modal.footer {
+    padding: 12px;
+  }
+
+  .compose-modal .ditto-button.primary {
+    padding: 8px 16px;
+  }
+}
+
+/* iOS safe area support */
+@supports (-webkit-touch-callout: none) {
+  .compose-modal .modal.content {
+    height: -webkit-fill-available;
+  }
+
+  .compose-modal form.modal.wrapper {
+    /* Make form element adapt to virtual keyboard */
+    padding-bottom: 0;
+  }
+
+  .compose-modal .modal.footer {
+    padding-bottom: max(16px, var(--safe-area-bottom));
+    padding-left: max(16px, var(--safe-area-left));
+    padding-right: max(16px, var(--safe-area-right));
+  }
+}

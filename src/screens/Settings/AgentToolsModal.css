@@ -1,0 +1,56 @@
+.agent-tools-content {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.tool-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tool-toggle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.tool-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.tool-toggle label {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+.tool-toggle-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.tool-toggle-header input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #7289da;
+}
+
+.tool-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.tool-description {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  padding-left: 30px;
+}

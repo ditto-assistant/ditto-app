@@ -1,20 +1,17 @@
 import { TOOLS } from "../../constants";
 import type { Tool, ToolPreferences } from "../../types/llm";
-
-const getToolsModule = (
-  scriptType: string | null,
-  toolPreferences: ToolPreferences
-): Tool[] => {
+import type { ScriptType, SelectedScriptInfo } from "../../hooks/useScripts";
+const getToolsModule = (params: {
+  scriptType?: ScriptType;
+  toolPreferences: ToolPreferences;
+}): Tool[] => {
+  const { scriptType, toolPreferences } = params;
   const enabledTools = [];
-
   if (toolPreferences.imageGeneration) {
     enabledTools.push(TOOLS.imageGeneration);
   }
   if (toolPreferences.googleSearch) {
     enabledTools.push(TOOLS.googleSearch);
-  }
-  if (toolPreferences.googleHome) {
-    enabledTools.push(TOOLS.googleHome);
   }
   if (toolPreferences.htmlScript) {
     enabledTools.push(TOOLS.webApps);
@@ -60,8 +57,12 @@ export const getTimezoneString = () => {
   return timezoneString;
 };
 
-export const workingOnScriptModule = (scriptName: string, type: string) => {
-  if (scriptName === "") {
+export const workingOnScriptModule = (params: {
+  scriptName?: string;
+  type?: ScriptType;
+}) => {
+  const { scriptName, type } = params;
+  if (!scriptName) {
     return "";
   }
   return `## Current Script: ${scriptName}
@@ -70,17 +71,29 @@ export const workingOnScriptModule = (scriptName: string, type: string) => {
 `;
 };
 
-export const mainTemplate = (
-  memories: string,
-  examples: string,
-  firstName: string,
-  timestamp: string,
-  usersPrompt: string,
-  workingOnScriptName: string | null = null,
-  workingOnScriptType: string | null = null,
-  toolPreferences: ToolPreferences
-) => {
-  const tools = getToolsModule(workingOnScriptType, toolPreferences);
+export const mainTemplate = (params: {
+  memories: string;
+  examples: string;
+  firstName: string;
+  timestamp: string;
+  usersPrompt: string;
+  selectedScript?: SelectedScriptInfo;
+  toolPreferences: ToolPreferences;
+}) => {
+  const {
+    memories,
+    examples,
+    firstName,
+    timestamp,
+    usersPrompt,
+    selectedScript,
+    toolPreferences,
+  } = params;
+  console.log("toolPreferences", params);
+  const tools = getToolsModule({
+    scriptType: selectedScript?.scriptType,
+    toolPreferences,
+  });
 
   const toolsSection =
     tools.length > 0
@@ -89,11 +102,12 @@ export const mainTemplate = (
 ${tools
   .map(
     (tool, index) =>
-      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`,
   )
   .join("\n")}`
       : "";
 
+  console.log("prefiltered examples", examples);
   const filteredExamples = examples
     .split("\n\n")
     .filter((example) => {
@@ -143,13 +157,16 @@ Ditto:`;
 
   prompt = prompt.replace(
     "<!time>",
-    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM"),
   );
   prompt = prompt.replace("<!memories>", memories);
   prompt = prompt.replace("<!examples>", examples);
   prompt = prompt.replace(
     "<!working_on_script_module>",
-    workingOnScriptModule(workingOnScriptName || "", workingOnScriptType || "")
+    workingOnScriptModule({
+      scriptName: selectedScript?.script,
+      type: selectedScript?.scriptType,
+    }),
   );
   prompt = prompt.replace("<!users_name>", firstName);
   prompt = prompt.replace("<!timestamp>", timestamp);

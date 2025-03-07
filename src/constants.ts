@@ -1,14 +1,15 @@
 import {
   ModelOption,
-  Model,
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
-} from "./types/llm";
+} from "@/types/llm";
 
-export const USER_PLACEHOLDER_IMAGE = "user_placeholder.png";
-export const IMAGE_PLACEHOLDER_IMAGE = "image-placeholder.png";
-export const NOT_FOUND_IMAGE = "not-found.png";
+export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png";
+export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png";
+export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png";
+export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png";
+export const DITTO_AVATAR = "/icons/clear/ditto-icon-192x192.png";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
@@ -68,11 +69,15 @@ export const DEFAULT_MODELS: ModelOption[] = [
     isTaggedModel: true,
     speedLevel: "medium",
   },
-
   // {
   //   id: "claude-3-haiku",
   //   name: "Claude 3 Haiku",
   //   vendor: "anthropic",
+  //   supports: {
+  //     imageAttachments: "single",
+  //     tools: true,
+  //   },
+  //   speedLevel: "fast",
   // },
   {
     id: "claude-3-haiku@20240307",
@@ -102,17 +107,6 @@ export const DEFAULT_MODELS: ModelOption[] = [
     isTaggedModel: true,
   },
   {
-    id: "claude-3-5-sonnet",
-    name: "Claude 3.5 Sonnet",
-    isPremium: true,
-    vendor: "anthropic",
-    supports: {
-      imageAttachments: "single",
-      tools: true,
-    },
-    speedLevel: "medium",
-  },
-  {
     id: "claude-3-5-sonnet@20240620",
     name: "Claude 3.5 Sonnet (2024-06-20)",
     isPremium: true,
@@ -126,13 +120,14 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "claude-3-5-sonnet-v2",
-    name: "Claude 3.5 Sonnet V2",
+    name: "Claude 3.5 Sonnet",
     isPremium: true,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
       tools: true,
     },
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-sonnet-v2@20241022",
@@ -258,7 +253,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 2",
     isPremium: true,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-2")
+      size.supportedModels.includes("dall-e-2"),
     ),
   },
   {
@@ -266,7 +261,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 3",
     isPremium: true,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-3")
+      size.supportedModels.includes("dall-e-3"),
     ),
   },
   {
@@ -274,7 +269,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 3 HD",
     isPremium: true,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-3")
+      size.supportedModels.includes("dall-e-3"),
     ),
   },
 ] as const;
@@ -284,7 +279,6 @@ export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   htmlScript: true,
   imageGeneration: true,
   googleSearch: true,
-  googleHome: false,
 } as const;
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
@@ -299,6 +293,10 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
+  memory: {
+    shortTermMemoryCount: 5,
+    longTermMemoryChain: [5, 3, 2],
+  },
 } as const;
 
 export const TOOLS = {
@@ -312,11 +310,6 @@ export const TOOLS = {
     description: "Search the web for information",
     trigger: "<GOOGLE_SEARCH>",
   },
-  googleHome: {
-    name: "Home Assistant",
-    description: "Control smart home devices",
-    trigger: "<GOOGLE_HOME>",
-  },
   webApps: {
     name: "Web Apps",
     description: "Generate web applications using HTML, CSS, and JavaScript",
@@ -326,5 +319,31 @@ export const TOOLS = {
     name: "OpenSCAD",
     description: "Generate 3D modeling scripts using OpenSCAD",
     trigger: "<OPENSCAD>",
+  },
+} as const;
+
+export const MEMORY_CONFIG = {
+  shortTerm: {
+    min: 0,
+    max: 5,
+    step: 1,
+    marks: [
+      { value: 0, label: "0" },
+      { value: 1, label: "1" },
+      { value: 3, label: "3" },
+      { value: 5, label: "5" },
+    ],
+  },
+  longTerm: {
+    min: 0,
+    max: 5,
+    step: 1,
+    marks: [
+      { value: 0, label: "0" },
+      { value: 1, label: "1" },
+      { value: 3, label: "3" },
+      { value: 5, label: "5" },
+    ],
+    maxChainLength: 5,
   },
 } as const;

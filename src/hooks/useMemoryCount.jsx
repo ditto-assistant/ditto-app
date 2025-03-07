@@ -42,9 +42,8 @@ function useMemCount() {
 
     async function fetchCount() {
       try {
-        const userID = localStorage.getItem("userID");
-        if (userID) {
-          const memoryCount = await grabConversationHistoryCount(userID);
+        if (user?.uid) {
+          const memoryCount = await grabConversationHistoryCount(user?.uid);
           setCount(memoryCount);
         }
       } catch (err) {

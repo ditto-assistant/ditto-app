@@ -1,0 +1,14 @@
+---
+description: React Function Component Guidelines
+globs: *.tsx,*.jsx
+alwaysApply: false
+---
+We use `export default function` for components.
+
+We use `export function` for hooks.
+
+We always use a separate .css file for styling components.
+
+Never use !important in css. There is always a better solution.
+
+Seek to reduce complexity where possible.

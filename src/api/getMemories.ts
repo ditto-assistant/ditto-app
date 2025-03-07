@@ -2,47 +2,50 @@ import { Result } from "@/types/common";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
 
-interface ParamsLongTermMemoriesV2 {
-  vector: number[];
-  nodeCounts: number[];
+export interface Memory {
+  id: string;
+  score: number;
+  prompt: string;
+  response: string;
+  timestamp: Date;
+  vector_distance: number;
+  depth: number;
+  children?: Memory[];
 }
 
-interface ParamsShortTermMemoriesV2 {
+export interface ParamsLongTermMemoriesV2 {
+  pairID: string;
+  nodeCounts: number[];
+  nodeThresholds?: number[];
+}
+
+export interface ParamsShortTermMemoriesV2 {
   k: number;
 }
 
-interface GetMemoriesV2Request {
+export interface GetMemoriesV2Request {
   userID: string;
   longTerm?: ParamsLongTermMemoriesV2;
   shortTerm?: ParamsShortTermMemoriesV2;
   stripImages: boolean;
 }
 
-interface Memory {
-  id: string;
-  score: number;
-  prompt: string;
-  response: string;
-  timestamp: string;
-  vector_distance: number;
-}
-
-interface MemoriesV2Response {
-  longTerm: Memory[];
-  shortTerm: Memory[];
+export interface MemoriesV2Response {
+  longTerm?: Memory[];
+  shortTerm?: Memory[];
 }
 
 export async function getMemories(
   params: GetMemoriesV2Request,
-  accept: "application/json"
+  accept: "application/json",
 ): Promise<Result<MemoriesV2Response>>;
 export async function getMemories(
   params: GetMemoriesV2Request,
-  accept: "text/plain"
+  accept: "text/plain",
 ): Promise<Result<string>>;
 export async function getMemories(
   params: GetMemoriesV2Request,
-  accept: "application/json" | "text/plain"
+  accept: "application/json" | "text/plain",
 ): Promise<Result<MemoriesV2Response | string>> {
   if (!params.longTerm && !params.shortTerm) {
     return { err: "No memories requested" };
