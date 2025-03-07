@@ -149,7 +149,7 @@ function App() {
 
                                   {createPortal(
                                     <Toaster
-                                      position="bottom-center"
+                                      position="top-center"
                                       toastOptions={{
                                         style: {
                                           background: "#333",
