@@ -11,11 +11,10 @@ import {
   htmlTemplate,
   htmlSystemTemplate,
 } from "../control/templates/htmlTemplate";
-import { downloadOpenscadScript, downloadHTMLScript } from "./agentTools";
+import { downloadOpenscadScript } from "./agentTools";
 import { handleScriptGeneration } from "./agentflows/scriptFlow";
 import { handleImageGeneration } from "./agentflows/imageFlow";
 import { handleGoogleSearch } from "./agentflows/searchFlow";
-// Home Assistant removed
 import { modelSupportsImageAttachments } from "@/types/llm";
 import { getMemories } from "@/api/getMemories";
 import { saveResponse } from "@/api/saveResponse";
@@ -23,7 +22,6 @@ import { createPrompt } from "@/api/createPrompt";
 import { searchExamples } from "@/api/searchExamples";
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
-
 /**
  * Sends a prompt to Ditto.
  * @param {string} userID - The user's ID.
@@ -36,6 +34,8 @@ import { searchExamples } from "@/api/searchExamples";
  * @param {function} streamingCallback - A callback for streaming response chunks.
  * @param {string} optimisticId - The ID of the optimistic message update.
  * @param {function} finalizeMessage - A function to finalize a message.
+ * @param {function} openScriptCallback - A function to open a script.
+ * @param {import("@/hooks/useScripts").SelectedScriptInfo?} selectedScript - The selected script.
  */
 export const sendPrompt = async (
   userID,
@@ -48,6 +48,8 @@ export const sendPrompt = async (
   streamingCallback = null,
   optimisticId = null,
   finalizeMessage = null,
+  openScriptCallback,
+  selectedScript,
 ) => {
   try {
     // Create a thinking indicator in localStorage to show we're processing
@@ -67,8 +69,7 @@ export const sendPrompt = async (
       throw new Error("No pairID");
     }
 
-    console.log("preferences", preferences);
-    const [memories, examplesString, scriptDetails] = await Promise.all([
+    const [memories, examplesString] = await Promise.all([
       getMemories(
         {
           userID,
@@ -84,7 +85,6 @@ export const sendPrompt = async (
         "text/plain",
       ),
       searchExamples(pairID),
-      fetchScriptDetails(),
     ]);
     if (memories.err) {
       throw new Error(memories.err);
@@ -99,18 +99,15 @@ export const sendPrompt = async (
       throw new Error("No examples found");
     }
 
-    const { scriptName, scriptType, scriptContents } = scriptDetails;
-
-    const constructedPrompt = mainTemplate(
-      memories.ok,
-      examplesString.ok,
+    const constructedPrompt = mainTemplate({
+      memories: memories.ok,
+      examples: examplesString.ok,
       firstName,
-      new Date().toISOString(),
-      prompt,
-      scriptName,
-      scriptType,
-      preferences.tools,
-    );
+      timestamp: new Date().toISOString(),
+      usersPrompt: prompt,
+      selectedScript,
+      toolPreferences: preferences.tools,
+    });
 
     console.log("%c" + constructedPrompt, "color: green");
 
@@ -162,14 +159,15 @@ export const sendPrompt = async (
           prompt,
           pairID,
           userID,
-          scriptContents,
-          scriptName,
+          selectedScript?.contents,
+          selectedScript?.script,
           image,
           memories,
           preferences,
           refetch,
           optimisticId,
           finalizeMessage,
+          openScriptCallback,
         );
         break;
       }
@@ -196,8 +194,6 @@ export const sendPrompt = async (
       }
     }
 
-    saveToLocalStorage(prompt, response, Date.now(), pairID);
-
     localStorage.setItem("idle", "true");
     return response;
   } catch (error) {
@@ -217,21 +213,6 @@ export const sendPrompt = async (
   }
 };
 
-const fetchScriptDetails = () => {
-  const workingOnScript = localStorage.getItem("workingOnScript");
-  let scriptName = "",
-    scriptType = "",
-    scriptContents = "";
-
-  if (workingOnScript) {
-    const workingOnScriptObject = JSON.parse(workingOnScript);
-    scriptName = workingOnScriptObject.script;
-    scriptContents = workingOnScriptObject.contents;
-    scriptType = workingOnScriptObject.scriptType;
-  }
-  return { scriptName, scriptType, scriptContents };
-};
-
 export const processResponse = async (
   response,
   prompt,
@@ -245,6 +226,7 @@ export const processResponse = async (
   refetch,
   optimisticId = null,
   finalizeMessage = null,
+  openScriptCallback,
 ) => {
   console.log("%c" + response, "color: yellow");
 
@@ -303,8 +285,6 @@ export const processResponse = async (
         } else if (refetch) {
           refetch();
         }
-
-        saveToLocalStorage(prompt, finalResponse, Date.now(), pairID);
       } else {
         // For in-progress status updates
         const statusText = status.endsWith("...") ? status : `${status}`;
@@ -369,6 +349,26 @@ export const processResponse = async (
 
     // Handle HTML script generation
     if (response.includes("<HTML_SCRIPT>")) {
+      const downloadFunction = (script, scriptName) => {
+        let fileDownloadName = scriptName;
+        if (fileDownloadName === "") {
+          // create a stamp to embed in the filename like "output-2021-09-01-12-00-00.html"
+          const stamp = new Date()
+            .toISOString()
+            .split(".")[0]
+            .replace(/:/g, "-")
+            .replace("T", "-");
+          fileDownloadName = `output-${stamp}.html`;
+        } else {
+          fileDownloadName = `${fileDownloadName}.html`;
+        }
+        openScriptCallback({
+          script: scriptName,
+          contents: script,
+          scriptType: "webApps",
+        });
+        return fileDownloadName;
+      };
       await updateMessageWithToolStatus(
         pairID,
         "Generating HTML Script...",
@@ -382,7 +382,7 @@ export const processResponse = async (
         tag: "<HTML_SCRIPT>",
         templateFunction: htmlTemplate,
         systemTemplateFunction: htmlSystemTemplate,
-        downloadFunction: downloadHTMLScript,
+        downloadFunction,
         scriptType: "webApps",
         scriptContents,
         scriptName,
@@ -425,7 +425,6 @@ export const processResponse = async (
       return finalResponse;
     }
 
-    // Handle Google search
     if (response.includes("<GOOGLE_SEARCH>")) {
       await updateMessageWithToolStatus(
         pairID,
@@ -479,8 +478,6 @@ export const processResponse = async (
       return finalResponse;
     }
 
-    // Home Assistant functionality removed
-
     return response;
   } catch (error) {
     console.error("Error in processResponse:", error);
@@ -495,28 +492,4 @@ export const processResponse = async (
     );
     return errorMessage;
   }
-};
-
-const saveToLocalStorage = (prompt, response, timestamp, pairID) => {
-  const prompts = loadFromLocalStorage("prompts", []);
-  const responses = loadFromLocalStorage("responses", []);
-  const timestamps = loadFromLocalStorage("timestamps", []);
-  const pairIDs = loadFromLocalStorage("pairIDs", []);
-
-  if (!pairIDs.includes(pairID)) {
-    // Ensure no duplicates
-    prompts.push(prompt);
-    responses.push(response);
-    timestamps.push(timestamp);
-    pairIDs.push(pairID);
-    localStorage.setItem("prompts", JSON.stringify(prompts));
-    localStorage.setItem("responses", JSON.stringify(responses));
-    localStorage.setItem("timestamps", JSON.stringify(timestamps));
-    localStorage.setItem("pairIDs", JSON.stringify(pairIDs));
-  }
-};
-
-const loadFromLocalStorage = (key, defaultValue) => {
-  const storedValue = localStorage.getItem(key);
-  return storedValue ? JSON.parse(storedValue) : defaultValue;
 };

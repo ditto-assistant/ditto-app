@@ -28,12 +28,7 @@ export default function HomeScreen() {
   });
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
   const { isIOS, isPWA } = usePlatform();
-  const {
-    selectedScript,
-    setSelectedScript,
-    handleDeselectScript,
-    saveScript,
-  } = useScripts();
+  const { setSelectedScript, saveScript } = useScripts();
   const { openWhatsNew } = useWhatsNew();
 
   const appBodyRef = useRef(null);
@@ -317,8 +312,6 @@ export default function HomeScreen() {
               onStop={() => {
                 balance.refetch();
               }}
-              selectedScript={selectedScript}
-              onDeselectScript={handleDeselectScript}
             />
           </div>
         </div>

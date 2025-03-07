@@ -49,7 +49,7 @@ export const handleScriptGeneration = async ({
 
   let scriptResponse = "";
 
-  if (scriptContents === "") {
+  if (!scriptContents) {
     scriptResponse = await promptLLMV2(
       constructedPrompt,
       systemTemplateFunction(),
@@ -67,16 +67,13 @@ export const handleScriptGeneration = async ({
   }
 
   const cleanedScript = cleanScriptResponse(scriptResponse);
-  if (scriptName === "") {
+  if (!scriptName) {
     scriptName = await generateScriptName(cleanedScript, query);
   }
 
   const fileName = downloadFunction(cleanedScript, scriptName);
   let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf("."));
-
   await saveScriptToFirestore(userID, cleanedScript, scriptType, fileNameNoExt);
-  handleWorkingOnScript(cleanedScript, fileNameNoExt, scriptType);
-
   return `**${scriptType === "webApps" ? "HTML" : "OpenSCAD"} Script Generated and Downloaded.**\n- Task: ${query}`;
 };
 
@@ -131,66 +128,4 @@ const cleanScriptResponse = (response) => {
     cleanedScript = cleanedScript.split("```")[0];
   }
   return cleanedScript;
-};
-
-/**
- * Updates working script state in localStorage
- */
-export const handleWorkingOnScript = (cleanedScript, filename, scriptType) => {
-  console.log("Handling working on script state...");
-  const workingOnScriptJSONString = localStorage.getItem("workingOnScript");
-
-  if (workingOnScriptJSONString) {
-    const scriptName = JSON.parse(workingOnScriptJSONString).script;
-    updateScriptInLocalStorage(scriptName, cleanedScript, scriptType);
-    saveWorkingScript(scriptName, cleanedScript, scriptType);
-  } else {
-    const newScript = {
-      script: filename,
-      contents: cleanedScript,
-      scriptType: scriptType,
-    };
-    localStorage.setItem("workingOnScript", JSON.stringify(newScript));
-    saveScriptToLocalStorage(filename, cleanedScript, scriptType);
-  }
-};
-
-const updateScriptInLocalStorage = (scriptName, cleanedScript, scriptType) => {
-  let scriptTypeObject = JSON.parse(localStorage.getItem(scriptType) || "[]");
-  const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === scriptName,
-  );
-  scriptTypeObject[scriptIndex].content = cleanedScript;
-  localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
-};
-
-const saveWorkingScript = (name, cleanedScript, scriptType) => {
-  localStorage.setItem(
-    "workingOnScript",
-    JSON.stringify({
-      script: name,
-      contents: cleanedScript,
-      scriptType: scriptType,
-    }),
-  );
-};
-
-const saveScriptToLocalStorage = (filename, cleanedScript, scriptType) => {
-  const scriptTypeObject = JSON.parse(localStorage.getItem(scriptType) || "[]");
-  const scriptIndex = scriptTypeObject.findIndex(
-    (script) => script.name === filename,
-  );
-
-  if (scriptIndex !== -1) {
-    scriptTypeObject[scriptIndex].content = cleanedScript;
-  } else {
-    scriptTypeObject.push({
-      id: Date.now(),
-      name: filename,
-      content: cleanedScript,
-      scriptType: scriptType,
-    });
-  }
-
-  localStorage.setItem(scriptType, JSON.stringify(scriptTypeObject));
 };

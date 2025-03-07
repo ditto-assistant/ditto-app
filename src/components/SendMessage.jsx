@@ -49,8 +49,6 @@ export default function SendMessage({
   onOpenMediaOptions,
   onCloseMediaOptions,
   onStop,
-  selectedScript,
-  onDeselectScript,
 }) {
   const [image, setImage] = useState(capturedImage || "");
   const textAreaRef = useRef(null);
@@ -89,6 +87,8 @@ export default function SendMessage({
   const scriptIndicatorRef = useRef(null);
   const [showScriptActions, setShowScriptActions] = useState(false);
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
+  const { selectedScript, setSelectedScript, handleDeselectScript } =
+    useScripts();
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -143,6 +143,10 @@ export default function SendMessage({
         const streamingCallback = (chunk) => {
           updateOptimisticResponse(optimisticMessageId, chunk);
         };
+        const openScriptCallback = (script) => {
+          setSelectedScript(script);
+          openDittoCanvas();
+        };
         try {
           await sendPrompt(
             userID,
@@ -155,6 +159,8 @@ export default function SendMessage({
             streamingCallback,
             optimisticMessageId,
             finalizeOptimisticMessage,
+            openScriptCallback,
+            selectedScript,
           );
           console.log("✅ [SendMessage] Prompt completed successfully");
         } catch (error) {
@@ -174,21 +180,21 @@ export default function SendMessage({
     [
       isWaitingForResponse,
       message,
-      finalTranscriptRef,
       image,
       isMenuOpen,
-      setIsMenuOpen,
-      setMenuPinned,
+      setIsWaitingForResponse,
       preferences.data,
+      clearPrompt,
+      setMessage,
+      addOptimisticMessage,
+      updateOptimisticResponse,
+      selectedScript,
+      setSelectedScript,
+      openDittoCanvas,
       refetch,
       balance.hasPremium,
-      addOptimisticMessage,
       finalizeOptimisticMessage,
-      updateOptimisticResponse,
-      clearPrompt,
       onStop,
-      setIsWaitingForResponse,
-      setMessage,
     ],
   );
 
@@ -540,7 +546,7 @@ export default function SendMessage({
                   {
                     icon: <FaTimes className="icon" />,
                     text: "Deselect Script",
-                    onClick: onDeselectScript,
+                    onClick: handleDeselectScript,
                   },
                 ]}
               />

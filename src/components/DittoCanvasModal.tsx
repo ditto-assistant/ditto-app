@@ -4,7 +4,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import Modal from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
-import { ScriptObject, useScripts } from "@/hooks/useScripts";
+import { useScripts } from "@/hooks/useScripts";
 import "./DittoCanvasModal.css";
 import { usePlatform } from "@/hooks/usePlatform";
 
@@ -14,15 +14,7 @@ export default function DittoCanvasModal() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { isMobile } = usePlatform();
-
-  const { selectedScript, scripts } = useScripts();
-
-  // Find the actual script object from the scripts collection
-  const scriptObject = selectedScript
-    ? scripts[selectedScript.scriptType]?.find(
-        (script: ScriptObject) => script.name === selectedScript.script,
-      )
-    : null;
+  const { selectedScript } = useScripts();
 
   useEffect(() => {
     const setVH = () => {
@@ -68,7 +60,7 @@ export default function DittoCanvasModal() {
   };
 
   // If no script is selected, show an empty state
-  if (!scriptObject || !selectedScript) {
+  if (!selectedScript) {
     return (
       <Modal id="dittoCanvas" title="No Script Selected" fullScreen>
         <div className="ditto-canvas-container">
@@ -82,7 +74,7 @@ export default function DittoCanvasModal() {
   }
 
   return (
-    <Modal id="dittoCanvas" title={scriptObject.name} fullScreen>
+    <Modal id="dittoCanvas" title={selectedScript.script} fullScreen>
       <div className="ditto-canvas-container">
         {!isFullscreen && (
           <div className="ditto-canvas-header">
@@ -98,10 +90,9 @@ export default function DittoCanvasModal() {
 
         <div ref={iframeRef} className="iframe-container">
           <iframe
-            title={scriptObject.name}
-            srcDoc={scriptObject.content || selectedScript.contents}
+            title={selectedScript.script}
+            srcDoc={selectedScript.contents}
             className="canvas-iframe"
-            scrolling="auto"
             sandbox="allow-scripts allow-same-origin"
           />
         </div>

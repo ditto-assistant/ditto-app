@@ -318,10 +318,10 @@ function useScriptsManager(): ScriptsManagerReturnType {
           });
         }
       } else {
-        handleDeselectScript();
+        setSelectedScriptLocal(null);
       }
     },
-    [handleDeselectScript],
+    [],
   );
 
   const refreshScriptQueries = useCallback(

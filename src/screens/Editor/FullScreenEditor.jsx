@@ -4,7 +4,7 @@ import ace from "ace-builds";
 import "ace-builds/src-min-noconflict/ace";
 import "ace-builds/src-min-noconflict/mode-html";
 import "ace-builds/src-min-noconflict/mode-javascript";
-import "ace-builds/src-min-noconflict/theme-tomorrow_night";
+import "ace-builds/src-noconflict/theme-tomorrow_night";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import "ace-builds/src-min-noconflict/ext-searchbox";
 import {
