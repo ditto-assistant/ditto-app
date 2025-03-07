@@ -11,9 +11,8 @@ export default defineConfig({
     // }),
     react(),
     VitePWA({
-      // We'll handle registration ourselves for better control
       registerType: "prompt",
-      injectRegister: false, // Don't auto-register
+      injectRegister: false,
       manifest: {
         name: "Ditto",
         short_name: "Ditto",
@@ -44,7 +43,6 @@ export default defineConfig({
           },
         ],
       },
-      // Use generateSW strategy (default)
       devOptions: {
         enabled: true,
         type: "module",
@@ -53,7 +51,6 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,json}"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: false, // Don't skip waiting by default, we'll control this
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/], // Don't cache API responses
@@ -162,7 +159,7 @@ export default defineConfig({
       "ace-builds",
       "react-ace",
       "ace-builds/src-noconflict/mode-javascript",
-      "ace-builds/src-noconflict/theme-monokai",
+      "ace-builds/src-noconflict/theme-tomorrow_night",
       "ace-builds/src-noconflict/ext-language_tools",
       "framer-motion",
     ],
