@@ -60,11 +60,8 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({
     closeComposeModal();
   };
 
-  // Save message to local storage when it changes
   useEffect(() => {
-    if (message.trim()) {
-      savePrompt(message);
-    }
+    savePrompt(message);
   }, [message, savePrompt]);
 
   const openComposeModal = () => setIsComposeModalOpen(true);

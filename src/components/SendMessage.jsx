@@ -70,7 +70,6 @@ export default function SendMessage({
     registerSubmitCallback,
   } = useCompose();
   const { clearPrompt } = usePromptStorage();
-  const finalTranscriptRef = useRef("");
   const canvasRef = useRef();
 
   // Ditto logo button state and refs
@@ -93,7 +92,7 @@ export default function SendMessage({
     async (event) => {
       if (event) event.preventDefault();
       if (isWaitingForResponse) return;
-      if (message === "" && !finalTranscriptRef.current && !image) return;
+      if (message === "" && !image) return;
 
       // Close the menu if it's open
       if (isMenuOpen) {
@@ -115,7 +114,7 @@ export default function SendMessage({
           return;
         }
         const firstName = localStorage.getItem("firstName") || "";
-        let messageToSend = finalTranscriptRef.current || message;
+        let messageToSend = message;
         let imageURI = "";
         if (image) {
           try {
@@ -129,7 +128,6 @@ export default function SendMessage({
         clearPrompt();
         setMessage("");
         setImage("");
-        finalTranscriptRef.current = "";
         resizeTextArea();
         console.log("🚀 [SendMessage] Creating optimistic message");
         const timestamp = Date.now().toString();
@@ -380,9 +378,6 @@ export default function SendMessage({
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);
-              if (e.target.value.trim() === "") {
-                finalTranscriptRef.current = "";
-              }
             }}
             placeholder="Message Ditto"
             rows={3}

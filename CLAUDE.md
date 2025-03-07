@@ -2,7 +2,7 @@
 
 ## Business Overview
 
-Ditto Teams is an AI-powered platform for individuals and small businesses that facilitates ideation, creativity, and emotional support. Our core technology is built around advanced long-term memory algorithms that improve the relevancy of every interaction with Ditto, creating truly personalized experiences that evolve over time. 
+Ditto Teams is an AI-powered platform for individuals and small businesses that facilitates ideation, creativity, and emotional support. Our core technology is built around advanced long-term memory algorithms that improve the relevancy of every interaction with Ditto, creating truly personalized experiences that evolve over time.
 
 The application integrates into everyday workflows through various communication channels (email, SMS, messaging platforms) and features:
 
@@ -16,6 +16,7 @@ The application integrates into everyday workflows through various communication
 ## Licensing Model
 
 Ditto uses a dual-licensing approach:
+
 - **Apache License 2.0**: For individuals and businesses with <$1M annual revenue
 - **Commercial License**: Required for organizations with >$1M annual revenue
 

@@ -62,7 +62,7 @@ function usePromptStorageData(): PromptStorageContextType {
   >(() =>
     debounce((userId: string, prompt: string, image: string = "") => {
       savePromptToFirestore(userId, prompt, image);
-    }, 1000),
+    }, 500),
   );
 
   // Cancel debounced function on unmount
@@ -95,20 +95,12 @@ function usePromptStorageData(): PromptStorageContextType {
       image?: string;
     }) => {
       if (!user?.uid) throw new Error("No user");
-
-      // If the prompt is empty, clear it from Firestore
-      if (prompt.trim() === "" && (!image || image === "")) {
+      if (!prompt.trim() && !image) {
         await clearPromptFromFirestore(user.uid);
         return { prompt: "", image: "" };
       }
-
-      // Optimistically update local state immediately
-      const updatedData = { prompt, image };
-
-      // Debounce the actual save to Firestore
       debounceSave(user.uid, prompt, image);
-
-      return updatedData;
+      return { prompt, image };
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["promptStorage", user?.uid], data);
