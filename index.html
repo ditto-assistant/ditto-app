@@ -135,10 +135,16 @@
           .then(function (registrations) {
             for (let registration of registrations) {
               // Unregister any non-Vite PWA service workers
-              if (!registration.scriptURL.includes("sw.js")) {
+              if (
+                registration.scriptURL &&
+                !registration.scriptURL.includes("sw.js")
+              ) {
                 registration.unregister();
               }
             }
+          })
+          .catch(function (error) {
+            console.error("Service worker unregistration failed:", error);
           });
       }
     </script>
