@@ -11,7 +11,7 @@ interface SearchExamplesRequest {
 // Retrieves relevant examples for the pairID.
 export async function searchExamples(
   pairID: string,
-  k: number = 5,
+  k: number = 7,
 ): Promise<Result<string>> {
   const tok = await getToken();
   if (tok.err) {
