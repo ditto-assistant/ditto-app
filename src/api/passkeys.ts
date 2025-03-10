@@ -182,19 +182,6 @@ export async function authenticatePasskey(
   }
 }
 
-// Helper function to convert ArrayBuffer to URL-safe base64 string
-// function arrayBufferToBase64(buffer: ArrayBuffer): string {
-//   const bytes = new Uint8Array(buffer);
-//   let binary = "";
-//   for (let i = 0; i < bytes.byteLength; i++) {
-//     binary += String.fromCharCode(bytes[i]);
-//   }
-//   // Convert to standard base64 first
-//   let base64 = btoa(binary);
-//   // Then convert to URL-safe base64 by replacing characters and removing padding
-//   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-// }
-
 // Helper function to convert URL-safe base64 string to ArrayBuffer
 export function base64ToArrayBuffer(base64: string): ArrayBuffer {
   // Convert URL-safe base64 to standard base64
@@ -211,53 +198,4 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes.buffer;
-}
-
-// Interface for passkey/encryption key list items
-export interface PasskeyListItem {
-  keyId: string;
-  credentialId: string;
-  createdAt: string;
-  lastUsedAt: string;
-  isActive: boolean;
-  version: number;
-  keyDerivationMethod: string;
-  passkeyName?: string;
-}
-
-export interface ListPasskeysResponse {
-  keys: PasskeyListItem[];
-}
-
-// List all passkeys for the current user
-export async function listPasskeys(): Promise<ListPasskeysResponse> {
-  try {
-    const tokenResult = await getToken();
-    if (tokenResult.err || !tokenResult.ok) {
-      return {
-        keys: [],
-      };
-    }
-
-    const { token } = tokenResult.ok;
-
-    const response = await fetch(routes.passkeys.list, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server error: ${errorText || response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Failed to list passkeys:", error);
-    return {
-      keys: [],
-    };
-  }
 }

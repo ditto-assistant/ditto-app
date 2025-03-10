@@ -22,7 +22,7 @@ export interface RotateKeyResponse {
 }
 
 type ListKeysResponse = {
-  keys: EncryptionKey[];
+  keys?: EncryptionKey[];
 };
 
 export interface DeactivateKeyResponse {
@@ -46,7 +46,7 @@ export async function listKeys(): Promise<Result<ListKeysResponse>> {
       };
     }
 
-    const { token, userID } = tokenResult.ok;
+    const { token } = tokenResult.ok;
 
     const response = await fetch(routes.passkeys.list, {
       method: "GET",
