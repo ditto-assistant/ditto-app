@@ -7,10 +7,18 @@ export interface CreatePromptRequest {
   userID: string;
   deviceID: string;
   prompt: string;
+  encryptedContent?: {
+    ciphertext: string;
+    iv: string;
+    keyId: string;
+  };
 }
 
 // Creates a new user prompt.
-export async function createPrompt(prompt: string): Promise<Result<string>> {
+export async function createPrompt(
+  prompt: string, 
+  encryptedContent?: { ciphertext: string; iv: string; keyId: string }
+): Promise<Result<string>> {
   const tok = await getToken();
   if (tok.err) {
     return { err: `Unable to get token: ${tok.err}` };
@@ -23,14 +31,24 @@ export async function createPrompt(prompt: string): Promise<Result<string>> {
     userID: tok.ok.userID,
     deviceID,
     prompt,
+    ...(encryptedContent && { encryptedContent }),
   };
+  
+  // Set headers (to support encrypted content)
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${tok.ok.token}`,
+  };
+  
+  // Update content type for encrypted requests
+  if (encryptedContent) {
+    headers["Content-Type"] = "application/json+encrypted";
+  }
+  
   try {
     const response = await fetch(routes.createPrompt, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`,
-      },
+      headers,
       body: JSON.stringify(request),
     });
 

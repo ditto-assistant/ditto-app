@@ -6,12 +6,18 @@ interface SaveResponseRequest {
   userID: string;
   pairID: string;
   response: string;
+  encryptedContent?: {
+    ciphertext: string;
+    iv: string;
+    keyId: string;
+  };
 }
 
 // Saves the LLM response.
 export async function saveResponse(
   pairID: string,
   response: string,
+  encryptedContent?: { ciphertext: string; iv: string; keyId: string }
 ): Promise<Result<void>> {
   const tok = await getToken();
   if (tok.err) {
@@ -24,14 +30,24 @@ export async function saveResponse(
     userID: tok.ok.userID,
     pairID,
     response,
+    ...(encryptedContent && { encryptedContent }),
   };
+  
+  // Set headers (to support encrypted content)
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${tok.ok.token}`,
+  };
+  
+  // Update content type for encrypted requests
+  if (encryptedContent) {
+    headers["Content-Type"] = "application/json+encrypted";
+  }
+  
   try {
     const response = await fetch(routes.saveResponse, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`,
-      },
+      headers,
       body: JSON.stringify(request),
     });
 

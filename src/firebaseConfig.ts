@@ -2,7 +2,7 @@
 const MODE = import.meta.env.MODE;
 // const MODE = "staging";
 
-function getBaseURL(dittoEnv) {
+function getBaseURL(dittoEnv: string) {
   switch (dittoEnv) {
     case "development":
       return "http://localhost:3400";
@@ -16,8 +16,12 @@ function getBaseURL(dittoEnv) {
 }
 
 export const BASE_URL = getBaseURL(MODE);
+const PASSKEYS_BASE_URL = BASE_URL + "/api/v2/passkeys";
 
 export const routes = {
+  // Base URL for constructing routes
+  BASE_URL: BASE_URL,
+
   // v1 API
   prompt: BASE_URL + "/v1/prompt",
   embed: BASE_URL + "/v1/embed",
@@ -26,16 +30,12 @@ export const routes = {
   searchExamples: BASE_URL + "/v1/search-examples",
   createPrompt: BASE_URL + "/v1/create-prompt",
   saveResponse: BASE_URL + "/v1/save-response",
-  /**
-   * Generates the URL for retrieving the user's balance.
-   *
-   * @param {string} userID - The unique identifier of the user.
-   * @param {string | null} email - The email of the user.
-   * @param {string} version - The version of the app.
-   * @param {string} deviceId - The device ID.
-   * @returns {string} The complete URL for the balance endpoint.
-   */
-  balance: (userID, email, version, deviceID) => {
+  balance: (
+    userID: string,
+    email: string | null,
+    version: string,
+    deviceID: string,
+  ) => {
     const url = new URL(`${BASE_URL}/v1/balance`);
     url.searchParams.append("userID", userID);
     url.searchParams.append("email", email ?? "");
@@ -50,6 +50,25 @@ export const routes = {
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
   promptV2: BASE_URL + "/api/v2/prompt",
+
+  // Passkeys API for encryption
+  passkeys: {
+    registrationChallenge: PASSKEYS_BASE_URL + "/action/registration/challenge",
+    register: (challengeID: number, passkeyName: string) => {
+      const url = new URL(PASSKEYS_BASE_URL + "/action/register");
+      url.searchParams.append("challengeID", challengeID.toString());
+      url.searchParams.append("passkeyName", passkeyName);
+      return url.toString();
+    },
+    authenticationChallenge:
+      PASSKEYS_BASE_URL + "/action/authentication/challenge",
+    authenticate: (challengeID: number) => {
+      const url = new URL(PASSKEYS_BASE_URL + "/action/authenticate");
+      url.searchParams.append("challengeID", challengeID.toString());
+      return url.toString();
+    },
+    list: PASSKEYS_BASE_URL,
+  },
 };
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

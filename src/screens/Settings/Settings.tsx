@@ -20,6 +20,7 @@ import { useMemo } from "react";
 import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
+import EncryptionControlsModal from "@/screens/Settings/EncryptionControlsModal";
 
 export default function Settings() {
   const balance = useBalance();
@@ -30,10 +31,11 @@ export default function Settings() {
   const closeModal = createCloseHandler("settings");
   const { isMobile } = usePlatform();
 
-  // Memoize the memory-related modal components
+  // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
   const memoryControls = useMemo(() => <MemoryControlsModal />, []);
   const agentTools = useMemo(() => <AgentToolsModal />, []);
+  const encryptionControls = useMemo(() => <EncryptionControlsModal />, []);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -201,6 +203,11 @@ export default function Settings() {
       id: "tools",
       label: "Tools",
       content: agentTools,
+    },
+    {
+      id: "encryption",
+      label: "Encryption",
+      content: encryptionControls,
     },
     {
       id: "danger",

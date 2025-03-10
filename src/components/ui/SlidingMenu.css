@@ -14,7 +14,7 @@
 /* Bottom-aligned menu (for bottom buttons bar) */
 .sliding-menu.bottom-aligned {
   top: auto;
-  bottom: 60px;
+  bottom: 10px;
 }
 
 /* Pinned menu indicator */
@@ -59,7 +59,7 @@
 /* Center-aligned + bottom-aligned adjustment */
 .sliding-menu.center-aligned.bottom-aligned {
   position: absolute;
-  bottom: 50px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
 }
