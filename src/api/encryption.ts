@@ -30,12 +30,6 @@ export interface DeactivateKeyResponse {
   message?: string;
 }
 
-export interface MigrateConversationsResponse {
-  success: boolean;
-  migratedCount?: number;
-  message?: string;
-}
-
 // List all encryption keys for the user
 export async function listKeys(): Promise<Result<ListKeysResponse>> {
   try {
@@ -121,48 +115,69 @@ export async function listKeys(): Promise<Result<ListKeysResponse>> {
 //   }
 // }
 
-// Migrate conversations to encrypted format
-// export async function migrateConversations(): Promise<MigrateConversationsResponse> {
-//   try {
-//     const tokenResult = await getToken();
-//     if (tokenResult.err) {
-//       return {
-//         success: false,
-//         message: "Authentication failed",
-//       };
-//     }
+export interface MigrateConversationsRequest {
+  encryptionKeyId: string;
+  encryptionVersion: number;
+  conversations: {
+    docId: string;
+    encryptedPrompt: string;
+    encryptedResponse: string;
+  }[];
+}
 
-//     const { token, userID } = tokenResult.ok;
+export interface MigrateConversationsResponse {
+  migratedCount?: number;
+  migrationDuration?: string;
+  completedAt?: Date;
+}
 
-//     const response = await fetch(routes.passkeys.migrate, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${token}`,
-//       },
-//       body: JSON.stringify({
-//         userID,
-//       }),
-//     });
+export async function migrateConversations(
+  request: MigrateConversationsRequest,
+): Promise<Result<MigrateConversationsResponse>> {
+  try {
+    const tokenResult = await getToken();
+    if (tokenResult.err) {
+      return {
+        err: tokenResult.err.message,
+      };
+    }
+    if (!tokenResult.ok) {
+      return {
+        err: "Authentication failed",
+      };
+    }
 
-//     if (!response.ok) {
-//       const errorText = await response.text();
-//       throw new Error(`Server error: ${errorText || response.status}`);
-//     }
+    const { token } = tokenResult.ok;
 
-//     const data: MigrateConversationsResponse = await response.json();
-//     return data;
-//   } catch (error) {
-//     console.error("Failed to migrate conversations:", error);
-//     return {
-//       success: false,
-//       message:
-//         error instanceof Error
-//           ? error.message
-//           : "Failed to migrate conversations",
-//     };
-//   }
-// }
+    const response = await fetch(
+      `${routes.BASE_URL}/api/v2/encryption/migrate-conversations`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json+encrypted",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(request),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Server error: ${errorText || response.status}`);
+    }
+
+    const data: MigrateConversationsResponse = await response.json();
+    return { ok: data };
+  } catch (error) {
+    console.error("Failed to migrate conversations:", error);
+    return {
+      err:
+        error instanceof Error
+          ? error.message
+          : "Failed to migrate conversations",
+    };
+  }
+}
 
 // Helper function to handle encryption headers
 export function getEncryptionHeaders() {

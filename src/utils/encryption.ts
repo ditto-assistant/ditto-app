@@ -1,9 +1,10 @@
 import { getToken } from "@/api/auth";
-import { base64ToArrayBuffer } from "@/api/passkeys";
+import { base64ToArrayBuffer, getRegistrationChallenge } from "@/api/passkeys";
 
 // Types
 export interface EncryptionKey {
   keyId: string;
+  publicKey: string;
   version: number;
   credentialId: string;
   keyDerivationMethod: string;
@@ -11,6 +12,8 @@ export interface EncryptionKey {
   isActive: boolean;
   createdAt: string;
   lastUsedAt: string;
+  prfEnabled?: boolean;
+  prfSalt?: string;
 }
 
 export interface EncryptedData {
@@ -57,6 +60,28 @@ export async function generateEncryptionKey(displayName?: string): Promise<{
     // Convert challenge string to ArrayBuffer using proper base64 decoding
     const challengeBuffer = base64ToArrayBuffer(challenge.challenge);
 
+    // PRF extension support
+    const extensions: AuthenticationExtensionsClientInputs = {};
+
+    // Always request PRF extension, even if server doesn't provide a salt
+    if (challenge.prfSalt) {
+      // If the server provides a salt, use it
+      const prfSaltBuffer = base64ToArrayBuffer(challenge.prfSalt);
+      extensions.prf = {
+        eval: {
+          first: prfSaltBuffer,
+        },
+      };
+    } else {
+      // If no salt is provided, use a fixed value as in the docs example
+      // This helps ensure consistent key derivation
+      extensions.prf = {
+        eval: {
+          first: new TextEncoder().encode("Ditto encryption key"),
+        },
+      };
+    }
+
     // Create credential creation options using the server-provided parameters
     const credentialCreationOptions: CredentialCreationOptions = {
       publicKey: {
@@ -82,8 +107,17 @@ export async function generateEncryptionKey(displayName?: string): Promise<{
         },
         attestation: "direct",
         timeout: challenge.timeout,
+        extensions,
       },
     };
+
+    console.log("Creating credential with options:", {
+      rpId: challenge.rpId,
+      prf: extensions.prf,
+      prfInputLength: extensions.prf?.eval?.first
+        ? (extensions.prf.eval.first as ArrayBuffer).byteLength
+        : 0,
+    });
 
     // Create the credential
     const credential = (await navigator.credentials.create(
@@ -101,15 +135,49 @@ export async function generateEncryptionKey(displayName?: string): Promise<{
     const response = credential.response as AuthenticatorAttestationResponse;
     const clientDataJSON = response.clientDataJSON;
 
-    // Derive encryption keys from the credential data
-    // Use key derivation to create symmetric keys for encryption
-    const keyMaterial = await window.crypto.subtle.digest(
-      "SHA-256",
-      new Uint8Array([
-        ...new TextEncoder().encode(credentialId),
-        ...new Uint8Array(clientDataJSON),
-      ]),
-    );
+    // Check if the PRF extension was used
+    const extensionResults = credential.getClientExtensionResults();
+    let keyMaterial: ArrayBuffer;
+
+    if (
+      extensionResults.prf &&
+      "enabled" in extensionResults.prf &&
+      extensionResults.prf.enabled
+    ) {
+      console.log("Using PRF extension for key derivation");
+      // If PRF was enabled, use the PRF output as key material
+      if (
+        "results" in extensionResults.prf &&
+        extensionResults.prf.results &&
+        extensionResults.prf.results.first
+      ) {
+        keyMaterial = extensionResults.prf.results.first;
+      } else {
+        // Fallback to legacy method if PRF didn't return results
+        console.warn(
+          "PRF extension enabled but no results returned, falling back to legacy method",
+        );
+        keyMaterial = await window.crypto.subtle.digest(
+          "SHA-256",
+          new Uint8Array([
+            ...new TextEncoder().encode(credentialId),
+            ...new Uint8Array(clientDataJSON),
+          ]),
+        );
+      }
+    } else {
+      console.log(
+        "PRF extension not supported or enabled, using legacy key derivation",
+      );
+      // Legacy method - derive from credential ID and client data
+      keyMaterial = await window.crypto.subtle.digest(
+        "SHA-256",
+        new Uint8Array([
+          ...new TextEncoder().encode(credentialId),
+          ...new Uint8Array(clientDataJSON),
+        ]),
+      );
+    }
 
     // Import the key material as a CryptoKey
     const baseKey = await window.crypto.subtle.importKey(
@@ -153,25 +221,6 @@ export async function generateEncryptionKey(displayName?: string): Promise<{
   }
 }
 
-// Helper function to get registration challenge
-async function getRegistrationChallenge(displayName?: string): Promise<{
-  challengeId: number;
-  challenge: string;
-  rpId: string;
-  rpName: string;
-  userVerification: string;
-  timeout: number;
-} | null> {
-  try {
-    // Import dynamically to avoid circular dependencies
-    const { getRegistrationChallenge } = await import("../api/passkeys");
-    return await getRegistrationChallenge(displayName);
-  } catch (error) {
-    console.error("Failed to get registration challenge:", error);
-    return null;
-  }
-}
-
 // Encryption function
 export async function encryptData(
   data: string,
@@ -191,32 +240,27 @@ export async function encryptData(
       ["encrypt"],
     );
 
-    // Generate IV
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-
     // Convert data to ArrayBuffer
     const encoder = new TextEncoder();
     const dataBuffer = encoder.encode(data);
 
-    // Encrypt the data
+    // Encrypt the data - RSA-OAEP doesn't use an IV parameter
     const encryptedBuffer = await window.crypto.subtle.encrypt(
       {
         name: "RSA-OAEP",
-        iv,
       },
       importedPublicKey,
       dataBuffer,
     );
 
-    // Convert to Base64
-    const ciphertext = btoa(
-      String.fromCharCode(...new Uint8Array(encryptedBuffer)),
-    );
-    const ivBase64 = btoa(String.fromCharCode(...iv));
+    // Convert to Base64URL encoding for safe storage and transmission
+    const ciphertext = bufferToBase64URLString(encryptedBuffer);
 
+    // RSA-OAEP doesn't use IV, but we need to maintain interface compatibility 
+    // so we'll use an empty string for the IV field
     return {
       ciphertext,
-      iv: ivBase64,
+      iv: "", // RSA-OAEP doesn't use IV
       keyId,
     };
   } catch (error) {
@@ -225,30 +269,38 @@ export async function encryptData(
   }
 }
 
+/**
+ * Convert the given array buffer into a Base64URL-encoded string.
+ *
+ * @param {ArrayBuffer} buffer
+ * @returns {string}
+ */
+function bufferToBase64URLString(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+
+  for (const charCode of bytes) {
+    str += String.fromCharCode(charCode);
+  }
+
+  const base64String = btoa(str);
+
+  return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
 // Decryption function
 export async function decryptData(
   encryptedData: EncryptedData,
   privateKey: CryptoKey,
 ): Promise<string> {
   try {
-    // Convert Base64 back to ArrayBuffer
-    const ciphertextBinary = atob(encryptedData.ciphertext);
-    const ciphertextBuffer = new Uint8Array(ciphertextBinary.length);
-    for (let i = 0; i < ciphertextBinary.length; i++) {
-      ciphertextBuffer[i] = ciphertextBinary.charCodeAt(i);
-    }
+    // Convert Base64URL back to ArrayBuffer
+    const ciphertextBuffer = base64URLStringToBuffer(encryptedData.ciphertext);
 
-    const ivBinary = atob(encryptedData.iv);
-    const iv = new Uint8Array(ivBinary.length);
-    for (let i = 0; i < ivBinary.length; i++) {
-      iv[i] = ivBinary.charCodeAt(i);
-    }
-
-    // Decrypt the data
+    // Decrypt the data - RSA-OAEP doesn't use an IV parameter
     const decryptedBuffer = await window.crypto.subtle.decrypt(
       {
         name: "RSA-OAEP",
-        iv,
       },
       privateKey,
       ciphertextBuffer,
@@ -261,6 +313,34 @@ export async function decryptData(
     console.error("Decryption failed:", error);
     throw new Error("Failed to decrypt data");
   }
+}
+
+/**
+ * Convert from a Base64URL-encoded string to an Array Buffer.
+ *
+ * @param {string} base64URLString
+ * @returns {ArrayBuffer}
+ */
+function base64URLStringToBuffer(base64URLString) {
+  // Convert from Base64URL to Base64
+  const base64 = base64URLString.replace(/-/g, '+').replace(/_/g, '/');
+  
+  // Pad with '=' until it's a multiple of four
+  const padLength = (4 - (base64.length % 4)) % 4;
+  const padded = base64.padEnd(base64.length + padLength, '=');
+
+  // Convert to a binary string
+  const binary = atob(padded);
+
+  // Convert binary string to buffer
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return buffer;
 }
 
 // Get the current encryption credential for passkey authentication
@@ -281,6 +361,28 @@ export async function getEncryptionCredential(): Promise<{
     // Convert challenge from base64 to ArrayBuffer
     const challengeBuffer = base64ToArrayBuffer(challenge.challenge);
 
+    // PRF extension support
+    const extensions: AuthenticationExtensionsClientInputs = {};
+
+    // Always request PRF extension, even if server doesn't provide a salt
+    if (challenge.prfSalt) {
+      // If the server provides a salt, use it
+      const prfSaltBuffer = base64ToArrayBuffer(challenge.prfSalt);
+      extensions.prf = {
+        eval: {
+          first: prfSaltBuffer,
+        },
+      };
+    } else {
+      // If no salt is provided, use the same fixed value as in registration
+      // This ensures consistent key derivation across sessions
+      extensions.prf = {
+        eval: {
+          first: new TextEncoder().encode("Ditto encryption key"),
+        },
+      };
+    }
+
     // Create the credential request options
     const credentialRequestOptions: CredentialRequestOptions = {
       publicKey: {
@@ -289,6 +391,7 @@ export async function getEncryptionCredential(): Promise<{
         userVerification:
           challenge.userVerification as AuthenticatorSelectionCriteria["userVerification"],
         timeout: challenge.timeout,
+        extensions,
       },
     };
 
@@ -302,6 +405,14 @@ export async function getEncryptionCredential(): Promise<{
       }));
     }
 
+    console.log("Authenticating with credential options:", {
+      rpId: challenge.rpId,
+      hasPRF: !!extensions.prf,
+      prfInputLength: extensions.prf?.eval?.first
+        ? (extensions.prf.eval.first as ArrayBuffer).byteLength
+        : 0,
+    });
+
     // Get the credential
     const credential = (await navigator.credentials.get(
       credentialRequestOptions,
@@ -310,6 +421,12 @@ export async function getEncryptionCredential(): Promise<{
     if (!credential) {
       throw new Error("Failed to get passkey credential");
     }
+
+    // Log extension results
+    const extensionResults = credential.getClientExtensionResults();
+    console.log("Credential extension results:", {
+      hasPRF: extensionResults.prf,
+    });
 
     return {
       credential,
@@ -347,14 +464,49 @@ export async function decryptWithPasskey(
   const response = credential.response as AuthenticatorAssertionResponse;
   const authenticatorData = response.authenticatorData;
 
-  // Derive encryption key material from credential data
-  const keyMaterial = await window.crypto.subtle.digest(
-    "SHA-256",
-    new Uint8Array([
-      ...new TextEncoder().encode(credential.id),
-      ...new Uint8Array(authenticatorData),
-    ]),
-  );
+  // Check if the PRF extension was used
+  const extensionResults = credential.getClientExtensionResults();
+  let keyMaterial: ArrayBuffer;
+
+  if (
+    extensionResults.prf &&
+    "enabled" in extensionResults.prf &&
+    extensionResults.prf.enabled
+  ) {
+    console.log("Using PRF extension for key derivation during decryption");
+    // If PRF was enabled, use the PRF output as key material
+    if (
+      "results" in extensionResults.prf &&
+      extensionResults.prf.results &&
+      extensionResults.prf.results.first
+    ) {
+      keyMaterial = extensionResults.prf.results.first;
+    } else {
+      // Fallback to legacy method if PRF didn't return results
+      console.warn(
+        "PRF extension enabled but no results returned for decryption, falling back to legacy method",
+      );
+      keyMaterial = await window.crypto.subtle.digest(
+        "SHA-256",
+        new Uint8Array([
+          ...new TextEncoder().encode(credential.id),
+          ...new Uint8Array(authenticatorData),
+        ]),
+      );
+    }
+  } else {
+    console.log(
+      "PRF extension not supported or enabled, using legacy key derivation for decryption",
+    );
+    // Legacy method - derive from credential ID and authenticator data
+    keyMaterial = await window.crypto.subtle.digest(
+      "SHA-256",
+      new Uint8Array([
+        ...new TextEncoder().encode(credential.id),
+        ...new Uint8Array(authenticatorData),
+      ]),
+    );
+  }
 
   // Import the key material
   const baseKey = await window.crypto.subtle.importKey(
@@ -381,38 +533,41 @@ export async function decryptWithPasskey(
   return await decryptData(encryptedData, derivedKeyPair.privateKey);
 }
 
-// Encrypt/decrypt conversation data
-// export async function encryptConversation(conversation: any): Promise<any> {
-//   const { activeKey } = await import("@/hooks/useEncryptionKeys").then(
-//     (module) => module.useEncryptionKeys(),
-//   );
-//   if (!activeKey) {
-//     throw new Error("No active encryption key found");
-//   }
+// Encrypt conversation data for migration
+export async function encryptConversation(
+  conversation: {
+    id: string;
+    prompt: string;
+    response: string;
+  },
+  publicKey: JsonWebKey,
+  keyId: string,
+): Promise<{
+  docId: string;
+  encryptedPrompt: string;
+  encryptedResponse: string;
+}> {
+  if (!publicKey) {
+    throw new Error("Public key is required for encryption");
+  }
 
-//   // Deep clone to avoid modifying original
-//   const encryptedConversation = JSON.parse(JSON.stringify(conversation));
+  // Encrypt the prompt and response
+  const encryptedPrompt = await encryptData(
+    conversation.prompt,
+    publicKey,
+    keyId,
+  );
 
-//   // Encrypt relevant fields (assuming conversation has messages array)
-//   if (
-//     encryptedConversation.messages &&
-//     Array.isArray(encryptedConversation.messages)
-//   ) {
-//     for (let i = 0; i < encryptedConversation.messages.length; i++) {
-//       const message = encryptedConversation.messages[i];
+  const encryptedResponse = await encryptData(
+    conversation.response,
+    publicKey,
+    keyId,
+  );
 
-//       if (message.content) {
-//         const encryptedContent = await encryptData(
-//           JSON.stringify(message.content),
-//           activeKey.publicKey,
-//           activeKey.id,
-//         );
-//         message.encryptedContent = encryptedContent;
-//         message.content = "[ENCRYPTED]"; // Keep a placeholder
-//       }
-//     }
-//   }
-
-//   encryptedConversation.isEncrypted = true;
-//   return encryptedConversation;
-// }
+  // Return the encrypted data in the format expected by the migration API
+  return {
+    docId: conversation.id,
+    encryptedPrompt: JSON.stringify(encryptedPrompt),
+    encryptedResponse: JSON.stringify(encryptedResponse),
+  };
+}

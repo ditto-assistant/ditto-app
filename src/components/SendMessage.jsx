@@ -52,7 +52,7 @@ export default function SendMessage({
   const [image, setImage] = useState(capturedImage || "");
   const textAreaRef = useRef(null);
   const preferences = useModelPreferences();
-  const { openImageViewer } = useImageViewerHandler();
+  const { handleImageClick } = useImageViewerHandler();
   const balance = useBalance();
   const { isMobile } = usePlatform();
   const {
@@ -549,7 +549,10 @@ export default function SendMessage({
         </div>
 
         {image && (
-          <div className="image-preview" onClick={() => openImageViewer(image)}>
+          <div
+            className="image-preview"
+            onClick={() => handleImageClick(image)}
+          >
             <img src={image} alt="Preview" />
             <FaTimes
               className="remove-image"

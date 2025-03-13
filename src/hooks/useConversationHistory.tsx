@@ -8,14 +8,8 @@ import {
   useMemo,
 } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useAuth, useAuthToken } from "./useAuth";
-import { BASE_URL } from "@/firebaseConfig";
 import { Memory } from "@/api/getMemories";
-
-interface ConversationResponse {
-  messages: Memory[];
-  nextCursor: string;
-}
+import { getConversations, ConversationResponse } from "@/api/getConversations";
 
 interface OptimisticMemory extends Memory {
   isOptimistic?: boolean;
@@ -43,8 +37,6 @@ interface ConversationContextType {
 const ConversationContext = createContext<ConversationContextType | null>(null);
 
 export function ConversationProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const tok = useAuthToken();
   const [optimisticMessages, setOptimisticMessages] = useState<
     OptimisticMemory[]
   >([]);
@@ -56,36 +48,21 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useInfiniteQuery<ConversationResponse>({
-    queryKey: ["conversations", user?.uid, tok.data],
+  } = useInfiniteQuery({
+    queryKey: ["conversations"],
     queryFn: async ({ pageParam }) => {
-      if (!tok.data) {
-        throw new Error("No token found");
+      const result = await getConversations(pageParam);
+      if (result.err) {
+        throw new Error(result.err);
       }
-      if (!user?.uid) {
-        throw new Error("No user ID found");
-      }
-      const params = new URLSearchParams({
-        userId: user?.uid || "",
-        limit: "5",
-      });
-      if (pageParam) {
-        params.set("cursor", pageParam as string);
-      }
-      const response = await fetch(`${BASE_URL}/v1/conversations?${params}`, {
-        headers: {
-          Authorization: `Bearer ${tok.data}`,
-        },
-      });
-      if (!response.ok) {
+      if (!result.ok) {
         throw new Error("Failed to fetch conversations");
       }
-      return response.json() as Promise<ConversationResponse>;
+      return result.ok;
     },
     initialPageParam: "",
     getNextPageParam: (lastPage: ConversationResponse) =>
       lastPage.nextCursor || undefined,
-    enabled: !!user?.uid && !!tok.data,
   });
 
   // Memoize server messages to prevent unnecessary re-renders
@@ -93,11 +70,6 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     () => data?.pages.flatMap((page) => page.messages) || [],
     [data?.pages],
   );
-
-  // Enhanced debug logging for message state (disabled in production)
-  useEffect(() => {
-    // Removed verbose logging
-  }, [serverMessages, optimisticMessages]);
 
   // Keep track of which messages have been finalized to avoid premature cleanup
   // This only removes optimistic messages that have been fully finalized and saved to server

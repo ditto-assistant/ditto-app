@@ -279,12 +279,48 @@ export async function saveResponse(
    - Mobile devices (iOS, Android) and desktop browsers (Chrome, Safari, Edge, Firefox) support passkeys
    - Platform-specific syncing (iCloud Keychain, Google Password Manager) allows for seamless multi-device use
 
+## WebAuthn PRF Extension
+
+The encryption implementation has been enhanced to use the WebAuthn PRF (Pseudo-Random Function) extension. This extension provides more reliable and standardized key derivation from WebAuthn credentials:
+
+### Benefits of PRF Extension
+
+1. **Consistent Key Derivation**: PRF provides a standardized way to derive encryption keys from passkeys
+2. **Cross-Device Compatibility**: The same PRF input will produce the same output across different devices with the same credential
+3. **Improved Security**: Uses the authenticator's security capabilities rather than custom key derivation
+4. **Fallback Support**: System falls back to the legacy key derivation method if PRF is not supported
+
+### Implementation Details
+
+The PRF extension is used both during passkey creation and authentication:
+
+```typescript
+// When creating a passkey
+if (challenge.prfSalt) {
+  const prfSaltBuffer = base64ToArrayBuffer(challenge.prfSalt);
+  extensions.prf = {
+    eval: {
+      first: prfSaltBuffer,
+    },
+  };
+}
+
+// When using the PRF result
+const extensionResults = credential.getClientExtensionResults();
+if (extensionResults.prf && extensionResults.prf.enabled && extensionResults.prf.results) {
+  keyMaterial = extensionResults.prf.results.first;
+} else {
+  // Fallback to legacy method
+}
+```
+
 ## Future Improvements
 
 1. **Recovery Mechanisms**: Add backup/recovery options for passkeys beyond platform syncing
 2. **Delegation**: Allow users to authorize specific devices or people to access encrypted content
 3. **Key Rotation Policies**: Implement automated key rotation based on time or usage
 4. **Independent Platform Support**: Support WebAuthn/passkeys on platforms without native syncing
+5. **Multi-Key Encryption**: Use multiple keys for the same content to support sharing with specific users
 
 ## Resources
 

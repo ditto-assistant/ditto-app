@@ -10,6 +10,7 @@ export interface WebAuthnChallenge {
   userVerification: string;
   timeout: number;
   allowCredentials?: string[];
+  prfSalt?: string; // PRF Salt for key derivation (base64 encoded)
 }
 
 export interface WebAuthnRegistrationResponse {
