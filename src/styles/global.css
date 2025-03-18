@@ -82,17 +82,10 @@ code {
   /* Android Chrome specific adjustments */
   html.android-chrome {
     height: -webkit-fill-available;
-    overscroll-behavior: none;
-    overflow: hidden;
   }
   
   body.android-chrome {
     height: -webkit-fill-available;
-    overscroll-behavior: none;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
   }
   
   /* Force hardware acceleration to prevent layout shifts */
@@ -101,28 +94,5 @@ code {
   .media-options-container {
     transform: translateZ(0);
     will-change: transform;
-    backface-visibility: hidden;
-  }
-  
-  /* Ensure app container fills the space */
-  html.android-chrome #root,
-  html.android-chrome .app {
-    height: -webkit-fill-available;
-    overflow: hidden;
-  }
-  
-  /* Prevent scrolling on the body but allow it in the chat area */
-  html.android-chrome .app-body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    height: auto;
-    flex: 1;
-  }
-  
-  /* Lock the footer position */
-  html.android-chrome .app-footer {
-    position: relative;
-    z-index: 100;
   }
 }
