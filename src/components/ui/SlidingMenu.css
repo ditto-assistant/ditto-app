@@ -1,14 +1,87 @@
 /* Sliding menu container */
 .sliding-menu {
-  position: absolute;
-  top: 60px;
-  left: 0;
-  background-color: var(--background-secondary);
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  width: 180px;
+  position: fixed;
+  z-index: 1000;
+  width: 240px;
+  max-width: 90vw;
+  background-color: var(--background-floating);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
-  z-index: 1001;
+  /* Default positioning */
+  bottom: calc(60px + var(--url-bar-offset, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  
+  /* Base styles for all sliding menus */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  
+  /* Ensure no flickering during animations */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* Bottom positioned menu overrides */
+.sliding-menu[data-position="bottom"] {
+  bottom: calc(60px + var(--url-bar-offset, 0px));
+  transform-origin: bottom center;
+}
+
+/* Top positioned menu overrides */
+.sliding-menu[data-position="top"] {
+  bottom: auto;
+  top: calc(20px + var(--url-bar-offset, 0px));
+  transform-origin: top center;
+}
+
+/* Right positioned menu overrides (for script indicator) */
+.sliding-menu[data-position="right"] {
+  transform-origin: top right;
+  bottom: auto;
+  left: auto;
+  right: 10px; /* Position relative to the right edge of its container */
+  top: calc(100% + 10px); /* Position below the trigger element */
+  transform: none; /* Override the translateX(-50%) from the default style */
+  width: 200px; /* Adjust width for the script menu */
+  
+  /* Additional styles specific to the right menu */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+}
+
+/* Add the arrow indicator for the right positioned menu */
+.sliding-menu[data-position="right"]::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 15px;
+  transform: rotate(45deg);
+  width: 16px;
+  height: 16px;
+  background-color: var(--background-floating);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: -1;
+}
+
+/* Enhance menu items for right positioned menu to match Ditto menu */
+.sliding-menu[data-position="right"] .menu-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sliding-menu[data-position="right"] .menu-item:last-child {
+  border-bottom: none;
+}
+
+.sliding-menu[data-position="right"] .menu-item .icon {
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.sliding-menu[data-position="right"] .menu-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.1);
 }
 
 /* Bottom-aligned menu (for bottom buttons bar) */
@@ -96,6 +169,14 @@
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 4px;
+}
+
+/* Enhanced menu title for right positioned menu */
+.sliding-menu[data-position="right"] .menu-title {
+  font-size: 14px;
+  padding: 14px 16px;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  margin-bottom: 0;
 }
 
 /* Menu items */

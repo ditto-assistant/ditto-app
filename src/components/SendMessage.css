@@ -149,19 +149,12 @@
   align-items: center;
 }
 
-/* Center logo container */
-.ditto-button-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
 /* Right buttons container */
 .right-buttons {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: 8px; /* Add gap between script indicator and send button */
 }
 
 /* Action button styling */
@@ -243,6 +236,9 @@
 /* Script indicator container */
 .script-indicator-container {
   position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
 }
 
 /* Ditto logo button */
@@ -761,4 +757,12 @@
       margin-bottom: max(50px, calc(50px + env(safe-area-inset-bottom, 0px)));
     }
   }
+}
+
+/* Center logo container */
+.ditto-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }

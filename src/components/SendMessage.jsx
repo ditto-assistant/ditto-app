@@ -494,6 +494,56 @@ export default function SendMessage({
 
             {/* Right aligned send button */}
             <div className="right-buttons">
+              {/* Script indicator that shows when a script is selected */}
+              {selectedScript && (
+                <div className="script-indicator-container" ref={scriptIndicatorRef}>
+                  <motion.div
+                    className="script-icon-button"
+                    onClick={handleScriptNameClick}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Script actions"
+                  >
+                    <FaCode />
+                  </motion.div>
+                  
+                  <AnimatePresence>
+                    {showScriptActions && (
+                      <SlidingMenu
+                        isOpen={showScriptActions}
+                        onClose={() => setShowScriptActions(false)}
+                        position="right"
+                        triggerRef={scriptIndicatorRef}
+                        menuPosition="bottom"
+                        menuTitle={selectedScript.script}
+                        menuItems={[
+                          {
+                            icon: <FaPlay className="icon" />,
+                            text: "Run Script",
+                            onClick: handlePlayScript,
+                          },
+                          {
+                            icon: <FaPen className="icon" />,
+                            text: "Edit Script",
+                            onClick: () => {
+                              const event = new CustomEvent("editScript", {
+                                detail: { script: selectedScript },
+                              });
+                              window.dispatchEvent(event);
+                            },
+                          },
+                          {
+                            icon: <FaTimes className="icon" />,
+                            text: "Close Script",
+                            onClick: handleDeselectScript,
+                          },
+                        ]}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+              
               <button
                 className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
                 type="submit"
