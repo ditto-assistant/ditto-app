@@ -90,13 +90,18 @@ export default function HomeScreen() {
         const chromeVh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
         
-        // Apply fixed position to the button hub to prevent it from moving with the URL bar
-        const buttonHub = document.querySelector(".button-hub");
-        if (buttonHub) {
-          // Ensure button hub stays at the bottom of the visible area
-          const offset = window.innerHeight - document.documentElement.clientHeight;
-          document.documentElement.style.setProperty("--url-bar-offset", `${offset}px`);
-        }
+        // Calculate URL bar offset more precisely
+        const windowHeight = window.innerHeight;
+        const visualHeight = window.visualViewport ? window.visualViewport.height : windowHeight;
+        const urlBarHeight = windowHeight - visualHeight;
+        
+        // Apply the URL bar offset as a CSS variable
+        document.documentElement.style.setProperty("--url-bar-offset", `${urlBarHeight}px`);
+        
+        // Force a reflow/repaint to ensure all changes take effect immediately
+        document.body.style.display = 'none';
+        document.body.offsetHeight; // Trigger a reflow
+        document.body.style.display = '';
       }
     };
 
@@ -111,6 +116,12 @@ export default function HomeScreen() {
     // For Chrome, we need additional events to catch all changes
     window.addEventListener("touchmove", setVH);
     window.addEventListener("touchend", setVH);
+    
+    // Add visualViewport event listeners for all devices that support it
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", setVH);
+      window.visualViewport.addEventListener("scroll", setVH);
+    }
 
     // Special handling for iOS to help with browser chrome appearing/disappearing
     if (isIOS) {
@@ -121,11 +132,6 @@ export default function HomeScreen() {
           "content",
           "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no",
         );
-      }
-
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", setVH);
-        window.visualViewport.addEventListener("scroll", setVH);
       }
 
       // Set a timer to periodically check viewport size on iOS
@@ -155,6 +161,10 @@ export default function HomeScreen() {
       window.removeEventListener("scroll", setVH);
       window.removeEventListener("touchmove", setVH);
       window.removeEventListener("touchend", setVH);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", setVH);
+        window.visualViewport.removeEventListener("scroll", setVH);
+      }
     };
   }, [isIOS, isPWA]);
 
@@ -168,10 +178,45 @@ export default function HomeScreen() {
       document.documentElement.classList.add('android-chrome');
       document.body.classList.add('android-chrome');
       
-      // Force a repaint to apply the classes immediately
-      document.body.style.display = 'none';
-      document.body.offsetHeight; // Trigger a reflow
-      document.body.style.display = '';
+      // Track URL bar visibility changes
+      let lastHeight = window.innerHeight;
+      
+      const checkUrlBarVisibility = () => {
+        const currentHeight = window.innerHeight;
+        if (currentHeight !== lastHeight) {
+          // Height changed, URL bar likely appeared/disappeared
+          document.documentElement.style.setProperty("--url-bar-visible", currentHeight < lastHeight ? "true" : "false");
+          lastHeight = currentHeight;
+          
+          // Update button positioning
+          const buttonHub = document.querySelector(".button-hub");
+          if (buttonHub) {
+            if (currentHeight < lastHeight) {
+              // URL bar appeared, adjust button positioning
+              buttonHub.style.position = "absolute";
+            } else {
+              // URL bar disappeared, reset position
+              buttonHub.style.position = "fixed";
+            }
+          }
+        }
+      };
+      
+      // Monitor for URL bar changes
+      window.addEventListener("resize", checkUrlBarVisibility);
+      window.addEventListener("scroll", checkUrlBarVisibility);
+      
+      // Force an immediate check
+      setTimeout(checkUrlBarVisibility, 100);
+      
+      return () => {
+        // Clean up event listeners
+        window.removeEventListener("resize", checkUrlBarVisibility);
+        window.removeEventListener("scroll", checkUrlBarVisibility);
+        // Clean up classes when component unmounts
+        document.documentElement.classList.remove('android-chrome');
+        document.body.classList.remove('android-chrome');
+      };
     }
     
     return () => {
