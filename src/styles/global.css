@@ -37,6 +37,8 @@ html {
   width: 100%;
   touch-action: manipulation;
   overscroll-behavior: none;
+  height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--chrome-vh, var(--vh, 1vh)) * 100);
 }
 
 body {
@@ -73,4 +75,24 @@ body {
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* Chrome on Android URL bar workaround */
+@media screen and (max-width: 480px) {
+  /* Android Chrome specific adjustments */
+  html.android-chrome {
+    height: -webkit-fill-available;
+  }
+  
+  body.android-chrome {
+    height: -webkit-fill-available;
+  }
+  
+  /* Force hardware acceleration to prevent layout shifts */
+  .button-hub,
+  .sliding-menu,
+  .media-options-container {
+    transform: translateZ(0);
+    will-change: transform;
+  }
 }

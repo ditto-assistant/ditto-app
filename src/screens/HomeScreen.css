@@ -19,6 +19,8 @@ body:not(.login-page) {
   height: 100vh;
   /* Fallback */
   height: calc(var(--vh, 1vh) * 100);
+  /* Chrome on Android */
+  height: calc(var(--chrome-vh, var(--vh, 1vh)) * 100);
   width: 100vw;
   background-color: var(--background-primary);
   overflow: hidden;

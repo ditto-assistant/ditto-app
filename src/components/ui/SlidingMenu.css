@@ -59,6 +59,8 @@
 .sliding-menu.center-aligned.bottom-aligned {
   position: fixed; /* Use fixed positioning to avoid parent relative positioning issues */
   bottom: 60px; /* Position above the buttons bar */
+  /* Account for URL bar on Chrome Android */
+  bottom: calc(60px + var(--url-bar-offset, 0px));
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Ensure perfect centering */
   border-radius: 16px;

@@ -79,6 +79,25 @@ export default function HomeScreen() {
         const iosVh = (window.innerHeight + extraSpace) * 0.01;
         document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
       }
+      
+      // Special handling for Chrome on Android to account for URL bar
+      const isAndroid = /android/i.test(navigator.userAgent);
+      const isChrome = /chrome/i.test(navigator.userAgent) && !isIOS;
+      
+      if (isAndroid && isChrome) {
+        // Chrome on Android needs special handling for the URL bar
+        // Set a specific height for the app content
+        const chromeVh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
+        
+        // Apply fixed position to the button hub to prevent it from moving with the URL bar
+        const buttonHub = document.querySelector(".button-hub");
+        if (buttonHub) {
+          // Ensure button hub stays at the bottom of the visible area
+          const offset = window.innerHeight - document.documentElement.clientHeight;
+          document.documentElement.style.setProperty("--url-bar-offset", `${offset}px`);
+        }
+      }
     };
 
     // Initial set
@@ -88,6 +107,10 @@ export default function HomeScreen() {
     window.addEventListener("resize", setVH);
     window.addEventListener("orientationchange", setVH);
     window.addEventListener("scroll", setVH);
+    
+    // For Chrome, we need additional events to catch all changes
+    window.addEventListener("touchmove", setVH);
+    window.addEventListener("touchend", setVH);
 
     // Special handling for iOS to help with browser chrome appearing/disappearing
     if (isIOS) {
@@ -116,6 +139,8 @@ export default function HomeScreen() {
         window.removeEventListener("resize", setVH);
         window.removeEventListener("orientationchange", setVH);
         window.removeEventListener("scroll", setVH);
+        window.removeEventListener("touchmove", setVH);
+        window.removeEventListener("touchend", setVH);
         if (window.visualViewport) {
           window.visualViewport.removeEventListener("resize", setVH);
           window.visualViewport.removeEventListener("scroll", setVH);
@@ -128,8 +153,33 @@ export default function HomeScreen() {
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);
       window.removeEventListener("scroll", setVH);
+      window.removeEventListener("touchmove", setVH);
+      window.removeEventListener("touchend", setVH);
     };
   }, [isIOS, isPWA]);
+
+  useEffect(() => {
+    // Identify Android Chrome and add special classes
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isChrome = /chrome/i.test(navigator.userAgent) && !isIOS;
+    
+    if (isAndroid && isChrome) {
+      // Add special classes for Android Chrome
+      document.documentElement.classList.add('android-chrome');
+      document.body.classList.add('android-chrome');
+      
+      // Force a repaint to apply the classes immediately
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // Trigger a reflow
+      document.body.style.display = '';
+    }
+    
+    return () => {
+      // Clean up classes when component unmounts
+      document.documentElement.classList.remove('android-chrome');
+      document.body.classList.remove('android-chrome');
+    };
+  }, [isIOS]);
 
   const handleCameraOpen = () => {
     setIsCameraOpen(true);
