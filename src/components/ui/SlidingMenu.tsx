@@ -67,6 +67,30 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   }, [isOpen, onClose, triggerRef]);
 
   const getMenuAnimation = () => {
+    // Special animation for the center-aligned bottom menu (Ditto button)
+    if (position === "center" && menuPosition === "bottom") {
+      return {
+        initial: { opacity: 0, scale: 0.5, y: 20 },
+        animate: { 
+          opacity: 1, 
+          scale: 1, 
+          y: 0,
+          transition: { 
+            type: "spring", 
+            damping: 30, 
+            stiffness: 350,
+            duration: 0.4 
+          }
+        },
+        exit: { 
+          opacity: 0, 
+          scale: 0.5, 
+          y: 10,
+          transition: { duration: 0.2 } 
+        }
+      };
+    }
+
     // For bottom-aligned menus, animate vertically
     if (menuPosition === "bottom") {
       return {
@@ -96,16 +120,28 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
           className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${isPinned ? "pinned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
           ref={menuRef}
           onMouseLeave={handleMenuLeave}
-          {...menuAnimation}
+          initial={menuAnimation.initial}
+          animate={menuAnimation.animate}
+          exit={menuAnimation.exit}
+          // Remove the spread operator and explicitly set transition if not included in animate
+          transition={menuAnimation.transition}
         >
           {menuTitle && <div className="menu-title">{menuTitle}</div>}
           {menuItems.map((item, index) => (
             <motion.div
               key={index}
               className="menu-item"
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                duration: 0.3,
+                delay: 0.07 * index,
+                ease: "easeOut"
+              }}
               whileTap={{ scale: 0.95 }}
               whileHover={{
                 backgroundColor: "rgba(255, 255, 255, 0.15)",
+                x: 3
               }}
               onClick={(e) => {
                 e.stopPropagation();

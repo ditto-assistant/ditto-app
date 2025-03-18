@@ -24,8 +24,13 @@
   z-index: 10;
   flex-direction: column;
   padding: var(--spacing-sm) var(--spacing-md);
+  padding-bottom: 0;
   border-radius: var(--border-radius-md);
-  margin-bottom: var(--safe-area-bottom, 0);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+  overflow: visible; /* Allow button hub to overflow */
 }
 
 .app-footer .form {
@@ -55,38 +60,48 @@
   display: flex;
   align-items: center;
   height: 100%;
-  margin-bottom: 6px;
+  margin-bottom: calc(52px + env(safe-area-inset-bottom, 0));
+  padding: 8px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  background-color: transparent;
+  transition: border-color var(--transition-normal);
+}
+
+.input-wrapper:focus-within {
+  border-bottom-color: var(--primary);
 }
 
 .text-area {
   flex: 1;
   border: none;
   resize: none;
-  background-color: var(--background-input);
+  background-color: transparent;
   color: var(--interactive-active);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 6px 8px;
+  padding-bottom: 10px;
   line-height: 1.5;
   font-size: 16px;
   max-height: 200px;
   min-height: 24px;
   height: 24px;
   width: 100%;
-  border-radius: var(--border-radius-sm);
+  border-radius: 0;
   overflow-y: hidden;
-  transition:
-    border var(--transition-normal),
-    box-shadow var(--transition-normal);
+  transition: all var(--transition-normal);
+}
+
+.text-area:focus {
+  outline: none;
+  box-shadow: none;
+  border: none;
 }
 
 .text-area::placeholder {
   color: var(--text-muted);
   opacity: 0.7;
-}
-
-.text-area:focus {
-  outline: none;
-  border: 1px solid var(--primary);
-  box-shadow: 0 0 3px var(--primary);
+  transform: translateY(-2px);
 }
 
 /* ===== 3. Button bar ===== */
@@ -95,91 +110,74 @@
   width: 100%;
   justify-content: center;
   align-items: center;
-  padding: 6px 10px;
+  padding: 0;
   position: relative;
+  margin: 0;
+  background-color: transparent;
+  height: 0;
+  overflow: visible;
+}
+
+/* Remove the separator since we have a new input style */
+.bottom-buttons-bar::before {
+  display: none;
 }
 
 .button-hub {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
+  padding: 8px 16px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-top: auto;
+  z-index: 101;
+}
+
+/* Left action buttons container */
+.left-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Center logo container */
+.ditto-button-container {
+  display: flex;
   justify-content: center;
-  background-color: var(--background-secondary);
-  padding: 6px 12px;
-  border-radius: 24px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  gap: 10px;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
   align-items: center;
-}
-
-/* ===== 4. Action buttons ===== */
-/* Script indicator container */
-.script-indicator-container {
   position: relative;
 }
 
-/* Ditto logo button */
-.ditto-logo-button {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background-color: var(--background-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  overflow: hidden;
-  z-index: 10;
-  transition: all var(--transition-normal);
-}
-
-/* Center button container for Ditto logo - keeping for backward compatibility */
-.center-button-container {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Right buttons container - keeping for backward compatibility */
+/* Right buttons container */
 .right-buttons {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  gap: 12px;
-}
-
-/* Make the ditto icon circular */
-.ditto-icon-circular {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 /* Action button styling */
 .action-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--background-tertiary);
+  background-color: transparent;
   color: var(--interactive-normal);
   cursor: pointer;
   transition: all var(--transition-normal);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .action-button:hover {
-  background-color: var(--background-floating);
+  background-color: rgba(255, 255, 255, 0.1);
   color: var(--interactive-hover);
 }
 
@@ -196,39 +194,127 @@
   border: none;
   cursor: pointer;
   transition: all var(--transition-normal);
-  margin-left: 2px;
+  margin-left: 8px;
+}
+
+.icon-button.submit:not(.disabled):hover {
+  background-color: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+.icon-button.submit.disabled {
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Submit button icon */
+.icon-button.submit svg {
+  width: 14px;
+  height: 14px;
+  color: white;
 }
 
 /* Media queries for responsive design */
 @media screen and (max-width: 480px) {
+  .input-wrapper {
+    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0));
+    padding: 6px;
+  }
+
   .button-hub {
-    padding: 4px 8px;
-    gap: 8px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
   }
 
-  .action-button,
-  .icon-button.submit,
-  .script-icon-button {
-    width: 28px;
-    height: 28px;
+  .action-button {
+    width: 32px;
+    height: 32px;
   }
+}
 
+/* ===== 4. Action buttons ===== */
+/* Script indicator container */
+.script-indicator-container {
+  position: relative;
+}
+
+/* Ditto logo button */
+.ditto-logo-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 10;
+  transition: all var(--transition-normal);
+}
+
+.ditto-logo-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+/* Active state for the Ditto button when menu is open */
+.ditto-logo-button.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a subtle glow to the active Ditto button */
+.ditto-logo-button.active::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.3) 0%, transparent 70%);
+  z-index: -1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+}
+
+/* Make the ditto icon circular */
+.ditto-icon-circular {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Media queries for responsive design */
+@media screen and (max-width: 480px) {
   .ditto-logo-button {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
   }
 
   .ditto-icon-circular {
-    width: 24px;
-    height: 24px;
-  }
-
-  .icon-button.submit svg,
-  .action-button svg,
-  .script-icon-button svg {
-    width: 12px;
-    height: 12px;
+    width: 28px;
+    height: 28px;
   }
 }
 
@@ -363,58 +449,6 @@
   animation: scaleIn var(--transition-normal);
 }
 
-/* ===== 6. Overlays and menus ===== */
-.action-menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  z-index: var(--z-index-dropdown);
-  align-items: center;
-}
-
-.action-menu {
-  background-color: var(--background-secondary);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  width: auto;
-  margin-left: var(--spacing-md);
-}
-
-.action-menu-item {
-  background-color: var(--background-input);
-  border: none;
-  border-radius: var(--border-radius-md);
-  color: var(--text-white);
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all var(--transition-quick);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-}
-
-.action-menu-item:hover {
-  background-color: var(--hover-element);
-  transform: translateX(2px);
-}
-
-.action-menu-item:active {
-  transform: translateX(4px) scale(0.98);
-}
-
-.action-menu-item svg {
-  font-size: 18px;
-}
-
 /* ===== 7. Fullscreen mode ===== */
 .fullscreen-message-modal {
   position: fixed;
@@ -547,27 +581,6 @@
     padding: 6px 5px;
   }
 
-  .ditto-logo-button {
-    width: 38px;
-    height: 38px;
-  }
-
-  .ditto-icon-circular {
-    width: 28px;
-    height: 28px;
-  }
-
-  .script-icon-button {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-  }
-
-  .icon-button.submit {
-    width: 32px;
-    height: 32px;
-  }
-
   .right-buttons {
     gap: var(--spacing-sm);
   }
@@ -615,24 +628,6 @@
   transform: translateY(-1px);
 }
 
-/* Submit button - additional styles */
-.icon-button.submit svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-white);
-}
-
-.icon-button.submit.disabled {
-  background-color: var(--background-secondary);
-  color: var(--text-muted);
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.icon-button.submit:not(.disabled):hover {
-  background-color: var(--primary-hover);
-}
-
 /* Expand button specific styling */
 .expand-button {
   color: var(--interactive-normal);
@@ -646,6 +641,7 @@
 /* Add Media button specific styling */
 .add-media-button {
   color: var(--interactive-normal);
+  position: relative;
 }
 
 .add-media-button:hover {
@@ -653,20 +649,110 @@
   background-color: var(--background-floating);
 }
 
-/* Ditto button container for centered menu alignment */
-.ditto-button-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Media options menu styling */
+.media-options-container {
+  position: absolute;
+  bottom: calc(60px + env(safe-area-inset-bottom, 0));
+  left: 16px;
+  z-index: 2000;
+  pointer-events: none;
 }
 
-.ditto-menu-container {
+.media-options-menu {
+  background-color: var(--background-floating);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  pointer-events: auto;
+  min-width: 180px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transform-origin: bottom left;
+}
+
+.media-options-menu::after {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
+  bottom: -8px;
+  left: 20px;
+  transform: translateX(-50%) rotate(45deg);
+  width: 16px;
+  height: 16px;
+  background-color: var(--background-floating);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: -1;
+}
+
+.media-option-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 15px;
+  transition: all var(--transition-normal);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.media-option-item:last-child {
+  border-bottom: none;
+}
+
+.media-option-icon {
+  color: var(--primary);
+  font-size: 18px;
+  margin-right: 12px;
+}
+
+.media-option-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+@media screen and (max-width: 480px) {
+  .media-options-container {
+    bottom: calc(50px + env(safe-area-inset-bottom, 0));
+  }
+  
+  .media-option-item {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+}
+
+/* Ditto button container for centered menu alignment */
+.ditto-menu-container {
+  position: static;
   z-index: 1002;
+  pointer-events: none;
+}
+
+.ditto-menu-container .sliding-menu {
+  pointer-events: auto;
+}
+
+/* iOS-specific styles for button hub and safe areas */
+@supports (padding: max(0px)) {
+  .button-hub {
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+    /* This ensures we use at least 12px padding, or the safe area inset if it's larger */
+  }
+  
+  /* Adjust input wrapper margin for iOS */
+  .input-wrapper {
+    margin-bottom: max(60px, calc(60px + env(safe-area-inset-bottom, 0px)));
+  }
+  
+  @media screen and (max-width: 480px) {
+    .button-hub {
+      padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    }
+    
+    .input-wrapper {
+      margin-bottom: max(50px, calc(50px + env(safe-area-inset-bottom, 0px)));
+    }
+  }
 }

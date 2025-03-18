@@ -50,18 +50,40 @@
 
 /* Center-aligned menu variant */
 .sliding-menu.center-aligned {
-  position: absolute;
   left: 50%;
   transform: translateX(-50%);
   width: 180px;
 }
 
-/* Center-aligned + bottom-aligned adjustment */
+/* Center-aligned + bottom-aligned adjustment (for Ditto menu) */
 .sliding-menu.center-aligned.bottom-aligned {
+  position: fixed; /* Use fixed positioning to avoid parent relative positioning issues */
+  bottom: 60px; /* Position above the buttons bar */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Ensure perfect centering */
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  background-color: var(--background-floating);
+  backdrop-filter: blur(10px);
+  transform-origin: center bottom;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  z-index: 2000; /* Ensure it's above other elements */
+}
+
+/* Special effect for the center bottom menu */
+.sliding-menu.center-aligned.bottom-aligned::after {
+  content: "";
   position: absolute;
-  bottom: 50px;
+  bottom: -8px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotate(45deg);
+  width: 16px;
+  height: 16px;
+  background-color: var(--background-floating);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: -1;
 }
 
 /* Menu title */
@@ -81,14 +103,35 @@
   padding: 12px 16px;
   cursor: pointer;
   transition: background-color 0.2s;
+  position: relative;
 }
 
 .menu-item .icon {
   margin-right: 12px;
   font-size: 18px;
+  color: var(--interactive-normal);
 }
 
 .menu-item span {
   font-weight: 500;
   color: var(--text-normal);
+}
+
+/* Special styling for central Ditto menu items */
+.sliding-menu.center-aligned.bottom-aligned .menu-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sliding-menu.center-aligned.bottom-aligned .menu-item:last-child {
+  border-bottom: none;
+}
+
+.sliding-menu.center-aligned.bottom-aligned .menu-item .icon {
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.sliding-menu.center-aligned.bottom-aligned .menu-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.1);
 }

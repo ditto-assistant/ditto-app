@@ -14,6 +14,7 @@
 :root {
   /* Primary colors */
   --primary: #5865f2;
+  --primary-rgb: 88, 101, 242; /* RGB values of the primary color for rgba() */
   --primary-hover: #4752c4;
   --primary-active: #3c45a5;
 
