@@ -38,20 +38,28 @@ body:not(.login-page) {
 /* Android Chrome specific adjustments */
 .android-chrome .app {
   min-height: -webkit-fill-available;
-  height: calc(100vh - var(--url-bar-offset, 0px));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .android-chrome .app-content-wrapper {
-  height: calc(100vh - var(--url-bar-offset, 0px));
+  height: 100%;
   transform: translateZ(0);
   will-change: transform;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  display: flex;
+  flex-direction: column;
 }
 
 .android-chrome .app-body {
-  height: calc(100vh - 120px - var(--url-bar-offset, 0px));
+  flex: 1;
+  height: auto;
   padding-bottom: calc(120px + env(safe-area-inset-bottom, 0));
   transform: translateZ(0);
   will-change: transform;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .android-chrome .app-footer {
@@ -63,6 +71,7 @@ body:not(.login-page) {
   transform: translateZ(0);
   will-change: transform;
   background-color: var(--background-primary);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* Container that wraps both the chat body and footer for better layout control */

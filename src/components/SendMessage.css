@@ -263,13 +263,30 @@
     transform: translateZ(0);
     will-change: transform;
     position: fixed;
-    bottom: var(--url-bar-offset, 0);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 16px;
+    padding-bottom: max(8px, calc(8px + env(safe-area-inset-bottom, 0px)));
     background-color: var(--background-input);
     border-top: 1px solid var(--border-color);
+    z-index: 1000;
   }
 
   .android-chrome .form {
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 0));
+    margin-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Ensure the app footer has proper spacing */
+  .android-chrome .app-footer {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    margin-bottom: 0;
+  }
+
+  /* Add extra padding to the bottom of the app body to prevent content from being hidden */
+  .android-chrome .app-body {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0));
   }
 }
 

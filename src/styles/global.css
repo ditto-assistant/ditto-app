@@ -110,7 +110,20 @@ code {
 
   /* Prevent content from being hidden under the URL bar */
   .android-chrome .app-content-wrapper {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: max(env(safe-area-inset-bottom, 0), 60px);
     min-height: -webkit-fill-available;
+  }
+
+  /* Ensure proper stacking context for fixed elements */
+  .android-chrome .app {
+    z-index: 1;
+  }
+
+  .android-chrome .button-hub {
+    z-index: 1000;
+  }
+
+  .android-chrome .input-wrapper {
+    z-index: 999;
   }
 }
