@@ -251,6 +251,7 @@
     z-index: 100;
     height: auto;
     min-height: 50px;
+    border-bottom: none; /* Remove the bottom border for Android Chrome */
   }
 
   .android-chrome .text-area {

@@ -536,15 +536,23 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .confirmation-modal-container {
-  position: fixed;
+  position: relative;
   background: var(--background-primary);
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   min-width: 280px;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .confirmation-modal-body {
@@ -552,12 +560,15 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .confirmation-modal-message {
   font-size: 0.95rem;
   line-height: 1.5;
   color: var(--text-normal);
+  word-break: break-word;
 }
 
 .confirmation-modal-buttons {
@@ -565,4 +576,33 @@
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Mobile optimizations for confirmation modal */
+@media (max-width: 480px) {
+  .confirmation-modal-container {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 12px;
+  }
+  
+  .confirmation-modal-body {
+    padding: 0 1rem 1.25rem;
+  }
+  
+  .confirmation-modal-message {
+    font-size: 1rem;
+  }
+  
+  .confirmation-modal-buttons {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .confirmation-modal-buttons button {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 16px;
+  }
 }
