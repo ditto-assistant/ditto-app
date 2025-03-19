@@ -110,8 +110,8 @@ code {
 
   /* Prevent content from being hidden under the URL bar */
   .android-chrome .app-content-wrapper {
-    padding-bottom: max(env(safe-area-inset-bottom, 0), 60px);
     min-height: -webkit-fill-available;
+    padding-bottom: 0;
   }
 
   /* Ensure proper stacking context for fixed elements */

@@ -535,7 +535,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9000; /* Increased z-index to ensure it's above other elements */
   padding: 20px;
   box-sizing: border-box;
 }
@@ -553,6 +553,12 @@
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+}
+
+.confirmation-modal-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .confirmation-modal-body {
@@ -604,5 +610,11 @@
     flex: 1;
     min-width: 0;
     padding: 10px 16px;
+  }
+  
+  /* Android Chrome-specific adjustments */
+  .android-chrome .confirmation-modal-overlay {
+    padding: 16px;
+    align-items: center;
   }
 }
