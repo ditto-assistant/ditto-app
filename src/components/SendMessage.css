@@ -31,6 +31,8 @@
   margin-bottom: 0;
   border-bottom: none;
   overflow: visible; /* Allow button hub to overflow */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .app-footer .form {
@@ -68,7 +70,7 @@
   border-radius: 0;
   background-color: transparent;
   transition: border-color var(--transition-normal);
-  min-height: 40px;
+  z-index: 1;
 }
 
 .input-wrapper:focus-within {
@@ -92,8 +94,6 @@
   border-radius: 0;
   overflow-y: hidden;
   transition: all var(--transition-normal);
-  position: relative;
-  z-index: 1;
 }
 
 .text-area:focus {
@@ -106,56 +106,6 @@
   color: var(--text-muted);
   opacity: 0.7;
   transform: translateY(-2px);
-}
-
-/* Add specific Android Chrome handling */
-.android-chrome .input-wrapper {
-  margin-bottom: calc(52px + var(--url-bar-offset, 0px));
-  padding-bottom: 12px;
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-.android-chrome .text-area {
-  transform: translateZ(0);
-  will-change: transform;
-  min-height: 24px;
-  height: auto;
-}
-
-/* Update mobile styles */
-@media screen and (max-width: 480px) {
-  .input-wrapper {
-    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0));
-    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
-    padding: 6px;
-    min-height: 36px;
-  }
-
-  .android-chrome .input-wrapper {
-    margin-bottom: calc(48px + var(--url-bar-offset, 0px));
-    padding-bottom: 10px;
-  }
-
-  .text-area {
-    padding: 4px 6px;
-    font-size: 16px;
-    min-height: 20px;
-  }
-
-  .android-chrome .text-area {
-    padding-bottom: 6px;
-  }
-
-  .button-hub {
-    padding: 6px 12px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
-  }
-
-  .action-button {
-    width: 32px;
-    height: 32px;
-  }
 }
 
 /* ===== 3. Button bar ===== */
@@ -195,21 +145,6 @@
   transform: translateZ(0);
   will-change: transform;
   transition: transform 0.2s ease-out;
-}
-
-/* Add specific Android Chrome handling for button hub */
-.android-chrome .button-hub {
-  position: fixed;
-  bottom: var(--url-bar-offset, 0);
-  transform: translateZ(0);
-  will-change: transform;
-  padding-bottom: calc(8px + var(--url-bar-offset, 0px));
-}
-
-@media screen and (max-width: 480px) {
-  .android-chrome .button-hub {
-    padding-bottom: calc(6px + var(--url-bar-offset, 0px));
-  }
 }
 
 /* Left action buttons container */
@@ -282,6 +217,60 @@
   width: 14px;
   height: 14px;
   color: white;
+}
+
+/* Media queries for responsive design */
+@media screen and (max-width: 480px) {
+  .input-wrapper {
+    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0));
+    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
+    padding: 6px;
+  }
+
+  .button-hub {
+    padding: 6px 12px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
+  }
+
+  .action-button {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Add specific Android Chrome fixes */
+@media screen and (max-width: 480px) {
+  .android-chrome .input-wrapper {
+    position: fixed;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 8px 16px;
+    background-color: var(--background-input);
+    z-index: 100;
+    height: auto;
+    min-height: 50px;
+  }
+
+  .android-chrome .text-area {
+    padding: 8px 0;
+    min-height: 24px;
+    height: auto;
+  }
+
+  .android-chrome .button-hub {
+    transform: translateZ(0);
+    will-change: transform;
+    position: fixed;
+    bottom: var(--url-bar-offset, 0);
+    background-color: var(--background-input);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .android-chrome .form {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0));
+  }
 }
 
 /* ===== 4. Action buttons ===== */

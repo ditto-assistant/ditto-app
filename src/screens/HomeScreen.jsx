@@ -90,19 +90,13 @@ export default function HomeScreen() {
         const chromeVh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
         
-        // Calculate the URL bar offset more accurately
-        const visualHeight = window.innerHeight;
-        const layoutHeight = document.documentElement.clientHeight;
-        const urlBarHeight = Math.max(0, visualHeight - layoutHeight);
-        
-        // Set the URL bar offset CSS variable
-        document.documentElement.style.setProperty("--url-bar-offset", `${urlBarHeight}px`);
-        
-        // Force layout recalculation to ensure proper positioning
-        requestAnimationFrame(() => {
-          document.body.style.height = `${visualHeight}px`;
-          document.documentElement.style.height = `${visualHeight}px`;
-        });
+        // Apply fixed position to the button hub to prevent it from moving with the URL bar
+        const buttonHub = document.querySelector(".button-hub");
+        if (buttonHub) {
+          // Ensure button hub stays at the bottom of the visible area
+          const offset = window.innerHeight - document.documentElement.clientHeight;
+          document.documentElement.style.setProperty("--url-bar-offset", `${offset}px`);
+        }
       }
     };
 

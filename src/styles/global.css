@@ -82,17 +82,35 @@ code {
   /* Android Chrome specific adjustments */
   html.android-chrome {
     height: -webkit-fill-available;
+    height: 100%;
+    overflow: hidden;
   }
   
   body.android-chrome {
     height: -webkit-fill-available;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
   }
   
   /* Force hardware acceleration to prevent layout shifts */
   .button-hub,
   .sliding-menu,
-  .media-options-container {
+  .media-options-container,
+  .input-wrapper,
+  .app-body,
+  .app-footer {
     transform: translateZ(0);
     will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  /* Prevent content from being hidden under the URL bar */
+  .android-chrome .app-content-wrapper {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    min-height: -webkit-fill-available;
   }
 }
