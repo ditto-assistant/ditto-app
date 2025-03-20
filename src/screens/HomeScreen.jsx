@@ -90,12 +90,27 @@ export default function HomeScreen() {
         const chromeVh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
         
-        // Apply fixed position to the button hub to prevent it from moving with the URL bar
+        // Calculate the URL bar offset more reliably using visualViewport
+        const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const urlBarOffset = Math.max(0, window.innerHeight - visualHeight);
+        
+        // Set a safe area value for the bottom navigation gesture area
+        // Modern Android devices typically have 16-24px for gesture area
+        const safeAreaBottom = window.innerHeight > 700 ? 16 : 0;
+        
+        // Set CSS variables for layout calculations
+        document.documentElement.style.setProperty("--url-bar-offset", `${urlBarOffset}px`);
+        document.documentElement.style.setProperty("--safe-area-bottom", `${safeAreaBottom}px`);
+        
+        // Apply to button hub and input wrapper with updated calculations
         const buttonHub = document.querySelector(".button-hub");
+        const inputWrapper = document.querySelector(".input-wrapper");
         if (buttonHub) {
-          // Ensure button hub stays at the bottom of the visible area
-          const offset = window.innerHeight - document.documentElement.clientHeight;
-          document.documentElement.style.setProperty("--url-bar-offset", `${offset}px`);
+          buttonHub.style.bottom = `${urlBarOffset}px`;
+          buttonHub.style.paddingBottom = `${safeAreaBottom + 8}px`;
+        }
+        if (inputWrapper) {
+          inputWrapper.style.bottom = `calc(${urlBarOffset}px + 50px + ${safeAreaBottom}px)`;
         }
       }
     };
@@ -111,6 +126,12 @@ export default function HomeScreen() {
     // For Chrome, we need additional events to catch all changes
     window.addEventListener("touchmove", setVH);
     window.addEventListener("touchend", setVH);
+
+    // Use visualViewport API for more accurate measurements on supported browsers
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", setVH);
+      window.visualViewport.addEventListener("scroll", setVH);
+    }
 
     // Special handling for iOS to help with browser chrome appearing/disappearing
     if (isIOS) {
@@ -149,12 +170,27 @@ export default function HomeScreen() {
       };
     }
 
+    // Set a timer to periodically check viewport size on Android Chrome
+    const androidHeightTimer = setInterval(() => {
+      if (/android/i.test(navigator.userAgent) && /chrome/i.test(navigator.userAgent)) {
+        setVH();
+      }
+    }, 500);
+
     return () => {
+      // Clean up event listeners
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);
       window.removeEventListener("scroll", setVH);
       window.removeEventListener("touchmove", setVH);
       window.removeEventListener("touchend", setVH);
+      
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", setVH);
+        window.visualViewport.removeEventListener("scroll", setVH);
+      }
+      
+      clearInterval(androidHeightTimer);
     };
   }, [isIOS, isPWA]);
 
@@ -167,6 +203,15 @@ export default function HomeScreen() {
       // Add special classes for Android Chrome
       document.documentElement.classList.add('android-chrome');
       document.body.classList.add('android-chrome');
+      
+      // Set a specific meta viewport tag for Android Chrome
+      const viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (viewportMeta) {
+        viewportMeta.setAttribute(
+          "content",
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+        );
+      }
       
       // Force a repaint to apply the classes immediately
       document.body.style.display = 'none';
