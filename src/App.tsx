@@ -76,7 +76,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
       <Route element={<Layout className="login-layout" />}>
-        <Route path="login" element={<Login />} />
+        <Route path="login" Component={Login} />
       </Route>
 
       <Route
@@ -88,10 +88,10 @@ const router = createBrowserRouter(
           </Suspense>
         }
       >
-        <Route index element={<HomeScreen />} />
+        <Route index Component={HomeScreen} />
         <Route path="checkout">
-          <Route index element={<Checkout />} />
-          <Route path="success" element={<CheckoutSuccess />} />
+          <Route index Component={Checkout} />
+          <Route path="success" Component={CheckoutSuccess} />
         </Route>
       </Route>
     </Route>,

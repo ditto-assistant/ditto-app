@@ -1,6 +1,7 @@
 // import MillionLint from "@million/lint";
+import { reactRouter } from "@react-router/dev/vite";
+
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "path";
 
@@ -9,7 +10,7 @@ export default defineConfig({
     // MillionLint.vite({
     //   enabled: true,
     // }),
-    react(),
+    reactRouter(),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,

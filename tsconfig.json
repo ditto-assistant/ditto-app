@@ -19,13 +19,15 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite-plugin-pwa/client"]
+    "types": ["vite-plugin-pwa/client", "vite/client"],
+    "rootDirs": [".", "./.react-router/types"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.js",
     "src/**/*.jsx",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    ".react-router/types/**/*"
   ]
 }

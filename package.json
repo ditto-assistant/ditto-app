@@ -8,17 +8,19 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "6.4.2",
     "@mui/material": "6.4.0",
+    "@react-router/node": "^7.4.0",
     "@tanstack/react-query": "^5.67.1",
     "ace-builds": "^1.39.0",
     "firebase": "~11.4.0",
     "framer-motion": "12.4.7",
+    "isbot": "^5",
     "react": "^19.0.0",
     "react-ace": "^13.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.3.0",
+    "react-router": "^7.4.0",
     "react-syntax-highlighter": "^15.6.1",
     "remark-gfm": "^4.0.1",
     "vis-data": "^7.1.9",
@@ -26,6 +28,7 @@
     "vite-plugin-pwa": "^0.21.1"
   },
   "devDependencies": {
+    "@react-router/dev": "^7.4.0",
     "@tanstack/eslint-plugin-query": "^5.67.2",
     "@tanstack/react-query-devtools": "^5.67.1",
     "@testing-library/jest-dom": "^6.6.3",
@@ -43,14 +46,15 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
+    "react-router-devtools": "^1.1.6",
     "vite": "^6.2.1"
   },
   "scripts": {
-    "start": "vite",
-    "build": "vite build",
-    "build:staging": "vite build --mode staging",
-    "build:dev": "vite build --mode development",
-    "serve": "vite preview",
+    "start": "react-router dev",
+    "build": "react-router build",
+    "build:staging": "react-router build --mode staging",
+    "build:dev": "react-router build --mode development",
+    "serve": "react-router serve",
     "clean": "rm -rf build",
     "depcheck": "depcheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json,css}\" --config .prettierrc",
@@ -58,7 +62,9 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint-fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "generate:whats-new": "bun scripts/generate-whats-new.ts",
-    "generate:icons": "bun scripts/generate-icons.js"
+    "generate:icons": "bun scripts/generate-icons.js",
+    "generate:types": "react-router typegen",
+    "typecheck": "bun generate:types && tsc"
   },
   "browserslist": {
     "production": [
