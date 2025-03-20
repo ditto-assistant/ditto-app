@@ -3,12 +3,38 @@ description: React Function Component Guidelines
 globs: *.tsx,*.jsx
 alwaysApply: false
 ---
-We use `export default function` for components.
+We prefer the following TypeScript component definition style:
+```tsx
+interface ComponentProps {
+  // Define your props here with TypeScript types
+  propName: PropType;
+}
 
-We use `export function` for hooks.
+const Component: React.FC<ComponentProps> = ({ propName }) => {
+  return (
+    // JSX here
+  );
+};
+
+export default Component;
+```
+
+For hooks, we use:
+```tsx
+export function useHook() {
+  // Hook implementation
+}
+```
 
 We always use a separate .css file for styling components.
 
 Never use !important in css. There is always a better solution.
 
 Seek to reduce complexity where possible.
+
+Key guidelines:
+- Use TypeScript interfaces to define prop types
+- Use React.FC type for functional components
+- Use arrow function syntax for components
+- Use named exports for hooks
+- Use default exports for components
