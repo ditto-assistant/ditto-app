@@ -3,15 +3,7 @@
 @import "../styles/components.css";
 @import "../styles/global.css";
 
-/* HomeScreen-specific body overrides */
-body:not(.login-page) {
-  background-color: var(--background-secondary);
-  color: var(--text-normal);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+/* HomeScreen-specific styling - layout colors now handled by layout.css */
 
 .app {
   display: flex;

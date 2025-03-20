@@ -26,7 +26,7 @@ function useDebounce<T>(
   callback: (...args: T[]) => void,
   delay: number,
 ): [(...args: T[]) => void, boolean] {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const debouncedCallback = useCallback(

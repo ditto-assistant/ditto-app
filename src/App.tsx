@@ -4,7 +4,6 @@ import {
   RouterProvider,
   Route,
   createRoutesFromElements,
-  Outlet,
 } from "react-router";
 import { Toaster } from "react-hot-toast";
 import { createPortal } from "react-dom";
@@ -30,6 +29,7 @@ import { initUpdateService } from "@/utils/updateService";
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler";
 import UpdateNotification from "@/components/UpdateNotification";
 import WhatsNew from "@/components/WhatsNew/WhatsNew";
+import Layout from "./components/ui/Layout";
 
 initUpdateService();
 
@@ -75,12 +75,15 @@ const queryClient = new QueryClient();
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
-      <Route path="login" element={<Login />} />
+      <Route element={<Layout className="login-layout" />}>
+        <Route path="login" element={<Login />} />
+      </Route>
+
       <Route
         element={
           <Suspense fallback={<FullScreenSpinner />}>
             <AuthenticatedRoute>
-              <Outlet />
+              <Layout className="main-layout" />
             </AuthenticatedRoute>
           </Suspense>
         }

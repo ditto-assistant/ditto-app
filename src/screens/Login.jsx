@@ -13,7 +13,6 @@ import {
 import {
   saveUserToFirestore,
   getUserObjectFromFirestore,
-  loadConversationHistoryFromFirestore,
   auth,
 } from "@/control/firebase";
 import "./Login.css";
@@ -26,18 +25,17 @@ const PasswordInput = ({
   showPassword,
   togglePasswordVisibility,
 }) => (
-  <div style={styles.passwordInputContainer}>
+  <div className="password-input-container">
     <input
       type={showPassword ? "text" : "password"}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      style={styles.input}
     />
     {showPassword ? (
-      <FaEyeSlash onClick={togglePasswordVisibility} style={styles.icon} />
+      <FaEyeSlash onClick={togglePasswordVisibility} className="icon" />
     ) : (
-      <FaEye onClick={togglePasswordVisibility} style={styles.icon} />
+      <FaEye onClick={togglePasswordVisibility} className="icon" />
     )}
   </div>
 );
@@ -60,10 +58,6 @@ const Login = () => {
     if (user) {
       navigate("/");
     }
-    document.body.classList.add("login-page");
-    return () => {
-      document.body.classList.remove("login-page");
-    };
   }, [user, navigate]);
 
   const handleSignIn = async () => {
@@ -177,40 +171,6 @@ const Login = () => {
       localStorage.setItem("firstName", user.displayName?.split(" ")[0]);
       localStorage.setItem("lastName", user.displayName?.split(" ")[1]);
 
-      // Get conversation history
-      const conversationHistory =
-        await loadConversationHistoryFromFirestore(userID);
-      if (conversationHistory) {
-        localStorage.setItem(
-          "prompts",
-          JSON.stringify(conversationHistory.prompts),
-        );
-        localStorage.setItem(
-          "responses",
-          JSON.stringify(conversationHistory.responses),
-        );
-        localStorage.setItem(
-          "timestamps",
-          JSON.stringify(conversationHistory.timestamps),
-        );
-        localStorage.setItem(
-          "pairIDs",
-          JSON.stringify(conversationHistory.pairIDs),
-        );
-        localStorage.setItem(
-          "memoryIDs",
-          JSON.stringify(conversationHistory.memoryIDs),
-        );
-        localStorage.setItem(
-          "histCount",
-          conversationHistory.prompts.length.toString(),
-        );
-        localStorage.setItem("status_bar_fiat_balance", "m");
-
-        // Dispatch event to update memory count
-        window.dispatchEvent(new Event("memoryUpdated"));
-      }
-
       // Save user to Firestore
       await saveUserToFirestore(
         userID,
@@ -265,14 +225,12 @@ const Login = () => {
               placeholder="First Name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              style={styles.input}
             />
             <input
               type="text"
               placeholder="Last Name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              style={styles.input}
             />
           </>
         )}
@@ -281,7 +239,6 @@ const Login = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
         />
         <PasswordInput
           placeholder="Password"
@@ -299,18 +256,15 @@ const Login = () => {
             togglePasswordVisibility={togglePasswordVisibility}
           />
         )}
-        <button
-          onClick={isCreatingAccount ? handleSignUpClick : handleSignIn}
-          style={styles.button}
-        >
+        <button onClick={isCreatingAccount ? handleSignUpClick : handleSignIn}>
           {isCreatingAccount ? "Sign Up" : "Sign In"}
         </button>
         {!isCreatingAccount && (
-          <button onClick={handleGoogleSignIn} style={styles.googleButton}>
-            <FcGoogle style={styles.googleIcon} /> Continue with Google
+          <button onClick={handleGoogleSignIn} className="google-button">
+            <FcGoogle className="google-icon" /> Continue with Google
           </button>
         )}
-        <p style={styles.text}>
+        <p>
           {isCreatingAccount
             ? "Already have an account?"
             : "Don't have an account?"}
@@ -319,18 +273,18 @@ const Login = () => {
               setIsCreatingAccount(!isCreatingAccount);
               setVerificationMessage(""); // Clear any previous verification message
             }}
-            style={styles.link}
+            className="link"
           >
             {isCreatingAccount ? " Sign in here" : " Create one here"}
           </span>
         </p>
         {verificationMessage && (
-          <p style={styles.verificationText}>{verificationMessage}</p>
+          <p className="verification-text">{verificationMessage}</p>
         )}
-        <p style={styles.tosText}>
+        <p>
           By signing up, you agree to our{" "}
           <span
-            style={styles.link}
+            className="link"
             onClick={() => {
               // When clicking Terms of Service link directly, it's just for viewing
               setShowTOS(true);
@@ -354,120 +308,6 @@ const Login = () => {
       )}
     </div>
   );
-};
-
-const styles = {
-  body: {
-    margin: 0,
-    padding: 0,
-    fontFamily: "Roboto, sans-serif",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#23272a",
-  },
-  app: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "column",
-    width: "100%",
-    maxWidth: "400px",
-    backgroundColor: "#ffffffb0",
-    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-    borderRadius: "8px",
-    padding: "40px 20px",
-    boxSizing: "border-box",
-  },
-  header: {
-    margin: 0,
-    fontSize: "24px",
-    color: "#333",
-    textAlign: "center",
-  },
-  input: {
-    width: "100%",
-    maxWidth: "100%",
-    padding: "12px 15px",
-    margin: "10px 0",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    fontSize: "16px",
-    transition: "all 0.3s ease",
-    boxSizing: "border-box",
-  },
-  passwordInputContainer: {
-    position: "relative",
-    width: "100%",
-  },
-  icon: {
-    position: "absolute",
-    top: "50%",
-    right: "15px",
-    transform: "translateY(-50%)",
-    cursor: "pointer",
-    color: "#aaa",
-  },
-  button: {
-    width: "100%",
-    padding: "12px 15px",
-    backgroundColor: "#6200ee",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "4px",
-    fontSize: "16px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "background-color 0.3s ease",
-    marginTop: "20px",
-    boxSizing: "border-box",
-  },
-  googleButton: {
-    width: "100%",
-    padding: "12px 15px",
-    backgroundColor: "#ffffff",
-    color: "#333",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    fontSize: "16px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "background-color 0.3s ease",
-    marginTop: "10px",
-    boxSizing: "border-box",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  googleIcon: {
-    marginRight: "10px",
-    fontSize: "20px",
-  },
-  text: {
-    marginTop: "20px",
-    fontSize: "14px",
-    color: "#333",
-    textAlign: "center",
-  },
-  link: {
-    color: "#6200ee",
-    cursor: "pointer",
-    transition: "color 0.3s ease",
-    textDecoration: "underline",
-  },
-  verificationText: {
-    marginTop: "20px",
-    fontSize: "14px",
-    color: "#e53e3e",
-    textAlign: "center",
-  },
-  tosText: {
-    marginTop: "20px",
-    fontSize: "14px",
-    color: "#333",
-    textAlign: "center",
-  },
 };
 
 export default Login;
