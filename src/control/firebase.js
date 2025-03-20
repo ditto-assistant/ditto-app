@@ -316,23 +316,6 @@ export const resetConversation = async (userID) => {
   }
 };
 
-export const loadConversationHistoryFromFirestore = async (userID) => {
-  try {
-    const history = await grabConversationHistory(userID);
-    if (history.length === 0) {
-      return { prompts: [], responses: [], timestamps: [], pairIDs: [] };
-    }
-    const prompts = history.map((pair) => pair.prompt);
-    const responses = history.map((pair) => pair.response);
-    const timestamps = history.map((pair) => pair.timestamp.toDate().getTime());
-    const pairIDs = history.map((pair) => pair.id);
-    return { prompts, responses, timestamps, pairIDs };
-  } catch (e) {
-    console.error(e);
-    return { prompts: [], responses: [], timestamps: [], pairIDs: [] };
-  }
-};
-
 // make optional skipBackup set to false
 export const saveScriptToFirestore = async (
   userID,
