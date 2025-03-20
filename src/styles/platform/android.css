@@ -11,6 +11,7 @@ html.android-chrome {
   width: 100%;
   top: 0;
   left: 0;
+  height: calc(100% + var(--url-bar-offset, 0px));
 }
 
 body.android-chrome {
@@ -21,6 +22,7 @@ body.android-chrome {
   top: 0;
   left: 0;
   overscroll-behavior: none;
+  height: calc(100% + var(--url-bar-offset, 0px));
 }
 
 /* Force hardware acceleration for smooth scrolling and animations */
@@ -65,7 +67,7 @@ body.android-chrome {
   height: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(100px + var(--safe-area-bottom, 0px));
+  padding-bottom: 100px; /* Simpler fixed padding */
   position: relative;
   z-index: 1;
 }
@@ -77,7 +79,15 @@ body.android-chrome {
   -webkit-overflow-scrolling: touch;
   position: relative;
   z-index: 1;
-  padding-bottom: calc(100px + var(--safe-area-bottom, 0px));
+  padding-bottom: 100px; /* Simpler fixed padding */
+}
+
+/* Adjust padding when keyboard is open */
+@media screen and (max-height: 500px), (max-height: 700px) and (orientation: landscape) {
+  .android-chrome .app-body,
+  .android-chrome .chat-feed {
+    padding-bottom: 60px; /* Less padding when keyboard is likely open */
+  }
 }
 
 /* Input area styling */
@@ -85,19 +95,18 @@ body.android-chrome {
   position: fixed;
   z-index: 100;
   background-color: var(--background-input); 
-  bottom: calc(46px + var(--safe-area-bottom, 0px));
   left: 0;
   right: 0;
   margin: 0;
   padding: 8px 16px;
   height: auto;
-  min-height: 48px;
+  min-height: 50px;
   border-bottom: none;
   border-top: 1px solid var(--border-color);
 }
 
 .android-chrome .text-area {
-  padding: 6px 0;
+  padding: 8px 0;
   min-height: 24px;
   height: auto;
   font-size: 16px;
@@ -107,16 +116,21 @@ body.android-chrome {
 /* Button hub (bottom bar) */
 .android-chrome .button-hub {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
   z-index: 100;
   background-color: var(--background-input);
   border-top: 1px solid var(--border-color);
   padding: 8px 16px;
-  padding-bottom: calc(8px + var(--safe-area-bottom, 0px));
+  padding-bottom: 8px;
   height: auto;
-  min-height: 46px;
+  min-height: 44px;
+}
+
+/* Different styles when keyboard is open */
+.android-chrome[style*="--is-keyboard-open: 1"] .app-body,
+.android-chrome[style*="--is-keyboard-open: 1"] .chat-feed {
+  padding-bottom: 60px;
 }
 
 /* App footer container */
@@ -127,47 +141,84 @@ body.android-chrome {
   right: 0;
   background-color: transparent;
   z-index: 99;
-  padding: 0;
-  margin: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 /* Media options positioning */
 .android-chrome .media-options-container {
-  bottom: calc(94px + var(--safe-area-bottom, 0px));
+  bottom: 100px;
   left: 16px;
   z-index: 2001;
 }
 
 /* Form container */
 .android-chrome .form {
-  padding: 0;
-  margin: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
   background-color: transparent;
   border: none;
 }
 
 /* Button sizes for better touch targets but not too large */
 .android-chrome .ditto-logo-button {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
 }
 
 .android-chrome .ditto-icon-circular {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 }
 
 .android-chrome .action-button {
-  width: 32px;
-  height: 32px;
-}
-
-/* Prevent content scrolling when overlay menus are open */
-.android-chrome body.menu-open {
-  overflow: hidden;
+  width: 30px;
+  height: 30px;
 }
 
 /* Fix position of sliding menu on Android */
 .android-chrome .sliding-menu.center-aligned.bottom-aligned {
-  bottom: calc(46px + var(--safe-area-bottom, 0px));
+  bottom: 50px;
+}
+
+/* Keyboard-open specific styles */
+html.android-chrome.keyboard-open {
+  /* When keyboard is open, we need a shorter layout */
+  overflow: hidden;
+  position: fixed;
+  height: 100%;
+}
+
+.android-chrome.keyboard-open .chat-feed,
+.android-chrome.keyboard-open .app-body {
+  padding-bottom: 60px;
+}
+
+.android-chrome.keyboard-open .button-hub {
+  /* Ensure button hub stays at bottom */
+  position: fixed;
+  bottom: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  min-height: 40px;
+}
+
+.android-chrome.keyboard-open .input-wrapper {
+  /* Position input right above button hub */
+  position: fixed;
+  bottom: 40px;
+  min-height: 40px;
+  padding: 4px 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.android-chrome.keyboard-open .text-area {
+  /* Reduce sizes when keyboard is open */
+  min-height: 20px;
+  padding: 4px 0;
+}
+
+/* Media options positioning with keyboard open */
+.android-chrome.keyboard-open .media-options-container {
+  bottom: 90px;
 } 

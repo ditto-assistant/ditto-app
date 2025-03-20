@@ -86,15 +86,16 @@ export default function HomeScreen() {
       
       if (isAndroid && isChrome) {
         // Chrome on Android needs special handling for the URL bar
+        // Set a specific height for the app content
         const chromeVh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
         
-        // Calculate the URL bar offset using visualViewport
+        // Calculate the URL bar offset more reliably using visualViewport
         const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
         const urlBarOffset = Math.max(0, window.innerHeight - visualHeight);
         
-        // Set a safe area value for the bottom navigation gesture area
-        const safeAreaBottom = window.innerHeight > 700 ? 16 : 0;
+        // For Android, we need minimal safe area since the keyboard handles that
+        const safeAreaBottom = 0; // Reduced to 0 to avoid extra space
         
         // Set CSS variables for layout calculations
         document.documentElement.style.setProperty("--url-bar-offset", `${urlBarOffset}px`);
@@ -103,12 +104,38 @@ export default function HomeScreen() {
         // Apply to button hub and input wrapper with updated calculations
         const buttonHub = document.querySelector(".button-hub");
         const inputWrapper = document.querySelector(".input-wrapper");
+        
+        // When keyboard is open, urlBarOffset will be significant
+        // This indicates keyboard is likely visible
+        const isKeyboardOpen = urlBarOffset > 100;
+        
+        // Also detect keyboard by checking viewport height vs window height ratio
+        const viewportRatio = visualHeight / window.innerHeight;
+        const keyboardLikelyOpen = viewportRatio < 0.8;
+        
+        // Set a CSS variable to track keyboard state
+        document.documentElement.style.setProperty("--is-keyboard-open", 
+          (isKeyboardOpen || keyboardLikelyOpen) ? "1" : "0");
+        
         if (buttonHub) {
-          buttonHub.style.bottom = `0`;
-          buttonHub.style.paddingBottom = `${safeAreaBottom + 8}px`;
+          // When keyboard is open, we want the button hub at the bottom of the visible area
+          buttonHub.style.bottom = "0";
+          buttonHub.style.paddingBottom = `${safeAreaBottom + 4}px`;
         }
+        
         if (inputWrapper) {
-          inputWrapper.style.bottom = `calc(46px + ${safeAreaBottom}px)`;
+          // Keep input wrapper just above the button hub
+          inputWrapper.style.bottom = "50px";
+        }
+        
+        // Also adjust scroll position when keyboard opens
+        if (isKeyboardOpen && appBodyRef.current) {
+          // Ensure we're scrolled to the bottom when keyboard opens
+          setTimeout(() => {
+            if (appBodyRef.current) {
+              appBodyRef.current.scrollTop = appBodyRef.current.scrollHeight;
+            }
+          }, 100);
         }
       }
     };
@@ -124,6 +151,10 @@ export default function HomeScreen() {
     // For Chrome, we need additional events to catch all changes
     window.addEventListener("touchmove", setVH);
     window.addEventListener("touchend", setVH);
+    
+    // Add focus/blur events to detect keyboard
+    window.addEventListener("focusin", setVH);
+    window.addEventListener("focusout", setVH);
 
     // Use visualViewport API for more accurate measurements on supported browsers
     if (window.visualViewport) {
@@ -191,6 +222,47 @@ export default function HomeScreen() {
       clearInterval(androidHeightTimer);
     };
   }, [isIOS, isPWA]);
+
+  // Special useEffect just for Android keyboard handling
+  useEffect(() => {
+    // Only run on Android Chrome
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isChrome = /chrome/i.test(navigator.userAgent) && !isIOS;
+    
+    if (!(isAndroid && isChrome)) return;
+    
+    // Detect keyboard visibility changes
+    const handleKeyboardChange = () => {
+      // Scroll to bottom when keyboard appears
+      if (appBodyRef.current) {
+        setTimeout(() => {
+          appBodyRef.current.scrollTop = appBodyRef.current.scrollHeight;
+        }, 50);
+      }
+    };
+    
+    // Track input field focus
+    const inputSelector = 'input, textarea, [contenteditable="true"]';
+    
+    const handleFocus = () => {
+      document.documentElement.classList.add('keyboard-open');
+      handleKeyboardChange();
+    };
+    
+    const handleBlur = () => {
+      document.documentElement.classList.remove('keyboard-open');
+      handleKeyboardChange();
+    };
+    
+    // Add delegates for current and future input elements
+    document.addEventListener('focusin', handleFocus);
+    document.addEventListener('focusout', handleBlur);
+    
+    return () => {
+      document.removeEventListener('focusin', handleFocus);
+      document.removeEventListener('focusout', handleBlur);
+    };
+  }, [isIOS]);
 
   useEffect(() => {
     // Identify Android Chrome and add special classes

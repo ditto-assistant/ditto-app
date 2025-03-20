@@ -238,20 +238,47 @@
   }
 }
 
-/* We're keeping this section as a comment for reference, but the styles have been moved to platform/android.css */
-/* Add specific Android Chrome fixes */
-/* @media screen and (max-width: 480px) {
-  .android-chrome .input-wrapper { ... }
-  .android-chrome .text-area { ... }
-  .android-chrome .button-hub { ... }
-  .android-chrome .ditto-logo-button { ... }
-  .android-chrome .ditto-icon-circular { ... }
-  .android-chrome .action-button { ... }
-  .android-chrome .form { ... }
-  .android-chrome .app-footer { ... }
-  .android-chrome .app-body { ... }
-  .android-chrome .media-options-container { ... }
-} */
+/* Android specific adjustments for when keyboard is open */
+.android-chrome .input-wrapper {
+  margin-bottom: 0;
+  position: relative;
+  border-bottom: none;
+  background-color: var(--background-input);
+}
+
+.android-chrome .text-area {
+  padding: 6px 8px;
+  min-height: 24px;
+  font-size: 16px;
+}
+
+.android-chrome .button-hub {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Special handling for Android with keyboard open */
+@media screen and (max-height: 500px), (max-height: 700px) and (orientation: landscape) {
+  .android-chrome .input-wrapper {
+    padding: 4px 8px;
+  }
+  
+  .android-chrome .text-area {
+    min-height: 22px;
+    padding: 4px;
+  }
+  
+  .android-chrome .button-hub {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  
+  .android-chrome .action-button,
+  .android-chrome .icon-button.submit {
+    width: 28px;
+    height: 28px;
+  }
+}
 
 /* ===== 4. Action buttons ===== */
 /* Script indicator container */

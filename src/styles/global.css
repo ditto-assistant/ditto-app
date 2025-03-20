@@ -38,8 +38,11 @@ html {
   width: 100%;
   touch-action: manipulation;
   overscroll-behavior: none;
-  height: calc(var(--vh, 1vh) * 100);
-  height: calc((var(--chrome-vh, var(--vh, 1vh)) * 100) + var(--url-bar-offset, 0px));
+  height: 100%;
+}
+
+html.android-chrome {
+  height: 100%;
 }
 
 body {
@@ -59,7 +62,10 @@ body {
   position: fixed;
   width: 100%;
   touch-action: pan-y;
-  height: calc((var(--chrome-vh, var(--vh, 1vh)) * 100) + var(--url-bar-offset, 0px));
+}
+
+body.android-chrome {
+  height: 100%;
 }
 
 #root {
@@ -88,5 +94,15 @@ code {
 
   .app {
     height: 100vh;
+  }
+}
+
+/* When keyboard is open, ensure content is visible */
+@media screen and (max-height: 500px), (max-height: 700px) and (orientation: landscape) {
+  html, body, #root, .app {
+    position: absolute;
+    overflow: hidden;
+    height: 100%;
+    min-height: auto;
   }
 }
