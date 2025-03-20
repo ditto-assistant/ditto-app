@@ -586,20 +586,20 @@
     max-width: 100%;
     border-radius: 12px;
   }
-  
+
   .confirmation-modal-body {
     padding: 0 1rem 1.25rem;
   }
-  
+
   .confirmation-modal-message {
     font-size: 1rem;
   }
-  
+
   .confirmation-modal-buttons {
     justify-content: space-between;
     width: 100%;
   }
-  
+
   .confirmation-modal-buttons button {
     flex: 1;
     min-width: 0;

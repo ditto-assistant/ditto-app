@@ -71,23 +71,23 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
     if (position === "center" && menuPosition === "bottom") {
       return {
         initial: { opacity: 0, scale: 0.5, y: 20 },
-        animate: { 
-          opacity: 1, 
-          scale: 1, 
+        animate: {
+          opacity: 1,
+          scale: 1,
           y: 0,
-          transition: { 
-            type: "spring", 
-            damping: 30, 
+          transition: {
+            type: "spring",
+            damping: 30,
             stiffness: 350,
-            duration: 0.4 
-          }
+            duration: 0.4,
+          },
         },
-        exit: { 
-          opacity: 0, 
-          scale: 0.5, 
+        exit: {
+          opacity: 0,
+          scale: 0.5,
           y: 10,
-          transition: { duration: 0.2 } 
-        }
+          transition: { duration: 0.2 },
+        },
       };
     }
 
@@ -136,12 +136,12 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
               transition={{
                 duration: 0.3,
                 delay: 0.07 * index,
-                ease: "easeOut"
+                ease: "easeOut",
               }}
               whileTap={{ scale: 0.95 }}
               whileHover={{
                 backgroundColor: "rgba(255, 255, 255, 0.15)",
-                x: 3
+                x: 3,
               }}
               onClick={(e) => {
                 e.stopPropagation();

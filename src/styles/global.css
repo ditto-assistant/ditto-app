@@ -87,7 +87,8 @@ code {
 
 /* PWA specific adjustments */
 @media all and (display-mode: standalone) {
-  html, body {
+  html,
+  body {
     height: 100vh;
     overflow: hidden;
   }
@@ -98,8 +99,12 @@ code {
 }
 
 /* When keyboard is open, ensure content is visible */
-@media screen and (max-height: 500px), (max-height: 700px) and (orientation: landscape) {
-  html, body, #root, .app {
+@media screen and (max-height: 500px),
+  (max-height: 700px) and (orientation: landscape) {
+  html,
+  body,
+  #root,
+  .app {
     position: absolute;
     overflow: hidden;
     height: 100%;

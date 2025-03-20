@@ -83,7 +83,8 @@ body.android-chrome {
 }
 
 /* Adjust padding when keyboard is open */
-@media screen and (max-height: 500px), (max-height: 700px) and (orientation: landscape) {
+@media screen and (max-height: 500px),
+  (max-height: 700px) and (orientation: landscape) {
   .android-chrome .app-body,
   .android-chrome .chat-feed {
     padding-bottom: 60px; /* Less padding when keyboard is likely open */
@@ -94,7 +95,7 @@ body.android-chrome {
 .android-chrome .input-wrapper {
   position: fixed;
   z-index: 100;
-  background-color: var(--background-input); 
+  background-color: var(--background-input);
   left: 0;
   right: 0;
   margin: 0;
@@ -221,4 +222,4 @@ html.android-chrome.keyboard-open {
 /* Media options positioning with keyboard open */
 .android-chrome.keyboard-open .media-options-container {
   bottom: 90px;
-} 
+}

@@ -255,7 +255,7 @@ export default function SendMessage({
     if (textArea) {
       // Reset height first to get accurate scrollHeight
       textArea.style.height = "24px";
-      
+
       // For empty messages, ensure we keep the minimum height
       if (!message.trim()) {
         textArea.style.height = "24px";
@@ -264,9 +264,10 @@ export default function SendMessage({
         // Otherwise, set the height based on content
         const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
         textArea.style.height = `${newHeight}px`;
-        textArea.style.overflowY = textArea.scrollHeight >= 200 ? "auto" : "hidden";
+        textArea.style.overflowY =
+          textArea.scrollHeight >= 200 ? "auto" : "hidden";
       }
-      
+
       // Adjust image preview position if present
       const imagePreview = document.querySelector(".image-preview");
       if (imagePreview) {
@@ -285,7 +286,7 @@ export default function SendMessage({
 
   // Add a new effect to specifically watch for empty message state
   useEffect(() => {
-    if (message === '') {
+    if (message === "") {
       // Force immediate resize when message is cleared
       setTimeout(resizeTextArea, 0);
     }
@@ -404,7 +405,7 @@ export default function SendMessage({
             }}
           />
         </div>
-        
+
         <div className="bottom-buttons-bar">
           <div className="button-hub">
             {/* Left aligned buttons */}
@@ -430,13 +431,17 @@ export default function SendMessage({
             <div className="ditto-button-container">
               <motion.div
                 ref={logoButtonRef}
-                className={`ditto-logo-button ${isMenuOpen ? 'active' : ''}`}
+                className={`ditto-logo-button ${isMenuOpen ? "active" : ""}`}
                 whileTap={{ scale: 0.9 }}
-                animate={isMenuOpen ? {
-                  scale: 1.1,
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                } : { scale: 1 }}
+                animate={
+                  isMenuOpen
+                    ? {
+                        scale: 1.1,
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      }
+                    : { scale: 1 }
+                }
                 transition={{ duration: 0.2 }}
                 whileHover={{
                   scale: 1.1,
@@ -496,7 +501,10 @@ export default function SendMessage({
             <div className="right-buttons">
               {/* Script indicator that shows when a script is selected */}
               {selectedScript && (
-                <div className="script-indicator-container" ref={scriptIndicatorRef}>
+                <div
+                  className="script-indicator-container"
+                  ref={scriptIndicatorRef}
+                >
                   <motion.div
                     className="script-icon-button"
                     onClick={handleScriptNameClick}
@@ -506,7 +514,7 @@ export default function SendMessage({
                   >
                     <FaCode />
                   </motion.div>
-                  
+
                   <AnimatePresence>
                     {showScriptActions && (
                       <SlidingMenu
@@ -543,7 +551,7 @@ export default function SendMessage({
                   </AnimatePresence>
                 </div>
               )}
-              
+
               <button
                 className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
                 type="submit"

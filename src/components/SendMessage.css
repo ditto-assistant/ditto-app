@@ -63,7 +63,9 @@
   align-items: center;
   height: 100%;
   margin-bottom: calc(52px + env(safe-area-inset-bottom, 0));
-  margin-bottom: calc(52px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
+  margin-bottom: calc(
+    52px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px)
+  );
   padding: 8px;
   border: none;
   border-bottom: 1px solid var(--border-color);
@@ -223,7 +225,9 @@
 @media screen and (max-width: 480px) {
   .input-wrapper {
     margin-bottom: calc(48px + env(safe-area-inset-bottom, 0));
-    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
+    margin-bottom: calc(
+      48px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px)
+    );
     padding: 6px;
   }
 
@@ -258,21 +262,22 @@
 }
 
 /* Special handling for Android with keyboard open */
-@media screen and (max-height: 500px), (max-height: 700px) and (orientation: landscape) {
+@media screen and (max-height: 500px),
+  (max-height: 700px) and (orientation: landscape) {
   .android-chrome .input-wrapper {
     padding: 4px 8px;
   }
-  
+
   .android-chrome .text-area {
     min-height: 22px;
     padding: 4px;
   }
-  
+
   .android-chrome .button-hub {
     padding-top: 6px;
     padding-bottom: 6px;
   }
-  
+
   .android-chrome .action-button,
   .android-chrome .icon-button.submit {
     width: 28px;
@@ -318,14 +323,18 @@
 
 /* Add a subtle glow to the active Ditto button */
 .ditto-logo-button.active::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
   right: -2px;
   bottom: -2px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.3) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(var(--primary-rgb), 0.3) 0%,
+    transparent 70%
+  );
   z-index: -1;
   animation: pulse 2s infinite;
 }
@@ -701,7 +710,9 @@
 .media-options-container {
   position: absolute;
   bottom: calc(60px + env(safe-area-inset-bottom, 0));
-  bottom: calc(60px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
+  bottom: calc(
+    60px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px)
+  );
   left: 16px;
   z-index: 2000;
   pointer-events: none;
@@ -764,9 +775,11 @@
 @media screen and (max-width: 480px) {
   .media-options-container {
     bottom: calc(50px + env(safe-area-inset-bottom, 0));
-    bottom: calc(50px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px));
+    bottom: calc(
+      50px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px)
+    );
   }
-  
+
   .media-option-item {
     padding: 12px 14px;
     font-size: 14px;
@@ -790,17 +803,17 @@
     padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
     /* This ensures we use at least 12px padding, or the safe area inset if it's larger */
   }
-  
+
   /* Adjust input wrapper margin for iOS */
   .input-wrapper {
     margin-bottom: max(60px, calc(60px + env(safe-area-inset-bottom, 0px)));
   }
-  
+
   @media screen and (max-width: 480px) {
     .button-hub {
       padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
     }
-    
+
     .input-wrapper {
       margin-bottom: max(50px, calc(50px + env(safe-area-inset-bottom, 0px)));
     }

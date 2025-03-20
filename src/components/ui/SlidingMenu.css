@@ -12,11 +12,11 @@
   bottom: calc(60px + var(--url-bar-offset, 0px));
   left: 50%;
   transform: translateX(-50%);
-  
+
   /* Base styles for all sliding menus */
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  
+
   /* Ensure no flickering during animations */
   will-change: transform, opacity;
   backface-visibility: hidden;
@@ -44,7 +44,7 @@
   top: calc(100% + 10px); /* Position below the trigger element */
   transform: none; /* Override the translateX(-50%) from the default style */
   width: 200px; /* Adjust width for the script menu */
-  
+
   /* Additional styles specific to the right menu */
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   border-radius: 16px;

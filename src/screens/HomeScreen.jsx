@@ -79,55 +79,68 @@ export default function HomeScreen() {
         const iosVh = (window.innerHeight + extraSpace) * 0.01;
         document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
       }
-      
+
       // Special handling for Chrome on Android to account for URL bar
       const isAndroid = /android/i.test(navigator.userAgent);
       const isChrome = /chrome/i.test(navigator.userAgent) && !isIOS;
-      
+
       if (isAndroid && isChrome) {
         // Chrome on Android needs special handling for the URL bar
         // Set a specific height for the app content
         const chromeVh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
-        
+        document.documentElement.style.setProperty(
+          "--chrome-vh",
+          `${chromeVh}px`,
+        );
+
         // Calculate the URL bar offset more reliably using visualViewport
-        const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const visualHeight = window.visualViewport
+          ? window.visualViewport.height
+          : window.innerHeight;
         const urlBarOffset = Math.max(0, window.innerHeight - visualHeight);
-        
+
         // For Android, we need minimal safe area since the keyboard handles that
         const safeAreaBottom = 0; // Reduced to 0 to avoid extra space
-        
+
         // Set CSS variables for layout calculations
-        document.documentElement.style.setProperty("--url-bar-offset", `${urlBarOffset}px`);
-        document.documentElement.style.setProperty("--safe-area-bottom", `${safeAreaBottom}px`);
-        
+        document.documentElement.style.setProperty(
+          "--url-bar-offset",
+          `${urlBarOffset}px`,
+        );
+        document.documentElement.style.setProperty(
+          "--safe-area-bottom",
+          `${safeAreaBottom}px`,
+        );
+
         // Apply to button hub and input wrapper with updated calculations
         const buttonHub = document.querySelector(".button-hub");
         const inputWrapper = document.querySelector(".input-wrapper");
-        
+
         // When keyboard is open, urlBarOffset will be significant
         // This indicates keyboard is likely visible
         const isKeyboardOpen = urlBarOffset > 100;
-        
+
         // Also detect keyboard by checking viewport height vs window height ratio
         const viewportRatio = visualHeight / window.innerHeight;
         const keyboardLikelyOpen = viewportRatio < 0.8;
-        
+
         // Set a CSS variable to track keyboard state
-        document.documentElement.style.setProperty("--is-keyboard-open", 
-          (isKeyboardOpen || keyboardLikelyOpen) ? "1" : "0");
-        
+        document.documentElement.style.setProperty(
+          "--is-keyboard-open",
+          isKeyboardOpen || keyboardLikelyOpen ? "1" : "0",
+        );
+
         if (buttonHub) {
           // When keyboard is open, we want the button hub at the bottom of the visible area
           buttonHub.style.bottom = "0";
           buttonHub.style.paddingBottom = `${safeAreaBottom + 4}px`;
         }
-        
+
         if (inputWrapper) {
           // Keep input wrapper just above the button hub
           inputWrapper.style.bottom = "50px";
         }
-        
+
         // Also adjust scroll position when keyboard opens
         if (isKeyboardOpen && appBodyRef.current) {
           // Ensure we're scrolled to the bottom when keyboard opens
@@ -147,11 +160,11 @@ export default function HomeScreen() {
     window.addEventListener("resize", setVH);
     window.addEventListener("orientationchange", setVH);
     window.addEventListener("scroll", setVH);
-    
+
     // For Chrome, we need additional events to catch all changes
     window.addEventListener("touchmove", setVH);
     window.addEventListener("touchend", setVH);
-    
+
     // Add focus/blur events to detect keyboard
     window.addEventListener("focusin", setVH);
     window.addEventListener("focusout", setVH);
@@ -201,7 +214,10 @@ export default function HomeScreen() {
 
     // Set a timer to periodically check viewport size on Android Chrome
     const androidHeightTimer = setInterval(() => {
-      if (/android/i.test(navigator.userAgent) && /chrome/i.test(navigator.userAgent)) {
+      if (
+        /android/i.test(navigator.userAgent) &&
+        /chrome/i.test(navigator.userAgent)
+      ) {
         setVH();
       }
     }, 500);
@@ -213,12 +229,12 @@ export default function HomeScreen() {
       window.removeEventListener("scroll", setVH);
       window.removeEventListener("touchmove", setVH);
       window.removeEventListener("touchend", setVH);
-      
+
       if (window.visualViewport) {
         window.visualViewport.removeEventListener("resize", setVH);
         window.visualViewport.removeEventListener("scroll", setVH);
       }
-      
+
       clearInterval(androidHeightTimer);
     };
   }, [isIOS, isPWA]);
@@ -228,9 +244,9 @@ export default function HomeScreen() {
     // Only run on Android Chrome
     const isAndroid = /android/i.test(navigator.userAgent);
     const isChrome = /chrome/i.test(navigator.userAgent) && !isIOS;
-    
+
     if (!(isAndroid && isChrome)) return;
-    
+
     // Detect keyboard visibility changes
     const handleKeyboardChange = () => {
       // Scroll to bottom when keyboard appears
@@ -240,27 +256,27 @@ export default function HomeScreen() {
         }, 50);
       }
     };
-    
+
     // Track input field focus
     const inputSelector = 'input, textarea, [contenteditable="true"]';
-    
+
     const handleFocus = () => {
-      document.documentElement.classList.add('keyboard-open');
+      document.documentElement.classList.add("keyboard-open");
       handleKeyboardChange();
     };
-    
+
     const handleBlur = () => {
-      document.documentElement.classList.remove('keyboard-open');
+      document.documentElement.classList.remove("keyboard-open");
       handleKeyboardChange();
     };
-    
+
     // Add delegates for current and future input elements
-    document.addEventListener('focusin', handleFocus);
-    document.addEventListener('focusout', handleBlur);
-    
+    document.addEventListener("focusin", handleFocus);
+    document.addEventListener("focusout", handleBlur);
+
     return () => {
-      document.removeEventListener('focusin', handleFocus);
-      document.removeEventListener('focusout', handleBlur);
+      document.removeEventListener("focusin", handleFocus);
+      document.removeEventListener("focusout", handleBlur);
     };
   }, [isIOS]);
 
@@ -268,31 +284,31 @@ export default function HomeScreen() {
     // Identify Android Chrome and add special classes
     const isAndroid = /android/i.test(navigator.userAgent);
     const isChrome = /chrome/i.test(navigator.userAgent) && !isIOS;
-    
+
     if (isAndroid && isChrome) {
       // Add special classes for Android Chrome
-      document.documentElement.classList.add('android-chrome');
-      document.body.classList.add('android-chrome');
-      
+      document.documentElement.classList.add("android-chrome");
+      document.body.classList.add("android-chrome");
+
       // Set a specific meta viewport tag for Android Chrome
       const viewportMeta = document.querySelector('meta[name="viewport"]');
       if (viewportMeta) {
         viewportMeta.setAttribute(
           "content",
-          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no",
         );
       }
-      
+
       // Force a repaint to apply the classes immediately
-      document.body.style.display = 'none';
+      document.body.style.display = "none";
       document.body.offsetHeight; // Trigger a reflow
-      document.body.style.display = '';
+      document.body.style.display = "";
     }
-    
+
     return () => {
       // Clean up classes when component unmounts
-      document.documentElement.classList.remove('android-chrome');
-      document.body.classList.remove('android-chrome');
+      document.documentElement.classList.remove("android-chrome");
+      document.body.classList.remove("android-chrome");
     };
   }, [isIOS]);
 
