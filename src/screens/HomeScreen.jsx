@@ -257,9 +257,6 @@ export default function HomeScreen() {
       }
     };
 
-    // Track input field focus
-    const inputSelector = 'input, textarea, [contenteditable="true"]';
-
     const handleFocus = () => {
       document.documentElement.classList.add("keyboard-open");
       handleKeyboardChange();
@@ -301,7 +298,6 @@ export default function HomeScreen() {
 
       // Force a repaint to apply the classes immediately
       document.body.style.display = "none";
-      document.body.offsetHeight; // Trigger a reflow
       document.body.style.display = "";
     }
 
