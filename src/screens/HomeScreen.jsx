@@ -86,16 +86,14 @@ export default function HomeScreen() {
       
       if (isAndroid && isChrome) {
         // Chrome on Android needs special handling for the URL bar
-        // Set a specific height for the app content
         const chromeVh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty("--chrome-vh", `${chromeVh}px`);
         
-        // Calculate the URL bar offset more reliably using visualViewport
+        // Calculate the URL bar offset using visualViewport
         const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
         const urlBarOffset = Math.max(0, window.innerHeight - visualHeight);
         
         // Set a safe area value for the bottom navigation gesture area
-        // Modern Android devices typically have 16-24px for gesture area
         const safeAreaBottom = window.innerHeight > 700 ? 16 : 0;
         
         // Set CSS variables for layout calculations
@@ -106,11 +104,11 @@ export default function HomeScreen() {
         const buttonHub = document.querySelector(".button-hub");
         const inputWrapper = document.querySelector(".input-wrapper");
         if (buttonHub) {
-          buttonHub.style.bottom = `${urlBarOffset}px`;
+          buttonHub.style.bottom = `0`;
           buttonHub.style.paddingBottom = `${safeAreaBottom + 8}px`;
         }
         if (inputWrapper) {
-          inputWrapper.style.bottom = `calc(${urlBarOffset}px + 50px + ${safeAreaBottom}px)`;
+          inputWrapper.style.bottom = `calc(46px + ${safeAreaBottom}px)`;
         }
       }
     };
