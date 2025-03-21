@@ -34,8 +34,8 @@ html.android-chrome .chat-feed {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 80px !important;
-  scroll-padding-bottom: 80px;
+  padding-bottom: 60px !important;
+  scroll-padding-bottom: 60px;
 }
 
 /* Fixed footer container */
@@ -227,10 +227,11 @@ html.android-chrome .media-options-container {
 
 /* Bottom spacer for Android */
 html.android-chrome .bottom-spacer {
-  height: 5px !important;
-  min-height: 5px !important;
-  margin-bottom: 0 !important;
-  margin-top: 5px !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: none !important;
 }
 
 /* Chat feed container - tighten spacing */
@@ -244,8 +245,20 @@ html.android-chrome .messages-container {
   margin-bottom: 0 !important;
 }
 
-/* PWA more aggressive overrides */
+/* Message spacing */
+html.android-chrome .message-pair:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Extreme overrides for Android PWA */
 @media all and (display-mode: standalone), all and (display-mode: fullscreen) {
+  /* Reduce chat feed padding to absolute minimum */
+  html.android-chrome .chat-feed {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
   /* Extra overrides for container elements */
   html.android-chrome .messages-scroll-view {
     padding-bottom: 0 !important;
@@ -254,5 +267,22 @@ html.android-chrome .messages-container {
 
   html.android-chrome .message-pair:last-child {
     margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Hide bottom spacer completely */
+  html.android-chrome .bottom-spacer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: 0 !important;
+    border: none !important;
+  }
+  
+  /* Force app body to use all available space */
+  html.android-chrome .app-body {
+    padding-bottom: 60px !important;
   }
 } 
