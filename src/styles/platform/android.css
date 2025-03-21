@@ -183,33 +183,34 @@ html.android-chrome .media-options-container {
   html.android-chrome .button-hub {
     /* Further reduce height and padding */
     min-height: 36px;
-    padding: 4px 16px 0;
-    border-top: none;
-    /* Remove any safe area insets for Android PWA */
-    bottom: 0;
+    padding: 4px 16px;
+    padding-bottom: 0;
+    margin-bottom: 0;
   }
   
   html.android-chrome .icon-button.submit,
   html.android-chrome .action-button {
     /* Slightly smaller buttons in PWA */
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
   }
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
     bottom: 36px;
-    min-height: 40px;
+    min-height: 36px;
+    padding: 4px 16px;
   }
   
   html.android-chrome .app-footer {
     /* Remove bottom padding that might be causing extra space */
     padding-bottom: 0;
+    margin-bottom: 0;
   }
   
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
-    padding-bottom: 10px !important;
+    padding-bottom: 0 !important;
   }
   
   /* Minimal bottom spacer for Android PWA */
@@ -223,7 +224,15 @@ html.android-chrome .media-options-container {
   /* Adjust the text area to have correct padding for PWA */
   html.android-chrome .text-area {
     min-height: 32px !important;
-    padding: 6px 8px !important;
+    padding: 4px 8px !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure containers don't add extra space */
+  html.android-chrome .chat-feed-container,
+  html.android-chrome .messages-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
   }
 }
 
