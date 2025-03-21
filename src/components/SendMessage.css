@@ -188,6 +188,7 @@
   transition: all var(--transition-normal);
   margin-left: 8px;
   transform-origin: center;
+  aspect-ratio: 1;
 }
 
 .icon-button.submit:not(.disabled):hover {
@@ -212,6 +213,36 @@
   width: 14px;
   height: 14px;
   color: white;
+}
+
+/* Platform specific overrides */
+@media screen and (max-width: 480px) {
+  .icon-button.submit {
+    width: 36px;
+    height: 36px;
+    aspect-ratio: 1;
+  }
+  
+  .icon-button.submit svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Android Chrome specific submit button */
+html.android-chrome .icon-button.submit {
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1;
+}
+
+/* PWA Android specific submit button */
+@media all and (display-mode: standalone), all and (display-mode: fullscreen) {
+  html.android-chrome .icon-button.submit {
+    width: 28px;
+    height: 28px;
+    aspect-ratio: 1;
+  }
 }
 
 /* Ditto logo button */
