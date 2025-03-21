@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useSearchParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -53,12 +54,14 @@ const Login = () => {
   const [verificationMessage, setVerificationMessage] = useState(""); // To show verification message
   const [showTOS, setShowTOS] = useState(false);
   const [isViewingTOS, setIsViewingTOS] = useState(false);
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate(redirectTo);
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectTo]);
 
   const handleSignIn = async () => {
     try {
@@ -185,7 +188,7 @@ const Login = () => {
         return;
       }
 
-      navigate("/");
+      navigate(redirectTo);
     } catch (error) {
       console.error("Error signing in with Google:", error.message);
       alert("Error signing in with Google. Please try again.");
