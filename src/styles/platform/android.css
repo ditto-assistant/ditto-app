@@ -183,10 +183,11 @@ html.android-chrome .media-options-container {
   html.android-chrome .button-hub {
     /* Further reduce height and padding */
     min-height: 32px;
-    padding: 2px 16px;
+    padding: 4px 16px;
     padding-bottom: 0;
     margin-bottom: 0;
-    border-top: none; /* Remove border to prevent gap */
+    /* Ensure button hub snaps to bottom */
+    bottom: 0;
   }
   
   html.android-chrome .icon-button.submit,
@@ -200,20 +201,29 @@ html.android-chrome .media-options-container {
     /* Adjust bottom position to match reduced button hub */
     bottom: 32px;
     min-height: 32px;
-    padding: 2px 16px;
-    border-bottom: none; /* Remove border to prevent gap */
+    padding: 4px 16px;
+    margin-bottom: 0;
+    border-bottom: none;
   }
   
   html.android-chrome .app-footer {
     /* Remove bottom padding that might be causing extra space */
     padding-bottom: 0;
     margin-bottom: 0;
-    border-top: none; /* Remove border to prevent gap */
+    /* Force footer to snap to bottom with no gap */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    /* Remove any border that might create visual gap */
+    border-top: none;
   }
   
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
     padding-bottom: 0 !important;
+    /* Ensure chat feed extends to the input area with no gap */
     margin-bottom: 0 !important;
   }
   
@@ -228,7 +238,7 @@ html.android-chrome .media-options-container {
   /* Adjust the text area to have correct padding for PWA */
   html.android-chrome .text-area {
     min-height: 28px !important;
-    padding: 2px 8px !important;
+    padding: 4px 8px !important;
     margin: 0 !important;
   }
 
@@ -238,22 +248,56 @@ html.android-chrome .media-options-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
   }
-
-  /* Ensure messages scroll view doesn't add extra space */
+  
+  /* Fix gap between chat feed and send message */
+  html.android-chrome .app-body {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Remove gap between messages-container and input */
   html.android-chrome .messages-scroll-view {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
   }
-
-  /* Remove any gaps between components */
-  html.android-chrome .app-content-wrapper {
-    gap: 0 !important;
-  }
-
-  /* Ensure app body fills space without gaps */
-  html.android-chrome .app-body {
+  
+  /* Ensure message pairs don't add extra bottom space */
+  html.android-chrome .message-pair:last-child {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
+  }
+  
+  /* Remove gap after the last message */
+  html.android-chrome .chat-bubble:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  /* Make sure app content wrapper doesn't add extra space */
+  html.android-chrome .app-content-wrapper {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Ensure form is directly attached to the input */
+  html.android-chrome .form {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Completely eliminate the bottom spacer in PWA mode on Android */
+  html.android-chrome .bottom-spacer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  
+  /* Override any other bottom spacers in the chat feed */
+  html.android-chrome .chat-feed .bottom-spacer {
+    display: none !important;
   }
 }
 
@@ -276,6 +320,126 @@ html.android-chrome .messages-container {
   margin-bottom: 0 !important;
 }
 
+/* Specific fixes for Android PWA mode to remove gaps */
+@media all and (display-mode: standalone), all and (display-mode: fullscreen) {
+  /* Extra overrides to eliminate padding between components */
+  html.android-chrome .app-body {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  html.android-chrome .form {
+    /* Remove all spacing in the form container */
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+  
+  /* Force button hub to attach to the bottom with no gap */
+  html.android-chrome .button-hub {
+    position: fixed;
+    bottom: 0 !important;
+    left: 0;
+    right: 0;
+    padding: 4px 16px 0 !important;
+    border-top: none !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    z-index: 100;
+  }
+  
+  /* Fix input wrapper position to match button hub */
+  html.android-chrome .input-wrapper {
+    position: fixed;
+    bottom: 32px !important;
+    left: 0;
+    right: 0;
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 4px 16px !important;
+    z-index: 99;
+  }
+  
+  /* Make height of chat feed fill available space */
+  html.android-chrome .chat-feed {
+    flex: 1 !important;
+    height: calc(100% - 64px) !important; /* Subtract combined height of input and button hub */
+    overflow-y: auto !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Remove excess spacing in message containers */
+  html.android-chrome .messages-scroll-view {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Set specific height for messages container */
+  html.android-chrome .messages-container {
+    height: calc(100% - 64px) !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Ensure the chat feed extends exactly to the input area */
+  html.android-chrome .app-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Adjust app footer spacing */
+  html.android-chrome .app-footer {
+    height: 64px !important; /* Combined height of input and button hub */
+    min-height: 64px !important;
+    max-height: 64px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible;
+  }
+  
+  /* Adjust the text area for a cleaner look */
+  html.android-chrome .text-area {
+    min-height: 24px !important;
+    height: 24px !important;
+    max-height: 24px !important; 
+    padding: 4px 8px !important;
+    margin: 0 !important;
+    overflow-y: hidden !important;
+  }
+  
+  /* Make sure there's absolutely no gap between the app body and app footer */
+  html.android-chrome .app {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Make message input directly touch bottom of messages */
+  html.android-chrome .message-pair:last-child {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+  
+  /* Remove any remaining spacers */
+  html.android-chrome .bottom-spacer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    visibility: hidden !important;
+  }
+}
+
 /* PWA more aggressive overrides */
 @media all and (display-mode: standalone), all and (display-mode: fullscreen) {
   /* Extra overrides for container elements */
@@ -285,6 +449,87 @@ html.android-chrome .messages-container {
   }
 
   html.android-chrome .message-pair:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Ensure the actual chat bubbles don't have excess margin */
+  html.android-chrome .chat-bubble {
+    margin-bottom: 8px !important;
+  }
+  
+  html.android-chrome .chat-bubble:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  /* Make form container attach directly to footer */
+  html.android-chrome .form {
+    border-top: none !important;
+  }
+  
+  /* Add specific fix for the gap between chat feed and send message */
+  html.android-chrome .app-body {
+    padding-bottom: 0 !important;
+  }
+  
+  /* Ensure the bottom of the chat feed extends all the way to the send message component */
+  html.android-chrome .chat-feed-container {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Make sure app content wrapper has no extra space */
+  html.android-chrome .app-content-wrapper {
+    gap: 0 !important;
+  }
+  
+  /* Completely eliminate the bottom spacer in PWA mode on Android */
+  html.android-chrome .bottom-spacer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  
+  /* Override any other bottom spacers in the chat feed */
+  html.android-chrome .chat-feed .bottom-spacer {
+    display: none !important;
+  }
+  
+  /* Ensure all containers truly have 0 bottom margin/padding */
+  html.android-chrome .custom-scroll-view {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Override ScrollToBottom component styling */
+  html.android-chrome .follow-button {
+    bottom: 70px !important; /* Position above the message input */
+  }
+  
+  /* Fix for ChatFeed component to properly fill space */
+  html.android-chrome .chat-feed-container,
+  html.android-chrome .messages-container,
+  html.android-chrome .messages-scroll-view {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    position: relative;
+  }
+  
+  /* Ensure body fills entire available space */
+  html.android-chrome .app-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+  
+  /* Fixes for white space or gaps at the bottom */
+  html.android-chrome .message-container:last-child {
     margin-bottom: 0 !important;
   }
 } 
