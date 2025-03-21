@@ -88,6 +88,19 @@ export default function SendMessage({
   const { selectedScript, setSelectedScript, handleDeselectScript } =
     useScripts();
 
+  // Check if we're running as PWA
+  const [isPWA, setIsPWA] = useState(false);
+  
+  // Detect if running as PWA
+  useEffect(() => {
+    const isPWAMode = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      window.matchMedia('(display-mode: fullscreen)').matches || 
+      window.navigator.standalone; // for iOS
+    
+    setIsPWA(isPWAMode);
+  }, []);
+
   const handleSubmit = useCallback(
     async (event) => {
       if (event) event.preventDefault();
@@ -285,7 +298,8 @@ export default function SendMessage({
     textArea.style.height = "0px";
     
     // Calculate new height based on content
-    const minHeight = isMobile ? 36 : 24; // Higher minimum height on mobile
+    // Use smaller height for PWA on mobile to prevent excessive space
+    const minHeight = isMobile ? (isPWA ? 32 : 36) : 24;
     
     const newHeight = Math.min(
       Math.max(minHeight, textArea.scrollHeight), // Use platform-specific minimum height

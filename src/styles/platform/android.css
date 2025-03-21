@@ -165,4 +165,56 @@ html.android-chrome .media-options-container {
     padding: 6px 12px;
     min-height: 36px;
   }
+}
+
+/* Add more comprehensive PWA-specific modifications for Android */
+@media all and (display-mode: standalone), all and (display-mode: fullscreen) {
+  html.android-chrome {
+    /* Make sure we're using real viewport size */
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  html.android-chrome .app {
+    /* Remove any extra height calc, just use 100vh */
+    height: 100vh;
+  }
+  
+  html.android-chrome .button-hub {
+    /* Reduce bottom padding for PWA mode */
+    min-height: 44px;
+    padding: 6px 16px;
+    padding-bottom: 6px; /* Remove env() safe area inset for PWA */
+    border-top: 1px solid var(--border-color);
+  }
+  
+  html.android-chrome .icon-button.submit,
+  html.android-chrome .action-button {
+    /* Slightly smaller buttons in PWA */
+    width: 36px;
+    height: 36px;
+  }
+  
+  html.android-chrome .input-wrapper {
+    /* Position relative to the smaller button hub */
+    bottom: 44px; /* Fixed value without env() for PWA */
+    min-height: 48px; /* Reduced from 52px */
+    padding: 8px 16px; /* Reduced padding */
+  }
+  
+  html.android-chrome .app-footer {
+    /* Remove bottom padding that might be causing extra space */
+    padding-bottom: 0;
+  }
+  
+  /* Adjust chat feed padding to account for smaller footer */
+  html.android-chrome .chat-feed {
+    padding-bottom: 92px !important;
+  }
+  
+  /* Adjust the text area to have correct padding for PWA */
+  html.android-chrome .text-area {
+    min-height: 32px !important;
+    padding: 6px 8px !important;
+  }
 } 
