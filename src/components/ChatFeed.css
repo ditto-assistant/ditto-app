@@ -1414,7 +1414,7 @@ ul.chat-bubble-list {
   /* Specific handling for Android devices */
   @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
     .follow-button {
-      bottom: 120px !important; /* Position even higher on Android */
+      bottom: 60px !important; /* Position even higher on Android */
     }
   }
 }
