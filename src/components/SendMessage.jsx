@@ -298,19 +298,19 @@ export default function SendMessage({
     textArea.style.height = "0px";
     
     // Calculate new height based on content
-    // Use smaller height for PWA on mobile to prevent excessive space
-    const minHeight = isMobile ? (isPWA ? 32 : 36) : 24;
+    // Use absolute minimum height for PWA mode
+    const minHeight = isMobile ? (isPWA ? 24 : 36) : 24;
     
     const newHeight = Math.min(
       Math.max(minHeight, textArea.scrollHeight), // Use platform-specific minimum height
-      120 // Maximum height 120px
+      isPWA ? 80 : 120 // Significantly lower maximum height in PWA mode
     );
     
     // Set the new height
     textArea.style.height = `${newHeight}px`;
     
     // Handle overflow - show scrollbar only if needed
-    const needsScrollbar = textArea.scrollHeight > 120;
+    const needsScrollbar = textArea.scrollHeight > (isPWA ? 80 : 120);
     textArea.style.overflowY = needsScrollbar ? "auto" : "hidden";
     
     // Ensure cursor visibility by scrolling to bottom when:
@@ -324,7 +324,7 @@ export default function SendMessage({
     // Adjust image preview position if it exists
     const imagePreview = document.querySelector('.image-preview');
     if (imagePreview) {
-      imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
+      imagePreview.style.bottom = `${textArea.offsetHeight + (isPWA ? 4 : 10)}px`;
     }
   }
 
