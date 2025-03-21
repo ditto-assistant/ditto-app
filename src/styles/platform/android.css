@@ -182,9 +182,11 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .button-hub {
     /* Further reduce height and padding */
-    min-height: 40px;
-    padding: 4px 16px;
-    padding-bottom: 4px;
+    min-height: 36px;
+    padding: 4px 16px 0;
+    border-top: none;
+    /* Remove any safe area insets for Android PWA */
+    bottom: 0;
   }
   
   html.android-chrome .icon-button.submit,
@@ -196,8 +198,8 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 40px;
-    min-height: 44px;
+    bottom: 36px;
+    min-height: 40px;
   }
   
   html.android-chrome .app-footer {

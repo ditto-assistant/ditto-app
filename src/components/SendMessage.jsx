@@ -299,7 +299,7 @@ export default function SendMessage({
     
     // Calculate new height based on content
     // Use smaller height for PWA on mobile to prevent excessive space
-    const minHeight = isMobile ? (isPWA ? 32 : 36) : 24;
+    const minHeight = isMobile ? (isPWA ? 28 : 36) : 24;
     
     const newHeight = Math.min(
       Math.max(minHeight, textArea.scrollHeight), // Use platform-specific minimum height
