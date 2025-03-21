@@ -1397,11 +1397,17 @@ ul.chat-bubble-list {
   overflow: hidden;
 }
 
+/* Android Chrome specific adjustment for bottom spacing */
+html.android-chrome .bottom-spacer {
+  height: 90px; /* Reduced from 150px to minimize extra space */
+  margin-bottom: 20px; /* Reduced from 30px */
+}
+
 /* Non-iOS specific styles */
 @supports not (-webkit-touch-callout: none) {
   /* For desktop and Android browsers */
   .bottom-spacer {
-    height: 70px !important; /* Increased from 0px to allow slight scroll on web */
+    height: 70px !important; /* Keep web spacing as is */
     min-height: 70px;
   }
 
@@ -1414,7 +1420,7 @@ ul.chat-bubble-list {
   /* Specific handling for Android devices */
   @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
     .follow-button {
-      bottom: 60px !important; /* Position even higher on Android */
+      bottom: 120px !important; /* Position even higher on Android */
     }
   }
 }
@@ -1652,10 +1658,4 @@ ul.chat-bubble-list {
   min-height: 80px;
   width: 100%;
   margin-top: 20px;
-}
-
-/* Android Chrome specific adjustment for bottom spacing */
-html.android-chrome .bottom-spacer {
-  height: 150px; /* Extra height for Android Chrome */
-  margin-bottom: 30px;
 }
