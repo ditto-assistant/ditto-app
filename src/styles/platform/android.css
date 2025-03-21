@@ -186,14 +186,13 @@ html.android-chrome .media-options-container {
     padding: 2px 16px;
     padding-bottom: 0;
     margin-bottom: 0;
-    border-top: none;
   }
   
   html.android-chrome .icon-button.submit,
   html.android-chrome .action-button {
     /* Slightly smaller buttons in PWA */
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
   
   html.android-chrome .input-wrapper {
@@ -201,15 +200,12 @@ html.android-chrome .media-options-container {
     bottom: 32px;
     min-height: 32px;
     padding: 2px 16px;
-    margin-bottom: 0;
-    border-bottom: none;
   }
   
   html.android-chrome .app-footer {
     /* Remove bottom padding that might be causing extra space */
     padding-bottom: 0;
     margin-bottom: 0;
-    border-top: none;
   }
   
   /* Reduce chat feed padding to match smaller footer */
@@ -236,21 +232,6 @@ html.android-chrome .media-options-container {
   html.android-chrome .chat-feed-container,
   html.android-chrome .messages-container {
     padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
-
-  /* Ensure messages scroll view doesn't add extra space */
-  html.android-chrome .messages-scroll-view {
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
-
-  /* Remove any extra spacing from message pairs */
-  html.android-chrome .message-pair {
-    margin-bottom: 8px !important;
-  }
-
-  html.android-chrome .message-pair:last-child {
     margin-bottom: 0 !important;
   }
 }
