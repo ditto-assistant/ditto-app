@@ -18,6 +18,8 @@
   /* Add fixed positioning */
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   overscroll-behavior: none;
   touch-action: pan-y;
   /* Only allow vertical scrolling */
@@ -38,6 +40,7 @@
   flex: 1;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 /* The floating header styles have been moved to SendMessage.css */
@@ -77,17 +80,14 @@
   -webkit-text-fill-color: transparent;
 }
 
+/* Main content area */
 .app-body {
   flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-  overscroll-behavior: contain;
-  /* Prevent pull to refresh while allowing normal scroll */
+  overflow-x: hidden;
+  position: relative;
   -webkit-overflow-scrolling: touch;
-  /* Smooth scrolling on iOS */
+  scroll-behavior: smooth;
 }
 
 .chat-feed-container {
@@ -98,18 +98,35 @@
   width: 100%;
 }
 
+/* Footer area containing the message input */
 .app-footer {
-  background-color: transparent; /* Make background transparent */
-  width: 100%;
-  z-index: 100; /* Ensure it stays on top */
-  padding: 0;
-  margin: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  flex-shrink: 0;
-  position: relative;
-  min-height: 60px; /* Ensure minimum height for the footer */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: var(--background-input);
+  transform: translateZ(0);
+  will-change: transform;
 }
+
+/* Android Chrome specific styles - moved to platform/android.css */
+/* html.android-chrome .app-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.android-chrome .app-body {
+  padding-bottom: 120px;
+} */
+
+/* iOS Safari specific styles - moved to platform/ios.css */
+/* html.ios-safari .app-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.ios-safari .app-body {
+  padding-bottom: 120px;
+} */
 
 .loading-placeholder {
   text-align: center;
@@ -117,87 +134,70 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Camera overlay styles */
+/* Camera overlay */
 .camera-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 3000;
 }
 
 .camera-container {
+  background-color: var(--background-secondary);
+  border-radius: 16px;
+  overflow: hidden;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  max-width: 90%;
-  max-height: 90%;
-  background-color: #2f3136;
-  border-radius: 10px;
-  overflow: hidden;
 }
 
 .camera-feed {
   width: 100%;
   height: auto;
-  max-height: calc(90vh - 100px);
-  object-fit: contain;
+  min-height: 200px;
+  background-color: #000;
 }
 
 .camera-controls {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  padding: 15px;
-  background-color: #40444b;
-}
-
-/* Camera control buttons */
-.flip-camera-icon {
-  font-size: 24px;
-  color: white;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
-}
-
-.flip-camera-icon:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
+  padding: 16px;
+  background-color: var(--background-secondary);
 }
 
 .camera-snap,
 .camera-close {
   padding: 8px 16px;
-  border-radius: 20px;
-  border: none;
+  border-radius: 8px;
   background-color: var(--primary);
   color: white;
+  border: none;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.camera-snap {
-  background-color: var(--primary);
+.camera-snap:active,
+.camera-close:active {
+  transform: scale(0.95);
 }
 
-.camera-close {
-  background-color: rgba(255, 255, 255, 0.2);
+.flip-camera-icon {
+  font-size: 24px;
+  color: var(--primary);
+  cursor: pointer;
 }
 
-.camera-snap:hover,
-.camera-close:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+.flip-camera-icon:active {
+  transform: scale(0.9);
 }
 
 /* Mobile-specific adjustments */
@@ -229,5 +229,25 @@
   .message-list {
     max-width: 900px;
     margin: 0 auto;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .app-body {
+    padding-bottom: 150px;
+  }
+}
+
+/* PWA specific adjustments */
+@media all and (display-mode: standalone) {
+  .app {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  html.ios-safari .app-footer {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }

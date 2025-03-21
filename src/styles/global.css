@@ -1,6 +1,7 @@
 @import "./variables.css";
 @import "./components.css";
 @import "./buttons.css";
+@import "./layout.css";
 @import "./platform/ios.css";
 @import "./platform/android.css";
 
@@ -38,11 +39,6 @@ html {
   width: 100%;
   touch-action: manipulation;
   overscroll-behavior: none;
-  height: 100%;
-}
-
-html.android-chrome {
-  height: 100%;
 }
 
 body {
@@ -62,10 +58,6 @@ body {
   position: fixed;
   width: 100%;
   touch-action: pan-y;
-}
-
-body.android-chrome {
-  height: 100%;
 }
 
 #root {

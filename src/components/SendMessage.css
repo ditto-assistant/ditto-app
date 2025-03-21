@@ -1,5 +1,5 @@
 @import "../styles/variables.css";
-@import "@/styles/animations.css";
+@import "../styles/animations.css";
 
 /* 
  * SendMessage Component Styles
@@ -23,16 +23,7 @@
   position: relative;
   z-index: 10;
   flex-direction: column;
-  padding: var(--spacing-sm) var(--spacing-md);
-  padding-bottom: 0;
-  border-radius: var(--border-radius-md);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  margin-bottom: 0;
-  border-bottom: none;
-  overflow: visible; /* Allow button hub to overflow */
-  transform: translateZ(0);
-  will-change: transform;
+  overflow: visible;
 }
 
 .app-footer .form {
@@ -57,22 +48,13 @@
 
 /* ===== 2. Input area ===== */
 .input-wrapper {
-  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
-  height: 100%;
-  margin-bottom: calc(52px + env(safe-area-inset-bottom, 0));
-  margin-bottom: calc(
-    52px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px)
-  );
-  padding: 8px;
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  border-radius: 0;
   background-color: transparent;
+  border-bottom: 1px solid var(--border-color);
   transition: border-color var(--transition-normal);
-  z-index: 1;
+  padding: 8px 16px;
 }
 
 .input-wrapper:focus-within {
@@ -85,17 +67,18 @@
   resize: none;
   background-color: transparent;
   color: var(--interactive-active);
-  padding: 6px 8px;
-  padding-bottom: 10px;
+  padding: 8px 10px;
   line-height: 1.5;
   font-size: 16px;
   max-height: 200px;
   min-height: 24px;
-  height: 24px;
+  height: auto;
   width: 100%;
   border-radius: 0;
   overflow-y: hidden;
-  transition: all var(--transition-normal);
+  transition: none;
+  box-sizing: border-box;
+  outline: none;
 }
 
 .text-area:focus {
@@ -108,6 +91,14 @@
   color: var(--text-muted);
   opacity: 0.7;
   transform: translateY(-2px);
+}
+
+/* For mobile devices, provide more space by default */
+@media screen and (max-width: 480px) {
+  .text-area {
+    min-height: 36px;
+    padding: 8px 10px;
+  }
 }
 
 /* ===== 3. Button bar ===== */
@@ -134,15 +125,7 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 8px 16px;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
   width: 100%;
-  position: fixed;
-  bottom: 0;
-  bottom: var(--url-bar-offset, 0);
-  left: 0;
-  right: 0;
-  margin-top: auto;
-  z-index: 101;
   background-color: var(--background-input);
   transform: translateZ(0);
   will-change: transform;
@@ -177,12 +160,17 @@
   color: var(--interactive-normal);
   cursor: pointer;
   transition: all var(--transition-normal);
-  font-size: 16px;
+  transform-origin: center;
 }
 
 .action-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: var(--interactive-hover);
+  transform: scale(1.05);
+}
+
+.action-button:active {
+  transform: scale(0.95);
 }
 
 /* Submit button styling */
@@ -199,11 +187,16 @@
   cursor: pointer;
   transition: all var(--transition-normal);
   margin-left: 8px;
+  transform-origin: center;
 }
 
 .icon-button.submit:not(.disabled):hover {
   background-color: var(--primary-hover);
   transform: scale(1.05);
+}
+
+.icon-button.submit:active {
+  transform: scale(0.95);
 }
 
 .icon-button.submit.disabled {
@@ -221,79 +214,6 @@
   color: white;
 }
 
-/* Media queries for responsive design */
-@media screen and (max-width: 480px) {
-  .input-wrapper {
-    margin-bottom: calc(48px + env(safe-area-inset-bottom, 0));
-    margin-bottom: calc(
-      48px + env(safe-area-inset-bottom, 0) + var(--url-bar-offset, 0px)
-    );
-    padding: 6px;
-  }
-
-  .button-hub {
-    padding: 6px 12px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
-  }
-
-  .action-button {
-    width: 32px;
-    height: 32px;
-  }
-}
-
-/* Android specific adjustments for when keyboard is open */
-.android-chrome .input-wrapper {
-  margin-bottom: 0;
-  position: relative;
-  border-bottom: none;
-  background-color: var(--background-input);
-}
-
-.android-chrome .text-area {
-  padding: 6px 8px;
-  min-height: 24px;
-  font-size: 16px;
-}
-
-.android-chrome .button-hub {
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
-/* Special handling for Android with keyboard open */
-@media screen and (max-height: 500px),
-  (max-height: 700px) and (orientation: landscape) {
-  .android-chrome .input-wrapper {
-    padding: 4px 8px;
-  }
-
-  .android-chrome .text-area {
-    min-height: 22px;
-    padding: 4px;
-  }
-
-  .android-chrome .button-hub {
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-
-  .android-chrome .action-button,
-  .android-chrome .icon-button.submit {
-    width: 28px;
-    height: 28px;
-  }
-}
-
-/* ===== 4. Action buttons ===== */
-/* Script indicator container */
-.script-indicator-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-right: 4px;
-}
-
 /* Ditto logo button */
 .ditto-logo-button {
   width: 38px;
@@ -307,11 +227,17 @@
   overflow: hidden;
   z-index: 10;
   transition: all var(--transition-normal);
+  transform-origin: center;
+  position: relative;
 }
 
 .ditto-logo-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
   transform: scale(1.05);
+}
+
+.ditto-logo-button:active {
+  transform: scale(0.95);
 }
 
 /* Active state for the Ditto button when menu is open */
@@ -321,40 +247,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Add a subtle glow to the active Ditto button */
-.ditto-logo-button.active::after {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(var(--primary-rgb), 0.3) 0%,
-    transparent 70%
-  );
-  z-index: -1;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-}
-
-/* Make the ditto icon circular */
+/* Ditto icon */
 .ditto-icon-circular {
   width: 28px;
   height: 28px;
@@ -362,17 +255,155 @@
   object-fit: cover;
 }
 
+/* Center logo container */
+.ditto-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Ensure menu doesn't affect layout */
+.ditto-menu-container {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.ditto-menu-container .sliding-menu {
+  pointer-events: auto;
+}
+
 /* Media queries for responsive design */
 @media screen and (max-width: 480px) {
+  .action-button {
+    width: 32px;
+    height: 32px;
+  }
+
   .ditto-logo-button {
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
   }
 
   .ditto-icon-circular {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
+  
+  /* Ensure tap targets are large enough */
+  .icon-button.submit {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .icon-button.submit svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Web-specific styles */
+@media screen and (min-width: 481px) {
+  .app .button-hub {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--background-input);
+    border-top: 1px solid var(--border-color);
+    z-index: 100;
+  }
+  
+  .app .input-wrapper {
+    margin-bottom: 52px;
+    position: relative;
+  }
+  
+  .app .chat-feed {
+    padding-bottom: 100px;
+  }
+}
+
+/* Mobile platform detection - move these styles to platform specific files */
+/* @media screen and (max-width: 480px) {
+  html.android-chrome .button-hub, 
+  html.ios-safari .button-hub {
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 0px);
+    left: 0;
+    right: 0;
+    background-color: var(--background-input);
+    border-top: 1px solid var(--border-color);
+    padding: 8px 16px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+  
+  html.android-chrome .input-wrapper,
+  html.ios-safari .input-wrapper {
+    position: fixed;
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    background-color: var(--background-input);
+    border-top: 1px solid var(--border-color);
+    z-index: 99;
+  }
+  
+  html.android-chrome .chat-feed,
+  html.ios-safari .chat-feed {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  html.android-chrome .text-area::placeholder,
+  html.ios-safari .text-area::placeholder {
+    opacity: 1;
+    color: var(--text-muted);
+  }
+} */
+
+/* Additional Android Chrome specific fixes - move to platform/android.css */
+/* html.android-chrome .app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+}
+
+html.android-chrome .button-hub {
+  min-height: 52px;
+}
+
+html.android-chrome .message-input-container {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+} */
+
+/* Script icon button */
+.script-icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  color: var(--text-white);
+  font-size: 14px;
+  transition: all var(--transition-normal);
+  margin: 0 2px;
+}
+
+.script-icon-button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 /* ===== 5. Image preview and media ===== */
@@ -663,28 +694,6 @@
 
 /* iOS and PWA specific styles are now in platform/ios.css */
 
-/* Script icon button */
-.script-icon-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  color: var(--text-white);
-  font-size: 14px;
-  transition: all var(--transition-normal);
-  margin: 0 2px;
-}
-
-.script-icon-button:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
 /* Expand button specific styling */
 .expand-button {
   color: var(--interactive-normal);
@@ -786,17 +795,6 @@
   }
 }
 
-/* Ditto button container for centered menu alignment */
-.ditto-menu-container {
-  position: static;
-  z-index: 1002;
-  pointer-events: none;
-}
-
-.ditto-menu-container .sliding-menu {
-  pointer-events: auto;
-}
-
 /* iOS-specific styles for button hub and safe areas */
 @supports (padding: max(0px)) {
   .button-hub {
@@ -818,12 +816,4 @@
       margin-bottom: max(50px, calc(50px + env(safe-area-inset-bottom, 0px)));
     }
   }
-}
-
-/* Center logo container */
-.ditto-button-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
 }

@@ -1642,3 +1642,16 @@ ul.chat-bubble-list {
   font-family: monospace;
   max-width: 200px;
 }
+
+/* Ensure messages don't get hidden behind the input area */
+.bottom-spacer {
+  height: 100px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* Android Chrome specific adjustment for bottom spacing */
+html.android-chrome .bottom-spacer {
+  height: 150px; /* Extra height for Android Chrome */
+  margin-bottom: 30px;
+}

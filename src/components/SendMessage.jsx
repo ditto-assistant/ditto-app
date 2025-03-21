@@ -206,9 +206,23 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
+  // Single, unified resize effect that works for all platforms
+  useEffect(() => {
+    // Call resize on window resize
+    window.addEventListener("resize", resizeTextArea);
+    
+    // Initial resize
+    resizeTextArea();
+    
+    return () => {
+      window.removeEventListener("resize", resizeTextArea);
+    };
+  }, []);
+
+  // Resize whenever the message or image changes
   useEffect(() => {
     resizeTextArea();
-  }, []);
+  }, [message, image]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -231,7 +245,19 @@ export default function SendMessage({
       if (e.key === "Enter") {
         e.preventDefault();
         setMessage((prevMessage) => prevMessage + "\n");
-        resizeTextArea();
+        
+        // Force immediate recalculation and scroll to show the new line
+        requestAnimationFrame(() => {
+          resizeTextArea();
+          
+          // Second call after a brief delay to ensure browser has updated DOM
+          setTimeout(() => {
+            const textArea = textAreaRef.current;
+            if (textArea && textArea.scrollHeight > 120) {
+              textArea.scrollTop = textArea.scrollHeight;
+            }
+          }, 10);
+        });
       }
     } else {
       if (e.key === "Enter") {
@@ -250,47 +276,43 @@ export default function SendMessage({
     }
   };
 
-  const resizeTextArea = () => {
+  // Simple, reliable resize function that works on both web and mobile
+  function resizeTextArea() {
     const textArea = textAreaRef.current;
-    if (textArea) {
-      // Reset height first to get accurate scrollHeight
-      textArea.style.height = "24px";
-
-      // For empty messages, ensure we keep the minimum height
-      if (!message.trim()) {
-        textArea.style.height = "24px";
-        textArea.style.overflowY = "hidden";
-      } else {
-        // Otherwise, set the height based on content
-        const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
-        textArea.style.height = `${newHeight}px`;
-        textArea.style.overflowY =
-          textArea.scrollHeight >= 200 ? "auto" : "hidden";
-      }
-
-      // Adjust image preview position if present
-      const imagePreview = document.querySelector(".image-preview");
-      if (imagePreview) {
-        imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
-      }
+    if (!textArea) return;
+    
+    // Reset height to recalculate
+    textArea.style.height = "0px";
+    
+    // Calculate new height based on content
+    const minHeight = isMobile ? 36 : 24; // Higher minimum height on mobile
+    
+    const newHeight = Math.min(
+      Math.max(minHeight, textArea.scrollHeight), // Use platform-specific minimum height
+      120 // Maximum height 120px
+    );
+    
+    // Set the new height
+    textArea.style.height = `${newHeight}px`;
+    
+    // Handle overflow - show scrollbar only if needed
+    const needsScrollbar = textArea.scrollHeight > 120;
+    textArea.style.overflowY = needsScrollbar ? "auto" : "hidden";
+    
+    // Ensure cursor visibility by scrolling to bottom when:
+    // 1. Text area is at max height
+    // 2. And there's a newline at the end (indicating user just pressed Enter)
+    if (needsScrollbar && message.endsWith('\n')) {
+      // Force scroll to the bottom to show the new line
+      textArea.scrollTop = textArea.scrollHeight;
     }
-  };
 
-  useEffect(() => {
-    const handleResize = () => resizeTextArea();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => resizeTextArea(), [message, image]);
-
-  // Add a new effect to specifically watch for empty message state
-  useEffect(() => {
-    if (message === "") {
-      // Force immediate resize when message is cleared
-      setTimeout(resizeTextArea, 0);
+    // Adjust image preview position if it exists
+    const imagePreview = document.querySelector('.image-preview');
+    if (imagePreview) {
+      imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
     }
-  }, [message]);
+  }
 
   const handlePaste = (event) => {
     const items = event.clipboardData.items;
@@ -381,27 +403,60 @@ export default function SendMessage({
     }
   };
 
+  // Effect to handle empty messages
+  useEffect(() => {
+    if (message === '') {
+      // When message is cleared, force resize immediately
+      resizeTextArea();
+      
+      // And again after a short delay to ensure it works on all platforms
+      setTimeout(() => {
+        resizeTextArea();
+      }, 10);
+    }
+  }, [message]);
+
+  // Simplify the onChange handler
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    const hasNewLine = newValue.endsWith('\n');
+    
+    // Update state
+    setMessage(newValue);
+    
+    // Force immediate resize with proper timing for scrolling
+    requestAnimationFrame(() => {
+      resizeTextArea();
+      
+      // If a newline was just added and we're at max height, ensure it's visible
+      if (hasNewLine) {
+        const textArea = textAreaRef.current;
+        if (textArea && textArea.scrollHeight > 120) {
+          // Double ensure scrolling to the bottom to show cursor on the new line
+          setTimeout(() => {
+            textArea.scrollTop = textArea.scrollHeight;
+          }, 0);
+        }
+      }
+    });
+  };
+
   return (
     <>
       <form className="form" onSubmit={handleSubmit} onPaste={handlePaste}>
         <div className="input-wrapper">
           <textarea
             ref={textAreaRef}
+            className="text-area"
+            value={message}
+            onChange={handleChange}
             onKeyDown={handleKeyDown}
             onInput={resizeTextArea}
-            className="text-area"
-            type="text"
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              // Resize on every change to ensure proper sizing
-              setTimeout(resizeTextArea, 0);
-            }}
+            onFocus={resizeTextArea}
+            onBlur={resizeTextArea}
             placeholder="Message Ditto"
-            rows={3}
             style={{
               overflowY: "hidden",
-              marginRight: "-5px",
             }}
           />
         </div>
