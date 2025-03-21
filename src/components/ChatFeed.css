@@ -1391,12 +1391,10 @@ ul.chat-bubble-list {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: hidden; /* Let ScrollToBottom handle overflow */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  max-height: 100%;
+  width: 100%;
   position: relative;
-  padding: 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  overflow: hidden;
 }
 
 /* Non-iOS specific styles */
@@ -1460,10 +1458,10 @@ ul.chat-bubble-list {
 .messages-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
   height: 100%;
-  overflow-y: auto;
+  width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 /* Follow button style for custom ScrollToBottom */
@@ -1522,10 +1520,14 @@ ul.chat-bubble-list {
 /* Custom ScrollToBottom scroll view container */
 .messages-scroll-view,
 .custom-scroll-view {
-  height: 100%;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Improves scroll on iOS */
+  padding-bottom: 20px;
 }
 
 /* We're using a different approach to fix iOS avatar clicking issues */
@@ -1645,9 +1647,10 @@ ul.chat-bubble-list {
 
 /* Ensure messages don't get hidden behind the input area */
 .bottom-spacer {
-  height: 100px;
-  margin-bottom: 20px;
+  height: 50px;
+  min-height: 50px;
   width: 100%;
+  margin-top: 20px;
 }
 
 /* Android Chrome specific adjustment for bottom spacing */

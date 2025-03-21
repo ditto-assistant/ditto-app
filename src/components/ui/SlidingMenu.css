@@ -130,10 +130,9 @@
 
 /* Center-aligned + bottom-aligned adjustment (for Ditto menu) */
 .sliding-menu.center-aligned.bottom-aligned {
-  position: fixed; /* Use fixed positioning to avoid parent relative positioning issues */
-  bottom: 60px; /* Position above the buttons bar */
-  /* Account for URL bar on Chrome Android */
-  bottom: calc(60px + var(--url-bar-offset, 0px));
+  position: absolute; /* Use absolute instead of fixed to position relative to button */
+  bottom: 100%; /* Position just above the triggering element */
+  margin-bottom: 10px; /* Add some spacing between the button and menu */
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Ensure perfect centering */
   border-radius: 16px;
@@ -217,4 +216,35 @@
 
 .sliding-menu.center-aligned.bottom-aligned .menu-item:hover {
   background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+/* Mobile-specific adjustments */
+@media screen and (max-width: 768px) {
+  /* Ensure better positioning on mobile devices */
+  .sliding-menu.center-aligned.bottom-aligned {
+    margin-bottom: 15px; /* Slightly more space on mobile */
+  }
+  
+  /* Add more specific Android Chrome styling */
+  html.android-chrome .sliding-menu.center-aligned.bottom-aligned {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 15px;
+  }
+  
+  /* iOS-specific adjustments */
+  html.ios-safari .sliding-menu.center-aligned.bottom-aligned {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 15px;
+  }
+}
+
+/* PWA specific adjustments */
+@media all and (display-mode: standalone) {
+  .sliding-menu.center-aligned.bottom-aligned {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 15px;
+  }
 }

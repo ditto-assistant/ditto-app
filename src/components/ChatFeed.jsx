@@ -39,7 +39,7 @@ const CustomScrollToBottom = ({
 
     setTimeout(() => {
       scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
+        top: scrollContainer.scrollHeight + 100,
         behavior: behavior,
       });
     }, 50);
@@ -115,7 +115,7 @@ const CustomScrollToBottom = ({
     const initialHeight = window.innerHeight;
     let isKeyboardVisible = false;
     let previousDiff = 0;
-    const MIN_KEYBOARD_HEIGHT = 200;
+    const MIN_KEYBOARD_HEIGHT = 150;
     let scrollTimeout = null;
 
     const setScrolling = () => {
@@ -139,7 +139,7 @@ const CustomScrollToBottom = ({
       const currentHeight = window.innerHeight;
       const heightDiff = initialHeight - currentHeight;
 
-      if (Math.abs(heightDiff - previousDiff) < 50) return;
+      if (Math.abs(heightDiff - previousDiff) < 30) return;
       previousDiff = heightDiff;
 
       if (heightDiff > MIN_KEYBOARD_HEIGHT) {
@@ -152,9 +152,8 @@ const CustomScrollToBottom = ({
             button.style.transition = "bottom 0.2s ease-out";
           }
 
-          if (isScrolledToBottom) {
-            setTimeout(() => scrollToBottom("auto"), 100);
-          }
+          setTimeout(() => scrollToBottom("auto"), 50);
+          setTimeout(() => scrollToBottom("auto"), 300);
         }
       } else {
         if (isKeyboardVisible) {
@@ -164,6 +163,10 @@ const CustomScrollToBottom = ({
           if (button) {
             button.style.bottom = "";
             button.style.transition = "bottom 0.3s ease-out";
+          }
+
+          if (isScrolledToBottom) {
+            setTimeout(() => scrollToBottom("auto"), 100);
           }
         }
       }
@@ -213,11 +216,15 @@ const CustomScrollToBottom = ({
     if (scrollContainerRef.current && isScrolledToBottom) {
       scrollToBottom(initialScrollBehavior);
 
-      setTimeout(() => {
-        if (isScrolledToBottom) {
-          scrollToBottom(initialScrollBehavior);
-        }
-      }, 300);
+      // Add multiple attempts to ensure scrolling works properly
+      const scrollAttempts = [100, 300, 500];
+      scrollAttempts.forEach(delay => {
+        setTimeout(() => {
+          if (isScrolledToBottom) {
+            scrollToBottom(initialScrollBehavior);
+          }
+        }, delay);
+      });
     }
 
     if (onScrollComplete) {
@@ -563,7 +570,7 @@ export default function ChatFeed({
               );
             })
             .reverse()}
-          <div ref={bottomRef} className="bottom-spacer" />
+          <div ref={bottomRef} className="bottom-spacer" style={{ height: '50px', minHeight: '50px' }} />
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">

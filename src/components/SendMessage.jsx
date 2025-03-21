@@ -497,7 +497,7 @@ export default function SendMessage({
             </div>
 
             {/* Center Ditto logo button */}
-            <div className="ditto-button-container">
+            <div className="ditto-button-container" style={{ position: 'relative', zIndex: 2000 }}>
               <motion.div
                 ref={logoButtonRef}
                 className={`ditto-logo-button ${isMenuOpen ? "active" : ""}`}
@@ -533,7 +533,7 @@ export default function SendMessage({
               </motion.div>
 
               {/* Hidden sliding menu container for Ditto logo */}
-              <div className="ditto-menu-container">
+              <div className="ditto-menu-container" style={{ position: 'relative' }}>
                 <SlidingMenu
                   isOpen={isMenuOpen}
                   onClose={() => {

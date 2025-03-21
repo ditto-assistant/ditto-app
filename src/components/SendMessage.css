@@ -265,12 +265,11 @@
 
 /* Ensure menu doesn't affect layout */
 .ditto-menu-container {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1001;
-  pointer-events: none;
+  position: relative;
+  z-index: 2000;
+  /* Ensure it takes up no space in layout but allows absolute positioning within */
+  margin: 0;
+  padding: 0;
 }
 
 .ditto-menu-container .sliding-menu {

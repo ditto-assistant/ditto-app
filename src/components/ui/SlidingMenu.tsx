@@ -119,6 +119,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         <motion.div
           className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${isPinned ? "pinned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
           ref={menuRef}
+          data-position={menuPosition}
           onMouseLeave={handleMenuLeave}
           initial={menuAnimation.initial}
           animate={menuAnimation.animate}
