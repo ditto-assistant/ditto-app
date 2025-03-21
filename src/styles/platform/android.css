@@ -34,7 +34,7 @@ html.android-chrome .chat-feed {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 140px !important;
+  padding-bottom: 120px !important;
   scroll-padding-bottom: 140px;
 }
 
@@ -207,7 +207,15 @@ html.android-chrome .media-options-container {
   
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
-    padding-bottom: 84px !important;
+    padding-bottom: 54px !important;
+  }
+  
+  /* Minimal bottom spacer for Android PWA */
+  html.android-chrome .bottom-spacer {
+    height: 10px !important;
+    min-height: 10px !important;
+    margin-bottom: 0 !important;
+    margin-top: 10px !important;
   }
   
   /* Adjust the text area to have correct padding for PWA */
@@ -215,4 +223,12 @@ html.android-chrome .media-options-container {
     min-height: 32px !important;
     padding: 6px 8px !important;
   }
+}
+
+/* Bottom spacer for Android */
+html.android-chrome .bottom-spacer {
+  height: 20px !important;
+  min-height: 20px !important;
+  margin-bottom: 10px !important;
+  margin-top: 10px !important;
 } 

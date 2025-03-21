@@ -570,7 +570,7 @@ export default function ChatFeed({
               );
             })
             .reverse()}
-          <div ref={bottomRef} className="bottom-spacer" style={{ height: '50px', minHeight: '50px' }} />
+          <div ref={bottomRef} className="bottom-spacer" />
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">
