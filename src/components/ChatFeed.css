@@ -1401,7 +1401,8 @@ ul.chat-bubble-list {
 @supports not (-webkit-touch-callout: none) {
   /* For desktop and Android browsers */
   .bottom-spacer {
-    height: 0px !important; /* Moderate spacing for desktop */
+    height: 80px !important; /* Increased from 0px to allow slight scroll on web */
+    min-height: 80px;
   }
 
   /* Position follow button for desktop and Android */
@@ -1647,8 +1648,8 @@ ul.chat-bubble-list {
 
 /* Ensure messages don't get hidden behind the input area */
 .bottom-spacer {
-  height: 50px;
-  min-height: 50px;
+  height: 80px;
+  min-height: 80px;
   width: 100%;
   margin-top: 20px;
 }
