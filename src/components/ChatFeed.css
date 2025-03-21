@@ -1399,8 +1399,8 @@ ul.chat-bubble-list {
 
 /* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 90px; /* Reduced from 150px to minimize extra space */
-  margin-bottom: 20px; /* Reduced from 30px */
+  height: 60px; /* Further reduced from 90px */
+  margin-bottom: 10px; /* Further reduced from 20px */
 }
 
 /* Non-iOS specific styles */
