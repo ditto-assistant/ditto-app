@@ -1386,14 +1386,11 @@ ul.chat-bubble-list {
   html.android-chrome .chat-feed-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
-    display: flex;
-    flex-direction: column;
   }
 
   html.android-chrome .messages-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
-    flex: 1;
   }
 
   html.android-chrome .messages-scroll-view {
@@ -1406,23 +1403,28 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
   }
-
-  /* Ensure message container takes full height */
-  html.android-chrome .message-container {
+  
+  /* Make sure content extends all the way down */
+  html.android-chrome .chat-feed-container {
+    height: calc(100% - 56px) !important; /* Account for input and button height */
     margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+    position: relative;
   }
-
-  /* Remove any potential gap from the app container */
-  html.android-chrome .app {
-    display: flex;
-    flex-direction: column;
-  }
-
+  
+  /* Ensure containers fit perfectly */
   html.android-chrome .app-content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    overflow: hidden !important;
+  }
+  
+  /* Fix positioning of message container */
+  html.android-chrome .messages-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
   }
 }
 

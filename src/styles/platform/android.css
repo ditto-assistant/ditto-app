@@ -182,10 +182,11 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .button-hub {
     /* Further reduce height and padding */
-    min-height: 32px;
+    min-height: 28px;
     padding: 2px 16px;
-    padding-bottom: 2px;
+    padding-bottom: calc(2px + env(safe-area-inset-bottom, 0px));
     margin-bottom: 0;
+    border-top: 1px solid var(--border-color);
   }
   
   html.android-chrome .icon-button.submit,
@@ -206,28 +207,32 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 32px;
+    bottom: 28px;
     min-height: 28px;
     padding: 2px 16px;
+    border-top: none;
+    border-bottom: none;
   }
   
   html.android-chrome .app-footer {
-    /* Remove bottom padding that might be causing extra space */
-    padding-bottom: 0;
+    /* Add subtle padding to the bottom */
+    padding-bottom: 3px;
     margin-bottom: 0;
+    border-top: none;
   }
   
-  /* Reduce chat feed padding to match smaller footer */
+  /* Close the gap between chat feed and input */
   html.android-chrome .chat-feed {
     padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
   }
   
-  /* Minimal bottom spacer for Android PWA */
+  /* Remove bottom spacer entirely in PWA mode */
   html.android-chrome .bottom-spacer {
+    display: none !important;
     height: 0 !important;
     min-height: 0 !important;
-    margin-bottom: 0 !important;
-    margin-top: 0 !important;
+    margin: 0 !important;
   }
   
   /* Adjust the text area to have correct padding for PWA */
@@ -237,11 +242,33 @@ html.android-chrome .media-options-container {
     margin: 0 !important;
   }
 
-  /* Ensure containers don't add extra space */
+  /* Ensure containers don't add any extra space */
   html.android-chrome .chat-feed-container,
   html.android-chrome .messages-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
+  }
+  
+  /* Make chat feed container fill available space precisely */
+  html.android-chrome .chat-feed-container {
+    height: calc(100% - 56px) !important;
+    position: relative;
+  }
+  
+  /* Ensure messages container fits perfectly */
+  html.android-chrome .messages-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Prevent any scroll gaps in app content wrapper */
+  html.android-chrome .app-content-wrapper {
+    overflow: hidden !important;
   }
 }
 
@@ -274,5 +301,6 @@ html.android-chrome .messages-container {
 
   html.android-chrome .message-pair:last-child {
     margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 } 
