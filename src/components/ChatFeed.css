@@ -1367,7 +1367,7 @@ ul.chat-bubble-list {
 /* Add PWA-specific styles for the chat feed */
 @media all and (display-mode: standalone) {
   .chat-feed {
-    padding-bottom: 10px;
+    padding-bottom: 15px;
   }
   
   html.android-chrome .bottom-spacer {
@@ -1375,7 +1375,7 @@ ul.chat-bubble-list {
   }
 
   html.android-chrome .chat-feed {
-    padding-bottom: 64px !important; /* Match taller input precisely */
+    padding-bottom: 72px !important; /* Slightly increased from 64px */
     margin-bottom: 0 !important;
     background-color: var(--background-primary);
   }
@@ -1677,4 +1677,11 @@ html.android-chrome .bottom-spacer {
   min-height: 80px;
   width: 100%;
   margin-top: 20px;
+}
+
+/* Mobile and narrow screen adjustments */
+@media screen and (max-width: 768px) {
+  .chat-feed {
+    padding-bottom: 15px;
+  }
 }
