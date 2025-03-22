@@ -23,7 +23,7 @@
 
 .chat-feed > div:last-child {
   transition: margin-top 0.3s ease-out;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 /* Avatar positioning for all screen sizes */
@@ -1375,7 +1375,7 @@ ul.chat-bubble-list {
   }
 
   html.android-chrome .chat-feed {
-    padding-bottom: 72px !important; /* Slightly increased from 64px */
+    padding-bottom: 70px !important; /* Match taller input precisely */
     margin-bottom: 0 !important;
     background-color: var(--background-primary);
   }
@@ -1677,11 +1677,4 @@ html.android-chrome .bottom-spacer {
   min-height: 80px;
   width: 100%;
   margin-top: 20px;
-}
-
-/* Mobile and narrow screen adjustments */
-@media screen and (max-width: 768px) {
-  .chat-feed {
-    padding-bottom: 15px;
-  }
 }
