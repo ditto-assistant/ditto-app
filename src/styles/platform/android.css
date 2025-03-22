@@ -189,7 +189,7 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .chat-feed {
     background-color: var(--background-primary);
-    padding-bottom: 64px !important; /* Match footer height precisely */
+    padding-bottom: 32px !important; /* Reduced from 64px */
     margin-bottom: 0 !important;
   }
   
@@ -212,15 +212,14 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .messages-scroll-view {
     background-color: var(--background-primary);
-    padding-bottom: 64px !important;
+    padding-bottom: 32px !important; /* Reduced from 64px */
     margin-bottom: 0 !important;
   }
   
   html.android-chrome .button-hub {
-    /* Further reduce height and padding */
     min-height: 28px;
     padding: 2px 16px;
-    padding-bottom: 8px; /* Fixed bottom padding */
+    padding-bottom: 4px; /* Reduced from 8px */
     margin-bottom: 0;
     border-top: 1px solid var(--border-color);
   }
@@ -242,29 +241,20 @@ html.android-chrome .media-options-container {
   }
   
   html.android-chrome .input-wrapper {
-    /* Adjust bottom position to match reduced button hub */
-    bottom: 36px; /* Further increased to eliminate gap completely */
-    min-height: 36px; /* Make input area even taller */
-    padding: 6px 16px; /* Increased padding for taller input area */
-    border-top: none;
-    border-bottom: none;
+    bottom: 28px; /* Reduced from 36px to tighten the gap */
+    min-height: 36px;
+    padding: 6px 16px;
     margin: 0;
+    border-bottom: none;
     background-color: var(--background-input);
   }
   
   html.android-chrome .app-footer {
-    /* Add subtle padding to the bottom */
     padding-bottom: 0;
     margin-bottom: 0;
     border-top: none;
     bottom: 0;
     height: auto;
-  }
-  
-  /* Close the gap between chat feed and input */
-  html.android-chrome .chat-feed {
-    padding-bottom: 64px !important; /* Match footer height precisely */
-    margin-bottom: 0 !important;
   }
   
   /* Remove bottom spacer entirely in PWA mode */
@@ -273,6 +263,12 @@ html.android-chrome .media-options-container {
     height: 0 !important;
     min-height: 0 !important;
     margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
   
   /* Adjust the text area to have correct padding for PWA */
