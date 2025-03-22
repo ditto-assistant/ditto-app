@@ -8,7 +8,7 @@
 }
 
 .chat-feed {
-  background-color: transparent;
+  background-color: var(--background-primary);
   padding: 10px 20px;
   overflow-y: auto;
   height: 100%;
@@ -1379,9 +1379,9 @@ ul.chat-bubble-list {
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
-    padding-bottom: 56px !important; /* Reduced from 64px */
+    padding-bottom: 48px !important; /* Reduced to minimize gap */
     margin-bottom: 0 !important;
-    background-color: var(--background-primary);
+    background-color: var(--background-primary) !important; /* Ensure same bg color as web */
   }
 
   html.android-chrome .chat-feed-container {
@@ -1389,7 +1389,7 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     height: 100% !important;
     position: relative;
-    background-color: var(--background-primary);
+    background-color: var(--background-primary) !important; /* Match background color with web */
   }
 
   html.android-chrome .messages-container {
@@ -1397,13 +1397,14 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     height: 100%;
     position: relative;
-    background-color: var(--background-primary);
+    background-color: var(--background-primary) !important; /* Match background color with web */
   }
 
   html.android-chrome .messages-scroll-view {
-    padding-bottom: 56px !important; /* Reduced from 64px */
+    padding-bottom: 0 !important;
     margin-bottom: 0 !important;
-    background-color: var(--background-primary);
+    padding-bottom: 48px !important; /* Reduced to minimize gap */
+    background-color: var(--background-primary) !important; /* Match background color with web */
   }
 
   /* Ensure the last message pair doesn't have extra space */
@@ -1419,7 +1420,7 @@ ul.chat-bubble-list {
   
   /* Make sure there is no small visible gap */
   html.android-chrome .app-content-wrapper {
-    background-color: var(--background-input);
+    background-color: var(--background-primary) !important; /* Match background color with web */
   }
 }
 
