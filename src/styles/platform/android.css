@@ -207,7 +207,7 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 28px; /* Reduced from 36px to close the gap */
+    bottom: 36px; /* Further increased to eliminate gap completely */
     min-height: 36px; /* Make input area even taller */
     padding: 6px 16px; /* Increased padding for taller input area */
     border-top: none;
@@ -227,7 +227,7 @@ html.android-chrome .media-options-container {
   
   /* Close the gap between chat feed and input */
   html.android-chrome .chat-feed {
-    padding-bottom: 48px !important; /* Reduced to minimize gap */
+    padding-bottom: 64px !important; /* Match footer height precisely */
     margin-bottom: 0 !important;
   }
   
@@ -267,13 +267,12 @@ html.android-chrome .media-options-container {
     position: relative;
     height: 100%;
     overflow: hidden;
-    padding-bottom: 48px !important; /* Reduced to minimize gap */
+    padding-bottom: 64px !important; /* Increased to match input height exactly */
   }
   
   /* Prevent any scroll gaps in app content wrapper */
   html.android-chrome .app-content-wrapper {
     overflow: hidden !important;
-    background-color: var(--background-primary) !important; /* Match background with web */
   }
   
   /* Adjust the entire layout structure */
@@ -284,7 +283,7 @@ html.android-chrome .media-options-container {
   /* Force no gaps between elements */
   html.android-chrome .messages-scroll-view {
     margin-bottom: 0 !important;
-    padding-bottom: 48px !important; /* Reduced to minimize gap */
+    padding-bottom: 64px !important;
   }
 }
 

@@ -251,7 +251,7 @@ html.android-chrome .icon-button.submit {
 
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 28px;
+    bottom: 36px;
     min-height: 36px;
     padding: 6px 16px;
     margin: 0;
@@ -278,7 +278,7 @@ html.android-chrome .icon-button.submit {
 
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
-    padding-bottom: 48px !important;
+    padding-bottom: 64px !important;
     margin-bottom: 0 !important;
   }
 
@@ -328,7 +328,6 @@ html.android-chrome .icon-button.submit {
     height: 100%;
     padding-bottom: 0;
     margin-bottom: 0;
-    background-color: var(--background-primary) !important;
   }
 
   /* Fix the full app height to prevent any gaps */
@@ -341,7 +340,7 @@ html.android-chrome .icon-button.submit {
   /* Force no gaps between elements */
   html.android-chrome .messages-scroll-view {
     margin-bottom: 0 !important;
-    padding-bottom: 48px !important;
+    padding-bottom: 64px !important;
   }
 }
 
