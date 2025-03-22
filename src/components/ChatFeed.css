@@ -1369,26 +1369,25 @@ ul.chat-bubble-list {
 /* Add PWA-specific styles for the chat feed */
 @media all and (display-mode: standalone) {
   .chat-feed {
-    /* Reduce padding for PWA mode */
-    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0 !important;
   }
 
   /* Android Chrome PWA specific adjustments */
   html.android-chrome .bottom-spacer {
-    height: 20px !important; /* Drastically reduced for Android PWA */
+    height: 0 !important; /* Remove bottom spacer in PWA mode */
     margin-bottom: 0;
-    min-height: 20px;
+    min-height: 0;
   }
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
-    padding-bottom: 20px !important;
+    padding-bottom: 0 !important;
   }
 }
 
 /* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 30px; /* Drastically reduced */
+  height: 30px; /* Reduced height for non-PWA Android */
   margin-bottom: 0;
   min-height: 30px;
 }

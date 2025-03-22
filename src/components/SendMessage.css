@@ -243,6 +243,58 @@ html.android-chrome .icon-button.submit {
     height: 28px;
     aspect-ratio: 1;
   }
+
+  html.android-chrome .icon-button.submit svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  html.android-chrome .input-wrapper {
+    /* Adjust bottom position to match reduced button hub */
+    bottom: 32px;
+    min-height: 28px;
+    padding: 2px 16px;
+  }
+
+  html.android-chrome .app-footer {
+    /* Remove bottom padding that might be causing extra space */
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  /* Reduce chat feed padding to match smaller footer */
+  html.android-chrome .chat-feed {
+    padding-bottom: 0 !important;
+  }
+
+  /* Minimal bottom spacer for Android PWA */
+  html.android-chrome .bottom-spacer {
+    height: 0 !important;
+    min-height: 0 !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* Adjust the text area to have correct padding for PWA */
+  html.android-chrome .text-area {
+    min-height: 24px !important;
+    padding: 2px 8px !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure containers don't add extra space */
+  html.android-chrome .chat-feed-container,
+  html.android-chrome .messages-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Adjust button hub for PWA */
+  html.android-chrome .button-hub {
+    min-height: 32px;
+    padding: 2px 16px;
+    padding-bottom: env(safe-area-inset-bottom, 2px);
+  }
 }
 
 /* Ditto logo button */
