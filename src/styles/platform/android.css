@@ -207,9 +207,9 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 33px; /* Increased to close the gap */
-    min-height: 28px;
-    padding: 2px 16px;
+    bottom: 34px; /* Further increased to close the gap */
+    min-height: 32px; /* Make input area taller */
+    padding: 4px 16px; /* Increased padding for taller input area */
     border-top: none;
     border-bottom: none;
     margin: 0;
@@ -226,7 +226,7 @@ html.android-chrome .media-options-container {
   
   /* Close the gap between chat feed and input */
   html.android-chrome .chat-feed {
-    padding-bottom: 56px !important; /* Match footer height */
+    padding-bottom: 62px !important; /* Increased to account for taller input */
     margin-bottom: 0 !important;
   }
   
@@ -240,8 +240,8 @@ html.android-chrome .media-options-container {
   
   /* Adjust the text area to have correct padding for PWA */
   html.android-chrome .text-area {
-    min-height: 24px !important;
-    padding: 2px 8px !important;
+    min-height: 28px !important; /* Increased from 24px */
+    padding: 4px 8px !important; /* Increased padding */
     margin: 0 !important;
   }
 
@@ -264,7 +264,7 @@ html.android-chrome .media-options-container {
     position: relative;
     height: 100%;
     overflow: hidden;
-    padding-bottom: 56px !important; /* Match input height */
+    padding-bottom: 62px !important; /* Increased to match taller input */
   }
   
   /* Prevent any scroll gaps in app content wrapper */
