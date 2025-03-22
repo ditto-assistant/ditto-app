@@ -62,16 +62,15 @@ html.android-chrome .form {
 /* Input wrapper */
 html.android-chrome .input-wrapper {
   position: fixed;
-  bottom: 22px;
+  bottom: calc(52px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   z-index: 100;
   background-color: var(--background-input);
-  border-top: none;
-  border-bottom: none;
-  padding: 6px 16px;
+  border-top: 1px solid var(--border-color);
+  padding: 12px 16px;
   margin: 0;
-  min-height: 36px;
+  min-height: 60px;
   height: auto;
   display: flex;
   align-items: center;
@@ -208,7 +207,7 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 22px; /* Further reduced from 28px to minimize gap */
+    bottom: 20px; /* Further reduced to close the gap even more */
     min-height: 36px; /* Make input area even taller */
     padding: 6px 16px; /* Increased padding for taller input area */
     border-top: none;
@@ -228,7 +227,7 @@ html.android-chrome .media-options-container {
   
   /* Close the gap between chat feed and input */
   html.android-chrome .chat-feed {
-    padding-bottom: 36px !important; /* Reduced further to minimize gap */
+    padding-bottom: 36px !important; /* Further reduced to minimize gap */
     margin-bottom: 0 !important;
   }
   
@@ -268,7 +267,7 @@ html.android-chrome .media-options-container {
     position: relative;
     height: 100%;
     overflow: hidden;
-    padding-bottom: 36px !important; /* Reduced further to minimize gap */
+    padding-bottom: 36px !important; /* Further reduced to minimize gap */
   }
   
   /* Prevent any scroll gaps in app content wrapper */
@@ -285,22 +284,15 @@ html.android-chrome .media-options-container {
   /* Force no gaps between elements */
   html.android-chrome .messages-scroll-view {
     margin-bottom: 0 !important;
-    padding-bottom: 36px !important; /* Reduced further to minimize gap */
-  }
-
-  /* Prevent excessive scrolling past the last message */
-  html.android-chrome .message-pair:last-child {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+    padding-bottom: 36px !important; /* Further reduced to minimize gap */
+    scroll-padding-bottom: 30px !important; /* Prevent scrolling too far past content */
+    overscroll-behavior-y: none !important; /* Disable overscroll effect */
   }
   
-  /* Limit the scrollable area */
-  html.android-chrome .messages-scroll-view:after {
-    content: "";
-    display: block;
-    height: 0;
-    margin: 0;
-    padding: 0;
+  /* Prevent scrolling past the last message */
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 8px !important; /* Small margin after last message */
+    padding-bottom: 0 !important;
   }
 }
 

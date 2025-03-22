@@ -251,7 +251,7 @@ html.android-chrome .icon-button.submit {
 
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 22px;
+    bottom: 20px;
     min-height: 36px;
     padding: 6px 16px;
     margin: 0;
@@ -288,7 +288,6 @@ html.android-chrome .icon-button.submit {
     min-height: 0 !important;
     margin-bottom: 0 !important;
     margin-top: 0 !important;
-    padding: 0 !important;
     display: none !important;
   }
 
@@ -343,15 +342,14 @@ html.android-chrome .icon-button.submit {
   html.android-chrome .messages-scroll-view {
     margin-bottom: 0 !important;
     padding-bottom: 36px !important;
+    scroll-padding-bottom: 30px !important; /* Prevent excessive scrolling */
+    overscroll-behavior-y: none !important; /* Disable overscroll effect */
   }
-
-  /* Limit scrollable area */
-  html.android-chrome .messages-scroll-view:after {
-    content: "";
-    display: block;
-    height: 0;
-    margin: 0;
-    padding: 0;
+  
+  /* Prevent overscrolling past the last message */
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 8px !important; /* Small margin after last message */
+    padding-bottom: 0 !important;
   }
 }
 

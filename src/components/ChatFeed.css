@@ -1379,7 +1379,7 @@ ul.chat-bubble-list {
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
-    padding-bottom: 36px !important; /* Reduced further to minimize gap */
+    padding-bottom: 36px !important; /* Further reduced to minimize gap */
     margin-bottom: 0 !important;
     background-color: var(--background-primary) !important; /* Ensure same bg color as web */
   }
@@ -1403,13 +1403,15 @@ ul.chat-bubble-list {
   html.android-chrome .messages-scroll-view {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
-    padding-bottom: 36px !important; /* Reduced further to minimize gap */
+    padding-bottom: 36px !important; /* Further reduced to minimize gap */
     background-color: var(--background-primary) !important; /* Match background color with web */
+    scroll-padding-bottom: 30px !important; /* Prevent excessive scrolling */
+    overscroll-behavior-y: none !important; /* Disable overscroll effect */
   }
 
   /* Ensure the last message pair doesn't have extra space */
   html.android-chrome .message-pair:last-child {
-    margin-bottom: 0 !important;
+    margin-bottom: 8px !important; /* Small margin after last message */
     padding-bottom: 0 !important;
   }
   
@@ -1422,31 +1424,14 @@ ul.chat-bubble-list {
   html.android-chrome .app-content-wrapper {
     background-color: var(--background-primary) !important; /* Match background color with web */
   }
-
-  /* Prevent excessive scrolling */
-  html.android-chrome .bottom-spacer {
-    display: none !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Limit scroll area in messages view */
-  html.android-chrome .messages-scroll-view:after {
-    content: "";
-    display: block;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
 }
 
 /* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 30px; /* Reduced height for non-PWA Android */
+  height: 20px !important; /* Reduced from 30px for less spacing */
   margin-bottom: 0;
-  min-height: 30px;
+  min-height: 20px;
+  margin-top: 0 !important;
 }
 
 /* Non-iOS specific styles */
@@ -1700,8 +1685,8 @@ html.android-chrome .bottom-spacer {
 
 /* Ensure messages don't get hidden behind the input area */
 .bottom-spacer {
-  height: 80px;
-  min-height: 80px;
+  height: 60px; /* Reduced from 80px to reduce excessive space */
+  min-height: 60px;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 10px; /* Reduced from 20px */
 }
