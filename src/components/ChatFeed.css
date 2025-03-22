@@ -1378,7 +1378,7 @@ ul.chat-bubble-list {
   }
 
   html.android-chrome .chat-feed {
-    padding-bottom: 64px !important; /* Match taller input precisely */
+    padding-bottom: 20px !important; /* Reduced to match web version */
     margin-bottom: 0 !important;
     background-color: var(--background-primary);
   }
@@ -1388,7 +1388,7 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     height: 100% !important;
     position: relative;
-    padding-bottom: 64px !important; /* Match taller input precisely */
+    padding-bottom: 0 !important; /* Remove redundant padding */
   }
 
   html.android-chrome .messages-container {
@@ -1399,30 +1399,21 @@ ul.chat-bubble-list {
   }
 
   html.android-chrome .messages-scroll-view {
-    padding-bottom: 0 !important;
+    padding-bottom: 20px !important; /* Reduced to match web version */
     margin-bottom: 0 !important;
-    padding-bottom: 64px !important; /* Match taller input precisely */
   }
 
   html.android-chrome .message-pair:last-child {
-    margin-bottom: 0 !important;
+    margin-bottom: 5px !important;
     padding-bottom: 0 !important;
-  }
-  
-  html.android-chrome .chat-feed {
-    border-bottom: none !important;
-  }
-  
-  html.android-chrome .app-content-wrapper {
-    background-color: var(--background-input);
   }
 }
 
 /* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 30px; /* Reduced height for non-PWA Android */
+  height: 5px !important; /* Reduced height */
   margin-bottom: 0;
-  min-height: 30px;
+  min-height: 5px !important;
 }
 
 /* Non-iOS specific styles */

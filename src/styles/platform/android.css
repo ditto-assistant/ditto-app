@@ -189,7 +189,7 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .chat-feed {
     background-color: var(--background-primary);
-    padding-bottom: 32px !important; /* Reduced from 64px */
+    padding-bottom: 20px !important; /* Reduced padding to match web version */
     margin-bottom: 0 !important;
   }
   
@@ -212,14 +212,15 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .messages-scroll-view {
     background-color: var(--background-primary);
-    padding-bottom: 32px !important; /* Reduced from 64px */
+    padding-bottom: 20px !important; /* Reduced padding to match web version */
     margin-bottom: 0 !important;
   }
   
   html.android-chrome .button-hub {
+    /* Further reduce height and padding */
     min-height: 28px;
     padding: 2px 16px;
-    padding-bottom: 4px; /* Reduced from 8px */
+    padding-bottom: 8px; /* Fixed bottom padding */
     margin-bottom: 0;
     border-top: 1px solid var(--border-color);
   }
@@ -241,20 +242,29 @@ html.android-chrome .media-options-container {
   }
   
   html.android-chrome .input-wrapper {
-    bottom: 28px; /* Reduced from 36px to tighten the gap */
-    min-height: 36px;
-    padding: 6px 16px;
-    margin: 0;
+    /* Adjust bottom position to match reduced button hub */
+    bottom: 36px; /* Further increased to eliminate gap completely */
+    min-height: 36px; /* Make input area even taller */
+    padding: 6px 16px; /* Increased padding for taller input area */
+    border-top: none;
     border-bottom: none;
+    margin: 0;
     background-color: var(--background-input);
   }
   
   html.android-chrome .app-footer {
+    /* Add subtle padding to the bottom */
     padding-bottom: 0;
     margin-bottom: 0;
     border-top: none;
     bottom: 0;
     height: auto;
+  }
+  
+  /* Close the gap between chat feed and input */
+  html.android-chrome .chat-feed {
+    padding-bottom: 64px !important; /* Match footer height precisely */
+    margin-bottom: 0 !important;
   }
   
   /* Remove bottom spacer entirely in PWA mode */
@@ -263,12 +273,6 @@ html.android-chrome .media-options-container {
     height: 0 !important;
     min-height: 0 !important;
     margin: 0 !important;
-    padding: 0 !important;
-  }
-  
-  html.android-chrome .message-pair:last-child {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
   }
   
   /* Adjust the text area to have correct padding for PWA */
@@ -317,14 +321,28 @@ html.android-chrome .media-options-container {
     margin-bottom: 0 !important;
     padding-bottom: 64px !important;
   }
+
+  /* Ensure the bottom spacer doesn't add extra space */
+  html.android-chrome .bottom-spacer {
+    height: 5px !important;
+    min-height: 5px !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Adjust the message pair to match web version */
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 5px !important; 
+    padding-bottom: 0 !important;
+  }
 }
 
-/* Bottom spacer for Android */
+/* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 5px !important;
+  height: 5px !important; /* Reduced height */
+  margin-bottom: 0;
   min-height: 5px !important;
-  margin-bottom: 0 !important;
-  margin-top: 5px !important;
+  margin-top: 0 !important;
 }
 
 /* Chat feed container - tighten spacing */
@@ -349,5 +367,34 @@ html.android-chrome .messages-container {
   html.android-chrome .message-pair:last-child {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
+  }
+
+  /* Add more specific style for PWA mode to minimize the space at the bottom */
+  html.android-chrome .bottom-spacer,
+  html.android-chrome.pwa-mode .bottom-spacer {
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: none !important;
+  }
+  
+  /* Make message-pair bottom margin minimal for last item */
+  html.android-chrome .message-pair:last-child,
+  html.android-chrome.pwa-mode .message-pair:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Make sure all scroll container paddings are minimal */
+  html.android-chrome .messages-scroll-view,
+  html.android-chrome.pwa-mode .messages-scroll-view {
+    padding-bottom: 5px !important;
+  }
+  
+  /* Make sure chat feed padding is minimal */
+  html.android-chrome .chat-feed,
+  html.android-chrome.pwa-mode .chat-feed {
+    padding-bottom: 5px !important;
   }
 } 
