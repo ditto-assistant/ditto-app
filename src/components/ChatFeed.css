@@ -1379,8 +1379,9 @@ ul.chat-bubble-list {
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
-    padding-bottom: 64px !important; /* Match taller input precisely */
+    padding-bottom: 56px !important; /* Reduced from 64px */
     margin-bottom: 0 !important;
+    background-color: var(--background-primary);
   }
 
   html.android-chrome .chat-feed-container {
@@ -1388,7 +1389,7 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     height: 100% !important;
     position: relative;
-    padding-bottom: 64px !important; /* Match taller input precisely */
+    background-color: var(--background-primary);
   }
 
   html.android-chrome .messages-container {
@@ -1396,12 +1397,13 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     height: 100%;
     position: relative;
+    background-color: var(--background-primary);
   }
 
   html.android-chrome .messages-scroll-view {
-    padding-bottom: 0 !important;
+    padding-bottom: 56px !important; /* Reduced from 64px */
     margin-bottom: 0 !important;
-    padding-bottom: 64px !important; /* Match taller input precisely */
+    background-color: var(--background-primary);
   }
 
   /* Ensure the last message pair doesn't have extra space */

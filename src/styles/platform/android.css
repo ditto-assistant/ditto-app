@@ -318,4 +318,124 @@ html.android-chrome .messages-container {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
   }
+}
+
+/* PWA more aggressive modifications for Android */
+@media all and (display-mode: standalone), all and (display-mode: fullscreen) {
+  html.android-chrome {
+    /* Prevent scrolling on the root */
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  html.android-chrome .app {
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    background-color: var(--background-primary);
+  }
+
+  html.android-chrome .app-content-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--background-primary);
+  }
+
+  /* Chat feed - ensure proper spacing above the input */
+  html.android-chrome .chat-feed {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 56px !important; /* Reduced from 64px */
+    scroll-padding-bottom: 56px;
+    background-color: var(--background-primary);
+  }
+
+  /* Fixed footer container */
+  html.android-chrome .app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--background-input);
+    z-index: 50;
+    padding-bottom: 0;
+    border-top: none;
+  }
+
+  /* Form container */
+  html.android-chrome .form {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background-color: var(--background-input);
+  }
+
+  /* Input wrapper */
+  html.android-chrome .input-wrapper {
+    position: fixed;
+    bottom: 36px; /* Keep at 36px */
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: var(--background-input);
+    border-top: none;
+    padding: 6px 16px;
+    margin: 0;
+    min-height: 36px;
+    height: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Button hub positioning */
+  html.android-chrome .button-hub {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 101;
+    padding: 2px 16px;
+    padding-bottom: 8px;
+    min-height: 28px;
+    background-color: var(--background-input);
+    border-top: 1px solid var(--border-color);
+  }
+
+  /* Ensure containers don't add any extra space */
+  html.android-chrome .chat-feed-container,
+  html.android-chrome .messages-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    background-color: var(--background-primary);
+  }
+  
+  /* Force no gaps between elements */
+  html.android-chrome .messages-scroll-view {
+    margin-bottom: 0 !important;
+    padding-bottom: 56px !important; /* Reduced from 64px */
+    background-color: var(--background-primary);
+  }
+
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* Bottom spacer for Android */
+html.android-chrome .bottom-spacer {
+  height: 0 !important;
+  min-height: 0 !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  display: none !important;
 } 
