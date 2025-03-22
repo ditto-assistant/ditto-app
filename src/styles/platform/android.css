@@ -207,12 +207,13 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 34px; /* Further increased to close the gap */
-    min-height: 32px; /* Make input area taller */
-    padding: 4px 16px; /* Increased padding for taller input area */
+    bottom: 36px; /* Further increased to eliminate gap completely */
+    min-height: 36px; /* Make input area even taller */
+    padding: 6px 16px; /* Increased padding for taller input area */
     border-top: none;
     border-bottom: none;
     margin: 0;
+    background-color: var(--background-input);
   }
   
   html.android-chrome .app-footer {
@@ -226,7 +227,7 @@ html.android-chrome .media-options-container {
   
   /* Close the gap between chat feed and input */
   html.android-chrome .chat-feed {
-    padding-bottom: 62px !important; /* Increased to account for taller input */
+    padding-bottom: 64px !important; /* Match footer height precisely */
     margin-bottom: 0 !important;
   }
   
@@ -240,9 +241,11 @@ html.android-chrome .media-options-container {
   
   /* Adjust the text area to have correct padding for PWA */
   html.android-chrome .text-area {
-    min-height: 28px !important; /* Increased from 24px */
-    padding: 4px 8px !important; /* Increased padding */
+    min-height: 32px !important; /* Increased from 28px */
+    padding: 6px 8px !important; /* Increased padding */
     margin: 0 !important;
+    line-height: 1.4 !important;
+    font-size: 16px !important;
   }
 
   /* Ensure containers don't add any extra space */
@@ -264,7 +267,7 @@ html.android-chrome .media-options-container {
     position: relative;
     height: 100%;
     overflow: hidden;
-    padding-bottom: 62px !important; /* Increased to match taller input */
+    padding-bottom: 64px !important; /* Increased to match input height exactly */
   }
   
   /* Prevent any scroll gaps in app content wrapper */
@@ -275,6 +278,12 @@ html.android-chrome .media-options-container {
   /* Adjust the entire layout structure */
   html.android-chrome .app {
     position: relative;
+  }
+  
+  /* Force no gaps between elements */
+  html.android-chrome .messages-scroll-view {
+    margin-bottom: 0 !important;
+    padding-bottom: 64px !important;
   }
 }
 

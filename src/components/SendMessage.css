@@ -251,11 +251,12 @@ html.android-chrome .icon-button.submit {
 
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 34px;
-    min-height: 32px;
-    padding: 4px 16px;
+    bottom: 36px;
+    min-height: 36px;
+    padding: 6px 16px;
     margin: 0;
     border-bottom: none;
+    background-color: var(--background-input);
   }
 
   html.android-chrome .app-footer {
@@ -277,7 +278,7 @@ html.android-chrome .icon-button.submit {
 
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
-    padding-bottom: 62px !important;
+    padding-bottom: 64px !important;
     margin-bottom: 0 !important;
   }
 
@@ -292,10 +293,11 @@ html.android-chrome .icon-button.submit {
 
   /* Adjust the text area to have correct padding for PWA */
   html.android-chrome .text-area {
-    min-height: 28px !important;
-    padding: 4px 8px !important;
+    min-height: 32px !important;
+    padding: 6px 8px !important;
     margin: 0 !important;
     font-size: 16px !important;
+    line-height: 1.4 !important;
   }
 
   /* Ensure containers don't add extra space */
@@ -333,6 +335,12 @@ html.android-chrome .icon-button.submit {
     height: 100vh !important;
     display: flex;
     flex-direction: column;
+  }
+  
+  /* Force no gaps between elements */
+  html.android-chrome .messages-scroll-view {
+    margin-bottom: 0 !important;
+    padding-bottom: 64px !important;
   }
 }
 
