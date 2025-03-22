@@ -8,7 +8,7 @@
 }
 
 .chat-feed {
-  background-color: transparent;
+  background-color: var(--background-primary);
   padding: 10px 20px;
   overflow-y: auto;
   height: 100%;
@@ -1369,41 +1369,68 @@ ul.chat-bubble-list {
 /* Add PWA-specific styles for the chat feed */
 @media all and (display-mode: standalone) {
   .chat-feed {
-    /* Use environment variable directly in PWA mode */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0 !important;
+    background-color: var(--background-primary);
+  }
+  
+  html.android-chrome .bottom-spacer {
+    display: none !important;
   }
 
-  /* Adjust message container margins in PWA mode */
-  .message-container {
-    margin-bottom: 8px; /* Consistent spacing in PWA mode */
+  html.android-chrome .chat-feed {
+    padding-bottom: 64px !important; /* Match taller input precisely */
+    margin-bottom: 0 !important;
+    background-color: var(--background-primary);
   }
 
-  /* Fix any modal positioning in PWA mode */
-  .action-overlay,
-  .reaction-overlay {
-    /* Ensure overlays don't get hidden by safe areas */
-    margin-top: env(safe-area-inset-top, 0px);
-    margin-bottom: env(safe-area-inset-bottom, 0px);
+  html.android-chrome .chat-feed-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    height: 100% !important;
+    position: relative;
+    padding-bottom: 64px !important; /* Match taller input precisely */
+  }
+
+  html.android-chrome .messages-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    height: 100%;
+    position: relative;
+  }
+
+  html.android-chrome .messages-scroll-view {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 64px !important; /* Match taller input precisely */
+  }
+
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  html.android-chrome .chat-feed {
+    border-bottom: none !important;
+  }
+  
+  html.android-chrome .app-content-wrapper {
+    background-color: var(--background-input);
   }
 }
 
-.chat-feed-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: hidden; /* Let ScrollToBottom handle overflow */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-  position: relative;
-  padding: 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+/* Android Chrome specific adjustment for bottom spacing */
+html.android-chrome .bottom-spacer {
+  height: 30px; /* Reduced height for non-PWA Android */
+  margin-bottom: 0;
+  min-height: 30px;
 }
 
 /* Non-iOS specific styles */
 @supports not (-webkit-touch-callout: none) {
   /* For desktop and Android browsers */
   .bottom-spacer {
-    height: 0px !important; /* Moderate spacing for desktop */
+    height: 70px !important; /* Keep web spacing as is */
+    min-height: 70px;
   }
 
   /* Position follow button for desktop and Android */
@@ -1460,10 +1487,10 @@ ul.chat-bubble-list {
 .messages-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
   height: 100%;
-  overflow-y: auto;
+  width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 /* Follow button style for custom ScrollToBottom */
@@ -1522,10 +1549,14 @@ ul.chat-bubble-list {
 /* Custom ScrollToBottom scroll view container */
 .messages-scroll-view,
 .custom-scroll-view {
-  height: 100%;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Improves scroll on iOS */
+  padding-bottom: 20px;
 }
 
 /* We're using a different approach to fix iOS avatar clicking issues */
@@ -1641,4 +1672,12 @@ ul.chat-bubble-list {
   z-index: 9999;
   font-family: monospace;
   max-width: 200px;
+}
+
+/* Ensure messages don't get hidden behind the input area */
+.bottom-spacer {
+  height: 80px;
+  min-height: 80px;
+  width: 100%;
+  margin-top: 20px;
 }

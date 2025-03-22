@@ -5,30 +5,16 @@ import { ModalHeader } from "./ModalHeader";
 import { motion } from "framer-motion";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import { ModalButton } from "../buttons/ModalButton";
+import { usePlatform } from "@/hooks/usePlatform";
 
 const id: ModalId = "confirmationDialog";
 
 export default function ConfirmationModal() {
   const { getModalState, createCloseHandler } = useModal();
   const { config, hideConfirmationDialog } = useConfirmationDialog();
+  const { isMobile } = usePlatform();
   const closeModal = createCloseHandler(id);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size] = useState({ width: 450, height: 200 });
   const { isOpen, zIndex } = getModalState(id) ?? DEFAULT_MODAL_STATE;
-
-  // Center the modal on mount and window resize
-  useEffect(() => {
-    const centerModal = () => {
-      setPosition({
-        x: Math.max(0, (window.innerWidth - size.width) / 2),
-        y: Math.max(0, (window.innerHeight - size.height) / 3), // Position 1/3 from the top
-      });
-    };
-
-    centerModal();
-    window.addEventListener("resize", centerModal);
-    return () => window.removeEventListener("resize", centerModal);
-  }, [size.width, size.height]);
 
   const handleCancel = () => {
     if (config?.onCancel) {
@@ -57,12 +43,7 @@ export default function ConfirmationModal() {
     >
       <motion.div
         className="confirmation-modal-container"
-        style={{
-          zIndex,
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          width: `${size.width}px`,
-        }}
+        style={{ zIndex }}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}

@@ -88,6 +88,19 @@ export default function SendMessage({
   const { selectedScript, setSelectedScript, handleDeselectScript } =
     useScripts();
 
+  // Check if we're running as PWA
+  const [isPWA, setIsPWA] = useState(false);
+  
+  // Detect if running as PWA
+  useEffect(() => {
+    const isPWAMode = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      window.matchMedia('(display-mode: fullscreen)').matches || 
+      window.navigator.standalone; // for iOS
+    
+    setIsPWA(isPWAMode);
+  }, []);
+
   const handleSubmit = useCallback(
     async (event) => {
       if (event) event.preventDefault();
@@ -206,9 +219,23 @@ export default function SendMessage({
     }
   }, [capturedImage]);
 
+  // Single, unified resize effect that works for all platforms
+  useEffect(() => {
+    // Call resize on window resize
+    window.addEventListener("resize", resizeTextArea);
+    
+    // Initial resize
+    resizeTextArea();
+    
+    return () => {
+      window.removeEventListener("resize", resizeTextArea);
+    };
+  }, []);
+
+  // Resize whenever the message or image changes
   useEffect(() => {
     resizeTextArea();
-  }, []);
+  }, [message, image]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -231,7 +258,19 @@ export default function SendMessage({
       if (e.key === "Enter") {
         e.preventDefault();
         setMessage((prevMessage) => prevMessage + "\n");
-        resizeTextArea();
+        
+        // Force immediate recalculation and scroll to show the new line
+        requestAnimationFrame(() => {
+          resizeTextArea();
+          
+          // Second call after a brief delay to ensure browser has updated DOM
+          setTimeout(() => {
+            const textArea = textAreaRef.current;
+            if (textArea && textArea.scrollHeight > 120) {
+              textArea.scrollTop = textArea.scrollHeight;
+            }
+          }, 10);
+        });
       }
     } else {
       if (e.key === "Enter") {
@@ -250,31 +289,44 @@ export default function SendMessage({
     }
   };
 
-  const resizeTextArea = () => {
+  // Simple, reliable resize function that works on both web and mobile
+  function resizeTextArea() {
     const textArea = textAreaRef.current;
-    if (textArea) {
-      textArea.style.height = "24px";
-      const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
-      textArea.style.height = `${newHeight}px`;
-      if (textArea.scrollHeight >= 200) {
-        textArea.style.overflowY = "auto";
-      } else {
-        textArea.style.overflowY = "hidden";
-      }
-      const imagePreview = document.querySelector(".image-preview");
-      if (imagePreview) {
-        imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
-      }
+    if (!textArea) return;
+    
+    // Reset height to recalculate
+    textArea.style.height = "0px";
+    
+    // Calculate new height based on content
+    // Use smaller height for PWA on mobile to prevent excessive space
+    const minHeight = isMobile ? (isPWA ? 32 : 36) : 24;
+    
+    const newHeight = Math.min(
+      Math.max(minHeight, textArea.scrollHeight), // Use platform-specific minimum height
+      120 // Maximum height 120px
+    );
+    
+    // Set the new height
+    textArea.style.height = `${newHeight}px`;
+    
+    // Handle overflow - show scrollbar only if needed
+    const needsScrollbar = textArea.scrollHeight > 120;
+    textArea.style.overflowY = needsScrollbar ? "auto" : "hidden";
+    
+    // Ensure cursor visibility by scrolling to bottom when:
+    // 1. Text area is at max height
+    // 2. And there's a newline at the end (indicating user just pressed Enter)
+    if (needsScrollbar && message.endsWith('\n')) {
+      // Force scroll to the bottom to show the new line
+      textArea.scrollTop = textArea.scrollHeight;
     }
-  };
 
-  useEffect(() => {
-    const handleResize = () => resizeTextArea();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => resizeTextArea(), [message, image]);
+    // Adjust image preview position if it exists
+    const imagePreview = document.querySelector('.image-preview');
+    if (imagePreview) {
+      imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
+    }
+  }
 
   const handlePaste = (event) => {
     const items = event.clipboardData.items;
@@ -365,55 +417,101 @@ export default function SendMessage({
     }
   };
 
+  // Effect to handle empty messages
+  useEffect(() => {
+    if (message === '') {
+      // When message is cleared, force resize immediately
+      resizeTextArea();
+      
+      // And again after a short delay to ensure it works on all platforms
+      setTimeout(() => {
+        resizeTextArea();
+      }, 10);
+    }
+  }, [message]);
+
+  // Simplify the onChange handler
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    const hasNewLine = newValue.endsWith('\n');
+    
+    // Update state
+    setMessage(newValue);
+    
+    // Force immediate resize with proper timing for scrolling
+    requestAnimationFrame(() => {
+      resizeTextArea();
+      
+      // If a newline was just added and we're at max height, ensure it's visible
+      if (hasNewLine) {
+        const textArea = textAreaRef.current;
+        if (textArea && textArea.scrollHeight > 120) {
+          // Double ensure scrolling to the bottom to show cursor on the new line
+          setTimeout(() => {
+            textArea.scrollTop = textArea.scrollHeight;
+          }, 0);
+        }
+      }
+    });
+  };
+
   return (
     <>
       <form className="form" onSubmit={handleSubmit} onPaste={handlePaste}>
         <div className="input-wrapper">
           <textarea
             ref={textAreaRef}
+            className="text-area"
+            value={message}
+            onChange={handleChange}
             onKeyDown={handleKeyDown}
             onInput={resizeTextArea}
-            className="text-area"
-            type="text"
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-            }}
+            onFocus={resizeTextArea}
+            onBlur={resizeTextArea}
             placeholder="Message Ditto"
-            rows={3}
             style={{
               overflowY: "hidden",
-              marginRight: "-5px",
             }}
           />
         </div>
 
         <div className="bottom-buttons-bar">
           <div className="button-hub">
-            {/* Full screen button on the left */}
-            <div
-              className="icon-button action-button expand-button"
-              onClick={openComposeModal}
-              aria-label="Expand message"
-            >
-              <FaExpand />
-            </div>
+            {/* Left aligned buttons */}
+            <div className="left-buttons">
+              <div
+                className="icon-button action-button expand-button"
+                onClick={openComposeModal}
+                aria-label="Expand message"
+              >
+                <FaExpand />
+              </div>
 
-            {/* Add Media button next to full screen */}
-            <div
-              className="icon-button action-button add-media-button"
-              onClick={handlePlusClick}
-              aria-label="Add media"
-            >
-              <FaPlus />
+              <div
+                className="icon-button action-button add-media-button"
+                onClick={handlePlusClick}
+                aria-label="Add media"
+              >
+                <FaPlus />
+              </div>
             </div>
 
             {/* Center Ditto logo button */}
-            <div className="ditto-button-container">
+            <div className="ditto-button-container" style={{ position: 'relative', zIndex: 2000 }}>
               <motion.div
                 ref={logoButtonRef}
-                className="ditto-logo-button"
+                className={`ditto-logo-button ${isMenuOpen ? "active" : ""}`}
                 whileTap={{ scale: 0.9 }}
+                animate={
+                  isMenuOpen
+                    ? {
+                        scale: 1.1,
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      }
+                    : { scale: 1 }
+                }
+                transition={{ duration: 0.2 }}
                 whileHover={{
                   scale: 1.1,
                   backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -435,7 +533,7 @@ export default function SendMessage({
               </motion.div>
 
               {/* Hidden sliding menu container for Ditto logo */}
-              <div className="ditto-menu-container">
+              <div className="ditto-menu-container" style={{ position: 'relative' }}>
                 <SlidingMenu
                   isOpen={isMenuOpen}
                   onClose={() => {
@@ -446,7 +544,7 @@ export default function SendMessage({
                   triggerRef={logoButtonRef}
                   isPinned={menuPinned}
                   menuPosition="bottom"
-                  menuTitle="Ditto Options"
+                  menuTitle="Ditto Menu"
                   menuItems={[
                     {
                       icon: <MdFeedback className="icon" />,
@@ -468,84 +566,71 @@ export default function SendMessage({
               </div>
             </div>
 
-            {/* Script indicator button (shows only when a script is selected) */}
-            {selectedScript && (
-              <motion.div
-                className="script-icon-button"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleScriptNameClick}
-                ref={scriptIndicatorRef}
-                title={selectedScript.script}
-              >
-                <FaCode />
-              </motion.div>
-            )}
+            {/* Right aligned send button */}
+            <div className="right-buttons">
+              {/* Script indicator that shows when a script is selected */}
+              {selectedScript && (
+                <div
+                  className="script-indicator-container"
+                  ref={scriptIndicatorRef}
+                >
+                  <motion.div
+                    className="script-icon-button"
+                    onClick={handleScriptNameClick}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Script actions"
+                  >
+                    <FaCode />
+                  </motion.div>
 
-            {/* Send button on the right */}
-            <button
-              className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
-              type="submit"
-              disabled={isWaitingForResponse}
-              aria-label="Send message"
-            >
-              <FaPaperPlane />
-            </button>
-
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
-          </div>
-
-          {/* Hidden sliding menu container for script actions */}
-          {selectedScript && (
-            <div style={{ position: "relative", width: "0", height: "0" }}>
-              <SlidingMenu
-                isOpen={showScriptActions}
-                onClose={() => setShowScriptActions(false)}
-                position="right"
-                triggerRef={scriptIndicatorRef}
-                menuPosition="bottom"
-                menuTitle={selectedScript.script}
-                menuItems={[
-                  {
-                    icon: <FaPlay className="icon" />,
-                    text: "Launch Script",
-                    onClick: handlePlayScript,
-                  },
-                  {
-                    icon: <FaPen className="icon" />,
-                    text: "Edit Script",
-                    onClick: () => {
-                      if (selectedScript) {
-                        const event = new CustomEvent("editScript", {
-                          detail: {
-                            script: {
-                              name: selectedScript.script,
-                              content: selectedScript.contents,
-                              scriptType: selectedScript.scriptType,
+                  <AnimatePresence>
+                    {showScriptActions && (
+                      <SlidingMenu
+                        isOpen={showScriptActions}
+                        onClose={() => setShowScriptActions(false)}
+                        position="right"
+                        triggerRef={scriptIndicatorRef}
+                        menuPosition="bottom"
+                        menuTitle={selectedScript.script}
+                        menuItems={[
+                          {
+                            icon: <FaPlay className="icon" />,
+                            text: "Run Script",
+                            onClick: handlePlayScript,
+                          },
+                          {
+                            icon: <FaPen className="icon" />,
+                            text: "Edit Script",
+                            onClick: () => {
+                              const event = new CustomEvent("editScript", {
+                                detail: { script: selectedScript },
+                              });
+                              window.dispatchEvent(event);
                             },
                           },
-                        });
-                        window.dispatchEvent(event);
-                      }
-                    },
-                  },
-                  {
-                    icon: <FaTimes className="icon" />,
-                    text: "Deselect Script",
-                    onClick: handleDeselectScript,
-                  },
-                ]}
-              />
+                          {
+                            icon: <FaTimes className="icon" />,
+                            text: "Close Script",
+                            onClick: handleDeselectScript,
+                          },
+                        ]}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              <button
+                className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
+                type="submit"
+                disabled={isWaitingForResponse}
+                aria-label="Send message"
+              >
+                <FaPaperPlane />
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {image && (
@@ -564,38 +649,46 @@ export default function SendMessage({
         <AnimatePresence>
           {showMediaOptions && (
             <motion.div
-              className="action-menu-overlay"
+              className="media-options-container"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onCloseMediaOptions}
             >
               <motion.div
-                className="action-menu"
-                initial={{ x: "-100%", opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: "-100%", opacity: 0 }}
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                className="media-options-menu"
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                transition={{ type: "spring", damping: 25, stiffness: 350 }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   type="button"
-                  className="action-menu-item"
+                  className="media-option-item"
                   onClick={handleGalleryClick}
                 >
-                  <FaImage /> Photo Gallery
+                  <FaImage className="media-option-icon" /> Photo Gallery
                 </button>
                 <button
                   type="button"
-                  className="action-menu-item"
+                  className="media-option-item"
                   onClick={handleCameraClick}
                 >
-                  <FaCamera /> Camera
+                  <FaCamera className="media-option-icon" /> Camera
                 </button>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        <input
+          type="file"
+          id="image-upload"
+          accept="image/*"
+          onChange={handleImageUpload}
+          style={{ display: "none" }}
+        />
 
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>

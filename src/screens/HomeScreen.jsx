@@ -13,7 +13,6 @@ import useWhatsNew from "@/hooks/useWhatsNew";
 import { getUpdateState } from "@/utils/updateService";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
-const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
@@ -21,17 +20,19 @@ export default function HomeScreen() {
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [showMediaOptions, setShowMediaOptions] = useState(false);
+  const mediaStreamRef = useRef(null);
+  const { saveScript, setSelectedScript } = useScripts();
+  const [fullScreenEdit, setFullScreenEdit] = useState(null);
   const [showTOS, setShowTOS] = useState(() => {
     return !localStorage.getItem("hasSeenTOS");
   });
-  const [fullScreenEdit, setFullScreenEdit] = useState(null);
-  const { isIOS, isPWA } = usePlatform();
-  const { setSelectedScript, saveScript } = useScripts();
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [showMediaOptions, setShowMediaOptions] = useState(false);
+  const { isIOS, isPWA, isChrome, isAndroid } = usePlatform();
   const { openWhatsNew } = useWhatsNew();
-
   const appBodyRef = useRef(null);
+  const { isMobile } = usePlatform();
+  const [isAndroidChrome, setIsAndroidChrome] = useState(false);
 
   // Handle showing What's New modal when app is reloaded after update
   useEffect(() => {
@@ -59,77 +60,75 @@ export default function HomeScreen() {
     }
   }, [openWhatsNew]);
 
+  // Add platform detection and viewport height management
   useEffect(() => {
-    // Update the existing useEffect that handles viewport height
-    const setVH = () => {
-      // First get the viewport height and multiply it by 1% to get a value for a vh unit
-      let vh = window.innerHeight * 0.01;
-
-      // For iOS Safari, use the visualViewport API for more accurate measurements
-      if (isIOS && window.visualViewport) {
-        vh = window.visualViewport.height * 0.01;
-      }
-
-      // Then set the value in the --vh custom property to the root of the document
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
-
-      // Simple approach - don't add extra space in PWA mode
-      if (isIOS) {
-        const extraSpace = isPWA ? 0 : 20; // No extra space needed in PWA mode
-        const iosVh = (window.innerHeight + extraSpace) * 0.01;
-        document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
-      }
-    };
-
-    // Initial set
-    setVH();
-
-    // Add event listeners for various events that might change the viewport
-    window.addEventListener("resize", setVH);
-    window.addEventListener("orientationchange", setVH);
-    window.addEventListener("scroll", setVH);
-
-    // Special handling for iOS to help with browser chrome appearing/disappearing
-    if (isIOS) {
-      // Add meta viewport tag to prevent scaling issues
-      const viewportMeta = document.querySelector('meta[name="viewport"]');
-      if (viewportMeta) {
-        viewportMeta.setAttribute(
-          "content",
-          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no",
-        );
-      }
-
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", setVH);
-        window.visualViewport.addEventListener("scroll", setVH);
-      }
-
-      // Set a timer to periodically check viewport size on iOS
-      const safariHeightTimer = setInterval(setVH, 500);
-
-      // Also check after a brief delay for when the page first loads
-      setTimeout(setVH, 300);
-
+    // Check if we're on Android Chrome
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isChrome = /Chrome/i.test(navigator.userAgent);
+    
+    if (isAndroid && isChrome) {
+      setIsAndroidChrome(true);
+      document.documentElement.classList.add('android-chrome');
+      document.body.classList.add('android-chrome');
+      
+      // Function to update viewport height
+      const updateViewportHeight = () => {
+        // Use the window's inner height as the true viewport height
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+        
+        // Calculate URL bar offset for adjustments
+        const urlBarOffset = Math.max(0, window.outerHeight - window.innerHeight);
+        document.documentElement.style.setProperty('--url-bar-offset', `${urlBarOffset}px`);
+      };
+      
+      // Update on resize and orientation change
+      window.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('orientationchange', updateViewportHeight);
+      window.addEventListener('scroll', updateViewportHeight);
+      
+      // Initial update
+      updateViewportHeight();
+      
+      // Update again after a short delay to catch any UI adjustments
+      setTimeout(updateViewportHeight, 100);
+      
+      // And once more after layout has fully settled
+      setTimeout(updateViewportHeight, 500);
+      
       return () => {
-        // Clean up event listeners
-        window.removeEventListener("resize", setVH);
-        window.removeEventListener("orientationchange", setVH);
-        window.removeEventListener("scroll", setVH);
-        if (window.visualViewport) {
-          window.visualViewport.removeEventListener("resize", setVH);
-          window.visualViewport.removeEventListener("scroll", setVH);
-        }
-        clearInterval(safariHeightTimer);
+        window.removeEventListener('resize', updateViewportHeight);
+        window.removeEventListener('orientationchange', updateViewportHeight);
+        window.removeEventListener('scroll', updateViewportHeight);
       };
     }
-
-    return () => {
-      window.removeEventListener("resize", setVH);
-      window.removeEventListener("orientationchange", setVH);
-      window.removeEventListener("scroll", setVH);
-    };
-  }, [isIOS, isPWA]);
+    
+    // Add iOS Safari detection
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    
+    if (isIOS && isSafari) {
+      document.documentElement.classList.add('ios-safari');
+      document.body.classList.add('ios-safari');
+      
+      // Set viewport height for iOS
+      const setIOSViewportHeight = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      };
+      
+      window.addEventListener('resize', setIOSViewportHeight);
+      window.addEventListener('orientationchange', setIOSViewportHeight);
+      
+      setIOSViewportHeight();
+      
+      return () => {
+        window.removeEventListener('resize', setIOSViewportHeight);
+        window.removeEventListener('orientationchange', setIOSViewportHeight);
+      };
+    }
+  }, []);
 
   const handleCameraOpen = () => {
     setIsCameraOpen(true);
@@ -191,54 +190,6 @@ export default function HomeScreen() {
     setShowMediaOptions(true);
   };
 
-  // Update the useEffect that listens for memory deletion events
-  useEffect(() => {
-    const handleMemoryDeleted = (event) => {
-      // Update histCount state with the new count
-      const { newHistCount } = event.detail;
-      setCount(newHistCount);
-
-      // Get the latest data from localStorage
-      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-      const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
-
-      // Create new conversation object
-      const newConversation = {
-        messages: [
-          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-        ],
-        is_typing: false,
-      };
-
-      // Rebuild messages array with latest data including pairIDs
-      for (let i = 0; i < prompts.length; i++) {
-        newConversation.messages.push({
-          sender: "User",
-          text: prompts[i],
-          timestamp: timestamps[i],
-          pairID: pairIDs[i],
-        });
-        newConversation.messages.push({
-          sender: "Ditto",
-          text: responses[i],
-          timestamp: timestamps[i],
-          pairID: pairIDs[i],
-        });
-      }
-
-      // Update the conversation state with new data
-      setConversation(newConversation);
-    };
-
-    window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-
-    return () => {
-      window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-    };
-  }, []);
-
   useEffect(() => {
     const handleEditScript = (event) => {
       const { script } = event.detail;
@@ -289,9 +240,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <div className="app" onClick={handleCloseMediaOptions}>
-      {/* Floating header has been moved to the bottom buttons bar */}
-      {/* Status bar has been removed */}
+    <div className={`app ${isAndroidChrome ? 'android-chrome' : ''}`} onClick={handleCloseMediaOptions}>
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="app-content-wrapper">
           <div
@@ -360,8 +309,6 @@ export default function HomeScreen() {
           isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
         />
       )}
-
-      {/* ScriptActionsOverlay has been removed and replaced with the SlidingMenu in the floating-script-indicator */}
 
       {fullScreenEdit && (
         <FullScreenEditor

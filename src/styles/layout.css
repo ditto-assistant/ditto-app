@@ -1,0 +1,202 @@
+/* Base layout system for Ditto app */
+@import "./variables.css";
+
+/* Root layout container */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100vw;
+  background-color: var(--background-primary);
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overscroll-behavior: none;
+  touch-action: pan-y;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Main content area */
+.app-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Chat feed area */
+.chat-feed {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 20px;
+  padding-bottom: 100px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Button hub - base styles for all platforms */
+.button-hub {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--background-input);
+  padding: 8px 16px;
+  transform: translateZ(0);
+  will-change: transform;
+  z-index: 100;
+}
+
+/* Prevent layout shifts from button animations */
+.ditto-button-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+/* Web-specific styles */
+@media screen and (min-width: 481px) {
+  .chat-feed {
+    padding-bottom: 100px;
+  }
+  
+  .button-hub {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .input-wrapper {
+    position: relative;
+    margin-bottom: 52px;
+  }
+}
+
+/* Mobile-specific styles */
+@media screen and (max-width: 480px) {
+  /* Ensure iOS and Android styling */
+  html.ios-safari .chat-feed,
+  html.android-chrome .chat-feed {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* Force footer to stay at bottom */
+  .app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    background-color: var(--background-input);
+  }
+  
+  html.ios-safari .button-hub,
+  html.android-chrome .button-hub {
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 0px);
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--border-color);
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 101;
+  }
+  
+  html.ios-safari .input-wrapper,
+  html.android-chrome .input-wrapper {
+    position: fixed;
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--border-color);
+    z-index: 100;
+    padding: 8px 16px;
+    height: auto;
+    min-height: 40px;
+    margin: 0;
+    background-color: var(--background-input);
+  }
+  
+  /* Force visibility of text area */
+  html.android-chrome .text-area,
+  html.ios-safari .text-area {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    min-height: 24px;
+    height: auto;
+    max-height: 120px;
+  }
+  
+  html.android-chrome .form,
+  html.ios-safari .form {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Special Android fixes for Android Chrome */
+html.android-chrome .app-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-color: var(--background-input);
+  border-top: 1px solid var(--border-color);
+}
+
+html.android-chrome .form {
+  margin-bottom: 0;
+  overflow: visible;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Keyboard open adjustments */
+@media screen and (max-height: 500px) {
+  .chat-feed {
+    padding-bottom: 80px;
+  }
+  
+  .button-hub {
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+  
+  .input-wrapper {
+    padding: 6px 12px;
+  }
+}
+
+/* Ensure safe area is respected */
+@supports (padding: max(0px)) {
+  .button-hub {
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+  }
+  
+  .chat-feed {
+    padding-bottom: max(100px, calc(100px + env(safe-area-inset-bottom, 0px)));
+  }
+  
+  @media screen and (max-width: 480px) {
+    html.ios-safari .button-hub,
+    html.android-chrome .button-hub {
+      padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+    }
+    
+    html.ios-safari .input-wrapper,
+    html.android-chrome .input-wrapper {
+      bottom: max(52px, calc(52px + env(safe-area-inset-bottom, 0px)));
+    }
+    
+    html.ios-safari .chat-feed,
+    html.android-chrome .chat-feed {
+      padding-bottom: max(120px, calc(120px + env(safe-area-inset-bottom, 0px)));
+    }
+  }
+} 

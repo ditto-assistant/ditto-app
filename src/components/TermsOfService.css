@@ -22,6 +22,7 @@
   flex-direction: column;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   color: #dcddde;
+  margin: 20px;
 }
 
 .tos-header {
@@ -52,6 +53,7 @@
   overflow-y: auto;
   flex: 1;
   line-height: 1.6;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Markdown specific styling for TOS */
@@ -166,11 +168,26 @@
 @media (max-width: 768px) {
   .tos-container {
     width: 95%;
-    max-height: 95vh;
+    max-height: 85vh;
+    margin: 10px;
   }
 
   .tos-content {
     padding: 15px;
+    padding-bottom: 20px;
+  }
+
+  .tos-footer {
+    padding: 15px;
+    position: sticky;
+    bottom: 0;
+    background-color: #36393f;
+    border-top: 1px solid #202225;
+    z-index: 10;
+  }
+
+  .tos-content .markdown-content {
+    padding-bottom: 10px;
   }
 
   .tos-content .markdown-content h2 {
@@ -184,5 +201,16 @@
   .tos-content .markdown-content p,
   .tos-content .markdown-content li {
     font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .tos-container {
+    max-height: 95vh;
+    margin: 10px;
+  }
+
+  .tos-content {
+    max-height: calc(95vh - 120px);
   }
 }

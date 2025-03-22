@@ -1,7 +1,9 @@
 @import "./variables.css";
 @import "./components.css";
 @import "./buttons.css";
+@import "./layout.css";
 @import "./platform/ios.css";
+@import "./platform/android.css";
 
 * {
   margin: 0;
@@ -73,4 +75,31 @@ body {
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* PWA specific adjustments */
+@media all and (display-mode: standalone) {
+  html,
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .app {
+    height: 100vh;
+  }
+}
+
+/* When keyboard is open, ensure content is visible */
+@media screen and (max-height: 500px),
+  (max-height: 700px) and (orientation: landscape) {
+  html,
+  body,
+  #root,
+  .app {
+    position: absolute;
+    overflow: hidden;
+    height: 100%;
+    min-height: auto;
+  }
 }
