@@ -36,19 +36,10 @@ const CustomScrollToBottom = ({
     if (!scrollContainerRef.current) return;
 
     const scrollContainer = scrollContainerRef.current;
-    const isAndroidPWA = document.documentElement.classList.contains('android-chrome') && 
-                         (window.matchMedia('(display-mode: standalone)').matches || 
-                          window.matchMedia('(display-mode: fullscreen)').matches);
-    
+
     setTimeout(() => {
-      // Calculate appropriate scroll position
-      // On Android PWA, we don't want to scroll past the content
-      const scrollTarget = isAndroidPWA 
-        ? scrollContainer.scrollHeight - scrollContainer.clientHeight
-        : scrollContainer.scrollHeight + 20; // Reduced from 100 to reduce overscroll
-        
       scrollContainer.scrollTo({
-        top: scrollTarget,
+        top: scrollContainer.scrollHeight + 100,
         behavior: behavior,
       });
     }, 50);
@@ -198,20 +189,10 @@ const CustomScrollToBottom = ({
     const scrollTop = scrollContainer.scrollTop;
     const scrollHeight = scrollContainer.scrollHeight;
     const clientHeight = scrollContainer.clientHeight;
-    const isAndroidPWA = document.documentElement.classList.contains('android-chrome') && 
-                         (window.matchMedia('(display-mode: standalone)').matches || 
-                          window.matchMedia('(display-mode: fullscreen)').matches);
 
-    // Use a smaller threshold for Android PWA to be more precise
-    const scrollThreshold = isAndroidPWA ? 10 : 30;
-    const isBottom = scrollHeight - scrollTop - clientHeight < scrollThreshold;
+    const isBottom = scrollHeight - scrollTop - clientHeight < 30;
     setIsScrolledToBottom(isBottom);
     setShowScrollToBottom(!isBottom);
-
-    // For Android PWA, prevent overscrolling past content
-    if (isAndroidPWA && scrollTop > scrollHeight - clientHeight) {
-      scrollContainer.scrollTop = scrollHeight - clientHeight;
-    }
 
     const isNearTop = scrollTop < 50;
 
@@ -315,7 +296,7 @@ export default function ChatFeed({
   const { showMemoryNetwork } = useMemoryNetwork();
   const { confirmMemoryDeletion } = useMemoryDeletion();
   const bottomRef = useRef(null);
-  const { isMobile, isAndroid, isPWA } = usePlatform();
+  const { isMobile } = usePlatform();
   const [activeAvatarIndex, setActiveAvatarIndex] = useState(null);
   const [messagesVisible, setMessagesVisible] = useState(false);
   const [shouldFetchNext, setShouldFetchNext] = useState(false);
@@ -497,28 +478,6 @@ export default function ChatFeed({
       toast.error("Failed to show memory network");
     }
   };
-
-  // Handle Android PWA specific scroll behavior
-  useEffect(() => {
-    if (isAndroid && isPWA) {
-      const fixScroll = () => {
-        const scrollView = document.querySelector('.messages-scroll-view');
-        if (scrollView) {
-          // Make sure scroll doesn't go beyond content
-          const maxScroll = scrollView.scrollHeight - scrollView.clientHeight;
-          if (scrollView.scrollTop > maxScroll) {
-            scrollView.scrollTop = maxScroll;
-          }
-        }
-      };
-      
-      // Run on load and on resize
-      fixScroll();
-      window.addEventListener('resize', fixScroll);
-      
-      return () => window.removeEventListener('resize', fixScroll);
-    }
-  }, [isAndroid, isPWA, messages]);
 
   return (
     <div className="chat-feed-container">
