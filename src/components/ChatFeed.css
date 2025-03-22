@@ -19,13 +19,11 @@
   box-sizing: border-box;
   transition: padding-top 0.3s ease-out;
   scroll-behavior: auto;
-  padding-bottom: 20px; /* Reduced since we no longer need to account for fixed footer */
 }
 
-/* Ensure smooth animation for the bottom ref */
 .chat-feed > div:last-child {
   transition: margin-top 0.3s ease-out;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 /* Avatar positioning for all screen sizes */
@@ -1369,8 +1367,7 @@ ul.chat-bubble-list {
 /* Add PWA-specific styles for the chat feed */
 @media all and (display-mode: standalone) {
   .chat-feed {
-    padding-bottom: 0 !important;
-    background-color: var(--background-primary);
+    padding-bottom: 10px;
   }
   
   html.android-chrome .bottom-spacer {
@@ -1378,7 +1375,7 @@ ul.chat-bubble-list {
   }
 
   html.android-chrome .chat-feed {
-    padding-bottom: 20px !important; /* Reduced to match web version */
+    padding-bottom: 64px !important; /* Match taller input precisely */
     margin-bottom: 0 !important;
     background-color: var(--background-primary);
   }
@@ -1388,7 +1385,7 @@ ul.chat-bubble-list {
     margin-bottom: 0 !important;
     height: 100% !important;
     position: relative;
-    padding-bottom: 0 !important; /* Remove redundant padding */
+    padding-bottom: 64px !important; /* Match taller input precisely */
   }
 
   html.android-chrome .messages-container {
@@ -1399,21 +1396,30 @@ ul.chat-bubble-list {
   }
 
   html.android-chrome .messages-scroll-view {
-    padding-bottom: 20px !important; /* Reduced to match web version */
+    padding-bottom: 0 !important;
     margin-bottom: 0 !important;
+    padding-bottom: 64px !important; /* Match taller input precisely */
   }
 
   html.android-chrome .message-pair:last-child {
-    margin-bottom: 5px !important;
+    margin-bottom: 0 !important;
     padding-bottom: 0 !important;
+  }
+  
+  html.android-chrome .chat-feed {
+    border-bottom: none !important;
+  }
+  
+  html.android-chrome .app-content-wrapper {
+    background-color: var(--background-input);
   }
 }
 
 /* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 5px !important; /* Reduced height */
+  height: 30px; /* Reduced height for non-PWA Android */
   margin-bottom: 0;
-  min-height: 5px !important;
+  min-height: 30px;
 }
 
 /* Non-iOS specific styles */

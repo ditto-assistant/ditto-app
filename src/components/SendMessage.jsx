@@ -99,25 +99,6 @@ export default function SendMessage({
       window.navigator.standalone; // for iOS
     
     setIsPWA(isPWAMode);
-    
-    // Apply PWA-specific class to html element if in PWA mode
-    if (isPWAMode) {
-      document.documentElement.classList.add('pwa-mode');
-    }
-    
-    // Listen for display mode changes
-    const mediaQuery = window.matchMedia('(display-mode: standalone)');
-    const handleChange = (e) => {
-      setIsPWA(e.matches);
-      if (e.matches) {
-        document.documentElement.classList.add('pwa-mode');
-      } else {
-        document.documentElement.classList.remove('pwa-mode');
-      }
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   const handleSubmit = useCallback(
