@@ -1379,52 +1379,35 @@ ul.chat-bubble-list {
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
-    padding-bottom: 0 !important;
+    padding-bottom: 56px !important; /* Match footer height */
     margin-bottom: 0 !important;
   }
 
   html.android-chrome .chat-feed-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
+    height: 100% !important;
+    position: relative;
+    padding-bottom: 56px !important; /* Fixed padding to handle footer space */
   }
 
   html.android-chrome .messages-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
+    height: 100%;
+    position: relative;
   }
 
   html.android-chrome .messages-scroll-view {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
+    padding-bottom: 56px !important; /* Add padding to handle footer space */
   }
 
   /* Ensure the last message pair doesn't have extra space */
   html.android-chrome .message-pair:last-child {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
-  }
-  
-  /* Make sure content extends all the way down */
-  html.android-chrome .chat-feed-container {
-    height: calc(100% - 56px) !important; /* Account for input and button height */
-    margin-bottom: 0 !important;
-    position: relative;
-  }
-  
-  /* Ensure containers fit perfectly */
-  html.android-chrome .app-content-wrapper {
-    overflow: hidden !important;
-  }
-  
-  /* Fix positioning of message container */
-  html.android-chrome .messages-container {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0;
-    padding: 0;
   }
 }
 

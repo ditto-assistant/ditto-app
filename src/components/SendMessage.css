@@ -251,7 +251,7 @@ html.android-chrome .icon-button.submit {
 
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 28px;
+    bottom: 33px;
     min-height: 28px;
     padding: 2px 16px;
     margin: 0;
@@ -260,16 +260,24 @@ html.android-chrome .icon-button.submit {
 
   html.android-chrome .app-footer {
     /* Remove bottom padding that might be causing extra space */
-    padding-bottom: 0;
     margin-bottom: 0;
     border-top: none;
     /* Add subtle padding to bottom of the app */
-    padding-bottom: 3px;
+    padding-bottom: 8px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    min-height: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
   }
 
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
-    padding-bottom: 0 !important;
+    padding-bottom: 56px !important;
     margin-bottom: 0 !important;
   }
 
@@ -300,7 +308,7 @@ html.android-chrome .icon-button.submit {
   html.android-chrome .button-hub {
     min-height: 28px;
     padding: 2px 16px;
-    padding-bottom: max(2px, env(safe-area-inset-bottom, 2px));
+    padding-bottom: 8px;
     border-top: 1px solid var(--border-color);
     margin: 0;
   }
@@ -310,19 +318,6 @@ html.android-chrome .icon-button.submit {
     margin: 0;
     padding: 0;
     border: none;
-  }
-
-  /* Adjust the entire footer area */
-  html.android-chrome .app-footer {
-    height: auto;
-    min-height: 28px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
   }
 
   /* Close the gap by fixing app-content-wrapper */

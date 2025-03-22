@@ -184,7 +184,7 @@ html.android-chrome .media-options-container {
     /* Further reduce height and padding */
     min-height: 28px;
     padding: 2px 16px;
-    padding-bottom: calc(2px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 8px; /* Fixed bottom padding */
     margin-bottom: 0;
     border-top: 1px solid var(--border-color);
   }
@@ -207,23 +207,26 @@ html.android-chrome .media-options-container {
   
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 28px;
+    bottom: 33px; /* Increased to close the gap */
     min-height: 28px;
     padding: 2px 16px;
     border-top: none;
     border-bottom: none;
+    margin: 0;
   }
   
   html.android-chrome .app-footer {
     /* Add subtle padding to the bottom */
-    padding-bottom: 3px;
+    padding-bottom: 0;
     margin-bottom: 0;
     border-top: none;
+    bottom: 0;
+    height: auto;
   }
   
   /* Close the gap between chat feed and input */
   html.android-chrome .chat-feed {
-    padding-bottom: 0 !important;
+    padding-bottom: 56px !important; /* Match footer height */
     margin-bottom: 0 !important;
   }
   
@@ -249,26 +252,29 @@ html.android-chrome .media-options-container {
     margin-bottom: 0 !important;
   }
   
-  /* Make chat feed container fill available space precisely */
+  /* Fix the messages container to fill the entire space */
   html.android-chrome .chat-feed-container {
-    height: calc(100% - 56px) !important;
+    height: 100% !important;
     position: relative;
+    overflow: hidden;
   }
   
-  /* Ensure messages container fits perfectly */
+  /* Ensure no gap between messages and input */
   html.android-chrome .messages-container {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0;
-    padding: 0;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    padding-bottom: 56px !important; /* Match input height */
   }
   
   /* Prevent any scroll gaps in app content wrapper */
   html.android-chrome .app-content-wrapper {
     overflow: hidden !important;
+  }
+  
+  /* Adjust the entire layout structure */
+  html.android-chrome .app {
+    position: relative;
   }
 }
 
