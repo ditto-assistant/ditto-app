@@ -27,6 +27,7 @@ html.android-chrome .app-content-wrapper {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  background-color: var(--background-primary);
 }
 
 /* Chat feed - ensure proper spacing above the input */
@@ -36,6 +37,7 @@ html.android-chrome .chat-feed {
   -webkit-overflow-scrolling: touch;
   padding-bottom: 70px !important;
   scroll-padding-bottom: 70px;
+  background-color: var(--background-primary);
 }
 
 /* Fixed footer container */
@@ -178,6 +180,40 @@ html.android-chrome .media-options-container {
   html.android-chrome .app {
     /* Remove any extra height calc, just use 100vh */
     height: 100vh;
+    background-color: var(--background-primary);
+  }
+  
+  html.android-chrome .app-content-wrapper {
+    background-color: var(--background-primary);
+  }
+  
+  html.android-chrome .chat-feed {
+    background-color: var(--background-primary);
+    padding-bottom: 64px !important; /* Match footer height precisely */
+    margin-bottom: 0 !important;
+  }
+  
+  html.android-chrome .chat-feed-container {
+    background-color: var(--background-primary);
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    height: 100% !important;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  html.android-chrome .messages-container {
+    background-color: var(--background-primary);
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    height: 100%;
+    position: relative;
+  }
+  
+  html.android-chrome .messages-scroll-view {
+    background-color: var(--background-primary);
+    padding-bottom: 64px !important;
+    margin-bottom: 0 !important;
   }
   
   html.android-chrome .button-hub {
