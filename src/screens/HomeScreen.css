@@ -9,29 +9,50 @@
   height: 100vh;
   /* Fallback */
   height: calc(var(--vh, 1vh) * 100);
-  /* Chrome on Android */
-  height: calc(var(--chrome-vh, var(--vh, 1vh)) * 100);
   width: 100vw;
   background-color: var(--background-primary);
   overflow: hidden;
   position: fixed;
-  /* Add fixed positioning */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   overscroll-behavior: none;
   touch-action: pan-y;
-  /* Only allow vertical scrolling */
   transform: translateZ(0);
   will-change: transform;
 }
 
-/* Android Chrome specific adjustments - moved to platform/android.css */
-/* .android-chrome .app { ... }
-.android-chrome .app-content-wrapper { ... }
-.android-chrome .app-body { ... }
-.android-chrome .app-footer { ... } */
+/* Android Chrome specific adjustments */
+html.android-chrome .app {
+  height: 100%;
+  min-height: calc(var(--vh, 1vh) * 100);
+  padding-bottom: 0;
+}
+
+html.android-chrome .app-content-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+html.android-chrome .app-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 120px; /* Increased padding to prevent content from being hidden */
+}
+
+html.android-chrome .app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Increased z-index */
+  background-color: var(--background-input);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  border-top: 1px solid var(--border-color);
+}
 
 /* Container that wraps both the chat body and footer for better layout control */
 .app-content-wrapper {
@@ -110,15 +131,6 @@
   will-change: transform;
   margin-top: auto;
 }
-
-/* Android Chrome specific styles - moved to platform/android.css */
-/* html.android-chrome .app-footer {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-html.android-chrome .app-body {
-  padding-bottom: 120px;
-} */
 
 /* iOS Safari specific styles - moved to platform/ios.css */
 /* html.ios-safari .app-footer {
@@ -219,10 +231,18 @@ html.ios-safari .app-body {
 
   .app-footer {
     position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
   
   .app-body {
-    padding-bottom: 60px;
+    padding-bottom: 120px;
+  }
+  
+  html.android-chrome .app-body {
+    padding-bottom: 120px;
   }
 }
 
@@ -243,18 +263,21 @@ html.ios-safari .app-body {
 
 /* PWA specific adjustments */
 @media all and (display-mode: standalone) {
-  .app {
-    height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
-    padding-bottom: env(safe-area-inset-bottom, 0);
+  html.android-chrome .app {
+    height: 100%;
+    min-height: calc(var(--vh, 1vh) * 100);
   }
   
-  .app-footer {
+  html.android-chrome .app-footer {
     position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
   
-  .app-body {
-    padding-bottom: 80px;
+  html.android-chrome .app-body {
+    padding-bottom: 120px;
   }
 }
