@@ -251,20 +251,24 @@ html.android-chrome .icon-button.submit {
 
   html.android-chrome .input-wrapper {
     /* Adjust bottom position to match reduced button hub */
-    bottom: 32px;
+    bottom: 28px;
     min-height: 28px;
     padding: 2px 16px;
+    margin: 0;
+    border-bottom: none;
   }
 
   html.android-chrome .app-footer {
     /* Remove bottom padding that might be causing extra space */
     padding-bottom: 0;
     margin-bottom: 0;
+    border-top: none;
   }
 
   /* Reduce chat feed padding to match smaller footer */
   html.android-chrome .chat-feed {
     padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
   }
 
   /* Minimal bottom spacer for Android PWA */
@@ -273,6 +277,7 @@ html.android-chrome .icon-button.submit {
     min-height: 0 !important;
     margin-bottom: 0 !important;
     margin-top: 0 !important;
+    display: none !important;
   }
 
   /* Adjust the text area to have correct padding for PWA */
@@ -291,9 +296,27 @@ html.android-chrome .icon-button.submit {
 
   /* Adjust button hub for PWA */
   html.android-chrome .button-hub {
-    min-height: 32px;
+    min-height: 28px;
     padding: 2px 16px;
-    padding-bottom: env(safe-area-inset-bottom, 2px);
+    padding-bottom: max(2px, env(safe-area-inset-bottom, 2px));
+    border-top: 1px solid var(--border-color);
+    margin: 0;
+  }
+
+  /* Ensure form container has no extra space */
+  html.android-chrome .form {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  /* Adjust the entire footer area */
+  html.android-chrome .app-footer {
+    height: auto;
+    min-height: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
   }
 }
 

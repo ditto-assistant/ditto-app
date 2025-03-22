@@ -1374,14 +1374,33 @@ ul.chat-bubble-list {
 
   /* Android Chrome PWA specific adjustments */
   html.android-chrome .bottom-spacer {
-    height: 0 !important; /* Remove bottom spacer in PWA mode */
-    margin-bottom: 0;
-    min-height: 0;
+    display: none !important;
   }
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
     padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  html.android-chrome .chat-feed-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  html.android-chrome .messages-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  html.android-chrome .messages-scroll-view {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Ensure the last message pair doesn't have extra space */
+  html.android-chrome .message-pair:last-child {
+    margin-bottom: 0 !important;
   }
 }
 
