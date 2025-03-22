@@ -189,8 +189,14 @@ const CustomScrollToBottom = ({
     const scrollTop = scrollContainer.scrollTop;
     const scrollHeight = scrollContainer.scrollHeight;
     const clientHeight = scrollContainer.clientHeight;
+    
+    // Use a smaller threshold for Android PWA to prevent excessive scrolling
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  window.matchMedia('(display-mode: fullscreen)').matches;
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const scrollThreshold = (isPWA && isAndroid) ? 10 : 30;
 
-    const isBottom = scrollHeight - scrollTop - clientHeight < 30;
+    const isBottom = scrollHeight - scrollTop - clientHeight < scrollThreshold;
     setIsScrolledToBottom(isBottom);
     setShowScrollToBottom(!isBottom);
 
@@ -570,7 +576,18 @@ export default function ChatFeed({
               );
             })
             .reverse()}
-          <div ref={bottomRef} className="bottom-spacer" />
+          
+          {/* Minimal bottom spacer for Android PWA mode */}
+          <div 
+            ref={bottomRef} 
+            className="bottom-spacer" 
+            style={{
+              height: (window.matchMedia('(display-mode: standalone)').matches && /android/i.test(navigator.userAgent)) ? '0px' : undefined,
+              minHeight: (window.matchMedia('(display-mode: standalone)').matches && /android/i.test(navigator.userAgent)) ? '0px' : undefined,
+              margin: (window.matchMedia('(display-mode: standalone)').matches && /android/i.test(navigator.userAgent)) ? '0px' : undefined,
+              padding: (window.matchMedia('(display-mode: standalone)').matches && /android/i.test(navigator.userAgent)) ? '0px' : undefined
+            }} 
+          />
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">

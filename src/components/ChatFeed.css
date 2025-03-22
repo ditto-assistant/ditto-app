@@ -1379,7 +1379,7 @@ ul.chat-bubble-list {
 
   /* Android Chrome PWA chat feed adjustments */
   html.android-chrome .chat-feed {
-    padding-bottom: 48px !important; /* Reduced to minimize gap */
+    padding-bottom: 36px !important; /* Reduced further to minimize gap */
     margin-bottom: 0 !important;
     background-color: var(--background-primary) !important; /* Ensure same bg color as web */
   }
@@ -1403,7 +1403,7 @@ ul.chat-bubble-list {
   html.android-chrome .messages-scroll-view {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
-    padding-bottom: 48px !important; /* Reduced to minimize gap */
+    padding-bottom: 36px !important; /* Reduced further to minimize gap */
     background-color: var(--background-primary) !important; /* Match background color with web */
   }
 
@@ -1421,6 +1421,24 @@ ul.chat-bubble-list {
   /* Make sure there is no small visible gap */
   html.android-chrome .app-content-wrapper {
     background-color: var(--background-primary) !important; /* Match background color with web */
+  }
+
+  /* Prevent excessive scrolling */
+  html.android-chrome .bottom-spacer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Limit scroll area in messages view */
+  html.android-chrome .messages-scroll-view:after {
+    content: "";
+    display: block;
+    height: 0;
+    margin: 0;
+    padding: 0;
   }
 }
 
