@@ -103,6 +103,30 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   flex-shrink: 0; /* Prevent footer from shrinking */
+  position: relative; /* Ensure it's in the document flow */
+}
+
+/* Android Chrome specific styles (non-PWA) */
+@supports (-webkit-appearance:none) and (not (overflow:-webkit-marquee)) and (not (-ms-ime-align:auto)) and (not (-moz-appearance:none)) {
+  /* Target Chrome on Android */
+  @media screen and (max-width: 768px) {
+    /* Only apply to mobile screens */
+    .app-footer {
+      padding-bottom: max(calc(10px + env(safe-area-inset-bottom, 0)), 16px); /* Ensure minimum padding */
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Add shadow to help visually anchor the footer */
+    }
+    
+    /* Fix for Chrome Android cutting off bottom of app */
+    .app {
+      padding-bottom: env(safe-area-inset-bottom, 16px); /* Add padding to account for home bar area */
+      min-height: calc(100vh + 60px); /* Add extra space for Android Chrome's address bar */
+    }
+    
+    /* Allow chat area to expand properly */
+    .app-content-wrapper {
+      padding-bottom: env(safe-area-inset-bottom, 0); /* Add padding to ensure content isn't cut off */
+    }
+  }
 }
 
 .loading-placeholder {

@@ -27,7 +27,7 @@ export default function HomeScreen() {
     return !localStorage.getItem("hasSeenTOS");
   });
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
-  const { isIOS, isPWA } = usePlatform();
+  const { isIOS, isPWA, isAndroid } = usePlatform();
   const { setSelectedScript, saveScript } = useScripts();
   const { openWhatsNew } = useWhatsNew();
 
@@ -69,6 +69,20 @@ export default function HomeScreen() {
       if (isIOS && window.visualViewport) {
         vh = window.visualViewport.height * 0.01;
       }
+      
+      // For Android Chrome (non-PWA), add extra padding to account for address bar
+      if (isAndroid && !isPWA) {
+        // Add extra padding to account for the Chrome address bar on Android
+        const extraSpace = 60; // Approximate pixels for Chrome address bar
+        vh = (window.innerHeight + extraSpace) * 0.01;
+        
+        // Set a timeout to recalculate after the page has fully loaded
+        // This helps adjust for when Chrome's address bar auto-hides
+        setTimeout(() => {
+          const delayedVh = (window.innerHeight + extraSpace) * 0.01;
+          document.documentElement.style.setProperty("--vh", `${delayedVh}px`);
+        }, 1000);
+      }
 
       // Then set the value in the --vh custom property to the root of the document
       document.documentElement.style.setProperty("--vh", `${vh}px`);
@@ -87,7 +101,11 @@ export default function HomeScreen() {
     // Add event listeners for various events that might change the viewport
     window.addEventListener("resize", setVH);
     window.addEventListener("orientationchange", setVH);
-    window.addEventListener("scroll", setVH);
+    
+    // For Android Chrome, we need to listen for scroll events as well to handle address bar appearing/disappearing
+    if (isAndroid && !isPWA) {
+      window.addEventListener("scroll", setVH);
+    }
 
     // Special handling for iOS to help with browser chrome appearing/disappearing
     if (isIOS) {
@@ -123,13 +141,28 @@ export default function HomeScreen() {
         clearInterval(safariHeightTimer);
       };
     }
+    
+    // For Android, set a timer to periodically check viewport size
+    if (isAndroid && !isPWA) {
+      const androidHeightTimer = setInterval(setVH, 500);
+      
+      // Also check after a brief delay for when the page first loads
+      setTimeout(setVH, 300);
+      
+      return () => {
+        window.removeEventListener("resize", setVH);
+        window.removeEventListener("orientationchange", setVH);
+        window.removeEventListener("scroll", setVH);
+        clearInterval(androidHeightTimer);
+      };
+    }
 
     return () => {
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);
       window.removeEventListener("scroll", setVH);
     };
-  }, [isIOS, isPWA]);
+  }, [isIOS, isPWA, isAndroid]);
 
   const handleCameraOpen = () => {
     setIsCameraOpen(true);

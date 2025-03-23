@@ -1,7 +1,7 @@
 set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 start:
-	bun run start
+	bun run start --host
 
 build:
 	bun run build
