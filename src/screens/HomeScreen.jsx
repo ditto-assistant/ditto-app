@@ -73,7 +73,7 @@ export default function HomeScreen() {
       // For Android Chrome (non-PWA), add extra padding to account for address bar
       if (isAndroid && !isPWA) {
         // Add extra padding to account for the Chrome address bar on Android
-        const extraSpace = 60; // Approximate pixels for Chrome address bar
+        const extraSpace = 80; // Increase pixels for Chrome address bar to be safer
         vh = (window.innerHeight + extraSpace) * 0.01;
         
         // Set a timeout to recalculate after the page has fully loaded
@@ -81,7 +81,20 @@ export default function HomeScreen() {
         setTimeout(() => {
           const delayedVh = (window.innerHeight + extraSpace) * 0.01;
           document.documentElement.style.setProperty("--vh", `${delayedVh}px`);
+          
+          // Force a redraw of the UI
+          document.body.style.display = 'none';
+          // Using requestAnimationFrame to ensure the DOM has time to process the change
+          requestAnimationFrame(() => {
+            document.body.style.display = '';
+          });
         }, 1000);
+        
+        // Add a second timeout with a longer delay for devices that might need more time
+        setTimeout(() => {
+          const finalVh = (window.innerHeight + extraSpace) * 0.01;
+          document.documentElement.style.setProperty("--vh", `${finalVh}px`);
+        }, 2000);
       }
 
       // Then set the value in the --vh custom property to the root of the document

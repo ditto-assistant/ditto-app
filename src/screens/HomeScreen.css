@@ -104,6 +104,9 @@
   border-bottom-right-radius: 0;
   flex-shrink: 0; /* Prevent footer from shrinking */
   position: relative; /* Ensure it's in the document flow */
+  bottom: 0; /* Anchor to bottom */
+  left: 0; 
+  right: 0;
 }
 
 /* Android Chrome specific styles (non-PWA) */
@@ -112,19 +115,23 @@
   @media screen and (max-width: 768px) {
     /* Only apply to mobile screens */
     .app-footer {
-      padding-bottom: max(calc(10px + env(safe-area-inset-bottom, 0)), 16px); /* Ensure minimum padding */
+      padding-bottom: max(calc(16px + env(safe-area-inset-bottom, 0)), 24px); /* Increase minimum padding */
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Add shadow to help visually anchor the footer */
+      margin-bottom: env(safe-area-inset-bottom, 0); /* Add margin to push content up from bottom */
+      position: sticky; /* Make footer sticky */
+      bottom: 0; /* Stick to bottom */
     }
     
     /* Fix for Chrome Android cutting off bottom of app */
     .app {
-      padding-bottom: env(safe-area-inset-bottom, 16px); /* Add padding to account for home bar area */
-      min-height: calc(100vh + 60px); /* Add extra space for Android Chrome's address bar */
+      padding-bottom: max(env(safe-area-inset-bottom, 30px), 30px); /* Significantly increase padding */
+      min-height: calc(100vh + 80px); /* Increase extra space for Android Chrome's address bar */
     }
     
     /* Allow chat area to expand properly */
     .app-content-wrapper {
-      padding-bottom: env(safe-area-inset-bottom, 0); /* Add padding to ensure content isn't cut off */
+      padding-bottom: env(safe-area-inset-bottom, 16px); /* Increase padding to ensure content isn't cut off */
+      margin-bottom: 10px; /* Add margin to create separation */
     }
   }
 }
@@ -238,8 +245,21 @@
     padding: 12px;
     margin-top: auto; /* Push footer to bottom */
     padding-bottom: calc(
-      12px + env(safe-area-inset-bottom, 0)
-    ); /* Account for safe area */
+      16px + env(safe-area-inset-bottom, 0)
+    ); /* Increase padding for safe area */
+    margin-bottom: env(safe-area-inset-bottom, 10px); /* Add bottom margin */
+  }
+  
+  /* Additional fallback to ensure the message input is visible */
+  .app-content-wrapper {
+    padding-bottom: 20px; /* Add padding for all mobile devices */
+  }
+}
+
+/* Ensure adequate space on taller mobile screens */
+@media screen and (max-width: 768px) and (min-height: 700px) {
+  .app-footer {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0)); /* More padding on taller screens */
   }
 }
 
