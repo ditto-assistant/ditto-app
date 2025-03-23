@@ -343,17 +343,67 @@ html.android-chrome .icon-button.submit {
   }
 }
 
-/* For PWA mode, adjust the Android nav height variable */
+/* For PWA mode, adjust the Android nav height variable based on device size */
 @media all and (display-mode: standalone), all and (display-mode: fullscreen) {
   html.android-chrome {
-    --android-nav-height: 8px; /* Reduced from default value */
+    --android-nav-height: 8px; /* Base reduced value */
+  }
+  
+  /* Smaller screens need less padding */
+  @media screen and (max-height: 700px) {
+    html.android-chrome {
+      --android-nav-height: 4px; /* Even smaller value for smaller screens */
+    }
+    
+    html.android-chrome .button-hub {
+      padding-bottom: 8px !important; /* Force smaller padding */
+    }
+    
+    html.android-chrome .input-wrapper {
+      padding-bottom: 4px !important; /* Reduce input padding */
+    }
+    
+    html.android-chrome .bottom-buttons-bar {
+      padding: 4px 12px !important; /* Reduce padding around buttons */
+    }
+    
+    html.android-chrome .chat-feed {
+      padding-bottom: 36px !important; /* Reduce chat feed padding */
+    }
+    
+    html.android-chrome .messages-scroll-view {
+      padding-bottom: 36px !important; /* Reduce messages scroll view padding */
+    }
   }
 }
 
 /* PWA specific adjustments for Android Chrome */
 @media all and (display-mode: standalone) {
   html.android-chrome .button-hub {
-    padding-bottom: calc(var(--android-nav-height, 8px) + 12px); /* Further reduced values */
+    padding-bottom: calc(var(--android-nav-height, 8px) + 12px); /* Adjusted value */
+  }
+  
+  /* Target smaller devices explicitly */
+  @media screen and (max-height: 700px) {
+    html.android-chrome .button-hub {
+      padding-bottom: 8px !important; /* Override for smaller screens */
+    }
+    
+    /* More compact layout for smaller screens */
+    html.android-chrome .icon-button.submit {
+      width: 24px !important;
+      height: 24px !important;
+    }
+    
+    html.android-chrome .action-button {
+      width: 28px !important;
+      height: 28px !important;
+    }
+    
+    html.android-chrome .ditto-logo-button {
+      width: 30px !important;
+      height: 30px !important;
+    }
   }
 }
 
@@ -1103,4 +1153,79 @@ html.android-chrome .app-footer {
 html.android-chrome .text-area {
   z-index: 1;
   transform: translateZ(0);
+}
+
+/* Additional text area adjustments for smaller Android devices */
+@media screen and (max-height: 700px) {
+  html.android-chrome .text-area {
+    min-height: 20px !important;
+    padding: 4px 8px !important;
+    font-size: 14px !important;
+  }
+  
+  html.android-chrome .form {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  html.android-chrome .app-footer {
+    padding-bottom: 0 !important;
+    min-height: 20px !important;
+  }
+}
+
+/* Fix input and button positioning for very small devices */
+@media screen and (max-height: 600px) {
+  html.android-chrome .input-wrapper {
+    padding: 4px 12px !important;
+  }
+  
+  html.android-chrome .bottom-buttons-bar {
+    padding: 2px 10px !important;
+  }
+  
+  html.android-chrome .button-hub {
+    padding: 2px 12px 4px !important;
+  }
+  
+  html.android-chrome .chat-feed {
+    padding-bottom: 28px !important;
+  }
+  
+  html.android-chrome .messages-scroll-view {
+    padding-bottom: 28px !important;
+  }
+}
+
+/* Make room for the home indicator on PWA smaller devices */
+@media all and (display-mode: standalone) and (max-height: 700px) {
+  html.android-chrome .app-footer {
+    bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+  
+  html.android-chrome .form {
+    margin-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+  
+  html.android-chrome .button-hub {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px) !important;
+  }
+  
+  /* Ensure Message Ditto text area has proper space */
+  html.android-chrome .text-area::placeholder {
+    font-size: 14px !important;
+  }
+}
+
+/* Ensure there's enough vertical spacing on all Android devices */
+html.android-chrome .app-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Prevent chat feed from being cut off at the bottom */
+html.android-chrome .chat-feed-container {
+  flex: 1;
+  min-height: 0;
 }
