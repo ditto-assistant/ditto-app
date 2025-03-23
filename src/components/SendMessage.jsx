@@ -29,6 +29,7 @@ import { MdFeedback } from "react-icons/md";
 import { FaLaptopCode } from "react-icons/fa";
 import { DITTO_AVATAR } from "@/constants";
 import { toast } from "react-hot-toast";
+import { createPortal } from "react-dom";
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -455,6 +456,16 @@ export default function SendMessage({
     });
   };
 
+  // Create portal container for menu
+  useEffect(() => {
+    const portalContainer = document.createElement('div');
+    portalContainer.id = 'ditto-menu-portal';
+    document.body.appendChild(portalContainer);
+    return () => {
+      document.body.removeChild(portalContainer);
+    };
+  }, []);
+
   return (
     <>
       <form className="form" onSubmit={handleSubmit} onPaste={handlePaste}>
@@ -497,7 +508,7 @@ export default function SendMessage({
             </div>
 
             {/* Center Ditto logo button */}
-            <div className="ditto-button-container" style={{ position: 'relative', zIndex: 2000 }}>
+            <div className="ditto-button-container">
               <motion.div
                 ref={logoButtonRef}
                 className={`ditto-logo-button ${isMenuOpen ? "active" : ""}`}
@@ -531,39 +542,6 @@ export default function SendMessage({
                   className="ditto-icon-circular"
                 />
               </motion.div>
-
-              {/* Hidden sliding menu container for Ditto logo */}
-              <div className="ditto-menu-container" style={{ position: 'relative' }}>
-                <SlidingMenu
-                  isOpen={isMenuOpen}
-                  onClose={() => {
-                    setIsMenuOpen(false);
-                    setMenuPinned(false);
-                  }}
-                  position="center"
-                  triggerRef={logoButtonRef}
-                  isPinned={menuPinned}
-                  menuPosition="bottom"
-                  menuTitle="Ditto Menu"
-                  menuItems={[
-                    {
-                      icon: <MdFeedback className="icon" />,
-                      text: "Feedback",
-                      onClick: openFeedbackModal,
-                    },
-                    {
-                      icon: <FaLaptopCode className="icon" />,
-                      text: "Scripts",
-                      onClick: openScriptsOverlay,
-                    },
-                    {
-                      icon: <IoSettingsOutline className="icon" />,
-                      text: "Settings",
-                      onClick: openSettingsModal,
-                    },
-                  ]}
-                />
-              </div>
             </div>
 
             {/* Right aligned send button */}
@@ -692,6 +670,48 @@ export default function SendMessage({
 
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>
+
+      {/* Render Ditto Menu in a portal */}
+      {document.getElementById('ditto-menu-portal') && createPortal(
+        <div className="ditto-menu-container" style={{ 
+          position: 'fixed',
+          top: logoButtonRef.current?.getBoundingClientRect().bottom ?? 0,
+          left: (logoButtonRef.current?.getBoundingClientRect().left ?? 0) + 40,
+          transform: 'translateX(-50%)',
+          zIndex: 999999
+        }}>
+          <SlidingMenu
+            isOpen={isMenuOpen}
+            onClose={() => {
+              setIsMenuOpen(false);
+              setMenuPinned(false);
+            }}
+            position="center"
+            triggerRef={logoButtonRef}
+            isPinned={menuPinned}
+            menuPosition="bottom"
+            menuTitle="Ditto Menu"
+            menuItems={[
+              {
+                icon: <MdFeedback className="icon" />,
+                text: "Feedback",
+                onClick: openFeedbackModal,
+              },
+              {
+                icon: <FaLaptopCode className="icon" />,
+                text: "Scripts",
+                onClick: openScriptsOverlay,
+              },
+              {
+                icon: <IoSettingsOutline className="icon" />,
+                text: "Settings",
+                onClick: openSettingsModal,
+              },
+            ]}
+          />
+        </div>,
+        document.getElementById('ditto-menu-portal')
+      )}
 
       <FullscreenComposeModal />
     </>

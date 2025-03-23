@@ -1,10 +1,13 @@
 @import "../styles/variables.css";
 @import "../styles/animations.css";
 
-/* Add root variables for chat bubble colors */
+/* Add root variables for chat bubble colors and spacing */
 :root {
   --ditto-color: #40444b;
   --user-color: #4752c4;
+  --chat-bottom-spacing: 16px;
+  --chat-bottom-spacing-mobile: 60px;
+  --chat-bottom-spacing-pwa: 20px;
 }
 
 .chat-feed {
@@ -19,11 +22,12 @@
   box-sizing: border-box;
   transition: padding-top 0.3s ease-out;
   scroll-behavior: auto;
+  padding-bottom: var(--chat-bottom-spacing);
 }
 
 .chat-feed > div:last-child {
   transition: margin-top 0.3s ease-out;
-  margin-bottom: 30px;
+  margin-bottom: var(--chat-bottom-spacing);
 }
 
 /* Avatar positioning for all screen sizes */
@@ -1366,143 +1370,76 @@ ul.chat-bubble-list {
 
 /* Add PWA-specific styles for the chat feed */
 @media all and (display-mode: standalone) {
-  .chat-feed {
-    padding-bottom: 30px;
+  :root {
+    --chat-bottom-spacing: var(--chat-bottom-spacing-pwa);
   }
   
-  html.android-chrome .bottom-spacer {
-    display: block !important;
-    height: 80px !important;
-    min-height: 80px !important;
+  .chat-feed {
+    padding-bottom: var(--chat-bottom-spacing-pwa);
   }
-
+  
+  .bottom-spacer {
+    height: var(--chat-bottom-spacing-mobile) !important;
+    min-height: var(--chat-bottom-spacing-mobile);
+  }
+  
   html.android-chrome .chat-feed {
-    padding-bottom: 80px !important;
+    padding-bottom: calc(var(--chat-bottom-spacing-mobile) + 10px) !important;
     margin-bottom: 0 !important;
-    background-color: var(--background-primary);
   }
-
+  
   html.android-chrome .chat-feed-container {
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
     height: 100% !important;
     position: relative;
   }
-
+  
   html.android-chrome .messages-container {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
     height: 100%;
     position: relative;
   }
-
-  html.android-chrome .messages-scroll-view {
-    padding-bottom: 80px !important;
-    margin-bottom: 0 !important;
-  }
-
-  html.android-chrome .message-pair:last-child {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  
-  html.android-chrome .chat-feed {
-    border-bottom: none !important;
-  }
-  
-  html.android-chrome .app-content-wrapper {
-    background-color: var(--background-input);
-  }
 }
 
 /* Android Chrome specific adjustment for bottom spacing */
 html.android-chrome .bottom-spacer {
-  height: 120px !important;
-  min-height: 120px !important;
-  display: block !important;
-  margin-bottom: 0 !important;
-}
-
-html.android-chrome .chat-feed {
-  padding-bottom: 120px !important;
-  margin-bottom: 0 !important;
-}
-
-html.android-chrome .chat-feed-container {
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-  height: 100% !important;
-}
-
-html.android-chrome .messages-container {
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-  height: 100% !important;
-}
-
-html.android-chrome .messages-scroll-view {
-  padding-bottom: 120px !important;
-  margin-bottom: 0 !important;
-}
-
-/* Non-PWA Android Chrome adjustments */
-@media screen and (max-width: 768px) {
-  html.android-chrome .chat-feed:not(.pwa) {
-    padding-bottom: 120px !important;
-  }
-  
-  html.android-chrome .bottom-spacer {
-    height: 120px !important;
-    min-height: 120px !important;
-    display: block !important;
-    margin-bottom: 0 !important;
-  }
-  
-  html.android-chrome .messages-scroll-view {
-    padding-bottom: 120px !important;
-  }
+  height: 60px;
+  min-height: 60px;
 }
 
 /* Non-iOS specific styles */
 @supports not (-webkit-touch-callout: none) {
   /* For desktop and Android browsers */
   .bottom-spacer {
-    height: 70px !important; /* Keep web spacing as is */
-    min-height: 70px;
+    height: 40px !important;
+    min-height: 40px;
   }
 
   /* Position follow button for desktop and Android */
   .follow-button {
-    bottom: 110px !important; /* Position well above send message on desktop/Android */
-    touch-action: manipulation !important; /* Prevent scroll interference */
-  }
-
-  /* Specific handling for Android devices */
-  @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
-    .follow-button {
-      bottom: 120px !important; /* Position even higher on Android */
-    }
+    bottom: 70px !important;
+    touch-action: manipulation !important;
   }
 }
 
 /* iOS specific styles */
 @supports (-webkit-touch-callout: none) {
   .chat-feed-container {
-    margin-bottom: env(safe-area-inset-bottom, 0px); /* Respect iOS safe area */
+    margin-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  /* Bottom spacer should provide more room for iOS */
   .bottom-spacer {
-    height: 120px !important; /* Overrides the inline style */
+    height: 70px !important;
+    min-height: 70px;
     margin-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Adjust bottom padding in PWA mode */
   @media all and (display-mode: standalone) {
     .chat-feed-container {
-      padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
     }
-
+    
     .messages-container {
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -1712,10 +1649,31 @@ html.android-chrome .messages-scroll-view {
   max-width: 200px;
 }
 
-/* Ensure messages don't get hidden behind the input area */
+/* Base styles for bottom spacer */
 .bottom-spacer {
-  height: 80px;
-  min-height: 80px;
-  width: 100%;
-  margin-top: 20px;
+  height: 30px;
+  min-height: 30px;
+  transition: height 0.2s ease;
+}
+
+/* Android Chrome specific adjustment for bottom spacing */
+html.android-chrome .bottom-spacer {
+  height: 60px;
+  min-height: 60px;
+}
+
+/* Media query for mobile screens */
+@media screen and (max-width: 768px) {
+  html.android-chrome .bottom-spacer {
+    height: 80px;
+    min-height: 80px;
+  }
+}
+
+/* Media query for PWA mode */
+@media all and (display-mode: standalone) {
+  html.android-chrome .bottom-spacer {
+    height: 90px;
+    min-height: 90px;
+  }
 }

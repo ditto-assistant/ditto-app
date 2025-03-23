@@ -55,6 +55,13 @@
   border-bottom: 1px solid var(--border-color);
   transition: border-color var(--transition-normal);
   padding: 8px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* In Android Chrome, avoid double dividers */
+html.android-chrome .input-wrapper {
+  border-bottom: none;
 }
 
 .input-wrapper:focus-within {
@@ -104,32 +111,21 @@
 /* ===== 3. Button bar ===== */
 .bottom-buttons-bar {
   display: flex;
-  width: 100%;
-  justify-content: center;
   align-items: center;
-  padding: 0;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 12px;
   position: relative;
-  margin: 0;
-  background-color: transparent;
-  height: 0;
-  overflow: visible;
-}
-
-/* Remove the separator since we have a new input style */
-.bottom-buttons-bar::before {
-  display: none;
+  z-index: 2;
 }
 
 .button-hub {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  padding: 8px 16px;
+  justify-content: space-between;
   width: 100%;
-  background-color: var(--background-input);
-  transform: translateZ(0);
-  will-change: transform;
-  transition: transform 0.2s ease-out;
+  position: relative;
+  padding: 8px 0;
 }
 
 /* Left action buttons container */
@@ -344,6 +340,30 @@ html.android-chrome .icon-button.submit {
   }
 }
 
+/* PWA specific adjustments for Android Chrome */
+@media all and (display-mode: standalone) {
+  html.android-chrome .button-hub {
+    padding-bottom: calc(var(--android-nav-height, 16px) + 30px);
+  }
+}
+
+/* Android Chrome specific adjustments for button hub */
+html.android-chrome .button-hub {
+  padding-bottom: calc(var(--android-nav-height, 16px) + 20px);
+  border-top: 1px solid var(--border-color);
+}
+
+@media screen and (max-width: 768px) {
+  html.android-chrome .button-hub {
+    padding-bottom: calc(var(--android-nav-height, 16px) + 25px);
+  }
+}
+
+/* Non-Android Chrome - no top border to prevent double divider */
+.button-hub:not(html.android-chrome .button-hub) {
+  border-top: none;
+}
+
 /* Ditto logo button */
 .ditto-logo-button {
   width: 38px;
@@ -355,7 +375,7 @@ html.android-chrome .icon-button.submit {
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
-  z-index: 10;
+  z-index: 1;
   transition: all var(--transition-normal);
   transform-origin: center;
   position: relative;
@@ -387,22 +407,32 @@ html.android-chrome .icon-button.submit {
 
 /* Center logo container */
 .ditto-button-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   position: relative;
+  z-index: 1;
 }
 
-/* Ensure menu doesn't affect layout */
-.ditto-menu-container {
-  position: relative;
-  z-index: 2000;
-  /* Ensure it takes up no space in layout but allows absolute positioning within */
-  margin: 0;
-  padding: 0;
+/* Portal container styles */
+#ditto-menu-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999999;
 }
 
-.ditto-menu-container .sliding-menu {
+#ditto-menu-portal .ditto-menu-container {
+  pointer-events: auto;
+}
+
+#ditto-menu-portal .sliding-menu {
+  pointer-events: auto;
+}
+
+/* Remove old menu container styles that are no longer needed */
+.ditto-menu-container,
+.sliding-menu {
   pointer-events: auto;
 }
 
@@ -969,4 +999,92 @@ html.android-chrome .message-input-container {
   .input-wrapper {
     padding: 6px 16px;
   }
+}
+
+.sliding-menu {
+  z-index: 20000;
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* Form container z-index adjustments for Android Chrome */
+html.android-chrome .form {
+  z-index: 1;
+  transform: translateZ(0);
+}
+
+html.android-chrome .input-wrapper {
+  z-index: 1;
+  transform: translateZ(0);
+}
+
+html.android-chrome .bottom-buttons-bar {
+  z-index: 1;
+  transform: translateZ(0);
+}
+
+/* Ditto Menu z-index overrides for Android Chrome */
+html.android-chrome .ditto-button-container {
+  position: relative;
+  z-index: 9999999;
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+html.android-chrome .ditto-menu-container {
+  position: absolute;
+  z-index: 9999999;
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+html.android-chrome .sliding-menu {
+  position: absolute;
+  z-index: 9999999;
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+  pointer-events: auto;
+}
+
+/* Ensure the menu container is properly positioned */
+.ditto-menu-container {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+}
+
+/* Keep existing styles but ensure they don't override Android Chrome specific ones */
+.ditto-button-container {
+  z-index: 20000;
+  position: relative;
+}
+
+.ditto-menu-container {
+  z-index: 20000;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+}
+
+.sliding-menu {
+  z-index: 20000;
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* Ensure the app-footer doesn't interfere with menu stacking */
+html.android-chrome .app-footer {
+  z-index: 1;
+  transform: translateZ(0);
+}
+
+/* Ensure the text area doesn't interfere with menu stacking */
+html.android-chrome .text-area {
+  z-index: 1;
+  transform: translateZ(0);
 }
