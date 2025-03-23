@@ -10,7 +10,6 @@
   --body-padding-bottom-mobile: 60px;
   --body-padding-bottom-pwa: 60px;
   --android-nav-height: 48px; /* Android navigation gesture area height */
-  --android-bottom-spacing: 120px; /* Consistent with ChatFeed.css */
 }
 
 .app {
@@ -123,54 +122,14 @@
   padding-bottom: var(--footer-padding);
 }
 
-/* Android Chrome specific improvements */
-html.android-chrome .app {
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-}
-
-html.android-chrome .app-content-wrapper {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+/* Android Chrome specific styles - moved to platform/android.css */
+/* html.android-chrome .app-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html.android-chrome .app-body {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  padding-bottom: var(--android-bottom-spacing);
-}
-
-html.android-chrome .app-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  padding-bottom: calc(var(--android-nav-height) + 10px);
-  border-top: 1px solid var(--border-color);
-}
-
-/* PWA specific styling for Android Chrome */
-@media all and (display-mode: standalone), all and (display-mode: fullscreen) {
-  html.android-chrome .app {
-    height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
-  }
-  
-  html.android-chrome .app-body {
-    padding-bottom: var(--android-bottom-spacing);
-  }
-  
-  html.android-chrome .app-footer {
-    padding-bottom: calc(var(--android-nav-height) + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid var(--border-color);
-  }
-}
+  padding-bottom: 120px;
+} */
 
 /* iOS Safari specific styles - moved to platform/ios.css */
 /* html.ios-safari .app-footer {

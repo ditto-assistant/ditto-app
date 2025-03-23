@@ -16,59 +16,54 @@
 
 /* ===== 1. Form container ===== */
 .form {
-  position: relative;
+  display: flex;
+  flex: 1;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 8px 16px;
-  box-sizing: border-box;
-  z-index: 50; /* Higher z-index to ensure it's above chat feed */
+  background-color: var(--background-input);
+  position: relative;
+  z-index: 10;
+  flex-direction: column;
+  overflow: visible;
 }
 
 .app-footer .form {
-  position: relative;
-  width: 100%;
-  padding: 8px 16px;
+  margin-top: 0;
 }
 
 .contents {
-  position: relative;
-  max-width: 800px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  z-index: 51; /* Ensure contents are above form */
 }
 
 .bar {
   display: flex;
-  align-items: center;
-  padding: 8px 0;
+  flex-direction: row;
   width: 100%;
+  justify-content: center;
+  align-items: flex-end;
   position: relative;
-  z-index: 52; /* Ensure bar is above contents */
 }
 
 /* ===== 2. Input area ===== */
 .input-wrapper {
-  flex: 1;
-  background-color: var(--background-secondary);
-  border-radius: 0; /* Remove rounded corners */
+  width: 100%;
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-color);
+  transition: border-color var(--transition-normal);
+  padding: 8px 16px;
   position: relative;
-  border: 1px solid var(--border-color);
-  min-height: 48px;
-  z-index: 53; /* Ensure input is above bar */
+  z-index: 1;
 }
 
-/* In Android Chrome, avoid double dividers and make input rectangular */
+/* In Android Chrome, avoid double dividers */
 html.android-chrome .input-wrapper {
-  position: relative;
-  padding: 8px 12px;
-  min-height: 48px;
-  z-index: 53;
-  border-radius: 0; /* Ensure no rounded corners on Android */
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0;
+  padding-bottom: 10px;
 }
 
 .input-wrapper:focus-within {
@@ -88,7 +83,7 @@ html.android-chrome .input-wrapper {
   min-height: 24px;
   height: auto;
   width: 100%;
-  border-radius: 0; /* Remove rounded corners */
+  border-radius: 0;
   overflow-y: hidden;
   transition: none;
   box-sizing: border-box;
@@ -118,12 +113,12 @@ html.android-chrome .input-wrapper {
 /* ===== 3. Button bar ===== */
 .bottom-buttons-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
-  position: relative;
+  justify-content: space-between;
   width: 100%;
-  z-index: 54; /* Ensure buttons are above input */
+  padding: 6px 12px;
+  position: relative;
+  z-index: 2;
 }
 
 .button-hub {
