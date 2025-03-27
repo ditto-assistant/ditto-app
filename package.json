@@ -7,7 +7,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "6.4.2",
-    "@mui/material": "6.4.0",
+    "@mui/material": "6.4.8",
     "@tanstack/react-query": "^5.67.1",
     "ace-builds": "^1.39.0",
     "firebase": "~11.4.0",
@@ -27,14 +27,14 @@
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.67.2",
-    "@tanstack/react-query-devtools": "^5.67.1",
+    "@tanstack/react-query-devtools": "^5.69.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/eslint-plugin": "^8.27.0",
     "@typescript-eslint/parser": "^8.26.0",
     "@vitejs/plugin-react": "^4.3.4",
     "depcheck": "^1.4.7",
@@ -43,7 +43,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
-    "vite": "^6.2.1"
+    "vite": "^6.2.2"
   },
   "scripts": {
     "start": "vite",

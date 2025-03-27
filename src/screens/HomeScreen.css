@@ -2,33 +2,25 @@
 @import "../styles/variables.css";
 @import "../styles/components.css";
 @import "../styles/global.css";
-
-/* HomeScreen-specific body overrides */
-body:not(.login-page) {
-  background-color: var(--background-secondary);
-  color: var(--text-normal);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+@import "../styles/platform/ios.css";
+/* HomeScreen-specific styling - layout colors now handled by layout.css */
 
 .app {
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
   height: 100vh;
-  /* Fallback */
-  height: calc(var(--vh, 1vh) * 100);
+  /* min-height: -webkit-fill-available; */
   width: 100vw;
   background-color: var(--background-primary);
   overflow: hidden;
   position: fixed;
-  /* Add fixed positioning */
-  top: 0;
-  left: 0;
-  overscroll-behavior: none;
+  /* top: 0; */
+  /* left: 0; */
+  /* overscroll-behavior: none; */
   touch-action: pan-y;
-  /* Only allow vertical scrolling */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Container that wraps both the chat body and footer for better layout control */
@@ -36,7 +28,6 @@ body:not(.login-page) {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 100%;
   overflow: hidden;
 }
 
@@ -79,23 +70,13 @@ body:not(.login-page) {
 
 .app-body {
   flex: 1;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   display: flex;
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
   overscroll-behavior: contain;
-  /* Prevent pull to refresh while allowing normal scroll */
   -webkit-overflow-scrolling: touch;
-  /* Smooth scrolling on iOS */
-}
-
-.chat-feed-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
 }
 
 .app-footer {
@@ -103,14 +84,10 @@ body:not(.login-page) {
   backdrop-filter: blur(10px);
   width: 100%;
   z-index: 100; /* Ensure it stays on top */
-  padding: 10px 20px; /* Add consistent padding */
-  padding-bottom: calc(
-    10px + env(safe-area-inset-bottom, 0)
-  ); /* Account for safe area */
-  /* Add bottom-specific stylings */
+  padding: 12px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  flex-shrink: 0; /* Prevent footer from shrinking */
+  /* flex-shrink: 0; */
 }
 
 .loading-placeholder {
@@ -220,10 +197,7 @@ body:not(.login-page) {
 
   .app-footer {
     padding: 12px;
-    margin-top: auto; /* Push footer to bottom */
-    padding-bottom: calc(
-      12px + env(safe-area-inset-bottom, 0)
-    ); /* Account for safe area */
+    /* Let platform-specific CSS handle the padding-bottom */
   }
 }
 
