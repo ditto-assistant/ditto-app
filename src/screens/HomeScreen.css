@@ -29,6 +29,7 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  height: 100%; /* Ensure it takes full height */
 }
 
 /* The floating header styles have been moved to SendMessage.css */
@@ -77,6 +78,7 @@
   box-sizing: border-box;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  position: relative; /* Added for positioning context */
 }
 
 .app-footer {
@@ -87,7 +89,8 @@
   padding: 12px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  /* flex-shrink: 0; */
+  flex-shrink: 0; /* Prevent footer from shrinking */
+  min-height: 75px; /* Ensure footer has a consistent height */
 }
 
 .loading-placeholder {

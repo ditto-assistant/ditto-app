@@ -1,5 +1,10 @@
 /* Android specific styles */
+/* Target Android browsers */
 @supports (-webkit-appearance: none) and (not (-webkit-touch-callout: none)) {
+  /* Add padding to chat feed for Android */
+  .chat-feed-container {
+    padding-bottom: calc(var(--footer-height, 75px) + 30px); /* Added extra padding to prevent cutoff */
+  }
   /* Footer adjustments for Android navigation bar */
   .app-footer {
     position: fixed;
@@ -19,21 +24,11 @@
     }
   }
 
-  /* Make sure body fills available space but doesn't overlap footer */
+  /* Make sure body fills available space */
   .app-body {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: calc(
-      var(--footer-height) + var(--android-nav-height)
-    ); /* Use CSS variables */
-  }
-
-  @supports (padding: env(viewport-segment-bottom 0 0)) {
-    .app-body {
-      padding-bottom: calc(
-        var(--footer-height) + env(viewport-segment-bottom 0 0)
-      );
-    }
+    /* Remove padding-bottom - now handled by chat-feed-container */
   }
 
   /* Different spacing for Chrome vs PWA mode */
@@ -45,8 +40,9 @@
       padding-bottom: 0 !important;
     }
 
-    .app-body {
-      padding-bottom: var(--footer-height);
+    /* Apply padding to chat feed container instead */
+    .chat-feed-container {
+      padding-bottom: var(--footer-height, 75px);
     }
   }
 }

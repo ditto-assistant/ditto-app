@@ -27,6 +27,19 @@
   border: 2px solid var(--background-primary);
 }
 
+/* Fix for unwanted gray background near scroll-to-bottom button */
+.messages-container::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px; /* Height of potential gray area */
+  background-color: transparent !important;
+  pointer-events: none;
+  z-index: 1;
+}
+
 *::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-thumb-hover-color);
 }
