@@ -72,32 +72,6 @@ const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"));
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"));
 const queryClient = new QueryClient();
 
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/">
-      <Route element={<Layout className="login-layout" />}>
-        <Route path="login" element={<Login />} />
-      </Route>
-
-      <Route
-        element={
-          <Suspense fallback={<FullScreenSpinner />}>
-            <AuthenticatedRoute>
-              <Layout className="main-layout" />
-            </AuthenticatedRoute>
-          </Suspense>
-        }
-      >
-        <Route index element={<HomeScreen />} />
-        <Route path="checkout">
-          <Route index element={<Checkout />} />
-          <Route path="success" element={<CheckoutSuccess />} />
-        </Route>
-      </Route>
-    </Route>,
-  ),
-);
-
 const modalRegistry: ModalRegistry = {
   feedback: {
     component: <FeedbackModal />,
@@ -128,6 +102,34 @@ const modalRegistry: ModalRegistry = {
   },
 } as const;
 
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/">
+      <Route element={<Layout className="login-layout" />}>
+        <Route path="login" element={<Login />} />
+      </Route>
+
+      <Route
+        element={
+          <Suspense fallback={<FullScreenSpinner />}>
+            <AuthenticatedRoute>
+              <ModalProvider registry={modalRegistry}>
+                <Layout className="main-layout" />
+              </ModalProvider>
+            </AuthenticatedRoute>
+          </Suspense>
+        }
+      >
+        <Route index element={<HomeScreen />} />
+        <Route path="checkout">
+          <Route index element={<Checkout />} />
+          <Route path="success" element={<CheckoutSuccess />} />
+        </Route>
+      </Route>
+    </Route>,
+  ),
+);
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -142,37 +144,33 @@ function App() {
                       <ConfirmationDialogProvider>
                         <MemoryNodeViewerProvider>
                           <ConversationProvider>
-                            <ModalProvider registry={modalRegistry}>
-                              <PromptStorageProvider>
-                                <ComposeProvider>
-                                  <AppErrorBoundary>
-                                    <RouterProvider router={router} />
-                                  </AppErrorBoundary>
-                                  <UpdateNotification />
-
-                                  {createPortal(
-                                    <Toaster
-                                      position="top-center"
-                                      toastOptions={{
-                                        style: {
-                                          background: "#333",
-                                          color: "#fff",
-                                          borderRadius: "8px",
-                                          padding: "12px 16px",
-                                          zIndex: 10000,
-                                        },
-                                      }}
-                                    />,
-                                    document.getElementById("toast-root") ||
-                                      document.body,
-                                  )}
-                                  <ReactQueryDevtools
-                                    buttonPosition="top-right"
-                                    initialIsOpen={false}
-                                  />
-                                </ComposeProvider>
-                              </PromptStorageProvider>
-                            </ModalProvider>
+                            <PromptStorageProvider>
+                              <ComposeProvider>
+                                <AppErrorBoundary>
+                                  <RouterProvider router={router} />
+                                </AppErrorBoundary>
+                                {createPortal(
+                                  <Toaster
+                                    position="top-center"
+                                    toastOptions={{
+                                      style: {
+                                        background: "#333",
+                                        color: "#fff",
+                                        borderRadius: "8px",
+                                        padding: "12px 16px",
+                                        zIndex: 10000,
+                                      },
+                                    }}
+                                  />,
+                                  document.getElementById("toast-root") ||
+                                    document.body,
+                                )}
+                                <ReactQueryDevtools
+                                  buttonPosition="top-right"
+                                  initialIsOpen={false}
+                                />
+                              </ComposeProvider>
+                            </PromptStorageProvider>
                           </ConversationProvider>
                         </MemoryNodeViewerProvider>
                       </ConfirmationDialogProvider>

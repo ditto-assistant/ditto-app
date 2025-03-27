@@ -383,33 +383,58 @@ export default function SendMessage({
             rows={3}
             style={{
               overflowY: "hidden",
-              marginRight: "-5px",
             }}
           />
+          <button
+            className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
+            type="submit"
+            disabled={isWaitingForResponse}
+            aria-label="Send message"
+          >
+            <FaPaperPlane />
+          </button>
         </div>
 
         <div className="bottom-buttons-bar">
           <div className="button-hub">
-            {/* Full screen button on the left */}
-            <div
-              className="icon-button action-button expand-button"
-              onClick={openComposeModal}
-              aria-label="Expand message"
-            >
-              <FaExpand />
+            <div className="left-group">
+              {/* Full screen button */}
+              <div
+                className="icon-button action-button expand-button"
+                onClick={openComposeModal}
+                aria-label="Expand message"
+              >
+                <FaExpand />
+              </div>
+
+              {/* Add Media button */}
+              <div
+                className="icon-button action-button add-media-button"
+                onClick={handlePlusClick}
+                aria-label="Add media"
+              >
+                <FaPlus />
+              </div>
             </div>
 
-            {/* Add Media button next to full screen */}
-            <div
-              className="icon-button action-button add-media-button"
-              onClick={handlePlusClick}
-              aria-label="Add media"
-            >
-              <FaPlus />
-            </div>
+            <div className="right-group">
+              {/* Script indicator button (shows only when a script is selected) */}
+              {selectedScript && (
+                <motion.div
+                  className="script-icon-button"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleScriptNameClick}
+                  ref={scriptIndicatorRef}
+                  title={selectedScript.script}
+                >
+                  <FaCode />
+                </motion.div>
+              )}
 
-            {/* Center Ditto logo button */}
-            <div className="ditto-button-container">
+              {/* Ditto features button */}
               <motion.div
                 ref={logoButtonRef}
                 className="ditto-logo-button"
@@ -433,120 +458,50 @@ export default function SendMessage({
                   className="ditto-icon-circular"
                 />
               </motion.div>
-
-              {/* Hidden sliding menu container for Ditto logo */}
-              <div className="ditto-menu-container">
-                <SlidingMenu
-                  isOpen={isMenuOpen}
-                  onClose={() => {
-                    setIsMenuOpen(false);
-                    setMenuPinned(false);
-                  }}
-                  position="center"
-                  triggerRef={logoButtonRef}
-                  isPinned={menuPinned}
-                  menuPosition="bottom"
-                  menuTitle="Ditto Options"
-                  menuItems={[
-                    {
-                      icon: <MdFeedback className="icon" />,
-                      text: "Feedback",
-                      onClick: openFeedbackModal,
-                    },
-                    {
-                      icon: <FaLaptopCode className="icon" />,
-                      text: "Scripts",
-                      onClick: openScriptsOverlay,
-                    },
-                    {
-                      icon: <IoSettingsOutline className="icon" />,
-                      text: "Settings",
-                      onClick: openSettingsModal,
-                    },
-                  ]}
-                />
-              </div>
             </div>
 
-            {/* Script indicator button (shows only when a script is selected) */}
-            {selectedScript && (
-              <motion.div
-                className="script-icon-button"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleScriptNameClick}
-                ref={scriptIndicatorRef}
-                title={selectedScript.script}
-              >
-                <FaCode />
-              </motion.div>
-            )}
-
-            {/* Send button on the right */}
-            <button
-              className={`icon-button submit ${isWaitingForResponse ? "disabled" : ""}`}
-              type="submit"
-              disabled={isWaitingForResponse}
-              aria-label="Send message"
-            >
-              <FaPaperPlane />
-            </button>
-
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
-          </div>
-
-          {/* Hidden sliding menu container for script actions */}
-          {selectedScript && (
-            <div style={{ position: "relative", width: "0", height: "0" }}>
+            {/* Hidden sliding menu container for Ditto logo */}
+            <div className="ditto-menu-container">
               <SlidingMenu
-                isOpen={showScriptActions}
-                onClose={() => setShowScriptActions(false)}
+                isOpen={isMenuOpen}
+                onClose={() => {
+                  setIsMenuOpen(false);
+                  setMenuPinned(false);
+                }}
                 position="right"
-                triggerRef={scriptIndicatorRef}
+                triggerRef={logoButtonRef}
+                isPinned={menuPinned}
                 menuPosition="bottom"
-                menuTitle={selectedScript.script}
+                menuTitle="Ditto Options"
                 menuItems={[
                   {
-                    icon: <FaPlay className="icon" />,
-                    text: "Launch Script",
-                    onClick: handlePlayScript,
+                    icon: <MdFeedback className="icon" />,
+                    text: "Feedback",
+                    onClick: openFeedbackModal,
                   },
                   {
-                    icon: <FaPen className="icon" />,
-                    text: "Edit Script",
-                    onClick: () => {
-                      if (selectedScript) {
-                        const event = new CustomEvent("editScript", {
-                          detail: {
-                            script: {
-                              name: selectedScript.script,
-                              content: selectedScript.contents,
-                              scriptType: selectedScript.scriptType,
-                            },
-                          },
-                        });
-                        window.dispatchEvent(event);
-                      }
-                    },
+                    icon: <FaLaptopCode className="icon" />,
+                    text: "Scripts",
+                    onClick: openScriptsOverlay,
                   },
                   {
-                    icon: <FaTimes className="icon" />,
-                    text: "Deselect Script",
-                    onClick: handleDeselectScript,
+                    icon: <IoSettingsOutline className="icon" />,
+                    text: "Settings",
+                    onClick: openSettingsModal,
                   },
                 ]}
               />
             </div>
-          )}
+          </div>
         </div>
+
+        <input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleImageUpload}
+        />
 
         {image && (
           <div className="image-preview" onClick={() => openImageViewer(image)}>
