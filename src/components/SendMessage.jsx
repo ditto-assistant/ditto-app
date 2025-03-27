@@ -372,27 +372,36 @@ export default function SendMessage({
       if (formRef.current) {
         const height = formRef.current.offsetHeight;
         // Add a larger buffer to ensure no clipping
-        document.documentElement.style.setProperty('--footer-height', `${height + 30}px`);
-        
+        document.documentElement.style.setProperty(
+          "--footer-height",
+          `${height + 30}px`,
+        );
+
         // Fix follow button position, which appears in different places on different platforms
-        const followButton = document.querySelector('.follow-button');
+        const followButton = document.querySelector(".follow-button");
         if (followButton) {
           // Position the button properly for iOS and Android
-          followButton.style.position = 'fixed';
-          followButton.style.right = '20px';
-          
+          followButton.style.position = "fixed";
+          followButton.style.right = "20px";
+
           // Base position depends on the current footer height
           let bottomPosition = height + 40; // Increase buffer for better placement
-          
+
           // Add different padding based on platform
           if (isIOS) {
             // Get the safe area inset bottom CSS variable
-            const safeAreaBottom = getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom') || '0px';
-            
+            const safeAreaBottom =
+              getComputedStyle(document.documentElement).getPropertyValue(
+                "--safe-area-bottom",
+              ) || "0px";
+
             // Extract safe area value
             const safeAreaMatch = safeAreaBottom.match(/(\d+)px/);
-            const safeAreaValue = safeAreaMatch && safeAreaMatch[1] ? parseInt(safeAreaMatch[1], 10) : 0;
-            
+            const safeAreaValue =
+              safeAreaMatch && safeAreaMatch[1]
+                ? parseInt(safeAreaMatch[1], 10)
+                : 0;
+
             // Adjust bottom position based on platform mode
             if (isPWA) {
               bottomPosition += safeAreaValue + 20;
@@ -404,42 +413,47 @@ export default function SendMessage({
             // Android needs extra space
             bottomPosition += 20;
           }
-          
+
           followButton.style.bottom = `${bottomPosition}px`;
-          followButton.style.zIndex = '9999'; // Ensure it's on top
+          followButton.style.zIndex = "9999"; // Ensure it's on top
         }
       }
     };
-    
+
     // Initial update with multiple attempts to ensure layout is complete
     // iOS sometimes needs multiple attempts to get the positioning right
     setTimeout(updateFooterHeight, 100);
     setTimeout(updateFooterHeight, 500);
     setTimeout(updateFooterHeight, 1000);
     setTimeout(updateFooterHeight, 2000);
-    
+
     // Update on window resize and after form content changes
-    window.addEventListener('resize', updateFooterHeight);
+    window.addEventListener("resize", updateFooterHeight);
     const observer = new ResizeObserver(() => {
       setTimeout(updateFooterHeight, 50); // Slight delay after resize for accuracy
     });
-    
+
     if (formRef.current) {
       observer.observe(formRef.current);
     }
-    
+
     return () => {
-      window.removeEventListener('resize', updateFooterHeight);
+      window.removeEventListener("resize", updateFooterHeight);
       if (formRef.current) {
         observer.unobserve(formRef.current);
       }
       observer.disconnect();
     };
   }, [image, message]); // Re-run when image or message changes
-  
+
   return (
     <>
-      <form ref={formRef} className="form" onSubmit={handleSubmit} onPaste={handlePaste}>
+      <form
+        ref={formRef}
+        className="form"
+        onSubmit={handleSubmit}
+        onPaste={handlePaste}
+      >
         <div className="input-wrapper">
           <textarea
             ref={textAreaRef}

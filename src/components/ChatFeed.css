@@ -1394,7 +1394,9 @@ ul.chat-bubble-list {
   overflow: hidden;
   position: relative;
   padding: 0;
-  padding-bottom: calc(var(--footer-height, 75px) + 20px); /* Add additional space to prevent cutoff */
+  padding-bottom: calc(
+    var(--footer-height, 75px) + 20px
+  ); /* Add additional space to prevent cutoff */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   background-color: transparent; /* Force transparency */

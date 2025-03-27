@@ -60,7 +60,9 @@
 
   /* Use dynamic footer height to ensure proper spacing */
   .chat-feed-container {
-    padding-bottom: calc(var(--footer-height, 75px) + env(safe-area-inset-bottom, 0px) + 30px); /* Add extra space to prevent cutoff */
+    padding-bottom: calc(
+      var(--footer-height, 75px) + env(safe-area-inset-bottom, 0px) + 30px
+    ); /* Add extra space to prevent cutoff */
   }
 
   /* Follow button is now entirely positioned via JS */
@@ -71,7 +73,9 @@
     @media all and (display-mode: standalone) {
       /* Override bottom position for PWA mode with safe area */
       .form {
-        padding-bottom: calc(var(--spacing-sm) + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(
+          var(--spacing-sm) + env(safe-area-inset-bottom, 0px)
+        );
       }
     }
   }
@@ -79,7 +83,9 @@
   /* Additional safe area consideration for iOS Safari */
   @media not all and (display-mode: standalone) {
     .form {
-      padding-bottom: calc(var(--spacing-sm) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(
+        var(--spacing-sm) + env(safe-area-inset-bottom, 0px)
+      );
     }
   }
 

@@ -3,7 +3,9 @@
 @supports (-webkit-appearance: none) and (not (-webkit-touch-callout: none)) {
   /* Add padding to chat feed for Android */
   .chat-feed-container {
-    padding-bottom: calc(var(--footer-height, 75px) + 30px); /* Added extra padding to prevent cutoff */
+    padding-bottom: calc(
+      var(--footer-height, 75px) + 30px
+    ); /* Added extra padding to prevent cutoff */
   }
   /* Footer adjustments for Android navigation bar */
   .app-footer {
