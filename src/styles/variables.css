@@ -74,6 +74,7 @@
   /* Layout variables */
   --header-height: 60px;
   --footer-height: 70px;
+  --android-nav-height: 100px; /* Height of Android gesture navigation bar */
   --scrollbar-width: 8px;
   --scrollbar-track-color: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-color: rgba(114, 137, 218, 0.5);

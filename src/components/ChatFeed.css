@@ -1390,9 +1390,9 @@ ul.chat-bubble-list {
 .chat-feed-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow-y: hidden; /* Let ScrollToBottom handle overflow */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  flex: 1;
+  overflow-y: hidden;
+  overflow-x: hidden;
   position: relative;
   padding: 0;
   scrollbar-width: thin;
