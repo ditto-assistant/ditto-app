@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
 
-# 
+#
 
 ---
 
@@ -81,4 +81,3 @@ It's important to test your implementation across different devices and Chrome v
 [^20]: https://www.youtube.com/watch?v=i96miHefikU
 
 [^21]: https://xdaforums.com/t/remove-navbar-gesture-pill-and-more-for-pixel-6-pro.4357937/page-8
-
