@@ -4,9 +4,11 @@ import ace from "ace-builds";
 import "ace-builds/src-min-noconflict/ace";
 import "ace-builds/src-min-noconflict/mode-html";
 import "ace-builds/src-min-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-tomorrow_night";
+import "ace-builds/src-min-noconflict/theme-tomorrow_night";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import "ace-builds/src-min-noconflict/ext-searchbox";
+import "ace-builds/src-min-noconflict/snippets/javascript";
+import "ace-builds/src-min-noconflict/snippets/html";
 import {
   FaArrowLeft,
   FaPlay,
@@ -41,21 +43,27 @@ import { toast } from "react-hot-toast";
 import { usePlatform } from "@/hooks/usePlatform";
 import "./FullScreenEditor.css"; // Import the CSS file
 
-// Initialize ace for production
-if (import.meta.env.PROD) {
-  ace.config.set(
-    "basePath",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
-  );
-  ace.config.setModuleUrl(
-    "ace/mode/html_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js",
-  );
-  ace.config.setModuleUrl(
-    "ace/mode/javascript_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js",
-  );
-}
+// Set ace paths for all environments, not just production
+ace.config.set(
+  "basePath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
+);
+ace.config.set(
+  "modePath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
+);
+ace.config.set(
+  "themePath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
+);
+ace.config.setModuleUrl(
+  "ace/mode/html_worker",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js",
+);
+ace.config.setModuleUrl(
+  "ace/mode/javascript_worker",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js",
+);
 
 const useSplitPane = (initialPosition = 50) => {
   const [splitPosition, setSplitPosition] = useState(initialPosition);
@@ -1015,7 +1023,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   useWorker: false,
                   wrap: wrapEnabled,
                   fontFamily: "JetBrains Mono, monospace",
-                  theme: "tomorrow_night",
+                  mode: "ace/mode/javascript",
+                  theme: "ace/theme/tomorrow_night",
                 }}
                 onSelectionChange={handleEditorSelection}
                 style={{
