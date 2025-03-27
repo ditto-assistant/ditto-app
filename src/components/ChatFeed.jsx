@@ -226,7 +226,10 @@ const CustomScrollToBottom = ({
   }, [children, isScrolledToBottom, initialScrollBehavior, onScrollComplete]);
 
   return (
-    <div className={containerClassName} style={containerStyle}>
+    <div
+      className={containerClassName}
+      style={{ ...containerStyle, backgroundColor: "transparent" }}
+    >
       <div
         ref={scrollContainerRef}
         className={scrollViewClassName || "custom-scroll-view"}
@@ -235,6 +238,7 @@ const CustomScrollToBottom = ({
           overflowY: "auto",
           height: "100%",
           position: "relative",
+          backgroundColor: "transparent",
         }}
       >
         {children}
@@ -255,6 +259,8 @@ const CustomScrollToBottom = ({
             pointerEvents: "auto",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
             touchAction: "none",
+            backgroundColor: "var(--primary)",
+            borderRadius: "50%",
           }}
           onTouchStart={(e) => {
             e.stopPropagation();
@@ -563,7 +569,8 @@ export default function ChatFeed({
               );
             })
             .reverse()}
-          <div ref={bottomRef} className="bottom-spacer" />
+          {/* Minimal reference point for scrolling, no added height needed */}
+          <div ref={bottomRef} />
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">

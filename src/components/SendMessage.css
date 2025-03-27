@@ -17,13 +17,13 @@
 /* ===== 1. Form container ===== */
 .form {
   display: flex;
-  flex: 1;
   background-color: var(--background-input);
   position: relative;
   z-index: 10;
   flex-direction: column;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius-md);
+  /* Remove flex: 1 - footer should not grow */
 }
 
 .contents {
