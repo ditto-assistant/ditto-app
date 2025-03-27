@@ -2,6 +2,7 @@
 @import "./components.css";
 @import "./buttons.css";
 @import "./platform/ios.css";
+@import "./platform/android.css";
 
 * {
   margin: 0;

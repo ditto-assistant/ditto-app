@@ -8,7 +8,6 @@ import ChatFeed from "@/components/ChatFeed";
 import SendMessage from "@/components/SendMessage";
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
 import { useScripts } from "@/hooks/useScripts";
-import { usePlatform } from "@/hooks/usePlatform";
 import useWhatsNew from "@/hooks/useWhatsNew";
 import { getUpdateState } from "@/utils/updateService";
 import "@/styles/buttons.css";
@@ -27,7 +26,6 @@ export default function HomeScreen() {
     return !localStorage.getItem("hasSeenTOS");
   });
   const [fullScreenEdit, setFullScreenEdit] = useState(null);
-  const { isIOS, isPWA } = usePlatform();
   const { setSelectedScript, saveScript } = useScripts();
   const { openWhatsNew } = useWhatsNew();
 
@@ -58,78 +56,6 @@ export default function HomeScreen() {
       }
     }
   }, [openWhatsNew]);
-
-  useEffect(() => {
-    // Update the existing useEffect that handles viewport height
-    const setVH = () => {
-      // First get the viewport height and multiply it by 1% to get a value for a vh unit
-      let vh = window.innerHeight * 0.01;
-
-      // For iOS Safari, use the visualViewport API for more accurate measurements
-      if (isIOS && window.visualViewport) {
-        vh = window.visualViewport.height * 0.01;
-      }
-
-      // Then set the value in the --vh custom property to the root of the document
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
-
-      // Simple approach - don't add extra space in PWA mode
-      if (isIOS) {
-        const extraSpace = isPWA ? 0 : 20; // No extra space needed in PWA mode
-        const iosVh = (window.innerHeight + extraSpace) * 0.01;
-        document.documentElement.style.setProperty("--ios-vh", `${iosVh}px`);
-      }
-    };
-
-    // Initial set
-    setVH();
-
-    // Add event listeners for various events that might change the viewport
-    window.addEventListener("resize", setVH);
-    window.addEventListener("orientationchange", setVH);
-    window.addEventListener("scroll", setVH);
-
-    // Special handling for iOS to help with browser chrome appearing/disappearing
-    if (isIOS) {
-      // Add meta viewport tag to prevent scaling issues
-      const viewportMeta = document.querySelector('meta[name="viewport"]');
-      if (viewportMeta) {
-        viewportMeta.setAttribute(
-          "content",
-          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no",
-        );
-      }
-
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", setVH);
-        window.visualViewport.addEventListener("scroll", setVH);
-      }
-
-      // Set a timer to periodically check viewport size on iOS
-      const safariHeightTimer = setInterval(setVH, 500);
-
-      // Also check after a brief delay for when the page first loads
-      setTimeout(setVH, 300);
-
-      return () => {
-        // Clean up event listeners
-        window.removeEventListener("resize", setVH);
-        window.removeEventListener("orientationchange", setVH);
-        window.removeEventListener("scroll", setVH);
-        if (window.visualViewport) {
-          window.visualViewport.removeEventListener("resize", setVH);
-          window.visualViewport.removeEventListener("scroll", setVH);
-        }
-        clearInterval(safariHeightTimer);
-      };
-    }
-
-    return () => {
-      window.removeEventListener("resize", setVH);
-      window.removeEventListener("orientationchange", setVH);
-      window.removeEventListener("scroll", setVH);
-    };
-  }, [isIOS, isPWA]);
 
   const handleCameraOpen = () => {
     setIsCameraOpen(true);
