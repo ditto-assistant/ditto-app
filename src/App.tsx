@@ -41,7 +41,7 @@ const AppErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   return <ErrorBoundaryWrapper>{children}</ErrorBoundaryWrapper>;
 };
 
-const loadE = <T extends React.ComponentType<unknown>>(
+const loadE = <T extends React.ComponentType>(
   importFn: () => Promise<{ default: T }>,
 ) => {
   return lazy(async () => {
@@ -60,7 +60,10 @@ const FeedbackModal = loadE(() => import("@/components/FeedbackModal"));
 const ImageViewer = loadE(() => import("@/components/ImageViewer"));
 const HomeScreen = loadE(() => import("@/screens/HomeScreen"));
 const Settings = loadE(() => import("@/screens/Settings"));
-const Checkout = loadE(() => import("@/screens/Checkout"));
+const TokenCheckout = loadE(() => import("@/screens/TokenCheckout"));
+const SubscriptionCheckout = loadE(
+  () => import("@/screens/SubscriptionCheckout"),
+);
 const CheckoutSuccess = loadE(() => import("@/screens/CheckoutSuccess"));
 const ScriptsOverlay = loadE(
   () => import("@/screens/ScriptsModal/ScriptsOverlay"),
@@ -76,7 +79,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
       <Route element={<Layout className="login-layout" />}>
-        <Route path="login" element={<Login />} />
+        <Route path="login" Component={Login} />
       </Route>
 
       <Route
@@ -88,10 +91,11 @@ const router = createBrowserRouter(
           </Suspense>
         }
       >
-        <Route index element={<HomeScreen />} />
+        <Route index Component={HomeScreen} />
         <Route path="checkout">
-          <Route index element={<Checkout />} />
-          <Route path="success" element={<CheckoutSuccess />} />
+          <Route index Component={SubscriptionCheckout} />
+          <Route path="token" Component={TokenCheckout} />
+          <Route path="success" Component={CheckoutSuccess} />
         </Route>
       </Route>
     </Route>,

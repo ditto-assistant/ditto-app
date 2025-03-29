@@ -24,7 +24,7 @@ const getTokenAmount = (usd) => {
   return `${usd}B`; // Default to 1:1 ratio
 };
 
-const Checkout = () => {
+const TokenCheckout = () => {
   const navigate = useNavigate();
   const balance = useBalance();
   const [amount, setAmount] = useState(10);
@@ -362,4 +362,4 @@ const styles = {
   },
 };
 
-export default Checkout;
+export default TokenCheckout;
