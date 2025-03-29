@@ -78,12 +78,19 @@ export type ModelOption = {
   isTaggedModel?: boolean;
   sizeOptions?: ImageGenerationSize[];
   vendor?: Vendor;
+  iconUrl?: string; // URL to model or provider icon
   supports?: {
     imageAttachments?: "single" | "multiple";
     imageGeneration?: boolean;
     tools?: boolean;
   };
   speedLevel?: "slow" | "medium" | "fast" | "insane";
+  pricing?: {
+    inputTokens?: number;  // cost per million input tokens
+    outputTokens?: number; // cost per million output tokens
+    intelligenceLevel?: string; // intelligence rating
+    costPerImage?: number; // cost per image for image models
+  };
 };
 
 export type Tool = {

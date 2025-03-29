@@ -24,6 +24,8 @@ import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useServices } from "@/hooks/useServices";
+import ModelCard from "@/components/ModelCard";
 
 interface ActiveFilters {
   speed: "slow" | "medium" | "fast" | "insane" | null;
@@ -57,6 +59,9 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
 
 export default function ModelPreferencesModal() {
   const { preferences, updatePreferences, isLoading } = useModelPreferences();
+  // Fetch services using our new hook
+  const { llms, imageModels, loading: servicesLoading } = useServices();
+  
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
@@ -221,114 +226,57 @@ export default function ModelPreferencesModal() {
       if (!preferences) return null;
 
       if (modelType === "imageGeneration") {
-        const selectedModel = IMAGE_GENERATION_MODELS.find(
+        const selectedModel = imageModels.find(
           (model) => model.id === preferences.imageGeneration.model,
         );
         return selectedModel;
       }
 
-      const selectedModel = DEFAULT_MODELS.find(
+      const selectedModel = llms.find(
         (model) => model.id === preferences[modelType],
       );
       return selectedModel;
     },
-    [preferences],
+    [preferences, llms, imageModels],
   );
 
   const renderModelCard = useCallback(
     (model: ModelOption) => {
       if (!preferences) return null;
+      
+      const isSelected = model.id === preferences[
+        activeSection === "main" ? "mainModel" : "programmerModel"
+      ];
+      
+      // Use our new ModelCard component
       return (
-        <div
-          key={model.id}
-          onClick={() =>
-            handleModelChange(
-              activeSection === "main" ? "mainModel" : "programmerModel",
-              model.id,
-            )
-          }
-          className={`model-card ${
-            model.id ===
-            preferences[
-              activeSection === "main" ? "mainModel" : "programmerModel"
-            ]
-              ? "selected"
-              : ""
-          }`}
+        <div 
+          key={model.id} 
+          className={`${isSelected ? "selected-model-wrapper" : ""}`}
+          style={{ padding: "6px" }}
         >
-          <div className="model-card-header">
-            <span className="model-name">{model.name}</span>
-            {model.vendor && (
-              <span
-                className="vendor-badge"
-                style={{
-                  backgroundColor: VENDOR_COLORS[model.vendor],
-                }}
-              >
-                {getVendorIcon(model.vendor)}
-              </span>
+          <ModelCard 
+            model={model}
+            isSelected={isSelected}
+            onSelect={() => handleModelChange(
+              activeSection === "main" ? "mainModel" : "programmerModel",
+              model.id
             )}
-          </div>
-          <div className="model-badges">
-            {model.speedLevel && (
-              <span
-                className="badge"
-                style={{
-                  background: SPEED_COLORS[model.speedLevel],
-                }}
-              >
-                {getSpeedIcon(model.speedLevel)}
-                {model.speedLevel.charAt(0).toUpperCase() +
-                  model.speedLevel.slice(1)}
-              </span>
-            )}
-            {model.isFree ? (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#43B581",
-                }}
-              >
-                {MemoizedFaCrownFree} Free
-              </span>
-            ) : model.isPremium ? (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#5865F2",
-                }}
-              >
-                {MemoizedFaCrownPremium} Premium
-              </span>
-            ) : null}
-            {model.supports?.imageAttachments && (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#43B581",
-                }}
-              >
-                {MemoizedFaImage} Image
-              </span>
-            )}
-          </div>
+            hasEnoughBalance={true} // Assuming the user has enough balance
+          />
         </div>
       );
     },
     [
       activeSection,
-      getSpeedIcon,
-      getVendorIcon,
       handleModelChange,
       preferences,
-      MemoizedFaImage,
-      MemoizedFaCrownFree,
-      MemoizedFaCrownPremium,
     ],
   );
 
   const filteredModels = useMemo(() => {
-    let filtered = [...DEFAULT_MODELS];
+    // Use the fetched llms instead of DEFAULT_MODELS
+    let filtered = [...llms];
 
     // Filter tagged/untagged models
     filtered = filtered.filter((model) =>
@@ -358,7 +306,7 @@ export default function ModelPreferencesModal() {
     }
 
     return filtered;
-  }, [activeFilters, showTaggedModels]);
+  }, [activeFilters, showTaggedModels, llms]);
 
   const renderImageModelCard = useCallback(
     (model: ModelOption) => {
@@ -452,7 +400,8 @@ export default function ModelPreferencesModal() {
   );
 
   const filteredImageModels = useMemo(() => {
-    let filtered = [...IMAGE_GENERATION_MODELS];
+    // Use the fetched imageModels instead of IMAGE_GENERATION_MODELS
+    let filtered = [...imageModels];
 
     if (imageFilters.provider) {
       filtered = filtered.filter(
@@ -475,7 +424,7 @@ export default function ModelPreferencesModal() {
     }
 
     return filtered;
-  }, [imageFilters]);
+  }, [imageFilters, imageModels]);
 
   const toggleImageFilter = useCallback(
     (filterType: keyof ImageFilters, value: any) => {
@@ -579,7 +528,7 @@ export default function ModelPreferencesModal() {
     MemoizedFaImage,
   ]);
 
-  // Compact version of renderModelCard for mobile
+  // Compact version of renderModelCard for mobile - now using our new ModelCard component
   const renderCompactModelCard = useCallback(
     (model: ModelOption) => {
       if (!preferences) return null;
@@ -589,105 +538,27 @@ export default function ModelPreferencesModal() {
         preferences[activeSection === "main" ? "mainModel" : "programmerModel"];
 
       return (
-        <div
-          key={model.id}
-          onClick={() =>
-            handleModelChange(
-              activeSection === "main" ? "mainModel" : "programmerModel",
-              model.id,
-            )
-          }
-          className={`model-card ${isSelected ? "selected" : ""}`}
+        <div 
+          key={model.id} 
+          className={`${isSelected ? "selected-model-wrapper" : ""}`}
+          style={{ padding: "4px" }}
         >
-          <div className="model-card-header">
-            <span className="model-name">{model.name}</span>
-            {model.vendor && (
-              <span
-                className="vendor-badge"
-                style={{
-                  backgroundColor: VENDOR_COLORS[model.vendor],
-                }}
-              >
-                {getVendorIcon(model.vendor)}
-              </span>
+          <ModelCard 
+            model={model}
+            isSelected={isSelected}
+            onSelect={() => handleModelChange(
+              activeSection === "main" ? "mainModel" : "programmerModel",
+              model.id
             )}
-          </div>
-          <div className="model-badges">
-            {model.speedLevel && (
-              <span
-                className="badge"
-                style={{
-                  background: SPEED_COLORS[model.speedLevel],
-                }}
-              >
-                {getSpeedIcon(model.speedLevel)}
-                {!isMobile && isCompactView && (
-                  <span className="badge-text">
-                    {model.speedLevel.charAt(0).toUpperCase() +
-                      model.speedLevel.slice(1)}
-                  </span>
-                )}
-              </span>
-            )}
-            {model.isFree && (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#43B581",
-                }}
-              >
-                {MemoizedFaCrownFree}
-                {!isMobile && isCompactView && (
-                  <span className="badge-text">Free</span>
-                )}
-              </span>
-            )}
-            {model.isPremium && (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#5865F2",
-                }}
-              >
-                {MemoizedFaCrownPremium}
-                {!isMobile && isCompactView && (
-                  <span className="badge-text">Premium</span>
-                )}
-              </span>
-            )}
-            {model.supports?.imageAttachments && (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#43B581",
-                }}
-              >
-                {MemoizedFaImage}
-                {!isMobile && isCompactView && (
-                  <span className="badge-text">Image</span>
-                )}
-              </span>
-            )}
-          </div>
-          {isSelected && (
-            <div className="selected-indicator">
-              <div className="selected-dot"></div>
-            </div>
-          )}
+            hasEnoughBalance={true} // Assuming the user has enough balance
+          />
         </div>
       );
     },
     [
       activeSection,
-      getSpeedIcon,
-      getVendorIcon,
       handleModelChange,
       preferences,
-      MemoizedFaImage,
-      MemoizedFaCrownFree,
-      MemoizedFaCrownPremium,
-      isMobile,
-      isCompactView,
     ],
   );
 
@@ -823,9 +694,17 @@ export default function ModelPreferencesModal() {
   );
 
   if (!preferences) return null;
+  
+  const loading = isLoading || servicesLoading;
 
   return (
     <div className="model-preferences-content">
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Loading model information...</div>
+        </div>
+      )}
       <div className="section-tabs-container">
         <div className="section-tabs">
           {["main", "programmer", "image"].map((section) => (

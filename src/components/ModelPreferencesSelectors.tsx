@@ -1,7 +1,5 @@
 import { ModelPreferences } from "@/types/llm";
-import ModelDropdown from "./ModelDropdown";
-import ModelDropdownImage from "./ModelDropdownImage";
-import { useState, useEffect } from "react";
+import ModelSelector from "./ModelSelector";
 
 interface ModelPreferencesSelectorsProps {
   preferences: ModelPreferences;
@@ -16,38 +14,13 @@ function ModelPreferencesSelectors({
   hasEnoughBalance,
   className,
 }: ModelPreferencesSelectorsProps) {
-  const [openDropdown, setOpenDropdown] = useState<
-    "main" | "programmer" | "image" | null
-  >(null);
-
-  // Handle clicking outside of any dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      // Don't handle clicks inside dropdowns, their options, or the selectors
-      const target = e.target as HTMLElement;
-      if (
-        target.closest(".model-dropdown") ||
-        target.closest(".dropdown-option") ||
-        target.closest(".model-selector") ||
-        target.closest(".selected-value")
-      ) {
-        return;
-      }
-
-      // Close dropdown if clicking outside
-      setOpenDropdown(null);
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // Our new ModelSelector component handles its own dropdown state internally
 
   const handleModelChange = (
     key: keyof ModelPreferences,
     value: (typeof preferences)[keyof ModelPreferences],
   ) => {
     updatePreferences({ [key]: value });
-    setOpenDropdown(null);
   };
 
   return (
@@ -59,56 +32,38 @@ function ModelPreferencesSelectors({
         <label className="model-label" style={styles.label}>
           Main Agent Model
         </label>
-        <ModelDropdown
+        <ModelSelector
           value={preferences.mainModel}
           onChange={(value) => handleModelChange("mainModel", value)}
           hasEnoughBalance={hasEnoughBalance}
-          isOpen={openDropdown === "main"}
-          onOpenChange={(isOpen) => {
-            if (isOpen) {
-              setOpenDropdown("main");
-            } else if (openDropdown === "main") {
-              setOpenDropdown(null);
-            }
-          }}
+          isModelType="llm"
         />
       </div>
       <div className="model-selector" style={styles.selector}>
         <label className="model-label" style={styles.label}>
           Programmer Model
         </label>
-        <ModelDropdown
+        <ModelSelector
           value={preferences.programmerModel}
           onChange={(value) => handleModelChange("programmerModel", value)}
           hasEnoughBalance={hasEnoughBalance}
-          isOpen={openDropdown === "programmer"}
-          onOpenChange={(isOpen) => {
-            if (isOpen) {
-              setOpenDropdown("programmer");
-            } else if (openDropdown === "programmer") {
-              setOpenDropdown(null);
-            }
-          }}
+          isModelType="llm"
         />
       </div>
       <div className="model-selector" style={styles.selector}>
         <label className="model-label" style={styles.label}>
           Image Generation Model
         </label>
-        <ModelDropdownImage
-          value={preferences.imageGeneration}
-          onChange={(model, size) =>
-            handleModelChange("imageGeneration", { model, size })
+        <ModelSelector
+          value={preferences.imageGeneration.model}
+          onChange={(value) => 
+            handleModelChange("imageGeneration", { 
+              model: value, 
+              size: preferences.imageGeneration.size 
+            })
           }
           hasEnoughBalance={hasEnoughBalance}
-          isOpen={openDropdown === "image"}
-          onOpenChange={(isOpen) => {
-            if (isOpen) {
-              setOpenDropdown("image");
-            } else if (openDropdown === "image") {
-              setOpenDropdown(null);
-            }
-          }}
+          isModelType="image"
         />
       </div>
     </div>
