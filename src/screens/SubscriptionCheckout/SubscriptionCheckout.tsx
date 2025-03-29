@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import { useAuth, useAuthToken } from "@/hooks/useAuth";
 import { routes } from "../../firebaseConfig";
 import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
