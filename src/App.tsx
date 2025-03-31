@@ -64,7 +64,9 @@ const TokenCheckout = loadE(() => import("@/screens/TokenCheckout"));
 const SubscriptionCheckout = loadE(
   () => import("@/screens/SubscriptionCheckout"),
 );
-const CheckoutSuccess = loadE(() => import("@/screens/CheckoutSuccess"));
+const TokenCheckoutSuccess = loadE(
+  () => import("@/screens/TokenCheckoutSuccess"),
+);
 const ScriptsOverlay = loadE(
   () => import("@/screens/ScriptsModal/ScriptsOverlay"),
 );
@@ -94,8 +96,10 @@ const router = createBrowserRouter(
         <Route index Component={HomeScreen} />
         <Route path="checkout">
           <Route index Component={SubscriptionCheckout} />
-          <Route path="token" Component={TokenCheckout} />
-          <Route path="success" Component={CheckoutSuccess} />
+          <Route path="token">
+            <Route index Component={TokenCheckout} />
+            <Route path="success" Component={TokenCheckoutSuccess} />
+          </Route>
         </Route>
       </Route>
     </Route>,

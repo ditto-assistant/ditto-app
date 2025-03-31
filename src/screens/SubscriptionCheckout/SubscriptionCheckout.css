@@ -100,6 +100,36 @@
   align-items: center;
 }
 
+.subscription-success-content {
+  background: #36393f;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.subscription-success-message {
+  margin: 2rem 0;
+  color: #b9bbbe;
+}
+
+.subscription-success-message p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.subscription-success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.subscription-nav-button.secondary {
+  background-color: #5865f2 !important;
+}
+
 @media (max-width: 600px) {
   .subscription-plans-grid {
     grid-template-columns: 1fr;
@@ -107,5 +137,9 @@
 
   .subscription-header-title {
     font-size: 1.5em;
+  }
+
+  .subscription-success-content {
+    padding: 1.5rem;
   }
 }

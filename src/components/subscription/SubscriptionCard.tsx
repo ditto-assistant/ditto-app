@@ -57,16 +57,11 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
           method="POST"
           className="subscription-card-form"
         >
-          <input type="hidden" name="userID" value={userID} />
+          <input type="hidden" name="user_id" value={userID} />
           <input type="hidden" name="email" value={email || ""} />
-          <input
-            type="hidden"
-            name="successURL"
-            value={`${window.location.origin}/checkout/success`}
-          />
-          <input type="hidden" name="cancelURL" value={window.location.href} />
-          <input type="hidden" name="lookupKey" value={price.lookupKey} />
-          <input type="hidden" name="purchaseType" value="subscription" />
+          <input type="hidden" name="base_url" value={window.location.href} />
+          <input type="hidden" name="lookup_key" value={price.lookupKey} />
+          <input type="hidden" name="product_type" value="ditto_subscription" />
           <input
             type="hidden"
             name="authorization"

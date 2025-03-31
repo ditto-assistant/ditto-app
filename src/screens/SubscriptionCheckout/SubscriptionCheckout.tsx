@@ -4,7 +4,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { useNavigate, useSearchParams } from "react-router";
 import { useAuth, useAuthToken } from "@/hooks/useAuth";
-import { routes } from "../../firebaseConfig";
+import { routes } from "@/firebaseConfig";
 import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
 import SubscriptionCard from "@/components/subscription/SubscriptionCard";
@@ -13,6 +13,7 @@ import "./SubscriptionCheckout.css";
 const SubscriptionCheckout: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session_id");
   const defaultIsYearly = searchParams.get("plan")?.includes("yearly") ?? false;
   const [isYearly, setIsYearly] = useState(defaultIsYearly);
   const balance = useBalance();
@@ -50,6 +51,30 @@ const SubscriptionCheckout: React.FC = () => {
       </div>
     );
   }
+  const SuccessDisplay = ({ sessionId }: { sessionId: string }) => {
+    return (
+      <section>
+        <div className="product Box-root">
+          <div className="description Box-root">
+            <h3>Subscription to {selectedPlan} successful!</h3>
+          </div>
+        </div>
+        <form action={routes.createPortalSession} method="POST">
+          <input type="hidden" name="session_id" value={sessionId} />
+          <input type="hidden" name="base_url" value={window.location.href} />
+          <input type="hidden" name="user_id" value={uid} />
+          <input
+            type="hidden"
+            name="authorization"
+            value={`Bearer ${token.data}`}
+          />
+          <button id="checkout-and-portal-button" type="submit">
+            Manage your billing information
+          </button>
+        </form>
+      </section>
+    );
+  };
 
   if (!auth.user) {
     navigate("/login?redirect=/checkout?plan=" + selectedPlan);
@@ -103,6 +128,8 @@ const SubscriptionCheckout: React.FC = () => {
             </div>
           </div>
           <div className="subscription-divider"></div>
+
+          {sessionId && <SuccessDisplay sessionId={sessionId} />}
 
           <SubscriptionToggle
             isYearly={isYearly}
