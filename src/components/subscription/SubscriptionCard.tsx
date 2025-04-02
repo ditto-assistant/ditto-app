@@ -62,6 +62,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
           <input type="hidden" name="base_url" value={window.location.href} />
           <input type="hidden" name="lookup_key" value={price.lookupKey} />
           <input type="hidden" name="product_type" value="ditto_subscription" />
+          <input type="hidden" name="plan_tier" value={tier.planTier} />
           <input
             type="hidden"
             name="authorization"

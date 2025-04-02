@@ -15,6 +15,7 @@ export interface SubscriptionTier {
   features: string[];
   prices: SubscriptionPrice[];
   mostPopular: boolean;
+  planTier: number;
 }
 
 export interface SubscriptionResponse {
