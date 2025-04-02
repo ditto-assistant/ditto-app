@@ -43,7 +43,7 @@ export async function getSubscriptionTiers(): Promise<
     });
 
     if (response.ok) {
-      const data = await response.json();
+      const data: SubscriptionResponse = await response.json();
       return { ok: data };
     } else {
       return {

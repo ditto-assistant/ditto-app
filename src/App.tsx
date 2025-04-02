@@ -61,9 +61,6 @@ const ImageViewer = loadE(() => import("@/components/ImageViewer"));
 const HomeScreen = loadE(() => import("@/screens/HomeScreen"));
 const Settings = loadE(() => import("@/screens/Settings"));
 const TokenCheckout = loadE(() => import("@/screens/TokenCheckout"));
-const SubscriptionCheckout = loadE(
-  () => import("@/screens/SubscriptionCheckout"),
-);
 const TokenCheckoutSuccess = loadE(
   () => import("@/screens/TokenCheckoutSuccess"),
 );
@@ -95,7 +92,6 @@ const router = createBrowserRouter(
       >
         <Route index Component={HomeScreen} />
         <Route path="checkout">
-          <Route index Component={SubscriptionCheckout} />
           <Route path="token">
             <Route index Component={TokenCheckout} />
             <Route path="success" Component={TokenCheckoutSuccess} />

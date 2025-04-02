@@ -6,8 +6,10 @@ import { useAuth, useAuthToken } from "@/hooks/useAuth";
 import { routes } from "@/firebaseConfig";
 import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
 import { useUser } from "@/hooks/useUser";
+import { useRefreshSubscription } from "@/hooks/useRefreshSubscription";
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
 import SubscriptionCard from "@/components/subscription/SubscriptionCard";
+import { FaSync } from "react-icons/fa";
 import "./SubscriptionTabContent.css";
 
 const SubscriptionTabContent: React.FC = () => {
@@ -18,6 +20,7 @@ const SubscriptionTabContent: React.FC = () => {
   const token = useAuthToken();
   const { data: subscriptionData, isLoading: isLoadingSubscriptions } =
     useSubscriptionTiers();
+  const refreshSubscription = useRefreshSubscription();
   const [selectedPlan, setSelectedPlan] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -32,6 +35,12 @@ const SubscriptionTabContent: React.FC = () => {
       }
     }
   }, [subscriptionData, isYearly]);
+
+  const handleRefreshSubscription = () => {
+    if (auth.user?.uid) {
+      refreshSubscription.mutate(auth.user.uid);
+    }
+  };
 
   if (
     auth.isLoading ||
@@ -72,19 +81,38 @@ const SubscriptionTabContent: React.FC = () => {
   };
 
   // If user is already subscribed, show manage subscription content
-  if (user?.subscriptionStatus === "active") {
+  if (user && user.subscriptionStatus !== "free") {
+    const planName = subscriptionData?.tiers.find(
+      (tier) => tier.planTier === user.planTier,
+    )?.name;
     return (
       <div className="subscription-manage-container">
         <div className="subscription-info">
-          <h3>Current Subscription</h3>
+          <div className="subscription-header">
+            <h3>Current Subscription</h3>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleRefreshSubscription}
+              disabled={refreshSubscription.isDisabled}
+              className="subscription-refresh-button"
+              title="Refresh subscription status"
+            >
+              <FaSync className={refreshSubscription.isPending ? "spin" : ""} />
+            </Button>
+          </div>
           <p>
             Status: <span className="subscription-active">Active</span>
           </p>
           <p>
-            Plan:{" "}
+            Plan: <span className="subscription-highlight">{planName}</span>
+          </p>
+          <p>
+            Balance:{" "}
             <span className="subscription-highlight">
-              Pro Tier {user.planTier}
-            </span>
+              {balance.data?.balance}
+            </span>{" "}
+            tokens
           </p>
           {user.cancelAtPeriodEnd && (
             <p className="subscription-cancellation">
@@ -103,7 +131,7 @@ const SubscriptionTabContent: React.FC = () => {
             name="stripe_customer_id"
             value={user.stripeCustomerID || ""}
           />
-          <input type="hidden" name="base_url" value={window.location.href} />
+          <input type="hidden" name="base_url" value={window.location.origin} />
           <input type="hidden" name="user_id" value={uid} />
           <input
             type="hidden"
