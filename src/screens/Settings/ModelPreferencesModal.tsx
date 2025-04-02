@@ -56,7 +56,7 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
 };
 
 export default function ModelPreferencesModal() {
-  const { preferences, updatePreferences, isLoading } = useModelPreferences();
+  const { preferences, updatePreferences } = useModelPreferences();
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");

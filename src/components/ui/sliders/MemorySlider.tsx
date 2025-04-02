@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Slider } from "@mui/material";
 import { IoAdd, IoRemove } from "react-icons/io5";
 import "./MemorySlider.css";

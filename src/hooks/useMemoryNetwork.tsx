@@ -87,9 +87,6 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
             // Log memories for debugging
             console.log("Fetched memories:", fetchedMemories);
 
-            // The root node uses the currentPairID which should always be available
-            const rootId = memory.id;
-
             // Create the network data structure
             const networkData = [
               {

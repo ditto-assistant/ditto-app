@@ -251,7 +251,6 @@ export const processResponse = async (
     finalResponse = null,
     optimisticId = null,
     finalizeMessage = null,
-    isStreaming = false,
   ) => {
     try {
       // For completed responses with a final result

@@ -124,7 +124,7 @@ ${tools
         .replace(/Example \d+/g, "")
         .trim();
 
-      const [userPrompt, response] = cleanExample
+      const [_, response] = cleanExample
         .split("User's Prompt:")
         .map((s) => s.trim());
 

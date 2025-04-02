@@ -4,9 +4,7 @@ import {
   deleteAllUserScriptsFromFirestore,
 } from "@/control/firebase";
 import packageJson from "../../../package.json";
-import { useBalance } from "@/hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { clearStorage } from "@/utils/deviceId";
 import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
@@ -20,13 +18,11 @@ import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
 import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent";
-import { RiSettings4Fill } from "react-icons/ri";
 import { BiMemoryCard } from "react-icons/bi";
 import { MdSettings } from "react-icons/md";
 import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 
 export default function Settings() {
-  const balance = useBalance();
   const { signOut, user } = useAuth();
   const auth = getAuth();
   const { createCloseHandler } = useModal();

@@ -29,7 +29,6 @@ import { MdFeedback } from "react-icons/md";
 import { FaLaptopCode } from "react-icons/fa";
 import { DITTO_AVATAR } from "@/constants";
 import { toast } from "react-hot-toast";
-import { useUser } from "@/hooks/useUser";
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -88,8 +87,6 @@ export default function SendMessage({
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const { selectedScript, setSelectedScript, handleDeselectScript } =
     useScripts();
-
-  const { data: user } = useUser();
 
   const handleSubmit = useCallback(
     async (event) => {

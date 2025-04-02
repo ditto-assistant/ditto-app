@@ -41,7 +41,7 @@ const VersionsOverlay = ({
       content: `Are you sure you want to delete "${script.name}"? This action cannot be undone.`,
       confirmLabel: "Delete",
       variant: "danger",
-      onConfirm: () => onDelete(category, script, false),
+      onConfirm: () => onDelete(category, script),
     });
   };
 
