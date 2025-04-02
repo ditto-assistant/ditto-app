@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import "./SlidingMenu.css";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useUser } from "@/hooks/useUser";
-import { useNavigate } from "react-router-dom";
 import { FaCrown } from "react-icons/fa";
-import { MdLock } from "react-icons/md";
 import { useModal } from "@/hooks/useModal";
 
 interface MenuItem {
