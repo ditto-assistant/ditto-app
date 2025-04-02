@@ -91,3 +91,33 @@
     max-width: 100%;
   }
 }
+
+.settings-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 24px 0;
+  width: 100%;
+}
+
+.settings-section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-bright);
+}
+
+.subscription-section {
+  width: 100%;
+}
+
+.account-section {
+  width: 100%;
+  padding-bottom: 20px;
+}
+
+.modal-tab .tab-icon {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  margin-right: 8px;
+}

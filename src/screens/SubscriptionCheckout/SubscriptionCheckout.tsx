@@ -6,11 +6,13 @@ import { useNavigate, useSearchParams } from "react-router";
 import { useAuth, useAuthToken } from "@/hooks/useAuth";
 import { routes } from "@/firebaseConfig";
 import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
+import { useUser } from "@/hooks/useUser";
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
 import SubscriptionCard from "@/components/subscription/SubscriptionCard";
 import "./SubscriptionCheckout.css";
 
 const SubscriptionCheckout: React.FC = () => {
+  const { data: user } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -51,7 +53,16 @@ const SubscriptionCheckout: React.FC = () => {
       </div>
     );
   }
-  const SuccessDisplay = ({ sessionId }: { sessionId: string }) => {
+  const SuccessDisplay = ({
+    sessionId,
+    stripeCustomerID,
+  }: {
+    sessionId?: string;
+    stripeCustomerID?: string;
+  }) => {
+    if (!sessionId && !stripeCustomerID) {
+      return null;
+    }
     return (
       <section>
         <div className="product Box-root">
@@ -60,7 +71,16 @@ const SubscriptionCheckout: React.FC = () => {
           </div>
         </div>
         <form action={routes.createPortalSession} method="POST">
-          <input type="hidden" name="session_id" value={sessionId} />
+          {sessionId && (
+            <input type="hidden" name="session_id" value={sessionId} />
+          )}
+          {stripeCustomerID && (
+            <input
+              type="hidden"
+              name="stripe_customer_id"
+              value={stripeCustomerID}
+            />
+          )}
           <input type="hidden" name="base_url" value={window.location.href} />
           <input type="hidden" name="user_id" value={uid} />
           <input
@@ -129,7 +149,12 @@ const SubscriptionCheckout: React.FC = () => {
           </div>
           <div className="subscription-divider"></div>
 
-          {sessionId && <SuccessDisplay sessionId={sessionId} />}
+          {(sessionId || user?.stripeCustomerID) && (
+            <SuccessDisplay
+              sessionId={sessionId ?? undefined}
+              stripeCustomerID={user?.stripeCustomerID}
+            />
+          )}
 
           <SubscriptionToggle
             isYearly={isYearly}

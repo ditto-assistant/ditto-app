@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "react-router";
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
+import { useModal } from "@/hooks/useModal";
 import TermsOfService from "@/components/TermsOfService";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
@@ -16,6 +18,8 @@ const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
+  const { createOpenHandler } = useModal();
+  const [searchParams] = useSearchParams();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
@@ -30,6 +34,27 @@ export default function HomeScreen() {
   const { openWhatsNew } = useWhatsNew();
 
   const appBodyRef = useRef(null);
+
+  // Handle URL parameters to open modals directly
+  useEffect(() => {
+    const openModal = searchParams.get("openModal");
+    const openTab = searchParams.get("openTab");
+
+    if (openModal) {
+      // Clean up URL parameters immediately to prevent reopening on refresh
+      const currentUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, currentUrl);
+
+      // Use the enhanced createOpenHandler with the tab ID
+      if (openModal === "settings" && openTab) {
+        const openSettingsWithTab = createOpenHandler("settings", openTab);
+        openSettingsWithTab();
+      } else {
+        const openModalHandler = createOpenHandler(openModal);
+        openModalHandler();
+      }
+    }
+  }, [searchParams, createOpenHandler]);
 
   // Handle showing What's New modal when app is reloaded after update
   useEffect(() => {

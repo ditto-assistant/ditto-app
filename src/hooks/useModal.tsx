@@ -39,6 +39,7 @@ export interface SingleModalState {
   isOpen: boolean;
   zIndex: number;
   content: ReactNode;
+  initialTabId?: string;
 }
 
 type ModalAction =
@@ -46,6 +47,7 @@ type ModalAction =
       type: "OPEN_MODAL";
       id: ModalId;
       content: ReactNode;
+      initialTabId?: string;
     }
   | { type: "CLOSE_MODAL"; id: ModalId }
   | { type: "CLOSE_ALL" }
@@ -67,6 +69,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
             isOpen: true,
             content: action.content,
             zIndex: maxZIndex + 1, // Set z-index higher than any existing modal
+            initialTabId: action.initialTabId,
           },
         },
       };
@@ -141,7 +144,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
 };
 
 interface ModalContextType {
-  createOpenHandler: (id: ModalId) => () => void;
+  createOpenHandler: (id: ModalId, initialTabId?: string) => () => void;
   createCloseHandler: (id: ModalId) => () => void;
   createBringToFrontHandler: (id: ModalId) => () => void;
   closeAllModals: () => void;
@@ -163,7 +166,8 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
     new Map<
       ModalId,
       {
-        open: () => void;
+        // Add tabId parameter to the open function
+        open: (tabId?: string) => void;
         close: () => void;
         bringToFront: () => void;
       }
@@ -176,7 +180,8 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
       if (!stableHandlers.current.has(id)) {
         // Create stable handlers only once per modal ID
         stableHandlers.current.set(id, {
-          open: () => {
+          // Updated open function to accept tabId
+          open: (tabId?: string) => {
             const registration = registry[id];
             if (!registration) {
               console.error(`No modal registered for id: ${id}`);
@@ -186,6 +191,7 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
               type: "OPEN_MODAL",
               id,
               content: registration.component,
+              initialTabId: tabId,
             });
           },
           close: () => dispatch({ type: "CLOSE_MODAL", id }),
@@ -199,8 +205,8 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
 
   // Factory functions that return stable handler references
   const createOpenHandler = useCallback(
-    (id: ModalId) => {
-      return getOrCreateHandlers(id).open;
+    (id: ModalId, initialTabId?: string) => {
+      return () => getOrCreateHandlers(id).open(initialTabId);
     },
     [getOrCreateHandlers],
   );
@@ -271,4 +277,5 @@ export const DEFAULT_MODAL_STATE: SingleModalState = {
   isOpen: false,
   content: null,
   zIndex: 1,
+  initialTabId: undefined,
 };

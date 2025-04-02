@@ -15,11 +15,15 @@ import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
-import { usePlatform } from "@/hooks/usePlatform";
 import { useMemo } from "react";
 import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
+import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent";
+import { RiSettings4Fill } from "react-icons/ri";
+import { BiMemoryCard } from "react-icons/bi";
+import { MdSettings } from "react-icons/md";
+import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 
 export default function Settings() {
   const balance = useBalance();
@@ -28,12 +32,23 @@ export default function Settings() {
   const { createCloseHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
-  const { isMobile } = usePlatform();
 
-  // Memoize the memory-related modal components
+  // Redirect function to direct users to the general tab
+  const redirectToGeneralTab = () => {
+    // Use direct DOM manipulation to click the general tab
+    const generalTab = document.querySelector(
+      '.modal-tab[data-tab-id="general"]',
+    );
+    if (generalTab) {
+      (generalTab as HTMLElement).click();
+    }
+  };
+
+  // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
   const memoryControls = useMemo(() => <MemoryControlsModal />, []);
   const agentTools = useMemo(() => <AgentToolsModal />, []);
+  const subscriptionContent = useMemo(() => <SubscriptionTabContent />, []);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -116,43 +131,24 @@ export default function Settings() {
     });
   };
 
-  // Create the tab content for the main settings
+  // Create the combined general and subscription tab content
   const generalTabContent = (
     <div className="settings-content">
-      <div className="tokens-info">
-        {!balance.isLoading ? (
-          <>
-            <p className="balance-item">
-              Ditto Tokens:{" "}
-              <span className="highlight-text">{balance.data?.balance}</span>
-            </p>
-            <p className="balance-item">
-              Images:{" "}
-              <span className="highlight-text">{balance.data?.images}</span>
-            </p>
-            <p className="balance-item">
-              Searches:{" "}
-              <span className="highlight-text">{balance.data?.searches}</span>
-            </p>
-          </>
-        ) : (
-          <div className="spinner-container">
-            <LoadingSpinner size={45} inline={true} />
-          </div>
-        )}
+      {/* Subscription Section */}
+      <div className="subscription-section">{subscriptionContent}</div>
+
+      <div className="settings-divider"></div>
+
+      {/* Account Section */}
+      <div className="account-section">
+        <h3 className="settings-section-title">Account</h3>
+        <div className="settings-options">
+          <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
+            LOG OUT
+          </ModalButton>
+        </div>
       </div>
-      <div className="settings-options">
-        <ModalButton
-          variant="primary"
-          onClick={() => (window.location.href = "/checkout")}
-          fixedWidth
-        >
-          ADD TOKENS
-        </ModalButton>
-        <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
-          LOG OUT
-        </ModalButton>
-      </div>
+
       <footer className="settings-footer">
         <div className="version-container">
           <small>Version: {packageJson.version}</small>
@@ -180,33 +176,44 @@ export default function Settings() {
     </div>
   );
 
-  // Define the tabs
+  // Define the tabs with icons
   const modalTabs: ModalTab[] = [
     {
       id: "general",
-      label: "General",
+      label: "Account",
       content: generalTabContent,
+      icon: <FaCrown />,
     },
     {
       id: "models",
       label: "Models",
       content: modelPreferences,
+      minimumTier: 1,
+      icon: <MdSettings />,
+      onSubscribeRedirect: redirectToGeneralTab,
     },
     {
       id: "memory",
       label: "Memory",
       content: memoryControls,
+      minimumTier: 1,
+      icon: <BiMemoryCard />,
+      onSubscribeRedirect: redirectToGeneralTab,
     },
     {
       id: "tools",
       label: "Tools",
       content: agentTools,
+      minimumTier: 1,
+      icon: <FaTools />,
+      onSubscribeRedirect: redirectToGeneralTab,
     },
     {
       id: "danger",
       label: "Danger Zone",
       content: dangerTabContent,
       customClass: "danger",
+      icon: <FaSkull />,
     },
   ];
 
@@ -214,7 +221,7 @@ export default function Settings() {
     <Modal
       id="settings"
       title="Settings"
-      fullScreen={isMobile}
+      fullScreen={true}
       tabs={modalTabs}
       defaultTabId="general"
     >

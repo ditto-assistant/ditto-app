@@ -2,11 +2,17 @@ import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./SlidingMenu.css";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useUser } from "@/hooks/useUser";
+import { useNavigate } from "react-router-dom";
+import { FaCrown } from "react-icons/fa";
+import { MdLock } from "react-icons/md";
+import { useModal } from "@/hooks/useModal";
 
 interface MenuItem {
   icon: React.ReactNode;
   text: string;
   onClick: () => void;
+  minimumTier?: number;
 }
 
 interface SlidingMenuProps {
@@ -32,6 +38,8 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const { isMobile } = usePlatform();
+  const { data: user } = useUser();
+  const { createOpenHandler } = useModal();
 
   const handleMenuLeave = () => {
     // Only apply hover behavior on desktop and when not pinned
@@ -43,6 +51,27 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
           onClose();
         }
       }, 150);
+    }
+  };
+
+  const isItemLocked = (minimumTier?: number) => {
+    if (!minimumTier) return false;
+    const userTier = user?.planTier || 0;
+    return userTier < minimumTier;
+  };
+
+  const handleItemClick = (item: MenuItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isItemLocked(item.minimumTier)) {
+      // Create a new handler with the general tab specified
+      const openSettingsWithGeneralTab = createOpenHandler(
+        "settings",
+        "general",
+      );
+      openSettingsWithGeneralTab();
+    } else {
+      item.onClick();
+      onClose();
     }
   };
 
@@ -99,25 +128,40 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
           {...menuAnimation}
         >
           {menuTitle && <div className="menu-title">{menuTitle}</div>}
-          {menuItems.map((item, index) => (
-            <motion.div
-              key={index}
-              className="menu-item"
-              whileTap={{ scale: 0.95 }}
-              whileHover={{
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                item.onClick();
-                onClose();
-              }}
-              aria-label={item.text}
-            >
-              {item.icon}
-              <span>{item.text}</span>
-            </motion.div>
-          ))}
+          {menuItems.map((item, index) => {
+            const locked = isItemLocked(item.minimumTier);
+            return (
+              <motion.div
+                key={index}
+                className={`menu-item ${locked ? "premium" : ""}`}
+                whileTap={locked ? undefined : { scale: 0.95 }}
+                whileHover={
+                  locked
+                    ? { backgroundColor: "rgba(var(--primary-rgb), 0.1)" }
+                    : { backgroundColor: "rgba(255, 255, 255, 0.15)" }
+                }
+                onClick={(e) => handleItemClick(item, e)}
+                aria-label={item.text}
+              >
+                <div className="menu-item-content">
+                  {item.icon}
+                  <span>{item.text}</span>
+                </div>
+                {locked && (
+                  <div className="premium-indicator">
+                    <div className="premium-badge">
+                      <FaCrown className="crown-icon" />
+                      <span>PRO</span>
+                    </div>
+                    <div className="upgrade-tooltip">
+                      <span>Upgrade to unlock</span>
+                      <FaCrown className="crown-icon" />
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
         </motion.div>
       )}
     </AnimatePresence>

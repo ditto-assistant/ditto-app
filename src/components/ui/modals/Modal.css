@@ -1,0 +1,87 @@
+.modal-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.modal-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.modal-tab:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-tab.premium {
+  background: linear-gradient(
+    45deg,
+    rgba(var(--primary-rgb), 0.05) 0%,
+    rgba(var(--primary-rgb), 0.1) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-tab.premium:hover {
+  background: linear-gradient(
+    45deg,
+    rgba(var(--primary-rgb), 0.1) 0%,
+    rgba(var(--primary-rgb), 0.15) 100%
+  );
+}
+
+.modal-tab .premium-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--primary);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.modal-tab .premium-badge .crown-icon {
+  font-size: 10px;
+}
+
+/* Shine effect for premium tabs */
+.modal-tab.premium::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}

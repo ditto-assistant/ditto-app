@@ -1,6 +1,6 @@
 ---
 description: React Function Component Guidelines
-globs: *.tsx,*.jsx
+globs: *.tsx,*.jsx,*.ts,*.js
 alwaysApply: false
 ---
 We prefer the following TypeScript component definition style:

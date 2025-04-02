@@ -2,12 +2,17 @@ import React, { useRef, useState, useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { DEFAULT_MODAL_STATE, ModalId, useModal } from "@/hooks/useModal";
 import { ModalHeader } from "./ModalHeader";
+import { useUser } from "@/hooks/useUser";
+import { FaCrown } from "react-icons/fa";
 
 export interface ModalTab {
   id: string;
   label: string;
   content: ReactNode;
   customClass?: string;
+  minimumTier?: number;
+  icon?: ReactNode;
+  onSubscribeRedirect?: () => void;
 }
 
 interface ModalProps {
@@ -34,6 +39,7 @@ export default function Modal({
 }: ModalProps) {
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
     useModal();
+  const { data: user } = useUser();
   const modalRef = useRef<HTMLDivElement>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
@@ -51,7 +57,19 @@ export default function Modal({
   );
   const closeModal = createCloseHandler(id);
   const bringToFront = createBringToFrontHandler(id);
-  const { isOpen, zIndex } = getModalState(id) ?? DEFAULT_MODAL_STATE;
+  const modalState = getModalState(id) ?? DEFAULT_MODAL_STATE;
+  const { isOpen, zIndex } = modalState;
+
+  // Update activeTabId when modal opens with an initialTabId
+  useEffect(() => {
+    if (isOpen && modalState.initialTabId && tabs && tabs.length > 0) {
+      // Make sure the tab exists before setting it active
+      const tabExists = tabs.some((tab) => tab.id === modalState.initialTabId);
+      if (tabExists) {
+        setActiveTabId(modalState.initialTabId);
+      }
+    }
+  }, [isOpen, modalState.initialTabId, tabs]);
 
   const handleStartDrag = (e: React.MouseEvent | React.TouchEvent) => {
     if ((e.target as HTMLElement).closest(".modal-controls")) return;
@@ -222,6 +240,23 @@ export default function Modal({
     localTransform,
   ]);
 
+  const isTabLocked = (minimumTier?: number) => {
+    if (!minimumTier) return false;
+    const userTier = user?.planTier || 0;
+    return userTier < minimumTier;
+  };
+
+  const handleTabClick = (tab: ModalTab) => {
+    if (isTabLocked(tab.minimumTier)) {
+      tab.onSubscribeRedirect?.();
+    } else {
+      setActiveTabId(tab.id);
+      if (onTabChange) {
+        onTabChange(tab.id);
+      }
+    }
+  };
+
   if (!isOpen) return null;
 
   const modalStyle = isFullscreen
@@ -283,23 +318,29 @@ export default function Modal({
 
         {tabs && tabs.length > 0 && (
           <div className="modal-tabs" ref={tabsContainerRef}>
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                ref={tab.id === activeTabId ? activeTabRef : null}
-                className={`modal-tab ${
-                  tab.id === activeTabId ? "active" : ""
-                } ${tab.customClass || ""}`}
-                onClick={() => {
-                  setActiveTabId(tab.id);
-                  if (onTabChange) {
-                    onTabChange(tab.id);
-                  }
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const locked = isTabLocked(tab.minimumTier);
+              return (
+                <button
+                  key={tab.id}
+                  ref={tab.id === activeTabId ? activeTabRef : null}
+                  className={`modal-tab ${
+                    tab.id === activeTabId ? "active" : ""
+                  } ${tab.customClass || ""} ${locked ? "premium" : ""}`}
+                  onClick={() => handleTabClick(tab)}
+                  data-tab-id={tab.id}
+                >
+                  {tab.icon && <span className="tab-icon">{tab.icon}</span>}
+                  <span>{tab.label}</span>
+                  {locked && (
+                    <div className="premium-badge">
+                      <FaCrown className="crown-icon" />
+                      <span>PRO</span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -308,7 +349,9 @@ export default function Modal({
             {tabs && tabs.length > 0
               ? (() => {
                   const activeTab = tabs.find((tab) => tab.id === activeTabId);
-                  return activeTab && activeTab.content
+                  return activeTab &&
+                    !isTabLocked(activeTab.minimumTier) &&
+                    activeTab.content
                     ? activeTab.content
                     : null;
                 })()
