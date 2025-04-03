@@ -108,7 +108,7 @@ export default function SendMessage({
           setIsWaitingForResponse(false);
           return;
         }
-        if (!preferences.data) {
+        if (!preferences.preferences) {
           toast.error("Please set your model preferences");
           setIsWaitingForResponse(false);
           return;
@@ -150,7 +150,7 @@ export default function SendMessage({
             firstName,
             messageToSend,
             imageURI,
-            preferences.data,
+            preferences.preferences,
             refetch,
             balance.hasPremium ?? false,
             streamingCallback,
@@ -180,7 +180,7 @@ export default function SendMessage({
       image,
       isMenuOpen,
       setIsWaitingForResponse,
-      preferences.data,
+      preferences.preferences,
       clearPrompt,
       setMessage,
       addOptimisticMessage,
