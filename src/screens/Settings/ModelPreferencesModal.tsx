@@ -24,6 +24,7 @@ import { useCallback, useMemo } from "react";
 import "./ModelPreferencesModal.css";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useUser } from "@/hooks/useUser";
 
 interface ActiveFilters {
   speed: "slow" | "medium" | "fast" | "insane" | null;
@@ -57,6 +58,8 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
 
 export default function ModelPreferencesModal() {
   const { preferences, updatePreferences } = useModelPreferences();
+  const { data: user, isLoading: isUserLoading } = useUser();
+  console.log("User data:", { user, isUserLoading });
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
@@ -235,18 +238,89 @@ export default function ModelPreferencesModal() {
     [preferences],
   );
 
+  const filteredModels = useMemo(() => {
+    let filtered = [...DEFAULT_MODELS];
+
+    // Filter tagged/untagged models
+    filtered = filtered.filter((model) =>
+      showTaggedModels ? model.isTaggedModel : !model.isTaggedModel,
+    );
+
+    if (activeFilters.speed) {
+      filtered = filtered.filter(
+        (model) => model.speedLevel === activeFilters.speed,
+      );
+    }
+
+    if (activeFilters.pricing === "free") {
+      filtered = filtered.filter((model) => !model.minimumTier);
+    } else if (activeFilters.pricing === "premium") {
+      filtered = filtered.filter((model) => model.minimumTier);
+    }
+
+    if (activeFilters.imageSupport) {
+      filtered = filtered.filter((model) => model.supports?.imageAttachments);
+    }
+
+    if (activeFilters.vendor) {
+      filtered = filtered.filter(
+        (model) => model.vendor === activeFilters.vendor,
+      );
+    }
+
+    return filtered;
+  }, [activeFilters, showTaggedModels]);
+
+  const getUpgradeMessage = useCallback(
+    (minimumTier: number) => {
+      if (!user) return { text: "Sign in to access", icon: <FaCrown /> };
+      if (minimumTier === 1) {
+        return { text: "Upgrade to Spark", icon: <FaBolt /> };
+      }
+      return { text: "Upgrade to Strong", icon: <FaCrown /> };
+    },
+    [user],
+  );
+
+  const isModelAccessible = useCallback(
+    (model: ModelOption) => {
+      console.log("Checking model accessibility:", {
+        model: model.id,
+        minimumTier: model.minimumTier,
+        userTier: user?.planTier,
+        isLoggedIn: !!user,
+      });
+
+      // Free models are always accessible
+      if (!model.minimumTier) return true;
+      // If not logged in, only free models are accessible
+      if (!user) return false;
+      // Check if user's tier is sufficient
+      return user.planTier >= model.minimumTier;
+    },
+    [user],
+  );
+
   const renderModelCard = useCallback(
     (model: ModelOption) => {
       if (!preferences) return null;
+
+      const isAccessible = isModelAccessible(model);
+      const tierLabel = model.minimumTier
+        ? `${model.minimumTier === 1 ? "Spark" : "Strong"}`
+        : "Free";
+
       return (
         <div
           key={model.id}
-          onClick={() =>
-            handleModelChange(
-              activeSection === "main" ? "mainModel" : "programmerModel",
-              model.id,
-            )
-          }
+          onClick={() => {
+            if (isAccessible) {
+              handleModelChange(
+                activeSection === "main" ? "mainModel" : "programmerModel",
+                model.id,
+              );
+            }
+          }}
           className={`model-card ${
             model.id ===
             preferences[
@@ -254,7 +328,7 @@ export default function ModelPreferencesModal() {
             ]
               ? "selected"
               : ""
-          }`}
+          } ${!isAccessible ? "disabled" : ""}`}
         >
           <div className="model-card-header">
             <span className="model-name">{model.name}</span>
@@ -282,25 +356,15 @@ export default function ModelPreferencesModal() {
                   model.speedLevel.slice(1)}
               </span>
             )}
-            {model.isFree ? (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#43B581",
-                }}
-              >
-                {MemoizedFaCrownFree} Free
-              </span>
-            ) : model.isPremium ? (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#5865F2",
-                }}
-              >
-                {MemoizedFaCrownPremium} Premium
-              </span>
-            ) : null}
+            <span
+              className="badge"
+              style={{
+                backgroundColor: model.minimumTier ? "#5865F2" : "#43B581",
+              }}
+            >
+              {model.minimumTier ? MemoizedFaCrownPremium : MemoizedFaCrownFree}{" "}
+              {tierLabel}
+            </span>
             {model.supports?.imageAttachments && (
               <span
                 className="badge"
@@ -312,6 +376,12 @@ export default function ModelPreferencesModal() {
               </span>
             )}
           </div>
+          {!isAccessible && model.minimumTier && (
+            <div className="upgrade-message">
+              {getUpgradeMessage(model.minimumTier).icon}
+              <span>{getUpgradeMessage(model.minimumTier).text}</span>
+            </div>
+          )}
         </div>
       );
     },
@@ -324,55 +394,32 @@ export default function ModelPreferencesModal() {
       MemoizedFaImage,
       MemoizedFaCrownFree,
       MemoizedFaCrownPremium,
+      isModelAccessible,
+      getUpgradeMessage,
     ],
   );
-
-  const filteredModels = useMemo(() => {
-    let filtered = [...DEFAULT_MODELS];
-
-    // Filter tagged/untagged models
-    filtered = filtered.filter((model) =>
-      showTaggedModels ? model.isTaggedModel : !model.isTaggedModel,
-    );
-
-    if (activeFilters.speed) {
-      filtered = filtered.filter(
-        (model) => model.speedLevel === activeFilters.speed,
-      );
-    }
-
-    if (activeFilters.pricing === "free") {
-      filtered = filtered.filter((model) => model.isFree === true);
-    } else if (activeFilters.pricing === "premium") {
-      filtered = filtered.filter((model) => model.isPremium);
-    }
-
-    if (activeFilters.imageSupport) {
-      filtered = filtered.filter((model) => model.supports?.imageAttachments);
-    }
-
-    if (activeFilters.vendor) {
-      filtered = filtered.filter(
-        (model) => model.vendor === activeFilters.vendor,
-      );
-    }
-
-    return filtered;
-  }, [activeFilters, showTaggedModels]);
 
   const renderImageModelCard = useCallback(
     (model: ModelOption) => {
       if (!preferences) return null;
+
+      const isAccessible = isModelAccessible(model);
+      const tierLabel = model.minimumTier
+        ? `${model.minimumTier === 1 ? "Spark" : "Strong"}`
+        : "Free";
+
       return (
         <div
           key={model.id}
           className={`model-card ${
             model.id === preferences.imageGeneration.model ? "selected" : ""
-          }`}
+          } ${!isAccessible ? "disabled" : ""}`}
           onClick={() => {
-            setExpandedImageModel(
-              expandedImageModel === model.id ? null : model.id,
-            );
+            if (isAccessible) {
+              setExpandedImageModel(
+                expandedImageModel === model.id ? null : model.id,
+              );
+            }
           }}
         >
           <div className="model-card-content">
@@ -394,16 +441,15 @@ export default function ModelPreferencesModal() {
             )}
           </div>
           <div className="model-badges">
-            {model.isPremium && (
-              <span
-                className="badge"
-                style={{
-                  backgroundColor: "#5865F2",
-                }}
-              >
-                {MemoizedFaCrownPremium} Premium
-              </span>
-            )}
+            <span
+              className="badge"
+              style={{
+                backgroundColor: model.minimumTier ? "#5865F2" : "#43B581",
+              }}
+            >
+              {model.minimumTier ? MemoizedFaCrownPremium : MemoizedFaCrownFree}{" "}
+              {tierLabel}
+            </span>
             {model.id.includes("hd") && (
               <span
                 className="badge"
@@ -415,30 +461,38 @@ export default function ModelPreferencesModal() {
               </span>
             )}
           </div>
-          {expandedImageModel === model.id && model.sizeOptions && (
-            <div className="dimension-options">
-              {model.sizeOptions.map((size) => (
-                <button
-                  key={size.wh}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card collapse when selecting size
-                    handleModelChange("imageGeneration", {
-                      model: model.id,
-                      size,
-                    });
-                  }}
-                  className={`dimension-button ${
-                    model.id === preferences.imageGeneration.model &&
-                    size.wh === preferences.imageGeneration.size.wh
-                      ? "selected"
-                      : ""
-                  }`}
-                >
-                  {size.description}
-                </button>
-              ))}
+          {!isAccessible && model.minimumTier && (
+            <div className="upgrade-message">
+              {getUpgradeMessage(model.minimumTier).icon}
+              {getUpgradeMessage(model.minimumTier).text}
             </div>
           )}
+          {expandedImageModel === model.id &&
+            model.sizeOptions &&
+            isAccessible && (
+              <div className="dimension-options">
+                {model.sizeOptions.map((size) => (
+                  <button
+                    key={size.wh}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card collapse when selecting size
+                      handleModelChange("imageGeneration", {
+                        model: model.id,
+                        size,
+                      });
+                    }}
+                    className={`dimension-button ${
+                      model.id === preferences.imageGeneration.model &&
+                      size.wh === preferences.imageGeneration.size.wh
+                        ? "selected"
+                        : ""
+                    }`}
+                  >
+                    {size.description}
+                  </button>
+                ))}
+              </div>
+            )}
         </div>
       );
     },
@@ -448,6 +502,9 @@ export default function ModelPreferencesModal() {
       handleModelChange,
       preferences,
       MemoizedFaCrownPremium,
+      MemoizedFaCrownFree,
+      isModelAccessible,
+      getUpgradeMessage,
     ],
   );
 
@@ -536,7 +593,7 @@ export default function ModelPreferencesModal() {
                 selectedModel.speedLevel.slice(1)}
             </span>
           )}
-          {selectedModel.isFree ? (
+          {!selectedModel.minimumTier ? (
             <span
               className="badge"
               style={{
@@ -545,7 +602,7 @@ export default function ModelPreferencesModal() {
             >
               {MemoizedFaCrownFree} Free
             </span>
-          ) : selectedModel.isPremium ? (
+          ) : selectedModel.minimumTier ? (
             <span
               className="badge"
               style={{
@@ -584,6 +641,11 @@ export default function ModelPreferencesModal() {
     (model: ModelOption) => {
       if (!preferences) return null;
 
+      const isAccessible = isModelAccessible(model);
+      const tierLabel = model.minimumTier
+        ? `${model.minimumTier === 1 ? "Spark" : "Strong"}`
+        : "Free";
+
       const isSelected =
         model.id ===
         preferences[activeSection === "main" ? "mainModel" : "programmerModel"];
@@ -591,13 +653,15 @@ export default function ModelPreferencesModal() {
       return (
         <div
           key={model.id}
-          onClick={() =>
-            handleModelChange(
-              activeSection === "main" ? "mainModel" : "programmerModel",
-              model.id,
-            )
-          }
-          className={`model-card ${isSelected ? "selected" : ""}`}
+          onClick={() => {
+            if (isAccessible) {
+              handleModelChange(
+                activeSection === "main" ? "mainModel" : "programmerModel",
+                model.id,
+              );
+            }
+          }}
+          className={`model-card ${isSelected ? "selected" : ""} ${!isAccessible ? "disabled" : ""}`}
         >
           <div className="model-card-header">
             <span className="model-name">{model.name}</span>
@@ -629,7 +693,7 @@ export default function ModelPreferencesModal() {
                 )}
               </span>
             )}
-            {model.isFree && (
+            {!model.minimumTier && (
               <span
                 className="badge"
                 style={{
@@ -642,7 +706,7 @@ export default function ModelPreferencesModal() {
                 )}
               </span>
             )}
-            {model.isPremium && (
+            {model.minimumTier && (
               <span
                 className="badge"
                 style={{
@@ -651,7 +715,7 @@ export default function ModelPreferencesModal() {
               >
                 {MemoizedFaCrownPremium}
                 {!isMobile && isCompactView && (
-                  <span className="badge-text">Premium</span>
+                  <span className="badge-text">{tierLabel}</span>
                 )}
               </span>
             )}
@@ -674,6 +738,12 @@ export default function ModelPreferencesModal() {
               <div className="selected-dot"></div>
             </div>
           )}
+          {!isAccessible && model.minimumTier && (
+            <div className="upgrade-message compact">
+              {getUpgradeMessage(model.minimumTier).icon}
+              <span>{getUpgradeMessage(model.minimumTier).text}</span>
+            </div>
+          )}
         </div>
       );
     },
@@ -688,6 +758,8 @@ export default function ModelPreferencesModal() {
       MemoizedFaCrownPremium,
       isMobile,
       isCompactView,
+      isModelAccessible,
+      getUpgradeMessage,
     ],
   );
 
@@ -696,17 +768,24 @@ export default function ModelPreferencesModal() {
     (model: ModelOption) => {
       if (!preferences) return null;
 
+      const isAccessible = isModelAccessible(model);
+      const tierLabel = model.minimumTier
+        ? `${model.minimumTier === 1 ? "Spark" : "Strong"}`
+        : "Free";
+
       const isSelected = model.id === preferences.imageGeneration.model;
       const isExpanded = expandedImageModel === model.id;
 
       return (
         <div
           key={model.id}
-          className={`model-card ${isSelected ? "selected" : ""} ${isExpanded ? "expanded" : ""}`}
+          className={`model-card ${isSelected ? "selected" : ""} ${isExpanded ? "expanded" : ""} ${!isAccessible ? "disabled" : ""}`}
           onClick={() => {
-            setExpandedImageModel(
-              expandedImageModel === model.id ? null : model.id,
-            );
+            if (isAccessible) {
+              setExpandedImageModel(
+                expandedImageModel === model.id ? null : model.id,
+              );
+            }
           }}
         >
           <div className="model-card-content">
@@ -728,7 +807,7 @@ export default function ModelPreferencesModal() {
             )}
           </div>
           <div className="model-badges">
-            {model.isPremium && (
+            {model.minimumTier && (
               <span
                 className="badge"
                 style={{
@@ -737,7 +816,7 @@ export default function ModelPreferencesModal() {
               >
                 {MemoizedFaCrownPremium}
                 {!isMobile && isCompactView && (
-                  <span className="badge-text">Premium</span>
+                  <span className="badge-text">{tierLabel}</span>
                 )}
               </span>
             )}
@@ -752,7 +831,7 @@ export default function ModelPreferencesModal() {
               </span>
             )}
           </div>
-          {isExpanded && model.sizeOptions && (
+          {isExpanded && model.sizeOptions && isAccessible && (
             <div className="dimension-options">
               {model.sizeOptions.map((size) => (
                 <button
@@ -781,6 +860,12 @@ export default function ModelPreferencesModal() {
               <div className="selected-dot"></div>
             </div>
           )}
+          {!isAccessible && model.minimumTier && (
+            <div className="upgrade-message compact">
+              {getUpgradeMessage(model.minimumTier).icon}
+              <span>{getUpgradeMessage(model.minimumTier).text}</span>
+            </div>
+          )}
         </div>
       );
     },
@@ -792,6 +877,8 @@ export default function ModelPreferencesModal() {
       MemoizedFaCrownPremium,
       isMobile,
       isCompactView,
+      isModelAccessible,
+      getUpgradeMessage,
     ],
   );
 

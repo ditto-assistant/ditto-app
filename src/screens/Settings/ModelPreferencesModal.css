@@ -113,6 +113,10 @@
   box-sizing: border-box;
   border: 1px solid #1e1f22;
   position: relative;
+  overflow: hidden;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
 }
 
 .model-card.selected {
@@ -144,6 +148,8 @@
   margin-bottom: 8px;
   padding: 4px;
   border-radius: 4px;
+  position: relative;
+  z-index: 2;
 }
 
 .model-card-header:hover {
@@ -172,6 +178,8 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
 }
 
 .badge {
@@ -881,4 +889,84 @@
   .model-grid {
     grid-template-columns: repeat(1, 1fr) !important;
   }
+}
+
+.model-card.disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: rgba(47, 49, 54, 0.95);
+  position: relative;
+  border: 1px solid rgba(88, 101, 242, 0.3);
+}
+
+.model-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.model-card.disabled .badge {
+  opacity: 0.7;
+}
+
+.model-card.disabled .model-badges {
+  margin-bottom: 40px;
+}
+
+.upgrade-message {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #5865f2 0%, #7289da 100%);
+  color: white;
+  padding: 12px;
+  font-size: 14px;
+  text-align: center;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 -4px 12px rgba(88, 101, 242, 0.3);
+  z-index: 2;
+}
+
+.upgrade-message svg {
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.model-card.disabled::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px rgba(88, 101, 242, 0.3);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ensure the model badges are visible */
+.model-badges {
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure the model card header is visible */
+.model-card-header {
+  position: relative;
+  z-index: 2;
+}
+
+/* Compact version of the upgrade message */
+.upgrade-message.compact {
+  padding: 8px;
+  font-size: 12px;
+  gap: 6px;
+  border-radius: 0 0 12px 12px;
 }

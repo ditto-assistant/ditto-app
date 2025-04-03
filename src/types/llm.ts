@@ -72,8 +72,7 @@ export type ImageGenerationSize = {
 export type ModelOption = {
   id: Model;
   name: string;
-  isPremium?: boolean;
-  isFree?: boolean;
+  minimumTier?: number;
   isMaintenance?: boolean;
   isTaggedModel?: boolean;
   sizeOptions?: ImageGenerationSize[];

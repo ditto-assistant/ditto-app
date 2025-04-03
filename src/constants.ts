@@ -16,7 +16,6 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "llama-3-2",
     name: "Llama 3.2",
-    isFree: true,
     vendor: "meta",
     supports: {
       imageAttachments: "single",
@@ -29,6 +28,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "gpt-4o-mini",
     name: "GPT-4o Mini",
     vendor: "openai",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -39,6 +39,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "gpt-4o-mini-2024-07-18",
     name: "GPT-4o Mini (2024-07-18)",
     vendor: "openai",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -49,7 +50,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "gpt-4o",
     name: "GPT-4o",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "openai",
     supports: {
       imageAttachments: "single",
@@ -60,7 +61,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "gpt-4o-2024-11-20",
     name: "GPT-4o (2024-11-20)",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "openai",
     supports: {
       imageAttachments: "single",
@@ -83,6 +84,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-haiku@20240307",
     name: "Claude 3 Haiku 2024-03-07",
     vendor: "anthropic",
+    minimumTier: 1,
     isTaggedModel: true,
     speedLevel: "medium",
   },
@@ -90,6 +92,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-5-haiku",
     name: "Claude 3.5 Haiku",
     vendor: "anthropic",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -100,6 +103,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-5-haiku@20241022",
     name: "Claude 3.5 Haiku (2024-10-22)",
     vendor: "anthropic",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -109,7 +113,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "claude-3-5-sonnet@20240620",
     name: "Claude 3.5 Sonnet (2024-06-20)",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
@@ -121,7 +125,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "claude-3-5-sonnet-v2",
     name: "Claude 3.5 Sonnet",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
@@ -132,7 +136,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "claude-3-5-sonnet-v2@20241022",
     name: "Claude 3.5 Sonnet V2 (2024-10-22)",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
@@ -146,6 +150,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "gemini-1.5-flash",
     name: "Gemini 1.5 Flash",
     vendor: "google",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -155,7 +160,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "gemini-1.5-pro",
     name: "Gemini 1.5 Pro",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "google",
     supports: {
       imageAttachments: "single",
@@ -168,6 +173,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "mistral-nemo",
     name: "Mistral Nemo",
     vendor: "mistral",
+    minimumTier: 1,
     supports: {
       tools: true,
     },
@@ -176,7 +182,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "mistral-large",
     name: "Mistral Large",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "mistral",
     supports: {
       tools: true,
@@ -202,6 +208,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "llama3.1-8b",
     name: "Llama 3.1 8B",
     vendor: "cerebras",
+    minimumTier: 1,
     supports: {
       tools: true,
     },
@@ -211,7 +218,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "llama-3.3-70b",
     name: "Llama 3.3 70B",
     vendor: "cerebras",
-    isPremium: true,
+    minimumTier: 1,
     supports: {
       tools: true,
     },
@@ -251,7 +258,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-2",
     name: "DALL-E 2",
-    isPremium: true,
+    minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-2"),
     ),
@@ -259,7 +266,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-3",
     name: "DALL-E 3",
-    isPremium: true,
+    minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3"),
     ),
@@ -267,7 +274,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-3-hd",
     name: "DALL-E 3 HD",
-    isPremium: true,
+    minimumTier: 2,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3"),
     ),

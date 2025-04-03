@@ -43,7 +43,7 @@ const ModelDropdown = ({
   }, [onOpenChange]);
 
   useEffect(() => {
-    if (!hasEnoughBalance && selectedModel?.isPremium) {
+    if (!hasEnoughBalance && selectedModel?.minimumTier) {
       onChange("llama-3-2");
     }
   }, [hasEnoughBalance, selectedModel, onChange]);
@@ -53,7 +53,7 @@ const ModelDropdown = ({
     e.stopPropagation();
 
     const model = models.find((m) => m.id === modelId);
-    if (model.isPremium && !hasEnoughBalance) {
+    if (model.minimumTier && !hasEnoughBalance) {
       console.log("Premium model requires sufficient balance");
       return;
     }
@@ -81,7 +81,7 @@ const ModelDropdown = ({
       >
         <div style={styles.selectedContent}>
           <span>{selectedModel?.name}</span>
-          {selectedModel?.isPremium && (
+          {selectedModel?.minimumTier && (
             <span style={styles.premiumBadge}>
               <FaCrown style={styles.crownIcon} />
               Premium
@@ -128,7 +128,7 @@ const ModelDropdown = ({
                 style={{
                   padding: "12px",
                   opacity:
-                    (model.isPremium && !hasEnoughBalance) ||
+                    (model.minimumTier && !hasEnoughBalance) ||
                     model.isMaintenance
                       ? 0.5
                       : 1,
@@ -139,7 +139,7 @@ const ModelDropdown = ({
                   alignItems: "center",
                   transition: "background-color 0.2s ease",
                   cursor:
-                    (model.isPremium && !hasEnoughBalance) ||
+                    (model.minimumTier && !hasEnoughBalance) ||
                     model.isMaintenance
                       ? "not-allowed"
                       : "pointer",
@@ -149,7 +149,7 @@ const ModelDropdown = ({
                 }}
                 onMouseEnter={(e) => {
                   if (
-                    !(model.isPremium && !hasEnoughBalance) &&
+                    !(model.minimumTier && !hasEnoughBalance) &&
                     !model.isMaintenance
                   ) {
                     e.currentTarget.style.backgroundColor =
@@ -162,7 +162,7 @@ const ModelDropdown = ({
               >
                 <span>{model.name}</span>
                 <div style={styles.badges}>
-                  {model.isPremium && (
+                  {model.minimumTier && (
                     <>
                       <span style={styles.premiumBadge}>
                         <FaCrown style={styles.crownIcon} />

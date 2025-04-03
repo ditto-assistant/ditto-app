@@ -45,7 +45,7 @@ const ModelDropdownImage = ({
    */
   const handleSelect = (model, size) => {
     const modelOption = IMAGE_GENERATION_MODELS.find((m) => m.id === model);
-    if (modelOption.isPremium && !hasEnoughBalance) return;
+    if (modelOption.minimumTier && !hasEnoughBalance) return;
     if (modelOption.isMaintenance) return;
     onChange(model, size);
     onOpenChange?.(false);
@@ -83,7 +83,7 @@ const ModelDropdownImage = ({
         <div style={styles.selectedContent}>
           <span>{selectedModel?.name}</span>
           <span style={styles.sizeIndicator}>{value.size.description}</span>
-          {selectedModel?.isPremium && (
+          {selectedModel?.minimumTier && (
             <span style={styles.premiumBadge}>
               <FaCrown style={styles.crownIcon} />
               Premium
@@ -120,21 +120,21 @@ const ModelDropdownImage = ({
                 <motion.div
                   style={{
                     ...styles.option,
-                    opacity: model.isPremium && !hasEnoughBalance ? 0.5 : 1,
+                    opacity: model.minimumTier && !hasEnoughBalance ? 0.5 : 1,
                     cursor:
-                      model.isPremium && !hasEnoughBalance
+                      model.minimumTier && !hasEnoughBalance
                         ? "not-allowed"
                         : "pointer",
                   }}
                   onClick={() => {
-                    if (!(model.isPremium && !hasEnoughBalance)) {
+                    if (!(model.minimumTier && !hasEnoughBalance)) {
                       setExpandedModel(
                         expandedModel === model.id ? null : model.id,
                       );
                     }
                   }}
                   whileHover={
-                    !(model.isPremium && !hasEnoughBalance)
+                    !(model.minimumTier && !hasEnoughBalance)
                       ? { backgroundColor: "rgba(88, 101, 242, 0.1)" }
                       : {}
                   }
@@ -142,7 +142,7 @@ const ModelDropdownImage = ({
                   <div style={styles.modelHeader}>
                     <span>{model.name}</span>
                     <div style={styles.badges}>
-                      {model.isPremium && (
+                      {model.minimumTier && (
                         <>
                           <span style={styles.premiumBadge}>
                             <FaCrown style={styles.crownIcon} />
