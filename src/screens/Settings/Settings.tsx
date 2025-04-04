@@ -22,23 +22,23 @@ import { BiMemoryCard } from "react-icons/bi";
 import { MdSettings } from "react-icons/md";
 import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 
+// Redirect function to direct users to the general tab
+const redirectToGeneralTab = () => {
+  // Use direct DOM manipulation to click the general tab
+  const generalTab = document.querySelector(
+    '.modal-tab[data-tab-id="general"]',
+  );
+  if (generalTab) {
+    (generalTab as HTMLElement).click();
+  }
+};
+
 export default function Settings() {
   const { signOut, user } = useAuth();
   const auth = getAuth();
   const { createCloseHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
-
-  // Redirect function to direct users to the general tab
-  const redirectToGeneralTab = () => {
-    // Use direct DOM manipulation to click the general tab
-    const generalTab = document.querySelector(
-      '.modal-tab[data-tab-id="general"]',
-    );
-    if (generalTab) {
-      (generalTab as HTMLElement).click();
-    }
-  };
 
   // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
