@@ -29,6 +29,7 @@ import { MdFeedback } from "react-icons/md";
 import { FaLaptopCode } from "react-icons/fa";
 import { DITTO_AVATAR } from "@/constants";
 import { toast } from "react-hot-toast";
+import { useUser } from "@/hooks/useUser";
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -87,6 +88,7 @@ export default function SendMessage({
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
   const { selectedScript, setSelectedScript, handleDeselectScript } =
     useScripts();
+  const user = useUser();
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -158,6 +160,7 @@ export default function SendMessage({
             finalizeOptimisticMessage,
             openScriptCallback,
             selectedScript,
+            user?.data?.planTier,
           );
           console.log("✅ [SendMessage] Prompt completed successfully");
         } catch (error) {
@@ -192,6 +195,7 @@ export default function SendMessage({
       balance.hasPremium,
       finalizeOptimisticMessage,
       onStop,
+      user?.data?.planTier,
     ],
   );
 

@@ -56,7 +56,22 @@ const SPEED_COLORS: Record<NonNullable<ActiveFilters["speed"]>, string> = {
     "linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8F00FF)",
 };
 
-export default function ModelPreferencesModal() {
+const redirectToGeneralTab = () => {
+  const generalTab = document.querySelector(
+    '.modal-tab[data-tab-id="general"]',
+  );
+  if (generalTab) {
+    (generalTab as HTMLElement).click();
+  }
+};
+
+type ModelPreferencesModalProps = {
+  minimumTier?: number;
+};
+
+export const ModelPreferencesModal: React.FC<ModelPreferencesModalProps> = ({
+  minimumTier = 1,
+}) => {
   const { preferences, updatePreferences } = useModelPreferences();
   const { data: user, isLoading: isUserLoading } = useUser();
   console.log("User data:", { user, isUserLoading });
@@ -377,7 +392,7 @@ export default function ModelPreferencesModal() {
             )}
           </div>
           {!isAccessible && model.minimumTier && (
-            <div className="upgrade-message">
+            <div onClick={redirectToGeneralTab} className="upgrade-message">
               {getUpgradeMessage(model.minimumTier).icon}
               <span>{getUpgradeMessage(model.minimumTier).text}</span>
             </div>
@@ -1458,4 +1473,6 @@ export default function ModelPreferencesModal() {
       )}
     </div>
   );
-}
+};
+
+export default ModelPreferencesModal;

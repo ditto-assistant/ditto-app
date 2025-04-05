@@ -19,7 +19,7 @@ export function modelSupportsImageAttachments(model: Model): boolean {
     model === "claude-3-5-sonnet@20240620" ||
     model === "claude-3-5-sonnet-v2" ||
     model === "claude-3-5-sonnet-v2@20241022" ||
-    model === "llama-3-2" ||
+    model === "meta/llama-3.3-70b-instruct-maas" ||
     model === "gpt-4o" ||
     model === "gpt-4o-2024-11-20" ||
     model === "gpt-4o-mini" ||
@@ -40,7 +40,7 @@ export type Model =
   | "claude-3-5-sonnet-v2@20241022"
   | "mistral-nemo"
   | "mistral-large"
-  | "llama-3-2"
+  | "meta/llama-3.3-70b-instruct-maas"
   | "dall-e-2"
   | "dall-e-3"
   | "dall-e-3-hd"
@@ -86,13 +86,13 @@ export type ModelOption = {
 };
 
 export type Tool = {
+  id: keyof ToolPreferences;
   name: string;
   description: string;
   trigger: string;
 };
 
 export type ToolPreferences = {
-  openScad: boolean;
   htmlScript: boolean;
   imageGeneration: boolean;
   googleSearch: boolean;

@@ -14,8 +14,8 @@ export const DITTO_AVATAR = "/icons/round/android-chrome-192x192.png";
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
   {
-    id: "llama-3-2",
-    name: "Llama 3.2",
+    id: "meta/llama-3.3-70b-instruct-maas",
+    name: "Llama 3.3 70B",
     vendor: "meta",
     supports: {
       imageAttachments: "single",
@@ -206,7 +206,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   // },
   {
     id: "llama3.1-8b",
-    name: "Llama 3.1 8B",
+    name: "Fast Llama 3.1 8B",
     vendor: "cerebras",
     minimumTier: 1,
     supports: {
@@ -216,7 +216,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "llama-3.3-70b",
-    name: "Llama 3.3 70B",
+    name: "Fast Llama 3.3 70B",
     vendor: "cerebras",
     minimumTier: 1,
     supports: {
@@ -282,14 +282,13 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
 ] as const;
 
 export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
-  openScad: false,
   htmlScript: true,
   imageGeneration: true,
   googleSearch: true,
 } as const;
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
-  mainModel: "llama-3-2",
+  mainModel: "meta/llama-3.3-70b-instruct-maas",
   programmerModel: "mistral-nemo",
   imageGeneration: {
     model: "dall-e-3",
@@ -302,32 +301,30 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   tools: DEFAULT_TOOL_PREFERENCES,
   memory: {
     shortTermMemoryCount: 5,
-    longTermMemoryChain: [5, 3, 2],
+    longTermMemoryChain: [3, 2, 1],
   },
 } as const;
 
-export const TOOLS = {
-  imageGeneration: {
+export const TOOLS = [
+  {
+    id: "imageGeneration",
     name: "Image Generation",
     description: "Generate images based on text descriptions",
     trigger: "<IMAGE_GENERATION>",
   },
-  googleSearch: {
+  {
+    id: "googleSearch",
     name: "Web Search",
     description: "Search the web for information",
     trigger: "<GOOGLE_SEARCH>",
   },
-  webApps: {
+  {
+    id: "htmlScript",
     name: "Web Apps",
     description: "Generate web applications using HTML, CSS, and JavaScript",
     trigger: "<HTML_SCRIPT>",
   },
-  openScad: {
-    name: "OpenSCAD",
-    description: "Generate 3D modeling scripts using OpenSCAD",
-    trigger: "<OPENSCAD>",
-  },
-} as const;
+] as const;
 
 export const MEMORY_CONFIG = {
   shortTerm: {

@@ -54,3 +54,24 @@
   color: rgba(255, 255, 255, 0.7);
   padding-left: 30px;
 }
+
+/* Locked state for agent tools */
+.agent-tools-content.locked {
+  position: relative; /* Needed for absolute positioning of overlay */
+}
+
+.agent-tools-content.locked .tool-toggle {
+  pointer-events: none; /* Disable hover effects and click on the whole toggle */
+}
+
+.agent-tools-content.locked .tool-toggle label {
+  cursor: not-allowed;
+}
+
+/* Ensure disabled checkboxes are visually distinct */
+.agent-tools-content.locked
+  .tool-toggle-header
+  input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  accent-color: var(--text-secondary);
+}

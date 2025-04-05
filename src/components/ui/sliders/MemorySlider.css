@@ -157,3 +157,33 @@
   background-color: var(--background-tertiary);
   color: var(--text-primary);
 }
+
+/* Styles for locked slider */
+.memory-slider.locked {
+  opacity: 0.5;
+  filter: grayscale(80%);
+  pointer-events: none; /* Prevent most interactions */
+}
+
+/* Allow interaction with the description */
+.memory-slider.locked .memory-slider-description {
+  pointer-events: auto;
+}
+
+/* Adjust MUI disabled styles */
+.memory-slider.locked .MuiSlider-root.Mui-disabled {
+  color: var(--text-secondary); /* Make the disabled color more apparent */
+}
+
+.memory-slider.locked .MuiSlider-thumb.Mui-disabled {
+  background-color: var(--text-secondary);
+}
+
+.memory-slider.locked .MuiSlider-track.Mui-disabled {
+  background-color: var(--text-secondary);
+}
+
+.memory-slider.locked .MuiSlider-rail {
+  /* Keep rail slightly visible */
+  background-color: rgba(var(--background-tertiary-rgb), 0.5);
+}

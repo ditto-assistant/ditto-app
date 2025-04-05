@@ -5,3 +5,9 @@
   flex-direction: column;
   gap: 24px;
 }
+
+/* Apply locked styles */
+.memory-controls-content.locked {
+  position: relative; /* Needed for absolute positioning of overlay */
+  /* The MemorySlider component handles its own locking styles */
+}

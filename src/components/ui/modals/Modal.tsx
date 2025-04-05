@@ -12,7 +12,6 @@ export interface ModalTab {
   customClass?: string;
   minimumTier?: number;
   icon?: ReactNode;
-  onSubscribeRedirect?: () => void;
 }
 
 interface ModalProps {
@@ -247,13 +246,9 @@ export default function Modal({
   };
 
   const handleTabClick = (tab: ModalTab) => {
-    if (isTabLocked(tab.minimumTier)) {
-      tab.onSubscribeRedirect?.();
-    } else {
-      setActiveTabId(tab.id);
-      if (onTabChange) {
-        onTabChange(tab.id);
-      }
+    setActiveTabId(tab.id);
+    if (onTabChange) {
+      onTabChange(tab.id);
     }
   };
 
@@ -349,9 +344,7 @@ export default function Modal({
             {tabs && tabs.length > 0
               ? (() => {
                   const activeTab = tabs.find((tab) => tab.id === activeTabId);
-                  return activeTab &&
-                    !isTabLocked(activeTab.minimumTier) &&
-                    activeTab.content
+                  return activeTab && activeTab.content
                     ? activeTab.content
                     : null;
                 })()

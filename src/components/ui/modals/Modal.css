@@ -85,3 +85,82 @@
     transform: translateX(100%) rotate(45deg);
   }
 }
+
+/* Style for locked content wrapper */
+.tab-content-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* Apply styles to the direct children of the locked content wrapper */
+.locked-tab-content > * {
+  filter: grayscale(80%) blur(1px);
+  opacity: 0.6;
+  pointer-events: none; /* Prevent interaction with content */
+}
+
+/* Overlay for locked content */
+.locked-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  border-radius: inherit; /* Inherit parent's border-radius if any */
+  pointer-events: all; /* Allow interaction with overlay elements (e.g., future buttons) */
+  z-index: 10; /* Ensure overlay is on top */
+}
+
+.locked-overlay .crown-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--primary);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.locked-overlay span {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* General Upgrade Overlay for Locked Tabs/Features */
+.upgrade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #5865f2 0%, #7289da 100%);
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  text-align: center;
+  /* Use a specific border-radius or inherit if needed */
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 -4px 12px rgba(88, 101, 242, 0.3);
+  z-index: 10;
+  pointer-events: auto; /* Allow interaction with overlay elements */
+  cursor: pointer; /* Indicate it's clickable */
+  transition: background 0.2s ease;
+}
+
+.upgrade-overlay:hover {
+  background: linear-gradient(135deg, #4757d1 0%, #5c6bc0 100%);
+}
+
+.upgrade-overlay svg {
+  font-size: 20px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}

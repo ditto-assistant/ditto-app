@@ -44,7 +44,7 @@ const ModelDropdown = ({
 
   useEffect(() => {
     if (!hasEnoughBalance && selectedModel?.minimumTier) {
-      onChange("llama-3-2");
+      onChange("meta/llama-3.3-70b-instruct-maas");
     }
   }, [hasEnoughBalance, selectedModel, onChange]);
 

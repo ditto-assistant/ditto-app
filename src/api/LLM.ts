@@ -37,19 +37,6 @@ interface SSEDoneEvent {
 
 type SSEEvent = SSETextEvent | SSEErrorEvent | SSEDoneEvent;
 
-/**
- * Sends a prompt to the LLM and returns the response.
- *
- * @async
- * @function promptLLM
- * @param {string} userPrompt - The user's prompt.
- * @param {string} systemPrompt - The system's prompt.
- * @param {Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
- * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
- * @param {TextCallback} textCallback - A callback function that handles the text as it comes in.
- * @returns {Promise<string>} A promise that resolves to the LLM's response.
- * @throws {Error} If there's an error during the LLM call.
- */
 export async function promptLLM(
   userPrompt: string,
   systemPrompt: string,
@@ -175,19 +162,6 @@ export async function openaiImageGeneration(
   return await response.text();
 }
 
-/**
- * Sends a prompt to the LLM using the v2 SSE endpoint and returns the response.
- *
- * @async
- * @function promptLLMV2
- * @param {string} userPrompt - The user's prompt.
- * @param {string} systemPrompt - The system's prompt.
- * @param {Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
- * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
- * @param {TextCallback} textCallback - A callback function that handles the text as it comes in.
- * @returns {Promise<string>} A promise that resolves to the LLM's response.
- * @throws {Error} If there's an error during the LLM call.
- */
 export async function promptLLMV2(
   userPrompt: string,
   systemPrompt: string,
