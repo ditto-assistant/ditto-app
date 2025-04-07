@@ -70,12 +70,6 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   const isLocked =
     minimumTier !== undefined && (user?.planTier || 0) < minimumTier;
 
-  useEffect(() => {
-    console.log(
-      `MemorySlider (${label}): minimumTier=${minimumTier}, userTier=${user?.planTier}, isLocked=${isLocked}`,
-    );
-  }, [minimumTier, user?.planTier, isLocked, label]);
-
   const handleChange = useCallback(
     (index: number) => (_event: Event, newValue: number | number[]) => {
       const value = Array.isArray(newValue) ? newValue[0] : newValue;

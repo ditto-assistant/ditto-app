@@ -73,8 +73,7 @@ export const ModelPreferencesModal: React.FC<ModelPreferencesModalProps> = ({
   minimumTier = 1,
 }) => {
   const { preferences, updatePreferences } = useModelPreferences();
-  const { data: user, isLoading: isUserLoading } = useUser();
-  console.log("User data:", { user, isUserLoading });
+  const { data: user } = useUser();
   const [activeSection, setActiveSection] = useState<
     "main" | "programmer" | "image"
   >("main");
@@ -299,18 +298,8 @@ export const ModelPreferencesModal: React.FC<ModelPreferencesModalProps> = ({
 
   const isModelAccessible = useCallback(
     (model: ModelOption) => {
-      console.log("Checking model accessibility:", {
-        model: model.id,
-        minimumTier: model.minimumTier,
-        userTier: user?.planTier,
-        isLoggedIn: !!user,
-      });
-
-      // Free models are always accessible
       if (!model.minimumTier) return true;
-      // If not logged in, only free models are accessible
       if (!user) return false;
-      // Check if user's tier is sufficient
       return user.planTier >= model.minimumTier;
     },
     [user],
