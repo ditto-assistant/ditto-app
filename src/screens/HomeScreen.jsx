@@ -14,7 +14,6 @@ import useWhatsNew from "@/hooks/useWhatsNew";
 import { getUpdateState } from "@/utils/updateService";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
-const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
@@ -46,11 +45,9 @@ export default function HomeScreen() {
     window.history.replaceState({}, document.title, currentUrl);
 
     if (tokenSuccess === "true") {
-      // Open the token modal with success state
-      const TokenModalComponent = React.lazy(() => import("@/components/TokenModal"));
       const openTokenModal = createOpenHandler("tokenCheckout");
       openTokenModal();
-      
+
       // This will be detected in the TokenModal component via initialSuccess prop
       window.sessionStorage.setItem("token_success", "true");
     } else if (openModal) {
@@ -150,54 +147,6 @@ export default function HomeScreen() {
   const handleOpenMediaOptions = () => {
     setShowMediaOptions(true);
   };
-
-  // Update the useEffect that listens for memory deletion events
-  useEffect(() => {
-    const handleMemoryDeleted = (event) => {
-      // Update histCount state with the new count
-      const { newHistCount } = event.detail;
-      setCount(newHistCount);
-
-      // Get the latest data from localStorage
-      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-      const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
-
-      // Create new conversation object
-      const newConversation = {
-        messages: [
-          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-        ],
-        is_typing: false,
-      };
-
-      // Rebuild messages array with latest data including pairIDs
-      for (let i = 0; i < prompts.length; i++) {
-        newConversation.messages.push({
-          sender: "User",
-          text: prompts[i],
-          timestamp: timestamps[i],
-          pairID: pairIDs[i],
-        });
-        newConversation.messages.push({
-          sender: "Ditto",
-          text: responses[i],
-          timestamp: timestamps[i],
-          pairID: pairIDs[i],
-        });
-      }
-
-      // Update the conversation state with new data
-      setConversation(newConversation);
-    };
-
-    window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-
-    return () => {
-      window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-    };
-  }, []);
 
   useEffect(() => {
     const handleEditScript = (event) => {
@@ -320,8 +269,6 @@ export default function HomeScreen() {
           isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
         />
       )}
-
-      {/* ScriptActionsOverlay has been removed and replaced with the SlidingMenu in the floating-script-indicator */}
 
       {fullScreenEdit && (
         <FullScreenEditor

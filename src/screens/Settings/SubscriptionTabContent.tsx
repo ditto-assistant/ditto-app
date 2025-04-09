@@ -136,7 +136,11 @@ const SubscriptionTabContent: React.FC = () => {
               name="stripe_customer_id"
               value={user.stripeCustomerID || ""}
             />
-            <input type="hidden" name="base_url" value={window.location.origin} />
+            <input
+              type="hidden"
+              name="base_url"
+              value={window.location.origin}
+            />
             <input type="hidden" name="user_id" value={uid} />
             <input
               type="hidden"
@@ -152,7 +156,7 @@ const SubscriptionTabContent: React.FC = () => {
               Manage Your Subscription
             </Button>
           </form>
-          
+
           <Button
             variant="outlined"
             color="primary"
