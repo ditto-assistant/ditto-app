@@ -17,23 +17,6 @@
   bottom: 60px;
 }
 
-/* Pinned menu indicator */
-.sliding-menu.pinned::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary) 0%, #5b6eae 100%);
-}
-
-/* Pinned indicator for bottom-aligned menus */
-.sliding-menu.bottom-aligned.pinned::before {
-  top: auto;
-  bottom: 0;
-}
-
 /* Right-aligned menu variant */
 .sliding-menu.right-aligned {
   left: auto;
@@ -59,7 +42,7 @@
 /* Center-aligned + bottom-aligned adjustment */
 .sliding-menu.center-aligned.bottom-aligned {
   position: absolute;
-  bottom: 50px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
 }

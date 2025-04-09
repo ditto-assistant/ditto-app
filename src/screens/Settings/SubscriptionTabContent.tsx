@@ -9,7 +9,8 @@ import { useUser } from "@/hooks/useUser";
 import { useRefreshSubscription } from "@/hooks/useRefreshSubscription";
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
 import SubscriptionCard from "@/components/subscription/SubscriptionCard";
-import { FaSync } from "react-icons/fa";
+import { FaSync, FaCreditCard } from "react-icons/fa";
+import { useModal } from "@/hooks/useModal";
 import "./SubscriptionTabContent.css";
 
 const SubscriptionTabContent: React.FC = () => {
@@ -22,6 +23,9 @@ const SubscriptionTabContent: React.FC = () => {
     useSubscriptionTiers();
   const refreshSubscription = useRefreshSubscription();
   const [selectedPlan, setSelectedPlan] = React.useState<string>("");
+  const { createOpenHandler, createCloseHandler } = useModal();
+  const openTokenModal = createOpenHandler("tokenCheckout");
+  const closeSettingsModal = createCloseHandler("settings");
 
   React.useEffect(() => {
     if (subscriptionData?.tiers) {
@@ -121,32 +125,47 @@ const SubscriptionTabContent: React.FC = () => {
           )}
         </div>
 
-        <form
-          action={routes.createPortalSession}
-          method="POST"
-          className="subscription-manage-form"
-        >
-          <input
-            type="hidden"
-            name="stripe_customer_id"
-            value={user.stripeCustomerID || ""}
-          />
-          <input type="hidden" name="base_url" value={window.location.origin} />
-          <input type="hidden" name="user_id" value={uid} />
-          <input
-            type="hidden"
-            name="authorization"
-            value={`Bearer ${token.data}`}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            className="subscription-manage-button"
+        <div className="subscription-buttons-container">
+          <form
+            action={routes.createPortalSession}
+            method="POST"
+            className="subscription-manage-form"
           >
-            Manage Your Subscription
+            <input
+              type="hidden"
+              name="stripe_customer_id"
+              value={user.stripeCustomerID || ""}
+            />
+            <input type="hidden" name="base_url" value={window.location.origin} />
+            <input type="hidden" name="user_id" value={uid} />
+            <input
+              type="hidden"
+              name="authorization"
+              value={`Bearer ${token.data}`}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              className="subscription-manage-button"
+            >
+              Manage Your Subscription
+            </Button>
+          </form>
+          
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              closeSettingsModal();
+              openTokenModal();
+            }}
+            className="buy-tokens-button"
+            startIcon={<FaCreditCard />}
+          >
+            Buy Extra Tokens
           </Button>
-        </form>
+        </div>
       </div>
     );
   }

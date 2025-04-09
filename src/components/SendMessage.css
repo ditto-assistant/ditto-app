@@ -23,7 +23,7 @@
   z-index: 10;
   flex-direction: column;
   padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-md);
+  border-radius: 0; /* Removed rounded corners */
 }
 
 .contents {
@@ -501,6 +501,7 @@
   .form {
     padding: var(--spacing-xs) var(--spacing-sm);
     margin: 0;
+    border-radius: 0;
   }
 
   .input-wrapper {
@@ -627,6 +628,119 @@
   background-color: var(--primary-hover);
 }
 
+/* Sales pitch overlay styles */
+.sales-pitch-content-container {
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: var(--background-input);
+  border-radius: 0;
+  animation: fade-in 0.3s ease;
+}
+
+.sales-pitch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.sales-pitch-title {
+  font-weight: bold;
+  color: var(--text-white);
+  font-size: 16px;
+}
+
+.sales-pitch-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sales-pitch-close:hover {
+  color: var(--text-white);
+}
+
+.sales-pitch-content {
+  margin-bottom: var(--spacing-md);
+  font-size: 14px;
+  color: var(--text-normal);
+  line-height: 1.4;
+}
+
+.sales-pitch.model-name {
+  background: var(--gradient-lavender-pink-peach);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+.sales-pitch-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sales-pitch-option {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.sales-pitch-option svg {
+  margin-right: var(--spacing-sm);
+}
+
+.free-model-option {
+  background-color: var(--background-tertiary);
+  color: var(--text-white);
+}
+
+.free-model-option:hover {
+  background-color: var(--hover-element);
+}
+
+.subscribe-option {
+  background-color: var(--primary);
+  color: var(--text-white);
+}
+
+.subscribe-option:hover {
+  background-color: var(--primary-hover);
+}
+
+.token-option {
+  background-color: var(--background-secondary);
+  color: var(--text-white);
+}
+
+.token-option:hover {
+  background-color: var(--hover-element);
+}
+
+@keyframes slide-up-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Expand button specific styling */
 .expand-button {
   color: var(--interactive-normal);
@@ -657,10 +771,9 @@
 
 .ditto-menu-container {
   position: absolute;
-  top: 0;
+  bottom: 100%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
+  transform: translateX(-90%);
+  width: 180px;
   z-index: 1002;
 }

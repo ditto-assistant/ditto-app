@@ -3,6 +3,7 @@ import {
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
+  Model,
 } from "@/types/llm";
 
 export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png";
@@ -10,6 +11,7 @@ export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png";
 export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png";
 export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png";
 export const DITTO_AVATAR = "/icons/round/android-chrome-192x192.png";
+export const FREE_MODEL_ID: Model = "meta/llama-3.3-70b-instruct-maas";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
@@ -274,7 +276,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-3-hd",
     name: "DALL-E 3 HD",
-    minimumTier: 2,
+    minimumTier: 3,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3"),
     ),

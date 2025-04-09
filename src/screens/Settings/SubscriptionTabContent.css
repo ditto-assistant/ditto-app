@@ -108,9 +108,25 @@
 .subscription-manage-form {
   display: flex;
   justify-content: center;
+  width: 100%;
+}
+
+.subscription-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
 }
 
 .subscription-manage-button {
+  width: 100%;
+  max-width: 300px;
+}
+
+.buy-tokens-button {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
   width: 100%;
   max-width: 300px;
 }

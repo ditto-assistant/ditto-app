@@ -10,6 +10,7 @@ import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
 import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
+import { FaCreditCard } from "react-icons/fa";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
@@ -25,9 +26,10 @@ import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 export default function Settings() {
   const { signOut, user } = useAuth();
   const auth = getAuth();
-  const { createCloseHandler } = useModal();
+  const { createCloseHandler, createOpenHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
+  const openTokenModal = createOpenHandler("tokenCheckout");
 
   // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);

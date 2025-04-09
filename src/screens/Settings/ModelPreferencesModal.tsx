@@ -16,6 +16,7 @@ import {
   FaBrain,
   FaFire,
   FaMicrochip,
+  FaStar,
 } from "react-icons/fa";
 import { SiOpenai } from "react-icons/si";
 import { TbBrandMeta } from "react-icons/tb";
@@ -288,10 +289,15 @@ export const ModelPreferencesModal: React.FC<ModelPreferencesModalProps> = ({
   const getUpgradeMessage = useCallback(
     (minimumTier: number) => {
       if (!user) return { text: "Sign in to access", icon: <FaCrown /> };
-      if (minimumTier === 1) {
-        return { text: "Upgrade to Spark", icon: <FaBolt /> };
+      switch (minimumTier) {
+        case 1:
+          return { text: "Upgrade to Spark", icon: <FaBolt /> };
+        case 2:
+          return { text: "Upgrade to Strong", icon: <FaCrown /> };
+        case 3:
+          return { text: "Upgrade to Hero", icon: <FaStar /> };
       }
-      return { text: "Upgrade to Strong", icon: <FaCrown /> };
+      return { text: "Upgrade to Hero", icon: <FaStar /> };
     },
     [user],
   );

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./SlidingMenu.css";
-import { usePlatform } from "@/hooks/usePlatform";
 import { useUser } from "@/hooks/useUser";
 import { FaCrown } from "react-icons/fa";
 import { useModal } from "@/hooks/useModal";
@@ -19,7 +18,6 @@ interface SlidingMenuProps {
   onClose: () => void;
   position?: "left" | "right" | "center";
   triggerRef?: React.RefObject<HTMLElement>;
-  isPinned?: boolean;
   menuPosition?: "top" | "bottom";
   menuTitle?: string;
 }
@@ -30,27 +28,12 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   onClose,
   position = "left",
   triggerRef,
-  isPinned = false,
   menuPosition = "top",
   menuTitle,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const { isMobile } = usePlatform();
   const { data: user } = useUser();
   const { createOpenHandler } = useModal();
-
-  const handleMenuLeave = () => {
-    // Only apply hover behavior on desktop and when not pinned
-    if (!isMobile && !isPinned) {
-      // Small delay before closing to allow movement between menu and button
-      setTimeout(() => {
-        // Check if user hasn't moved back to the trigger button
-        if (triggerRef && !triggerRef.current?.matches(":hover")) {
-          onClose();
-        }
-      }, 150);
-    }
-  };
 
   const isItemLocked = (minimumTier?: number) => {
     if (!minimumTier) return false;
@@ -97,20 +80,20 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
     // For bottom-aligned menus, animate vertically
     if (menuPosition === "bottom") {
       return {
-        initial: { opacity: 0, y: 50 },
+        initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: 50 },
-        transition: { type: "spring", damping: 25, stiffness: 300 },
+        exit: { opacity: 0, y: 20 },
+        transition: { duration: 0.15 },
       };
     }
 
     // For standard top menus, animate horizontally
-    const initialX = position === "left" ? -50 : 50;
+    const initialX = position === "left" ? -20 : 20;
     return {
       initial: { opacity: 0, x: initialX },
       animate: { opacity: 1, x: 0 },
       exit: { opacity: 0, x: initialX },
-      transition: { type: "spring", damping: 25, stiffness: 300 },
+      transition: { duration: 0.15 },
     };
   };
 
@@ -120,9 +103,8 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${isPinned ? "pinned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
+          className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
           ref={menuRef}
-          onMouseLeave={handleMenuLeave}
           {...menuAnimation}
         >
           {menuTitle && <div className="menu-title">{menuTitle}</div>}

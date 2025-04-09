@@ -39,12 +39,21 @@ export default function HomeScreen() {
   useEffect(() => {
     const openModal = searchParams.get("openModal");
     const openTab = searchParams.get("openTab");
+    const tokenSuccess = searchParams.get("tokenSuccess");
 
-    if (openModal) {
-      // Clean up URL parameters immediately to prevent reopening on refresh
-      const currentUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, currentUrl);
+    // Clean up URL parameters immediately to prevent reopening on refresh
+    const currentUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, currentUrl);
 
+    if (tokenSuccess === "true") {
+      // Open the token modal with success state
+      const TokenModalComponent = React.lazy(() => import("@/components/TokenModal"));
+      const openTokenModal = createOpenHandler("tokenCheckout");
+      openTokenModal();
+      
+      // This will be detected in the TokenModal component via initialSuccess prop
+      window.sessionStorage.setItem("token_success", "true");
+    } else if (openModal) {
       // Use the enhanced createOpenHandler with the tab ID
       if (openModal === "settings" && openTab) {
         const openSettingsWithTab = createOpenHandler("settings", openTab);

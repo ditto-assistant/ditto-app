@@ -60,10 +60,7 @@ const FeedbackModal = loadE(() => import("@/components/FeedbackModal"));
 const ImageViewer = loadE(() => import("@/components/ImageViewer"));
 const HomeScreen = loadE(() => import("@/screens/HomeScreen"));
 const Settings = loadE(() => import("@/screens/Settings"));
-const TokenCheckout = loadE(() => import("@/screens/TokenCheckout"));
-const TokenCheckoutSuccess = loadE(
-  () => import("@/screens/TokenCheckoutSuccess"),
-);
+const TokenModal = loadE(() => import("@/components/TokenModal"));
 const ScriptsOverlay = loadE(
   () => import("@/screens/ScriptsModal/ScriptsOverlay"),
 );
@@ -91,11 +88,9 @@ const router = createBrowserRouter(
         }
       >
         <Route index Component={HomeScreen} />
+        {/* The checkout routes have been replaced by the modal, keeping for backward compatibility */}
         <Route path="checkout">
-          <Route path="token">
-            <Route index Component={TokenCheckout} />
-            <Route path="success" Component={TokenCheckoutSuccess} />
-          </Route>
+          <Route path="token" Component={HomeScreen} />
         </Route>
       </Route>
     </Route>,
@@ -129,6 +124,9 @@ const modalRegistry: ModalRegistry = {
   },
   whatsNew: {
     component: <WhatsNew />,
+  },
+  tokenCheckout: {
+    component: <TokenModal />,
   },
 } as const;
 

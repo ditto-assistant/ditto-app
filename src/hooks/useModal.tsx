@@ -21,7 +21,8 @@ export type ModalId =
   | "confirmationDialog"
   | "memoryNodeViewer"
   | "fullscreenCompose"
-  | "whatsNew";
+  | "whatsNew"
+  | "tokenCheckout";
 
 type ModalRegistration = {
   component: ReactNode;

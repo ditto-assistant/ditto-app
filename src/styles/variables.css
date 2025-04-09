@@ -58,6 +58,20 @@
   --hover-overlay: rgba(50, 53, 59, 0.5);
   --hover-element: #32353b;
 
+  /* Gradients */
+  --gradient-lavender-pink-peach: linear-gradient(
+    98deg,
+    #9966ff 0%,
+    #ff6eb2 50%,
+    #ffad66 100%
+  );
+  --gradient-bg: linear-gradient(
+    135deg,
+    rgba(41, 19, 52, 1) 0%,
+    rgba(31, 14, 42, 1) 50%,
+    rgba(19, 10, 31, 1) 100%
+  );
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;

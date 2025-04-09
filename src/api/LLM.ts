@@ -1,3 +1,4 @@
+import { ErrorPaymentRequired } from "@/types/errors";
 import { DEFAULT_PREFERENCES } from "../constants";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
@@ -175,11 +176,10 @@ export async function promptLLMV2(
   const maxRetries = 3;
   const tok = await getToken();
   if (tok.err) {
-    console.error(tok.err);
-    return "Error: Unable to get LLM response";
+    throw tok.err;
   }
   if (!tok.ok) {
-    return "Error: Unable to get LLM response";
+    throw new Error("Unable to get LLM response");
   }
   while (retries < maxRetries) {
     try {
@@ -200,9 +200,8 @@ export async function promptLLMV2(
         body: JSON.stringify(requestBody),
       });
 
-      // Check for payment required error
       if (response.status === 402) {
-        return "Error: Payment Required. Please check your token balance.";
+        throw ErrorPaymentRequired;
       }
 
       // Handle other error statuses
@@ -265,10 +264,9 @@ export async function promptLLMV2(
         (error instanceof Error && error.message?.includes("402")) ||
         (error instanceof Error && error.message?.includes("Payment Required"))
       ) {
-        return "Error: Payment Required. Please check your token balance.";
+        throw ErrorPaymentRequired;
       }
     }
   }
-  console.error("Error in promptLLMV2: Max retries reached.");
-  return "An error occurred. Please try again.";
+  throw new Error("promptLLMV2: Max retries reached.");
 }
