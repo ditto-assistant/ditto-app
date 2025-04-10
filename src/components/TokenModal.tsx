@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, TextField, Slider } from "@mui/material";
+import { Button } from "@mui/material";
 import { useBalance } from "@/hooks/useBalance";
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { CheckoutForm } from "@/components/CheckoutForm";
@@ -19,16 +19,6 @@ const PricingTiers = [
   { price: 75, tokens: "100B", bonus: "33%" },
   { price: 100, tokens: "150B", bonus: "50%" },
 ];
-
-// Update the getTokenAmount function to return billions
-const getTokenAmount = (usd: number): string => {
-  if (usd < 10) return `${usd}B`;
-  if (usd === 10) return "11B";
-  if (usd === 25) return "30B";
-  if (usd === 75) return "100B";
-  if (usd === 100) return "150B";
-  return `${usd}B`; // Default to 1:1 ratio
-};
 
 export default function TokenModal() {
   const { createCloseHandler } = useModal();
@@ -212,82 +202,6 @@ export default function TokenModal() {
               cancelURL={window.location.origin}
             />
           </motion.div>
-
-          <div className="token-slider-container">
-            <div className="token-slider-label">
-              Amount: <span className="token-highlight-text">${amount}</span>
-            </div>
-            <div className="token-slider-label">
-              Receive:{" "}
-              <span className="token-highlight-text">
-                {getTokenAmount(amount)}
-              </span>{" "}
-              tokens
-            </div>
-            <Slider
-              value={amount}
-              onChange={(_, value) => handleAmountChange(value as number)}
-              min={1}
-              max={100}
-              step={1}
-              sx={{
-                color: "var(--primary)",
-                "& .MuiSlider-rail": {
-                  backgroundColor: "var(--background-darker)",
-                },
-                "& .MuiSlider-track": {
-                  backgroundImage:
-                    "linear-gradient(to right, #4752c4, #7289da)",
-                },
-                "& .MuiSlider-thumb": {
-                  backgroundColor: "#fff",
-                  "&:hover, &.Mui-focusVisible": {
-                    boxShadow: "0 0 0 8px rgba(114, 137, 218, 0.16)",
-                  },
-                },
-                "& .MuiSlider-mark": {
-                  backgroundColor: "var(--background-darker)",
-                },
-                "& .MuiSlider-markLabel": {
-                  color: "var(--text-secondary)",
-                  fontSize: "0.8rem",
-                },
-                "& .MuiSlider-valueLabel": {
-                  backgroundColor: "var(--primary)",
-                },
-              }}
-            />
-            <TextField
-              type="number"
-              label="Custom Amount"
-              value={amount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-              variant="outlined"
-              InputProps={{
-                style: {
-                  color: "var(--text-primary)",
-                  backgroundColor: "var(--background-darker)",
-                },
-                inputProps: { min: "1", step: "1" },
-              }}
-              InputLabelProps={{
-                style: { color: "var(--text-secondary)" },
-              }}
-              className="token-custom-amount-input"
-            />
-          </div>
-
-          {/* <motion.div
-            className="token-preview"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            You will receive:{" "}
-            <span className="token-highlight-text">
-              {getTokenAmount(amount)} tokens
-            </span>
-          </motion.div> */}
         </div>
       </div>
     </Modal>
