@@ -11,7 +11,6 @@ import { motion } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors";
 
-// Update the PricingTiers array
 const PricingTiers = [
   { price: 5, tokens: "5B", bonus: "0%" },
   { price: 10, tokens: "11B", bonus: "10%" },
@@ -47,13 +46,6 @@ export default function TokenModal() {
     const newAmount = Math.max(1, Number(value));
     setAmount(newAmount);
   };
-
-  // Create token package header icon
-  const tokenHeaderIcon = (
-    <div className="token-pricing-icon">
-      <FaCoins />
-    </div>
-  );
 
   if (showSuccess) {
     // Token purchase success view
@@ -140,7 +132,11 @@ export default function TokenModal() {
       id="tokenCheckout"
       title="Buy Ditto Tokens"
       fullScreen={true}
-      icon={tokenHeaderIcon}
+      icon={
+        <div className="token-pricing-icon">
+          <FaCoins />
+        </div>
+      }
     >
       <div className="token-checkout-content">
         <div className="token-info-container">
