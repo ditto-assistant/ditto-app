@@ -154,28 +154,20 @@ export default function TokenModal() {
     >
       <div className="token-checkout-content">
         <div className="token-info-container">
-          <h3 className="token-balance-header">Current Balance</h3>
-          <div className="token-balance-grid">
-            {!balance.isLoading ? (
-              <p className="token-balance-item">
-                USD:{" "}
-                <span className="token-highlight-text">
-                  {balance.data?.usd}
-                </span>{" "}
-                (
-                <span className="token-highlight-text">
-                  {balance.data?.balance}
-                </span>{" "}
-                tokens)
-              </p>
-            ) : (
-              <div className="token-spinner-container">
-                <LoadingSpinner size={45} inline={true} />
-              </div>
-            )}
-          </div>
+          {!balance.isLoading ? (
+            <p className="token-balance-item">
+              Current Balance:{" "}
+              <span className="token-highlight-text">
+                {balance.data?.balance}
+              </span>{" "}
+              tokens
+            </p>
+          ) : (
+            <div className="token-spinner-container">
+              <LoadingSpinner size={45} inline={true} />
+            </div>
+          )}
         </div>
-        <div className="token-divider"></div>
 
         <div className="token-pricing-info">
           <div className="token-pricing-table">
