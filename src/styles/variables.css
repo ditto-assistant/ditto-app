@@ -104,4 +104,23 @@
   --z-index-dropdown: 1000;
   --z-index-modal: 2000;
   --z-index-overlay: 3000;
+
+  /* Token UI colors */
+  --token-gold: #ffd700;
+  --token-gold-glow: rgba(255, 215, 0, 0.6);
+  --token-bonus-bg: rgba(39, 174, 96, 0.1);
+  --token-bonus-selected-bg: rgba(255, 255, 255, 0.2);
+  --token-pricing-gradient: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary) 60%,
+    #8ba4e4
+  );
+  --token-button-gradient: linear-gradient(45deg, #5865f2, #7289da, #8ba4e4);
+  --token-button-hover-gradient: linear-gradient(
+    45deg,
+    #4752c4,
+    #5865f2,
+    #7289da
+  );
 }

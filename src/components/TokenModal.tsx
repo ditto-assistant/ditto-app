@@ -6,7 +6,7 @@ import { CheckoutForm } from "@/components/CheckoutForm";
 import Modal from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
 import "./TokenModal.css";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaCoins } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors";
@@ -57,6 +57,13 @@ export default function TokenModal() {
     const newAmount = Math.max(1, Number(value));
     setAmount(newAmount);
   };
+
+  // Create token package header icon
+  const tokenHeaderIcon = (
+    <div className="token-pricing-icon">
+      <FaCoins />
+    </div>
+  );
 
   if (showSuccess) {
     // Token purchase success view
@@ -139,7 +146,12 @@ export default function TokenModal() {
 
   // Regular token purchase view
   return (
-    <Modal id="tokenCheckout" title="Buy Ditto Tokens" fullScreen={true}>
+    <Modal
+      id="tokenCheckout"
+      title="Buy Ditto Tokens"
+      fullScreen={true}
+      icon={tokenHeaderIcon}
+    >
       <div className="token-checkout-content">
         <div className="token-info-container">
           <h3 className="token-balance-header">Current Balance</h3>
@@ -167,13 +179,16 @@ export default function TokenModal() {
 
         <div className="token-pricing-info">
           <div className="token-pricing-table">
-            {PricingTiers.map(({ price, tokens, bonus }) => {
+            {PricingTiers.map(({ price, tokens, bonus }, index) => {
               const isSelected = price === amount;
               return (
-                <div
+                <motion.div
                   key={price}
                   onClick={() => handleAmountChange(price)}
                   className={`token-tier ${isSelected ? "selected" : ""}`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index }}
                 >
                   <div className="token-price">${price}</div>
                   <div
@@ -186,15 +201,37 @@ export default function TokenModal() {
                   >
                     +{bonus}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </div>
 
         <div className="token-checkout">
+          <motion.div
+            className="token-checkout-button-container"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <CheckoutForm
+              usd={amount}
+              successURL={`${window.location.origin}/?tokenSuccess=true`}
+              cancelURL={window.location.origin}
+            />
+          </motion.div>
+
           <div className="token-slider-container">
-            <div className="token-slider-label">Amount: ${amount}</div>
+            <div className="token-slider-label">
+              Amount: <span className="token-highlight-text">${amount}</span>
+            </div>
+            <div className="token-slider-label">
+              Receive:{" "}
+              <span className="token-highlight-text">
+                {getTokenAmount(amount)}
+              </span>{" "}
+              tokens
+            </div>
             <Slider
               value={amount}
               onChange={(_, value) => handleAmountChange(value as number)}
@@ -202,12 +239,13 @@ export default function TokenModal() {
               max={100}
               step={1}
               sx={{
-                color: "var(--accent-color)",
+                color: "var(--primary)",
                 "& .MuiSlider-rail": {
                   backgroundColor: "var(--background-darker)",
                 },
                 "& .MuiSlider-track": {
-                  backgroundColor: "var(--accent-color)",
+                  backgroundImage:
+                    "linear-gradient(to right, #4752c4, #7289da)",
                 },
                 "& .MuiSlider-thumb": {
                   backgroundColor: "#fff",
@@ -223,7 +261,7 @@ export default function TokenModal() {
                   fontSize: "0.8rem",
                 },
                 "& .MuiSlider-valueLabel": {
-                  backgroundColor: "var(--accent-color)",
+                  backgroundColor: "var(--primary)",
                 },
               }}
             />
@@ -247,20 +285,17 @@ export default function TokenModal() {
             />
           </div>
 
-          <div className="token-preview">
+          {/* <motion.div
+            className="token-preview"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             You will receive:{" "}
             <span className="token-highlight-text">
               {getTokenAmount(amount)} tokens
             </span>
-          </div>
-
-          <div className="token-checkout-button-container">
-            <CheckoutForm
-              usd={amount}
-              successURL={`${window.location.origin}/?tokenSuccess=true`}
-              cancelURL={window.location.origin}
-            />
-          </div>
+          </motion.div> */}
         </div>
       </div>
     </Modal>

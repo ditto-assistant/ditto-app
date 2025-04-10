@@ -22,6 +22,8 @@ interface ModalProps {
   tabs?: ModalTab[];
   defaultTabId?: string;
   onTabChange?: (tabId: string) => void;
+  icon?: React.ReactNode;
+  useGradientTitle?: boolean;
 }
 
 const MIN_WIDTH = 280;
@@ -35,6 +37,8 @@ export default function Modal({
   tabs,
   defaultTabId,
   onTabChange,
+  icon,
+  useGradientTitle = true,
 }: ModalProps) {
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
     useModal();
@@ -308,6 +312,8 @@ export default function Modal({
             className={isFullscreen ? "fullscreen" : ""}
             isFullscreen={isFullscreen}
             onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
+            icon={icon}
+            useGradient={useGradientTitle}
           />
         </div>
 

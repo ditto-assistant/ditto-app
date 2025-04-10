@@ -3,6 +3,7 @@ import { routes } from "../firebaseConfig";
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { Button } from "@mui/material";
 import { JSX } from "react";
+import "./CheckoutForm.css";
 
 interface CheckoutFormProps {
   usd: number;
@@ -34,7 +35,11 @@ export function CheckoutForm({
   }
 
   return (
-    <form action={routes.checkoutSession} method="POST">
+    <form
+      action={routes.checkoutSession}
+      method="POST"
+      className="checkout-form"
+    >
       <input type="hidden" name="product_type" value={"ditto_tokens"} />
       <input type="hidden" name="userID" value={auth.user.uid} />
       <input type="hidden" name="email" value={auth.user.email} />
@@ -46,16 +51,7 @@ export function CheckoutForm({
         name="authorization"
         value={`Bearer ${token.data}`}
       />
-      <Button
-        type="submit"
-        variant="contained"
-        style={{
-          backgroundColor: "#7289da",
-          color: "white",
-          padding: "10px 20px",
-          fontSize: "1.1em",
-        }}
-      >
+      <Button type="submit" variant="contained" className="purchase-button">
         Purchase Tokens
       </Button>
     </form>
