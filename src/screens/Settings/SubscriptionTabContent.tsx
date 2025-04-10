@@ -6,10 +6,9 @@ import { useAuth, useAuthToken } from "@/hooks/useAuth";
 import { routes } from "@/firebaseConfig";
 import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
 import { useUser } from "@/hooks/useUser";
-import { useRefreshSubscription } from "@/hooks/useRefreshSubscription";
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
 import SubscriptionCard from "@/components/subscription/SubscriptionCard";
-import { FaSync, FaCreditCard } from "react-icons/fa";
+import { FaCreditCard } from "react-icons/fa";
 import { useModal } from "@/hooks/useModal";
 import "./SubscriptionTabContent.css";
 
@@ -21,7 +20,6 @@ const SubscriptionTabContent: React.FC = () => {
   const token = useAuthToken();
   const { data: subscriptionData, isLoading: isLoadingSubscriptions } =
     useSubscriptionTiers();
-  const refreshSubscription = useRefreshSubscription();
   const [selectedPlan, setSelectedPlan] = React.useState<string>("");
   const { createOpenHandler, createCloseHandler } = useModal();
   const openTokenModal = createOpenHandler("tokenCheckout");
@@ -39,12 +37,6 @@ const SubscriptionTabContent: React.FC = () => {
       }
     }
   }, [subscriptionData, isYearly]);
-
-  const handleRefreshSubscription = () => {
-    if (auth.user?.uid) {
-      refreshSubscription.mutate(auth.user.uid);
-    }
-  };
 
   if (
     auth.isLoading ||
@@ -94,16 +86,6 @@ const SubscriptionTabContent: React.FC = () => {
         <div className="subscription-info">
           <div className="subscription-header">
             <h3>Current Subscription</h3>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleRefreshSubscription}
-              disabled={refreshSubscription.isDisabled}
-              className="subscription-refresh-button"
-              title="Refresh subscription status"
-            >
-              <FaSync className={refreshSubscription.isPending ? "spin" : ""} />
-            </Button>
           </div>
           <p>
             Status: <span className="subscription-active">Active</span>

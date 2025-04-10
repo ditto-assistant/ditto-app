@@ -139,7 +139,7 @@ export default function TokenModal() {
 
   // Regular token purchase view
   return (
-    <Modal id="tokenCheckout" title="Buy Tokens">
+    <Modal id="tokenCheckout" title="Buy Ditto Tokens" fullScreen={true}>
       <div className="token-checkout-content">
         <div className="token-info-container">
           <h3 className="token-balance-header">Current Balance</h3>

@@ -88,10 +88,6 @@ const router = createBrowserRouter(
         }
       >
         <Route index Component={HomeScreen} />
-        {/* The checkout routes have been replaced by the modal, keeping for backward compatibility */}
-        <Route path="checkout">
-          <Route path="token" Component={HomeScreen} />
-        </Route>
       </Route>
     </Route>,
   ),

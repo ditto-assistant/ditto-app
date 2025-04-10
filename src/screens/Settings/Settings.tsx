@@ -26,10 +26,9 @@ import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 export default function Settings() {
   const { signOut, user } = useAuth();
   const auth = getAuth();
-  const { createCloseHandler, createOpenHandler } = useModal();
+  const { createCloseHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
   const closeModal = createCloseHandler("settings");
-  const openTokenModal = createOpenHandler("tokenCheckout");
 
   // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);

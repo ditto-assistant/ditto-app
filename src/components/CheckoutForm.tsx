@@ -35,6 +35,7 @@ export function CheckoutForm({
 
   return (
     <form action={routes.checkoutSession} method="POST">
+      <input type="hidden" name="product_type" value={"ditto_tokens"} />
       <input type="hidden" name="userID" value={auth.user.uid} />
       <input type="hidden" name="email" value={auth.user.email} />
       <input type="hidden" name="successURL" value={successURL} />
