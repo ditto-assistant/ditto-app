@@ -10,6 +10,7 @@ import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
 import SubscriptionCard from "@/components/subscription/SubscriptionCard";
 import { FaCreditCard } from "react-icons/fa";
 import { useModal } from "@/hooks/useModal";
+import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator";
 import "./SubscriptionTabContent.css";
 
 const SubscriptionTabContent: React.FC = () => {
@@ -83,74 +84,94 @@ const SubscriptionTabContent: React.FC = () => {
     )?.name;
     return (
       <div className="subscription-manage-container">
-        <div className="subscription-info">
-          <div className="subscription-header">
-            <h3>Current Subscription</h3>
+        <div className="subscription-content-wrapper">
+          <div className="subscription-info">
+            <div className="subscription-header">
+              <h3>Current Subscription</h3>
+            </div>
+
+            <div className="subscription-details">
+              <div className="subscription-detail-item">
+                <span className="detail-label">Status:</span>
+                <span className="subscription-active">Active</span>
+              </div>
+
+              <div className="subscription-detail-item">
+                <span className="detail-label">Plan:</span>
+                <div className="detail-value-with-boost">
+                  <span className="subscription-highlight">{planName}</span>
+                  <SubscriptionBoostIndicator
+                    isBoosted={user.isTierBoostedFromBalance ?? false}
+                  />
+                </div>
+              </div>
+
+              <div className="subscription-detail-item">
+                <span className="detail-label">Balance:</span>
+                <div className="subscription-balance-value">
+                  <span className="subscription-highlight">
+                    {balance.data?.balance}
+                  </span>
+                  <span>tokens</span>
+                </div>
+              </div>
+
+              {user.cancelAtPeriodEnd && (
+                <div className="subscription-detail-item subscription-cancellation">
+                  Your subscription will end on{" "}
+                  {user.currentPeriodEnd
+                    ? user.currentPeriodEnd.toLocaleDateString()
+                    : "unknown"}
+                </div>
+              )}
+            </div>
           </div>
-          <p>
-            Status: <span className="subscription-active">Active</span>
-          </p>
-          <p>
-            Plan: <span className="subscription-highlight">{planName}</span>
-          </p>
-          <p>
-            Balance:{" "}
-            <span className="subscription-highlight">
-              {balance.data?.balance}
-            </span>{" "}
-            tokens
-          </p>
-          {user.cancelAtPeriodEnd && (
-            <p className="subscription-cancellation">
-              Your subscription will end at the current billing period.
-            </p>
-          )}
-        </div>
 
-        <div className="subscription-buttons-container">
-          <form
-            action={routes.createPortalSession}
-            method="POST"
-            className="subscription-manage-form"
-          >
-            <input
-              type="hidden"
-              name="stripe_customer_id"
-              value={user.stripeCustomerID || ""}
-            />
-            <input
-              type="hidden"
-              name="base_url"
-              value={window.location.origin}
-            />
-            <input type="hidden" name="user_id" value={uid} />
-            <input
-              type="hidden"
-              name="authorization"
-              value={`Bearer ${token.data}`}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              className="subscription-manage-button"
+          <div className="subscription-buttons-container">
+            <form
+              action={routes.createPortalSession}
+              method="POST"
+              className="subscription-manage-form"
             >
-              Manage Your Subscription
-            </Button>
-          </form>
+              <input
+                type="hidden"
+                name="stripe_customer_id"
+                value={user.stripeCustomerID || ""}
+              />
+              <input
+                type="hidden"
+                name="base_url"
+                value={window.location.origin}
+              />
+              <input type="hidden" name="user_id" value={uid} />
+              <input
+                type="hidden"
+                name="authorization"
+                value={`Bearer ${token.data}`}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                className="subscription-manage-button"
+              >
+                Manage Your Subscription
+              </Button>
+            </form>
 
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => {
-              closeSettingsModal();
-              openTokenModal();
-            }}
-            className="buy-tokens-button"
-            startIcon={<FaCreditCard />}
-          >
-            Buy Extra Tokens
-          </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => {
+                closeSettingsModal();
+                openTokenModal();
+              }}
+              className="buy-tokens-button"
+              startIcon={<FaCreditCard />}
+            >
+              Buy Extra Tokens
+            </Button>
+          </div>
         </div>
       </div>
     );

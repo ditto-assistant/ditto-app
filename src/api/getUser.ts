@@ -1,22 +1,29 @@
+import { z } from "zod";
 import { Result } from "@/types/common";
 import { BASE_URL } from "../firebaseConfig";
 import { getToken } from "./auth";
 
-export interface User {
-  balance: number;
-  email: string;
-  subscriptionStatus:
-    | "free"
-    | "active"
-    | "incomplete"
-    | "incomplete_expired"
-    | "past_due"
-    | "canceled"
-    | "unpaid";
-  cancelAtPeriodEnd: boolean;
-  planTier: number;
-  stripeCustomerID: string;
-}
+const UserSchema = z.object({
+  balance: z.number(),
+  email: z.string().optional(),
+  subscriptionStatus: z.enum([
+    "free",
+    "active",
+    "incomplete",
+    "incomplete_expired",
+    "past_due",
+    "canceled",
+    "unpaid",
+  ]),
+  currentPeriodEnd: z.coerce.date().optional(),
+  cancelAtPeriodEnd: z.boolean(),
+  trialEnd: z.coerce.date().optional(),
+  planTier: z.number(),
+  stripeCustomerID: z.string().optional(),
+  isTierBoostedFromBalance: z.boolean().optional(),
+});
+
+export type User = z.infer<typeof UserSchema>;
 
 export async function getUser(): Promise<Result<User>> {
   const tok = await getToken();
@@ -38,15 +45,23 @@ export async function getUser(): Promise<Result<User>> {
     });
 
     if (response.ok) {
-      const data: User = await response.json();
-      return { ok: data };
+      const rawData: unknown = await response.json();
+      const result = UserSchema.safeParse(rawData);
+      if (result.success) {
+        return { ok: result.data };
+      } else {
+        console.error("Zod validation error:", result.error.flatten());
+        return {
+          err: `Invalid user data received from API. Error: ${result.error.message}`,
+        };
+      }
     } else {
       return {
         err: `Unable to fetch user data. Error: ${response.status}`,
       };
     }
   } catch (error) {
-    console.error(error);
+    console.error("Fetch error:", error);
     return { err: `Unable to fetch user data. Error: ${error}` };
   }
 }
