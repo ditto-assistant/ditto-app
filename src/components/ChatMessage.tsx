@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserAvatar } from "@/hooks/useUserAvatar";
 import { FiCopy } from "react-icons/fi";
 import { FaBrain, FaTrash } from "react-icons/fa";
 import "./ChatMessage.css";
@@ -119,9 +120,8 @@ export default function ChatMessage({
   menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth();
-  const avatar = isUser
-    ? (user?.photoURL ?? DEFAULT_USER_AVATAR)
-    : DITTO_AVATAR;
+  const userAvatar = useUserAvatar(user?.photoURL);
+  const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR;
 
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);

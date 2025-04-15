@@ -2,16 +2,18 @@
 
 ## Business Overview
 
-Ditto Teams is an AI-powered platform for individuals and small businesses that facilitates ideation, creativity, and emotional support. Our core technology is built around advanced long-term memory algorithms that improve the relevancy of every interaction with Ditto, creating truly personalized experiences that evolve over time.
+Ditto is a therapy-focused AI assistant that understands who YOU are, similar to NotebookLM but with a deep understanding of the individual user. Our platform helps individuals process thoughts, explore ideas, and receive personalized emotional support through meaningful conversations that evolve over time.
 
-The application integrates into everyday workflows through various communication channels (email, SMS, messaging platforms) and features:
+Our core technology is built around advanced long-term memory algorithms that enable Ditto to remember personal details, preferences, and past conversations, creating genuinely personalized experiences tailored to each user's unique needs and emotional context.
 
-- **Advanced long-term memory algorithms** that continuously improve interaction relevance
-- AI-powered brainstorming with personalized prompts
-- Emotional support features for processing thoughts and challenges
-- Collaborative workspaces for team productivity
-- Customizable knowledge base integration
-- Automatic knowledge base creation for small businesses
+Key features include:
+
+- **Personalized therapeutic conversations** powered by memory of your unique history
+- **AI-powered reflective journaling** and thought processing
+- **Emotional support companion** that adapts to your communication style
+- **Research assistant** that remembers your interests and past explorations
+- **Customizable knowledge integration** for personal growth
+- **Personal development insights** based on conversation patterns
 
 ## Licensing Model
 
