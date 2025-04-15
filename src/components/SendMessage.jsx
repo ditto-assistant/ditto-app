@@ -526,7 +526,7 @@ export default function SendMessage({
                       position="center"
                       triggerRef={logoButtonRef}
                       menuPosition="bottom"
-                      menuTitle="Ditto Options"
+                      menuTitle="Options"
                       menuItems={[
                         {
                           icon: <FaLaptopCode className="icon" />,
