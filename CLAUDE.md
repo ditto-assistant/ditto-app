@@ -29,7 +29,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 - Build: `bun run build` or `vite build`
 - Dev server: `bun run start`
 - Preview: `vite preview`
-- Lint: `bun run lint` or `bun lint` 
+- Lint: `bun run lint` or `bun lint`
 - Fix linting: `bun run lint-fix` or `bun lint-fix`
 - Format: `bun run format` or `prettier --write "**/*.{ts,tsx,js,jsx,md,json,css}" --config .prettierrc`
 
