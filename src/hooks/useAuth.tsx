@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { User } from "firebase/auth";
 import { auth } from "../control/firebase";
+import { preloadAvatar } from "./useUserAvatar";
 
 type AuthContextType = ReturnType<typeof useAuthState> & {
   user: User | null;
@@ -71,6 +72,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Subscribe to auth state changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
       queryClient.setQueryData(["auth"], user);
+      if (user?.photoURL) {
+        preloadAvatar(user.photoURL);
+      }
     });
 
     return () => unsubscribe();
