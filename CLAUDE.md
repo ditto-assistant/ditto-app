@@ -62,7 +62,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 - **src/components/ChatFeed.jsx**: Main conversation display component
 - **src/components/ComposeModal.tsx**: Modal for composing longer messages
 - **src/components/SendMessage.jsx**: Primary user input component
-- **src/components/ui/modals/Modal.tsx**: Core modal component with standardized behavior 
+- **src/components/ui/modals/Modal.tsx**: Core modal component with standardized behavior
 - **src/hooks/useModal.tsx**: Central hook for managing modal state throughout the app
 - **src/control/agent.js**: Core agent logic and orchestration
 - **src/hooks/useConversationHistory.tsx**: Manages conversation state and history
@@ -74,7 +74,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 - **Context Providers**: Used for global state (e.g., ComposeProvider, AuthProvider)
 - **Custom Hooks**: Encapsulate complex logic and state management
 - **Functional Components**: All components use functional style with hooks
-- **Modal System**: 
+- **Modal System**:
   - Centralized modal management via useModal hook
   - Modals are tracked by ID in a global state system
   - Modal windows automatically close when not needed, avoiding state persistence issues
@@ -98,7 +98,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
   - For text inputs that should adjust to keyboard, use `position: relative` instead of `sticky/fixed`
   - Use `-webkit-fill-available` height for iOS viewport issues
   - `SendMessage.jsx` shows the correct pattern for keyboard-aware text inputs
-- **Modal System**: 
+- **Modal System**:
   - All modals are automatically fullscreen by default (fullScreen prop defaults to true in Modal component)
   - For custom modal behavior, use the Modal component's props as needed
 - **Platform Detection**: Use `usePlatform` hook (`const { isMobile } = usePlatform()`) for platform-specific logic
