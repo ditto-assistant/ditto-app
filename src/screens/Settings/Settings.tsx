@@ -26,8 +26,9 @@ import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 export default function Settings() {
   const { signOut, user } = useAuth();
   const auth = getAuth();
-  const { createCloseHandler } = useModal();
+  const { createCloseHandler, createOpenHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
+  const openTokenModal = createOpenHandler("tokenCheckout");
   const closeModal = createCloseHandler("settings");
 
   // Memoize the modal components
@@ -129,9 +130,23 @@ export default function Settings() {
       <div className="account-section">
         <h3 className="settings-section-title">Account</h3>
         <div className="settings-options">
-          <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
-            LOG OUT
-          </ModalButton>
+          <div className="settings-buttons-row">
+            <ModalButton 
+              variant="primary" 
+              onClick={() => {
+                closeModal();
+                openTokenModal();
+              }} 
+              fixedWidth
+              icon={<FaCreditCard />}
+            >
+              BUY TOKENS
+            </ModalButton>
+            
+            <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
+              LOG OUT
+            </ModalButton>
+          </div>
         </div>
       </div>
 

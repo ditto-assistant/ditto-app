@@ -115,6 +115,20 @@
   padding-bottom: 20px;
 }
 
+.settings-buttons-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .settings-buttons-row {
+    flex-direction: column;
+  }
+}
+
 .modal-tab .tab-icon {
   display: flex;
   align-items: center;

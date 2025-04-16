@@ -197,6 +197,22 @@ const SubscriptionTabContent: React.FC = () => {
             </div>
           )}
         </div>
+        
+        {/* Always show Buy Tokens button for free users */}
+        <div className="tokens-purchase-section">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              closeSettingsModal();
+              openTokenModal();
+            }}
+            className="buy-tokens-button"
+            startIcon={<FaCreditCard />}
+          >
+            Buy Ditto Tokens
+          </Button>
+        </div>
       </div>
 
       <SubscriptionToggle isYearly={isYearly} onChange={handleIntervalChange} />

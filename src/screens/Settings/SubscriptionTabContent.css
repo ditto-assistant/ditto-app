@@ -41,6 +41,21 @@
   padding: 1rem 0;
 }
 
+.tokens-purchase-section {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.tokens-purchase-section .buy-tokens-button {
+  width: 100% !important;
+  background-color: var(--primary) !important;
+  color: white !important;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
 .subscription-plans {
   display: flex;
   flex-direction: column;
