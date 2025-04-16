@@ -532,7 +532,6 @@ export default function SendMessage({
                           icon: <FaLaptopCode className="icon" />,
                           text: "Scripts",
                           onClick: openScriptsOverlay,
-                          minimumTier: 1,
                         },
                         {
                           icon: <MdFeedback className="icon" />,
