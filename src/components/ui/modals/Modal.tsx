@@ -33,7 +33,7 @@ export default function Modal({
   id,
   title,
   children,
-  fullScreen = false,
+  fullScreen = true,
   tabs,
   defaultTabId,
   onTabChange,
@@ -60,19 +60,19 @@ export default function Modal({
   );
   const closeModal = createCloseHandler(id);
   const bringToFront = createBringToFrontHandler(id);
-  const modalState = getModalState(id) ?? DEFAULT_MODAL_STATE;
-  const { isOpen, zIndex } = modalState;
+  const modalState = getModalState(id);
+  const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex;
 
   // Update activeTabId when modal opens with an initialTabId
   useEffect(() => {
-    if (isOpen && modalState.initialTabId && tabs && tabs.length > 0) {
+    if (modalState && modalState.initialTabId && tabs && tabs.length > 0) {
       // Make sure the tab exists before setting it active
       const tabExists = tabs.some((tab) => tab.id === modalState.initialTabId);
       if (tabExists) {
         setActiveTabId(modalState.initialTabId);
       }
     }
-  }, [isOpen, modalState.initialTabId, tabs]);
+  }, [modalState, tabs]);
 
   const handleStartDrag = (e: React.MouseEvent | React.TouchEvent) => {
     if ((e.target as HTMLElement).closest(".modal-controls")) return;
@@ -256,7 +256,7 @@ export default function Modal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!modalState) return null;
 
   const modalStyle = isFullscreen
     ? {

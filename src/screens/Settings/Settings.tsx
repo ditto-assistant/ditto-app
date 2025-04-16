@@ -131,18 +131,18 @@ export default function Settings() {
         <h3 className="settings-section-title">Account</h3>
         <div className="settings-options">
           <div className="settings-buttons-row">
-            <ModalButton 
-              variant="primary" 
+            <ModalButton
+              variant="primary"
               onClick={() => {
                 closeModal();
                 openTokenModal();
-              }} 
+              }}
               fixedWidth
               icon={<FaCreditCard />}
             >
               BUY TOKENS
             </ModalButton>
-            
+
             <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
               LOG OUT
             </ModalButton>
@@ -219,7 +219,6 @@ export default function Settings() {
     <Modal
       id="settings"
       title="Settings"
-      fullScreen={true}
       tabs={modalTabs}
       defaultTabId="general"
     >

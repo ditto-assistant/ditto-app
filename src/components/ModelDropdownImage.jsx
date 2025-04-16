@@ -13,19 +13,12 @@ import { createPortal } from "react-dom";
  * @param {object} props
  * @param {{model: Model, size: ImageGenerationSize}} props.value - Currently selected model and size
  * @param {(model: Model, size: ImageGenerationSize) => void} props.onChange - Callback when selection changes
- * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {boolean} [props.isOpen=false] - Whether the dropdown is open
  * @param {(isOpen: boolean) => void} props.onOpenChange - Callback when the dropdown state changes
  * @returns {JSX.Element} The ModelDropdownImage component
  */
-const ModelDropdownImage = ({
-  value,
-  onChange,
-  hasEnoughBalance,
-  isOpen,
-  onOpenChange,
-}) => {
+const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
   const [expandedModel, setExpandedModel] = useState(null);
   const dropdownRef = useRef(null);
 
@@ -45,7 +38,6 @@ const ModelDropdownImage = ({
    */
   const handleSelect = (model, size) => {
     const modelOption = IMAGE_GENERATION_MODELS.find((m) => m.id === model);
-    if (modelOption.minimumTier && !hasEnoughBalance) return;
     if (modelOption.isMaintenance) return;
     onChange(model, size);
     onOpenChange?.(false);
@@ -120,24 +112,14 @@ const ModelDropdownImage = ({
                 <motion.div
                   style={{
                     ...styles.option,
-                    opacity: model.minimumTier && !hasEnoughBalance ? 0.5 : 1,
-                    cursor:
-                      model.minimumTier && !hasEnoughBalance
-                        ? "not-allowed"
-                        : "pointer",
+                    opacity: model.isMaintenance ? 0.5 : 1,
                   }}
                   onClick={() => {
-                    if (!(model.minimumTier && !hasEnoughBalance)) {
-                      setExpandedModel(
-                        expandedModel === model.id ? null : model.id,
-                      );
-                    }
+                    setExpandedModel(
+                      expandedModel === model.id ? null : model.id,
+                    );
                   }}
-                  whileHover={
-                    !(model.minimumTier && !hasEnoughBalance)
-                      ? { backgroundColor: "rgba(88, 101, 242, 0.1)" }
-                      : {}
-                  }
+                  whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 >
                   <div style={styles.modelHeader}>
                     <span>{model.name}</span>
@@ -148,11 +130,6 @@ const ModelDropdownImage = ({
                             <FaCrown style={styles.crownIcon} />
                             Premium
                           </span>
-                          {!hasEnoughBalance && (
-                            <span style={styles.requirementBadge}>
-                              Requires 1.00B
-                            </span>
-                          )}
                         </>
                       )}
                     </div>

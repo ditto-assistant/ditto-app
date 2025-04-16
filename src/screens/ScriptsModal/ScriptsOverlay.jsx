@@ -828,7 +828,7 @@ export default function ScriptsOverlay() {
   );
 
   return (
-    <Modal id="scripts" title="Scripts" fullScreen>
+    <Modal id="scripts" title="Scripts">
       {modalContent}
     </Modal>
   );

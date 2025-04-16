@@ -37,7 +37,6 @@ interface ModalState {
 }
 
 export interface SingleModalState {
-  isOpen: boolean;
   zIndex: number;
   content: ReactNode;
   initialTabId?: string;
@@ -67,7 +66,6 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
         modals: {
           ...state.modals,
           [action.id]: {
-            isOpen: true,
             content: action.content,
             zIndex: maxZIndex + 1, // Set z-index higher than any existing modal
             initialTabId: action.initialTabId,
@@ -77,36 +75,22 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
     }
 
     case "CLOSE_MODAL":
-      // If the modal doesn't exist or is already closed, avoid unnecessary state update
-      if (!state.modals[action.id] || !state.modals[action.id]?.isOpen) {
+      if (!state.modals[action.id]) {
         return state;
       }
 
+      const { [action.id]: _, ...remainingModals } = state.modals;
       return {
         ...state,
-        modals: {
-          ...state.modals,
-          [action.id]: {
-            ...state.modals[action.id],
-            isOpen: false,
-          },
-        },
+        modals: remainingModals,
       };
 
     case "CLOSE_ALL": {
       // Only update if there are open modals
-      const hasOpenModals = Object.values(state.modals).some(
-        (modal) => modal?.isOpen,
-      );
+      const hasOpenModals = Object.keys(state.modals).length > 0;
       if (!hasOpenModals) return state;
 
-      const closedModals = Object.fromEntries(
-        Object.entries(state.modals).map(([id, modal]) => [
-          id,
-          { ...modal, isOpen: false },
-        ]),
-      );
-      return { ...state, modals: closedModals };
+      return { ...state, modals: {} };
     }
 
     case "BRING_TO_FRONT": {
@@ -275,7 +259,6 @@ export function useModal() {
 }
 
 export const DEFAULT_MODAL_STATE: SingleModalState = {
-  isOpen: false,
   content: null,
   zIndex: 1,
   initialTabId: undefined,

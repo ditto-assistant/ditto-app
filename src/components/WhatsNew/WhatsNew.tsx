@@ -1,7 +1,6 @@
 import Modal from "@/components/ui/modals/Modal";
 import { version as appVersion } from "../../../package.json";
 import "./WhatsNew.css";
-import { usePlatform } from "@/hooks/usePlatform";
 // Import all version components
 import V0_11_54 from "./versions/V0_11_54";
 import V0_11_55 from "./versions/V0_11_55";
@@ -51,7 +50,6 @@ interface WhatsNewProps {
 }
 
 const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
-  const { isMobile } = usePlatform();
   // Find the component for the current version
   const VersionComponent = versionComponents[version];
 
@@ -66,11 +64,7 @@ const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
   );
 
   return (
-    <Modal
-      id="whatsNew"
-      title={`What's New in v${version}`}
-      fullScreen={isMobile}
-    >
+    <Modal id="whatsNew" title={`What's New in v${version}`}>
       <div className="whats-new-content">{content}</div>
     </Modal>
   );

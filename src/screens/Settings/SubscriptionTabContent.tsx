@@ -197,7 +197,7 @@ const SubscriptionTabContent: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         {/* Always show Buy Tokens button for free users */}
         <div className="tokens-purchase-section">
           <Button

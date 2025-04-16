@@ -30,7 +30,6 @@ export default function TokenModal() {
     updatePreferences,
     isLoading: preferencesLoading,
   } = useModelPreferences();
-  const hasEnoughBalance = balance.data?.hasPremium ?? false;
 
   useEffect(() => {
     // Check if we should show the success screen
@@ -60,7 +59,7 @@ export default function TokenModal() {
     }
 
     return (
-      <Modal id="tokenCheckout" title="Purchase Successful" fullScreen={true}>
+      <Modal id="tokenCheckout" title="Purchase Successful">
         <div className="token-success-content">
           <motion.div
             initial={{ scale: 0 }}
@@ -103,7 +102,6 @@ export default function TokenModal() {
             <ModelPreferencesSelectors
               preferences={preferences}
               updatePreferences={updatePreferences}
-              hasEnoughBalance={hasEnoughBalance}
             />
           </motion.div>
 

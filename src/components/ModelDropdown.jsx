@@ -12,7 +12,6 @@ import { createPortal } from "react-dom";
  * @param {object} props
  * @param {Model} props.value - Currently selected model ID
  * @param {(modelId: Model) => void} props.onChange - Callback when model selection changes
- * @param {boolean} props.hasEnoughBalance - Whether user has enough balance for premium models
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {readonly ModelOption[]} [props.models=DEFAULT_MODELS] - Array of available models
  * @param {boolean} props.isOpen - Whether the dropdown is open
@@ -22,18 +21,23 @@ import { createPortal } from "react-dom";
 const ModelDropdown = ({
   value,
   onChange,
-  hasEnoughBalance,
   models = DEFAULT_MODELS,
   isOpen,
   onOpenChange,
 }) => {
   const dropdownRef = useRef(null);
+  const portalRef = useRef(null);
 
   const selectedModel = models.find((model) => model.id === value);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        portalRef.current &&
+        !portalRef.current.contains(event.target)
+      ) {
         onOpenChange?.(false);
       }
     };
@@ -42,23 +46,13 @@ const ModelDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onOpenChange]);
 
-  useEffect(() => {
-    if (!hasEnoughBalance && selectedModel?.minimumTier) {
-      onChange("meta/llama-3.3-70b-instruct-maas");
-    }
-  }, [hasEnoughBalance, selectedModel, onChange]);
-
-  const handleSelect = (modelId, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  /**
+   * Handles the selection of a model
+   * @param {Model} modelId - The ID of the selected model
+   */
+  const handleSelect = (modelId) => {
     const model = models.find((m) => m.id === modelId);
-    if (model.minimumTier && !hasEnoughBalance) {
-      console.log("Premium model requires sufficient balance");
-      return;
-    }
     if (model.isMaintenance) {
-      console.log("Model is in maintenance");
       return;
     }
 
@@ -103,6 +97,7 @@ const ModelDropdown = ({
       {isOpen &&
         createPortal(
           <div
+            ref={portalRef}
             style={{
               position: "fixed",
               top: dropdownRef.current?.getBoundingClientRect().bottom + 4,
@@ -127,31 +122,20 @@ const ModelDropdown = ({
                 className="dropdown-option"
                 style={{
                   padding: "12px",
-                  opacity:
-                    (model.minimumTier && !hasEnoughBalance) ||
-                    model.isMaintenance
-                      ? 0.5
-                      : 1,
+                  opacity: model.isMaintenance ? 0.5 : 1,
                   backgroundColor: "#2f3136",
                   color: "#ffffff",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   transition: "background-color 0.2s ease",
-                  cursor:
-                    (model.minimumTier && !hasEnoughBalance) ||
-                    model.isMaintenance
-                      ? "not-allowed"
-                      : "pointer",
+                  cursor: model.isMaintenance ? "not-allowed" : "pointer",
                 }}
-                onClick={(e) => {
-                  handleSelect(model.id, e);
+                onClick={() => {
+                  handleSelect(model.id);
                 }}
                 onMouseEnter={(e) => {
-                  if (
-                    !(model.minimumTier && !hasEnoughBalance) &&
-                    !model.isMaintenance
-                  ) {
+                  if (!model.isMaintenance) {
                     e.currentTarget.style.backgroundColor =
                       "rgba(88, 101, 242, 0.1)";
                   }
@@ -163,17 +147,10 @@ const ModelDropdown = ({
                 <span>{model.name}</span>
                 <div style={styles.badges}>
                   {model.minimumTier && (
-                    <>
-                      <span style={styles.premiumBadge}>
-                        <FaCrown style={styles.crownIcon} />
-                        Premium
-                      </span>
-                      {!hasEnoughBalance && (
-                        <span style={styles.requirementBadge}>
-                          Requires 1.00B
-                        </span>
-                      )}
-                    </>
+                    <span style={styles.premiumBadge}>
+                      <FaCrown style={styles.crownIcon} />
+                      Premium
+                    </span>
                   )}
                   {model.isFree && <span style={styles.freeBadge}>FREE</span>}
                   {model.isMaintenance && (

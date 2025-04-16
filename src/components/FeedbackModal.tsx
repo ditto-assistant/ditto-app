@@ -12,7 +12,6 @@ import "./FeedbackModal.css";
 import { useModal } from "@/hooks/useModal";
 import Modal from "@/components/ui/modals/Modal";
 import { Result } from "@/types/common";
-import { usePlatform } from "@/hooks/usePlatform";
 
 type FeedbackType = "bug" | "feature-request";
 
@@ -35,7 +34,6 @@ async function submitFeedback(_: FeedbackState, formData: FormData) {
 }
 
 export default function FeedbackModal() {
-  const { isMobile } = usePlatform();
   const { createCloseHandler } = useModal();
   const [selectedType, setSelectedType] = useState<FeedbackType>("bug");
   const createSelectTypeCallback = useCallback(
@@ -66,7 +64,7 @@ export default function FeedbackModal() {
   }
 
   return (
-    <Modal id="feedback" title="Feedback" fullScreen={isMobile}>
+    <Modal id="feedback" title="Feedback">
       <form ref={formRef} action={formAction}>
         <input type="hidden" name="userID" value={auth.user?.uid || ""} />
         <input type="hidden" name="deviceID" value={getDeviceID()} />
