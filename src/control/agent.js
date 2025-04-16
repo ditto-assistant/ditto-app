@@ -424,15 +424,23 @@ export const processResponse = async (
         finalizeMessage,
       );
       const finalResponse = await handleImageGeneration(response, preferences);
+      let toolStatus = "complete";
+      let finalResponseText;
+      if (finalResponse instanceof Error) {
+        toolStatus = "failed";
+        finalResponseText = finalResponse.message;
+      } else {
+        finalResponseText = finalResponse;
+      }
       await updateMessageWithToolStatus(
         pairID,
-        "complete",
+        toolStatus,
         "image",
-        finalResponse,
+        finalResponseText,
         optimisticId,
         finalizeMessage,
       );
-      return finalResponse;
+      return finalResponseText;
     }
 
     if (response.includes("<GOOGLE_SEARCH>")) {
