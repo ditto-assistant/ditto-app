@@ -3,6 +3,7 @@ import {
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
+  Model,
 } from "@/types/llm";
 
 export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png";
@@ -10,13 +11,13 @@ export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png";
 export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png";
 export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png";
 export const DITTO_AVATAR = "/icons/round/android-chrome-192x192.png";
+export const FREE_MODEL_ID: Model = "meta/llama-3.3-70b-instruct-maas";
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
   {
-    id: "llama-3-2",
-    name: "Llama 3.2",
-    isFree: true,
+    id: "meta/llama-3.3-70b-instruct-maas",
+    name: "Llama 3.3 70B",
     vendor: "meta",
     supports: {
       imageAttachments: "single",
@@ -29,6 +30,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "gpt-4o-mini",
     name: "GPT-4o Mini",
     vendor: "openai",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -39,6 +41,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "gpt-4o-mini-2024-07-18",
     name: "GPT-4o Mini (2024-07-18)",
     vendor: "openai",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -49,7 +52,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "gpt-4o",
     name: "GPT-4o",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "openai",
     supports: {
       imageAttachments: "single",
@@ -60,7 +63,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "gpt-4o-2024-11-20",
     name: "GPT-4o (2024-11-20)",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "openai",
     supports: {
       imageAttachments: "single",
@@ -83,6 +86,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-haiku@20240307",
     name: "Claude 3 Haiku 2024-03-07",
     vendor: "anthropic",
+    minimumTier: 1,
     isTaggedModel: true,
     speedLevel: "medium",
   },
@@ -90,6 +94,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-5-haiku",
     name: "Claude 3.5 Haiku",
     vendor: "anthropic",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -100,6 +105,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "claude-3-5-haiku@20241022",
     name: "Claude 3.5 Haiku (2024-10-22)",
     vendor: "anthropic",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -109,7 +115,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "claude-3-5-sonnet@20240620",
     name: "Claude 3.5 Sonnet (2024-06-20)",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
@@ -121,7 +127,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "claude-3-5-sonnet-v2",
     name: "Claude 3.5 Sonnet",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
@@ -132,7 +138,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "claude-3-5-sonnet-v2@20241022",
     name: "Claude 3.5 Sonnet V2 (2024-10-22)",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
@@ -146,6 +152,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "gemini-1.5-flash",
     name: "Gemini 1.5 Flash",
     vendor: "google",
+    minimumTier: 1,
     supports: {
       imageAttachments: "single",
       tools: true,
@@ -155,7 +162,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "gemini-1.5-pro",
     name: "Gemini 1.5 Pro",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "google",
     supports: {
       imageAttachments: "single",
@@ -168,6 +175,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     id: "mistral-nemo",
     name: "Mistral Nemo",
     vendor: "mistral",
+    minimumTier: 1,
     supports: {
       tools: true,
     },
@@ -176,7 +184,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
   {
     id: "mistral-large",
     name: "Mistral Large",
-    isPremium: true,
+    minimumTier: 2,
     vendor: "mistral",
     supports: {
       tools: true,
@@ -200,8 +208,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
   // },
   {
     id: "llama3.1-8b",
-    name: "Llama 3.1 8B",
+    name: "Fast Llama 3.1 8B",
     vendor: "cerebras",
+    minimumTier: 1,
     supports: {
       tools: true,
     },
@@ -209,9 +218,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
   },
   {
     id: "llama-3.3-70b",
-    name: "Llama 3.3 70B",
+    name: "Fast Llama 3.3 70B",
     vendor: "cerebras",
-    isPremium: true,
+    minimumTier: 1,
     supports: {
       tools: true,
     },
@@ -251,7 +260,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-2",
     name: "DALL-E 2",
-    isPremium: true,
+    minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-2"),
     ),
@@ -259,7 +268,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-3",
     name: "DALL-E 3",
-    isPremium: true,
+    minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3"),
     ),
@@ -267,7 +276,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
     id: "dall-e-3-hd",
     name: "DALL-E 3 HD",
-    isPremium: true,
+    minimumTier: 3,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3"),
     ),
@@ -275,14 +284,13 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
 ] as const;
 
 export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
-  openScad: false,
   htmlScript: true,
   imageGeneration: true,
   googleSearch: true,
 } as const;
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
-  mainModel: "llama-3-2",
+  mainModel: "meta/llama-3.3-70b-instruct-maas",
   programmerModel: "mistral-nemo",
   imageGeneration: {
     model: "dall-e-3",
@@ -295,32 +303,30 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   tools: DEFAULT_TOOL_PREFERENCES,
   memory: {
     shortTermMemoryCount: 5,
-    longTermMemoryChain: [5, 3, 2],
+    longTermMemoryChain: [3, 2, 1],
   },
 } as const;
 
-export const TOOLS = {
-  imageGeneration: {
+export const TOOLS = [
+  {
+    id: "imageGeneration",
     name: "Image Generation",
     description: "Generate images based on text descriptions",
     trigger: "<IMAGE_GENERATION>",
   },
-  googleSearch: {
+  {
+    id: "googleSearch",
     name: "Web Search",
     description: "Search the web for information",
     trigger: "<GOOGLE_SEARCH>",
   },
-  webApps: {
+  {
+    id: "htmlScript",
     name: "Web Apps",
     description: "Generate web applications using HTML, CSS, and JavaScript",
     trigger: "<HTML_SCRIPT>",
   },
-  openScad: {
-    name: "OpenSCAD",
-    description: "Generate 3D modeling scripts using OpenSCAD",
-    trigger: "<OPENSCAD>",
-  },
-} as const;
+] as const;
 
 export const MEMORY_CONFIG = {
   shortTerm: {

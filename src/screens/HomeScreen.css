@@ -84,7 +84,7 @@
   backdrop-filter: blur(10px);
   width: 100%;
   z-index: 100; /* Ensure it stays on top */
-  padding: 12px;
+  padding: 0; /* Removed padding to avoid the gray border */
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   /* flex-shrink: 0; */
@@ -196,7 +196,7 @@
   }
 
   .app-footer {
-    padding: 12px;
+    padding: 0;
     /* Let platform-specific CSS handle the padding-bottom */
   }
 }

@@ -1,0 +1,31 @@
+.subscription-toggle-container {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.subscription-toggle-labels {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #36393f;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.subscription-toggle-labels span {
+  color: #b9bbbe;
+  font-size: 0.9rem;
+}
+
+.subscription-toggle-labels span.active {
+  color: white;
+  font-weight: 500;
+}
+
+.subscription-toggle-savings {
+  font-size: 0.9rem;
+  color: #b9bbbe;
+  font-weight: 500;
+}

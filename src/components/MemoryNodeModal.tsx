@@ -3,12 +3,10 @@ import { toast } from "react-hot-toast";
 import Modal from "./ui/modals/Modal";
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
 import "./MemoryNodeModal.css";
-import { usePlatform } from "@/hooks/usePlatform";
 import MarkdownRenderer from "./MarkdownRenderer";
 
 export default function MemoryNodeModal() {
   const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer();
-  const { isMobile } = usePlatform();
 
   // Determine if this is the root node
   const isRootNode = nodeData?.level === 0 || nodeData?.depth === 0;
@@ -27,11 +25,7 @@ export default function MemoryNodeModal() {
   };
 
   return (
-    <Modal
-      id="memoryNodeViewer"
-      title={isRootNode ? "Your Prompt" : "Memory"}
-      fullScreen={isMobile} // Use fullscreen on mobile, resizable on desktop
-    >
+    <Modal id="memoryNodeViewer" title={isRootNode ? "Your Prompt" : "Memory"}>
       <div className="memory-node-modal">
         {nodeData && (
           <>

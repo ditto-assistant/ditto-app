@@ -6,34 +6,49 @@ const getToolsModule = (params: {
   toolPreferences: ToolPreferences;
 }): Tool[] => {
   const { scriptType, toolPreferences } = params;
-  const enabledTools = [];
-  if (toolPreferences.imageGeneration) {
-    enabledTools.push(TOOLS.imageGeneration);
-  }
-  if (toolPreferences.googleSearch) {
-    enabledTools.push(TOOLS.googleSearch);
-  }
-  if (toolPreferences.htmlScript) {
-    enabledTools.push(TOOLS.webApps);
-  }
-  if (toolPreferences.openScad) {
-    enabledTools.push(TOOLS.openScad);
-  }
+
+  // Filter tools based on preferences
+  const enabledTools = TOOLS.filter(
+    (tool) => toolPreferences[tool.id as keyof ToolPreferences],
+  );
 
   if (!scriptType) return enabledTools;
 
-  switch (scriptType.toLowerCase()) {
-    case "webapps":
-      return toolPreferences.htmlScript
-        ? [TOOLS.webApps, ...enabledTools.filter((t) => t !== TOOLS.webApps)]
-        : enabledTools;
-    case "openscad":
-      return toolPreferences.openScad
-        ? [TOOLS.openScad, ...enabledTools.filter((t) => t !== TOOLS.openScad)]
-        : enabledTools;
-    default:
-      return enabledTools;
+  const scriptTypeLower = scriptType.toLowerCase();
+
+  // Find the tool specific to the script type (currently only webApps)
+  let scriptSpecificToolId: keyof ToolPreferences | null = null;
+  if (scriptTypeLower === "webapps") {
+    scriptSpecificToolId = "htmlScript";
   }
+  // Add other script-specific tool lookups here if needed in the future
+
+  if (scriptSpecificToolId && toolPreferences[scriptSpecificToolId]) {
+    // Find the tool object using the ID
+    const scriptSpecificTool = TOOLS.find(
+      (tool) => tool.id === scriptSpecificToolId,
+    );
+
+    if (scriptSpecificTool) {
+      // If the script-specific tool is enabled and found,
+      // move it to the beginning of the array.
+      const index = enabledTools.findIndex(
+        (t) => t.id === scriptSpecificToolId,
+      );
+      if (index > -1) {
+        const [toolToMove] = enabledTools.splice(index, 1);
+        // Ensure the return type matches Tool[]
+        return [toolToMove, ...enabledTools] as Tool[];
+      } else {
+        // If it wasn't found in enabledTools but should be enabled, add it to the front.
+        // This should ideally not happen if TOOLS and ToolPreferences are consistent.
+        return [scriptSpecificTool, ...enabledTools] as Tool[];
+      }
+    }
+  }
+
+  // Ensure the return type matches Tool[]
+  return enabledTools as Tool[];
 };
 
 export const systemTemplate = () => {
@@ -124,7 +139,7 @@ ${tools
         .replace(/Example \d+/g, "")
         .trim();
 
-      const [userPrompt, response] = cleanExample
+      const [_, response] = cleanExample
         .split("User's Prompt:")
         .map((s) => s.trim());
 

@@ -1,0 +1,112 @@
+.subscription-card {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: #36393f;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.subscription-card.selected {
+  border-color: #5865f2;
+}
+
+.subscription-card.popular {
+  border-color: #5865f2;
+}
+
+.subscription-popular-badge {
+  position: absolute;
+  top: -10px;
+  right: 50%;
+  transform: translateX(50%);
+  background: #36393f;
+  color: #b9bbbe;
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.subscription-card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+}
+
+.subscription-card-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.subscription-card-description {
+  color: #b9bbbe;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.subscription-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0.5rem 0;
+}
+
+.subscription-card-price .price {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.subscription-card-price .interval {
+  font-size: 1rem;
+  color: #b9bbbe;
+}
+
+.subscription-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.subscription-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #b9bbbe;
+  font-size: 0.9rem;
+}
+
+.subscription-feature-item::before {
+  content: "✓";
+  color: #5865f2;
+  font-weight: bold;
+}
+
+.subscription-card-form {
+  margin-top: auto;
+}
+
+.subscription-card-button {
+  width: 100% !important;
+  background-color: #5865f2 !important;
+  padding: 0.75rem !important;
+  font-size: 1rem !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  margin-top: 1rem !important;
+}
+
+.subscription-card.selected .subscription-card-button {
+  background-color: #4752c4 !important;
+}

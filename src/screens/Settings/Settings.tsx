@@ -4,36 +4,38 @@ import {
   deleteAllUserScriptsFromFirestore,
 } from "@/control/firebase";
 import packageJson from "../../../package.json";
-import { useBalance } from "@/hooks/useBalance";
 import { useAuth } from "@/hooks/useAuth";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import { clearStorage } from "@/utils/deviceId";
 import Modal, { ModalTab } from "@/components/ui/modals/Modal";
 import { useModal } from "@/hooks/useModal";
 import { ModalButton } from "@/components/ui/buttons/ModalButton";
 import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
+import { FaCreditCard } from "react-icons/fa";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import "./Settings.css";
 import toast from "react-hot-toast";
-import { usePlatform } from "@/hooks/usePlatform";
 import { useMemo } from "react";
 import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
+import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent";
+import { BiMemoryCard } from "react-icons/bi";
+import { MdSettings } from "react-icons/md";
+import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
 
 export default function Settings() {
-  const balance = useBalance();
   const { signOut, user } = useAuth();
   const auth = getAuth();
-  const { createCloseHandler } = useModal();
+  const { createCloseHandler, createOpenHandler } = useModal();
   const { showConfirmationDialog } = useConfirmationDialog();
+  const openTokenModal = createOpenHandler("tokenCheckout");
   const closeModal = createCloseHandler("settings");
-  const { isMobile } = usePlatform();
 
-  // Memoize the memory-related modal components
+  // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
   const memoryControls = useMemo(() => <MemoryControlsModal />, []);
   const agentTools = useMemo(() => <AgentToolsModal />, []);
+  const subscriptionContent = useMemo(() => <SubscriptionTabContent />, []);
 
   const handleLogout = () => {
     console.log("logging out");
@@ -116,43 +118,38 @@ export default function Settings() {
     });
   };
 
-  // Create the tab content for the main settings
+  // Create the combined general and subscription tab content
   const generalTabContent = (
     <div className="settings-content">
-      <div className="tokens-info">
-        {!balance.isLoading ? (
-          <>
-            <p className="balance-item">
-              Ditto Tokens:{" "}
-              <span className="highlight-text">{balance.data?.balance}</span>
-            </p>
-            <p className="balance-item">
-              Images:{" "}
-              <span className="highlight-text">{balance.data?.images}</span>
-            </p>
-            <p className="balance-item">
-              Searches:{" "}
-              <span className="highlight-text">{balance.data?.searches}</span>
-            </p>
-          </>
-        ) : (
-          <div className="spinner-container">
-            <LoadingSpinner size={45} inline={true} />
+      {/* Subscription Section */}
+      <div className="subscription-section">{subscriptionContent}</div>
+
+      <div className="settings-divider"></div>
+
+      {/* Account Section */}
+      <div className="account-section">
+        <h3 className="settings-section-title">Account</h3>
+        <div className="settings-options">
+          <div className="settings-buttons-row">
+            <ModalButton
+              variant="primary"
+              onClick={() => {
+                closeModal();
+                openTokenModal();
+              }}
+              fixedWidth
+              icon={<FaCreditCard />}
+            >
+              BUY TOKENS
+            </ModalButton>
+
+            <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
+              LOG OUT
+            </ModalButton>
           </div>
-        )}
+        </div>
       </div>
-      <div className="settings-options">
-        <ModalButton
-          variant="primary"
-          onClick={() => (window.location.href = "/checkout")}
-          fixedWidth
-        >
-          ADD TOKENS
-        </ModalButton>
-        <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
-          LOG OUT
-        </ModalButton>
-      </div>
+
       <footer className="settings-footer">
         <div className="version-container">
           <small>Version: {packageJson.version}</small>
@@ -180,33 +177,41 @@ export default function Settings() {
     </div>
   );
 
-  // Define the tabs
+  // Define the tabs with icons
   const modalTabs: ModalTab[] = [
     {
       id: "general",
-      label: "General",
+      label: "Account",
       content: generalTabContent,
+      icon: <FaCrown />,
     },
     {
       id: "models",
       label: "Models",
       content: modelPreferences,
+      minimumTier: 1,
+      icon: <MdSettings />,
     },
     {
       id: "memory",
       label: "Memory",
       content: memoryControls,
+      minimumTier: 1,
+      icon: <BiMemoryCard />,
     },
     {
       id: "tools",
       label: "Tools",
       content: agentTools,
+      minimumTier: 1,
+      icon: <FaTools />,
     },
     {
       id: "danger",
       label: "Danger Zone",
       content: dangerTabContent,
       customClass: "danger",
+      icon: <FaSkull />,
     },
   ];
 
@@ -214,7 +219,6 @@ export default function Settings() {
     <Modal
       id="settings"
       title="Settings"
-      fullScreen={isMobile}
       tabs={modalTabs}
       defaultTabId="general"
     >

@@ -14,7 +14,8 @@ export default function ConfirmationModal() {
   const closeModal = createCloseHandler(id);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [size] = useState({ width: 450, height: 200 });
-  const { isOpen, zIndex } = getModalState(id) ?? DEFAULT_MODAL_STATE;
+  const modalState = getModalState(id);
+  const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex;
 
   // Center the modal on mount and window resize
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function ConfirmationModal() {
     hideConfirmationDialog();
   };
 
-  if (!isOpen || !config) return null;
+  if (!modalState || !config) return null;
 
   return createPortal(
     <motion.div

@@ -46,7 +46,7 @@ export const routes = {
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",
   createUploadURL: BASE_URL + "/v1/create-upload-url",
-
+  createPortalSession: BASE_URL + "/v1/stripe/portal-session",
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
   promptV2: BASE_URL + "/api/v2/prompt",

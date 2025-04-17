@@ -81,8 +81,8 @@ function useModels() {
   });
 
   return {
-    ...query,
     preferences: query.data,
     updatePreferences: mutation.mutate,
+    isLoading: query.isLoading,
   };
 }

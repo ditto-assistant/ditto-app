@@ -1,11 +1,32 @@
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { MemorySlider } from "@/components/ui/sliders/MemorySlider";
 import { MEMORY_CONFIG } from "@/constants";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
+import { useUser } from "@/hooks/useUser";
+import { FaBolt } from "react-icons/fa";
 import "./MemoryControlsModal.css";
+import "@/components/ui/modals/Modal.css";
 
-function MemoryControlsModal() {
+const redirectToGeneralTab = () => {
+  const generalTab = document.querySelector(
+    '.modal-tab[data-tab-id="general"]',
+  );
+  if (generalTab) {
+    (generalTab as HTMLElement).click();
+  }
+};
+
+type MemoryControlsModalProps = {
+  minimumTier?: number;
+};
+
+const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
+  minimumTier = 1,
+}) => {
   const { preferences, updatePreferences } = useModelPreferences();
+  const { data: user } = useUser();
+
+  const isLocked = (user?.planTier || 0) < minimumTier;
 
   const handleShortTermChange = useCallback(
     (newValues: number[]) => {
@@ -38,7 +59,7 @@ function MemoryControlsModal() {
   if (!preferences) return null;
 
   return (
-    <div className="memory-controls-content">
+    <div className={`memory-controls-content ${isLocked ? "locked" : ""}`}>
       <MemorySlider
         label="Short Term Memory"
         values={[preferences.memory.shortTermMemoryCount]}
@@ -48,6 +69,7 @@ function MemoryControlsModal() {
         step={MEMORY_CONFIG.shortTerm.step}
         marks={MEMORY_CONFIG.shortTerm.marks}
         description={`Number of recent messages to include in short-term memory (max ${MEMORY_CONFIG.shortTerm.max})`}
+        minimumTier={minimumTier}
       />
 
       <MemorySlider
@@ -61,9 +83,17 @@ function MemoryControlsModal() {
         description={`Chain of memory depths for long-term memory search (max ${MEMORY_CONFIG.longTerm.maxChainLength} levels, max ${MEMORY_CONFIG.longTerm.max} memories per level)`}
         showChainControls
         maxChainLength={MEMORY_CONFIG.longTerm.maxChainLength}
+        minimumTier={minimumTier}
       />
+
+      {isLocked && (
+        <div onClick={redirectToGeneralTab} className="upgrade-overlay">
+          <FaBolt />
+          <span>Upgrade to Spark to customize memory settings</span>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default MemoryControlsModal;

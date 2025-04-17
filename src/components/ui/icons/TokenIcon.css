@@ -1,0 +1,25 @@
+.token-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.token-icon {
+  color: var(--token-color, #f8d030);
+}
+
+@keyframes pulse-glow {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(248, 208, 48, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 4px rgba(248, 208, 48, 0.7));
+  }
+  100% {
+    filter: drop-shadow(0 0 2px rgba(248, 208, 48, 0.4));
+  }
+}
+
+.token-icon-boosted {
+  animation: pulse-glow 2s infinite ease-in-out;
+}

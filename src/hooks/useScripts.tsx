@@ -99,11 +99,7 @@ export interface ScriptsManagerReturnType {
     scriptType: ScriptType,
     name: string,
   ) => Promise<void>;
-  deleteScript: (
-    scriptType: ScriptType,
-    name: string,
-    deleteAllVersions?: boolean,
-  ) => Promise<void>;
+  deleteScript: (scriptType: ScriptType, name: string) => Promise<void>;
   renameScript: (
     timestampString: string,
     scriptType: ScriptType,
@@ -219,11 +215,9 @@ function useScriptsManager(): ScriptsManagerReturnType {
     mutationFn: ({
       scriptType,
       name,
-      deleteAllVersions = false,
     }: {
       scriptType: ScriptType;
       name: string;
-      deleteAllVersions?: boolean;
     }) => deleteScriptFromFirestore(userId, scriptType, name),
     onSuccess: (_, variables) => {
       // If we delete the currently selected script, deselect it
@@ -385,8 +379,8 @@ function useScriptsManager(): ScriptsManagerReturnType {
     handleDeselectScript,
     saveScript: (content, scriptType, name) =>
       saveScriptMutation.mutateAsync({ content, scriptType, name }),
-    deleteScript: (scriptType, name, deleteAllVersions = false) =>
-      deleteScriptMutation.mutateAsync({ scriptType, name, deleteAllVersions }),
+    deleteScript: (scriptType, name) =>
+      deleteScriptMutation.mutateAsync({ scriptType, name }),
     renameScript: (timestampString, scriptType, oldName, newName) =>
       renameScriptMutation.mutateAsync({
         timestampString,

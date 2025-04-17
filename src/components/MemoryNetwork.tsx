@@ -660,7 +660,6 @@ export default function MemoryNetworkModal() {
     <Modal
       id="memoryNetwork"
       title="Memory Network"
-      fullScreen={true}
       tabs={[
         {
           id: "network",

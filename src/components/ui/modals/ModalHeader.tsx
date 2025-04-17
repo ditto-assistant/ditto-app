@@ -1,6 +1,7 @@
 import React from "react";
 import { MdClose, MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { motion } from "framer-motion";
+import "./ModalHeader.css";
 
 interface ModalHeaderProps {
   title: string;
@@ -8,6 +9,8 @@ interface ModalHeaderProps {
   className?: string;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  icon?: React.ReactNode;
+  useGradient?: boolean;
 }
 
 export const ModalHeader: React.FC<ModalHeaderProps> = ({
@@ -16,6 +19,8 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
   className = "",
   isFullscreen = false,
   onToggleFullscreen,
+  icon,
+  useGradient = true,
 }) => {
   // Handle touch events separately to prevent iOS Safari issues
   const handleButtonTouch = (e: React.TouchEvent, callback: () => void) => {
@@ -26,13 +31,15 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
 
   return (
     <div className={`header modal ${className}`}>
-      <motion.h3
+      <motion.div
+        className={icon ? "header-content-with-icon" : ""}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {title}
-      </motion.h3>
+        {icon && <div className="header-icon">{icon}</div>}
+        <h3 className={useGradient ? "gradient-text" : ""}>{title}</h3>
+      </motion.div>
       <div className="modal-controls">
         {onToggleFullscreen && (
           <motion.button

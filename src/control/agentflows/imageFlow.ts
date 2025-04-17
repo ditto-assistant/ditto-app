@@ -13,5 +13,8 @@ export const handleImageGeneration = async (
     query,
     preferences.imageGeneration,
   );
+  if (imageURL instanceof Error) {
+    return imageURL;
+  }
   return `Image Task: ${query}\n![DittoImage](${imageURL})`;
 };

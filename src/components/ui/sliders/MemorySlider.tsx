@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Slider } from "@mui/material";
 import { IoAdd, IoRemove } from "react-icons/io5";
+import { useUser } from "@/hooks/useUser";
 import "./MemorySlider.css";
 
 interface Mark {
@@ -20,6 +21,7 @@ interface MemorySliderProps {
   marks?: readonly Mark[];
   showChainControls?: boolean;
   maxChainLength?: number;
+  minimumTier?: number;
 }
 
 function useDebounce<T>(
@@ -59,9 +61,14 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   marks,
   showChainControls = false,
   maxChainLength = 3,
+  minimumTier,
 }) => {
+  const { data: user } = useUser();
   const [localValues, setLocalValues] = useState<number[]>(values);
   const [debouncedOnChange, isSaving] = useDebounce(onChange, debounceMs);
+
+  const isLocked =
+    minimumTier !== undefined && (user?.planTier || 0) < minimumTier;
 
   const handleChange = useCallback(
     (index: number) => (_event: Event, newValue: number | number[]) => {
@@ -94,7 +101,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   }, [localValues, debouncedOnChange]);
 
   return (
-    <div className="memory-slider">
+    <div className={`memory-slider ${isLocked ? "locked" : ""}`}>
       <div className="memory-slider-header">
         <div className="memory-slider-header-left">
           <span className="memory-slider-label">{label}</span>
@@ -128,7 +135,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
             <button
               className="chain-control-button"
               onClick={handleRemoveChain}
-              disabled={localValues.length <= 1}
+              disabled={localValues.length <= 1 || isLocked}
               title="Remove last chain level"
             >
               <IoRemove />
@@ -136,7 +143,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
             <button
               className="chain-control-button"
               onClick={handleAddChain}
-              disabled={localValues.length >= maxChainLength}
+              disabled={localValues.length >= maxChainLength || isLocked}
               title="Add chain level"
             >
               <IoAdd />
@@ -161,6 +168,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
               valueLabelDisplay="auto"
               aria-label={`${label} level ${index + 1}`}
               className="memory-slider-input"
+              disabled={isLocked}
             />
           </div>
         ))}

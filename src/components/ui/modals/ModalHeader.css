@@ -1,0 +1,61 @@
+.header-content-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 80%;
+  overflow: hidden;
+}
+
+.header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-content-with-icon h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--primary), #8ba4e4);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.5px;
+}
+
+/* Ensure proper alignment for modal header with icon */
+.header.modal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+/* Prevent icon from causing header to grow too tall */
+.header-content-with-icon svg {
+  flex-shrink: 0;
+}
+
+/* Ensure proper vertical alignment of header content */
+.header.modal h3 {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .header-content-with-icon {
+    max-width: 70%;
+  }
+
+  .header-content-with-icon h3 {
+    font-size: 1rem;
+  }
+}

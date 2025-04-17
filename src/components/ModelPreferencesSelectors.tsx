@@ -6,16 +6,14 @@ import { useState, useEffect } from "react";
 interface ModelPreferencesSelectorsProps {
   preferences: ModelPreferences;
   updatePreferences: (update: Partial<ModelPreferences>) => void;
-  hasEnoughBalance: boolean;
   className?: string;
 }
 
-function ModelPreferencesSelectors({
+const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
   preferences,
   updatePreferences,
-  hasEnoughBalance,
   className,
-}: ModelPreferencesSelectorsProps) {
+}) => {
   const [openDropdown, setOpenDropdown] = useState<
     "main" | "programmer" | "image" | null
   >(null);
@@ -62,7 +60,6 @@ function ModelPreferencesSelectors({
         <ModelDropdown
           value={preferences.mainModel}
           onChange={(value) => handleModelChange("mainModel", value)}
-          hasEnoughBalance={hasEnoughBalance}
           isOpen={openDropdown === "main"}
           onOpenChange={(isOpen) => {
             if (isOpen) {
@@ -80,7 +77,6 @@ function ModelPreferencesSelectors({
         <ModelDropdown
           value={preferences.programmerModel}
           onChange={(value) => handleModelChange("programmerModel", value)}
-          hasEnoughBalance={hasEnoughBalance}
           isOpen={openDropdown === "programmer"}
           onOpenChange={(isOpen) => {
             if (isOpen) {
@@ -100,7 +96,6 @@ function ModelPreferencesSelectors({
           onChange={(model, size) =>
             handleModelChange("imageGeneration", { model, size })
           }
-          hasEnoughBalance={hasEnoughBalance}
           isOpen={openDropdown === "image"}
           onOpenChange={(isOpen) => {
             if (isOpen) {
@@ -113,7 +108,7 @@ function ModelPreferencesSelectors({
       </div>
     </div>
   );
-}
+};
 
 const styles = {
   container: {

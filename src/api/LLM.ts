@@ -1,3 +1,4 @@
+import { ErrorPaymentRequired } from "@/types/errors";
 import { DEFAULT_PREFERENCES } from "../constants";
 import { routes } from "../firebaseConfig";
 import { getToken } from "./auth";
@@ -37,19 +38,6 @@ interface SSEDoneEvent {
 
 type SSEEvent = SSETextEvent | SSEErrorEvent | SSEDoneEvent;
 
-/**
- * Sends a prompt to the LLM and returns the response.
- *
- * @async
- * @function promptLLM
- * @param {string} userPrompt - The user's prompt.
- * @param {string} systemPrompt - The system's prompt.
- * @param {Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
- * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
- * @param {TextCallback} textCallback - A callback function that handles the text as it comes in.
- * @returns {Promise<string>} A promise that resolves to the LLM's response.
- * @throws {Error} If there's an error during the LLM call.
- */
 export async function promptLLM(
   userPrompt: string,
   systemPrompt: string,
@@ -137,27 +125,16 @@ export async function promptLLM(
   return "An error occurred. Please try again.";
 }
 
-/**
- * Generates an image using OpenAI's DALL-E API.
- *
- * @async
- * @function openaiImageGeneration
- * @param {string} prompt - The prompt for image generation.
- * @param {ImageGenerationPreferences} preferences - The preferences for image generation.
- * @returns {Promise<string>} A promise that resolves to the generated image URL.
- * @throws {Error} If there's an error during the image generation process.
- */
 export async function openaiImageGeneration(
   prompt: string,
   preferences: ImageGenerationPreferences = DEFAULT_PREFERENCES.imageGeneration,
-): Promise<string> {
+): Promise<string | Error> {
   const tok = await getToken();
   if (tok.err) {
-    console.error(tok.err);
-    return "Error: Unable to get image generation";
+    return tok.err;
   }
   if (!tok.ok) {
-    return "Error: Unable to get image generation";
+    return new Error("Unable to get image generation");
   }
   const response = await fetch(routes.imageGeneration, {
     method: "POST",
@@ -172,22 +149,15 @@ export async function openaiImageGeneration(
       size: preferences.size.wh,
     }),
   });
+  if (response.status === 402) {
+    return ErrorPaymentRequired;
+  }
+  if (!response.ok) {
+    return new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
   return await response.text();
 }
 
-/**
- * Sends a prompt to the LLM using the v2 SSE endpoint and returns the response.
- *
- * @async
- * @function promptLLMV2
- * @param {string} userPrompt - The user's prompt.
- * @param {string} systemPrompt - The system's prompt.
- * @param {Model} [model='gemini-1.5-flash'] - The model to use for the LLM.
- * @param {string} [imageURL=''] - The URL of the image to use for the LLM.
- * @param {TextCallback} textCallback - A callback function that handles the text as it comes in.
- * @returns {Promise<string>} A promise that resolves to the LLM's response.
- * @throws {Error} If there's an error during the LLM call.
- */
 export async function promptLLMV2(
   userPrompt: string,
   systemPrompt: string,
@@ -201,11 +171,10 @@ export async function promptLLMV2(
   const maxRetries = 3;
   const tok = await getToken();
   if (tok.err) {
-    console.error(tok.err);
-    return "Error: Unable to get LLM response";
+    throw tok.err;
   }
   if (!tok.ok) {
-    return "Error: Unable to get LLM response";
+    throw new Error("Unable to get LLM response");
   }
   while (retries < maxRetries) {
     try {
@@ -226,9 +195,8 @@ export async function promptLLMV2(
         body: JSON.stringify(requestBody),
       });
 
-      // Check for payment required error
       if (response.status === 402) {
-        return "Error: Payment Required. Please check your token balance.";
+        throw ErrorPaymentRequired;
       }
 
       // Handle other error statuses
@@ -291,10 +259,9 @@ export async function promptLLMV2(
         (error instanceof Error && error.message?.includes("402")) ||
         (error instanceof Error && error.message?.includes("Payment Required"))
       ) {
-        return "Error: Payment Required. Please check your token balance.";
+        throw ErrorPaymentRequired;
       }
     }
   }
-  console.error("Error in promptLLMV2: Max retries reached.");
-  return "An error occurred. Please try again.";
+  throw new Error("promptLLMV2: Max retries reached.");
 }

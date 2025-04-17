@@ -20,6 +20,7 @@ import { getMemories } from "@/api/getMemories";
 import { saveResponse } from "@/api/saveResponse";
 import { createPrompt } from "@/api/createPrompt";
 import { searchExamples } from "@/api/searchExamples";
+import { DEFAULT_PREFERENCES } from "@/constants";
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 /**
@@ -36,6 +37,7 @@ import { searchExamples } from "@/api/searchExamples";
  * @param {function} finalizeMessage - A function to finalize a message.
  * @param {function} openScriptCallback - A function to open a script.
  * @param {import("@/hooks/useScripts").SelectedScriptInfo?} selectedScript - The selected script.
+ * @param {number} planTier - The user's plan tier.
  */
 export const sendPrompt = async (
   userID,
@@ -50,6 +52,7 @@ export const sendPrompt = async (
   finalizeMessage = null,
   openScriptCallback,
   selectedScript,
+  planTier,
 ) => {
   try {
     // Create a thinking indicator in localStorage to show we're processing
@@ -68,17 +71,25 @@ export const sendPrompt = async (
     if (!pairID) {
       throw new Error("No pairID");
     }
-
+    // Free tier is not allowed to change memory settings
+    const nodeCounts =
+      planTier > 0
+        ? preferences.memory.longTermMemoryChain
+        : DEFAULT_PREFERENCES.memory.longTermMemoryChain;
+    const shortTermK =
+      planTier > 0
+        ? preferences.memory.shortTermMemoryCount
+        : DEFAULT_PREFERENCES.memory.shortTermMemoryCount;
     const [memories, examplesString] = await Promise.all([
       getMemories(
         {
           userID,
           longTerm: {
-            nodeCounts: preferences.memory.longTermMemoryChain,
+            nodeCounts,
             pairID,
           },
           shortTerm: {
-            k: preferences.memory.shortTermMemoryCount,
+            k: shortTermK,
           },
           stripImages: true,
         },
@@ -116,7 +127,7 @@ export const sendPrompt = async (
       if (isPremiumUser) {
         mainAgentModel = "claude-3-5-sonnet";
       } else {
-        mainAgentModel = "llama-3-2";
+        mainAgentModel = "meta/llama-3.3-70b-instruct-maas";
       }
     }
 
@@ -251,7 +262,6 @@ export const processResponse = async (
     finalResponse = null,
     optimisticId = null,
     finalizeMessage = null,
-    isStreaming = false,
   ) => {
     try {
       // For completed responses with a final result
@@ -414,15 +424,23 @@ export const processResponse = async (
         finalizeMessage,
       );
       const finalResponse = await handleImageGeneration(response, preferences);
+      let toolStatus = "complete";
+      let finalResponseText;
+      if (finalResponse instanceof Error) {
+        // toolStatus = "failed"; // "failed" is not supported by updateMessageWithToolStatus
+        finalResponseText = finalResponse.message;
+      } else {
+        finalResponseText = finalResponse;
+      }
       await updateMessageWithToolStatus(
         pairID,
-        "complete",
+        toolStatus,
         "image",
-        finalResponse,
+        finalResponseText,
         optimisticId,
         finalizeMessage,
       );
-      return finalResponse;
+      return finalResponseText;
     }
 
     if (response.includes("<GOOGLE_SEARCH>")) {

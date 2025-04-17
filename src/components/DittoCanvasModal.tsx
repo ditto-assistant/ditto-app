@@ -62,7 +62,7 @@ export default function DittoCanvasModal() {
   // If no script is selected, show an empty state
   if (!selectedScript) {
     return (
-      <Modal id="dittoCanvas" title="No Script Selected" fullScreen>
+      <Modal id="dittoCanvas" title="No Script Selected">
         <div className="ditto-canvas-container">
           <div className="empty-state">
             <h2>No Script Selected</h2>
@@ -74,7 +74,7 @@ export default function DittoCanvasModal() {
   }
 
   return (
-    <Modal id="dittoCanvas" title={selectedScript.script} fullScreen>
+    <Modal id="dittoCanvas" title={selectedScript.script}>
       <div className="ditto-canvas-container">
         {!isFullscreen && (
           <div className="ditto-canvas-header">

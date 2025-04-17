@@ -58,6 +58,20 @@
   --hover-overlay: rgba(50, 53, 59, 0.5);
   --hover-element: #32353b;
 
+  /* Gradients */
+  --gradient-lavender-pink-peach: linear-gradient(
+    98deg,
+    #9966ff 0%,
+    #ff6eb2 50%,
+    #ffad66 100%
+  );
+  --gradient-bg: linear-gradient(
+    135deg,
+    rgba(41, 19, 52, 1) 0%,
+    rgba(31, 14, 42, 1) 50%,
+    rgba(19, 10, 31, 1) 100%
+  );
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -90,4 +104,23 @@
   --z-index-dropdown: 1000;
   --z-index-modal: 2000;
   --z-index-overlay: 3000;
+
+  /* Token UI colors */
+  --token-gold: #ffd700;
+  --token-gold-glow: rgba(255, 215, 0, 0.6);
+  --token-bonus-bg: rgba(39, 174, 96, 0.1);
+  --token-bonus-selected-bg: rgba(255, 255, 255, 0.2);
+  --token-pricing-gradient: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary) 60%,
+    #8ba4e4
+  );
+  --token-button-gradient: linear-gradient(45deg, #5865f2, #7289da, #8ba4e4);
+  --token-button-hover-gradient: linear-gradient(
+    45deg,
+    #4752c4,
+    #5865f2,
+    #7289da
+  );
 }

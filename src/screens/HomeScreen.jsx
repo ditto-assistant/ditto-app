@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "react-router";
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
 import { useBalance } from "@/hooks/useBalance";
+import { useModal } from "@/hooks/useModal";
 import TermsOfService from "@/components/TermsOfService";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdFlipCameraIos } from "react-icons/md";
@@ -12,10 +14,11 @@ import useWhatsNew from "@/hooks/useWhatsNew";
 import { getUpdateState } from "@/utils/updateService";
 import "@/styles/buttons.css";
 import "./HomeScreen.css";
-const MEMORY_DELETED_EVENT = "memoryDeleted";
 
 export default function HomeScreen() {
   const balance = useBalance();
+  const { createOpenHandler } = useModal();
+  const [searchParams] = useSearchParams();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const videoRef = useRef(null);
@@ -30,6 +33,34 @@ export default function HomeScreen() {
   const { openWhatsNew } = useWhatsNew();
 
   const appBodyRef = useRef(null);
+
+  // Handle URL parameters to open modals directly
+  useEffect(() => {
+    const openModal = searchParams.get("openModal");
+    const openTab = searchParams.get("openTab");
+    const tokenSuccess = searchParams.get("tokenSuccess");
+
+    // Clean up URL parameters immediately to prevent reopening on refresh
+    const currentUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, currentUrl);
+
+    if (tokenSuccess === "true") {
+      const openTokenModal = createOpenHandler("tokenCheckout");
+      openTokenModal();
+
+      // This will be detected in the TokenModal component via initialSuccess prop
+      window.sessionStorage.setItem("token_success", "true");
+    } else if (openModal) {
+      // Use the enhanced createOpenHandler with the tab ID
+      if (openModal === "settings" && openTab) {
+        const openSettingsWithTab = createOpenHandler("settings", openTab);
+        openSettingsWithTab();
+      } else {
+        const openModalHandler = createOpenHandler(openModal);
+        openModalHandler();
+      }
+    }
+  }, [searchParams, createOpenHandler]);
 
   // Handle showing What's New modal when app is reloaded after update
   useEffect(() => {
@@ -116,54 +147,6 @@ export default function HomeScreen() {
   const handleOpenMediaOptions = () => {
     setShowMediaOptions(true);
   };
-
-  // Update the useEffect that listens for memory deletion events
-  useEffect(() => {
-    const handleMemoryDeleted = (event) => {
-      // Update histCount state with the new count
-      const { newHistCount } = event.detail;
-      setCount(newHistCount);
-
-      // Get the latest data from localStorage
-      const prompts = JSON.parse(localStorage.getItem("prompts") || "[]");
-      const responses = JSON.parse(localStorage.getItem("responses") || "[]");
-      const timestamps = JSON.parse(localStorage.getItem("timestamps") || "[]");
-      const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]");
-
-      // Create new conversation object
-      const newConversation = {
-        messages: [
-          { sender: "Ditto", text: "Hi! I'm Ditto.", timestamp: Date.now() },
-        ],
-        is_typing: false,
-      };
-
-      // Rebuild messages array with latest data including pairIDs
-      for (let i = 0; i < prompts.length; i++) {
-        newConversation.messages.push({
-          sender: "User",
-          text: prompts[i],
-          timestamp: timestamps[i],
-          pairID: pairIDs[i],
-        });
-        newConversation.messages.push({
-          sender: "Ditto",
-          text: responses[i],
-          timestamp: timestamps[i],
-          pairID: pairIDs[i],
-        });
-      }
-
-      // Update the conversation state with new data
-      setConversation(newConversation);
-    };
-
-    window.addEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-
-    return () => {
-      window.removeEventListener(MEMORY_DELETED_EVENT, handleMemoryDeleted);
-    };
-  }, []);
 
   useEffect(() => {
     const handleEditScript = (event) => {
@@ -286,8 +269,6 @@ export default function HomeScreen() {
           isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
         />
       )}
-
-      {/* ScriptActionsOverlay has been removed and replaced with the SlidingMenu in the floating-script-indicator */}
 
       {fullScreenEdit && (
         <FullScreenEditor

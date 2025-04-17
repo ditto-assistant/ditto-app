@@ -58,12 +58,11 @@ if (import.meta.env.PROD) {
 }
 
 const useSplitPane = (initialPosition = 50) => {
-  const [splitPosition, setSplitPosition] = useState(initialPosition);
   const [isMaximized, setIsMaximized] = useState("preview");
   const containerRef = useRef(null);
 
   return {
-    splitPosition,
+    splitPosition: initialPosition,
     isMaximized,
     setIsMaximized,
     containerRef,

@@ -92,17 +92,14 @@ export default function ScriptsOverlay() {
     window.dispatchEvent(new Event("scriptSelected"));
   };
 
-  const openDeleteConfirmation = (script, category, deleteAllVersions) => {
-    const content = deleteAllVersions
-      ? `Are you sure you want to delete "${script?.name}" and all its versions? This action cannot be undone.`
-      : `Are you sure you want to delete "${script?.name}"? This action cannot be undone.`;
-
+  const openDeleteConfirmation = (script, category) => {
+    const content = `Are you sure you want to delete "${script?.name}"? This action cannot be undone.`;
     showConfirmationDialog({
       title: "Confirm Delete",
       content,
-      confirmLabel: deleteAllVersions ? "Delete All" : "Delete",
+      confirmLabel: "Delete",
       variant: "danger",
-      onConfirm: () => handleDeleteScript(category, script, deleteAllVersions),
+      onConfirm: () => handleDeleteScript(category, script),
     });
   };
 
@@ -135,47 +132,21 @@ export default function ScriptsOverlay() {
     });
   };
 
-  const handleDeleteScript = async (
-    category,
-    currentScript,
-    deleteAllVersions = true,
-  ) => {
+  const handleDeleteScript = async (category, currentScript) => {
     const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
 
     try {
-      if (deleteAllVersions) {
-        const relatedScripts = scripts[category].filter(
-          (script) =>
-            getBaseNameAndVersion(script.name).baseName === baseScriptName,
-        );
+      const relatedScripts = scripts[category].filter(
+        (script) =>
+          getBaseNameAndVersion(script.name).baseName === baseScriptName,
+      );
 
-        for (const script of relatedScripts) {
-          await deleteScript(category, script.name, true);
-        }
-
-        // Close version overlay since all versions are deleted
-        setVersionOverlay(null);
-      } else {
-        await deleteScript(category, currentScript.name, false);
-
-        // Update version overlay if it's open
-        if (versionOverlay) {
-          const remainingVersions = versionOverlay.versions.filter(
-            (script) => script.name !== currentScript.name,
-          );
-
-          if (remainingVersions.length === 0) {
-            // If no versions left, close the overlay
-            setVersionOverlay(null);
-          } else {
-            // Update versions in the overlay
-            setVersionOverlay({
-              ...versionOverlay,
-              versions: remainingVersions,
-            });
-          }
-        }
+      for (const script of relatedScripts) {
+        await deleteScript(category, script.name);
       }
+
+      // Close version overlay since all versions are deleted
+      setVersionOverlay(null);
     } catch (error) {
       console.error("Error deleting script:", error);
     }
@@ -611,7 +582,7 @@ export default function ScriptsOverlay() {
                     e.preventDefault();
                     e.stopPropagation();
                   }
-                  openDeleteConfirmation(currentScript, category, true);
+                  openDeleteConfirmation(currentScript, category);
                   setActiveCard(null);
                   setMenuPosition(null);
                 }}
@@ -857,7 +828,7 @@ export default function ScriptsOverlay() {
   );
 
   return (
-    <Modal id="scripts" title="Scripts" fullScreen>
+    <Modal id="scripts" title="Scripts">
       {modalContent}
     </Modal>
   );
