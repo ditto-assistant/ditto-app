@@ -427,7 +427,7 @@ export const processResponse = async (
       let toolStatus = "complete";
       let finalResponseText;
       if (finalResponse instanceof Error) {
-        toolStatus = "failed";
+        // toolStatus = "failed"; // "failed" is not supported by updateMessageWithToolStatus
         finalResponseText = finalResponse.message;
       } else {
         finalResponseText = finalResponse;
