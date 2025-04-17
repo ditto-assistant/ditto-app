@@ -1385,12 +1385,12 @@ ul.chat-bubble-list {
     margin-top: env(safe-area-inset-top, 0px);
     margin-bottom: env(safe-area-inset-bottom, 0px);
   }
-  
+
   /* Fix for chatfeed bottom being cut off in PWA mode */
   .chat-feed-container {
     padding-bottom: 80px; /* Add extra padding at the bottom when in PWA mode */
   }
-  
+
   .bottom-spacer {
     height: 100px !important; /* Increase the height of the bottom spacer in PWA mode */
   }
