@@ -10,14 +10,14 @@ interface ModelListProps {
   isImageModel?: boolean;
 }
 
-export const ModelList = ({ 
-  models, 
-  activeTab, 
-  groupedModels, 
-  isImageModel = false 
+export const ModelList = ({
+  models,
+  activeTab,
+  groupedModels,
+  isImageModel = false,
 }: ModelListProps) => {
   const { data: user } = useUser();
-  
+
   if (models.length === 0) {
     return (
       <div className="flex justify-center items-center h-32 text-muted-foreground">
@@ -25,7 +25,7 @@ export const ModelList = ({
       </div>
     );
   }
-  
+
   const redirectToGeneralTab = () => {
     const generalTab = document.querySelector(
       '.modal-tab[data-tab-id="general"]',
@@ -34,7 +34,7 @@ export const ModelList = ({
       (generalTab as HTMLElement).click();
     }
   };
-  
+
   // Render models grouped by family/flavor
   if (isImageModel) {
     return (
@@ -44,21 +44,24 @@ export const ModelList = ({
             // For image models, we group by family and then by orientation
             return (
               <div key={family} className="space-y-6">
-                {Object.entries(orientations).map(([orientation, orientationModels]) => {
-                  if ((orientationModels as ImageModel[]).length === 0) return null;
-                  
-                  return (
-                    <ModelGroup
-                      key={`${family}-${orientation}`}
-                      title={family}
-                      models={orientationModels as ImageModel[]}
-                      userTier={user?.planTier || 0}
-                      activeTab={activeTab}
-                      redirectToSubscription={redirectToGeneralTab}
-                      orientationFilter={orientation}
-                    />
-                  );
-                })}
+                {Object.entries(orientations).map(
+                  ([orientation, orientationModels]) => {
+                    if ((orientationModels as ImageModel[]).length === 0)
+                      return null;
+
+                    return (
+                      <ModelGroup
+                        key={`${family}-${orientation}`}
+                        title={family}
+                        models={orientationModels as ImageModel[]}
+                        userTier={user?.planTier || 0}
+                        activeTab={activeTab}
+                        redirectToSubscription={redirectToGeneralTab}
+                        orientationFilter={orientation}
+                      />
+                    );
+                  },
+                )}
               </div>
             );
           })}
@@ -72,11 +75,11 @@ export const ModelList = ({
           {Object.entries(groupedModels).map(([family, familyModels]) => {
             // Skip empty families or those filtered out
             const filteredModels = (familyModels as LLMModel[]).filter(
-              model => models.some(m => m.name === model.name)
+              (model) => models.some((m) => m.name === model.name),
             );
-            
+
             if (filteredModels.length === 0) return null;
-            
+
             return (
               <ModelGroup
                 key={family}

@@ -1,5 +1,11 @@
 import { LLMModel, ImageModel } from "@/api/services";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Vendor } from "@/types/llm";
 
@@ -45,7 +51,9 @@ const getModelStats = (model: LLMModel | ImageModel) => {
     {
       name: "Speed",
       value: model.speedLevel,
-      color: SPEED_COLORS[model.speedLevel as keyof typeof SPEED_COLORS] || "#4285F4",
+      color:
+        SPEED_COLORS[model.speedLevel as keyof typeof SPEED_COLORS] ||
+        "#4285F4",
     },
     {
       name: "Intelligence",
@@ -59,21 +67,23 @@ const getModelStats = (model: LLMModel | ImageModel) => {
 
 export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
   if (!model) return null;
-  
+
   const modelStats = getModelStats(model);
-  const isLLMModel = 'costPerMillionInputTokens' in model;
-  
+  const isLLMModel = "costPerMillionInputTokens" in model;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span className="text-xl">{model.displayName}</span>
-            <Badge 
+            <Badge
               className="ml-2"
-              style={{ 
-                backgroundColor: VENDOR_COLORS[model.provider.toLowerCase() as Vendor] || "#999",
-                color: "white" 
+              style={{
+                backgroundColor:
+                  VENDOR_COLORS[model.provider.toLowerCase() as Vendor] ||
+                  "#999",
+                color: "white",
               }}
             >
               {model.provider}
@@ -83,7 +93,7 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
             {formatDescription(model.description)}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="py-4">
           <h3 className="text-sm font-medium mb-4">Stats</h3>
           <div className="space-y-4">
@@ -94,8 +104,8 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
                   <span>{stat.value}/10</span>
                 </div>
                 <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full" 
+                  <div
+                    className="h-full rounded-full"
                     style={{
                       width: `${stat.value * 10}%`,
                       background: stat.color,
@@ -105,7 +115,7 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
               </div>
             ))}
           </div>
-          
+
           <div className="mt-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -133,20 +143,26 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
                 <p className="text-sm">{model.weaknesses}</p>
               </div>
             </div>
-            
+
             {/* LLM-specific info */}
-            {isLLMModel && 'costPerMillionInputTokens' in model && model.costPerMillionInputTokens > 0 && (
-              <div className="mt-4 p-4 bg-secondary/20 rounded-lg">
-                <h4 className="text-sm font-medium mb-2">Pricing Details</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>Input Cost:</div>
-                  <div>${model.costPerMillionInputTokens.toFixed(3)}/M tokens</div>
-                  <div>Output Cost:</div>
-                  <div>${model.costPerMillionOutputTokens.toFixed(3)}/M tokens</div>
+            {isLLMModel &&
+              "costPerMillionInputTokens" in model &&
+              model.costPerMillionInputTokens > 0 && (
+                <div className="mt-4 p-4 bg-secondary/20 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2">Pricing Details</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>Input Cost:</div>
+                    <div>
+                      ${model.costPerMillionInputTokens.toFixed(3)}/M tokens
+                    </div>
+                    <div>Output Cost:</div>
+                    <div>
+                      ${model.costPerMillionOutputTokens.toFixed(3)}/M tokens
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-            
+              )}
+
             {/* Image model info */}
             {!isLLMModel && (
               <div className="mt-4 p-4 bg-secondary/20 rounded-lg">

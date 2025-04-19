@@ -18,11 +18,7 @@ import {
 } from "react-icons/fa";
 import { SiOpenai } from "react-icons/si";
 import { TbBrandMeta } from "react-icons/tb";
-import { 
-  MdExpandMore, 
-  MdExpandLess,
-  MdFilterAlt
-} from "react-icons/md";
+import { MdExpandMore, MdExpandLess, MdFilterAlt } from "react-icons/md";
 
 // Unused, but kept for reference if needed in the future
 /*
@@ -43,22 +39,23 @@ interface FilterGroupProps {
   children: React.ReactNode;
 }
 
-const FilterGroup = ({ title, expanded, onToggle, children }: FilterGroupProps) => {
+const FilterGroup = ({
+  title,
+  expanded,
+  onToggle,
+  children,
+}: FilterGroupProps) => {
   return (
     <div className="mb-4">
-      <div 
+      <div
         className="flex justify-between items-center py-2 cursor-pointer text-muted-foreground hover:text-foreground"
         onClick={onToggle}
       >
         <span className="font-medium text-sm">{title}</span>
         {expanded ? <MdExpandLess /> : <MdExpandMore />}
       </div>
-      
-      {expanded && (
-        <div className="pl-1 mt-2 space-y-2">
-          {children}
-        </div>
-      )}
+
+      {expanded && <div className="pl-1 mt-2 space-y-2">{children}</div>}
     </div>
   );
 };
@@ -85,32 +82,32 @@ export const ModelFilters = ({
   activeFilters,
   setActiveFilters,
   filterType,
-  groupedModels
+  groupedModels,
 }: ModelFiltersProps) => {
   const { isMobile } = usePlatform();
   const [expanded, setExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({
     speed: !isMobile,
-    pricing: !isMobile, 
+    pricing: !isMobile,
     features: !isMobile,
     vendor: !isMobile,
     family: !isMobile,
     provider: !isMobile,
     dimensions: !isMobile,
-    quality: !isMobile
+    quality: !isMobile,
   });
-  
+
   const toggleFilter = (filterKey: keyof FilterValues, value: string) => {
     setActiveFilters({
       ...activeFilters,
-      [filterKey]: activeFilters[filterKey] === value ? null : value
+      [filterKey]: activeFilters[filterKey] === value ? null : value,
     });
   };
-  
+
   const toggleGroup = (group: string) => {
     setExpandedGroups({
       ...expandedGroups,
-      [group]: !expandedGroups[group]
+      [group]: !expandedGroups[group],
     });
   };
 
@@ -129,85 +126,103 @@ export const ModelFilters = ({
           {expanded ? <MdExpandLess /> : <MdExpandMore />}
         </Button>
       )}
-      
-      <div className={`p-4 ${isMobile && !expanded ? "hidden" : "block"} md:block h-full`}>
+
+      <div
+        className={`p-4 ${isMobile && !expanded ? "hidden" : "block"} md:block h-full`}
+      >
         <ScrollArea className="h-[calc(100vh-12rem)] md:h-[calc(100%-2rem)]">
-          
           {filterType === "prompt" && (
             <>
-              <FilterGroup 
-                title="Speed" 
+              <FilterGroup
+                title="Speed"
                 expanded={expandedGroups.speed}
-                onToggle={() => toggleGroup('speed')}
+                onToggle={() => toggleGroup("speed")}
               >
                 <div className="flex flex-wrap gap-2">
-                  <Badge 
-                    variant={activeFilters.speed === "slow" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.speed === "slow" ? "default" : "outline"
+                    }
                     className="cursor-pointer"
-                    onClick={() => toggleFilter('speed', 'slow')}
+                    onClick={() => toggleFilter("speed", "slow")}
                   >
                     <FaClock className="mr-1" /> Slow
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.speed === "medium" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.speed === "medium" ? "default" : "outline"
+                    }
                     className="cursor-pointer"
-                    onClick={() => toggleFilter('speed', 'medium')}
+                    onClick={() => toggleFilter("speed", "medium")}
                   >
                     <FaRobot className="mr-1" /> Medium
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.speed === "fast" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.speed === "fast" ? "default" : "outline"
+                    }
                     className="cursor-pointer"
-                    onClick={() => toggleFilter('speed', 'fast')}
+                    onClick={() => toggleFilter("speed", "fast")}
                   >
                     <FaBolt className="mr-1" /> Fast
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.speed === "insane" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.speed === "insane" ? "default" : "outline"
+                    }
                     className="cursor-pointer"
-                    onClick={() => toggleFilter('speed', 'insane')}
+                    onClick={() => toggleFilter("speed", "insane")}
                   >
-                    <FaFire className="mr-1" style={{ color: "#FF0000" }} /> Insane
+                    <FaFire className="mr-1" style={{ color: "#FF0000" }} />{" "}
+                    Insane
                   </Badge>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Pricing" 
+
+              <FilterGroup
+                title="Pricing"
                 expanded={expandedGroups.pricing}
-                onToggle={() => toggleGroup('pricing')}
+                onToggle={() => toggleGroup("pricing")}
               >
                 <div className="flex flex-wrap gap-2">
-                  <Badge 
-                    variant={activeFilters.pricing === "free" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.pricing === "free" ? "default" : "outline"
+                    }
                     className="cursor-pointer"
-                    onClick={() => toggleFilter('pricing', 'free')}
+                    onClick={() => toggleFilter("pricing", "free")}
                   >
                     <FaCrown className="mr-1" style={{ opacity: 0.5 }} /> Free
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.pricing === "premium" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.pricing === "premium"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer"
-                    onClick={() => toggleFilter('pricing', 'premium')}
+                    onClick={() => toggleFilter("pricing", "premium")}
                   >
                     <FaCrown className="mr-1" /> Premium
                   </Badge>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Features" 
+
+              <FilterGroup
+                title="Features"
                 expanded={expandedGroups.features}
-                onToggle={() => toggleGroup('features')}
+                onToggle={() => toggleGroup("features")}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <Switch
                     id="image-support"
                     checked={activeFilters.imageSupport}
-                    onCheckedChange={(checked) => setActiveFilters({
-                      ...activeFilters,
-                      imageSupport: checked
-                    })}
+                    onCheckedChange={(checked) =>
+                      setActiveFilters({
+                        ...activeFilters,
+                        imageSupport: checked,
+                      })
+                    }
                   />
                   <label
                     htmlFor="image-support"
@@ -217,70 +232,90 @@ export const ModelFilters = ({
                   </label>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Vendor" 
+
+              <FilterGroup
+                title="Vendor"
                 expanded={expandedGroups.vendor}
-                onToggle={() => toggleGroup('vendor')}
+                onToggle={() => toggleGroup("vendor")}
               >
                 <div className="flex flex-col space-y-2">
-                  <Badge 
-                    variant={activeFilters.vendor === "openai" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.vendor === "openai" ? "default" : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('vendor', 'openai')}
+                    onClick={() => toggleFilter("vendor", "openai")}
                   >
                     <SiOpenai className="mr-1" /> OpenAI
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.vendor === "anthropic" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.vendor === "anthropic"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('vendor', 'anthropic')}
+                    onClick={() => toggleFilter("vendor", "anthropic")}
                   >
                     <FaBrain className="mr-1" /> Anthropic
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.vendor === "google" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.vendor === "google" ? "default" : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('vendor', 'google')}
+                    onClick={() => toggleFilter("vendor", "google")}
                   >
                     <FaGoogle className="mr-1" /> Google
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.vendor === "mistral" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.vendor === "mistral" ? "default" : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('vendor', 'mistral')}
+                    onClick={() => toggleFilter("vendor", "mistral")}
                   >
                     <FaBolt className="mr-1" /> Mistral
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.vendor === "meta" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.vendor === "meta" ? "default" : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('vendor', 'meta')}
+                    onClick={() => toggleFilter("vendor", "meta")}
                   >
                     <TbBrandMeta className="mr-1" /> Meta
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.vendor === "cerebras" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.vendor === "cerebras"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('vendor', 'cerebras')}
+                    onClick={() => toggleFilter("vendor", "cerebras")}
                   >
                     <FaMicrochip className="mr-1" /> Cerebras
                   </Badge>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Model Family" 
+
+              <FilterGroup
+                title="Model Family"
                 expanded={expandedGroups.family}
-                onToggle={() => toggleGroup('family')}
+                onToggle={() => toggleGroup("family")}
               >
                 <div className="flex flex-col space-y-2">
                   {Object.keys(groupedModels).map((family) => (
-                    <Badge 
+                    <Badge
                       key={family}
-                      variant={activeFilters.modelFamily === family ? "default" : "outline"}
+                      variant={
+                        activeFilters.modelFamily === family
+                          ? "default"
+                          : "outline"
+                      }
                       className="cursor-pointer justify-start w-full"
-                      onClick={() => toggleFilter('modelFamily', family)}
+                      onClick={() => toggleFilter("modelFamily", family)}
                     >
                       {family}
                     </Badge>
@@ -289,90 +324,116 @@ export const ModelFilters = ({
               </FilterGroup>
             </>
           )}
-          
+
           {filterType === "image" && (
             <>
-              <FilterGroup 
-                title="Provider" 
+              <FilterGroup
+                title="Provider"
                 expanded={expandedGroups.provider}
-                onToggle={() => toggleGroup('provider')}
+                onToggle={() => toggleGroup("provider")}
               >
                 <div className="flex flex-col space-y-2">
-                  <Badge 
-                    variant={activeFilters.provider === "openai" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.provider === "openai"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('provider', 'openai')}
+                    onClick={() => toggleFilter("provider", "openai")}
                   >
                     <SiOpenai className="mr-1" /> OpenAI
                   </Badge>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Dimensions" 
+
+              <FilterGroup
+                title="Dimensions"
                 expanded={expandedGroups.dimensions}
-                onToggle={() => toggleGroup('dimensions')}
+                onToggle={() => toggleGroup("dimensions")}
               >
                 <div className="flex flex-col space-y-2">
-                  <Badge 
-                    variant={activeFilters.dimensions === "square" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.dimensions === "square"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('dimensions', 'square')}
+                    onClick={() => toggleFilter("dimensions", "square")}
                   >
                     □ Square
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.dimensions === "landscape" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.dimensions === "landscape"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('dimensions', 'landscape')}
+                    onClick={() => toggleFilter("dimensions", "landscape")}
                   >
                     ▭ Landscape
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.dimensions === "portrait" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.dimensions === "portrait"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('dimensions', 'portrait')}
+                    onClick={() => toggleFilter("dimensions", "portrait")}
                   >
                     ▯ Portrait
                   </Badge>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Quality" 
+
+              <FilterGroup
+                title="Quality"
                 expanded={expandedGroups.quality}
-                onToggle={() => toggleGroup('quality')}
+                onToggle={() => toggleGroup("quality")}
               >
                 <div className="flex flex-col space-y-2">
-                  <Badge 
-                    variant={activeFilters.quality === "standard" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.quality === "standard"
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('quality', 'standard')}
+                    onClick={() => toggleFilter("quality", "standard")}
                   >
                     Standard
                   </Badge>
-                  <Badge 
-                    variant={activeFilters.quality === "hd" ? "default" : "outline"}
+                  <Badge
+                    variant={
+                      activeFilters.quality === "hd" ? "default" : "outline"
+                    }
                     className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter('quality', 'hd')}
+                    onClick={() => toggleFilter("quality", "hd")}
                   >
                     HD
                   </Badge>
                 </div>
               </FilterGroup>
-              
-              <FilterGroup 
-                title="Model Family" 
+
+              <FilterGroup
+                title="Model Family"
                 expanded={expandedGroups.family}
-                onToggle={() => toggleGroup('family')}
+                onToggle={() => toggleGroup("family")}
               >
                 <div className="flex flex-col space-y-2">
                   {Object.keys(groupedModels).map((family) => (
-                    <Badge 
+                    <Badge
                       key={family}
-                      variant={activeFilters.modelFamily === family ? "default" : "outline"}
+                      variant={
+                        activeFilters.modelFamily === family
+                          ? "default"
+                          : "outline"
+                      }
                       className="cursor-pointer justify-start w-full"
-                      onClick={() => toggleFilter('modelFamily', family)}
+                      onClick={() => toggleFilter("modelFamily", family)}
                     >
                       {family}
                     </Badge>

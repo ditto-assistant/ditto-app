@@ -22,41 +22,53 @@ export const ModelGroup = ({
   orientationFilter,
 }: ModelGroupProps) => {
   const { preferences, updatePreferences } = useModelPreferences();
-  const [selectedModelDetails, setSelectedModelDetails] = useState<LLMModel | ImageModel | null>(null);
-  
+  const [selectedModelDetails, setSelectedModelDetails] = useState<
+    LLMModel | ImageModel | null
+  >(null);
+
   if (!models || models.length === 0) return null;
-  
-  const isLLMGroup = 'costPerMillionInputTokens' in models[0];
-  
+
+  const isLLMGroup = "costPerMillionInputTokens" in models[0];
+
   // Filter by orientation if specified
-  const filteredModels = orientationFilter 
-    ? models.filter(model => 'imageOrientation' in model && model.imageOrientation.toLowerCase() === orientationFilter)
+  const filteredModels = orientationFilter
+    ? models.filter(
+        (model) =>
+          "imageOrientation" in model &&
+          model.imageOrientation.toLowerCase() === orientationFilter,
+      )
     : models;
-  
+
   if (filteredModels.length === 0) return null;
-  
+
   // Select appropriate model
   const handleSelectModel = (model: LLMModel | ImageModel) => {
     if (activeTab === "image" && !isLLMGroup) {
       updatePreferences({
         imageGeneration: {
           model: model.name,
-          size: preferences?.imageGeneration?.size || { wh: "1024x1024", description: "Square (1024×1024)" }
-        }
+          size: preferences?.imageGeneration?.size || {
+            wh: "1024x1024",
+            description: "Square (1024×1024)",
+          },
+        },
       });
     } else if (isLLMGroup) {
       updatePreferences({
-        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name
+        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name,
       });
     }
   };
-  
+
   // Check if model is selected
   const isModelSelected = (model: LLMModel | ImageModel) => {
     if (activeTab === "image" && !isLLMGroup) {
       return model.name === preferences?.imageGeneration?.model;
     } else if (isLLMGroup) {
-      return model.name === preferences?.[activeTab === "main" ? "mainModel" : "programmerModel"];
+      return (
+        model.name ===
+        preferences?.[activeTab === "main" ? "mainModel" : "programmerModel"]
+      );
     }
     return false;
   };
@@ -64,11 +76,13 @@ export const ModelGroup = ({
   return (
     <div className="mb-8">
       <h3 className="text-lg font-semibold mb-2 px-4">{title}</h3>
-      
+
       {orientationFilter && (
-        <h4 className="text-sm font-medium mb-2 px-4 capitalize">{orientationFilter}</h4>
+        <h4 className="text-sm font-medium mb-2 px-4 capitalize">
+          {orientationFilter}
+        </h4>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
         {filteredModels.map((model) => (
           <ModelCard
@@ -83,7 +97,7 @@ export const ModelGroup = ({
           />
         ))}
       </div>
-      
+
       <ModelDetails
         model={selectedModelDetails}
         isOpen={!!selectedModelDetails}
