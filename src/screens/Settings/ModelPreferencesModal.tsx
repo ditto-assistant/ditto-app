@@ -59,13 +59,21 @@ const SPEED_COLORS: Record<string, string> = {
   5: "linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8F00FF)",
 };
 
-// Stat labels used in the model cards
-const SPEED_LEVELS = {
-  1: "Slow",
-  2: "Moderate",
-  3: "Fast",
-  4: "Very Fast",
-  5: "Ultra Fast",
+// Get speed label dynamically from level 
+const getSpeedLabel = (level: number): string => {
+  switch(level) {
+    case 1: return "Slow";
+    case 2: return "Moderate";
+    case 3: return "Fast";
+    case 4: return "Very Fast";
+    case 5: return "Ultra Fast";
+    case 6: return "Blazing";
+    case 7: return "Insane";
+    case 8: return "Ludicrous";
+    case 9: return "Plaid";
+    case 10: return "Maximum";
+    default: return `Level ${level}`;
+  }
 };
 
 const redirectToGeneralTab = () => {
@@ -95,10 +103,13 @@ export const ModelPreferencesModal: React.FC = () => {
     dimensions: null,
     quality: null,
   });
-  // No longer using expandedImageModel
+  // Store the model details that should be displayed in a side panel
   const [expandedModelDetails, setExpandedModelDetails] = useState<
     string | null
   >(null);
+  
+  // Store selected model details for the side panel
+  const [selectedModelDetails, setSelectedModelDetails] = useState<LLMModel | ImageModel | null>(null);
 
   const { isMobile } = usePlatform();
   const [isCompactView, setIsCompactView] = useState(false);
@@ -266,15 +277,21 @@ export const ModelPreferencesModal: React.FC = () => {
     // Filter by price/tier (free/premium)
     if (activeFilters.pricing === "free") {
       filtered = filtered.filter(
-        (model) =>
-          model.costPerMillionInputTokens === 0 &&
-          model.costPerMillionOutputTokens === 0,
+        (model) => {
+          // Models are free if they have no cost OR if their name contains llama-4
+          return (model.costPerMillionInputTokens === 0 && 
+                 model.costPerMillionOutputTokens === 0) ||
+                 model.name.toLowerCase().includes("llama-4");
+        }
       );
     } else if (activeFilters.pricing === "premium") {
       filtered = filtered.filter(
-        (model) =>
-          model.costPerMillionInputTokens > 0 ||
-          model.costPerMillionOutputTokens > 0,
+        (model) => {
+          // Models are premium if they have cost AND don't contain llama-4
+          return (model.costPerMillionInputTokens > 0 || 
+                 model.costPerMillionOutputTokens > 0) &&
+                 !model.name.toLowerCase().includes("llama-4");
+        }
       );
     }
 
@@ -343,11 +360,19 @@ export const ModelPreferencesModal: React.FC = () => {
 
   const isModelAccessible = useCallback(
     (model: LLMModel) => {
+      // LLaMA 4 models are always accessible
+      if (model.name.toLowerCase().includes("llama-4")) {
+        return true;
+      }
+      
+      // Free models (no cost) are always accessible
       if (
         !model.costPerMillionInputTokens ||
         model.costPerMillionInputTokens === 0
       )
         return true;
+      
+      // User must be logged in for paid models
       if (!user) return false;
 
       // Use plan tier to determine accessibility
@@ -378,7 +403,11 @@ export const ModelPreferencesModal: React.FC = () => {
       const isExpanded = expandedModelDetails === model.name;
       const modelStats = getModelStats(model);
       const modelCost = model.costPerMillionInputTokens || 0;
-      const tierLabel = modelCost > 0 ? "Premium" : "Free";
+      
+      // Special handling for LLaMA 4 models
+      const isLlama4 = model.name.toLowerCase().includes("llama-4");
+      const tierLabel = isLlama4 ? "Free" : (modelCost > 0 ? "Premium" : "Free");
+      
       const isSelected =
         model.name ===
         preferences[activeSection === "main" ? "mainModel" : "programmerModel"];
@@ -386,7 +415,7 @@ export const ModelPreferencesModal: React.FC = () => {
       return (
         <div
           key={model.name}
-          className={`model-card ${isSelected ? "selected" : ""} ${!isAccessible ? "disabled" : ""}`}
+          className={`model-card ${isSelected ? "selected" : ""} ${!isAccessible ? "disabled" : ""} ${isExpanded ? "expanded" : ""}`}
         >
           <div
             className="model-card-header"
@@ -405,7 +434,13 @@ export const ModelPreferencesModal: React.FC = () => {
                 className="info-button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setExpandedModelDetails(isExpanded ? null : model.name);
+                  if (isMobile || isCompactView) {
+                    // For mobile, we expand the card in place
+                    setExpandedModelDetails(isExpanded ? null : model.name);
+                  } else {
+                    // For desktop, we show the side panel
+                    setSelectedModelDetails(model);
+                  }
                 }}
               >
                 <MdInfoOutline />
@@ -435,16 +470,15 @@ export const ModelPreferencesModal: React.FC = () => {
             >
               {getSpeedIcon(model.speedLevel)}
               Speed:{" "}
-              {SPEED_LEVELS[model.speedLevel as keyof typeof SPEED_LEVELS] ||
-                `Level ${model.speedLevel}`}
+              {getSpeedLabel(model.speedLevel)}
             </span>
             <span
               className="badge"
               style={{
-                backgroundColor: modelCost > 0 ? "#5865F2" : "#43B581",
+                backgroundColor: isLlama4 ? "#43B581" : (modelCost > 0 ? "#5865F2" : "#43B581"),
               }}
             >
-              {modelCost > 0 ? MemoizedFaCrownPremium : MemoizedFaCrownFree}{" "}
+              {isLlama4 ? MemoizedFaCrownFree : (modelCost > 0 ? MemoizedFaCrownPremium : MemoizedFaCrownFree)}{" "}
               {tierLabel}
             </span>
             {model.attachableImageCount > 0 && (
@@ -472,7 +506,8 @@ export const ModelPreferencesModal: React.FC = () => {
             )}
           </div>
 
-          {isExpanded && (
+          {/* Show model details on mobile/compact view when expanded */}
+          {(isMobile || isCompactView) && isExpanded && (
             <div className="model-details">
               <div className="model-description">
                 <p>{formatDescription(model.description)}</p>
@@ -487,12 +522,12 @@ export const ModelPreferencesModal: React.FC = () => {
                         <div
                           className="stat-bar-fill"
                           style={{
-                            width: `${stat.value * 20}%`,
+                            width: `${stat.value * 10}%`,
                             background: stat.color,
                           }}
                         ></div>
                       </div>
-                      <div className="stat-value">{stat.value}/5</div>
+                      <div className="stat-value">{stat.value}/10</div>
                     </div>
                   ))}
                 </div>
@@ -592,7 +627,7 @@ export const ModelPreferencesModal: React.FC = () => {
       return (
         <div
           key={model.name}
-          className={`model-card ${isSelected ? "selected" : ""} ${!isAccessible ? "disabled" : ""}`}
+          className={`model-card ${isSelected ? "selected" : ""} ${!isAccessible ? "disabled" : ""} ${isExpanded ? "expanded" : ""}`}
         >
           <div
             className="model-card-header"
@@ -611,7 +646,13 @@ export const ModelPreferencesModal: React.FC = () => {
                 className="info-button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setExpandedModelDetails(isExpanded ? null : model.name);
+                  if (isMobile || isCompactView) {
+                    // For mobile, we expand the card in place
+                    setExpandedModelDetails(isExpanded ? null : model.name);
+                  } else {
+                    // For desktop, we show the side panel
+                    setSelectedModelDetails(model);
+                  }
                 }}
               >
                 <MdInfoOutline />
@@ -640,8 +681,7 @@ export const ModelPreferencesModal: React.FC = () => {
             >
               {getSpeedIcon(model.speedLevel)}
               Speed:{" "}
-              {SPEED_LEVELS[model.speedLevel as keyof typeof SPEED_LEVELS] ||
-                `Level ${model.speedLevel}`}
+              {getSpeedLabel(model.speedLevel)}
             </span>
             <span
               className="badge"
@@ -679,12 +719,12 @@ export const ModelPreferencesModal: React.FC = () => {
                         <div
                           className="stat-bar-fill"
                           style={{
-                            width: `${stat.value * 20}%`,
+                            width: `${stat.value * 10}%`,
                             background: stat.color,
                           }}
                         ></div>
                       </div>
-                      <div className="stat-value">{stat.value}/5</div>
+                      <div className="stat-value">{stat.value}/10</div>
                     </div>
                   ))}
                 </div>
@@ -1127,6 +1167,110 @@ export const ModelPreferencesModal: React.FC = () => {
     );
   };
 
+  // Render model details in side panel
+  const renderModelDetailsPanel = () => {
+    if (!selectedModelDetails) return null;
+    
+    const modelStats = getModelStats(selectedModelDetails);
+    const modelCost = "costPerMillionInputTokens" in selectedModelDetails ? 
+      selectedModelDetails.costPerMillionInputTokens || 0 : 0;
+    
+    return (
+      <div className={`model-details-panel ${selectedModelDetails ? 'visible' : ''}`}>
+        <div className="panel-header">
+          <h3>{selectedModelDetails.displayName}</h3>
+          <button 
+            className="close-panel-button"
+            onClick={() => setSelectedModelDetails(null)}
+          >
+            <MdExpandLess />
+          </button>
+        </div>
+        
+        <div className="model-description">
+          <p>{formatDescription(selectedModelDetails.description)}</p>
+        </div>
+
+        <div className="model-character-sheet">
+          <div className="stat-bars">
+            {modelStats.map((stat) => (
+              <div key={stat.name} className="stat-bar-container">
+                <div className="stat-label">{stat.name}</div>
+                <div className="stat-bar-background">
+                  <div
+                    className="stat-bar-fill"
+                    style={{
+                      width: `${stat.value * 10}%`,
+                      background: stat.color,
+                    }}
+                  ></div>
+                </div>
+                <div className="stat-value">{stat.value}/10</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="character-details">
+            <div className="detail-row">
+              <strong>Class:</strong> <span>{selectedModelDetails.characterClass}</span>
+            </div>
+            <div className="detail-row">
+              <strong>Personality:</strong>{" "}
+              <span>{selectedModelDetails.personality}</span>
+            </div>
+            <div className="detail-row">
+              <strong>Special Ability:</strong>{" "}
+              <span>{selectedModelDetails.specialAbility}</span>
+            </div>
+
+            <div className="collapsible-details">
+              <div className="detail-row">
+                <strong>Strengths:</strong> <span>{selectedModelDetails.strengths}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Weaknesses:</strong>{" "}
+                <span>{selectedModelDetails.weaknesses}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Version:</strong> <span>{selectedModelDetails.version}</span>
+              </div>
+              {"costPerMillionInputTokens" in selectedModelDetails && selectedModelDetails.costPerMillionInputTokens > 0 && (
+                <div className="pricing-details">
+                  <div className="detail-row">
+                    <strong>Input Cost:</strong>{" "}
+                    <span>
+                      ${selectedModelDetails.costPerMillionInputTokens.toFixed(3)}/M
+                      tokens
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <strong>Output Cost:</strong>{" "}
+                    <span>
+                      ${selectedModelDetails.costPerMillionOutputTokens.toFixed(3)}/M
+                      tokens
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render backdrop for mobile expanded view
+  const renderBackdrop = () => {
+    if (!(isMobile || isCompactView) || !expandedModelDetails) return null;
+    
+    return (
+      <div 
+        className={`model-details-backdrop ${expandedModelDetails ? 'visible' : ''}`}
+        onClick={() => setExpandedModelDetails(null)}
+      />
+    );
+  };
+
   return (
     <div className="model-preferences-modal">
       <div className="model-preferences-header">
@@ -1136,6 +1280,8 @@ export const ModelPreferencesModal: React.FC = () => {
             onClick={() => {
               setActiveSection("main");
               setIsFilterSectionExpanded(false);
+              setExpandedModelDetails(null);
+              setSelectedModelDetails(null);
             }}
           >
             <FaRobot /> Main
@@ -1147,6 +1293,8 @@ export const ModelPreferencesModal: React.FC = () => {
             onClick={() => {
               setActiveSection("programmer");
               setIsFilterSectionExpanded(false);
+              setExpandedModelDetails(null);
+              setSelectedModelDetails(null);
             }}
           >
             <FaMicrochip /> Programmer
@@ -1158,6 +1306,8 @@ export const ModelPreferencesModal: React.FC = () => {
             onClick={() => {
               setActiveSection("image");
               setIsFilterSectionExpanded(false);
+              setExpandedModelDetails(null);
+              setSelectedModelDetails(null);
             }}
           >
             <FaImage /> Image Gen
@@ -1168,7 +1318,7 @@ export const ModelPreferencesModal: React.FC = () => {
       <div className="model-preferences-content">
         {renderFilterSection()}
 
-        <div className="model-selection">
+        <div className={`model-selection ${!isMobile && !isCompactView && selectedModelDetails ? 'with-panel' : ''}`}>
           <div className="current-selection">
             <h3>Selected Model</h3>
             {activeSection === "main" || activeSection === "programmer" ? (
@@ -1212,6 +1362,12 @@ export const ModelPreferencesModal: React.FC = () => {
             )}
           </div>
         </div>
+        
+        {/* Desktop side panel for model details */}
+        {!isMobile && !isCompactView && renderModelDetailsPanel()}
+        
+        {/* Mobile backdrop */}
+        {renderBackdrop()}
       </div>
     </div>
   );

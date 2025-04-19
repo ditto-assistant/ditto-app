@@ -36,10 +36,10 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
   // Query for prompt models
   const promptQuery = useInfiniteQuery({
     queryKey: ["promptModels", user?.uid],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const params: PageParams = {
         page: pageParam as number,
-        pageSize: 10,
+        pageSize: 50,
       };
       const result = await getPromptModels(params);
       if (result.err) {
@@ -47,12 +47,12 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
       }
       return result.ok;
     },
-    initialPageParam: 0,
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      if (!lastPage) {
+      if (!lastPage || !lastPage.items) {
         return undefined;
       }
-      return lastPage.nextPage > lastPage.page ? lastPage.nextPage : undefined;
+      return lastPage.nextPage;
     },
     enabled: !!user,
   });
@@ -60,10 +60,10 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
   // Query for image models
   const imageQuery = useInfiniteQuery({
     queryKey: ["imageModels", user?.uid],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const params: PageParams = {
         page: pageParam as number,
-        pageSize: 10,
+        pageSize: 50,
       };
       const result = await getImageModels(params);
       if (result.err) {
@@ -71,12 +71,12 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
       }
       return result.ok;
     },
-    initialPageParam: 0,
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      if (!lastPage) {
+      if (!lastPage || !lastPage.items) {
         return undefined;
       }
-      return lastPage.nextPage > lastPage.page ? lastPage.nextPage : undefined;
+      return lastPage.nextPage;
     },
     enabled: !!user,
   });

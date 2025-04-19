@@ -29,11 +29,11 @@ const BaseModelCapabilitiesSchema = z.object({
   strengths: z.string(),
   weaknesses: z.string(),
   avatarStyle: z.string(),
+  minimumTier: z.number().optional().default(0),
 });
 
 // Schema for image model capabilities
 const ImageModelSchema = BaseModelCapabilitiesSchema.extend({
-  minimumTier: z.number().optional().default(0),
   cost: z.number(),
 });
 
