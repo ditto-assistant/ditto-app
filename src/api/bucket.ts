@@ -21,12 +21,12 @@ export async function presignURL(url: string): Promise<Result<string>> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
+        Authorization: `Bearer ${tok.ok.token}`,
       },
       body: JSON.stringify({
         url,
-        userID: tok.ok.userID
-      })
+        userID: tok.ok.userID,
+      }),
     })
     const result = await response.text()
     return { ok: result }
@@ -47,11 +47,11 @@ export async function createUploadURL(userID: string) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${tok.ok.token}`
+      Authorization: `Bearer ${tok.ok.token}`,
     },
     body: JSON.stringify({
-      userID
-    })
+      userID,
+    }),
   })
   return await response.text()
 }

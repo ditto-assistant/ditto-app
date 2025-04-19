@@ -3,7 +3,7 @@ export const ErrorPaymentRequired = new Error(
   {
     cause: {
       status: 402,
-      message: "Payment Required. Please check your token balance."
-    }
+      message: "Payment Required. Please check your token balance.",
+    },
   }
 )

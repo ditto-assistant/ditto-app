@@ -3,7 +3,7 @@ import {
   ModelPreferences,
   ImageGenerationSize,
   ToolPreferences,
-  Model
+  Model,
 } from "@/types/llm"
 
 export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png"
@@ -21,9 +21,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "meta",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
 
   {
@@ -33,9 +33,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     minimumTier: 1,
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "fast"
+    speedLevel: "fast",
   },
   {
     id: "gpt-4o-mini-2024-07-18",
@@ -44,10 +44,10 @@ export const DEFAULT_MODELS: ModelOption[] = [
     minimumTier: 1,
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
     isTaggedModel: true,
-    speedLevel: "fast"
+    speedLevel: "fast",
   },
   {
     id: "gpt-4o",
@@ -56,9 +56,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "openai",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
   {
     id: "gpt-4o-2024-11-20",
@@ -67,10 +67,10 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "openai",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
     isTaggedModel: true,
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
   // {
   //   id: "claude-3-haiku",
@@ -88,7 +88,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "anthropic",
     minimumTier: 1,
     isTaggedModel: true,
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-haiku",
@@ -97,9 +97,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     minimumTier: 1,
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "fast"
+    speedLevel: "fast",
   },
   {
     id: "claude-3-5-haiku@20241022",
@@ -108,9 +108,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     minimumTier: 1,
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    isTaggedModel: true
+    isTaggedModel: true,
   },
   {
     id: "claude-3-5-sonnet@20240620",
@@ -119,10 +119,10 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
     isTaggedModel: true,
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-sonnet-v2",
@@ -131,9 +131,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
   {
     id: "claude-3-5-sonnet-v2@20241022",
@@ -142,10 +142,10 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "anthropic",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
     isTaggedModel: true,
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
 
   {
@@ -155,9 +155,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     minimumTier: 1,
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "fast"
+    speedLevel: "fast",
   },
   {
     id: "gemini-1.5-pro",
@@ -166,9 +166,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "google",
     supports: {
       imageAttachments: "single",
-      tools: true
+      tools: true,
     },
-    speedLevel: "medium"
+    speedLevel: "medium",
   },
 
   {
@@ -177,9 +177,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "mistral",
     minimumTier: 1,
     supports: {
-      tools: true
+      tools: true,
     },
-    speedLevel: "fast"
+    speedLevel: "fast",
   },
   {
     id: "mistral-large",
@@ -187,9 +187,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     minimumTier: 2,
     vendor: "mistral",
     supports: {
-      tools: true
+      tools: true,
     },
-    speedLevel: "slow"
+    speedLevel: "slow",
   },
 
   // { id: "o1-mini", name: "o1 Mini", vendor: "openai", isPremium: true },
@@ -212,9 +212,9 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "cerebras",
     minimumTier: 1,
     supports: {
-      tools: true
+      tools: true,
     },
-    speedLevel: "insane"
+    speedLevel: "insane",
   },
   {
     id: "llama-3.3-70b",
@@ -222,38 +222,38 @@ export const DEFAULT_MODELS: ModelOption[] = [
     vendor: "cerebras",
     minimumTier: 1,
     supports: {
-      tools: true
+      tools: true,
     },
-    speedLevel: "insane"
-  }
+    speedLevel: "insane",
+  },
 ] as const
 
 export const IMAGE_GENERATION_SIZES: Record<string, ImageGenerationSize> = {
   "256x256": {
     wh: "256x256",
     description: "Square (256x256)",
-    supportedModels: ["dall-e-2"]
+    supportedModels: ["dall-e-2"],
   },
   "512x512": {
     wh: "512x512",
     description: "Square (512x512)",
-    supportedModels: ["dall-e-2"]
+    supportedModels: ["dall-e-2"],
   },
   "1024x1024": {
     wh: "1024x1024",
     description: "Square (1024x1024)",
-    supportedModels: ["dall-e-2", "dall-e-3"]
+    supportedModels: ["dall-e-2", "dall-e-3"],
   },
   "1792x1024": {
     wh: "1792x1024",
     description: "Landscape (1792x1024)",
-    supportedModels: ["dall-e-3"]
+    supportedModels: ["dall-e-3"],
   },
   "1024x1792": {
     wh: "1024x1792",
     description: "Portrait (1024x1792)",
-    supportedModels: ["dall-e-3"]
-  }
+    supportedModels: ["dall-e-3"],
+  },
 } as const
 
 export const IMAGE_GENERATION_MODELS: ModelOption[] = [
@@ -263,7 +263,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-2")
-    )
+    ),
   },
   {
     id: "dall-e-3",
@@ -271,7 +271,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3")
-    )
+    ),
   },
   {
     id: "dall-e-3-hd",
@@ -279,14 +279,14 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     minimumTier: 3,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
       size.supportedModels.includes("dall-e-3")
-    )
-  }
+    ),
+  },
 ] as const
 
 export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   htmlScript: true,
   imageGeneration: true,
-  googleSearch: true
+  googleSearch: true,
 } as const
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
@@ -297,14 +297,14 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     size: {
       wh: "1024x1024",
       description: "Square (1024x1024)",
-      supportedModels: ["dall-e-2", "dall-e-3"]
-    }
+      supportedModels: ["dall-e-2", "dall-e-3"],
+    },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
   memory: {
     shortTermMemoryCount: 5,
-    longTermMemoryChain: [3, 2, 1]
-  }
+    longTermMemoryChain: [3, 2, 1],
+  },
 } as const
 
 export const TOOLS = [
@@ -312,20 +312,20 @@ export const TOOLS = [
     id: "imageGeneration",
     name: "Image Generation",
     description: "Generate images based on text descriptions",
-    trigger: "<IMAGE_GENERATION>"
+    trigger: "<IMAGE_GENERATION>",
   },
   {
     id: "googleSearch",
     name: "Web Search",
     description: "Search the web for information",
-    trigger: "<GOOGLE_SEARCH>"
+    trigger: "<GOOGLE_SEARCH>",
   },
   {
     id: "htmlScript",
     name: "Web Apps",
     description: "Generate web applications using HTML, CSS, and JavaScript",
-    trigger: "<HTML_SCRIPT>"
-  }
+    trigger: "<HTML_SCRIPT>",
+  },
 ] as const
 
 export const MEMORY_CONFIG = {
@@ -337,8 +337,8 @@ export const MEMORY_CONFIG = {
       { value: 0, label: "0" },
       { value: 1, label: "1" },
       { value: 3, label: "3" },
-      { value: 5, label: "5" }
-    ]
+      { value: 5, label: "5" },
+    ],
   },
   longTerm: {
     min: 0,
@@ -348,8 +348,8 @@ export const MEMORY_CONFIG = {
       { value: 0, label: "0" },
       { value: 1, label: "1" },
       { value: 3, label: "3" },
-      { value: 5, label: "5" }
+      { value: 5, label: "5" },
     ],
-    maxChainLength: 5
-  }
+    maxChainLength: 5,
+  },
 } as const

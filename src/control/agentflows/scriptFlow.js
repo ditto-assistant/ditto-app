@@ -3,7 +3,7 @@ import { promptLLMV2 } from "../../api/LLM"
 import updaterAgent from "../agentflows/updaterAgentFlow"
 import {
   scriptToNameTemplate,
-  scriptToNameSystemTemplate
+  scriptToNameSystemTemplate,
 } from "../templates/scriptToNameTemplate"
 
 /**
@@ -35,7 +35,7 @@ export const handleScriptGeneration = async ({
   userID,
   image,
   memories,
-  preferences
+  preferences,
 }) => {
   const query = response.split(tag)[1]
   const constructedPrompt = templateFunction(

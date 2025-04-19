@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/useAuth"
 import {
   saveModelPreferencesToFirestore,
-  getModelPreferencesFromFirestore
+  getModelPreferencesFromFirestore,
 } from "@/control/firebase"
 import { DEFAULT_PREFERENCES } from "@/constants"
 import { ModelPreferences } from "@/types/llm"
@@ -23,7 +23,7 @@ export function useModelPreferences() {
 }
 
 export function ModelPreferencesProvider({
-  children
+  children,
 }: {
   children: React.ReactNode
 }) {
@@ -53,11 +53,11 @@ function useModels() {
         ...prefs,
         memory: {
           ...DEFAULT_PREFERENCES.memory,
-          ...prefs.memory
-        }
+          ...prefs.memory,
+        },
       }
     },
-    enabled: !!user
+    enabled: !!user,
   })
 
   const mutation = useMutation({
@@ -69,20 +69,20 @@ function useModels() {
         ...newPreferences,
         memory: {
           ...currentPrefs.memory,
-          ...(newPreferences.memory || {})
-        }
+          ...(newPreferences.memory || {}),
+        },
       }
       await saveModelPreferencesToFirestore(user.uid, updatedPreferences)
       return updatedPreferences
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["modelPreferences", user?.uid], data)
-    }
+    },
   })
 
   return {
     preferences: query.data,
     updatePreferences: mutation.mutate,
-    isLoading: query.isLoading
+    isLoading: query.isLoading,
   }
 }

@@ -21,7 +21,7 @@ import {
   FaComments,
   FaTimes,
   FaChevronDown,
-  FaBrain
+  FaBrain,
 } from "react-icons/fa"
 import { Button, IconButton, Tooltip } from "@mui/material"
 import { motion, AnimatePresence } from "framer-motion"
@@ -64,7 +64,7 @@ const useSplitPane = (initialPosition = 50) => {
     splitPosition: initialPosition,
     isMaximized,
     setIsMaximized,
-    containerRef
+    containerRef,
   }
 }
 
@@ -74,7 +74,7 @@ const SearchOverlay = ({
   setSearchTerm,
   onSearch,
   onClose,
-  searchResults
+  searchResults,
 }) => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -182,12 +182,12 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
   const scriptChatMessagesEndRef = useRef(null)
   const [scriptChatSize, setScriptChatSize] = useState({
     width: isMobile ? window.innerWidth * 0.9 : 400,
-    height: isMobile ? window.innerHeight * 0.6 : 500
+    height: isMobile ? window.innerHeight * 0.6 : 500,
   })
   const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null)
   const [scriptChatPosition, setScriptChatPosition] = useState({
     x: isMobile ? (window.innerWidth - window.innerWidth * 0.9) / 2 : null,
-    y: isMobile ? (window.innerHeight - window.innerHeight * 0.6) / 2 : null
+    y: isMobile ? (window.innerHeight - window.innerHeight * 0.6) / 2 : null,
   })
   const dragRef = useRef(null)
   const [selectedCodeAttachment, setSelectedCodeAttachment] = useState(null)
@@ -241,8 +241,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
           {
             role: "user",
             content: messageContent,
-            timestamp
-          }
+            timestamp,
+          },
         ]
         // Keep only the last 40 messages (20 pairs of user/assistant messages)
         return newMessages.slice(-40)
@@ -290,8 +290,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             {
               role: "assistant",
               content: "Task completed",
-              fullScript: response
-            }
+              fullScript: response,
+            },
           ]
           return newMessages.slice(-40)
         })
@@ -301,8 +301,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             ...prev,
             {
               role: "assistant",
-              content: response
-            }
+              content: response,
+            },
           ]
           return newMessages.slice(-40)
         })
@@ -314,8 +314,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
           ...prev,
           {
             role: "assistant",
-            content: "Sorry, there was an error processing your request."
-          }
+            content: "Sorry, there was an error processing your request.",
+          },
         ]
         return newMessages.slice(-40)
       })
@@ -414,7 +414,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       wrap: true,
       caseSensitive: false,
       wholeWord: false,
-      regExp: false
+      regExp: false,
     }
 
     // Find all matches to get total count
@@ -495,7 +495,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
           if (!searchVisible) {
             setSearchTerm("")
           }
-        }
+        },
       })
     }
 
@@ -631,7 +631,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       index,
       role,
       clientX,
-      clientY
+      clientY,
     })
   }
 
@@ -679,7 +679,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
 
         setScriptChatPosition({
           x: Math.max(0, Math.min(x, maxX)),
-          y: Math.max(0, Math.min(y, maxY))
+          y: Math.max(0, Math.min(y, maxY)),
         })
       })
     }
@@ -701,12 +701,12 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
 
       setScriptChatSize((prevSize) => ({
         width: Math.min(prevSize.width, maxWidth),
-        height: Math.min(prevSize.height, maxHeight)
+        height: Math.min(prevSize.height, maxHeight),
       }))
 
       setScriptChatPosition((prevPosition) => ({
         x: Math.min(prevPosition.x, maxWidth - scriptChatSize.width),
-        y: Math.min(prevPosition.y, maxHeight - scriptChatSize.height)
+        y: Math.min(prevPosition.y, maxHeight - scriptChatSize.height),
       }))
     }
 
@@ -748,8 +748,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       new CustomEvent("scriptsUpdated", {
         detail: {
           webApps: localWebApps,
-          openSCAD: localOpenSCAD
-        }
+          openSCAD: localOpenSCAD,
+        },
       })
     )
 
@@ -790,7 +790,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       setTimeout(() => {
         scriptChatMessagesEndRef.current.scrollIntoView({
           behavior: "smooth",
-          block: "end"
+          block: "end",
         })
       }, 100)
     }
@@ -882,7 +882,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 : isMaximized === "preview"
                   ? "0%"
                   : `${splitPosition}%`
-              : "100%"
+              : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         >
@@ -1012,12 +1012,12 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   useWorker: false,
                   wrap: wrapEnabled,
                   fontFamily: "JetBrains Mono, monospace",
-                  theme: "tomorrow_night"
+                  theme: "tomorrow_night",
                 }}
                 onSelectionChange={handleEditorSelection}
                 style={{
                   backgroundColor: "var(--background)",
-                  borderRadius: "4px"
+                  borderRadius: "4px",
                 }}
               />
             ) : (
@@ -1047,7 +1047,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 : isMaximized === "editor"
                   ? "0%"
                   : `${100 - splitPosition}%`
-              : "100%"
+              : "100%",
           }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         >
@@ -1162,7 +1162,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 scriptChatPosition.y !== null
                   ? `${scriptChatPosition.y}px`
                   : "90px",
-              cursor: "move"
+              cursor: "move",
             }}
             onMouseDown={handleDragStart}
           >
@@ -1202,7 +1202,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                           style={{
                             margin: "0 0 8px 0",
                             color: "var(--text)",
-                            fontSize: "14px"
+                            fontSize: "14px",
                           }}
                         >
                           Model
@@ -1226,7 +1226,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                           borderRadius: "6px",
                           cursor: "pointer",
                           fontSize: "14px",
-                          transition: "all 0.2s ease"
+                          transition: "all 0.2s ease",
                         }}
                       >
                         Reset Chat History
@@ -1250,7 +1250,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       scriptChatActionOverlay?.index === index
                         ? "blur(2px)"
                         : "none",
-                    transition: "filter 0.2s ease"
+                    transition: "filter 0.2s ease",
                   }}
                   onClick={(e) =>
                     handleScriptChatBubbleClick(e, index, msg.role)
@@ -1300,7 +1300,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                                 {children}
                               </code>
                             )
-                          }
+                          },
                         }}
                       >
                         {msg.content}
@@ -1381,7 +1381,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     left: scriptChatActionOverlay.clientX,
                     top: scriptChatActionOverlay.clientY,
                     transform: "translate(-50%, -50%)",
-                    zIndex: 1000
+                    zIndex: 1000,
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -1499,7 +1499,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 <motion.button
                   whileHover={{
                     scale: 1.02,
-                    backgroundColor: `var(--hover)CC`
+                    backgroundColor: `var(--hover)CC`,
                   }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowUnsavedChanges(false)}
@@ -1511,7 +1511,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   <motion.button
                     whileHover={{
                       scale: 1.02,
-                      backgroundColor: `var(--danger)15`
+                      backgroundColor: `var(--danger)15`,
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={async () => {
@@ -1524,7 +1524,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   <motion.button
                     whileHover={{
                       scale: 1.02,
-                      backgroundColor: "var(--secondary)"
+                      backgroundColor: "var(--secondary)",
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={async () => {

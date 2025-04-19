@@ -18,7 +18,7 @@ const formatDateTime = (timestamp: Date | number) => {
     month: "short",
     day: "numeric",
     hour: "numeric",
-    minute: "numeric"
+    minute: "numeric",
   }).format(date)
 }
 
@@ -86,7 +86,7 @@ const TableView: React.FC<{
     showMemoryNode(
       {
         ...memory,
-        level: 0 // Set a default level since it's required
+        level: 0, // Set a default level since it's required
       },
       deleteAdapter
     )
@@ -177,7 +177,7 @@ const TableView: React.FC<{
               isUser={true}
               bubbleStyles={{
                 text: { fontSize: 14 },
-                chatbubble: { borderRadius: 8, padding: 8 }
+                chatbubble: { borderRadius: 8, padding: 8 },
               }}
             />
             <ChatMessage
@@ -190,7 +190,7 @@ const TableView: React.FC<{
               isUser={false}
               bubbleStyles={{
                 text: { fontSize: 14 },
-                chatbubble: { borderRadius: 8, padding: 8 }
+                chatbubble: { borderRadius: 8, padding: 8 },
               }}
             />
           </div>
@@ -255,7 +255,7 @@ export default function MemoryNetworkModal() {
 
         console.log("Deleting memory with ID:", memoryId, "Node data:", {
           id: node.id,
-          nodeId: node.nodeId
+          nodeId: node.nodeId,
         })
 
         if (!memoryId) {
@@ -272,7 +272,7 @@ export default function MemoryNetworkModal() {
             deleteMemory(memoryId)
             // Mark that network needs update on next render
             networkNeedsUpdate.current = true
-          }
+          },
         })
       } catch (error) {
         console.error("Error deleting memory node:", error)
@@ -329,7 +329,7 @@ export default function MemoryNetworkModal() {
             "#1ABC9C", // Level 6 (turquoise)
             "#D35400", // Level 7 (dark orange)
             "#8E44AD", // Level 8 (dark purple)
-            "#27AE60" // Level 9 (dark green)
+            "#27AE60", // Level 9 (dark green)
           ]
 
           // Get color based on depth, cycling through colors if depth exceeds array length
@@ -354,15 +354,15 @@ export default function MemoryNetworkModal() {
               font: {
                 color: "#FFFFFF",
                 size: 14,
-                face: "Arial"
-              }
+                face: "Arial",
+              },
             })
 
             // Store the complete memory data with added properties
             const memoryWithLevel = {
               ...memory,
               level: depth,
-              nodeId: nodeId
+              nodeId: nodeId,
             }
 
             // Add edge if this is not the root node
@@ -374,7 +374,7 @@ export default function MemoryNetworkModal() {
                 arrows: { to: { enabled: true } },
                 width: Math.max(3 - depth * 0.5, 1),
                 color: { color: nodeColor, opacity: 0.8 },
-                smooth: { enabled: true, type: "continuous", roundness: 0.5 }
+                smooth: { enabled: true, type: "continuous", roundness: 0.5 },
               })
             }
 
@@ -410,7 +410,7 @@ export default function MemoryNetworkModal() {
             shape: "dot",
             font: { color: "#ffffff", size: 14 },
             borderWidth: 2,
-            shadow: false
+            shadow: false,
           },
           edges: {
             color: { opacity: 0.3 },
@@ -418,9 +418,9 @@ export default function MemoryNetworkModal() {
             smooth: {
               enabled: true,
               type: "continuous",
-              roundness: 0.5
+              roundness: 0.5,
             },
-            arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+            arrows: { to: { enabled: true, scaleFactor: 0.5 } },
           },
           interaction: {
             hover: false, // Disable hover completely to prevent errors
@@ -432,7 +432,7 @@ export default function MemoryNetworkModal() {
             selectable: true,
             selectConnectedEdges: false,
             hoverConnectedEdges: false, // Disable hover on edges
-            navigationButtons: false // Disable navigation buttons
+            navigationButtons: false, // Disable navigation buttons
           },
           physics: {
             enabled: true,
@@ -443,14 +443,14 @@ export default function MemoryNetworkModal() {
               springLength: 100,
               springConstant: 0.08,
               damping: 0.4,
-              avoidOverlap: 0.8
+              avoidOverlap: 0.8,
             },
             stabilization: {
               enabled: true,
               iterations: 100, // Reduce iterations for faster stabilization
-              updateInterval: 50
-            }
-          }
+              updateInterval: 50,
+            },
+          },
         }
 
         // Process all root memories
@@ -534,9 +534,9 @@ export default function MemoryNetworkModal() {
                 enabled: true,
                 iterations: 100,
                 updateInterval: 50,
-                fit: true
-              }
-            }
+                fit: true,
+              },
+            },
           }
 
           // Create the network
@@ -600,7 +600,7 @@ export default function MemoryNetworkModal() {
     network,
     handleNodeDelete,
     showMemoryNode,
-    memoryMap
+    memoryMap,
   ])
 
   // Fit the network when it's visible and active
@@ -613,8 +613,8 @@ export default function MemoryNetworkModal() {
           network.fit({
             animation: {
               duration: 300,
-              easingFunction: "easeInOutQuad"
-            }
+              easingFunction: "easeInOutQuad",
+            },
           })
         }, 100)
       } catch (err) {
@@ -662,13 +662,13 @@ export default function MemoryNetworkModal() {
         {
           id: "network",
           label: "Network View",
-          content: null // We'll render this via children
+          content: null, // We'll render this via children
         },
         {
           id: "table",
           label: "Table View",
-          content: TableViewContent // Table view comes from the tab content
-        }
+          content: TableViewContent, // Table view comes from the tab content
+        },
       ]}
       defaultTabId="network"
       onTabChange={handleTabChange}

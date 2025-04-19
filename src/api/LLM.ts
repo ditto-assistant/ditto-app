@@ -64,15 +64,15 @@ export async function promptLLM(
         userPrompt,
         systemPrompt,
         model,
-        imageURL
+        imageURL,
       }
       const response = await fetch(routes.prompt, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${tok.ok.token}`
+          Authorization: `Bearer ${tok.ok.token}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       })
 
       // Check for payment required error
@@ -140,14 +140,14 @@ export async function openaiImageGeneration(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${tok.ok.token}`
+      Authorization: `Bearer ${tok.ok.token}`,
     },
     body: JSON.stringify({
       userID: tok.ok.userID,
       prompt,
       model: preferences.model,
-      size: preferences.size.wh
-    })
+      size: preferences.size.wh,
+    }),
   })
   if (response.status === 402) {
     return ErrorPaymentRequired
@@ -183,16 +183,16 @@ export async function promptLLMV2(
         userPrompt,
         systemPrompt,
         model,
-        imageURL
+        imageURL,
       }
 
       const response = await fetch(routes.promptV2, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${tok.ok.token}`
+          Authorization: `Bearer ${tok.ok.token}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       })
 
       if (response.status === 402) {

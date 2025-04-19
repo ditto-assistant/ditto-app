@@ -21,7 +21,7 @@ function usePromptModelsQuery(userId?: string) {
     queryFn: async ({ pageParam = 1 }) => {
       const params: PageParams = {
         page: pageParam as number,
-        pageSize: 20
+        pageSize: 20,
       }
       const result = await getPromptModels(params)
       if (result.err) {
@@ -40,7 +40,7 @@ function usePromptModelsQuery(userId?: string) {
       }
       return page.nextPage
     },
-    enabled: !!userId
+    enabled: !!userId,
   })
 }
 
@@ -50,7 +50,7 @@ function useImageModelsQuery(userId?: string) {
     queryFn: async ({ pageParam = 1 }) => {
       const params: PageParams = {
         page: pageParam as number,
-        pageSize: 20
+        pageSize: 20,
       }
       const result = await getImageModels(params)
       if (result.err) {
@@ -69,7 +69,7 @@ function useImageModelsQuery(userId?: string) {
       }
       return page.nextPage
     },
-    enabled: !!userId
+    enabled: !!userId,
   })
 }
 
@@ -81,7 +81,7 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
 
   const value: ServicesContextType = {
     promptModels: promptQuery,
-    imageModels: imageQuery
+    imageModels: imageQuery,
   }
 
   return (

@@ -13,7 +13,7 @@ const darkModeColors = {
   danger: "#DA373C",
   cardBackground: "#313338",
   headerBackground: "#2B2D31",
-  inputBackground: "#1E1F22"
+  inputBackground: "#1E1F22",
 }
 
 const AddScriptOverlay = ({ isOpen, onClose, onSave, category }) => {
@@ -91,7 +91,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "auto"
+    overflow: "auto",
   },
   overlay: {
     backgroundColor: darkModeColors.cardBackground,
@@ -109,8 +109,8 @@ const styles = {
     margin: "0 auto",
     "@media (max-height: 600px)": {
       minHeight: "300px",
-      maxHeight: "85vh"
-    }
+      maxHeight: "85vh",
+    },
   },
   header: {
     padding: "20px",
@@ -123,13 +123,13 @@ const styles = {
     borderTopRightRadius: "12px",
     position: "sticky",
     top: 0,
-    zIndex: 2
+    zIndex: 2,
   },
   title: {
     margin: 0,
     color: darkModeColors.text,
     fontSize: "1.2em",
-    fontWeight: "600"
+    fontWeight: "600",
   },
   closeIcon: {
     color: darkModeColors.textSecondary,
@@ -137,8 +137,8 @@ const styles = {
     cursor: "pointer",
     transition: "color 0.2s ease",
     "&:hover": {
-      color: darkModeColors.text
-    }
+      color: darkModeColors.text,
+    },
   },
   content: {
     padding: "20px",
@@ -152,8 +152,8 @@ const styles = {
     "@media (max-height: 600px)": {
       padding: "16px",
       gap: "12px",
-      paddingBottom: "70px"
-    }
+      paddingBottom: "70px",
+    },
   },
   input: {
     backgroundColor: darkModeColors.inputBackground,
@@ -167,15 +167,15 @@ const styles = {
     outline: "none",
     transition: "border-color 0.2s ease",
     "&:focus": {
-      borderColor: darkModeColors.primary
-    }
+      borderColor: darkModeColors.primary,
+    },
   },
   textarea: {
     minHeight: "200px",
     height: "100%",
     resize: "none",
     fontFamily: "monospace",
-    flex: 1
+    flex: 1,
   },
   actions: {
     padding: "20px",
@@ -190,21 +190,21 @@ const styles = {
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 2
+    zIndex: 2,
   },
   saveButton: {
     backgroundColor: darkModeColors.primary,
     "&:hover": {
-      backgroundColor: darkModeColors.secondary
-    }
+      backgroundColor: darkModeColors.secondary,
+    },
   },
   cancelButton: {
     backgroundColor: "transparent",
     color: darkModeColors.text,
     "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.1)"
-    }
-  }
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+  },
 }
 
 export default AddScriptOverlay

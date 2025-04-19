@@ -12,7 +12,7 @@ interface ModelPreferencesSelectorsProps {
 const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
   preferences,
   updatePreferences,
-  className
+  className,
 }) => {
   const [openDropdown, setOpenDropdown] = useState<
     "main" | "programmer" | "image" | null
@@ -115,19 +115,19 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "24px",
-    width: "100%"
+    width: "100%",
   },
   selector: {
     display: "flex",
     flexDirection: "column",
-    gap: "8px"
+    gap: "8px",
   },
   label: {
     color: "white",
     fontSize: "14px",
     textAlign: "left",
-    fontWeight: "500"
-  }
+    fontWeight: "500",
+  },
 } as const
 
 export default ModelPreferencesSelectors

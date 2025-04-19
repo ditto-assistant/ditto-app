@@ -57,7 +57,7 @@ export function usePlatform() {
     isLinux,
     isMobile,
     isIOS,
-    isPWA
+    isPWA,
   }
 }
 

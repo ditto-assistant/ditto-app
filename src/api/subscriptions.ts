@@ -38,8 +38,8 @@ export async function getSubscriptionTiers(): Promise<
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
-      }
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
     })
 
     if (response.ok) {
@@ -47,7 +47,7 @@ export async function getSubscriptionTiers(): Promise<
       return { ok: data }
     } else {
       return {
-        err: `Unable to fetch subscription tiers. Error: ${response.status}`
+        err: `Unable to fetch subscription tiers. Error: ${response.status}`,
       }
     }
   } catch (error) {

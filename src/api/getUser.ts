@@ -13,14 +13,14 @@ const UserSchema = z.object({
     "incomplete_expired",
     "past_due",
     "canceled",
-    "unpaid"
+    "unpaid",
   ]),
   currentPeriodEnd: z.coerce.date().optional(),
   cancelAtPeriodEnd: z.boolean(),
   trialEnd: z.coerce.date().optional(),
   planTier: z.number(),
   stripeCustomerID: z.string().optional(),
-  isTierBoostedFromBalance: z.boolean().optional()
+  isTierBoostedFromBalance: z.boolean().optional(),
 })
 
 export type User = z.infer<typeof UserSchema>
@@ -40,8 +40,8 @@ export async function getUser(): Promise<Result<User>> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
-      }
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
     })
 
     if (response.ok) {
@@ -52,12 +52,12 @@ export async function getUser(): Promise<Result<User>> {
       } else {
         console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `Invalid user data received from API. Error: ${result.error.message}`
+          err: `Invalid user data received from API. Error: ${result.error.message}`,
         }
       }
     } else {
       return {
-        err: `Unable to fetch user data. Error: ${response.status}`
+        err: `Unable to fetch user data. Error: ${response.status}`,
       }
     }
   } catch (error) {

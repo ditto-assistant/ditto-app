@@ -101,8 +101,8 @@ export function useUserAvatar(
                 fetch(photoURL, {
                   method: "GET",
                   headers: {
-                    "Cache-Control": "max-age=86400" // 24 hours
-                  }
+                    "Cache-Control": "max-age=86400", // 24 hours
+                  },
                 })
                   .then((response) => cache.put(photoURL, response))
                   .catch((err) => console.debug("Failed to cache avatar:", err))
@@ -132,7 +132,7 @@ export function useUserAvatar(
     staleTime: 1000 * 60 * 60, // Consider data fresh for 1 hour
     retry: false, // Don't retry failed requests to avoid rate limits
     refetchOnWindowFocus: false, // Don't refetch when window focuses
-    refetchOnMount: false // Don't refetch when component mounts
+    refetchOnMount: false, // Don't refetch when component mounts
   })
 
   // Always return a valid avatar URL

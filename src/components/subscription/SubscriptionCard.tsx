@@ -20,7 +20,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   authToken,
   userID,
   email,
-  checkoutURL
+  checkoutURL,
 }) => {
   const price = tier.prices.find(
     (p) => p.interval === (isYearly ? "year" : "month")
@@ -88,7 +88,7 @@ function formatPrice(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(amount)
 }
 

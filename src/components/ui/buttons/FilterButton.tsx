@@ -23,7 +23,7 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
       className={`filter-button ${isActive ? "active" : ""} ${className}`}
       style={{
         ...(isActive && activeColor ? { background: activeColor } : {}),
-        ...style
+        ...style,
       }}
       whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
       whileTap={{ scale: 0.98 }}

@@ -22,7 +22,7 @@ export default function ConfirmationModal() {
     const centerModal = () => {
       setPosition({
         x: Math.max(0, (window.innerWidth - size.width) / 2),
-        y: Math.max(0, (window.innerHeight - size.height) / 3) // Position 1/3 from the top
+        y: Math.max(0, (window.innerHeight - size.height) / 3), // Position 1/3 from the top
       })
     }
 
@@ -62,7 +62,7 @@ export default function ConfirmationModal() {
           zIndex,
           left: `${position.x}px`,
           top: `${position.y}px`,
-          width: `${size.width}px`
+          width: `${size.width}px`,
         }}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

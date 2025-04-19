@@ -9,12 +9,12 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendEmailVerification
+  sendEmailVerification,
 } from "firebase/auth"
 import {
   saveUserToFirestore,
   getUserObjectFromFirestore,
-  auth
+  auth,
 } from "@/control/firebase"
 import "./Login.css"
 import TermsOfService from "@/components/TermsOfService"
@@ -24,7 +24,7 @@ const PasswordInput = ({
   onChange,
   placeholder,
   showPassword,
-  togglePasswordVisibility
+  togglePasswordVisibility,
 }) => (
   <div className="password-input-container">
     <input

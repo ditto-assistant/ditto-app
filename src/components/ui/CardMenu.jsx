@@ -27,13 +27,13 @@ const CardMenu = ({ children, style, onDelete }) => {
         initial={{
           opacity: 0,
           scale: 0.95,
-          y: shouldOpenUpward ? 10 : -10
+          y: shouldOpenUpward ? 10 : -10,
         }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{
           opacity: 0,
           scale: 0.95,
-          y: shouldOpenUpward ? 10 : -10
+          y: shouldOpenUpward ? 10 : -10,
         }}
         transition={{ duration: 0.2 }}
         style={{
@@ -51,8 +51,8 @@ const CardMenu = ({ children, style, onDelete }) => {
           padding: isMobile ? "6px" : "4px",
           ...(shouldOpenUpward && {
             top: "auto",
-            bottom: window.innerHeight - style.top + 8
-          })
+            bottom: window.innerHeight - style.top + 8,
+          }),
         }}
         onClick={(e) => {
           e.stopPropagation()
@@ -72,7 +72,7 @@ const CardMenu = ({ children, style, onDelete }) => {
                 style={{
                   height: "1px",
                   backgroundColor: "#1E1F22",
-                  margin: isMobile ? "4px 0" : "2px 0"
+                  margin: isMobile ? "4px 0" : "2px 0",
                 }}
               />
             )
@@ -83,7 +83,7 @@ const CardMenu = ({ children, style, onDelete }) => {
               key={index}
               whileHover={{
                 backgroundColor: "rgba(88, 101, 242, 0.1)",
-                paddingLeft: isMobile ? "14px" : "12px"
+                paddingLeft: isMobile ? "14px" : "12px",
               }}
               transition={{ duration: 0.2 }}
               style={{
@@ -101,8 +101,8 @@ const CardMenu = ({ children, style, onDelete }) => {
                 marginBottom: isMobile ? "3px" : "2px",
                 ...(index === orderedItems.length - 1 && {
                   marginTop: "0",
-                  marginBottom: "0"
-                })
+                  marginBottom: "0",
+                }),
               }}
               onClick={() => {
                 if (child.props.onClick) {

@@ -2,11 +2,11 @@ import { promptLLMV2 } from "../api/LLM"
 import { mainTemplate, systemTemplate } from "../control/templates/mainTemplate"
 import {
   openscadTemplate,
-  openscadSystemTemplate
+  openscadSystemTemplate,
 } from "../control/templates/openscadTemplate"
 import {
   htmlTemplate,
-  htmlSystemTemplate
+  htmlSystemTemplate,
 } from "../control/templates/htmlTemplate"
 import { downloadOpenscadScript } from "./agentTools"
 import { handleScriptGeneration } from "./agentflows/scriptFlow"
@@ -56,7 +56,7 @@ export const sendPrompt = async (
     // This is read by other components to show a loading state
     const thinkingObject = {
       prompt,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
     localStorage.setItem("thinking", JSON.stringify(thinkingObject))
 
@@ -83,16 +83,16 @@ export const sendPrompt = async (
           userID,
           longTerm: {
             nodeCounts,
-            pairID
+            pairID,
           },
           shortTerm: {
-            k: shortTermK
+            k: shortTermK,
           },
-          stripImages: true
+          stripImages: true,
         },
         "text/plain"
       ),
-      searchExamples(pairID)
+      searchExamples(pairID),
     ])
     if (memories.err) {
       throw new Error(memories.err)
@@ -114,7 +114,7 @@ export const sendPrompt = async (
       timestamp: new Date().toISOString(),
       usersPrompt: prompt,
       selectedScript,
-      toolPreferences: preferences.tools
+      toolPreferences: preferences.tools,
     })
 
     console.log("%c" + constructedPrompt, "color: green")
@@ -146,7 +146,7 @@ export const sendPrompt = async (
       "<OPENSCAD>",
       "<HTML_SCRIPT>",
       "<IMAGE_GENERATION>",
-      "<GOOGLE_SEARCH>"
+      "<GOOGLE_SEARCH>",
     ]
 
     let toolTriggered = false
@@ -341,7 +341,7 @@ export const processResponse = async (
         userID,
         image,
         memories,
-        preferences
+        preferences,
       })
       await updateMessageWithToolStatus(
         pairID,
@@ -372,7 +372,7 @@ export const processResponse = async (
         openScriptCallback({
           script: scriptName,
           contents: script,
-          scriptType: "webApps"
+          scriptType: "webApps",
         })
         return fileDownloadName
       }
@@ -397,7 +397,7 @@ export const processResponse = async (
         userID,
         image,
         memories,
-        preferences
+        preferences,
       })
       await updateMessageWithToolStatus(
         pairID,

@@ -4,7 +4,7 @@ import {
   programmerAgentTaskCoder,
   programmerAgentTaskApplier,
   programmerAgentContinuer,
-  htmlSystemTemplate
+  htmlSystemTemplate,
 } from "../templates/agentUpdaterTemplates"
 
 export default async function updaterAgent(

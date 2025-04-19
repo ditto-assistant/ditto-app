@@ -14,7 +14,7 @@ interface CheckoutFormProps {
 export function CheckoutForm({
   usd,
   successURL,
-  cancelURL
+  cancelURL,
 }: CheckoutFormProps): JSX.Element {
   const auth = useAuth()
   const token = useAuthToken()

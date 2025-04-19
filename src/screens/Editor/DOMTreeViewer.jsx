@@ -36,7 +36,7 @@ const darkModeColors = {
   secondary: "#4752C4",
   text: "#FFFFFF",
   textSecondary: "#B5BAC1",
-  border: "#1E1F22"
+  border: "#1E1F22",
 }
 
 const NodeEditor = ({
@@ -44,7 +44,7 @@ const NodeEditor = ({
   onClose,
   onSave,
   setShowScriptChat,
-  setSelectedCodeAttachment
+  setSelectedCodeAttachment,
 }) => {
   const [code, setCode] = useState(node.outerHTML)
   const [wrapEnabled, setWrapEnabled] = useState(true)
@@ -133,11 +133,11 @@ const NodeEditor = ({
             tabSize: 2,
             wrap: wrapEnabled,
             fontFamily: "JetBrains Mono, monospace",
-            theme: "tomorrow_night"
+            theme: "tomorrow_night",
           }}
           style={{
             backgroundColor: darkModeColors.background,
-            borderRadius: "4px"
+            borderRadius: "4px",
           }}
         />
       </div>
@@ -149,7 +149,7 @@ const DOMTreeViewer = ({
   htmlContent,
   onNodeUpdate,
   setShowScriptChat,
-  setSelectedCodeAttachment
+  setSelectedCodeAttachment,
 }) => {
   const containerRef = useRef(null)
   const networkRef = useRef(null)
@@ -197,7 +197,7 @@ const DOMTreeViewer = ({
           ul: "#1ABC9C", // Teal
           li: "#16A085", // Dark Teal
           // Add more tag colors as needed
-          default: darkModeColors.primary // Fallback color
+          default: darkModeColors.primary, // Fallback color
         }
         const nodeColor = tagColors[tagName] || tagColors.default
 
@@ -210,13 +210,13 @@ const DOMTreeViewer = ({
             border: darkModeColors.secondary,
             highlight: {
               background: darkModeColors.secondary,
-              border: darkModeColors.primary
-            }
+              border: darkModeColors.primary,
+            },
           },
           font: {
             color: darkModeColors.text,
-            face: "Inter, system-ui, sans-serif"
-          }
+            face: "Inter, system-ui, sans-serif",
+          },
         })
 
         if (parentId !== null) {
@@ -225,8 +225,8 @@ const DOMTreeViewer = ({
             to: currentId,
             color: {
               color: darkModeColors.textSecondary,
-              highlight: darkModeColors.text
-            }
+              highlight: darkModeColors.text,
+            },
           })
         }
 
@@ -249,28 +249,28 @@ const DOMTreeViewer = ({
         font: {
           size: 14,
           color: darkModeColors.text,
-          face: "Inter, system-ui, sans-serif"
+          face: "Inter, system-ui, sans-serif",
         },
         borderWidth: 2,
         shadow: {
           enabled: true,
           color: "rgba(0,0,0,0.2)",
-          size: 5
+          size: 5,
         },
-        mass: 1
+        mass: 1,
       },
       edges: {
         arrows: {
           to: {
             enabled: true,
-            scaleFactor: 0.5
-          }
+            scaleFactor: 0.5,
+          },
         },
         smooth: {
           enabled: true,
           type: "dynamic",
-          roundness: 0.5
-        }
+          roundness: 0.5,
+        },
       },
       physics: {
         enabled: true,
@@ -280,17 +280,17 @@ const DOMTreeViewer = ({
           springLength: 95,
           springConstant: 0.04,
           damping: 0.09,
-          avoidOverlap: 0.1
+          avoidOverlap: 0.1,
         },
         stabilization: {
           enabled: true,
           iterations: 1000,
           updateInterval: 100,
-          fit: true
+          fit: true,
         },
         timestep: 0.5,
         maxVelocity: 50,
-        minVelocity: 0.1
+        minVelocity: 0.1,
       },
       interaction: {
         hover: true,
@@ -300,11 +300,11 @@ const DOMTreeViewer = ({
         multiselect: false,
         selectConnectedEdges: false,
         keyboard: {
-          enabled: false
+          enabled: false,
         },
         navigationButtons: false,
-        tooltipDelay: 0
-      }
+        tooltipDelay: 0,
+      },
     }
 
     networkRef.current = new Network(
@@ -338,7 +338,7 @@ const DOMTreeViewer = ({
 
         const velocity = {
           x: (Math.random() - 0.5) * 30,
-          y: (Math.random() - 0.5) * 30
+          y: (Math.random() - 0.5) * 30,
         }
 
         networkRef.current.body.data.nodes.update([
@@ -347,8 +347,8 @@ const DOMTreeViewer = ({
             x: position.x,
             y: position.y,
             vx: velocity.x,
-            vy: velocity.y
-          }
+            vy: velocity.y,
+          },
         ])
 
         isDragging = false
@@ -365,7 +365,7 @@ const DOMTreeViewer = ({
     }
 
     document.addEventListener("touchmove", preventDefaultTouch, {
-      passive: false
+      passive: false,
     })
 
     networkRef.current.on("stabilizationProgress", function () {
@@ -503,7 +503,7 @@ const styles = {
     height: "100%",
     display: "flex",
     flexDirection: "column",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   graph: {
     width: "100%",
@@ -511,7 +511,7 @@ const styles = {
     background: darkModeColors.background,
     border: `1px solid ${darkModeColors.border}`,
     borderRadius: "4px",
-    position: "relative"
+    position: "relative",
   },
   editorOverlay: {
     position: "fixed",
@@ -525,7 +525,7 @@ const styles = {
     zIndex: 999,
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   editorWrapper: {
     zIndex: 1000,
@@ -537,11 +537,11 @@ const styles = {
     "@media (max-width: 768px)": {
       width: "95%",
       maxWidth: "none",
-      margin: "0"
+      margin: "0",
     },
     "@media (max-height: 600px)": {
-      maxHeight: "90%"
-    }
+      maxHeight: "90%",
+    },
   },
   nodeEditor: {
     backgroundColor: darkModeColors.foreground,
@@ -552,7 +552,7 @@ const styles = {
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
-    maxHeight: "100%"
+    maxHeight: "100%",
   },
   nodeEditorHeader: {
     padding: "16px",
@@ -562,17 +562,17 @@ const styles = {
     alignItems: "center",
     backgroundColor: darkModeColors.foreground,
     borderTopLeftRadius: "12px",
-    borderTopRightRadius: "12px"
+    borderTopRightRadius: "12px",
   },
   nodeEditorTitle: {
     color: darkModeColors.text,
     fontSize: "16px",
-    fontWeight: 600
+    fontWeight: 600,
   },
   nodeEditorActions: {
     display: "flex",
     alignItems: "center",
-    gap: "8px"
+    gap: "8px",
   },
   nodeEditorButton: {
     padding: "8px",
@@ -580,17 +580,17 @@ const styles = {
     transition: "all 0.2s ease",
     "&:hover": {
       backgroundColor: `${darkModeColors.hover}80`,
-      transform: "scale(1.05)"
+      transform: "scale(1.05)",
     },
     "&:active": {
-      transform: "scale(0.95)"
-    }
+      transform: "scale(0.95)",
+    },
   },
   editorContainer: {
     flex: 1,
     minHeight: 0,
     maxHeight: "calc(100% - 60px)",
-    overflow: "auto"
+    overflow: "auto",
   },
   loadingOverlay: {
     position: "absolute",
@@ -605,14 +605,14 @@ const styles = {
     backgroundColor: "rgba(30, 31, 34, 0.8)",
     zIndex: 100,
     backdropFilter: "blur(4px)",
-    borderRadius: "4px"
+    borderRadius: "4px",
   },
   loadingText: {
     color: darkModeColors.text,
     marginTop: "16px",
     fontSize: "14px",
-    fontWeight: 500
-  }
+    fontWeight: 500,
+  },
 }
 
 export default DOMTreeViewer

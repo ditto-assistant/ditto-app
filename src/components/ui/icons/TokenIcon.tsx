@@ -11,7 +11,7 @@ interface TokenIconProps {
 const TokenIcon: React.FC<TokenIconProps> = ({
   className = "",
   size = 16,
-  color
+  color,
 }) => {
   return (
     <div

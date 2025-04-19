@@ -20,7 +20,7 @@ export function MemoryCountProvider({ children }) {
         count,
         loading,
         error,
-        refetch
+        refetch,
       }}
     >
       {children}

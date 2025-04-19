@@ -8,7 +8,7 @@ import {
   Fragment,
   Suspense,
   useMemo,
-  useRef
+  useRef,
 } from "react"
 
 export type ModalId =
@@ -68,9 +68,9 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
           [action.id]: {
             content: action.content,
             zIndex: maxZIndex + 1, // Set z-index higher than any existing modal
-            initialTabId: action.initialTabId
-          }
-        }
+            initialTabId: action.initialTabId,
+          },
+        },
       }
     }
 
@@ -82,7 +82,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
       const { [action.id]: _, ...remainingModals } = state.modals
       return {
         ...state,
-        modals: remainingModals
+        modals: remainingModals,
       }
 
     case "CLOSE_ALL": {
@@ -117,9 +117,9 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
           ...state.modals,
           [action.id]: {
             ...currentModal,
-            zIndex: maxZIndex + 1
-          }
-        }
+            zIndex: maxZIndex + 1,
+          },
+        },
       }
     }
 
@@ -176,11 +176,11 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
               type: "OPEN_MODAL",
               id,
               content: registration.component,
-              initialTabId: tabId
+              initialTabId: tabId,
             })
           },
           close: () => dispatch({ type: "CLOSE_MODAL", id }),
-          bringToFront: () => dispatch({ type: "BRING_TO_FRONT", id })
+          bringToFront: () => dispatch({ type: "BRING_TO_FRONT", id }),
         })
       }
       return stableHandlers.current.get(id)!
@@ -224,14 +224,14 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
       createCloseHandler,
       createBringToFrontHandler,
       closeAllModals,
-      getModalState
+      getModalState,
     }),
     [
       createOpenHandler,
       createCloseHandler,
       createBringToFrontHandler,
       closeAllModals,
-      getModalState
+      getModalState,
     ]
   )
 
@@ -261,5 +261,5 @@ export function useModal() {
 export const DEFAULT_MODAL_STATE: SingleModalState = {
   content: null,
   zIndex: 1,
-  initialTabId: undefined
+  initialTabId: undefined,
 }

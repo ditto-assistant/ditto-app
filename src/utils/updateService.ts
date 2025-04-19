@@ -42,7 +42,7 @@ const initialState: UpdateServiceState = {
   status: "idle",
   currentVersion: appVersion,
   needsRefresh: false,
-  justUpdated: false
+  justUpdated: false,
 }
 
 let state = { ...initialState }
@@ -111,7 +111,7 @@ export const initUpdateService = () => {
         console.error("Service worker registration error:", error)
         state.status = "update-error"
         window.dispatchEvent(createUpdateEvent(UPDATE_ERROR, { error }))
-      }
+      },
     })
 
     // Make the update function globally available
@@ -154,7 +154,7 @@ export const handleLazyLoadError = (error: Error | unknown): boolean => {
       createUpdateEvent(UPDATE_ERROR, {
         error,
         outdated: true,
-        message: "App is outdated and needs to be updated"
+        message: "App is outdated and needs to be updated",
       })
     )
     return true

@@ -6,7 +6,7 @@ import {
   renameScriptInFirestore,
   getVersionsOfScriptFromFirestore,
   syncLocalScriptsWithFirestore,
-  getScriptTimestamps
+  getScriptTimestamps,
 } from "../control/firebase"
 import { useAuth } from "./useAuth"
 import { useCallback, useState } from "react"
@@ -136,7 +136,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       return syncLocalScriptsWithFirestore(userId, "webApps")
     },
     enabled: !!userId,
-    staleTime: 30000 // 30 seconds
+    staleTime: 30000, // 30 seconds
   })
 
   // Fetch OpenSCAD scripts
@@ -148,7 +148,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         return syncLocalScriptsWithFirestore(userId, "openSCAD")
       },
       enabled: !!userId,
-      staleTime: 30000 // 30 seconds
+      staleTime: 30000, // 30 seconds
     }
   )
 
@@ -160,7 +160,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       return getScriptTimestamps(userId, "webApps")
     },
     enabled: !!userId,
-    staleTime: 30000 // 30 seconds
+    staleTime: 30000, // 30 seconds
   })
 
   const { data: openSCADTimestamps = {} } = useQuery({
@@ -170,7 +170,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       return getScriptTimestamps(userId, "openSCAD")
     },
     enabled: !!userId,
-    staleTime: 30000 // 30 seconds
+    staleTime: 30000, // 30 seconds
   })
 
   const { data: scriptVersions = [] } = useQuery({
@@ -178,7 +178,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       "scriptVersions",
       userId,
       selectedScript?.scriptType,
-      selectedScript?.script
+      selectedScript?.script,
     ],
     queryFn: () => {
       if (!userId || !selectedScript?.scriptType || !selectedScript?.script)
@@ -191,7 +191,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
     },
     enabled:
       !!userId && !!selectedScript?.scriptType && !!selectedScript?.script,
-    staleTime: 60000 // 1 minute
+    staleTime: 60000, // 1 minute
   })
 
   // Mutation for saving a script
@@ -199,7 +199,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
     mutationFn: ({
       content,
       scriptType,
-      name
+      name,
     }: {
       content: string
       scriptType: ScriptType
@@ -207,14 +207,14 @@ function useScriptsManager(): ScriptsManagerReturnType {
     }) => saveScriptToFirestore(userId, content, scriptType, name),
     onSuccess: (_, variables) => {
       refreshScriptQueries(variables.scriptType)
-    }
+    },
   })
 
   // Mutation for deleting a script
   const deleteScriptMutation = useMutation({
     mutationFn: ({
       scriptType,
-      name
+      name,
     }: {
       scriptType: ScriptType
       name: string
@@ -228,7 +228,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         handleDeselectScript()
       }
       refreshScriptQueries(variables.scriptType)
-    }
+    },
   })
 
   // Mutation for renaming a script
@@ -237,7 +237,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
       timestampString,
       scriptType,
       oldName,
-      newName
+      newName,
     }: {
       timestampString: string
       scriptType: ScriptType
@@ -259,11 +259,11 @@ function useScriptsManager(): ScriptsManagerReturnType {
       ) {
         setSelectedScriptLocal({
           ...selectedScript,
-          script: variables.newName
+          script: variables.newName,
         })
       }
       refreshScriptQueries(variables.scriptType)
-    }
+    },
   })
 
   const handleDeselectScript = useCallback(() => {
@@ -274,7 +274,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
   const revertScriptMutation = useMutation({
     mutationFn: ({
       scriptType,
-      name
+      name,
     }: {
       scriptType: ScriptType
       name: string
@@ -288,7 +288,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         handleDeselectScript()
       }
       refreshScriptQueries(variables.scriptType)
-    }
+    },
   })
 
   // Function to set the selected script (replaces localStorage)
@@ -301,14 +301,14 @@ function useScriptsManager(): ScriptsManagerReturnType {
           setSelectedScriptLocal({
             script: script.name,
             contents: script.content || script.contents || "",
-            scriptType: script.scriptType
+            scriptType: script.scriptType,
           })
         } else if ("script" in script && script.script) {
           // Handle SelectedScriptInfo format
           setSelectedScriptLocal({
             script: script.script,
             contents: script.contents || "",
-            scriptType: script.scriptType || "webApps"
+            scriptType: script.scriptType || "webApps",
           })
         }
       } else {
@@ -324,10 +324,10 @@ function useScriptsManager(): ScriptsManagerReturnType {
         if (scriptType) {
           // Invalidate specific script type queries
           queryClient.invalidateQueries({
-            queryKey: ["scripts", userId, scriptType]
+            queryKey: ["scripts", userId, scriptType],
           })
           queryClient.invalidateQueries({
-            queryKey: ["scriptTimestamps", userId, scriptType]
+            queryKey: ["scriptTimestamps", userId, scriptType],
           })
           if (selectedScript?.scriptType === scriptType) {
             queryClient.invalidateQueries({
@@ -335,17 +335,17 @@ function useScriptsManager(): ScriptsManagerReturnType {
                 "scriptVersions",
                 userId,
                 selectedScript.scriptType,
-                selectedScript.script
-              ]
+                selectedScript.script,
+              ],
             })
           }
         } else {
           // Invalidate all script-related queries
           queryClient.invalidateQueries({
-            queryKey: ["scripts", userId]
+            queryKey: ["scripts", userId],
           })
           queryClient.invalidateQueries({
-            queryKey: ["scriptTimestamps", userId]
+            queryKey: ["scriptTimestamps", userId],
           })
         }
       }
@@ -361,7 +361,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
   // Combine scripts into a single object to match the old API
   const scripts: ScriptsState = {
     webApps: webAppsScripts,
-    openSCAD: openSCADScripts
+    openSCAD: openSCADScripts,
   }
 
   return {
@@ -386,7 +386,7 @@ function useScriptsManager(): ScriptsManagerReturnType {
         timestampString,
         scriptType,
         oldName,
-        newName
+        newName,
       }),
     revertScript: (scriptType, name) =>
       revertScriptMutation.mutateAsync({ scriptType, name }),
@@ -396,6 +396,6 @@ function useScriptsManager(): ScriptsManagerReturnType {
     isLoading: isLoadingWebApps || isLoadingOpenSCAD,
     isSaving: saveScriptMutation.isPending,
     isDeleting: deleteScriptMutation.isPending,
-    isRenaming: renameScriptMutation.isPending
+    isRenaming: renameScriptMutation.isPending,
   }
 }

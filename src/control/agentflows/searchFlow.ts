@@ -2,7 +2,7 @@ import { webSearch } from "../../api/webSearch"
 import { promptLLMV2 } from "../../api/LLM"
 import {
   googleSearchTemplate,
-  googleSearchSystemTemplate
+  googleSearchSystemTemplate,
 } from "../templates/googleSearchTemplate"
 import { ModelPreferences } from "@/types/llm"
 

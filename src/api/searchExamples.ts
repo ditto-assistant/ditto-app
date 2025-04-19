@@ -23,23 +23,23 @@ export async function searchExamples(
   const request: SearchExamplesRequest = {
     userID: tok.ok.userID,
     pairID,
-    k
+    k,
   }
   try {
     const response = await fetch(routes.searchExamples, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
+        Authorization: `Bearer ${tok.ok.token}`,
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     })
     if (response.ok) {
       const data = await response.text()
       return { ok: data }
     } else {
       return {
-        err: `Unable to search examples. Error: ${response.status}`
+        err: `Unable to search examples. Error: ${response.status}`,
       }
     }
   } catch (error) {

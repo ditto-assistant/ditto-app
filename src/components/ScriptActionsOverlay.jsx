@@ -10,7 +10,7 @@ function ScriptActionsOverlay({
   onEdit,
   onDeselect,
   onClose,
-  script // This is the full script object
+  script, // This is the full script object
 }) {
   const [isVisible, setIsVisible] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
@@ -112,14 +112,14 @@ function ScriptActionsOverlay({
             width: "100%",
             height: "100%",
             zIndex: 5000,
-            backgroundColor: "#1E1F22"
+            backgroundColor: "#1E1F22",
           }}
         >
           <FullScreenEditor
             script={{
               name: scriptName,
               content: script.content || "",
-              scriptType: script.scriptType
+              scriptType: script.scriptType,
             }}
             onClose={() => {
               setShowEditor(false)

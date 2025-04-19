@@ -12,7 +12,7 @@ import {
   FaCode,
   FaCreditCard,
   FaCrown,
-  FaBolt
+  FaBolt,
 } from "react-icons/fa"
 import { sendPrompt } from "../control/agent"
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
@@ -52,7 +52,7 @@ export default function SendMessage({
   showMediaOptions,
   onOpenMediaOptions,
   onCloseMediaOptions,
-  onStop
+  onStop,
 }) {
   const [image, setImage] = useState(capturedImage || "")
   const textAreaRef = useRef(null)
@@ -64,7 +64,7 @@ export default function SendMessage({
     refetch,
     addOptimisticMessage,
     updateOptimisticResponse,
-    finalizeOptimisticMessage
+    finalizeOptimisticMessage,
   } = useConversationHistory()
   const {
     message,
@@ -72,7 +72,7 @@ export default function SendMessage({
     openComposeModal,
     isWaitingForResponse,
     setIsWaitingForResponse,
-    registerSubmitCallback
+    registerSubmitCallback,
   } = useCompose()
   const { clearPrompt } = usePromptStorage()
   const canvasRef = useRef()
@@ -224,7 +224,7 @@ export default function SendMessage({
       finalizeOptimisticMessage,
       selectedScript,
       user?.data?.planTier,
-      onStop
+      onStop,
     ]
   )
 
@@ -454,7 +454,7 @@ export default function SendMessage({
                 rows={3}
                 style={{
                   overflowY: "hidden",
-                  marginRight: "-5px"
+                  marginRight: "-5px",
                 }}
               />
             </div>
@@ -488,7 +488,7 @@ export default function SendMessage({
                     whileHover={{
                       scale: 1.1,
                       backgroundColor: "rgba(255, 255, 255, 0.2)",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)"
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
                     }}
                     onMouseEnter={handleHoverStart}
                     onMouseLeave={handleHoverEnd}
@@ -520,18 +520,18 @@ export default function SendMessage({
                         {
                           icon: <FaLaptopCode className="icon" />,
                           text: "Scripts",
-                          onClick: openScriptsOverlay
+                          onClick: openScriptsOverlay,
                         },
                         {
                           icon: <MdFeedback className="icon" />,
                           text: "Feedback",
-                          onClick: openFeedbackModal
+                          onClick: openFeedbackModal,
                         },
                         {
                           icon: <IoSettingsOutline className="icon" />,
                           text: "Settings",
-                          onClick: openSettingsModal
-                        }
+                          onClick: openSettingsModal,
+                        },
                       ]}
                     />
                   </div>
@@ -594,7 +594,7 @@ export default function SendMessage({
                 {
                   icon: <FaPlay className="icon" />,
                   text: "Launch Script",
-                  onClick: handlePlayScript
+                  onClick: handlePlayScript,
                 },
                 {
                   icon: <FaPen className="icon" />,
@@ -606,19 +606,19 @@ export default function SendMessage({
                           script: {
                             name: selectedScript.script,
                             content: selectedScript.contents,
-                            scriptType: selectedScript.scriptType
-                          }
-                        }
+                            scriptType: selectedScript.scriptType,
+                          },
+                        },
                       })
                       window.dispatchEvent(event)
                     }
-                  }
+                  },
                 },
                 {
                   icon: <FaTimes className="icon" />,
                   text: "Deselect Script",
-                  onClick: handleDeselectScript
-                }
+                  onClick: handleDeselectScript,
+                },
               ]}
             />
           </div>

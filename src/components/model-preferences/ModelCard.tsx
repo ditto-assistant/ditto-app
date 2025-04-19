@@ -9,7 +9,7 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,7 +25,7 @@ import {
   Flame,
   Clock,
   Zap,
-  Rocket
+  Rocket,
 } from "lucide-react"
 
 // Vendor color mappings for visual consistency
@@ -35,7 +35,7 @@ const VENDOR_COLORS: Record<Vendor, string> = {
   anthropic: "#5436DA",
   mistral: "#7A88FF",
   meta: "#0668E1",
-  cerebras: "#FF4B4B"
+  cerebras: "#FF4B4B",
 }
 
 // Speed labels have been removed per requirements
@@ -118,7 +118,7 @@ export const ModelCard = ({
   onSelect,
   onShowDetails,
   type,
-  redirectToSubscription
+  redirectToSubscription,
 }: ModelCardProps) => {
   const { preferences, updatePreferences } = useModelPreferences()
 
@@ -136,8 +136,8 @@ export const ModelCard = ({
     updatePreferences({
       imageGeneration: {
         model: model.name as Model,
-        size
-      }
+        size,
+      },
     })
   }
 
@@ -178,7 +178,7 @@ export const ModelCard = ({
                 backgroundColor:
                   VENDOR_COLORS[model.provider.toLowerCase() as Vendor] ||
                   "#999",
-                color: "white"
+                color: "white",
               }}
             >
               {getVendorIcon(model.provider.toLowerCase() as Vendor)}

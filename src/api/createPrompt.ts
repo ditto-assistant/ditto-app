@@ -22,23 +22,23 @@ export async function createPrompt(prompt: string): Promise<Result<string>> {
   const request: CreatePromptRequest = {
     userID: tok.ok.userID,
     deviceID,
-    prompt
+    prompt,
   }
   try {
     const response = await fetch(routes.createPrompt, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
+        Authorization: `Bearer ${tok.ok.token}`,
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     })
 
     if (response.ok) {
       return { ok: await response.text() }
     } else {
       return {
-        err: `Unable to create prompt. Error: ${response.status}`
+        err: `Unable to create prompt. Error: ${response.status}`,
       }
     }
   } catch (error) {

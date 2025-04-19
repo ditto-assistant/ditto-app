@@ -10,7 +10,7 @@ const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemsSchema: T) =>
     page: z.number(),
     nextPage: z.number(),
     prevPage: z.number().optional(),
-    pageSize: z.number()
+    pageSize: z.number(),
   })
 
 // Base schema for common model capabilities (shared between image and LLM models)
@@ -33,14 +33,14 @@ const BaseModelCapabilitiesSchema = z.object({
   strengths: z.string(),
   weaknesses: z.string(),
   avatarStyle: z.string(),
-  minimumTier: z.number().optional().default(0)
+  minimumTier: z.number().optional().default(0),
 })
 
 // Schema for image model capabilities
 const ImageModelSchema = BaseModelCapabilitiesSchema.extend({
   imageSize: z.string(),
   imageOrientation: z.string(),
-  cost: z.number()
+  cost: z.number(),
 })
 
 // Schema for LLM model capabilities with additional fields
@@ -50,7 +50,7 @@ const LLMModelSchema = BaseModelCapabilitiesSchema.extend({
   isDateTagged: z.boolean(),
   attachableImageCount: z.number(),
   costPerMillionInputTokens: z.number(),
-  costPerMillionOutputTokens: z.number()
+  costPerMillionOutputTokens: z.number(),
 })
 
 export type ImageModel = z.infer<typeof ImageModelSchema>
@@ -65,7 +65,7 @@ export type PaginatedLLMModels = z.infer<
 // Request parameters schema for pagination
 export const PageParamsSchema = z.object({
   page: z.number().optional().default(0),
-  pageSize: z.number().optional().default(10)
+  pageSize: z.number().optional().default(10),
 })
 
 export type PageParams = z.infer<typeof PageParamsSchema>
@@ -91,7 +91,7 @@ export async function getPromptModels(
     // Build query parameters
     const queryParams = new URLSearchParams({
       page: validParams.page.toString(),
-      pageSize: validParams.pageSize.toString()
+      pageSize: validParams.pageSize.toString(),
     })
 
     const response = await fetch(
@@ -100,8 +100,8 @@ export async function getPromptModels(
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok.token}`,
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       }
     )
 
@@ -115,12 +115,12 @@ export async function getPromptModels(
       } else {
         console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getPromptModels: Invalid data received. Error: ${result.error.message}`
+          err: `getPromptModels: Invalid data received. Error: ${result.error.message}`,
         }
       }
     } else {
       return {
-        err: `getPromptModels: Unable to fetch models: ${response.status}`
+        err: `getPromptModels: Unable to fetch models: ${response.status}`,
       }
     }
   } catch (error) {
@@ -150,7 +150,7 @@ export async function getImageModels(
     // Build query parameters
     const queryParams = new URLSearchParams({
       page: validParams.page.toString(),
-      pageSize: validParams.pageSize.toString()
+      pageSize: validParams.pageSize.toString(),
     })
 
     const response = await fetch(
@@ -159,8 +159,8 @@ export async function getImageModels(
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok.token}`,
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       }
     )
 
@@ -174,12 +174,12 @@ export async function getImageModels(
       } else {
         console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getImageModels: Invalid data received. Error: ${result.error.message}`
+          err: `getImageModels: Invalid data received. Error: ${result.error.message}`,
         }
       }
     } else {
       return {
-        err: `getImageModels: Unable to fetch models: ${response.status}`
+        err: `getImageModels: Unable to fetch models: ${response.status}`,
       }
     }
   } catch (error) {

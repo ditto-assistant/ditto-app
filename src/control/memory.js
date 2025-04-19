@@ -2,7 +2,7 @@ import { deleteDoc, doc, getDoc } from "firebase/firestore"
 import {
   db,
   extractFirebaseImageUrls,
-  deleteImageFromFirebaseStorage
+  deleteImageFromFirebaseStorage,
 } from "./firebase"
 
 /**

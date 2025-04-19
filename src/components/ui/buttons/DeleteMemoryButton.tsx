@@ -3,7 +3,7 @@ import { FaTrash } from "react-icons/fa"
 import { ModalButton } from "./ModalButton"
 import {
   resetConversation,
-  deleteAllUserImagesFromFirebaseStorageBucket
+  deleteAllUserImagesFromFirebaseStorageBucket,
 } from "@/control/firebase"
 import { useAuth } from "@/hooks/useAuth"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
@@ -17,7 +17,7 @@ interface DeleteMemoryButtonProps {
 export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
   onSuccess,
   className = "",
-  fixedWidth
+  fixedWidth,
 }) => {
   const { user } = useAuth()
   const { showConfirmationDialog } = useConfirmationDialog()
@@ -38,7 +38,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
 
     window.dispatchEvent(
       new CustomEvent("memoryDeleted", {
-        detail: { newHistCount: 0 }
+        detail: { newHistCount: 0 },
       })
     )
 
@@ -53,7 +53,7 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       onConfirm: handleDeleteMemory,
-      variant: "danger"
+      variant: "danger",
     })
   }
 

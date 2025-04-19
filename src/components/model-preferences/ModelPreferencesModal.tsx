@@ -27,14 +27,14 @@ export const ModelPreferencesModal: React.FC = () => {
     pricing: null,
     imageSupport: false,
     vendor: null,
-    modelFamily: null
+    modelFamily: null,
   })
 
   const [imageFilters, setImageFilters] = useState({
     provider: null,
     dimensions: null,
     quality: null,
-    modelFamily: null
+    modelFamily: null,
   })
 
   // Fetch models from API
@@ -71,7 +71,7 @@ export const ModelPreferencesModal: React.FC = () => {
         acc[family] = {
           square: [],
           landscape: [],
-          portrait: []
+          portrait: [],
         }
       }
 
@@ -139,7 +139,7 @@ export const ModelPreferencesModal: React.FC = () => {
         slow: [1, 2],
         medium: [3],
         fast: [4],
-        insane: [5, 6, 7, 8, 9, 10]
+        insane: [5, 6, 7, 8, 9, 10],
       }
 
       filtered = filtered.filter((model) => {

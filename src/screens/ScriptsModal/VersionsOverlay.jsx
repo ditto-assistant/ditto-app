@@ -8,7 +8,7 @@ const VersionsOverlay = ({
   onSelect,
   onDelete,
   versions,
-  category
+  category,
 }) => {
   const { showConfirmationDialog } = useConfirmationDialog()
 
@@ -41,7 +41,7 @@ const VersionsOverlay = ({
       content: `Are you sure you want to delete "${script.name}"? This action cannot be undone.`,
       confirmLabel: "Delete",
       variant: "danger",
-      onConfirm: () => onDelete(category, script)
+      onConfirm: () => onDelete(category, script),
     })
   }
 
@@ -150,7 +150,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 100001
+    zIndex: 100001,
   },
   modal: {
     position: "relative",
@@ -163,7 +163,7 @@ const styles = {
     maxWidth: "480px",
     textAlign: "center",
     border: "1px solid rgba(255, 255, 255, 0.1)",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
   deleteConfirmationWrapper: {
     position: "fixed",
@@ -171,18 +171,18 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 100003
+    zIndex: 100003,
   },
   icon: {
     color: "#5865F2",
     fontSize: "48px",
-    marginBottom: "24px"
+    marginBottom: "24px",
   },
   title: {
     color: "#FFFFFF",
     margin: "0 0 24px 0",
     fontSize: "24px",
-    fontWeight: "600"
+    fontWeight: "600",
   },
   versionsContainer: {
     display: "flex",
@@ -191,7 +191,7 @@ const styles = {
     maxHeight: "300px",
     overflowY: "auto",
     marginBottom: "24px",
-    padding: "4px"
+    padding: "4px",
   },
   versionItem: {
     display: "flex",
@@ -200,13 +200,13 @@ const styles = {
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: "8px",
     cursor: "pointer",
-    transition: "all 0.2s ease"
+    transition: "all 0.2s ease",
   },
   versionName: {
     flex: 1,
     color: "#FFFFFF",
     fontSize: "14px",
-    textAlign: "left"
+    textAlign: "left",
   },
   versionBadge: {
     backgroundColor: "#5865F2",
@@ -214,7 +214,7 @@ const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    marginLeft: "8px"
+    marginLeft: "8px",
   },
   latestBadge: {
     backgroundColor: "#28A745",
@@ -222,13 +222,13 @@ const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    marginLeft: "8px"
+    marginLeft: "8px",
   },
   deleteIcon: {
     color: "#DA373C",
     cursor: "pointer",
     fontSize: "14px",
-    marginLeft: "12px"
+    marginLeft: "12px",
   },
   cancelButton: {
     backgroundColor: "#4F545C",
@@ -241,8 +241,8 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.2s ease",
     marginTop: "8px",
-    width: "100%"
-  }
+    width: "100%",
+  },
 }
 
 export default VersionsOverlay

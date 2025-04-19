@@ -25,7 +25,7 @@ const formatTimestamp = (timestamp) => {
   // If more than 24 hours, show the date
   return date.toLocaleDateString("en-US", {
     month: "short",
-    day: "numeric"
+    day: "numeric",
   })
 }
 
@@ -46,7 +46,7 @@ export default function ScriptsOverlay() {
     deleteScript,
     renameScript,
     revertScript,
-    refreshScripts
+    refreshScripts,
   } = useScripts()
 
   const [activeTab, setActiveTab] = useState("webApps")
@@ -54,7 +54,7 @@ export default function ScriptsOverlay() {
   const [sortOrder, setSortOrder] = useState("recent")
   const [showAddForm, setShowAddForm] = useState({
     webApps: false,
-    openSCAD: false
+    openSCAD: false,
   })
   const [activeCard, setActiveCard] = useState(null)
   const [menuPosition, setMenuPosition] = useState(null)
@@ -85,7 +85,7 @@ export default function ScriptsOverlay() {
     setSelectedScript({
       name: script.name,
       content: script.content,
-      scriptType: script.scriptType
+      scriptType: script.scriptType,
     })
 
     // Trigger a global event to notify other components
@@ -99,7 +99,7 @@ export default function ScriptsOverlay() {
       content,
       confirmLabel: "Delete",
       variant: "danger",
-      onConfirm: () => handleDeleteScript(category, script)
+      onConfirm: () => handleDeleteScript(category, script),
     })
   }
 
@@ -118,7 +118,7 @@ export default function ScriptsOverlay() {
               padding: "2px 6px",
               fontSize: "12px",
               display: "inline-block",
-              margin: "0 4px"
+              margin: "0 4px",
             }}
           >
             v{version}
@@ -128,7 +128,7 @@ export default function ScriptsOverlay() {
       ),
       confirmLabel: "Revert",
       variant: "primary",
-      onConfirm: () => handleRevertScript(category, script)
+      onConfirm: () => handleRevertScript(category, script),
     })
   }
 
@@ -167,7 +167,7 @@ export default function ScriptsOverlay() {
       closeOverlay()
       window.dispatchEvent(
         new CustomEvent("editScript", {
-          detail: { script }
+          detail: { script },
         })
       )
     } else if (script.scriptType === "openSCAD") {
@@ -410,7 +410,7 @@ export default function ScriptsOverlay() {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{
             y: -4,
-            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)"
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
           }}
           whileTap={{ scale: 0.98 }}
           onClick={() => {
@@ -479,7 +479,7 @@ export default function ScriptsOverlay() {
                 const rect = e.currentTarget.getBoundingClientRect()
                 setMenuPosition({
                   top: rect.bottom + 8,
-                  left: rect.left
+                  left: rect.left,
                 })
                 setActiveCard(currentScript.id)
               }}
@@ -492,7 +492,7 @@ export default function ScriptsOverlay() {
               style={{
                 top: menuPosition.top,
                 left: menuPosition.left,
-                transformOrigin: menuPosition.openUpward ? "bottom" : "top"
+                transformOrigin: menuPosition.openUpward ? "bottom" : "top",
               }}
             >
               <motion.div
@@ -529,7 +529,7 @@ export default function ScriptsOverlay() {
                 <motion.div
                   className="card-menu-item"
                   whileHover={{
-                    backgroundColor: "rgba(88, 101, 242, 0.1)"
+                    backgroundColor: "rgba(88, 101, 242, 0.1)",
                   }}
                   onClick={(e) => {
                     if (e) {
@@ -542,7 +542,7 @@ export default function ScriptsOverlay() {
                     )
                     setVersionOverlay({
                       baseScriptName: baseName,
-                      versions: versions
+                      versions: versions,
                     })
                     setActiveCard(null)
                     setMenuPosition(null)
@@ -557,7 +557,7 @@ export default function ScriptsOverlay() {
                   <motion.div
                     className="card-menu-item primary"
                     whileHover={{
-                      backgroundColor: "rgba(88, 101, 242, 0.1)"
+                      backgroundColor: "rgba(88, 101, 242, 0.1)",
                     }}
                     onClick={(e) => {
                       if (e) {
@@ -631,8 +631,8 @@ export default function ScriptsOverlay() {
               type: "spring",
               stiffness: 300,
               damping: 25,
-              mass: 0.5
-            }
+              mass: 0.5,
+            },
           }}
           exit={{
             opacity: 0,
@@ -643,8 +643,8 @@ export default function ScriptsOverlay() {
               stiffness: 300,
               damping: 25,
               mass: 0.5,
-              opacity: { duration: 0.2 }
-            }
+              opacity: { duration: 0.2 },
+            },
           }}
         >
           <motion.div
@@ -658,15 +658,15 @@ export default function ScriptsOverlay() {
                 type: "spring",
                 stiffness: 400,
                 damping: 25,
-                mass: 0.5
-              }
+                mass: 0.5,
+              },
             }}
             exit={{
               scale: 0.95,
               opacity: 0,
               transition: {
-                duration: 0.2
-              }
+                duration: 0.2,
+              },
             }}
           >
             <motion.div
@@ -677,8 +677,8 @@ export default function ScriptsOverlay() {
                 y: 0,
                 transition: {
                   delay: 0.2,
-                  duration: 0.3
-                }
+                  duration: 0.3,
+                },
               }}
             >
               <p className="selected-script-label">Currently Selected</p>
@@ -716,8 +716,8 @@ export default function ScriptsOverlay() {
                   delay: 0.3,
                   type: "spring",
                   stiffness: 400,
-                  damping: 30
-                }
+                  damping: 30,
+                },
               }}
             >
               {selectedScript.script}

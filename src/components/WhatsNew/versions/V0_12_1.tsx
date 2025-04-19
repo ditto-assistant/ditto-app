@@ -9,9 +9,9 @@ const sections: Section[] = [
         type: "new",
         title: "Token Airdrop Notifications",
         description:
-          "Get notified with a beautiful toast notification when you receive token airdrops"
-      }
-    ]
+          "Get notified with a beautiful toast notification when you receive token airdrops",
+      },
+    ],
   },
   {
     title: "Improvements",
@@ -20,15 +20,15 @@ const sections: Section[] = [
         type: "improved",
         title: "Balance API Validation",
         description:
-          "Added Zod schema validation to balance API responses for improved reliability"
+          "Added Zod schema validation to balance API responses for improved reliability",
       },
       {
         type: "improved",
         title: "Premium User Detection",
         description:
-          "Simplified premium user detection based on plan tier rather than balance"
-      }
-    ]
+          "Simplified premium user detection based on plan tier rather than balance",
+      },
+    ],
   },
   {
     title: "Bug Fixes",
@@ -36,10 +36,10 @@ const sections: Section[] = [
       {
         type: "fixed",
         title: "Model Dropdown Props",
-        description: "Fixed unused props in ModelDropdown component"
-      }
-    ]
-  }
+        description: "Fixed unused props in ModelDropdown component",
+      },
+    ],
+  },
 ]
 
 const V0_12_1 = () => (

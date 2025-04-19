@@ -19,7 +19,7 @@ type AgentToolsModalProps = {
 }
 
 export const AgentToolsModal: React.FC<AgentToolsModalProps> = ({
-  minimumTier = 1
+  minimumTier = 1,
 }) => {
   const { preferences, updatePreferences } = useModelPreferences()
   const [localTools, setLocalTools] = useState<ToolPreferences | null>(null)
@@ -39,13 +39,13 @@ export const AgentToolsModal: React.FC<AgentToolsModalProps> = ({
     // Update local state immediately for UI responsiveness
     const updatedTools = {
       ...localTools,
-      [toolName]: !localTools[toolName]
+      [toolName]: !localTools[toolName],
     }
     setLocalTools(updatedTools)
 
     // Then update the backend
     updatePreferences({
-      tools: updatedTools
+      tools: updatedTools,
     })
   }
 

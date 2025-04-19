@@ -104,7 +104,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
               top: dropdownRef.current?.getBoundingClientRect().bottom + 4,
               left: dropdownRef.current?.getBoundingClientRect().left,
               width: dropdownRef.current?.getBoundingClientRect().width,
-              zIndex: 999999
+              zIndex: 999999,
             }}
           >
             {IMAGE_GENERATION_MODELS.map((model) => (
@@ -112,7 +112,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                 <motion.div
                   style={{
                     ...styles.option,
-                    opacity: model.isMaintenance ? 0.5 : 1
+                    opacity: model.isMaintenance ? 0.5 : 1,
                   }}
                   onClick={() => {
                     setExpandedModel(
@@ -159,10 +159,10 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                             backgroundColor:
                               value === model.id && selectedSize === size
                                 ? "rgba(88, 101, 242, 0.1)"
-                                : "transparent"
+                                : "transparent",
                           }}
                           whileHover={{
-                            backgroundColor: "rgba(88, 101, 242, 0.1)"
+                            backgroundColor: "rgba(88, 101, 242, 0.1)",
                           }}
                           onClick={() => handleSelect(model.id, size)}
                         >
@@ -187,24 +187,24 @@ const styles = {
     fontSize: "12px",
     color: "#FFFFFF",
     opacity: 0.7,
-    marginLeft: "8px"
+    marginLeft: "8px",
   },
   modelHeader: {
     display: "flex",
     alignItems: "center",
-    gap: "8px"
+    gap: "8px",
   },
   sizeOptions: {
     backgroundColor: "#2F3136",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   sizeOption: {
     padding: "8px 24px",
     fontSize: "14px",
     color: "#FFFFFF",
     cursor: "pointer",
-    transition: "background-color 0.2s ease"
-  }
+    transition: "background-color 0.2s ease",
+  },
 }
 
 export default ModelDropdownImage

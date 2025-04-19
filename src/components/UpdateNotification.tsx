@@ -3,7 +3,7 @@ import {
   getUpdateState,
   applyUpdate,
   UPDATE_READY,
-  UPDATE_ERROR
+  UPDATE_ERROR,
 } from "@/utils/updateService"
 import "./UpdateNotification.css"
 import { UpdateServiceState } from "@/types/common"
@@ -30,7 +30,7 @@ const UpdateNotification = () => {
         setUpdateState({
           ...getUpdateState(),
           status: "outdated",
-          needsRefresh: true
+          needsRefresh: true,
         })
         setVisible(true)
       }

@@ -33,7 +33,7 @@ const versionComponents: Record<string, React.ComponentType> = {
   "0.11.65": V0_11_65,
   "0.11.66": V0_11_66,
   "0.12.0": V0_12_0,
-  "0.12.1": V0_12_1
+  "0.12.1": V0_12_1,
   // Add future versions here
 }
 

@@ -23,7 +23,7 @@ const CustomScrollToBottom = ({
   scrollViewClassName,
   initialScrollBehavior = "auto",
   detectScrollToTop = () => {},
-  onScrollToTopRef
+  onScrollToTopRef,
 }) => {
   const scrollContainerRef = useRef(null)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
@@ -40,7 +40,7 @@ const CustomScrollToBottom = ({
     setTimeout(() => {
       scrollContainer.scrollTo({
         top: scrollContainer.scrollHeight,
-        behavior: behavior
+        behavior: behavior,
       })
     }, 50)
   }
@@ -108,7 +108,7 @@ const CustomScrollToBottom = ({
     detectScrollToTop,
     initialScrollBehavior,
     isScrolledToBottom,
-    onScrollToTopRef
+    onScrollToTopRef,
   ])
 
   useEffect(() => {
@@ -234,7 +234,7 @@ const CustomScrollToBottom = ({
         style={{
           overflowY: "auto",
           height: "100%",
-          position: "relative"
+          position: "relative",
         }}
       >
         {children}
@@ -254,7 +254,7 @@ const CustomScrollToBottom = ({
             display: "flex",
             pointerEvents: "auto",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
-            touchAction: "none"
+            touchAction: "none",
           }}
           onTouchStart={(e) => {
             e.stopPropagation()
@@ -270,13 +270,13 @@ const CustomScrollToBottom = ({
 export default function ChatFeed({
   bubbleStyles = {
     text: {
-      fontSize: 14
+      fontSize: 14,
     },
     chatbubble: {
       borderRadius: 20,
-      padding: 10
-    }
-  }
+      padding: 10,
+    },
+  },
 }) {
   const {
     messages,
@@ -284,7 +284,7 @@ export default function ChatFeed({
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    refetch
+    refetch,
   } = useConversationHistory()
   const { showMemoryNetwork } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
@@ -454,7 +454,7 @@ export default function ChatFeed({
       await confirmMemoryDeletion(message.id, {
         onSuccess: () => {
           refetch()
-        }
+        },
       })
     } catch (error) {
       console.error("Error deleting message:", error)
@@ -498,7 +498,7 @@ export default function ChatFeed({
           onScrollToTopRef={detectScrollToTopRef}
           style={{
             opacity: messagesVisible ? 1 : 0,
-            transition: "opacity 0.2s ease-in-out"
+            transition: "opacity 0.2s ease-in-out",
           }}
         >
           {messages
@@ -533,7 +533,7 @@ export default function ChatFeed({
                       menuProps={{
                         onCopy: () => handleCopy(message, "prompt"),
                         onDelete: () => handleMessageDelete(message),
-                        onShowMemories: () => handleShowMemories(message)
+                        onShowMemories: () => handleShowMemories(message),
                       }}
                     />
                   )}
@@ -555,7 +555,7 @@ export default function ChatFeed({
                       menuProps={{
                         onCopy: () => handleCopy(message, "response"),
                         onDelete: () => handleMessageDelete(message),
-                        onShowMemories: () => handleShowMemories(message)
+                        onShowMemories: () => handleShowMemories(message),
                       }}
                     />
                   )}

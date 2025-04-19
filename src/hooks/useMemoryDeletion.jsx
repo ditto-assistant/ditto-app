@@ -22,7 +22,9 @@ export const useMemoryDeletion = (updateConversation) => {
           if (updateConversation) {
             updateConversation((prevState) => ({
               ...prevState,
-              messages: prevState.messages.filter((msg) => msg.pairID !== docId)
+              messages: prevState.messages.filter(
+                (msg) => msg.pairID !== docId
+              ),
             }))
 
             const prompts = JSON.parse(localStorage.getItem("prompts") || "[]")
@@ -87,7 +89,7 @@ export const useMemoryDeletion = (updateConversation) => {
                   opacity: 0.7,
                   padding: "6px 10px",
                   background: "rgba(0, 0, 0, 0.2)",
-                  borderRadius: "4px"
+                  borderRadius: "4px",
                 }}
               >
                 Document ID: {docId}
@@ -98,7 +100,7 @@ export const useMemoryDeletion = (updateConversation) => {
         confirmLabel: "Delete",
         cancelLabel: "Cancel",
         variant: "danger",
-        onConfirm: () => deleteMemory(docId, options)
+        onConfirm: () => deleteMemory(docId, options),
       })
     },
     [showConfirmationDialog, deleteMemory, user]
@@ -106,6 +108,6 @@ export const useMemoryDeletion = (updateConversation) => {
 
   return {
     deleteMemory,
-    confirmMemoryDeletion
+    confirmMemoryDeletion,
   }
 }

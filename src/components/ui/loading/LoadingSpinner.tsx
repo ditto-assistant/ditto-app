@@ -11,7 +11,7 @@ export default function FullScreenSpinner({ text }: { text?: string }) {
 
 export function LoadingSpinner({
   size = 50,
-  inline = false
+  inline = false,
 }: {
   size?: number
   inline?: boolean
@@ -24,7 +24,7 @@ export function LoadingSpinner({
       style={{
         width: inline ? size : "100%",
         height: inline ? size : "100%",
-        ["--spinner-size" as string]: `${size}px`
+        ["--spinner-size" as string]: `${size}px`,
       }}
     >
       {[0, 1, 2, 3].map((i) => (

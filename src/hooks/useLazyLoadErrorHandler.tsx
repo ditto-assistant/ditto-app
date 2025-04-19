@@ -11,7 +11,7 @@ interface ErrorBoundaryContextType {
 const ErrorBoundaryContext = createContext<ErrorBoundaryContextType>({
   hasError: false,
   isOutdated: false,
-  resetError: () => {}
+  resetError: () => {},
 })
 
 // Error boundary for catching lazy loading errors
@@ -24,7 +24,7 @@ class LazyLoadErrorBoundary extends Component<
 > {
   state = {
     hasError: false,
-    isOutdated: false
+    isOutdated: false,
   }
 
   static getDerivedStateFromError(_: Error) {
@@ -49,7 +49,7 @@ class LazyLoadErrorBoundary extends Component<
           value={{
             hasError: this.state.hasError,
             isOutdated: this.state.isOutdated,
-            resetError: this.resetError
+            resetError: this.resetError,
           }}
         >
           {this.props.children}
@@ -62,7 +62,7 @@ class LazyLoadErrorBoundary extends Component<
         value={{
           hasError: this.state.hasError,
           isOutdated: this.state.isOutdated,
-          resetError: this.resetError
+          resetError: this.resetError,
         }}
       >
         {this.props.children}
@@ -88,7 +88,7 @@ export const useLazyLoadErrorHandler = () => {
   }
 
   const ErrorBoundaryWrapper = ({
-    children
+    children,
   }: {
     children: React.ReactNode
   }) => (
@@ -102,7 +102,7 @@ export const useLazyLoadErrorHandler = () => {
     isOutdated,
     resetError,
     ErrorBoundaryWrapper,
-    useErrorBoundaryContext: () => useContext(ErrorBoundaryContext)
+    useErrorBoundaryContext: () => useContext(ErrorBoundaryContext),
   }
 }
 

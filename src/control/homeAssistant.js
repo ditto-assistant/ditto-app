@@ -10,15 +10,15 @@ const sendGoogleSdkCommand = async (prompt) => {
     const url = API_URL + "/api/services/google_assistant_sdk/send_text_command"
     const headers = {
       Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     }
     const data = {
-      command: prompt
+      command: prompt,
     }
     await fetch(url, {
       method: "POST",
       headers: headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
     if (MODE === "development") {
       console.log("Google Assistant SDK Command:", prompt)
@@ -50,11 +50,11 @@ const getHaServices = async (services = null, states = null) => {
     const endpoint = services ? "services" : states ? "states" : "services"
     const url = `${API_URL}${endpoint}`
     const headers = {
-      Authorization: `Bearer ${API_KEY}`
+      Authorization: `Bearer ${API_KEY}`,
     }
     const response = await fetch(url, {
       method: "GET",
-      headers: headers
+      headers: headers,
     })
     return response.json()
   } catch (error) {
@@ -94,12 +94,12 @@ const updateState = async (entityId, data) => {
     const url = `${API_URL}states/${entityId}`
     const headers = {
       Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     }
     const response = await fetch(url, {
       method: "POST",
       headers: headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
     return response.json()
   } catch (error) {
@@ -113,5 +113,5 @@ export {
   sendPushCamera,
   getHaServices,
   getForecast,
-  updateState
+  updateState,
 }

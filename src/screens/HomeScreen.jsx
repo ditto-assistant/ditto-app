@@ -98,7 +98,7 @@ export default function HomeScreen() {
   const startCamera = (useFrontCamera) => {
     navigator.mediaDevices
       .getUserMedia({
-        video: { facingMode: useFrontCamera ? "user" : "environment" }
+        video: { facingMode: useFrontCamera ? "user" : "environment" },
       })
       .then((stream) => {
         if (videoRef.current) {
@@ -159,7 +159,7 @@ export default function HomeScreen() {
             setSelectedScript({
               name: script.name,
               content: newContent,
-              scriptType: script.scriptType
+              scriptType: script.scriptType,
             })
 
             setFullScreenEdit(null)
@@ -167,7 +167,7 @@ export default function HomeScreen() {
           } catch (error) {
             console.error("Error saving:", error)
           }
-        }
+        },
       })
     }
 

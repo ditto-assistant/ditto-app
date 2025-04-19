@@ -11,7 +11,7 @@ const darkModeColors = {
   secondary: "#4752C4",
   text: "#FFFFFF",
   textSecondary: "#B5BAC1",
-  border: "#1E1F22"
+  border: "#1E1F22",
 }
 
 const OpenSCADViewer = ({ script, onClose }) => {
@@ -43,7 +43,7 @@ const OpenSCADViewer = ({ script, onClose }) => {
           JSON.stringify({
             script: script.name,
             contents: content,
-            scriptType: "openSCAD"
+            scriptType: "openSCAD",
           })
         )
       }
@@ -117,7 +117,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 100002,
-    backdropFilter: "blur(4px)"
+    backdropFilter: "blur(4px)",
   },
   container: {
     backgroundColor: darkModeColors.foreground,
@@ -130,34 +130,34 @@ const styles = {
     flexDirection: "column",
     border: `1px solid ${darkModeColors.border}`,
     position: "relative",
-    zIndex: 100003
+    zIndex: 100003,
   },
   header: {
     padding: "16px 24px",
     borderBottom: `1px solid ${darkModeColors.border}`,
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   title: {
     margin: 0,
     color: darkModeColors.text,
     fontSize: "18px",
-    fontWeight: 600
+    fontWeight: 600,
   },
   headerButtons: {
     display: "flex",
-    gap: "8px"
+    gap: "8px",
   },
   saveButton: {
     "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.1)"
-    }
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
   },
   closeButton: {
     "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.1)"
-    }
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
   },
   editor: {
     padding: "24px",
@@ -175,8 +175,8 @@ const styles = {
     fontFamily: "monospace",
     fontSize: "14px",
     color: darkModeColors.text,
-    lineHeight: "1.5"
-  }
+    lineHeight: "1.5",
+  },
 }
 
 export default OpenSCADViewer

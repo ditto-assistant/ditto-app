@@ -21,7 +21,7 @@ async function submitFeedback(_: FeedbackState, formData: FormData) {
   try {
     const response = await fetch(`${BASE_URL}/v1/feedback`, {
       method: "POST",
-      body: formData
+      body: formData,
     })
     if (response.status === 201) {
       return { ok: true }

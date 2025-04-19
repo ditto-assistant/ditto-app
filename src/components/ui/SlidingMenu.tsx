@@ -29,7 +29,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   position = "left",
   triggerRef,
   menuPosition = "top",
-  menuTitle
+  menuTitle,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: user } = useUser()
@@ -83,7 +83,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: 20 },
-        transition: { duration: 0.15 }
+        transition: { duration: 0.15 },
       }
     }
 
@@ -93,7 +93,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
       initial: { opacity: 0, x: initialX },
       animate: { opacity: 1, x: 0 },
       exit: { opacity: 0, x: initialX },
-      transition: { duration: 0.15 }
+      transition: { duration: 0.15 },
     }
   }
 

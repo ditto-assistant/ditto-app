@@ -20,7 +20,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
   isFullscreen = false,
   onToggleFullscreen,
   icon,
-  useGradient = true
+  useGradient = true,
 }) => {
   // Handle touch events separately to prevent iOS Safari issues
   const handleButtonTouch = (e: React.TouchEvent, callback: () => void) => {

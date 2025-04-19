@@ -8,7 +8,7 @@ interface SubscriptionBoostIndicatorProps {
 }
 
 const SubscriptionBoostIndicator: React.FC<SubscriptionBoostIndicatorProps> = ({
-  isBoosted
+  isBoosted,
 }) => {
   if (!isBoosted) return null
 

@@ -13,6 +13,6 @@ export function useUser() {
         throw new Error("No data returned")
       }
       return result.ok
-    }
+    },
   })
 }

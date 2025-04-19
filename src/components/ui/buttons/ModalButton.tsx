@@ -29,7 +29,7 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
     fullWidth ? "full-width" : "",
     fixedWidth ? "fixed-width" : "",
     size ? size : "",
-    className
+    className,
   ]
     .filter(Boolean)
     .join(" ")

@@ -3,7 +3,7 @@ import {
   createBrowserRouter,
   RouterProvider,
   Route,
-  createRoutesFromElements
+  createRoutesFromElements,
 } from "react-router"
 import { Toaster } from "react-hot-toast"
 import { createPortal } from "react-dom"
@@ -96,35 +96,35 @@ const router = createBrowserRouter(
 
 const modalRegistry: ModalRegistry = {
   feedback: {
-    component: <FeedbackModal />
+    component: <FeedbackModal />,
   },
   memoryNetwork: {
-    component: <MemoryNetworkModal />
+    component: <MemoryNetworkModal />,
   },
   imageViewer: {
-    component: <ImageViewer />
+    component: <ImageViewer />,
   },
   settings: {
-    component: <Settings />
+    component: <Settings />,
   },
   scripts: {
-    component: <ScriptsOverlay />
+    component: <ScriptsOverlay />,
   },
   dittoCanvas: {
-    component: <DittoCanvasModal />
+    component: <DittoCanvasModal />,
   },
   confirmationDialog: {
-    component: <ConfirmationDialog />
+    component: <ConfirmationDialog />,
   },
   memoryNodeViewer: {
-    component: <MemoryNodeModal />
+    component: <MemoryNodeModal />,
   },
   whatsNew: {
-    component: <WhatsNew />
+    component: <WhatsNew />,
   },
   tokenCheckout: {
-    component: <TokenModal />
-  }
+    component: <TokenModal />,
+  },
 } as const
 
 function App() {
@@ -159,8 +159,8 @@ function App() {
                                             color: "#fff",
                                             borderRadius: "8px",
                                             padding: "12px 16px",
-                                            zIndex: 10000
-                                          }
+                                            zIndex: 10000,
+                                          },
                                         }}
                                       />,
                                       document.getElementById("toast-root") ||

@@ -3,7 +3,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useState
+  useState,
 } from "react"
 import { useModal } from "./useModal"
 import { Memory } from "@/api/getMemories"
@@ -26,7 +26,7 @@ const MemoryNodeViewerContext = createContext<
 >(undefined)
 
 export function MemoryNodeViewerProvider({
-  children
+  children,
 }: {
   children: ReactNode
 }) {
@@ -41,7 +41,7 @@ export function MemoryNodeViewerProvider({
         nodeData,
         setNodeData,
         onDelete,
-        setOnDelete
+        setOnDelete,
       }}
     >
       {children}
@@ -91,6 +91,6 @@ export function useMemoryNodeViewer() {
   return {
     ...context,
     showMemoryNode,
-    hideMemoryNode
+    hideMemoryNode,
   }
 }

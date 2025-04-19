@@ -21,9 +21,9 @@ export async function embed(request: {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
+        Authorization: `Bearer ${tok.ok.token}`,
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     })
 
     if (response.ok) {
@@ -31,7 +31,7 @@ export async function embed(request: {
       return { ok: data }
     } else {
       return {
-        err: `Unable to create embedding. Error: ${response.status}`
+        err: `Unable to create embedding. Error: ${response.status}`,
       }
     }
   } catch (error) {

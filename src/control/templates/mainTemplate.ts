@@ -100,12 +100,12 @@ export const mainTemplate = (params: {
     timestamp,
     usersPrompt,
     selectedScript,
-    toolPreferences
+    toolPreferences,
   } = params
   console.log("toolPreferences", params)
   const tools = getToolsModule({
     scriptType: selectedScript?.scriptType,
-    toolPreferences
+    toolPreferences,
   })
 
   const toolsSection =
@@ -178,7 +178,7 @@ Ditto:`
     "<!working_on_script_module>",
     workingOnScriptModule({
       scriptName: selectedScript?.script,
-      type: selectedScript?.scriptType
+      type: selectedScript?.scriptType,
     })
   )
   prompt = prompt.replace("<!users_name>", firstName)

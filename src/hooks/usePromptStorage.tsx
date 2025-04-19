@@ -3,14 +3,14 @@ import {
   createContext,
   useState,
   useEffect,
-  useCallback
+  useCallback,
 } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/useAuth"
 import {
   savePromptToFirestore,
   getPromptFromFirestore,
-  clearPromptFromFirestore
+  clearPromptFromFirestore,
 } from "@/control/firebase"
 import { debounce, DebouncedFunction } from "@/utils/debounce"
 
@@ -42,7 +42,7 @@ export function usePromptStorage() {
 }
 
 export function PromptStorageProvider({
-  children
+  children,
 }: {
   children: React.ReactNode
 }) {
@@ -82,14 +82,14 @@ function usePromptStorageData(): PromptStorageContextType {
     },
     enabled: !!user,
     staleTime: 2000,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
   })
 
   // Mutation to save prompt
   const saveMutation = useMutation({
     mutationFn: async ({
       prompt,
-      image = ""
+      image = "",
     }: {
       prompt: string
       image?: string
@@ -104,7 +104,7 @@ function usePromptStorageData(): PromptStorageContextType {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["promptStorage", user?.uid], data)
-    }
+    },
   })
 
   // Mutation to clear prompt
@@ -116,7 +116,7 @@ function usePromptStorageData(): PromptStorageContextType {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["promptStorage", user?.uid], data)
-    }
+    },
   })
   const { mutate: savePromptMutate } = saveMutation
   const { mutate: clearPromptMutate } = clearMutation
@@ -138,6 +138,6 @@ function usePromptStorageData(): PromptStorageContextType {
     isLoading: query.isLoading,
     error: query.error as Error | null,
     savePrompt,
-    clearPrompt
+    clearPrompt,
   }
 }

@@ -21,7 +21,7 @@ export function useLLMModelDetails(modelId: Model | undefined) {
       }
       return result.ok
     },
-    enabled: !!modelId && !!user
+    enabled: !!modelId && !!user,
   })
 }
 
@@ -43,7 +43,7 @@ export function useImageModelDetails(modelId: Model | undefined) {
       }
       return result.ok
     },
-    enabled: !!modelId && !!user
+    enabled: !!modelId && !!user,
   })
 }
 

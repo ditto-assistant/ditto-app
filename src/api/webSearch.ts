@@ -19,19 +19,19 @@ export async function webSearch(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
+        Authorization: `Bearer ${tok.ok.token}`,
       },
       body: JSON.stringify({
         query,
         numResults,
-        userID: tok.ok.userID
-      })
+        userID: tok.ok.userID,
+      }),
     })
     if (response.ok) {
       return { ok: await response.text() }
     } else {
       return {
-        err: `Unable to retrieve search results. Error: ${response.status}`
+        err: `Unable to retrieve search results. Error: ${response.status}`,
       }
     }
   } catch (error) {

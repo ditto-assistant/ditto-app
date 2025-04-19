@@ -14,7 +14,7 @@ import {
   FaRobot,
   FaBrain,
   FaFire,
-  FaMicrochip
+  FaMicrochip,
 } from "react-icons/fa"
 import { SiOpenai } from "react-icons/si"
 import { TbBrandMeta } from "react-icons/tb"
@@ -43,7 +43,7 @@ const FilterGroup = ({
   title,
   expanded,
   onToggle,
-  children
+  children,
 }: FilterGroupProps) => {
   return (
     <div className="mb-4">
@@ -82,7 +82,7 @@ export const ModelFilters = ({
   activeFilters,
   setActiveFilters,
   filterType,
-  groupedModels
+  groupedModels,
 }: ModelFiltersProps) => {
   const { isMobile } = usePlatform()
   const [expanded, setExpanded] = useState(false)
@@ -94,20 +94,20 @@ export const ModelFilters = ({
     family: !isMobile,
     provider: !isMobile,
     dimensions: !isMobile,
-    quality: !isMobile
+    quality: !isMobile,
   })
 
   const toggleFilter = (filterKey: keyof FilterValues, value: string) => {
     setActiveFilters({
       ...activeFilters,
-      [filterKey]: activeFilters[filterKey] === value ? null : value
+      [filterKey]: activeFilters[filterKey] === value ? null : value,
     })
   }
 
   const toggleGroup = (group: string) => {
     setExpandedGroups({
       ...expandedGroups,
-      [group]: !expandedGroups[group]
+      [group]: !expandedGroups[group],
     })
   }
 
@@ -220,7 +220,7 @@ export const ModelFilters = ({
                     onCheckedChange={(checked) =>
                       setActiveFilters({
                         ...activeFilters,
-                        imageSupport: checked
+                        imageSupport: checked,
                       })
                     }
                   />

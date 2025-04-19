@@ -38,7 +38,7 @@ export default function Modal({
   defaultTabId,
   onTabChange,
   icon,
-  useGradientTitle = true
+  useGradientTitle = true,
 }: ModalProps) {
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
     useModal()
@@ -119,7 +119,7 @@ export default function Modal({
 
         tabsContainer.scrollTo({
           left: Math.max(0, scrollPosition),
-          behavior: "smooth"
+          behavior: "smooth",
         })
       }
     }
@@ -136,7 +136,7 @@ export default function Modal({
       const maxY = window.innerHeight - height
       return {
         x: Math.max(0, Math.min(x, maxX)),
-        y: Math.max(0, Math.min(y, maxY))
+        y: Math.max(0, Math.min(y, maxY)),
       }
     }
 
@@ -145,7 +145,7 @@ export default function Modal({
       const maxHeight = window.innerHeight - position.y
       return {
         width: Math.max(MIN_WIDTH, Math.min(width, maxWidth)),
-        height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight))
+        height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight)),
       }
     }
 
@@ -153,7 +153,7 @@ export default function Modal({
       if (isDragging) {
         const finalPosition = {
           x: position.x + localTransform.x,
-          y: position.y + localTransform.y
+          y: position.y + localTransform.y,
         }
         setPosition(finalPosition)
         setLocalTransform({ x: 0, y: 0 })
@@ -178,7 +178,7 @@ export default function Modal({
         )
         setLocalTransform({
           x: boundedPos.x - position.x,
-          y: boundedPos.y - position.y
+          y: boundedPos.y - position.y,
         })
       }
 
@@ -240,7 +240,7 @@ export default function Modal({
     resizeEdge,
     resizeStart,
     size,
-    localTransform
+    localTransform,
   ])
 
   const isTabLocked = (minimumTier?: number) => {
@@ -267,7 +267,7 @@ export default function Modal({
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0
+        bottom: 0,
       }
     : {
         zIndex,
@@ -276,7 +276,7 @@ export default function Modal({
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        transform: `translate(${localTransform.x}px, ${localTransform.y}px)`
+        transform: `translate(${localTransform.x}px, ${localTransform.y}px)`,
       }
 
   return createPortal(

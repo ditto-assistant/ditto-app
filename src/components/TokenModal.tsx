@@ -16,7 +16,7 @@ const PricingTiers = [
   { price: 10, tokens: "11B", bonus: "10%" },
   { price: 25, tokens: "30B", bonus: "20%" },
   { price: 75, tokens: "100B", bonus: "33%" },
-  { price: 100, tokens: "150B", bonus: "50%" }
+  { price: 100, tokens: "150B", bonus: "50%" },
 ]
 
 export default function TokenModal() {
@@ -28,7 +28,7 @@ export default function TokenModal() {
   const {
     preferences,
     updatePreferences,
-    isLoading: preferencesLoading
+    isLoading: preferencesLoading,
   } = useModelPreferences()
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function TokenModal() {
               type: "spring",
               stiffness: 260,
               damping: 20,
-              delay: 0.2
+              delay: 0.2,
             }}
             className="token-success-icon-container"
           >

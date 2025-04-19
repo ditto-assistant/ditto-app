@@ -9,10 +9,10 @@ const sections: Section[] = [
         type: "fixed",
         title: "Scripts",
         description:
-          "Ditto now automatically opens and plays scripts in the canvas when they are created. This improves the user experience by eliminating the need to manually open scripts after they are generated."
-      }
-    ]
-  }
+          "Ditto now automatically opens and plays scripts in the canvas when they are created. This improves the user experience by eliminating the need to manually open scripts after they are generated.",
+      },
+    ],
+  },
 ]
 
 const V0_11_65 = () => (

@@ -13,6 +13,6 @@ export function useSubscriptionTiers() {
         throw new Error("No data returned")
       }
       return result.ok
-    }
+    },
   })
 }

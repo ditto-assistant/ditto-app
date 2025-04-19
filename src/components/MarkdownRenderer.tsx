@@ -15,7 +15,7 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer = ({
   content,
-  className = ""
+  className = "",
 }: MarkdownRendererProps) => {
   const { handleImageClick } = useImageViewerHandler()
   const { isIOS } = usePlatform()
@@ -48,7 +48,7 @@ const MarkdownRenderer = ({
                 minHeight: isIOS ? "180px" : "auto",
                 minWidth: "100px",
                 background: "rgba(0, 0, 0, 0.05)",
-                position: "relative"
+                position: "relative",
               }}
               onClick={() => src && handleImageClick(src)}
               // Keep just the essential attributes for iOS
@@ -140,7 +140,7 @@ const MarkdownRenderer = ({
                         margin: 0,
                         padding: "16px",
                         borderRadius: "6px",
-                        minWidth: "min-content"
+                        minWidth: "min-content",
                       }}
                       style={
                         vscDarkPlus as { [key: string]: React.CSSProperties }
@@ -155,7 +155,7 @@ const MarkdownRenderer = ({
 
             // If no code element found, just render the pre
             return <pre {...props}>{children}</pre>
-          }
+          },
         }}
       >
         {content}

@@ -33,7 +33,7 @@ export const useAuthToken = () => {
       if (!user) return undefined
       return user.getIdToken()
     },
-    enabled: !!user
+    enabled: !!user,
   })
 }
 
@@ -56,7 +56,7 @@ function useAuthState() {
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false
+    refetchOnReconnect: false,
   })
 }
 
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       value={{
         ...query,
         user: query.data ?? null,
-        signOut
+        signOut,
       }}
     >
       {children}

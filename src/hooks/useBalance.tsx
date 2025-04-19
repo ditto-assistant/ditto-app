@@ -57,11 +57,11 @@ function useBal() {
       // Using consistent ID ensures only one toast is shown at a time
       toast.custom((t) => <BalanceDropToast t={t} amount={dropAmount} />, {
         // duration: 2000,
-        id: "balance-drop-toast" // Using a consistent ID prevents duplicates
+        id: "balance-drop-toast", // Using a consistent ID prevents duplicates
       })
 
       return result.ok
     },
-    enabled: !!user
+    enabled: !!user,
   })
 }

@@ -22,7 +22,7 @@ const ModelDropdown = ({
   onChange,
   models = DEFAULT_MODELS,
   isOpen,
-  onOpenChange
+  onOpenChange,
 }) => {
   const dropdownRef = useRef(null)
   const portalRef = useRef(null)
@@ -108,7 +108,7 @@ const ModelDropdown = ({
               zIndex: 999999,
               overflow: "hidden",
               maxHeight: "200px",
-              overflowY: "auto"
+              overflowY: "auto",
             }}
             onClick={(e) => {
               e.preventDefault()
@@ -128,7 +128,7 @@ const ModelDropdown = ({
                   justifyContent: "space-between",
                   alignItems: "center",
                   transition: "background-color 0.2s ease",
-                  cursor: model.isMaintenance ? "not-allowed" : "pointer"
+                  cursor: model.isMaintenance ? "not-allowed" : "pointer",
                 }}
                 onClick={() => {
                   handleSelect(model.id)
@@ -170,13 +170,13 @@ const darkModeColors = {
   text: "#FFFFFF",
   foreground: "#23272A",
   cardBg: "#2F3136",
-  border: "#1E1F22"
+  border: "#1E1F22",
 }
 
 export const styles = {
   container: {
     position: "relative",
-    width: "100%"
+    width: "100%",
   },
   selectedValue: {
     backgroundColor: darkModeColors.foreground,
@@ -187,18 +187,18 @@ export const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    border: `1px solid ${darkModeColors.border}`
+    border: `1px solid ${darkModeColors.border}`,
   },
   selectedContent: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
     fontSize: "14px",
-    color: darkModeColors.text
+    color: darkModeColors.text,
   },
   expandIcon: {
     fontSize: "20px",
-    color: darkModeColors.text
+    color: darkModeColors.text,
   },
   dropdown: {
     backgroundColor: darkModeColors.cardBg,
@@ -208,7 +208,7 @@ export const styles = {
     maxHeight: "200px",
     width: "100%",
     zIndex: 10000,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)"
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
   },
   option: {
     padding: "10px 12px",
@@ -220,14 +220,14 @@ export const styles = {
     backgroundColor: darkModeColors.cardBg,
     color: darkModeColors.text,
     "&:hover": {
-      backgroundColor: "rgba(88, 101, 242, 0.1)"
-    }
+      backgroundColor: "rgba(88, 101, 242, 0.1)",
+    },
   },
   badges: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    flexShrink: 0
+    flexShrink: 0,
   },
   premiumBadge: {
     backgroundColor: "#5865F2",
@@ -238,7 +238,7 @@ export const styles = {
     display: "flex",
     alignItems: "center",
     gap: "4px",
-    whiteSpace: "nowrap"
+    whiteSpace: "nowrap",
   },
   requirementBadge: {
     backgroundColor: "#ED4245",
@@ -246,12 +246,12 @@ export const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    whiteSpace: "nowrap"
+    whiteSpace: "nowrap",
   },
   crownIcon: {
     fontSize: "10px",
     flexShrink: 0,
-    color: "#FFFFFF"
+    color: "#FFFFFF",
   },
   freeBadge: {
     backgroundColor: "#43B581",
@@ -259,7 +259,7 @@ export const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    whiteSpace: "nowrap"
+    whiteSpace: "nowrap",
   },
   maintenanceBadge: {
     backgroundColor: "#ED4245",
@@ -267,8 +267,8 @@ export const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    whiteSpace: "nowrap"
-  }
+    whiteSpace: "nowrap",
+  },
 }
 
 export default ModelDropdown

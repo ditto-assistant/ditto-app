@@ -9,7 +9,7 @@ interface FilterGroupProps {
 export const FilterGroup: React.FC<FilterGroupProps> = ({
   label,
   children,
-  className = ""
+  className = "",
 }) => {
   return (
     <div className={`filter-group ${className}`}>

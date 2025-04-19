@@ -14,7 +14,7 @@ export const ModelList = ({
   models,
   activeTab,
   groupedModels,
-  isImageModel = false
+  isImageModel = false,
 }: ModelListProps) => {
   const { data: user } = useUser()
 

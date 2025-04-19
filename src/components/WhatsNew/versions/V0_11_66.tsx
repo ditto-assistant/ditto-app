@@ -8,10 +8,10 @@ const sections: Section[] = [
         type: "fixed",
         title: "Profile Image Loading",
         description:
-          "Fixed an issue where user profile images would sometimes fail to load."
-      }
-    ]
-  }
+          "Fixed an issue where user profile images would sometimes fail to load.",
+      },
+    ],
+  },
 ]
 
 const V0_11_66 = () => (

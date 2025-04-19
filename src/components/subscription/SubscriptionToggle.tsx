@@ -9,7 +9,7 @@ interface SubscriptionToggleProps {
 
 const SubscriptionToggle: React.FC<SubscriptionToggleProps> = ({
   isYearly,
-  onChange
+  onChange,
 }) => {
   return (
     <div className="subscription-toggle-container">

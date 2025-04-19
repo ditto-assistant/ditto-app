@@ -5,7 +5,7 @@ import {
   useState,
   useCallback,
   useEffect,
-  useMemo
+  useMemo,
 } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useAuth, useAuthToken } from "./useAuth"
@@ -55,7 +55,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    refetch
+    refetch,
   } = useInfiniteQuery<ConversationResponse>({
     queryKey: ["conversations", user?.uid, tok.data],
     queryFn: async ({ pageParam }) => {
@@ -67,15 +67,15 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       }
       const params = new URLSearchParams({
         userId: user?.uid || "",
-        limit: "5"
+        limit: "5",
       })
       if (pageParam) {
         params.set("cursor", pageParam as string)
       }
       const response = await fetch(`${BASE_URL}/v1/conversations?${params}`, {
         headers: {
-          Authorization: `Bearer ${tok.data}`
-        }
+          Authorization: `Bearer ${tok.data}`,
+        },
       })
       if (!response.ok) {
         throw new Error("Failed to fetch conversations")
@@ -85,7 +85,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     initialPageParam: "",
     getNextPageParam: (lastPage: ConversationResponse) =>
       lastPage.nextCursor || undefined,
-    enabled: !!user?.uid && !!tok.data
+    enabled: !!user?.uid && !!tok.data,
   })
 
   // Memoize server messages to prevent unnecessary re-renders
@@ -223,8 +223,8 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
           imageURL,
           score: 0,
           vector_distance: 0,
-          depth: 0
-        }
+          depth: 0,
+        },
       ]
 
       setOptimisticMessages((prev) => [...newOptimisticMessages, ...prev])
@@ -248,7 +248,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
                 ...msg,
                 streamingResponse:
                   (msg.streamingResponse || "") + responseChunk,
-                response: (msg.streamingResponse || "") + responseChunk
+                response: (msg.streamingResponse || "") + responseChunk,
               }
             : msg
         )
@@ -290,7 +290,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
                 streamingResponse: undefined,
                 // For tool responses, keep isOptimistic true to prevent cleanup
                 // during tool processing
-                isOptimistic: hasTool
+                isOptimistic: hasTool,
               }
             : msg
         )
@@ -336,7 +336,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     addOptimisticMessage,
     updateOptimisticResponse,
     finalizeOptimisticMessage,
-    clearOptimisticMessages
+    clearOptimisticMessages,
   }
 
   return (

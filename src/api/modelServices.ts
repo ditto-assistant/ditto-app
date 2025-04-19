@@ -30,7 +30,7 @@ const LLMModelSchema = z.object({
   attachableImageCount: z.number(),
   minimumTier: z.number().optional().default(0),
   costPerMillionInputTokens: z.number(),
-  costPerMillionOutputTokens: z.number()
+  costPerMillionOutputTokens: z.number(),
 })
 
 // Schema for image model capabilities
@@ -58,7 +58,7 @@ const ImageModelSchema = z.object({
   weaknesses: z.string(),
   avatarStyle: z.string(),
   minimumTier: z.number().optional().default(0),
-  cost: z.number()
+  cost: z.number(),
 })
 
 export type LLMModel = z.infer<typeof LLMModelSchema>
@@ -83,8 +83,8 @@ export async function getLLMModel(modelId: Model): Promise<Result<LLMModel>> {
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok.token}`,
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       }
     )
 
@@ -97,12 +97,12 @@ export async function getLLMModel(modelId: Model): Promise<Result<LLMModel>> {
       } else {
         console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getLLMModel: Invalid data received. Error: ${result.error.message}`
+          err: `getLLMModel: Invalid data received. Error: ${result.error.message}`,
         }
       }
     } else {
       return {
-        err: `getLLMModel: Unable to fetch model: ${response.status}`
+        err: `getLLMModel: Unable to fetch model: ${response.status}`,
       }
     }
   } catch (error) {
@@ -132,8 +132,8 @@ export async function getImageModel(
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok.token}`,
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       }
     )
 
@@ -146,12 +146,12 @@ export async function getImageModel(
       } else {
         console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getImageModel: Invalid data received. Error: ${result.error.message}`
+          err: `getImageModel: Invalid data received. Error: ${result.error.message}`,
         }
       }
     } else {
       return {
-        err: `getImageModel: Unable to fetch model: ${response.status}`
+        err: `getImageModel: Unable to fetch model: ${response.status}`,
       }
     }
   } catch (error) {

@@ -65,9 +65,9 @@ export async function getMemories(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${tok.ok.token}`,
-        Accept: accept
+        Accept: accept,
       },
-      body: JSON.stringify(params)
+      body: JSON.stringify(params),
     })
 
     if (response.ok) {
@@ -79,7 +79,7 @@ export async function getMemories(
       }
     } else {
       return {
-        err: `Unable to retrieve memories. Error: ${response.status}`
+        err: `Unable to retrieve memories. Error: ${response.status}`,
       }
     }
   } catch (error) {

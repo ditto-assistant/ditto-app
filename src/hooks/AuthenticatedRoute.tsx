@@ -7,7 +7,7 @@ type AuthenticatedRouteProps = {
 }
 
 export default function AuthenticatedRoute({
-  children
+  children,
 }: AuthenticatedRouteProps) {
   const { user, isLoading } = useAuth()
   const navigate = useNavigate()

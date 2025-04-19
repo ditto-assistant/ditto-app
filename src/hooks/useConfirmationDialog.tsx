@@ -21,7 +21,7 @@ const ConfirmationDialogContext = createContext<
 >(undefined)
 
 export function ConfirmationDialogProvider({
-  children
+  children,
 }: {
   children: ReactNode
 }) {
@@ -31,7 +31,7 @@ export function ConfirmationDialogProvider({
     <ConfirmationDialogContext.Provider
       value={{
         config,
-        setConfig
+        setConfig,
       }}
     >
       {children}
@@ -65,6 +65,6 @@ export function useConfirmationDialog() {
   return {
     ...context,
     showConfirmationDialog,
-    hideConfirmationDialog
+    hideConfirmationDialog,
   }
 }

@@ -31,11 +31,11 @@ const sections: Section[] = [
       {
         type: "new", // Options: "new", "improved", "fixed"
         title: "Feature Title",
-        description: "Feature description"
-      }
+        description: "Feature description",
+      },
       // Add more features...
-    ]
-  }
+    ],
+  },
   // Add more sections...
 ]
 
@@ -60,7 +60,7 @@ import V1_2_3 from "./versions/V1_2_3"
 
 // Map versions to their components
 const versionComponents: Record<string, React.ComponentType> = {
-  "1.2.3": V1_2_3
+  "1.2.3": V1_2_3,
   // Other versions...
 }
 ```

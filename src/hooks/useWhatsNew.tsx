@@ -139,6 +139,6 @@ export default function useWhatsNew(): UseWhatsNewReturn {
 
   return {
     openWhatsNew,
-    currentVersion
+    currentVersion,
   }
 }

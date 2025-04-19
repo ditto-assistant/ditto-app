@@ -111,7 +111,7 @@ const LLMTest: React.FC = () => {
           disabled={isLoading}
           style={{
             padding: "10px 20px",
-            cursor: isLoading ? "not-allowed" : "pointer"
+            cursor: isLoading ? "not-allowed" : "pointer",
           }}
         >
           Test V1 Endpoint
@@ -121,7 +121,7 @@ const LLMTest: React.FC = () => {
           disabled={isLoading}
           style={{
             padding: "10px 20px",
-            cursor: isLoading ? "not-allowed" : "pointer"
+            cursor: isLoading ? "not-allowed" : "pointer",
           }}
         >
           Test V2 Endpoint
@@ -136,7 +136,7 @@ const LLMTest: React.FC = () => {
               border: "1px solid #ccc",
               padding: "10px",
               minHeight: "200px",
-              whiteSpace: "pre-wrap"
+              whiteSpace: "pre-wrap",
             }}
           >
             {v1Response}
@@ -150,7 +150,7 @@ const LLMTest: React.FC = () => {
               border: "1px solid #ccc",
               padding: "10px",
               minHeight: "200px",
-              whiteSpace: "pre-wrap"
+              whiteSpace: "pre-wrap",
             }}
           >
             {v2Response}

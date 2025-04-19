@@ -2,7 +2,7 @@ import * as React from "react"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  MoreHorizontalIcon
+  MoreHorizontalIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -56,7 +56,7 @@ function PaginationLink({
       className={cn(
         buttonVariants({
           variant: isActive ? "outline" : "ghost",
-          size
+          size,
         }),
         className
       )}
@@ -123,5 +123,5 @@ export {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis
+  PaginationEllipsis,
 }

@@ -61,7 +61,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   marks,
   showChainControls = false,
   maxChainLength = 3,
-  minimumTier
+  minimumTier,
 }) => {
   const { data: user } = useUser()
   const [localValues, setLocalValues] = useState<number[]>(values)
@@ -85,7 +85,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
     if (localValues.length < maxChainLength) {
       const newValues = [
         ...localValues,
-        localValues[localValues.length - 1] || 5
+        localValues[localValues.length - 1] || 5,
       ]
       setLocalValues(newValues)
       debouncedOnChange(newValues)

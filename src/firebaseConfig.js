@@ -49,7 +49,7 @@ export const routes = {
   createPortalSession: BASE_URL + "/v1/stripe/portal-session",
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
-  promptV2: BASE_URL + "/api/v2/prompt"
+  promptV2: BASE_URL + "/api/v2/prompt",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -61,5 +61,5 @@ export const firebaseConfig = {
   messagingSenderId: "22790208601",
   appId: "1:22790208601:web:b6ee532b2e8a048d1a0548",
   measurementId: "G-KJFMK6PHML",
-  webSocketURL: "wss://websocket-server-m4cg7rn54q-uc.a.run.app"
+  webSocketURL: "wss://websocket-server-m4cg7rn54q-uc.a.run.app",
 }

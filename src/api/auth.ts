@@ -26,8 +26,8 @@ export async function getToken(): Promise<TokenResult> {
       ok: {
         token: token,
         userID: auth.currentUser.uid,
-        email: auth.currentUser.email
-      }
+        email: auth.currentUser.email,
+      },
     }
   } catch (error) {
     return { err: error instanceof Error ? error : new Error(String(error)) }

@@ -24,7 +24,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Show v0.11.54
@@ -35,7 +35,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Show v0.11.55
@@ -46,7 +46,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Show v0.11.56
@@ -57,7 +57,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Show v0.11.57

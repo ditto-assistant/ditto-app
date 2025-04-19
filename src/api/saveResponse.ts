@@ -23,23 +23,23 @@ export async function saveResponse(
   const request: SaveResponseRequest = {
     userID: tok.ok.userID,
     pairID,
-    response
+    response,
   }
   try {
     const response = await fetch(routes.saveResponse, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`
+        Authorization: `Bearer ${tok.ok.token}`,
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     })
 
     if (response.status === 201) {
       return { ok: void 0 }
     } else {
       return {
-        err: `Unable to save response. Error: ${response.status}`
+        err: `Unable to save response. Error: ${response.status}`,
       }
     }
   } catch (error) {

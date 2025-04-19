@@ -19,7 +19,7 @@ export const ModelGroup = ({
   userTier,
   activeTab,
   redirectToSubscription,
-  orientationFilter
+  orientationFilter,
 }: ModelGroupProps) => {
   const { preferences, updatePreferences } = useModelPreferences()
   const [selectedModelDetails, setSelectedModelDetails] = useState<
@@ -49,13 +49,13 @@ export const ModelGroup = ({
           model: model.name,
           size: preferences?.imageGeneration?.size || {
             wh: "1024x1024",
-            description: "Square (1024×1024)"
-          }
-        }
+            description: "Square (1024×1024)",
+          },
+        },
       })
     } else if (isLLMGroup) {
       updatePreferences({
-        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name
+        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name,
       })
     }
   }

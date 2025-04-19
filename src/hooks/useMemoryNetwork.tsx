@@ -13,7 +13,7 @@ const filterMemoryById = (memories: Memory[], idToRemove: string): Memory[] => {
       if (memory.children && memory.children.length > 0) {
         return {
           ...memory,
-          children: filterMemoryById(memory.children, idToRemove)
+          children: filterMemoryById(memory.children, idToRemove),
         }
       }
       return memory
@@ -66,9 +66,9 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
                 userID,
                 longTerm: {
                   pairID: memory.id,
-                  nodeCounts: preferences.memory.longTermMemoryChain
+                  nodeCounts: preferences.memory.longTermMemoryChain,
                 },
-                stripImages: false
+                stripImages: false,
               },
               "application/json"
             )
@@ -91,8 +91,8 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
             const networkData = [
               {
                 ...memory,
-                children: Array.isArray(fetchedMemories) ? fetchedMemories : []
-              }
+                children: Array.isArray(fetchedMemories) ? fetchedMemories : [],
+              },
             ]
 
             console.log(
@@ -102,8 +102,8 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
                 childCount: node.children?.length || 0,
                 children: node.children?.map((child) => ({
                   id: child.id,
-                  childCount: child.children?.length || 0
-                }))
+                  childCount: child.children?.length || 0,
+                })),
               }))
             )
 
@@ -114,7 +114,7 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
           } finally {
             setLoading(false)
           }
-        }
+        },
       }}
     >
       {children}
@@ -145,6 +145,6 @@ export function useMemoryNetwork() {
   return {
     ...context,
     showMemoryNetwork,
-    closeMemoryNetwork: closeModal
+    closeMemoryNetwork: closeModal,
   }
 }

@@ -8,10 +8,10 @@ const sections: Section[] = [
       {
         type: "fixed",
         title: "Send Message",
-        description: "Fixed sending messages to Ditto!"
-      }
-    ]
-  }
+        description: "Fixed sending messages to Ditto!",
+      },
+    ],
+  },
 ]
 
 const V0_11_62 = () => (

@@ -3,7 +3,7 @@ import React, {
   useContext,
   useState,
   useRef,
-  useEffect
+  useEffect,
 } from "react"
 import { FaPaperPlane, FaTimes } from "react-icons/fa"
 import { createPortal } from "react-dom"
@@ -33,7 +33,7 @@ interface ComposeProviderProps {
 }
 
 export const ComposeProvider: React.FC<ComposeProviderProps> = ({
-  children
+  children,
 }) => {
   const { promptData, savePrompt } = usePromptStorage()
   const [message, setMessage] = useState("")
@@ -78,7 +78,7 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({
         handleSubmit,
         isWaitingForResponse,
         setIsWaitingForResponse,
-        registerSubmitCallback
+        registerSubmitCallback,
       }}
     >
       {children}
@@ -103,7 +103,7 @@ export const FullscreenComposeModal: React.FC = () => {
     isComposeModalOpen,
     closeComposeModal,
     handleSubmit,
-    isWaitingForResponse
+    isWaitingForResponse,
   } = useCompose()
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null)

@@ -1,7 +1,7 @@
 import { deleteUser, getAuth } from "firebase/auth"
 import {
   removeUserFromFirestore,
-  deleteAllUserScriptsFromFirestore
+  deleteAllUserScriptsFromFirestore,
 } from "@/control/firebase"
 import packageJson from "../../../package.json"
 import { useAuth } from "@/hooks/useAuth"
@@ -64,7 +64,7 @@ export default function Settings() {
         confirmLabel: "Sign Out",
         cancelLabel: "Cancel",
         onConfirm: handleLogout,
-        variant: "primary"
+        variant: "primary",
       })
 
     try {
@@ -114,7 +114,7 @@ export default function Settings() {
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       onConfirm: handleDeleteAccount,
-      variant: "danger"
+      variant: "danger",
     })
   }
 
@@ -183,36 +183,36 @@ export default function Settings() {
       id: "general",
       label: "Account",
       content: generalTabContent,
-      icon: <FaCrown />
+      icon: <FaCrown />,
     },
     {
       id: "models",
       label: "Models",
       content: modelPreferences,
       minimumTier: 1,
-      icon: <MdSettings />
+      icon: <MdSettings />,
     },
     {
       id: "memory",
       label: "Memory",
       content: memoryControls,
       minimumTier: 1,
-      icon: <BiMemoryCard />
+      icon: <BiMemoryCard />,
     },
     {
       id: "tools",
       label: "Tools",
       content: agentTools,
       minimumTier: 1,
-      icon: <FaTools />
+      icon: <FaTools />,
     },
     {
       id: "danger",
       label: "Danger Zone",
       content: dangerTabContent,
       customClass: "danger",
-      icon: <FaSkull />
-    }
+      icon: <FaSkull />,
+    },
   ]
 
   return (

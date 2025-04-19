@@ -27,8 +27,8 @@ export async function refreshUserSubscription(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${tok.ok.token}`
-        }
+          Authorization: `Bearer ${tok.ok.token}`,
+        },
       }
     )
 
@@ -37,7 +37,7 @@ export async function refreshUserSubscription(
       return { ok: data }
     } else {
       return {
-        err: `Unable to refresh subscription. Error: ${response.status}`
+        err: `Unable to refresh subscription. Error: ${response.status}`,
       }
     }
   } catch (error) {

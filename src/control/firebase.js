@@ -13,7 +13,7 @@ import {
   getDocs,
   writeBatch,
   deleteDoc,
-  getCountFromServer
+  getCountFromServer,
 } from "firebase/firestore"
 import {
   getStorage,
@@ -21,7 +21,7 @@ import {
   uploadBytes,
   deleteObject,
   getDownloadURL,
-  listAll
+  listAll,
 } from "firebase/storage"
 import { getAuth } from "firebase/auth"
 import { DEFAULT_PREFERENCES } from "@/constants"
@@ -89,7 +89,7 @@ export const saveUserToFirestore = async (
       email: email,
       firstName: firstName,
       lastName: lastName,
-      timestamp: new Date()
+      timestamp: new Date(),
     })
     if (mode === "development") {
       console.log("User written to Firestore collection with ID: ", docRef.id)
@@ -225,7 +225,7 @@ export function saveFeedback(userID, pairID, emoji, feedback) {
     pairID: pairID,
     emoji: emoji,
     feedback: feedback,
-    timestamp: new Date()
+    timestamp: new Date(),
   })
     .then((docRef) => {
       console.log("Feedback saved to Firestore with ID: ", docRef.id)
@@ -340,7 +340,7 @@ export const saveScriptToFirestore = async (
       script: script,
       filename: filename,
       timestamp: new Date(),
-      timestampString: new Date().toISOString()
+      timestampString: new Date().toISOString(),
     })
     if (mode === "development") {
       console.log("Script written to Firestore collection with ID: ", docRef.id)
@@ -410,7 +410,7 @@ export const backupOldScriptMakeVersion = async (
             script: baseVersionDoc.script,
             filename: newFilename,
             timestamp: new Date(),
-            timestampString: new Date().toISOString()
+            timestampString: new Date().toISOString(),
           }
         )
 
@@ -445,7 +445,7 @@ const getBaseVersion = async (userID, scriptType, filename) => {
       baseVersion = {
         script: data.script,
         filename: data.filename,
-        timestamp: data.timestamp
+        timestamp: data.timestamp,
       }
     }
   })
@@ -483,14 +483,14 @@ export const getVersionsOfScriptFromFirestore = async (
           versionNumber = doc.data().filename.split("-v")[1]
           let version = {
             versionNumber: versionNumber,
-            script: doc.data().script
+            script: doc.data().script,
           }
           versions.push(version)
         } else {
           let version = {
             versionNumber: 0,
             script: doc.data().script,
-            timestamp: doc.data().timestamp
+            timestamp: doc.data().timestamp,
           }
           versions.push(version)
         }
@@ -526,7 +526,7 @@ export const updateFirestoreScript = async (
         script: script,
         filename: filename,
         timestamp: new Date(),
-        timestampString: new Date().toISOString()
+        timestampString: new Date().toISOString(),
       })
       return
     }
@@ -542,7 +542,7 @@ export const updateFirestoreScript = async (
         updateDoc(docRef, {
           script: script,
           timestamp: new Date(),
-          timestampString: new Date().toISOString()
+          timestampString: new Date().toISOString(),
         })
         updated = true
       }
@@ -554,7 +554,7 @@ export const updateFirestoreScript = async (
         script: script,
         filename: filename,
         timestamp: new Date(),
-        timestampString: new Date().toISOString()
+        timestampString: new Date().toISOString(),
       })
     }
   } catch (e) {
@@ -628,7 +628,7 @@ export const renameScriptInFirestore = async (
       if (doc.data().timestampString === scriptId) {
         const docRef = doc.ref
         updateDoc(docRef, {
-          filename: newFilename
+          filename: newFilename,
         })
       }
     })
@@ -714,7 +714,7 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
         content: doc.data().script,
         scriptType: scriptType,
         timestamp: doc.data().timestamp,
-        timestampString: doc.data().timestampString
+        timestampString: doc.data().timestampString,
       }
       scripts.push(scriptObj)
     })
@@ -743,18 +743,18 @@ export const saveModelPreferencesToFirestore = async (userID, preferences) => {
         updateDoc(doc.ref, {
           preferences: {
             ...preferences,
-            tools: preferences.tools || DEFAULT_PREFERENCES.tools
+            tools: preferences.tools || DEFAULT_PREFERENCES.tools,
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       })
     } else {
       await addDoc(collection(db, "users", userID, "preferences"), {
         preferences: {
           ...preferences,
-          tools: preferences.tools || DEFAULT_PREFERENCES.tools
+          tools: preferences.tools || DEFAULT_PREFERENCES.tools,
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
   } catch (e) {
@@ -799,7 +799,7 @@ export const getScriptTimestamps = async (userID, scriptType) => {
       const data = doc.data()
       timestamps[data.filename] = {
         timestamp: data.timestamp,
-        timestampString: data.timestampString
+        timestampString: data.timestampString,
       }
     })
 
@@ -915,7 +915,7 @@ export const savePromptToFirestore = async (userID, prompt, image = "") => {
         updateDoc(doc.ref, {
           prompt: prompt,
           image: image,
-          timestamp: new Date()
+          timestamp: new Date(),
         })
       })
     } else {
@@ -923,7 +923,7 @@ export const savePromptToFirestore = async (userID, prompt, image = "") => {
       await addDoc(collection(db, "users", userID, "drafts"), {
         prompt: prompt,
         image: image,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
     }
 
@@ -951,7 +951,7 @@ export const getPromptFromFirestore = async (userID) => {
       const data = doc.data()
       return {
         prompt: data.prompt || "",
-        image: data.image || ""
+        image: data.image || "",
       }
     }
 

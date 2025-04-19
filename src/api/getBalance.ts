@@ -16,7 +16,7 @@ const BalanceSchema = z.object({
   dropAmount: z.string().optional(),
   totalAirdroppedRaw: z.number().optional(),
   totalAirdropped: z.string().optional(),
-  lastAirdropAt: z.coerce.date().optional()
+  lastAirdropAt: z.coerce.date().optional(),
 })
 
 export type Balance = z.infer<typeof BalanceSchema>
@@ -40,8 +40,8 @@ export async function getBalance(): Promise<Result<Balance>> {
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok?.token}`,
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       }
     )
 
@@ -54,7 +54,7 @@ export async function getBalance(): Promise<Result<Balance>> {
       } else {
         console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getBalance: Invalid balance data received. Error: ${result.error.message}`
+          err: `getBalance: Invalid balance data received. Error: ${result.error.message}`,
         }
       }
     } else {

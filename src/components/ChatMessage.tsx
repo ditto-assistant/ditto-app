@@ -31,7 +31,7 @@ const toolLabels: Record<string, { color: string; text: string }> = {
   html: { color: "#FF9800", text: "HTML" },
   image: { color: "#4CAF50", text: "Image" },
   search: { color: "#9C27B0", text: "Search" },
-  home: { color: "#F44336", text: "Home" }
+  home: { color: "#F44336", text: "Home" },
 }
 
 // Avatar action menu component
@@ -39,7 +39,7 @@ const AvatarActionMenu = ({
   isUser,
   onCopy,
   onDelete,
-  onShowMemories
+  onShowMemories,
 }: {
   isUser: boolean
   onCopy: () => void
@@ -113,11 +113,11 @@ export default function ChatMessage({
   isOptimistic = false,
   bubbleStyles = {
     text: { fontSize: 14 },
-    chatbubble: { borderRadius: 20, padding: 10 }
+    chatbubble: { borderRadius: 20, padding: 10 },
   },
   onAvatarClick,
   showMenu = false,
-  menuProps
+  menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth()
   const userAvatar = useUserAvatar(user?.photoURL)
@@ -131,7 +131,7 @@ export default function ChatMessage({
     if (diffInHours < 24) {
       return date.toLocaleTimeString([], {
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
       })
     } else if (diffInHours < 168) {
       // 7 days
@@ -163,14 +163,14 @@ export default function ChatMessage({
           className={`message-bubble ${isUser ? "user" : "ditto"} content-ready ${isOptimistic ? "optimistic" : ""}`}
           style={{
             ...bubbleStyles.chatbubble,
-            backgroundColor: isUser ? "#007AFF" : "#1C1C1E"
+            backgroundColor: isUser ? "#007AFF" : "#1C1C1E",
           }}
         >
           {toolType && (
             <div
               className="tool-label"
               style={{
-                backgroundColor: toolLabels[toolType].color
+                backgroundColor: toolLabels[toolType].color,
               }}
             >
               {toolLabels[toolType].text}

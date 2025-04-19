@@ -19,7 +19,7 @@ type MemoryControlsModalProps = {
 }
 
 const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
-  minimumTier = 1
+  minimumTier = 1,
 }) => {
   const { preferences, updatePreferences } = useModelPreferences()
   const { data: user } = useUser()
@@ -32,8 +32,8 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
       updatePreferences({
         memory: {
           ...preferences.memory,
-          shortTermMemoryCount: newValues[0]
-        }
+          shortTermMemoryCount: newValues[0],
+        },
       })
     },
     [preferences, updatePreferences]
@@ -46,8 +46,8 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
         updatePreferences({
           memory: {
             ...preferences.memory,
-            longTermMemoryChain: newValues
-          }
+            longTermMemoryChain: newValues,
+          },
         })
       }
     },
