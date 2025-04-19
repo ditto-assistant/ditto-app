@@ -25,6 +25,7 @@ import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer";
 import { ConversationProvider } from "./hooks/useConversationHistory";
 import { ComposeProvider } from "@/components/ComposeModal";
 import { PromptStorageProvider } from "@/hooks/usePromptStorage";
+import { ServicesProvider } from "@/hooks/useServices";
 import { initUpdateService } from "@/utils/updateService";
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler";
 import UpdateNotification from "@/components/UpdateNotification";
@@ -140,37 +141,39 @@ function App() {
                       <ConfirmationDialogProvider>
                         <MemoryNodeViewerProvider>
                           <ConversationProvider>
-                            <ModalProvider registry={modalRegistry}>
-                              <PromptStorageProvider>
-                                <ComposeProvider>
-                                  <AppErrorBoundary>
-                                    <RouterProvider router={router} />
-                                  </AppErrorBoundary>
-                                  <UpdateNotification />
+                            <ServicesProvider>
+                              <ModalProvider registry={modalRegistry}>
+                                <PromptStorageProvider>
+                                  <ComposeProvider>
+                                    <AppErrorBoundary>
+                                      <RouterProvider router={router} />
+                                    </AppErrorBoundary>
+                                    <UpdateNotification />
 
-                                  {createPortal(
-                                    <Toaster
-                                      position="top-center"
-                                      toastOptions={{
-                                        style: {
-                                          background: "#333",
-                                          color: "#fff",
-                                          borderRadius: "8px",
-                                          padding: "12px 16px",
-                                          zIndex: 10000,
-                                        },
-                                      }}
-                                    />,
-                                    document.getElementById("toast-root") ||
-                                      document.body,
-                                  )}
-                                  <ReactQueryDevtools
-                                    buttonPosition="top-right"
-                                    initialIsOpen={false}
-                                  />
-                                </ComposeProvider>
-                              </PromptStorageProvider>
-                            </ModalProvider>
+                                    {createPortal(
+                                      <Toaster
+                                        position="top-center"
+                                        toastOptions={{
+                                          style: {
+                                            background: "#333",
+                                            color: "#fff",
+                                            borderRadius: "8px",
+                                            padding: "12px 16px",
+                                            zIndex: 10000,
+                                          },
+                                        }}
+                                      />,
+                                      document.getElementById("toast-root") ||
+                                        document.body,
+                                    )}
+                                    <ReactQueryDevtools
+                                      buttonPosition="top-right"
+                                      initialIsOpen={false}
+                                    />
+                                  </ComposeProvider>
+                                </PromptStorageProvider>
+                              </ModalProvider>
+                            </ServicesProvider>
                           </ConversationProvider>
                         </MemoryNodeViewerProvider>
                       </ConfirmationDialogProvider>
