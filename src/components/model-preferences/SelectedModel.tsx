@@ -39,17 +39,17 @@ export const SelectedModel = ({ type }: SelectedModelProps) => {
 
   if (!selectedModel) {
     return (
-      <div className="border-b p-4">
+      <div className="border-b p-4 bg-muted/5">
         <h3 className="text-sm text-muted-foreground font-medium mb-1">
           Selected Model
         </h3>
-        <div className="text-lg font-semibold">No model selected</div>
+        <div className="text-lg font-semibold text-muted-foreground">No model selected</div>
       </div>
     );
   }
 
   return (
-    <div className="border-b p-4">
+    <div className="border-b p-4 bg-muted/5">
       <h3 className="text-sm text-muted-foreground font-medium mb-1">
         Selected Model
       </h3>

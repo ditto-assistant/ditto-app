@@ -16,19 +16,14 @@ import { Button } from "@/components/ui/button";
 
 import {
   FaBolt,
-  FaClock,
-  FaCrown,
-  FaImage,
-  FaRobot,
   FaBrain,
-  FaFire,
   FaMicrochip,
-  FaStar,
   FaGoogle,
 } from "react-icons/fa";
 import { SiOpenai } from "react-icons/si";
 import { TbBrandMeta } from "react-icons/tb";
 import { MdInfoOutline } from "react-icons/md";
+import { ZapIcon, ImageIcon, CpuIcon, Flame, Clock, Zap, Rocket } from "lucide-react";
 
 // Vendor color mappings for visual consistency
 const VENDOR_COLORS: Record<Vendor, string> = {
@@ -40,39 +35,14 @@ const VENDOR_COLORS: Record<Vendor, string> = {
   cerebras: "#FF4B4B",
 };
 
-// Get speed label dynamically from level
-const getSpeedLabel = (level: number): string => {
-  switch (level) {
-    case 1:
-      return "Slow";
-    case 2:
-      return "Moderate";
-    case 3:
-      return "Fast";
-    case 4:
-      return "Very Fast";
-    case 5:
-      return "Ultra Fast";
-    case 6:
-      return "Blazing";
-    case 7:
-      return "Insane";
-    case 8:
-      return "Ludicrous";
-    case 9:
-      return "Plaid";
-    case 10:
-      return "Maximum";
-    default:
-      return `Level ${level}`;
-  }
-};
+// Speed labels have been removed per requirements
 
 const getSpeedIcon = (level: number) => {
-  if (level <= 2) return <FaClock />;
-  if (level <= 3) return <FaRobot />;
-  if (level <= 4) return <FaBolt />;
-  return <FaFire style={{ color: "#FF0000" }} />;
+  if (level <= 2) return <Clock className="h-3 w-3" />;
+  if (level <= 4) return <Zap className="h-3 w-3" />;
+  if (level <= 6) return <CpuIcon className="h-3 w-3" />;
+  if (level <= 8) return <Rocket className="h-3 w-3" />;
+  return <Flame className="h-3 w-3" style={{ color: "#FF0000" }} />;
 };
 
 const getVendorIcon = (vendor: Vendor) => {
@@ -152,23 +122,9 @@ export const ModelCard = ({
   const isAccessible = isModelAccessible(model, userTier);
   const isLLMModel = "costPerMillionInputTokens" in model;
 
-  // Special handling for LLaMA 4 models
-  const isLlama4 = isLLMModel && model.name.toLowerCase().includes("llama-4");
-  const modelCost = isLLMModel
-    ? model.costPerMillionInputTokens || 0
-    : (model as ImageModel).cost;
-  const tierLabel = isLlama4 ? "Free" : modelCost > 0 ? "Premium" : "Free";
+  // Special handling no longer needed with updated design
 
-  // Function to get upgrade message
-  const getUpgradeMessage = (minimumTier: number) => {
-    if (minimumTier >= 3) {
-      return { text: "Upgrade to Hero", icon: <FaStar /> };
-    } else if (minimumTier >= 2) {
-      return { text: "Upgrade to Strong", icon: <FaCrown /> };
-    } else {
-      return { text: "Upgrade to Spark", icon: <FaBolt /> };
-    }
-  };
+  // Not needed anymore as we simplified the UI
 
   // Handle size selection for image models
   const handleSizeChange = (size: { wh: string; description: string }) => {
@@ -184,24 +140,33 @@ export const ModelCard = ({
 
   return (
     <Card
-      className={`overflow-hidden transition-all cursor-pointer ${isSelected ? "border-2 border-primary" : "border"} ${!isAccessible ? "opacity-75" : ""}`}
+      className={`overflow-hidden transition-all cursor-pointer h-full ${isSelected ? "border-2 border-primary ring-2 ring-primary/20" : "border hover:border-primary/50"} ${!isAccessible ? "opacity-75" : ""}`}
       onClick={() => {
         if (isAccessible) {
           onSelect();
         }
       }}
     >
-      <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between space-y-0">
-        <div>
-          <CardTitle className="text-base font-semibold">
-            {model.displayName}
-          </CardTitle>
-          <div className="text-xs text-muted-foreground">
+      <CardHeader className="p-4 pb-1 flex flex-row items-center justify-between space-y-0">
+        <div className="flex-1 mr-2 overflow-hidden">
+          <CardTitle className="text-base font-semibold truncate">
             {model.modelFlavor}
-          </div>
+          </CardTitle>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0 h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowDetails();
+            }}
+          >
+            <MdInfoOutline className="h-4 w-4" />
+          </Button>
+          
           {model.provider && (
             <Badge
               variant="outline"
@@ -219,72 +184,42 @@ export const ModelCard = ({
         </div>
       </CardHeader>
 
-      <CardContent className="p-4">
-        <div className="flex flex-wrap gap-2 mb-2">
-          <Badge variant="secondary" className="flex items-center gap-1">
+      <CardContent className="p-4 pt-1 pb-2">
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          <Badge variant="secondary" className="flex items-center">
             {getSpeedIcon(model.speedLevel)}
-            <span>{getSpeedLabel(model.speedLevel)}</span>
           </Badge>
 
           <Badge
-            variant={isLlama4 || modelCost === 0 ? "success" : "default"}
-            className="flex items-center gap-1"
+            variant="secondary"
+            className="flex items-center"
           >
-            {modelCost > 0 && !isLlama4 ? (
-              <FaCrown />
-            ) : (
-              <FaCrown style={{ opacity: 0.5 }} />
-            )}
-            <span>{tierLabel}</span>
           </Badge>
 
           {isLLMModel && (model as LLMModel).attachableImageCount > 0 && (
-            <Badge variant="success" className="flex items-center gap-1">
-              <FaImage />
-              <span>
-                {(model as LLMModel).attachableImageCount > 1
-                  ? `${(model as LLMModel).attachableImageCount} Images`
-                  : "Image"}
-              </span>
-            </Badge>
-          )}
-
-          {isLLMModel && (model as LLMModel).supportsTools && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <FaRobot />
-              <span>Tools</span>
+            <Badge variant="success" className="flex items-center">
+              <ImageIcon className="h-3 w-3" />
             </Badge>
           )}
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="p-0 h-8 w-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            onShowDetails();
-          }}
-        >
-          <MdInfoOutline className="h-4 w-4" />
-        </Button>
-
+      <CardFooter className="p-4 pt-1 pb-2 flex justify-center items-center">
         {!isAccessible && (
-          <Badge
-            variant="outline"
-            className="cursor-pointer"
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full text-sm font-medium"
             onClick={(e) => {
               e.stopPropagation();
               redirectToSubscription?.();
             }}
           >
-            {getUpgradeMessage(model.minimumTier).icon}
-            <span className="ml-1">
-              {getUpgradeMessage(model.minimumTier).text}
-            </span>
-          </Badge>
+            <ZapIcon className="h-3.5 w-3.5 mr-1.5" />
+            {model.minimumTier >= 3 ? "Upgrade to Hero" : 
+             model.minimumTier >= 2 ? "Upgrade to Strong" : 
+                                      "Upgrade to Spark"}
+          </Button>
         )}
       </CardFooter>
 

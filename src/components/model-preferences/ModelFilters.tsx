@@ -112,7 +112,7 @@ export const ModelFilters = ({
   };
 
   return (
-    <div className="w-full md:w-72 lg:w-80 border-r border-border shrink-0">
+    <div className="w-full md:w-72 lg:w-80 border-r border-border shrink-0 max-h-[calc(100vh-8rem)] overflow-hidden">
       {isMobile && (
         <Button
           variant="ghost"
@@ -130,7 +130,7 @@ export const ModelFilters = ({
       <div
         className={`p-4 ${isMobile && !expanded ? "hidden" : "block"} md:block h-full`}
       >
-        <ScrollArea className="h-[calc(100vh-12rem)] md:h-[calc(100%-2rem)]">
+        <ScrollArea className="flex-1 h-[calc(100vh-12rem)] overflow-auto">
           {filterType === "prompt" && (
             <>
               <FilterGroup

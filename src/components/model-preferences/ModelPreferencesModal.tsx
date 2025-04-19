@@ -204,7 +204,7 @@ export const ModelPreferencesModal: React.FC = () => {
         }
         className="w-full h-full"
       >
-        <TabsList className="w-full grid grid-cols-3">
+        <TabsList className="w-full grid grid-cols-3 sticky top-0 z-10">
           <TabsTrigger value="main" className="flex items-center gap-2">
             <FaRobot className="h-4 w-4" />
             <span>Main</span>
