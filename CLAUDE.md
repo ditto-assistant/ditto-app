@@ -46,11 +46,15 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 ## Project Structure
 
 - **src/api/**: API client code and external service integrations
+  - API endpoints with Zod validation (e.g., `services.ts`, `getBalance.ts`)
+  - Result type pattern for error handling
 - **src/components/**: Reusable UI components, organized by function
 - **src/components/ui/**: Low-level, generic UI components (buttons, modals, etc.)
 - **src/control/**: Core application logic, agent functionality, and flow controllers
 - **src/control/templates/**: Templates used for different agent capabilities
 - **src/hooks/**: Custom React hooks for shared functionality
+  - Data fetching hooks with React Query
+  - Pagination hooks (e.g., `useServices.tsx`)
 - **src/screens/**: Top-level page components
 - **src/styles/**: Global CSS, variables, and platform-specific styling
 - **src/types/**: TypeScript type definitions
@@ -102,6 +106,25 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
   - All modals are automatically fullscreen by default (fullScreen prop defaults to true in Modal component)
   - For custom modal behavior, use the Modal component's props as needed
 - **Platform Detection**: Use `usePlatform` hook (`const { isMobile } = usePlatform()`) for platform-specific logic
+
+## API Integration Patterns
+
+- **Zod Schema Validation**:
+  - Define Zod schemas for API response validation
+  - Use `z.infer<typeof Schema>` for TypeScript type definitions
+  - Handle validation errors gracefully with detailed error messages
+- **React Query for Data Fetching**:
+  - Use `useQuery` for single data fetching operations
+  - Use `useInfiniteQuery` for paginated data with `getNextPageParam`
+  - Implement custom hooks that abstract away the React Query implementation
+- **API Endpoint Implementation**:
+  - Create dedicated functions for each API endpoint in `src/api/`
+  - Return a consistent `Result<T>` type: `{ ok: T } | { err: string }`
+  - Expose hooks in `src/hooks/` directory for components to consume
+- **Pagination Pattern**:
+  - Backend pagination uses `Paginated<T>` with `items`, `page`, `nextPage`, and `pageSize`
+  - Frontend uses React Query's infinite query with `fetchNextPage` and `hasNextPage`
+  - Flatten paginated data with `data?.pages.flatMap(page => page.items)`
 
 ## Project Roadmap
 
