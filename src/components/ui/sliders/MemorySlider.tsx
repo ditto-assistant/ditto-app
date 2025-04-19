@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Slider } from "@mui/material";
 import { IoAdd, IoRemove } from "react-icons/io5";
 import { useUser } from "@/hooks/useUser";

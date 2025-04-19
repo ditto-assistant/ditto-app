@@ -46,7 +46,6 @@ export const sendPrompt = async (
   image,
   preferences,
   refetch,
-  isPremiumUser = false,
   streamingCallback = null,
   optimisticId = null,
   finalizeMessage = null,
@@ -54,6 +53,7 @@ export const sendPrompt = async (
   selectedScript,
   planTier,
 ) => {
+  const isPremiumUser = planTier > 0;
   try {
     // Create a thinking indicator in localStorage to show we're processing
     // This is read by other components to show a loading state

@@ -41,7 +41,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 4. Run: `bun run format` to ensure consistent formatting
 5. Run: `bun run depcheck` to check for unused dependencies
 6. Use `git add .` to stage all changes
-7. Create descriptive commit (if no files are staged, prompt the user)
+7. Create descriptive commit (if no files are staged, prompt the user); Do not mention Claude
 
 ## Project Structure
 

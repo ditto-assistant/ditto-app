@@ -26,16 +26,15 @@ import {
 import { Button, IconButton, Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import DOMTreeViewer from "@/screens/Editor/DOMTreeViewer";
-import { syncLocalScriptsWithFirestore } from "../../control/firebase"; // Changed from '../control/agent'
-import { LoadingSpinner } from "../../components/ui/loading/LoadingSpinner";
+import { syncLocalScriptsWithFirestore } from "@/control/firebase"; // Changed from '../control/agent'
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import FullScreenSpinner from "../../components/ui/loading/LoadingSpinner";
-import updaterAgent from "../../control/agentflows/updaterAgentFlow";
-import ModelDropdown from "../../components/ModelDropdown";
-import { useBalance } from "../../hooks/useBalance";
-import { useAuth } from "../../hooks/useAuth";
+import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
+import updaterAgent from "@/control/agentflows/updaterAgentFlow";
+import ModelDropdown from "@/components/ModelDropdown";
+import { useAuth } from "@/hooks/useAuth";
 import { useModelPreferences } from "@/hooks/useModelPreferences";
 import { toast } from "react-hot-toast";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -197,7 +196,6 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
   const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
   const [scriptChatHistory, setScriptChatHistory] = useState([]);
   const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
-  const balance = useBalance();
 
   const handleEditorSelection = () => {
     const editor = editorRef.current?.editor;
@@ -1214,7 +1212,6 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                           onChange={(newModel) => {
                             updatePreferences({ programmerModel: newModel });
                           }}
-                          hasEnoughBalance={balance.data?.hasPremium}
                         />
                       </div>
 

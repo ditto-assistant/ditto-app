@@ -2,21 +2,24 @@ import { getToken } from "@/api/auth";
 import { routes } from "@/firebaseConfig";
 import { Result } from "@/types/common";
 import { getDeviceID, APP_VERSION } from "@/utils/deviceId";
+import { z } from "zod";
 
-export interface Balance {
-  balanceRaw: number;
-  balance: string;
-  usd: string;
-  images: string;
-  imagesRaw: number;
-  searches: string;
-  searchesRaw: number;
-  dropAmountRaw?: number;
-  dropAmount?: string;
-  totalAirdroppedRaw?: number;
-  totalAirdropped?: string;
-  lastAirdropAt?: Date;
-}
+const BalanceSchema = z.object({
+  balanceRaw: z.number(),
+  balance: z.string(),
+  usd: z.string(),
+  images: z.string(),
+  imagesRaw: z.number(),
+  searches: z.string(),
+  searchesRaw: z.number(),
+  dropAmountRaw: z.number().optional(),
+  dropAmount: z.string().optional(),
+  totalAirdroppedRaw: z.number().optional(),
+  totalAirdropped: z.string().optional(),
+  lastAirdropAt: z.coerce.date().optional(),
+});
+
+export type Balance = z.infer<typeof BalanceSchema>;
 
 // Retrieves the user's balance.
 export async function getBalance(): Promise<Result<Balance>> {
@@ -30,21 +33,35 @@ export async function getBalance(): Promise<Result<Balance>> {
   }
 
   const deviceID = getDeviceID();
-  const response = await fetch(
-    routes.balance(tok.ok.userID, tok.ok.email, APP_VERSION, deviceID),
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${tok.ok?.token}`,
-        Accept: "application/json",
+  try {
+    const response = await fetch(
+      routes.balance(tok.ok.userID, tok.ok.email, APP_VERSION, deviceID),
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${tok.ok?.token}`,
+          Accept: "application/json",
+        },
       },
-    },
-  );
+    );
 
-  if (response.ok) {
-    const data = await response.json();
-    return { ok: data };
-  } else {
-    return { err: `getBalance: Unable to get balance: ${response.status}` };
+    if (response.ok) {
+      const rawData: unknown = await response.json();
+      const result = BalanceSchema.safeParse(rawData);
+
+      if (result.success) {
+        return { ok: result.data };
+      } else {
+        console.error("Zod validation error:", result.error.flatten());
+        return {
+          err: `getBalance: Invalid balance data received. Error: ${result.error.message}`,
+        };
+      }
+    } else {
+      return { err: `getBalance: Unable to get balance: ${response.status}` };
+    }
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return { err: `getBalance: Network error: ${error}` };
   }
 }
