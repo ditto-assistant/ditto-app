@@ -84,5 +84,6 @@ function useModels() {
     preferences: query.data,
     updatePreferences: mutation.mutate,
     isLoading: query.isLoading,
+    isPending: mutation.isPending,
   }
 }

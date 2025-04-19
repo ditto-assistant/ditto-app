@@ -2,7 +2,7 @@ import { getToken } from "@/api/auth"
 import { Result } from "@/types/common"
 import { BASE_URL } from "@/firebaseConfig"
 import { z } from "zod"
-
+import { Model } from "@/types/llm"
 // Common schema for pagination
 const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemsSchema: T) =>
   z.object({
@@ -15,7 +15,7 @@ const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemsSchema: T) =>
 
 // Base schema for common model capabilities (shared between image and LLM models)
 const BaseModelCapabilitiesSchema = z.object({
-  name: z.string(),
+  name: z.string() as z.ZodType<Model>,
   displayName: z.string(),
   description: z.string(),
   version: z.string(),
