@@ -66,13 +66,7 @@ const redirectToGeneralTab = () => {
   }
 };
 
-type ModelPreferencesModalProps = {
-  minimumTier?: number;
-};
-
-export const ModelPreferencesModal: React.FC<ModelPreferencesModalProps> = ({
-  minimumTier = 1,
-}) => {
+export const ModelPreferencesModal: React.FC = () => {
   const { preferences, updatePreferences } = useModelPreferences();
   const { data: user } = useUser();
   const [activeSection, setActiveSection] = useState<

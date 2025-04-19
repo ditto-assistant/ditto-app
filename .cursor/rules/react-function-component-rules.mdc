@@ -28,6 +28,13 @@ export function useHook() {
 
 We always use a separate .css file for styling components.
 
+For component styling, we enforce scoped CSS:
+1. Each component should have a unique class name matching the component name in kebab-case (e.g., `balance-drop-toast` for `BalanceDropToast`)
+2. All CSS selectors should be scoped to the root component class to prevent leaking styles
+3. For child elements, use the pattern `.component-name .element-name`
+4. For component states, use the pattern `.component-name.state-name`
+5. Use kebab-case for all CSS class names
+
 Never use !important in css. There is always a better solution.
 
 Seek to reduce complexity where possible.
@@ -38,3 +45,4 @@ Key guidelines:
 - Use arrow function syntax for components
 - Use named exports for hooks
 - Use default exports for components
+- Scope all CSS selectors to component-specific class names
