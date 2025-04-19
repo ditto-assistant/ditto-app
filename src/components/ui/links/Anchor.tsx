@@ -1,9 +1,9 @@
-import React from "react";
+import React from "react"
 
 interface AnchorLinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  variant?: "social-link";
-  children: React.ReactNode;
+  variant?: "social-link"
+  children: React.ReactNode
 }
 
 export const A: React.FC<AnchorLinkProps> = ({
@@ -21,5 +21,5 @@ export const A: React.FC<AnchorLinkProps> = ({
     >
       {children}
     </a>
-  );
-};
+  )
+}

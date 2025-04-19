@@ -1,9 +1,9 @@
-import reactPlugin from "eslint-plugin-react";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
-import typescriptPlugin from "@typescript-eslint/eslint-plugin";
-import typescriptParser from "@typescript-eslint/parser";
-import tanstackPlugin from "@tanstack/eslint-plugin-query";
-import globals from "globals";
+import reactPlugin from "eslint-plugin-react"
+import reactHooksPlugin from "eslint-plugin-react-hooks"
+import typescriptPlugin from "@typescript-eslint/eslint-plugin"
+import typescriptParser from "@typescript-eslint/parser"
+import tanstackPlugin from "@tanstack/eslint-plugin-query"
+import globals from "globals"
 
 export default [
   {
@@ -16,8 +16,8 @@ export default [
       "**/build/**",
       "**/coverage/**",
       "**/*.d.ts",
-      "**/vite.config.ts",
-    ],
+      "**/vite.config.ts"
+    ]
   },
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
@@ -27,24 +27,24 @@ export default [
         ecmaVersion: "latest",
         sourceType: "module",
         ecmaFeatures: {
-          jsx: true,
-        },
+          jsx: true
+        }
       },
       globals: {
         ...globals.browser,
-        ...globals.es2022,
-      },
+        ...globals.es2022
+      }
     },
     plugins: {
       react: reactPlugin,
       "@typescript-eslint": typescriptPlugin,
       "react-hooks": reactHooksPlugin,
-      "@tanstack/query": tanstackPlugin,
+      "@tanstack/query": tanstackPlugin
     },
     settings: {
       react: {
-        version: "detect",
-      },
+        version: "detect"
+      }
     },
     rules: {
       ...typescriptPlugin.configs["recommended"].rules,
@@ -62,11 +62,11 @@ export default [
         "warn",
         {
           argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-        },
+          varsIgnorePattern: "^_"
+        }
       ],
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-    },
-  },
-];
+      "react-hooks/exhaustive-deps": "warn"
+    }
+  }
+]

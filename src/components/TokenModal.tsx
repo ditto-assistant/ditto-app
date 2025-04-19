@@ -1,50 +1,50 @@
-import { useState, useEffect } from "react";
-import { Button } from "@mui/material";
-import { useBalance } from "@/hooks/useBalance";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import { CheckoutForm } from "@/components/CheckoutForm";
-import Modal from "@/components/ui/modals/Modal";
-import { useModal } from "@/hooks/useModal";
-import "./TokenModal.css";
-import { FaCheckCircle, FaCoins } from "react-icons/fa";
-import { motion } from "framer-motion";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors";
+import { useState, useEffect } from "react"
+import { Button } from "@mui/material"
+import { useBalance } from "@/hooks/useBalance"
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { CheckoutForm } from "@/components/CheckoutForm"
+import Modal from "@/components/ui/modals/Modal"
+import { useModal } from "@/hooks/useModal"
+import "./TokenModal.css"
+import { FaCheckCircle, FaCoins } from "react-icons/fa"
+import { motion } from "framer-motion"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors"
 
 const PricingTiers = [
   { price: 5, tokens: "5B", bonus: "0%" },
   { price: 10, tokens: "11B", bonus: "10%" },
   { price: 25, tokens: "30B", bonus: "20%" },
   { price: 75, tokens: "100B", bonus: "33%" },
-  { price: 100, tokens: "150B", bonus: "50%" },
-];
+  { price: 100, tokens: "150B", bonus: "50%" }
+]
 
 export default function TokenModal() {
-  const { createCloseHandler } = useModal();
-  const closeModal = createCloseHandler("tokenCheckout");
-  const balance = useBalance();
-  const [amount, setAmount] = useState(10);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const { createCloseHandler } = useModal()
+  const closeModal = createCloseHandler("tokenCheckout")
+  const balance = useBalance()
+  const [amount, setAmount] = useState(10)
+  const [showSuccess, setShowSuccess] = useState(false)
   const {
     preferences,
     updatePreferences,
-    isLoading: preferencesLoading,
-  } = useModelPreferences();
+    isLoading: preferencesLoading
+  } = useModelPreferences()
 
   useEffect(() => {
     // Check if we should show the success screen
-    const tokenSuccess = window.sessionStorage.getItem("token_success");
+    const tokenSuccess = window.sessionStorage.getItem("token_success")
     if (tokenSuccess === "true") {
-      setShowSuccess(true);
+      setShowSuccess(true)
       // Clear the flag
-      window.sessionStorage.removeItem("token_success");
+      window.sessionStorage.removeItem("token_success")
     }
-  }, []);
+  }, [])
 
   const handleAmountChange = (value: number | string) => {
-    const newAmount = Math.max(1, Number(value));
-    setAmount(newAmount);
-  };
+    const newAmount = Math.max(1, Number(value))
+    setAmount(newAmount)
+  }
 
   if (showSuccess) {
     // Token purchase success view
@@ -55,7 +55,7 @@ export default function TokenModal() {
             <LoadingSpinner size={45} />
           </div>
         </Modal>
-      );
+      )
     }
 
     return (
@@ -68,7 +68,7 @@ export default function TokenModal() {
               type: "spring",
               stiffness: 260,
               damping: 20,
-              delay: 0.2,
+              delay: 0.2
             }}
             className="token-success-icon-container"
           >
@@ -121,7 +121,7 @@ export default function TokenModal() {
           </motion.div>
         </div>
       </Modal>
-    );
+    )
   }
 
   // Regular token purchase view
@@ -156,7 +156,7 @@ export default function TokenModal() {
         <div className="token-pricing-info">
           <div className="token-pricing-table">
             {PricingTiers.map(({ price, tokens, bonus }, index) => {
-              const isSelected = price === amount;
+              const isSelected = price === amount
               return (
                 <motion.div
                   key={price}
@@ -178,7 +178,7 @@ export default function TokenModal() {
                     +{bonus}
                   </div>
                 </motion.div>
-              );
+              )
             })}
           </div>
         </div>
@@ -199,5 +199,5 @@ export default function TokenModal() {
         </div>
       </div>
     </Modal>
-  );
+  )
 }

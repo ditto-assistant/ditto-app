@@ -1,3 +1,3 @@
 export const knowledgeGraphSystemTemplate = () => {
-  return "";
-};
+  return ""
+}

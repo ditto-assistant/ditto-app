@@ -1,5 +1,5 @@
-import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { A } from "./Anchor";
+import { FaGithub, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6"
+import { A } from "./Anchor"
 
 export default function SocialLinks() {
   return (
@@ -20,5 +20,5 @@ export default function SocialLinks() {
         <FaYoutube /> YouTube
       </A>
     </div>
-  );
+  )
 }

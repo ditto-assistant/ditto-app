@@ -1,15 +1,15 @@
-import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
-import "@/styles/buttons.css";
+import React from "react"
+import { motion, HTMLMotionProps } from "framer-motion"
+import "@/styles/buttons.css"
 
 interface ModalButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "submit";
-  icon?: React.ReactNode;
-  isLoading?: boolean;
-  fullWidth?: boolean;
-  fixedWidth?: boolean;
-  size?: "small" | "default" | "large";
-  children?: React.ReactNode;
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "submit"
+  icon?: React.ReactNode
+  isLoading?: boolean
+  fullWidth?: boolean
+  fixedWidth?: boolean
+  size?: "small" | "default" | "large"
+  children?: React.ReactNode
 }
 
 export const ModalButton: React.FC<ModalButtonProps> = ({
@@ -29,10 +29,10 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
     fullWidth ? "full-width" : "",
     fixedWidth ? "fixed-width" : "",
     size ? size : "",
-    className,
+    className
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(" ")
 
   return (
     <motion.button
@@ -51,5 +51,5 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
         </>
       )}
     </motion.button>
-  );
-};
+  )
+}

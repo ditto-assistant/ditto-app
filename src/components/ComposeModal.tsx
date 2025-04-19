@@ -3,69 +3,69 @@ import React, {
   useContext,
   useState,
   useRef,
-  useEffect,
-} from "react";
-import { FaPaperPlane, FaTimes } from "react-icons/fa";
-import { createPortal } from "react-dom";
-import { usePlatform } from "@/hooks/usePlatform";
-import { usePromptStorage } from "@/hooks/usePromptStorage";
-import "./ComposeModal.css";
+  useEffect
+} from "react"
+import { FaPaperPlane, FaTimes } from "react-icons/fa"
+import { createPortal } from "react-dom"
+import { usePlatform } from "@/hooks/usePlatform"
+import { usePromptStorage } from "@/hooks/usePromptStorage"
+import "./ComposeModal.css"
 
 // Define context types
 interface ComposeContextType {
-  message: string;
-  setMessage: React.Dispatch<React.SetStateAction<string>>;
-  isComposeModalOpen: boolean;
-  openComposeModal: () => void;
-  closeComposeModal: () => void;
-  handleSubmit: () => void;
-  isWaitingForResponse: boolean;
-  setIsWaitingForResponse: (isWaiting: boolean) => void;
-  registerSubmitCallback: (callback: () => void) => void;
+  message: string
+  setMessage: React.Dispatch<React.SetStateAction<string>>
+  isComposeModalOpen: boolean
+  openComposeModal: () => void
+  closeComposeModal: () => void
+  handleSubmit: () => void
+  isWaitingForResponse: boolean
+  setIsWaitingForResponse: (isWaiting: boolean) => void
+  registerSubmitCallback: (callback: () => void) => void
 }
 
 // Create compose context
-const ComposeContext = createContext<ComposeContextType | null>(null);
+const ComposeContext = createContext<ComposeContextType | null>(null)
 
 // Provider component
 interface ComposeProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export const ComposeProvider: React.FC<ComposeProviderProps> = ({
-  children,
+  children
 }) => {
-  const { promptData, savePrompt } = usePromptStorage();
-  const [message, setMessage] = useState("");
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
-  const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
+  const { promptData, savePrompt } = usePromptStorage()
+  const [message, setMessage] = useState("")
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [isComposeModalOpen, setIsComposeModalOpen] = useState(false)
 
   // Load saved prompt from storage when component mounts
   useEffect(() => {
     if (promptData && promptData.prompt) {
-      setMessage(promptData.prompt);
+      setMessage(promptData.prompt)
     }
-  }, [promptData]);
+  }, [promptData])
 
-  const submitCallback = useRef<() => void | null>(null);
+  const submitCallback = useRef<() => void | null>(null)
 
   const registerSubmitCallback = (callback: () => void) => {
-    submitCallback.current = callback;
-  };
+    submitCallback.current = callback
+  }
 
   const handleSubmit = () => {
     if (submitCallback.current) {
-      submitCallback.current();
+      submitCallback.current()
     }
-    closeComposeModal();
-  };
+    closeComposeModal()
+  }
 
   useEffect(() => {
-    savePrompt(message);
-  }, [message, savePrompt]);
+    savePrompt(message)
+  }, [message, savePrompt])
 
-  const openComposeModal = () => setIsComposeModalOpen(true);
-  const closeComposeModal = () => setIsComposeModalOpen(false);
+  const openComposeModal = () => setIsComposeModalOpen(true)
+  const closeComposeModal = () => setIsComposeModalOpen(false)
 
   return (
     <ComposeContext.Provider
@@ -78,22 +78,22 @@ export const ComposeProvider: React.FC<ComposeProviderProps> = ({
         handleSubmit,
         isWaitingForResponse,
         setIsWaitingForResponse,
-        registerSubmitCallback,
+        registerSubmitCallback
       }}
     >
       {children}
     </ComposeContext.Provider>
-  );
-};
+  )
+}
 
 // Custom hook to use the compose context
 export const useCompose = () => {
-  const context = useContext(ComposeContext);
+  const context = useContext(ComposeContext)
   if (!context) {
-    throw new Error("useCompose must be used within a ComposeProvider");
+    throw new Error("useCompose must be used within a ComposeProvider")
   }
-  return context;
-};
+  return context
+}
 
 // Modal component for fullscreen compose
 export const FullscreenComposeModal: React.FC = () => {
@@ -103,30 +103,30 @@ export const FullscreenComposeModal: React.FC = () => {
     isComposeModalOpen,
     closeComposeModal,
     handleSubmit,
-    isWaitingForResponse,
-  } = useCompose();
+    isWaitingForResponse
+  } = useCompose()
 
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const { isMobile } = usePlatform();
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
+  const { isMobile } = usePlatform()
 
   useEffect(() => {
     // Focus textarea when modal opens and position cursor at the end of the text
     if (isComposeModalOpen && textAreaRef.current) {
       setTimeout(() => {
-        const textarea = textAreaRef.current;
-        if (!textarea) return;
-        textarea.focus();
+        const textarea = textAreaRef.current
+        if (!textarea) return
+        textarea.focus()
         // Place cursor at the end of the text
-        const textLength = textarea.value.length;
-        textarea.setSelectionRange(textLength, textLength);
-      }, 100);
+        const textLength = textarea.value.length
+        textarea.setSelectionRange(textLength, textLength)
+      }, 100)
     }
 
     // Handle keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
       // Escape to close modal
       if (e.key === "Escape" && isComposeModalOpen) {
-        closeComposeModal();
+        closeComposeModal()
       }
 
       // Cmd/Ctrl+Enter to submit
@@ -136,18 +136,18 @@ export const FullscreenComposeModal: React.FC = () => {
         (e.metaKey || e.ctrlKey) &&
         e.key === "Enter"
       ) {
-        e.preventDefault();
+        e.preventDefault()
         if (message.trim()) {
-          handleSubmit();
+          handleSubmit()
         }
       }
-    };
+    }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isComposeModalOpen, closeComposeModal, message, handleSubmit, isMobile]);
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isComposeModalOpen, closeComposeModal, message, handleSubmit, isMobile])
 
-  if (!isComposeModalOpen) return null;
+  if (!isComposeModalOpen) return null
 
   return createPortal(
     <div className="modal container fullscreen compose-modal">
@@ -163,9 +163,9 @@ export const FullscreenComposeModal: React.FC = () => {
         <form
           className="modal wrapper"
           onSubmit={(e) => {
-            e.preventDefault();
+            e.preventDefault()
             if (message.trim()) {
-              handleSubmit();
+              handleSubmit()
             }
           }}
         >
@@ -195,6 +195,6 @@ export const FullscreenComposeModal: React.FC = () => {
         </form>
       </div>
     </div>,
-    document.getElementById("modal-root") || document.body,
-  );
-};
+    document.getElementById("modal-root") || document.body
+  )
+}

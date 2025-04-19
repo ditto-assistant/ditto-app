@@ -1,46 +1,46 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { removeUserFromFirestore } from "../control/firebase";
-import { useAuth } from "../hooks/useAuth";
-import MarkdownRenderer from "@/components/MarkdownRenderer";
-import "./TermsOfService.css";
+import { useState } from "react"
+import { useNavigate } from "react-router"
+import { removeUserFromFirestore } from "../control/firebase"
+import { useAuth } from "../hooks/useAuth"
+import MarkdownRenderer from "@/components/MarkdownRenderer"
+import "./TermsOfService.css"
 
 const TermsOfService = ({ onClose, isNewAccount = false, onAccept }) => {
-  const [isVisible, setIsVisible] = useState(true);
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const [isVisible, setIsVisible] = useState(true)
+  const navigate = useNavigate()
+  const { user } = useAuth()
 
   const handleAccept = () => {
     if (isNewAccount) {
       // Set hasSeenTOS in localStorage when accepting during account creation
-      localStorage.setItem("hasSeenTOS", "true");
+      localStorage.setItem("hasSeenTOS", "true")
 
       // Call the onAccept callback if provided (for sign-up process)
       if (onAccept) {
-        onAccept();
+        onAccept()
       }
     }
-    setIsVisible(false);
-    if (onClose) onClose();
-  };
+    setIsVisible(false)
+    if (onClose) onClose()
+  }
 
   const handleDecline = async () => {
     if (isNewAccount) {
       // Delete the user's account
       if (user?.uid) {
-        await removeUserFromFirestore(user?.uid);
+        await removeUserFromFirestore(user?.uid)
       }
       // Clear local storage
-      localStorage.clear();
+      localStorage.clear()
       // Navigate to login page
-      navigate("/login");
+      navigate("/login")
     } else {
-      setIsVisible(false);
-      if (onClose) onClose();
+      setIsVisible(false)
+      if (onClose) onClose()
     }
-  };
+  }
 
-  if (!isVisible) return null;
+  if (!isVisible) return null
 
   // TOS content as markdown
   const tosContent = `
@@ -107,7 +107,7 @@ To the fullest extent permitted by law, Omni Aura, its officers, directors, empl
 ### 9. Contact Us
 
 If you have any questions about these Terms, please contact us at [support@heyditto.ai](mailto:support@heyditto.ai).
-`;
+`
 
   return (
     <div className="tos-overlay">
@@ -141,7 +141,7 @@ If you have any questions about these Terms, please contact us at [support@heydi
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TermsOfService;
+export default TermsOfService

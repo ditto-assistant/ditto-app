@@ -1,16 +1,16 @@
-import { LLMModel, ImageModel } from "@/api/services";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { ModelCard } from "./ModelCard";
-import { useState } from "react";
-import { ModelDetails } from "./ModelDetails";
+import { LLMModel, ImageModel } from "@/api/services"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { ModelCard } from "./ModelCard"
+import { useState } from "react"
+import { ModelDetails } from "./ModelDetails"
 
 interface ModelGroupProps {
-  title: string;
-  models: (LLMModel | ImageModel)[];
-  userTier: number;
-  activeTab: "main" | "programmer" | "image";
-  redirectToSubscription?: () => void;
-  orientationFilter?: string;
+  title: string
+  models: (LLMModel | ImageModel)[]
+  userTier: number
+  activeTab: "main" | "programmer" | "image"
+  redirectToSubscription?: () => void
+  orientationFilter?: string
 }
 
 export const ModelGroup = ({
@@ -19,27 +19,27 @@ export const ModelGroup = ({
   userTier,
   activeTab,
   redirectToSubscription,
-  orientationFilter,
+  orientationFilter
 }: ModelGroupProps) => {
-  const { preferences, updatePreferences } = useModelPreferences();
+  const { preferences, updatePreferences } = useModelPreferences()
   const [selectedModelDetails, setSelectedModelDetails] = useState<
     LLMModel | ImageModel | null
-  >(null);
+  >(null)
 
-  if (!models || models.length === 0) return null;
+  if (!models || models.length === 0) return null
 
-  const isLLMGroup = "costPerMillionInputTokens" in models[0];
+  const isLLMGroup = "costPerMillionInputTokens" in models[0]
 
   // Filter by orientation if specified
   const filteredModels = orientationFilter
     ? models.filter(
         (model) =>
           "imageOrientation" in model &&
-          model.imageOrientation.toLowerCase() === orientationFilter,
+          model.imageOrientation.toLowerCase() === orientationFilter
       )
-    : models;
+    : models
 
-  if (filteredModels.length === 0) return null;
+  if (filteredModels.length === 0) return null
 
   // Select appropriate model
   const handleSelectModel = (model: LLMModel | ImageModel) => {
@@ -49,29 +49,29 @@ export const ModelGroup = ({
           model: model.name,
           size: preferences?.imageGeneration?.size || {
             wh: "1024x1024",
-            description: "Square (1024×1024)",
-          },
-        },
-      });
+            description: "Square (1024×1024)"
+          }
+        }
+      })
     } else if (isLLMGroup) {
       updatePreferences({
-        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name,
-      });
+        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name
+      })
     }
-  };
+  }
 
   // Check if model is selected
   const isModelSelected = (model: LLMModel | ImageModel) => {
     if (activeTab === "image" && !isLLMGroup) {
-      return model.name === preferences?.imageGeneration?.model;
+      return model.name === preferences?.imageGeneration?.model
     } else if (isLLMGroup) {
       return (
         model.name ===
         preferences?.[activeTab === "main" ? "mainModel" : "programmerModel"]
-      );
+      )
     }
-    return false;
-  };
+    return false
+  }
 
   return (
     <div className="mb-8">
@@ -104,7 +104,7 @@ export const ModelGroup = ({
         onClose={() => setSelectedModelDetails(null)}
       />
     </div>
-  );
-};
+  )
+}
 
-export default ModelGroup;
+export default ModelGroup

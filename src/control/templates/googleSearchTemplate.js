@@ -3,7 +3,7 @@
  */
 export function googleSearchSystemTemplate() {
   return `You are an experienced Google Searcher named Ditto here to help the user, who is your best friend.
-`;
+`
 }
 
 /**
@@ -23,7 +23,7 @@ Website Contents:
 ${contents}
 
 Summary: 
-`;
+`
 }
 
 /**
@@ -35,7 +35,7 @@ Summary:
 export function googleSearchResultsAndWebsiteSummary(
   query,
   searchResults,
-  websiteSummary,
+  websiteSummary
 ) {
   return `You will be given a user's Search Query, the top 5 search results and the summary of a website. You will need to create a summary of the contents provided, answering the user's search query with the most relevant information.
 
@@ -50,7 +50,7 @@ Website Summary:
 ${websiteSummary}
 
 Response:
-`;
+`
 }
 
 /**
@@ -73,5 +73,5 @@ Search Results:
 ${searchResults}
 
 Response: 
-`;
+`
 }

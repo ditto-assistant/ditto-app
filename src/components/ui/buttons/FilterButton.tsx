@@ -1,12 +1,12 @@
-import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
+import React from "react"
+import { motion, HTMLMotionProps } from "framer-motion"
 
 interface FilterButtonProps
   extends Omit<HTMLMotionProps<"button">, "children"> {
-  icon?: React.ReactNode;
-  isActive?: boolean;
-  activeColor?: string;
-  children?: React.ReactNode;
+  icon?: React.ReactNode
+  isActive?: boolean
+  activeColor?: string
+  children?: React.ReactNode
 }
 
 export const FilterButton: React.FC<FilterButtonProps> = ({
@@ -23,7 +23,7 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
       className={`filter-button ${isActive ? "active" : ""} ${className}`}
       style={{
         ...(isActive && activeColor ? { background: activeColor } : {}),
-        ...style,
+        ...style
       }}
       whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
       whileTap={{ scale: 0.98 }}
@@ -32,5 +32,5 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
       {icon && <span className="filter-icon">{icon}</span>}
       {children}
     </motion.button>
-  );
-};
+  )
+}

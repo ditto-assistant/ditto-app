@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MdExpandMore } from "react-icons/md";
-import { FaCrown } from "react-icons/fa";
-import { IMAGE_GENERATION_MODELS } from "../constants";
-import { styles as modelDropdownStyles } from "./ModelDropdown";
-import { createPortal } from "react-dom";
+import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { MdExpandMore } from "react-icons/md"
+import { FaCrown } from "react-icons/fa"
+import { IMAGE_GENERATION_MODELS } from "../constants"
+import { styles as modelDropdownStyles } from "./ModelDropdown"
+import { createPortal } from "react-dom"
 /**@typedef {import("@/types/llm").Model} Model */
 /**@typedef {import("@/types/llm").ImageGenerationSize} ImageGenerationSize */
 
@@ -19,17 +19,17 @@ import { createPortal } from "react-dom";
  * @returns {JSX.Element} The ModelDropdownImage component
  */
 const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
-  const [expandedModel, setExpandedModel] = useState(null);
-  const dropdownRef = useRef(null);
+  const [expandedModel, setExpandedModel] = useState(null)
+  const dropdownRef = useRef(null)
 
   const selectedModel = IMAGE_GENERATION_MODELS.find(
-    (model) => model.id === value.model,
-  );
+    (model) => model.id === value.model
+  )
 
   const handleClick = (e) => {
-    e.stopPropagation();
-    onOpenChange?.(!isOpen);
-  };
+    e.stopPropagation()
+    onOpenChange?.(!isOpen)
+  }
 
   /**
    * Handles the selection of a model and size option
@@ -37,32 +37,32 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
    * @param {ImageGenerationSize} size - The selected size option
    */
   const handleSelect = (model, size) => {
-    const modelOption = IMAGE_GENERATION_MODELS.find((m) => m.id === model);
-    if (modelOption.isMaintenance) return;
-    onChange(model, size);
-    onOpenChange?.(false);
-    setExpandedModel(null);
-  };
+    const modelOption = IMAGE_GENERATION_MODELS.find((m) => m.id === model)
+    if (modelOption.isMaintenance) return
+    onChange(model, size)
+    onOpenChange?.(false)
+    setExpandedModel(null)
+  }
 
   useEffect(() => {
     if (isOpen && dropdownRef.current) {
-      const dropdown = dropdownRef.current.querySelector(".model-dropdown");
+      const dropdown = dropdownRef.current.querySelector(".model-dropdown")
       if (dropdown) {
-        dropdown.style.position = "absolute";
-        dropdown.style.top = "100%";
-        dropdown.style.left = "0";
-        dropdown.style.width = "100%";
+        dropdown.style.position = "absolute"
+        dropdown.style.top = "100%"
+        dropdown.style.left = "0"
+        dropdown.style.width = "100%"
 
-        const dropdownRect = dropdown.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
+        const dropdownRect = dropdown.getBoundingClientRect()
+        const viewportHeight = window.innerHeight
 
         if (dropdownRect.bottom > viewportHeight) {
-          dropdown.style.top = "auto";
-          dropdown.style.bottom = "100%";
+          dropdown.style.top = "auto"
+          dropdown.style.bottom = "100%"
         }
       }
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   return (
     <div ref={dropdownRef} style={styles.container}>
@@ -104,7 +104,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
               top: dropdownRef.current?.getBoundingClientRect().bottom + 4,
               left: dropdownRef.current?.getBoundingClientRect().left,
               width: dropdownRef.current?.getBoundingClientRect().width,
-              zIndex: 999999,
+              zIndex: 999999
             }}
           >
             {IMAGE_GENERATION_MODELS.map((model) => (
@@ -112,12 +112,12 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                 <motion.div
                   style={{
                     ...styles.option,
-                    opacity: model.isMaintenance ? 0.5 : 1,
+                    opacity: model.isMaintenance ? 0.5 : 1
                   }}
                   onClick={() => {
                     setExpandedModel(
-                      expandedModel === model.id ? null : model.id,
-                    );
+                      expandedModel === model.id ? null : model.id
+                    )
                   }}
                   whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 >
@@ -159,10 +159,10 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                             backgroundColor:
                               value === model.id && selectedSize === size
                                 ? "rgba(88, 101, 242, 0.1)"
-                                : "transparent",
+                                : "transparent"
                           }}
                           whileHover={{
-                            backgroundColor: "rgba(88, 101, 242, 0.1)",
+                            backgroundColor: "rgba(88, 101, 242, 0.1)"
                           }}
                           onClick={() => handleSelect(model.id, size)}
                         >
@@ -175,11 +175,11 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
               </div>
             ))}
           </motion.div>,
-          document.body,
+          document.body
         )}
     </div>
-  );
-};
+  )
+}
 
 const styles = {
   ...modelDropdownStyles,
@@ -187,24 +187,24 @@ const styles = {
     fontSize: "12px",
     color: "#FFFFFF",
     opacity: 0.7,
-    marginLeft: "8px",
+    marginLeft: "8px"
   },
   modelHeader: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "8px"
   },
   sizeOptions: {
     backgroundColor: "#2F3136",
-    overflow: "hidden",
+    overflow: "hidden"
   },
   sizeOption: {
     padding: "8px 24px",
     fontSize: "14px",
     color: "#FFFFFF",
     cursor: "pointer",
-    transition: "background-color 0.2s ease",
-  },
-};
+    transition: "background-color 0.2s ease"
+  }
+}
 
-export default ModelDropdownImage;
+export default ModelDropdownImage

@@ -1,7 +1,7 @@
-import { getToken } from "@/api/auth";
-import { Result } from "@/types/common";
-import { BASE_URL } from "@/firebaseConfig";
-import { z } from "zod";
+import { getToken } from "@/api/auth"
+import { Result } from "@/types/common"
+import { BASE_URL } from "@/firebaseConfig"
+import { z } from "zod"
 
 // Common schema for pagination
 const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemsSchema: T) =>
@@ -9,8 +9,9 @@ const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemsSchema: T) =>
     items: z.array(itemsSchema).optional(),
     page: z.number(),
     nextPage: z.number(),
-    pageSize: z.number(),
-  });
+    prevPage: z.number().optional(),
+    pageSize: z.number()
+  })
 
 // Base schema for common model capabilities (shared between image and LLM models)
 const BaseModelCapabilitiesSchema = z.object({
@@ -32,15 +33,15 @@ const BaseModelCapabilitiesSchema = z.object({
   strengths: z.string(),
   weaknesses: z.string(),
   avatarStyle: z.string(),
-  minimumTier: z.number().optional().default(0),
-});
+  minimumTier: z.number().optional().default(0)
+})
 
 // Schema for image model capabilities
 const ImageModelSchema = BaseModelCapabilitiesSchema.extend({
   imageSize: z.string(),
   imageOrientation: z.string(),
-  cost: z.number(),
-});
+  cost: z.number()
+})
 
 // Schema for LLM model capabilities with additional fields
 const LLMModelSchema = BaseModelCapabilitiesSchema.extend({
@@ -49,49 +50,49 @@ const LLMModelSchema = BaseModelCapabilitiesSchema.extend({
   isDateTagged: z.boolean(),
   attachableImageCount: z.number(),
   costPerMillionInputTokens: z.number(),
-  costPerMillionOutputTokens: z.number(),
-});
+  costPerMillionOutputTokens: z.number()
+})
 
-export type ImageModel = z.infer<typeof ImageModelSchema>;
-export type LLMModel = z.infer<typeof LLMModelSchema>;
+export type ImageModel = z.infer<typeof ImageModelSchema>
+export type LLMModel = z.infer<typeof LLMModelSchema>
 export type PaginatedImageModels = z.infer<
   ReturnType<typeof PaginatedResponseSchema<typeof ImageModelSchema>>
->;
+>
 export type PaginatedLLMModels = z.infer<
   ReturnType<typeof PaginatedResponseSchema<typeof LLMModelSchema>>
->;
+>
 
 // Request parameters schema for pagination
 export const PageParamsSchema = z.object({
   page: z.number().optional().default(0),
-  pageSize: z.number().optional().default(10),
-});
+  pageSize: z.number().optional().default(10)
+})
 
-export type PageParams = z.infer<typeof PageParamsSchema>;
+export type PageParams = z.infer<typeof PageParamsSchema>
 
 /**
  * Fetches available prompt (LLM) models with pagination support
  */
 export async function getPromptModels(
-  params: PageParams = { page: 1, pageSize: 50 },
+  params: PageParams = { page: 1, pageSize: 50 }
 ): Promise<Result<PaginatedLLMModels>> {
-  const tok = await getToken();
+  const tok = await getToken()
   if (tok.err) {
-    return { err: tok.err.message };
+    return { err: tok.err.message }
   }
   if (!tok.ok) {
-    return { err: "getPromptModels: Unable to fetch models: No token" };
+    return { err: "getPromptModels: Unable to fetch models: No token" }
   }
 
   try {
     // Validate and parse input parameters
-    const validParams = PageParamsSchema.parse(params);
+    const validParams = PageParamsSchema.parse(params)
 
     // Build query parameters
     const queryParams = new URLSearchParams({
       page: validParams.page.toString(),
-      pageSize: validParams.pageSize.toString(),
-    });
+      pageSize: validParams.pageSize.toString()
+    })
 
     const response = await fetch(
       `${BASE_URL}/api/v2/services/prompt?${queryParams}`,
@@ -99,32 +100,32 @@ export async function getPromptModels(
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok.token}`,
-          Accept: "application/json",
-        },
-      },
-    );
+          Accept: "application/json"
+        }
+      }
+    )
 
     if (response.ok) {
-      const rawData: unknown = await response.json();
-      const schema = PaginatedResponseSchema(LLMModelSchema);
-      const result = schema.safeParse(rawData);
+      const rawData: unknown = await response.json()
+      const schema = PaginatedResponseSchema(LLMModelSchema)
+      const result = schema.safeParse(rawData)
 
       if (result.success) {
-        return { ok: result.data };
+        return { ok: result.data }
       } else {
-        console.error("Zod validation error:", result.error.flatten());
+        console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getPromptModels: Invalid data received. Error: ${result.error.message}`,
-        };
+          err: `getPromptModels: Invalid data received. Error: ${result.error.message}`
+        }
       }
     } else {
       return {
-        err: `getPromptModels: Unable to fetch models: ${response.status}`,
-      };
+        err: `getPromptModels: Unable to fetch models: ${response.status}`
+      }
     }
   } catch (error) {
-    console.error("Fetch error:", error);
-    return { err: `getPromptModels: Network error: ${error}` };
+    console.error("Fetch error:", error)
+    return { err: `getPromptModels: Network error: ${error}` }
   }
 }
 
@@ -132,25 +133,25 @@ export async function getPromptModels(
  * Fetches available image generation models with pagination support
  */
 export async function getImageModels(
-  params: PageParams = { page: 1, pageSize: 50 },
+  params: PageParams = { page: 1, pageSize: 50 }
 ): Promise<Result<PaginatedImageModels>> {
-  const tok = await getToken();
+  const tok = await getToken()
   if (tok.err) {
-    return { err: tok.err.message };
+    return { err: tok.err.message }
   }
   if (!tok.ok) {
-    return { err: "getImageModels: Unable to fetch models: No token" };
+    return { err: "getImageModels: Unable to fetch models: No token" }
   }
 
   try {
     // Validate and parse input parameters
-    const validParams = PageParamsSchema.parse(params);
+    const validParams = PageParamsSchema.parse(params)
 
     // Build query parameters
     const queryParams = new URLSearchParams({
       page: validParams.page.toString(),
-      pageSize: validParams.pageSize.toString(),
-    });
+      pageSize: validParams.pageSize.toString()
+    })
 
     const response = await fetch(
       `${BASE_URL}/api/v2/services/image?${queryParams}`,
@@ -158,31 +159,31 @@ export async function getImageModels(
         method: "GET",
         headers: {
           Authorization: `Bearer ${tok.ok.token}`,
-          Accept: "application/json",
-        },
-      },
-    );
+          Accept: "application/json"
+        }
+      }
+    )
 
     if (response.ok) {
-      const rawData: unknown = await response.json();
-      const schema = PaginatedResponseSchema(ImageModelSchema);
-      const result = schema.safeParse(rawData);
+      const rawData: unknown = await response.json()
+      const schema = PaginatedResponseSchema(ImageModelSchema)
+      const result = schema.safeParse(rawData)
 
       if (result.success) {
-        return { ok: result.data };
+        return { ok: result.data }
       } else {
-        console.error("Zod validation error:", result.error.flatten());
+        console.error("Zod validation error:", result.error.flatten())
         return {
-          err: `getImageModels: Invalid data received. Error: ${result.error.message}`,
-        };
+          err: `getImageModels: Invalid data received. Error: ${result.error.message}`
+        }
       }
     } else {
       return {
-        err: `getImageModels: Unable to fetch models: ${response.status}`,
-      };
+        err: `getImageModels: Unable to fetch models: ${response.status}`
+      }
     }
   } catch (error) {
-    console.error("Fetch error:", error);
-    return { err: `getImageModels: Network error: ${error}` };
+    console.error("Fetch error:", error)
+    return { err: `getImageModels: Network error: ${error}` }
   }
 }

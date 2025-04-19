@@ -1,28 +1,28 @@
-import { FaTrash } from "react-icons/fa";
-import { toast } from "react-hot-toast";
-import Modal from "./ui/modals/Modal";
-import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
-import "./MemoryNodeModal.css";
-import MarkdownRenderer from "./MarkdownRenderer";
+import { FaTrash } from "react-icons/fa"
+import { toast } from "react-hot-toast"
+import Modal from "./ui/modals/Modal"
+import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
+import "./MemoryNodeModal.css"
+import MarkdownRenderer from "./MarkdownRenderer"
 
 export default function MemoryNodeModal() {
-  const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer();
+  const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer()
 
   // Determine if this is the root node
-  const isRootNode = nodeData?.level === 0 || nodeData?.depth === 0;
+  const isRootNode = nodeData?.level === 0 || nodeData?.depth === 0
 
   // Handle deletion with error handling
   const handleDelete = () => {
     try {
       if (nodeData && typeof onDelete === "function") {
-        onDelete(nodeData);
+        onDelete(nodeData)
       }
-      hideMemoryNode();
+      hideMemoryNode()
     } catch (error) {
-      console.error("Error deleting node:", error);
-      toast.error("Failed to delete memory");
+      console.error("Error deleting node:", error)
+      toast.error("Failed to delete memory")
     }
-  };
+  }
 
   return (
     <Modal id="memoryNodeViewer" title={isRootNode ? "Your Prompt" : "Memory"}>
@@ -66,5 +66,5 @@ export default function MemoryNodeModal() {
         )}
       </div>
     </Modal>
-  );
+  )
 }

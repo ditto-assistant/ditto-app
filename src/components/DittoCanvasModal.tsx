@@ -1,63 +1,63 @@
-import { useEffect, useRef, useState } from "react";
-import { IconButton } from "@mui/material";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import Modal from "@/components/ui/modals/Modal";
-import { useModal } from "@/hooks/useModal";
-import { useScripts } from "@/hooks/useScripts";
-import "./DittoCanvasModal.css";
-import { usePlatform } from "@/hooks/usePlatform";
+import { useEffect, useRef, useState } from "react"
+import { IconButton } from "@mui/material"
+import FullscreenIcon from "@mui/icons-material/Fullscreen"
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit"
+import Modal from "@/components/ui/modals/Modal"
+import { useModal } from "@/hooks/useModal"
+import { useScripts } from "@/hooks/useScripts"
+import "./DittoCanvasModal.css"
+import { usePlatform } from "@/hooks/usePlatform"
 
 export default function DittoCanvasModal() {
-  const { createCloseHandler } = useModal();
-  const closeModal = createCloseHandler("dittoCanvas");
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const { isMobile } = usePlatform();
-  const { selectedScript } = useScripts();
+  const { createCloseHandler } = useModal()
+  const closeModal = createCloseHandler("dittoCanvas")
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const { isMobile } = usePlatform()
+  const { selectedScript } = useScripts()
 
   useEffect(() => {
     const setVH = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
-    };
+      const vh = window.innerHeight * 0.01
+      document.documentElement.style.setProperty("--vh", `${vh}px`)
+    }
 
-    setVH();
-    window.addEventListener("resize", setVH);
-    window.addEventListener("orientationchange", setVH);
+    setVH()
+    window.addEventListener("resize", setVH)
+    window.addEventListener("orientationchange", setVH)
 
     return () => {
-      window.removeEventListener("resize", setVH);
-      window.removeEventListener("orientationchange", setVH);
-    };
-  }, []);
+      window.removeEventListener("resize", setVH)
+      window.removeEventListener("orientationchange", setVH)
+    }
+  }, [])
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+      setIsFullscreen(!!document.fullscreenElement)
+    }
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    }
+  }, [])
 
   const toggleFullscreen = () => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    const iframe = iframeRef.current
+    if (!iframe) return
 
     if (!isFullscreen) {
       if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
+        iframe.requestFullscreen()
       }
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen();
+        document.exitFullscreen()
       }
     }
-  };
+  }
 
   // If no script is selected, show an empty state
   if (!selectedScript) {
@@ -70,7 +70,7 @@ export default function DittoCanvasModal() {
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   return (
@@ -106,5 +106,5 @@ export default function DittoCanvasModal() {
         )}
       </div>
     </Modal>
-  );
+  )
 }

@@ -1,17 +1,17 @@
-import React from "react";
-import { FaCoins } from "react-icons/fa";
-import "./TokenIcon.css";
+import React from "react"
+import { FaCoins } from "react-icons/fa"
+import "./TokenIcon.css"
 
 interface TokenIconProps {
-  className?: string;
-  size?: number;
-  color?: string;
+  className?: string
+  size?: number
+  color?: string
 }
 
 const TokenIcon: React.FC<TokenIconProps> = ({
   className = "",
   size = 16,
-  color,
+  color
 }) => {
   return (
     <div
@@ -20,7 +20,7 @@ const TokenIcon: React.FC<TokenIconProps> = ({
     >
       <FaCoins className="token-icon" style={color ? { color } : undefined} />
     </div>
-  );
-};
+  )
+}
 
-export default TokenIcon;
+export default TokenIcon

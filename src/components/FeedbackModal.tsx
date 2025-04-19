@@ -1,66 +1,66 @@
-import { MdBugReport, MdLightbulb } from "react-icons/md";
-import { useActionState, useCallback, useEffect } from "react";
-import { useState, useRef } from "react";
-import { BASE_URL } from "@/firebaseConfig";
-import { getDeviceID, APP_VERSION } from "@/utils/deviceId";
-import { useAuth, useAuthToken } from "@/hooks/useAuth";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import { toast } from "react-hot-toast";
-import { SubmitButton } from "@/components/ui/buttons/SubmitButton";
-import SocialLinks from "@/components/ui/links/SocialLinks";
-import "./FeedbackModal.css";
-import { useModal } from "@/hooks/useModal";
-import Modal from "@/components/ui/modals/Modal";
-import { Result } from "@/types/common";
+import { MdBugReport, MdLightbulb } from "react-icons/md"
+import { useActionState, useCallback, useEffect } from "react"
+import { useState, useRef } from "react"
+import { BASE_URL } from "@/firebaseConfig"
+import { getDeviceID, APP_VERSION } from "@/utils/deviceId"
+import { useAuth, useAuthToken } from "@/hooks/useAuth"
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { toast } from "react-hot-toast"
+import { SubmitButton } from "@/components/ui/buttons/SubmitButton"
+import SocialLinks from "@/components/ui/links/SocialLinks"
+import "./FeedbackModal.css"
+import { useModal } from "@/hooks/useModal"
+import Modal from "@/components/ui/modals/Modal"
+import { Result } from "@/types/common"
 
-type FeedbackType = "bug" | "feature-request";
+type FeedbackType = "bug" | "feature-request"
 
-type FeedbackState = Result<boolean>;
+type FeedbackState = Result<boolean>
 
 async function submitFeedback(_: FeedbackState, formData: FormData) {
   try {
     const response = await fetch(`${BASE_URL}/v1/feedback`, {
       method: "POST",
-      body: formData,
-    });
+      body: formData
+    })
     if (response.status === 201) {
-      return { ok: true };
+      return { ok: true }
     }
-    const error = await response.text();
-    return { err: error };
+    const error = await response.text()
+    return { err: error }
   } catch (error: unknown) {
-    return { err: error instanceof Error ? error.message : "Unknown error" };
+    return { err: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
 export default function FeedbackModal() {
-  const { createCloseHandler } = useModal();
-  const [selectedType, setSelectedType] = useState<FeedbackType>("bug");
+  const { createCloseHandler } = useModal()
+  const [selectedType, setSelectedType] = useState<FeedbackType>("bug")
   const createSelectTypeCallback = useCallback(
     (type: FeedbackType) => () => setSelectedType(type),
-    [],
-  );
-  const auth = useAuth();
-  const token = useAuthToken();
-  const [state, formAction] = useActionState(submitFeedback, { ok: false });
-  const formRef = useRef<HTMLFormElement>(null);
-  const closeModal = createCloseHandler("feedback");
+    []
+  )
+  const auth = useAuth()
+  const token = useAuthToken()
+  const [state, formAction] = useActionState(submitFeedback, { ok: false })
+  const formRef = useRef<HTMLFormElement>(null)
+  const closeModal = createCloseHandler("feedback")
   useEffect(() => {
     if (state?.err) {
-      toast.error(state.err);
+      toast.error(state.err)
     }
     if (state?.ok) {
-      toast.success("Feedback submitted successfully!");
-      formRef.current?.reset();
-      state.ok = false;
-      closeModal();
+      toast.success("Feedback submitted successfully!")
+      formRef.current?.reset()
+      state.ok = false
+      closeModal()
     }
-  }, [state, closeModal]);
+  }, [state, closeModal])
   if (auth.isLoading || token.isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner />
   }
   if (auth.error || token.error) {
-    return <div className="error-message">Authentication required</div>;
+    return <div className="error-message">Authentication required</div>
   }
 
   return (
@@ -115,5 +115,5 @@ export default function FeedbackModal() {
         <SocialLinks />
       </form>
     </Modal>
-  );
+  )
 }

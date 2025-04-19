@@ -1,62 +1,60 @@
-import React, { useCallback } from "react";
-import { MemorySlider } from "@/components/ui/sliders/MemorySlider";
-import { MEMORY_CONFIG } from "@/constants";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { useUser } from "@/hooks/useUser";
-import { FaBolt } from "react-icons/fa";
-import "./MemoryControlsModal.css";
-import "@/components/ui/modals/Modal.css";
+import React, { useCallback } from "react"
+import { MemorySlider } from "@/components/ui/sliders/MemorySlider"
+import { MEMORY_CONFIG } from "@/constants"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { useUser } from "@/hooks/useUser"
+import { FaBolt } from "react-icons/fa"
+import "./MemoryControlsModal.css"
+import "@/components/ui/modals/Modal.css"
 
 const redirectToGeneralTab = () => {
-  const generalTab = document.querySelector(
-    '.modal-tab[data-tab-id="general"]',
-  );
+  const generalTab = document.querySelector('.modal-tab[data-tab-id="general"]')
   if (generalTab) {
-    (generalTab as HTMLElement).click();
+    ;(generalTab as HTMLElement).click()
   }
-};
+}
 
 type MemoryControlsModalProps = {
-  minimumTier?: number;
-};
+  minimumTier?: number
+}
 
 const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
-  minimumTier = 1,
+  minimumTier = 1
 }) => {
-  const { preferences, updatePreferences } = useModelPreferences();
-  const { data: user } = useUser();
+  const { preferences, updatePreferences } = useModelPreferences()
+  const { data: user } = useUser()
 
-  const isLocked = (user?.planTier || 0) < minimumTier;
+  const isLocked = (user?.planTier || 0) < minimumTier
 
   const handleShortTermChange = useCallback(
     (newValues: number[]) => {
-      if (!preferences) return;
+      if (!preferences) return
       updatePreferences({
         memory: {
           ...preferences.memory,
-          shortTermMemoryCount: newValues[0],
-        },
-      });
+          shortTermMemoryCount: newValues[0]
+        }
+      })
     },
-    [preferences, updatePreferences],
-  );
+    [preferences, updatePreferences]
+  )
 
   const handleLongTermChange = useCallback(
     (newValues: number[]) => {
-      if (!preferences) return;
+      if (!preferences) return
       if (newValues.length <= MEMORY_CONFIG.longTerm.maxChainLength) {
         updatePreferences({
           memory: {
             ...preferences.memory,
-            longTermMemoryChain: newValues,
-          },
-        });
+            longTermMemoryChain: newValues
+          }
+        })
       }
     },
-    [preferences, updatePreferences],
-  );
+    [preferences, updatePreferences]
+  )
 
-  if (!preferences) return null;
+  if (!preferences) return null
 
   return (
     <div className={`memory-controls-content ${isLocked ? "locked" : ""}`}>
@@ -93,7 +91,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default MemoryControlsModal;
+export default MemoryControlsModal

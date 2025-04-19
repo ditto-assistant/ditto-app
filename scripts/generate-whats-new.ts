@@ -1,24 +1,24 @@
 #!/usr/bin/env bun
-import { readFileSync, writeFileSync, existsSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync, existsSync } from "fs"
+import { join } from "path"
 
 // Read the current version from package.json
-const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
-const version = packageJson.version;
+const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"))
+const version = packageJson.version
 
 // Convert version to component name format (e.g., 0.11.62 -> V0_11_62)
-const componentName = `V${version.replace(/\./g, "_")}`;
-const fileName = `${componentName}.tsx`;
+const componentName = `V${version.replace(/\./g, "_")}`
+const fileName = `${componentName}.tsx`
 
 // Paths
-const versionsDir = "./src/components/WhatsNew/versions";
-const whatsNewPath = "./src/components/WhatsNew/WhatsNew.tsx";
-const targetPath = join(versionsDir, fileName);
+const versionsDir = "./src/components/WhatsNew/versions"
+const whatsNewPath = "./src/components/WhatsNew/WhatsNew.tsx"
+const targetPath = join(versionsDir, fileName)
 
 // Check if version file already exists
 if (existsSync(targetPath)) {
-  console.error(`Version file ${fileName} already exists!`);
-  process.exit(1);
+  console.error(`Version file ${fileName} already exists!`)
+  process.exit(1)
 }
 
 // Template for the new version component
@@ -67,31 +67,31 @@ const ${componentName} = () => (
 );
 
 export default ${componentName};
-`;
+`
 
 // Write the new version file
-writeFileSync(targetPath, versionTemplate);
+writeFileSync(targetPath, versionTemplate)
 
 // Update WhatsNew.tsx
-const whatsNewContent = readFileSync(whatsNewPath, "utf-8");
+const whatsNewContent = readFileSync(whatsNewPath, "utf-8")
 
 // Add import statement - note we remove the .tsx extension from the import
-const importStatement = `import ${componentName} from "./versions/${componentName}";\n// Add imports for future versions here`;
+const importStatement = `import ${componentName} from "./versions/${componentName}";\n// Add imports for future versions here`
 const updatedContent = whatsNewContent.replace(
   /\/\/ Add imports for future versions here/,
-  importStatement,
-);
+  importStatement
+)
 
 // Add version to components map
-const versionMapEntry = `  "${version}": ${componentName},\n  // Add future versions here`;
+const versionMapEntry = `  "${version}": ${componentName},\n  // Add future versions here`
 const finalContent = updatedContent.replace(
   /\/\/ Add future versions here/,
-  versionMapEntry,
-);
+  versionMapEntry
+)
 
-writeFileSync(whatsNewPath, finalContent);
+writeFileSync(whatsNewPath, finalContent)
 
-console.log(`✨ Generated What's New template for version ${version}:`);
-console.log(`📝 Created: ${targetPath}`);
-console.log(`🔄 Updated: ${whatsNewPath}`);
-console.log("\n⚠️  Remember to update the template with actual release notes!");
+console.log(`✨ Generated What's New template for version ${version}:`)
+console.log(`📝 Created: ${targetPath}`)
+console.log(`🔄 Updated: ${whatsNewPath}`)
+console.log("\n⚠️  Remember to update the template with actual release notes!")

@@ -1,70 +1,70 @@
-import { useState, useEffect, useContext, createContext } from "react";
-import { grabConversationHistoryCount } from "../control/firebase";
-import { useAuth } from "./useAuth";
+import { useState, useEffect, useContext, createContext } from "react"
+import { grabConversationHistoryCount } from "../control/firebase"
+import { useAuth } from "./useAuth"
 
-const MemoryCountContext = createContext();
+const MemoryCountContext = createContext()
 
 export function useMemoryCount() {
-  const context = useContext(MemoryCountContext);
+  const context = useContext(MemoryCountContext)
   if (context === undefined) {
-    throw new Error("useMemoryCount must be used within a MemoryCountProvider");
+    throw new Error("useMemoryCount must be used within a MemoryCountProvider")
   }
-  return context;
+  return context
 }
 
 export function MemoryCountProvider({ children }) {
-  const { count, loading, error, refetch } = useMemCount();
+  const { count, loading, error, refetch } = useMemCount()
   return (
     <MemoryCountContext.Provider
       value={{
         count,
         loading,
         error,
-        refetch,
+        refetch
       }}
     >
       {children}
     </MemoryCountContext.Provider>
-  );
+  )
 }
 
 function useMemCount() {
-  const { user } = useAuth();
-  const [count, setCount] = useState(0);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [refetch, setRefetch] = useState(false);
+  const { user } = useAuth()
+  const [count, setCount] = useState(0)
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [refetch, setRefetch] = useState(false)
 
   useEffect(() => {
     if (!user) {
-      return;
+      return
     }
 
     async function fetchCount() {
       try {
         if (user?.uid) {
-          const memoryCount = await grabConversationHistoryCount(user?.uid);
-          setCount(memoryCount);
+          const memoryCount = await grabConversationHistoryCount(user?.uid)
+          setCount(memoryCount)
         }
       } catch (err) {
-        setError(err.message);
+        setError(err.message)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
 
-    fetchCount().then(() => setRefetch(false));
+    fetchCount().then(() => setRefetch(false))
 
     // Listen for memory-related events
-    const handleMemoryUpdate = () => setRefetch(true);
-    window.addEventListener("memoryUpdated", handleMemoryUpdate);
-    window.addEventListener("memoryDeleted", handleMemoryUpdate);
+    const handleMemoryUpdate = () => setRefetch(true)
+    window.addEventListener("memoryUpdated", handleMemoryUpdate)
+    window.addEventListener("memoryDeleted", handleMemoryUpdate)
 
     return () => {
-      window.removeEventListener("memoryUpdated", handleMemoryUpdate);
-      window.removeEventListener("memoryDeleted", handleMemoryUpdate);
-    };
-  }, [refetch, user]);
+      window.removeEventListener("memoryUpdated", handleMemoryUpdate)
+      window.removeEventListener("memoryDeleted", handleMemoryUpdate)
+    }
+  }, [refetch, user])
 
-  return { count, error, loading, refetch: () => setRefetch(true) };
+  return { count, error, loading, refetch: () => setRefetch(true) }
 }

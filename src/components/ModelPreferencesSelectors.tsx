@@ -1,52 +1,52 @@
-import { ModelPreferences } from "@/types/llm";
-import ModelDropdown from "./ModelDropdown";
-import ModelDropdownImage from "./ModelDropdownImage";
-import { useState, useEffect } from "react";
+import { ModelPreferences } from "@/types/llm"
+import ModelDropdown from "./ModelDropdown"
+import ModelDropdownImage from "./ModelDropdownImage"
+import { useState, useEffect } from "react"
 
 interface ModelPreferencesSelectorsProps {
-  preferences: ModelPreferences;
-  updatePreferences: (update: Partial<ModelPreferences>) => void;
-  className?: string;
+  preferences: ModelPreferences
+  updatePreferences: (update: Partial<ModelPreferences>) => void
+  className?: string
 }
 
 const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
   preferences,
   updatePreferences,
-  className,
+  className
 }) => {
   const [openDropdown, setOpenDropdown] = useState<
     "main" | "programmer" | "image" | null
-  >(null);
+  >(null)
 
   // Handle clicking outside of any dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       // Don't handle clicks inside dropdowns, their options, or the selectors
-      const target = e.target as HTMLElement;
+      const target = e.target as HTMLElement
       if (
         target.closest(".model-dropdown") ||
         target.closest(".dropdown-option") ||
         target.closest(".model-selector") ||
         target.closest(".selected-value")
       ) {
-        return;
+        return
       }
 
       // Close dropdown if clicking outside
-      setOpenDropdown(null);
-    };
+      setOpenDropdown(null)
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const handleModelChange = (
     key: keyof ModelPreferences,
-    value: (typeof preferences)[keyof ModelPreferences],
+    value: (typeof preferences)[keyof ModelPreferences]
   ) => {
-    updatePreferences({ [key]: value });
-    setOpenDropdown(null);
-  };
+    updatePreferences({ [key]: value })
+    setOpenDropdown(null)
+  }
 
   return (
     <div
@@ -63,9 +63,9 @@ const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
           isOpen={openDropdown === "main"}
           onOpenChange={(isOpen) => {
             if (isOpen) {
-              setOpenDropdown("main");
+              setOpenDropdown("main")
             } else if (openDropdown === "main") {
-              setOpenDropdown(null);
+              setOpenDropdown(null)
             }
           }}
         />
@@ -80,9 +80,9 @@ const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
           isOpen={openDropdown === "programmer"}
           onOpenChange={(isOpen) => {
             if (isOpen) {
-              setOpenDropdown("programmer");
+              setOpenDropdown("programmer")
             } else if (openDropdown === "programmer") {
-              setOpenDropdown(null);
+              setOpenDropdown(null)
             }
           }}
         />
@@ -99,35 +99,35 @@ const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
           isOpen={openDropdown === "image"}
           onOpenChange={(isOpen) => {
             if (isOpen) {
-              setOpenDropdown("image");
+              setOpenDropdown("image")
             } else if (openDropdown === "image") {
-              setOpenDropdown(null);
+              setOpenDropdown(null)
             }
           }}
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
 const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
     gap: "24px",
-    width: "100%",
+    width: "100%"
   },
   selector: {
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: "8px"
   },
   label: {
     color: "white",
     fontSize: "14px",
     textAlign: "left",
-    fontWeight: "500",
-  },
-} as const;
+    fontWeight: "500"
+  }
+} as const
 
-export default ModelPreferencesSelectors;
+export default ModelPreferencesSelectors

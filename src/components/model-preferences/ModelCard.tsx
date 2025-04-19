@@ -1,29 +1,32 @@
 // Main imports
-import { LLMModel, ImageModel } from "@/api/services";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { Model, Vendor } from "@/types/llm";
-import { IMAGE_GENERATION_SIZES } from "@/constants";
+import { LLMModel, ImageModel } from "@/api/services"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { Model, Vendor } from "@/types/llm"
+import { IMAGE_GENERATION_SIZES } from "@/constants"
 
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+  CardTitle
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
+import { FaBolt, FaBrain, FaMicrochip, FaGoogle } from "react-icons/fa"
+import { SiOpenai } from "react-icons/si"
+import { TbBrandMeta } from "react-icons/tb"
+import { MdInfoOutline } from "react-icons/md"
 import {
-  FaBolt,
-  FaBrain,
-  FaMicrochip,
-  FaGoogle,
-} from "react-icons/fa";
-import { SiOpenai } from "react-icons/si";
-import { TbBrandMeta } from "react-icons/tb";
-import { MdInfoOutline } from "react-icons/md";
-import { ZapIcon, ImageIcon, CpuIcon, Flame, Clock, Zap, Rocket } from "lucide-react";
+  ZapIcon,
+  ImageIcon,
+  CpuIcon,
+  Flame,
+  Clock,
+  Zap,
+  Rocket
+} from "lucide-react"
 
 // Vendor color mappings for visual consistency
 const VENDOR_COLORS: Record<Vendor, string> = {
@@ -32,49 +35,49 @@ const VENDOR_COLORS: Record<Vendor, string> = {
   anthropic: "#5436DA",
   mistral: "#7A88FF",
   meta: "#0668E1",
-  cerebras: "#FF4B4B",
-};
+  cerebras: "#FF4B4B"
+}
 
 // Speed labels have been removed per requirements
 
 const getSpeedIcon = (level: number) => {
-  if (level <= 2) return <Clock className="h-3 w-3" />;
-  if (level <= 4) return <Zap className="h-3 w-3" />;
-  if (level <= 6) return <CpuIcon className="h-3 w-3" />;
-  if (level <= 8) return <Rocket className="h-3 w-3" />;
-  return <Flame className="h-3 w-3" style={{ color: "#FF0000" }} />;
-};
+  if (level <= 2) return <Clock className="h-3 w-3" />
+  if (level <= 4) return <Zap className="h-3 w-3" />
+  if (level <= 6) return <CpuIcon className="h-3 w-3" />
+  if (level <= 8) return <Rocket className="h-3 w-3" />
+  return <Flame className="h-3 w-3" style={{ color: "#FF0000" }} />
+}
 
 const getVendorIcon = (vendor: Vendor) => {
   switch (vendor) {
     case "google":
-      return <FaGoogle />;
+      return <FaGoogle />
     case "openai":
-      return <SiOpenai />;
+      return <SiOpenai />
     case "anthropic":
-      return <FaBrain />;
+      return <FaBrain />
     case "mistral":
-      return <FaBolt />;
+      return <FaBolt />
     case "meta":
-      return <TbBrandMeta />;
+      return <TbBrandMeta />
     case "cerebras":
-      return <FaMicrochip />;
+      return <FaMicrochip />
     default:
-      return null;
+      return null
   }
-};
+}
 
 // Function to check if model is accessible
 const isModelAccessible = (
   model: LLMModel | ImageModel,
-  userTier: number = 0,
+  userTier: number = 0
 ) => {
   // Special case for LLaMA 4 models - always accessible
   if (
     "costPerMillionInputTokens" in model &&
     model.name.toLowerCase().includes("llama-4")
   ) {
-    return true;
+    return true
   }
 
   // Free models (no cost) are always accessible
@@ -82,30 +85,30 @@ const isModelAccessible = (
     "costPerMillionInputTokens" in model &&
     (!model.costPerMillionInputTokens || model.costPerMillionInputTokens === 0)
   ) {
-    return true;
+    return true
   }
 
   // Image models
   if (!("costPerMillionInputTokens" in model)) {
-    return model.minimumTier ? userTier >= model.minimumTier : true;
+    return model.minimumTier ? userTier >= model.minimumTier : true
   }
 
   // Use plan tier to determine accessibility
-  if (model.costPerMillionInputTokens > 30 && userTier < 3) return false;
-  if (model.costPerMillionInputTokens > 10 && userTier < 2) return false;
-  if (model.costPerMillionInputTokens > 0 && userTier < 1) return false;
+  if (model.costPerMillionInputTokens > 30 && userTier < 3) return false
+  if (model.costPerMillionInputTokens > 10 && userTier < 2) return false
+  if (model.costPerMillionInputTokens > 0 && userTier < 1) return false
 
-  return true;
-};
+  return true
+}
 
 interface ModelCardProps {
-  model: LLMModel | ImageModel;
-  isSelected: boolean;
-  userTier: number;
-  onSelect: () => void;
-  onShowDetails: () => void;
-  type: "main" | "programmer" | "image";
-  redirectToSubscription?: () => void;
+  model: LLMModel | ImageModel
+  isSelected: boolean
+  userTier: number
+  onSelect: () => void
+  onShowDetails: () => void
+  type: "main" | "programmer" | "image"
+  redirectToSubscription?: () => void
 }
 
 export const ModelCard = ({
@@ -115,12 +118,12 @@ export const ModelCard = ({
   onSelect,
   onShowDetails,
   type,
-  redirectToSubscription,
+  redirectToSubscription
 }: ModelCardProps) => {
-  const { preferences, updatePreferences } = useModelPreferences();
+  const { preferences, updatePreferences } = useModelPreferences()
 
-  const isAccessible = isModelAccessible(model, userTier);
-  const isLLMModel = "costPerMillionInputTokens" in model;
+  const isAccessible = isModelAccessible(model, userTier)
+  const isLLMModel = "costPerMillionInputTokens" in model
 
   // Special handling no longer needed with updated design
 
@@ -128,22 +131,22 @@ export const ModelCard = ({
 
   // Handle size selection for image models
   const handleSizeChange = (size: { wh: string; description: string }) => {
-    if (isLLMModel || !preferences) return;
+    if (isLLMModel || !preferences) return
 
     updatePreferences({
       imageGeneration: {
         model: model.name as Model,
-        size,
-      },
-    });
-  };
+        size
+      }
+    })
+  }
 
   return (
     <Card
       className={`overflow-hidden transition-all cursor-pointer h-full ${isSelected ? "border-2 border-primary ring-2 ring-primary/20" : "border hover:border-primary/50"} ${!isAccessible ? "opacity-75" : ""}`}
       onClick={() => {
         if (isAccessible) {
-          onSelect();
+          onSelect()
         }
       }}
     >
@@ -160,13 +163,13 @@ export const ModelCard = ({
             size="sm"
             className="p-0 h-8 w-8"
             onClick={(e) => {
-              e.stopPropagation();
-              onShowDetails();
+              e.stopPropagation()
+              onShowDetails()
             }}
           >
             <MdInfoOutline className="h-4 w-4" />
           </Button>
-          
+
           {model.provider && (
             <Badge
               variant="outline"
@@ -175,7 +178,7 @@ export const ModelCard = ({
                 backgroundColor:
                   VENDOR_COLORS[model.provider.toLowerCase() as Vendor] ||
                   "#999",
-                color: "white",
+                color: "white"
               }}
             >
               {getVendorIcon(model.provider.toLowerCase() as Vendor)}
@@ -190,11 +193,7 @@ export const ModelCard = ({
             {getSpeedIcon(model.speedLevel)}
           </Badge>
 
-          <Badge
-            variant="secondary"
-            className="flex items-center"
-          >
-          </Badge>
+          <Badge variant="secondary" className="flex items-center"></Badge>
 
           {isLLMModel && (model as LLMModel).attachableImageCount > 0 && (
             <Badge variant="success" className="flex items-center">
@@ -211,14 +210,16 @@ export const ModelCard = ({
             size="sm"
             className="w-full text-sm font-medium"
             onClick={(e) => {
-              e.stopPropagation();
-              redirectToSubscription?.();
+              e.stopPropagation()
+              redirectToSubscription?.()
             }}
           >
             <ZapIcon className="h-3.5 w-3.5 mr-1.5" />
-            {model.minimumTier >= 3 ? "Upgrade to Hero" : 
-             model.minimumTier >= 2 ? "Upgrade to Strong" : 
-                                      "Upgrade to Spark"}
+            {model.minimumTier >= 3
+              ? "Upgrade to Hero"
+              : model.minimumTier >= 2
+                ? "Upgrade to Strong"
+                : "Upgrade to Spark"}
           </Button>
         )}
       </CardFooter>
@@ -238,8 +239,8 @@ export const ModelCard = ({
                 }
                 size="sm"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleSizeChange(size);
+                  e.stopPropagation()
+                  handleSizeChange(size)
                 }}
               >
                 {size.description}
@@ -249,7 +250,7 @@ export const ModelCard = ({
         </div>
       )}
     </Card>
-  );
-};
+  )
+}
 
-export default ModelCard;
+export default ModelCard

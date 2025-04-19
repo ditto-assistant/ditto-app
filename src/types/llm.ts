@@ -1,13 +1,13 @@
 export type ModelPreferences = {
-  mainModel: Model;
-  programmerModel: Model;
+  mainModel: Model
+  programmerModel: Model
   imageGeneration: {
-    model: Model;
-    size: Omit<ImageGenerationSize, "supportedModels">;
-  };
-  tools: ToolPreferences;
-  memory: MemoryPreferences;
-};
+    model: Model
+    size: Omit<ImageGenerationSize, "supportedModels">
+  }
+  tools: ToolPreferences
+  memory: MemoryPreferences
+}
 
 export function modelSupportsImageAttachments(model: Model): boolean {
   return (
@@ -26,7 +26,7 @@ export function modelSupportsImageAttachments(model: Model): boolean {
     model === "gpt-4o-2024-11-20" ||
     model === "gpt-4o-mini" ||
     model === "gpt-4o-mini-2024-07-18"
-  );
+  )
 }
 
 export type Model =
@@ -57,7 +57,7 @@ export type Model =
   | "llama3.1-8b"
   | "llama-3.3-70b"
   | "meta/llama-4-scout-17b-16e-instruct-maas"
-  | "meta/llama-4-maverick-17b-128e-instruct-maas";
+  | "meta/llama-4-maverick-17b-128e-instruct-maas"
 
 export type Vendor =
   | "openai"
@@ -65,44 +65,44 @@ export type Vendor =
   | "google"
   | "mistral"
   | "meta"
-  | "cerebras";
+  | "cerebras"
 
 export type ImageGenerationSize = {
-  wh: string;
-  description: string;
-  supportedModels: Model[];
-};
+  wh: string
+  description: string
+  supportedModels: Model[]
+}
 
 export type ModelOption = {
-  id: Model;
-  name: string;
-  minimumTier?: number;
-  isMaintenance?: boolean;
-  isTaggedModel?: boolean;
-  sizeOptions?: ImageGenerationSize[];
-  vendor?: Vendor;
+  id: Model
+  name: string
+  minimumTier?: number
+  isMaintenance?: boolean
+  isTaggedModel?: boolean
+  sizeOptions?: ImageGenerationSize[]
+  vendor?: Vendor
   supports?: {
-    imageAttachments?: "single" | "multiple";
-    imageGeneration?: boolean;
-    tools?: boolean;
-  };
-  speedLevel?: "slow" | "medium" | "fast" | "insane";
-};
+    imageAttachments?: "single" | "multiple"
+    imageGeneration?: boolean
+    tools?: boolean
+  }
+  speedLevel?: "slow" | "medium" | "fast" | "insane"
+}
 
 export type Tool = {
-  id: keyof ToolPreferences;
-  name: string;
-  description: string;
-  trigger: string;
-};
+  id: keyof ToolPreferences
+  name: string
+  description: string
+  trigger: string
+}
 
 export type ToolPreferences = {
-  htmlScript: boolean;
-  imageGeneration: boolean;
-  googleSearch: boolean;
-};
+  htmlScript: boolean
+  imageGeneration: boolean
+  googleSearch: boolean
+}
 
 export type MemoryPreferences = {
-  shortTermMemoryCount: number;
-  longTermMemoryChain: number[];
-};
+  shortTermMemoryCount: number
+  longTermMemoryChain: number[]
+}

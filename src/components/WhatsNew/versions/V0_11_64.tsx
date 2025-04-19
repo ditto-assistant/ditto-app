@@ -1,5 +1,5 @@
-import React from "react";
-import { VersionSection, Section } from "./VersionTemplate";
+import React from "react"
+import { VersionSection, Section } from "./VersionTemplate"
 
 const sections: Section[] = [
   {
@@ -9,15 +9,15 @@ const sections: Section[] = [
         type: "improved",
         title: "Reorganized Application Icons",
         description:
-          "Icons are now better organized into clear categories (round, square, clear) for improved maintenance and consistency across platforms.",
+          "Icons are now better organized into clear categories (round, square, clear) for improved maintenance and consistency across platforms."
       },
       {
         type: "improved",
         title: "Automated Icon Generation",
         description:
-          "Added a new script to automatically generate all required icon sizes and formats from source images.",
-      },
-    ],
+          "Added a new script to automatically generate all required icon sizes and formats from source images."
+      }
+    ]
   },
   {
     title: "Bug Fixes",
@@ -26,11 +26,11 @@ const sections: Section[] = [
         type: "fixed",
         title: "Icon Path References",
         description:
-          "Fixed icon path references throughout the application to match the new directory structure.",
-      },
-    ],
-  },
-];
+          "Fixed icon path references throughout the application to match the new directory structure."
+      }
+    ]
+  }
+]
 
 const V0_11_64 = () => (
   <div>
@@ -38,6 +38,6 @@ const V0_11_64 = () => (
       <VersionSection key={index} {...section} />
     ))}
   </div>
-);
+)
 
-export default V0_11_64;
+export default V0_11_64

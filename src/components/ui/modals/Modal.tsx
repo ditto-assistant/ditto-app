@@ -1,33 +1,33 @@
-import React, { useRef, useState, useEffect, ReactNode } from "react";
-import { createPortal } from "react-dom";
-import { DEFAULT_MODAL_STATE, ModalId, useModal } from "@/hooks/useModal";
-import { ModalHeader } from "./ModalHeader";
-import { useUser } from "@/hooks/useUser";
-import { FaCrown } from "react-icons/fa";
+import React, { useRef, useState, useEffect, ReactNode } from "react"
+import { createPortal } from "react-dom"
+import { DEFAULT_MODAL_STATE, ModalId, useModal } from "@/hooks/useModal"
+import { ModalHeader } from "./ModalHeader"
+import { useUser } from "@/hooks/useUser"
+import { FaCrown } from "react-icons/fa"
 
 export interface ModalTab {
-  id: string;
-  label: string;
-  content: ReactNode;
-  customClass?: string;
-  minimumTier?: number;
-  icon?: ReactNode;
+  id: string
+  label: string
+  content: ReactNode
+  customClass?: string
+  minimumTier?: number
+  icon?: ReactNode
 }
 
 interface ModalProps {
-  id: ModalId;
-  title: string;
-  children?: ReactNode;
-  fullScreen?: boolean;
-  tabs?: ModalTab[];
-  defaultTabId?: string;
-  onTabChange?: (tabId: string) => void;
-  icon?: React.ReactNode;
-  useGradientTitle?: boolean;
+  id: ModalId
+  title: string
+  children?: ReactNode
+  fullScreen?: boolean
+  tabs?: ModalTab[]
+  defaultTabId?: string
+  onTabChange?: (tabId: string) => void
+  icon?: React.ReactNode
+  useGradientTitle?: boolean
 }
 
-const MIN_WIDTH = 280;
-const MIN_HEIGHT = 200;
+const MIN_WIDTH = 280
+const MIN_HEIGHT = 200
 
 export default function Modal({
   id,
@@ -38,73 +38,73 @@ export default function Modal({
   defaultTabId,
   onTabChange,
   icon,
-  useGradientTitle = true,
+  useGradientTitle = true
 }: ModalProps) {
   const { createBringToFrontHandler, createCloseHandler, getModalState } =
-    useModal();
-  const { data: user } = useUser();
-  const modalRef = useRef<HTMLDivElement>(null);
-  const tabsContainerRef = useRef<HTMLDivElement>(null);
-  const activeTabRef = useRef<HTMLButtonElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [position, setPosition] = useState({ x: 100, y: 100 });
-  const [size, setSize] = useState({ width: 250, height: 400 });
-  const [isFullscreen, setIsFullscreen] = useState(fullScreen);
-  const [localTransform, setLocalTransform] = useState({ x: 0, y: 0 });
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0 });
-  const [resizeEdge, setResizeEdge] = useState<string | null>(null);
+    useModal()
+  const { data: user } = useUser()
+  const modalRef = useRef<HTMLDivElement>(null)
+  const tabsContainerRef = useRef<HTMLDivElement>(null)
+  const activeTabRef = useRef<HTMLButtonElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState({ x: 100, y: 100 })
+  const [size, setSize] = useState({ width: 250, height: 400 })
+  const [isFullscreen, setIsFullscreen] = useState(fullScreen)
+  const [localTransform, setLocalTransform] = useState({ x: 0, y: 0 })
+  const [isResizing, setIsResizing] = useState(false)
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0 })
+  const [resizeEdge, setResizeEdge] = useState<string | null>(null)
   const [activeTabId, setActiveTabId] = useState<string | undefined>(
-    defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined),
-  );
-  const closeModal = createCloseHandler(id);
-  const bringToFront = createBringToFrontHandler(id);
-  const modalState = getModalState(id);
-  const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex;
+    defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined)
+  )
+  const closeModal = createCloseHandler(id)
+  const bringToFront = createBringToFrontHandler(id)
+  const modalState = getModalState(id)
+  const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex
 
   // Update activeTabId when modal opens with an initialTabId
   useEffect(() => {
     if (modalState && modalState.initialTabId && tabs && tabs.length > 0) {
       // Make sure the tab exists before setting it active
-      const tabExists = tabs.some((tab) => tab.id === modalState.initialTabId);
+      const tabExists = tabs.some((tab) => tab.id === modalState.initialTabId)
       if (tabExists) {
-        setActiveTabId(modalState.initialTabId);
+        setActiveTabId(modalState.initialTabId)
       }
     }
-  }, [modalState, tabs]);
+  }, [modalState, tabs])
 
   const handleStartDrag = (e: React.MouseEvent | React.TouchEvent) => {
-    if ((e.target as HTMLElement).closest(".modal-controls")) return;
+    if ((e.target as HTMLElement).closest(".modal-controls")) return
 
-    setIsDragging(true);
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    setDragOffset({ x: clientX - position.x, y: clientY - position.y });
-    setLocalTransform({ x: 0, y: 0 });
-    bringToFront();
-  };
+    setIsDragging(true)
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
+    setDragOffset({ x: clientX - position.x, y: clientY - position.y })
+    setLocalTransform({ x: 0, y: 0 })
+    bringToFront()
+  }
 
   const handleStartResize = (
     e: React.MouseEvent | React.TouchEvent,
-    edge: string,
+    edge: string
   ) => {
-    setIsResizing(true);
-    setResizeEdge(edge);
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    setResizeStart({ x: clientX, y: clientY });
-    bringToFront();
-    e.stopPropagation();
-  };
+    setIsResizing(true)
+    setResizeEdge(edge)
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
+    setResizeStart({ x: clientX, y: clientY })
+    bringToFront()
+    e.stopPropagation()
+  }
 
   // Scroll to active tab when it changes
   useEffect(() => {
     if (activeTabRef.current && tabsContainerRef.current) {
-      const tabElement = activeTabRef.current;
-      const tabsContainer = tabsContainerRef.current;
-      const tabRect = tabElement.getBoundingClientRect();
-      const containerRect = tabsContainer.getBoundingClientRect();
+      const tabElement = activeTabRef.current
+      const tabsContainer = tabsContainerRef.current
+      const tabRect = tabElement.getBoundingClientRect()
+      const containerRect = tabsContainer.getBoundingClientRect()
 
       // Check if tab is outside visible area
       if (
@@ -115,122 +115,122 @@ export default function Modal({
         const scrollPosition =
           tabElement.offsetLeft -
           tabsContainer.clientWidth / 2 +
-          tabElement.clientWidth / 2;
+          tabElement.clientWidth / 2
 
         tabsContainer.scrollTo({
           left: Math.max(0, scrollPosition),
-          behavior: "smooth",
-        });
+          behavior: "smooth"
+        })
       }
     }
-  }, [activeTabId]);
+  }, [activeTabId])
 
   useEffect(() => {
     const getBoundedPosition = (
       x: number,
       y: number,
       width: number,
-      height: number,
+      height: number
     ) => {
-      const maxX = window.innerWidth - width;
-      const maxY = window.innerHeight - height;
+      const maxX = window.innerWidth - width
+      const maxY = window.innerHeight - height
       return {
         x: Math.max(0, Math.min(x, maxX)),
-        y: Math.max(0, Math.min(y, maxY)),
-      };
-    };
+        y: Math.max(0, Math.min(y, maxY))
+      }
+    }
 
     const getBoundedSize = (width: number, height: number) => {
-      const maxWidth = window.innerWidth - position.x;
-      const maxHeight = window.innerHeight - position.y;
+      const maxWidth = window.innerWidth - position.x
+      const maxHeight = window.innerHeight - position.y
       return {
         width: Math.max(MIN_WIDTH, Math.min(width, maxWidth)),
-        height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight)),
-      };
-    };
+        height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight))
+      }
+    }
 
     const handleEnd = () => {
       if (isDragging) {
         const finalPosition = {
           x: position.x + localTransform.x,
-          y: position.y + localTransform.y,
-        };
-        setPosition(finalPosition);
-        setLocalTransform({ x: 0, y: 0 });
+          y: position.y + localTransform.y
+        }
+        setPosition(finalPosition)
+        setLocalTransform({ x: 0, y: 0 })
       }
-      setIsDragging(false);
-      setIsResizing(false);
-      setResizeEdge(null);
-    };
+      setIsDragging(false)
+      setIsResizing(false)
+      setResizeEdge(null)
+    }
 
     const handleMove = (e: MouseEvent | TouchEvent) => {
-      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
 
       if (isDragging) {
-        const newX = clientX - dragOffset.x;
-        const newY = clientY - dragOffset.y;
+        const newX = clientX - dragOffset.x
+        const newY = clientY - dragOffset.y
         const boundedPos = getBoundedPosition(
           newX,
           newY,
           size.width,
-          size.height,
-        );
+          size.height
+        )
         setLocalTransform({
           x: boundedPos.x - position.x,
-          y: boundedPos.y - position.y,
-        });
+          y: boundedPos.y - position.y
+        })
       }
 
       if (isResizing && resizeEdge) {
-        let newWidth = size.width;
-        let newHeight = size.height;
-        let newX = position.x;
-        let newY = position.y;
+        let newWidth = size.width
+        let newHeight = size.height
+        let newX = position.x
+        let newY = position.y
 
-        const dx = clientX - resizeStart.x;
-        const dy = clientY - resizeStart.y;
+        const dx = clientX - resizeStart.x
+        const dy = clientY - resizeStart.y
 
-        if (resizeEdge.includes("e")) newWidth = size.width + dx;
-        if (resizeEdge.includes("s")) newHeight = size.height + dy;
+        if (resizeEdge.includes("e")) newWidth = size.width + dx
+        if (resizeEdge.includes("s")) newHeight = size.height + dy
         if (resizeEdge.includes("w")) {
-          newWidth = size.width - dx;
-          newX = position.x + dx;
+          newWidth = size.width - dx
+          newX = position.x + dx
         }
         if (resizeEdge.includes("n")) {
-          newHeight = size.height - dy;
-          newY = position.y + dy;
+          newHeight = size.height - dy
+          newY = position.y + dy
         }
 
-        const boundedSize = getBoundedSize(newWidth, newHeight);
-        setSize(boundedSize);
+        const boundedSize = getBoundedSize(newWidth, newHeight)
+        setSize(boundedSize)
 
         if (resizeEdge.includes("w") || resizeEdge.includes("n")) {
           const boundedPos = getBoundedPosition(
             newX,
             newY,
             boundedSize.width,
-            boundedSize.height,
-          );
-          setPosition(boundedPos);
+            boundedSize.height
+          )
+          setPosition(boundedPos)
         }
 
-        setResizeStart({ x: clientX, y: clientY });
+        setResizeStart({ x: clientX, y: clientY })
       }
-    };
+    }
 
     if (isDragging || isResizing) {
-      window.addEventListener("mousemove", handleMove);
-      window.addEventListener("mouseup", handleEnd);
-      window.addEventListener("touchmove", handleMove);
-      window.addEventListener("touchend", handleEnd);
+      window.addEventListener("mousemove", handleMove)
+      window.addEventListener("mouseup", handleEnd)
+      window.addEventListener("touchmove", handleMove)
+      window.addEventListener("touchend", handleEnd)
 
       return () => {
-        window.removeEventListener("mousemove", handleMove);
-        window.removeEventListener("mouseup", handleEnd);
-        window.removeEventListener("touchmove", handleMove);
-        window.removeEventListener("touchend", handleEnd);
-      };
+        window.removeEventListener("mousemove", handleMove)
+        window.removeEventListener("mouseup", handleEnd)
+        window.removeEventListener("touchmove", handleMove)
+        window.removeEventListener("touchend", handleEnd)
+      }
     }
   }, [
     isDragging,
@@ -240,23 +240,23 @@ export default function Modal({
     resizeEdge,
     resizeStart,
     size,
-    localTransform,
-  ]);
+    localTransform
+  ])
 
   const isTabLocked = (minimumTier?: number) => {
-    if (!minimumTier) return false;
-    const userTier = user?.planTier || 0;
-    return userTier < minimumTier;
-  };
+    if (!minimumTier) return false
+    const userTier = user?.planTier || 0
+    return userTier < minimumTier
+  }
 
   const handleTabClick = (tab: ModalTab) => {
-    setActiveTabId(tab.id);
+    setActiveTabId(tab.id)
     if (onTabChange) {
-      onTabChange(tab.id);
+      onTabChange(tab.id)
     }
-  };
+  }
 
-  if (!modalState) return null;
+  if (!modalState) return null
 
   const modalStyle = isFullscreen
     ? {
@@ -267,7 +267,7 @@ export default function Modal({
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
+        bottom: 0
       }
     : {
         zIndex,
@@ -276,8 +276,8 @@ export default function Modal({
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        transform: `translate(${localTransform.x}px, ${localTransform.y}px)`,
-      };
+        transform: `translate(${localTransform.x}px, ${localTransform.y}px)`
+      }
 
   return createPortal(
     <div
@@ -286,23 +286,23 @@ export default function Modal({
       style={modalStyle}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
-          closeModal();
+          closeModal()
         } else {
-          bringToFront();
+          bringToFront()
         }
       }}
       onTouchStart={(e) => {
-        const target = e.target as HTMLElement;
+        const target = e.target as HTMLElement
         const isInteractive =
           target.tagName === "BUTTON" ||
           target.tagName === "A" ||
           target.tagName === "INPUT" ||
           target.closest("button") ||
           target.closest("a") ||
-          target.closest("input");
+          target.closest("input")
 
         if (!isInteractive) {
-          bringToFront();
+          bringToFront()
         }
       }}
     >
@@ -310,7 +310,7 @@ export default function Modal({
         <div
           onMouseDown={handleStartDrag}
           onTouchStart={(e) => {
-            handleStartDrag(e);
+            handleStartDrag(e)
           }}
         >
           <ModalHeader
@@ -327,7 +327,7 @@ export default function Modal({
         {tabs && tabs.length > 0 && (
           <div className="modal-tabs" ref={tabsContainerRef}>
             {tabs.map((tab) => {
-              const locked = isTabLocked(tab.minimumTier);
+              const locked = isTabLocked(tab.minimumTier)
               return (
                 <button
                   key={tab.id}
@@ -347,7 +347,7 @@ export default function Modal({
                     </div>
                   )}
                 </button>
-              );
+              )
             })}
           </div>
         )}
@@ -356,10 +356,10 @@ export default function Modal({
           <div className={`modal body ${id}-body`}>
             {tabs && tabs.length > 0
               ? (() => {
-                  const activeTab = tabs.find((tab) => tab.id === activeTabId);
+                  const activeTab = tabs.find((tab) => tab.id === activeTabId)
                   return activeTab && activeTab.content
                     ? activeTab.content
-                    : null;
+                    : null
                 })()
               : null}
 
@@ -418,6 +418,6 @@ export default function Modal({
         )}
       </div>
     </div>,
-    document.getElementById("modal-root")!,
-  );
+    document.getElementById("modal-root")!
+  )
 }

@@ -1,25 +1,25 @@
-import { LLMModel, ImageModel } from "@/api/services";
+import { LLMModel, ImageModel } from "@/api/services"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Vendor } from "@/types/llm";
+  DialogDescription
+} from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Vendor } from "@/types/llm"
 
 interface ModelDetailsProps {
-  model: LLMModel | ImageModel | null;
-  isOpen: boolean;
-  onClose: () => void;
+  model: LLMModel | ImageModel | null
+  isOpen: boolean
+  onClose: () => void
 }
 
 // Format description with proper capitalization
 const formatDescription = (text: string): string => {
-  if (!text) return "";
-  return text.charAt(0).toUpperCase() + text.slice(1);
-};
+  if (!text) return ""
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
 
 // SPEED_COLORS for matching the original implementation
 const SPEED_COLORS = {
@@ -32,8 +32,8 @@ const SPEED_COLORS = {
   7: "#FFD700",
   8: "#FFD700",
   9: "#FFD700",
-  10: "#FFD700",
-};
+  10: "#FFD700"
+}
 
 // Vendor color mappings for visual consistency
 const VENDOR_COLORS: Record<Vendor, string> = {
@@ -42,8 +42,8 @@ const VENDOR_COLORS: Record<Vendor, string> = {
   anthropic: "#5436DA",
   mistral: "#7A88FF",
   meta: "#0668E1",
-  cerebras: "#FF4B4B",
-};
+  cerebras: "#FF4B4B"
+}
 
 // Function to get model stats
 const getModelStats = (model: LLMModel | ImageModel) => {
@@ -52,24 +52,23 @@ const getModelStats = (model: LLMModel | ImageModel) => {
       name: "Speed",
       value: model.speedLevel,
       color:
-        SPEED_COLORS[model.speedLevel as keyof typeof SPEED_COLORS] ||
-        "#4285F4",
+        SPEED_COLORS[model.speedLevel as keyof typeof SPEED_COLORS] || "#4285F4"
     },
     {
       name: "Intelligence",
       value: model.intelligenceLevel,
-      color: "#4285F4",
+      color: "#4285F4"
     },
     { name: "Creativity", value: model.creativityLevel, color: "#F472B6" },
-    { name: "Stamina", value: model.staminaLevel, color: "#8B5CF6" },
-  ];
-};
+    { name: "Stamina", value: model.staminaLevel, color: "#8B5CF6" }
+  ]
+}
 
 export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
-  if (!model) return null;
+  if (!model) return null
 
-  const modelStats = getModelStats(model);
-  const isLLMModel = "costPerMillionInputTokens" in model;
+  const modelStats = getModelStats(model)
+  const isLLMModel = "costPerMillionInputTokens" in model
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -83,7 +82,7 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
                 backgroundColor:
                   VENDOR_COLORS[model.provider.toLowerCase() as Vendor] ||
                   "#999",
-                color: "white",
+                color: "white"
               }}
             >
               {model.provider}
@@ -108,7 +107,7 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
                     className="h-full rounded-full"
                     style={{
                       width: `${stat.value * 10}%`,
-                      background: stat.color,
+                      background: stat.color
                     }}
                   />
                 </div>
@@ -181,7 +180,7 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default ModelDetails;
+export default ModelDetails

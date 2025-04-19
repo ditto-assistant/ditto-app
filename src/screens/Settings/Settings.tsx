@@ -1,59 +1,59 @@
-import { deleteUser, getAuth } from "firebase/auth";
+import { deleteUser, getAuth } from "firebase/auth"
 import {
   removeUserFromFirestore,
-  deleteAllUserScriptsFromFirestore,
-} from "@/control/firebase";
-import packageJson from "../../../package.json";
-import { useAuth } from "@/hooks/useAuth";
-import { clearStorage } from "@/utils/deviceId";
-import Modal, { ModalTab } from "@/components/ui/modals/Modal";
-import { useModal } from "@/hooks/useModal";
-import { ModalButton } from "@/components/ui/buttons/ModalButton";
-import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
-import { FaCreditCard } from "react-icons/fa";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
-import "./Settings.css";
-import toast from "react-hot-toast";
-import { useMemo } from "react";
-import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
-import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
-import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
-import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent";
-import { BiMemoryCard } from "react-icons/bi";
-import { MdSettings } from "react-icons/md";
-import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
+  deleteAllUserScriptsFromFirestore
+} from "@/control/firebase"
+import packageJson from "../../../package.json"
+import { useAuth } from "@/hooks/useAuth"
+import { clearStorage } from "@/utils/deviceId"
+import Modal, { ModalTab } from "@/components/ui/modals/Modal"
+import { useModal } from "@/hooks/useModal"
+import { ModalButton } from "@/components/ui/buttons/ModalButton"
+import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
+import { FaCreditCard } from "react-icons/fa"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
+import "./Settings.css"
+import toast from "react-hot-toast"
+import { useMemo } from "react"
+import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal"
+import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
+import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
+import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
+import { BiMemoryCard } from "react-icons/bi"
+import { MdSettings } from "react-icons/md"
+import { FaTools, FaCrown, FaSkull } from "react-icons/fa"
 
 export default function Settings() {
-  const { signOut, user } = useAuth();
-  const auth = getAuth();
-  const { createCloseHandler, createOpenHandler } = useModal();
-  const { showConfirmationDialog } = useConfirmationDialog();
-  const openTokenModal = createOpenHandler("tokenCheckout");
-  const closeModal = createCloseHandler("settings");
+  const { signOut, user } = useAuth()
+  const auth = getAuth()
+  const { createCloseHandler, createOpenHandler } = useModal()
+  const { showConfirmationDialog } = useConfirmationDialog()
+  const openTokenModal = createOpenHandler("tokenCheckout")
+  const closeModal = createCloseHandler("settings")
 
   // Memoize the modal components
-  const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
-  const memoryControls = useMemo(() => <MemoryControlsModal />, []);
-  const agentTools = useMemo(() => <AgentToolsModal />, []);
-  const subscriptionContent = useMemo(() => <SubscriptionTabContent />, []);
+  const modelPreferences = useMemo(() => <ModelPreferencesModal />, [])
+  const memoryControls = useMemo(() => <MemoryControlsModal />, [])
+  const agentTools = useMemo(() => <AgentToolsModal />, [])
+  const subscriptionContent = useMemo(() => <SubscriptionTabContent />, [])
 
   const handleLogout = () => {
-    console.log("logging out");
-    const hasSeenTOS = localStorage.getItem("hasSeenTOS");
-    localStorage.clear();
+    console.log("logging out")
+    const hasSeenTOS = localStorage.getItem("hasSeenTOS")
+    localStorage.clear()
     if (hasSeenTOS) {
-      localStorage.setItem("hasSeenTOS", hasSeenTOS);
+      localStorage.setItem("hasSeenTOS", hasSeenTOS)
     }
-    signOut();
-    closeModal();
-  };
+    signOut()
+    closeModal()
+  }
 
   const handleDeleteAccount = async () => {
     if (!user) {
-      console.error("No user currently signed in");
-      alert("You are not currently signed in. Please sign in and try again.");
-      handleLogout();
-      return;
+      console.error("No user currently signed in")
+      alert("You are not currently signed in. Please sign in and try again.")
+      handleLogout()
+      return
     }
 
     const openReauthenticationDialog = () =>
@@ -64,47 +64,47 @@ export default function Settings() {
         confirmLabel: "Sign Out",
         cancelLabel: "Cancel",
         onConfirm: handleLogout,
-        variant: "primary",
-      });
+        variant: "primary"
+      })
 
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = auth.currentUser
       if (!currentUser) {
-        throw new Error("Firebase auth user not found");
+        throw new Error("Firebase auth user not found")
       }
 
-      const metadata = currentUser.metadata;
+      const metadata = currentUser.metadata
       // Handle case where lastSignInTime might be undefined
       const lastSignInTime = metadata.lastSignInTime
         ? new Date(metadata.lastSignInTime).getTime()
-        : 0;
-      const now = new Date().getTime();
-      const fiveMinutes = 5 * 60 * 1000;
+        : 0
+      const now = new Date().getTime()
+      const fiveMinutes = 5 * 60 * 1000
 
       if (now - lastSignInTime > fiveMinutes) {
-        openReauthenticationDialog();
-        return;
+        openReauthenticationDialog()
+        return
       }
 
-      await deleteUser(currentUser);
-      console.log("Account deleted");
-      await removeUserFromFirestore(currentUser.uid);
-      await deleteAllUserScriptsFromFirestore(currentUser.uid);
-      clearStorage();
-      closeModal();
+      await deleteUser(currentUser)
+      console.log("Account deleted")
+      await removeUserFromFirestore(currentUser.uid)
+      await deleteAllUserScriptsFromFirestore(currentUser.uid)
+      clearStorage()
+      closeModal()
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error("Error deleting account: ", error);
+        console.error("Error deleting account: ", error)
         if (error.message === "auth/requires-recent-login") {
-          openReauthenticationDialog();
+          openReauthenticationDialog()
         } else {
-          toast.error(`Error deleting account: ${error.message}`);
+          toast.error(`Error deleting account: ${error.message}`)
         }
       } else {
-        console.error("Error deleting account: ", error);
+        console.error("Error deleting account: ", error)
       }
     }
-  };
+  }
 
   const openDeleteDialog = () => {
     showConfirmationDialog({
@@ -114,9 +114,9 @@ export default function Settings() {
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       onConfirm: handleDeleteAccount,
-      variant: "danger",
-    });
-  };
+      variant: "danger"
+    })
+  }
 
   // Create the combined general and subscription tab content
   const generalTabContent = (
@@ -134,8 +134,8 @@ export default function Settings() {
             <ModalButton
               variant="primary"
               onClick={() => {
-                closeModal();
-                openTokenModal();
+                closeModal()
+                openTokenModal()
               }}
               fixedWidth
               icon={<FaCreditCard />}
@@ -156,7 +156,7 @@ export default function Settings() {
         </div>
       </footer>
     </div>
-  );
+  )
 
   // Create the tab content for the danger zone
   const dangerTabContent = (
@@ -175,7 +175,7 @@ export default function Settings() {
         </div>
       </div>
     </div>
-  );
+  )
 
   // Define the tabs with icons
   const modalTabs: ModalTab[] = [
@@ -183,37 +183,37 @@ export default function Settings() {
       id: "general",
       label: "Account",
       content: generalTabContent,
-      icon: <FaCrown />,
+      icon: <FaCrown />
     },
     {
       id: "models",
       label: "Models",
       content: modelPreferences,
       minimumTier: 1,
-      icon: <MdSettings />,
+      icon: <MdSettings />
     },
     {
       id: "memory",
       label: "Memory",
       content: memoryControls,
       minimumTier: 1,
-      icon: <BiMemoryCard />,
+      icon: <BiMemoryCard />
     },
     {
       id: "tools",
       label: "Tools",
       content: agentTools,
       minimumTier: 1,
-      icon: <FaTools />,
+      icon: <FaTools />
     },
     {
       id: "danger",
       label: "Danger Zone",
       content: dangerTabContent,
       customClass: "danger",
-      icon: <FaSkull />,
-    },
-  ];
+      icon: <FaSkull />
+    }
+  ]
 
   return (
     <Modal
@@ -224,5 +224,5 @@ export default function Settings() {
     >
       {/* Footer will be conditionally rendered in each tab's content */}
     </Modal>
-  );
+  )
 }

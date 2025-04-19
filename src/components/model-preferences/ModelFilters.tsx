@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { usePlatform } from "@/hooks/usePlatform";
-import { ScrollArea } from "../ui/scroll-area";
-import { Switch } from "../ui/switch";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
+import { useState } from "react"
+import { usePlatform } from "@/hooks/usePlatform"
+import { ScrollArea } from "../ui/scroll-area"
+import { Switch } from "../ui/switch"
+import { Button } from "../ui/button"
+import { Badge } from "../ui/badge"
 // Types
 
 import {
@@ -14,11 +14,11 @@ import {
   FaRobot,
   FaBrain,
   FaFire,
-  FaMicrochip,
-} from "react-icons/fa";
-import { SiOpenai } from "react-icons/si";
-import { TbBrandMeta } from "react-icons/tb";
-import { MdExpandMore, MdExpandLess, MdFilterAlt } from "react-icons/md";
+  FaMicrochip
+} from "react-icons/fa"
+import { SiOpenai } from "react-icons/si"
+import { TbBrandMeta } from "react-icons/tb"
+import { MdExpandMore, MdExpandLess, MdFilterAlt } from "react-icons/md"
 
 // Unused, but kept for reference if needed in the future
 /*
@@ -33,17 +33,17 @@ const VENDOR_COLORS: Record<Vendor, string> = {
 */
 
 interface FilterGroupProps {
-  title: string;
-  expanded: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
+  title: string
+  expanded: boolean
+  onToggle: () => void
+  children: React.ReactNode
 }
 
 const FilterGroup = ({
   title,
   expanded,
   onToggle,
-  children,
+  children
 }: FilterGroupProps) => {
   return (
     <div className="mb-4">
@@ -57,35 +57,35 @@ const FilterGroup = ({
 
       {expanded && <div className="pl-1 mt-2 space-y-2">{children}</div>}
     </div>
-  );
-};
+  )
+}
 
 interface FilterValues {
-  speed: string | null;
-  pricing: string | null;
-  imageSupport: boolean;
-  vendor: string | null;
-  modelFamily: string | null;
-  provider?: string | null;
-  dimensions?: string | null;
-  quality?: string | null;
+  speed: string | null
+  pricing: string | null
+  imageSupport: boolean
+  vendor: string | null
+  modelFamily: string | null
+  provider?: string | null
+  dimensions?: string | null
+  quality?: string | null
 }
 
 interface ModelFiltersProps {
-  activeFilters: FilterValues;
-  setActiveFilters: (filters: FilterValues) => void;
-  filterType: "prompt" | "image";
-  groupedModels: Record<string, unknown>;
+  activeFilters: FilterValues
+  setActiveFilters: (filters: FilterValues) => void
+  filterType: "prompt" | "image"
+  groupedModels: Record<string, unknown>
 }
 
 export const ModelFilters = ({
   activeFilters,
   setActiveFilters,
   filterType,
-  groupedModels,
+  groupedModels
 }: ModelFiltersProps) => {
-  const { isMobile } = usePlatform();
-  const [expanded, setExpanded] = useState(false);
+  const { isMobile } = usePlatform()
+  const [expanded, setExpanded] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState({
     speed: !isMobile,
     pricing: !isMobile,
@@ -94,43 +94,43 @@ export const ModelFilters = ({
     family: !isMobile,
     provider: !isMobile,
     dimensions: !isMobile,
-    quality: !isMobile,
-  });
+    quality: !isMobile
+  })
 
   const toggleFilter = (filterKey: keyof FilterValues, value: string) => {
     setActiveFilters({
       ...activeFilters,
-      [filterKey]: activeFilters[filterKey] === value ? null : value,
-    });
-  };
+      [filterKey]: activeFilters[filterKey] === value ? null : value
+    })
+  }
 
   const toggleGroup = (group: string) => {
     setExpandedGroups({
       ...expandedGroups,
-      [group]: !expandedGroups[group],
-    });
-  };
+      [group]: !expandedGroups[group]
+    })
+  }
 
   return (
-    <div className="w-full md:w-72 lg:w-80 border-r border-border shrink-0 max-h-[calc(100vh-8rem)] overflow-hidden">
-      {isMobile && (
-        <Button
-          variant="ghost"
-          className="w-full flex justify-between items-center p-3"
-          onClick={() => setExpanded(!expanded)}
-        >
-          <div className="flex items-center gap-2">
-            <MdFilterAlt />
-            <span>Filters</span>
-          </div>
-          {expanded ? <MdExpandLess /> : <MdExpandMore />}
-        </Button>
-      )}
+    <div
+      className={`${isMobile ? "w-full border-b" : "w-full md:w-72 lg:w-72 xl:w-80 border-r"} border-border shrink-0 max-h-[calc(100vh-8rem)] overflow-hidden`}
+    >
+      <Button
+        variant="ghost"
+        className="w-full flex justify-between items-center p-3"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2">
+          <MdFilterAlt />
+          <span>Filters</span>
+        </div>
+        {expanded ? <MdExpandLess /> : <MdExpandMore />}
+      </Button>
 
       <div
-        className={`p-4 ${isMobile && !expanded ? "hidden" : "block"} md:block h-full`}
+        className={`p-4 ${!expanded ? "hidden" : "block"} h-full ${isMobile ? "absolute z-10 bg-background w-full border-b border-border shadow-md" : ""}`}
       >
-        <ScrollArea className="flex-1 h-[calc(100vh-12rem)] overflow-auto">
+        <ScrollArea className="h-[calc(100vh-14rem)] max-h-60 md:max-h-none overflow-auto">
           {filterType === "prompt" && (
             <>
               <FilterGroup
@@ -220,7 +220,7 @@ export const ModelFilters = ({
                     onCheckedChange={(checked) =>
                       setActiveFilters({
                         ...activeFilters,
-                        imageSupport: checked,
+                        imageSupport: checked
                       })
                     }
                   />
@@ -445,7 +445,7 @@ export const ModelFilters = ({
         </ScrollArea>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ModelFilters;
+export default ModelFilters

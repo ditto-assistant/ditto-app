@@ -1,118 +1,118 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { FaTrash, FaEye } from "react-icons/fa";
-import { toast } from "react-hot-toast";
-import { DataSet } from "vis-data";
-import ChatMessage from "./ChatMessage";
-import Modal from "./ui/modals/Modal";
-import { useMemoryDeletion } from "@/hooks/useMemoryDeletion";
-import { useMemoryNetwork } from "@/hooks/useMemoryNetwork";
-import { Memory } from "@/api/getMemories";
-import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer";
-import { Network, Node, Edge } from "vis-network";
-import "./MemoryNetwork.css";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react"
+import { FaTrash, FaEye } from "react-icons/fa"
+import { toast } from "react-hot-toast"
+import { DataSet } from "vis-data"
+import ChatMessage from "./ChatMessage"
+import Modal from "./ui/modals/Modal"
+import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
+import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
+import { Memory } from "@/api/getMemories"
+import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
+import { Network, Node, Edge } from "vis-network"
+import "./MemoryNetwork.css"
 
 const formatDateTime = (timestamp: Date | number) => {
-  if (!timestamp) return "";
-  const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+  if (!timestamp) return ""
+  const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
   return new Intl.DateTimeFormat("default", {
     month: "short",
     day: "numeric",
     hour: "numeric",
-    minute: "numeric",
-  }).format(date);
-};
+    minute: "numeric"
+  }).format(date)
+}
 
 const TableView: React.FC<{
-  memories: Memory[];
+  memories: Memory[]
 }> = ({ memories }) => {
   // Initialize with just the root-level nodes expanded
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(() => {
     // Start with an empty set
-    const initialExpanded = new Set<string>();
+    const initialExpanded = new Set<string>()
 
     // Add only root level nodes (index 0, 1, 2, etc.)
     memories.forEach((_, index) => {
-      initialExpanded.add(index.toString());
-    });
+      initialExpanded.add(index.toString())
+    })
 
-    return initialExpanded;
-  });
+    return initialExpanded
+  })
 
-  const { confirmMemoryDeletion } = useMemoryDeletion();
-  const { showMemoryNode } = useMemoryNodeViewer();
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { showMemoryNode } = useMemoryNodeViewer()
 
   // Update expanded nodes ONLY on initial render or when memories array changes completely
-  const initializedRef = useRef(false);
+  const initializedRef = useRef(false)
   useEffect(() => {
     // Skip if already initialized
-    if (initializedRef.current) return;
+    if (initializedRef.current) return
 
     // Mark as initialized
-    initializedRef.current = true;
+    initializedRef.current = true
 
     // Set all root nodes as expanded
     if (memories.length > 0) {
-      const rootNodes = new Set<string>();
+      const rootNodes = new Set<string>()
       memories.forEach((_, index) => {
-        rootNodes.add(index.toString());
-      });
-      setExpandedNodes(rootNodes);
+        rootNodes.add(index.toString())
+      })
+      setExpandedNodes(rootNodes)
     }
-  }, [memories]);
+  }, [memories])
 
   const handleDelete = async (memory: Memory) => {
-    if (!memory) return;
-    confirmMemoryDeletion(memory.id, { isMessage: false });
-  };
+    if (!memory) return
+    confirmMemoryDeletion(memory.id, { isMessage: false })
+  }
 
   const toggleExpanded = (nodeId: string) => {
     setExpandedNodes((prev) => {
-      const newExpanded = new Set(prev);
+      const newExpanded = new Set(prev)
       if (newExpanded.has(nodeId)) {
-        newExpanded.delete(nodeId);
+        newExpanded.delete(nodeId)
       } else {
-        newExpanded.add(nodeId);
+        newExpanded.add(nodeId)
       }
-      return newExpanded;
-    });
-  };
+      return newExpanded
+    })
+  }
 
   const handleViewMemory = (memory: Memory) => {
     // Create an adapter function to convert MemoryNodeData to Memory
     const deleteAdapter = (node: any) => {
-      handleDelete(node as Memory);
-    };
+      handleDelete(node as Memory)
+    }
 
     showMemoryNode(
       {
         ...memory,
-        level: 0, // Set a default level since it's required
+        level: 0 // Set a default level since it's required
       },
-      deleteAdapter,
-    );
-  };
+      deleteAdapter
+    )
+  }
 
   // Get the total count of items including children
   const getMemoryTreeCount = (memory: Memory): number => {
-    let count = 1; // Count self
+    let count = 1 // Count self
     if (memory.children && memory.children.length > 0) {
       memory.children.forEach((child) => {
-        count += getMemoryTreeCount(child);
-      });
+        count += getMemoryTreeCount(child)
+      })
     }
-    return count;
-  };
+    return count
+  }
 
   const MemoryNode: React.FC<{
-    memory: Memory;
-    depth?: number;
-    index?: number;
-    parentPath?: string;
+    memory: Memory
+    depth?: number
+    index?: number
+    parentPath?: string
   }> = ({ memory, depth = 0, index = 0, parentPath = "" }) => {
-    const nodePath = parentPath ? `${parentPath}-${index}` : `${index}`;
-    const isExpanded = expandedNodes.has(nodePath);
-    const hasChildren = memory.children && memory.children.length > 0;
-    const childrenCount = hasChildren ? getMemoryTreeCount(memory) - 1 : 0;
+    const nodePath = parentPath ? `${parentPath}-${index}` : `${index}`
+    const isExpanded = expandedNodes.has(nodePath)
+    const hasChildren = memory.children && memory.children.length > 0
+    const childrenCount = hasChildren ? getMemoryTreeCount(memory) - 1 : 0
 
     return (
       <div
@@ -142,8 +142,8 @@ const TableView: React.FC<{
               <button
                 className="memory-view-button"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewMemory(memory);
+                  e.stopPropagation()
+                  handleViewMemory(memory)
                 }}
                 title="View memory details"
               >
@@ -152,8 +152,8 @@ const TableView: React.FC<{
               <button
                 className="memory-delete-button"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(memory);
+                  e.stopPropagation()
+                  handleDelete(memory)
                 }}
                 title="Delete this memory"
               >
@@ -177,7 +177,7 @@ const TableView: React.FC<{
               isUser={true}
               bubbleStyles={{
                 text: { fontSize: 14 },
-                chatbubble: { borderRadius: 8, padding: 8 },
+                chatbubble: { borderRadius: 8, padding: 8 }
               }}
             />
             <ChatMessage
@@ -190,7 +190,7 @@ const TableView: React.FC<{
               isUser={false}
               bubbleStyles={{
                 text: { fontSize: 14 },
-                chatbubble: { borderRadius: 8, padding: 8 },
+                chatbubble: { borderRadius: 8, padding: 8 }
               }}
             />
           </div>
@@ -211,8 +211,8 @@ const TableView: React.FC<{
           </div>
         )}
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className="memory-table">
@@ -226,42 +226,42 @@ const TableView: React.FC<{
         ))
       )}
     </div>
-  );
-};
+  )
+}
 
 export default function MemoryNetworkModal() {
-  const [network, setNetwork] = useState<Network | null>(null);
-  const [activeTab, setActiveTab] = useState<"network" | "table">("network");
-  const { memories, loading, deleteMemory } = useMemoryNetwork();
-  const { confirmMemoryDeletion } = useMemoryDeletion();
-  const { showMemoryNode } = useMemoryNodeViewer();
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const networkInitializedRef = useRef<boolean>(false);
-  const networkNeedsUpdate = useRef<boolean>(true);
-  const networkIsStabilizing = useRef<boolean>(false);
-  const memoryMap = useMemo(() => new Map<string, any>(), []);
+  const [network, setNetwork] = useState<Network | null>(null)
+  const [activeTab, setActiveTab] = useState<"network" | "table">("network")
+  const { memories, loading, deleteMemory } = useMemoryNetwork()
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { showMemoryNode } = useMemoryNodeViewer()
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const networkInitializedRef = useRef<boolean>(false)
+  const networkNeedsUpdate = useRef<boolean>(true)
+  const networkIsStabilizing = useRef<boolean>(false)
+  const memoryMap = useMemo(() => new Map<string, any>(), [])
 
   // Handle deleting a node - use useCallback to prevent recreation on each render
   const handleNodeDelete = useCallback(
     async (node: any) => {
-      if (!node) return;
+      if (!node) return
 
       try {
         // Get the document ID for deletion (using only id now)
-        let memoryId = "";
+        let memoryId = ""
         if (typeof node.id === "string" && node.id) {
-          memoryId = node.id;
+          memoryId = node.id
         }
 
         console.log("Deleting memory with ID:", memoryId, "Node data:", {
           id: node.id,
-          nodeId: node.nodeId,
-        });
+          nodeId: node.nodeId
+        })
 
         if (!memoryId) {
-          console.error("Cannot delete node: No valid ID found");
-          toast.error("Cannot delete: No valid ID found");
-          return;
+          console.error("Cannot delete node: No valid ID found")
+          toast.error("Cannot delete: No valid ID found")
+          return
         }
 
         // Confirm and delete the memory using the original document ID
@@ -269,23 +269,23 @@ export default function MemoryNetworkModal() {
           isMessage: false,
           onSuccess: () => {
             // Update local state to remove the memory
-            deleteMemory(memoryId);
+            deleteMemory(memoryId)
             // Mark that network needs update on next render
-            networkNeedsUpdate.current = true;
-          },
-        });
+            networkNeedsUpdate.current = true
+          }
+        })
       } catch (error) {
-        console.error("Error deleting memory node:", error);
-        toast.error("Failed to delete memory");
+        console.error("Error deleting memory node:", error)
+        toast.error("Failed to delete memory")
       }
     },
-    [confirmMemoryDeletion, deleteMemory],
-  );
+    [confirmMemoryDeletion, deleteMemory]
+  )
 
   // Handle tab changes
   const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId as "network" | "table");
-  }, []);
+    setActiveTab(tabId as "network" | "table")
+  }, [])
 
   // Memoize the buildNetwork function so it only creates a new network
   // when memories actually change, not just when switching tabs
@@ -293,32 +293,30 @@ export default function MemoryNetworkModal() {
     return (nodesData: Memory[]) => {
       // Only proceed if we have memory data
       if (!nodesData || nodesData.length === 0) {
-        console.warn("No memory data available for network visualization");
-        return null;
+        console.warn("No memory data available for network visualization")
+        return null
       }
 
       try {
         // Create datasets with explicit types
-        const nodes = new DataSet<Node>([]);
-        const edges = new DataSet<Edge>([]);
+        const nodes = new DataSet<Node>([])
+        const edges = new DataSet<Edge>([])
 
         // Clear the memory map before rebuilding
-        memoryMap.clear();
+        memoryMap.clear()
 
-        console.log("Building network from memories:", nodesData);
+        console.log("Building network from memories:", nodesData)
 
         // Add the nodes and edges to the datasets
         const addMemoryNodes = (
           memory: Memory,
           parentNodeId: string | null = null,
           depth = 0,
-          parentPath = "",
+          parentPath = ""
         ) => {
-          if (!memory) return null;
+          if (!memory) return null
           // Use a consistent node ID pattern for the visualization
-          const nodeId = parentPath
-            ? `${parentPath}-${depth}`
-            : `root-${depth}`;
+          const nodeId = parentPath ? `${parentPath}-${depth}` : `root-${depth}`
 
           // Color palette for different depths (based on old code)
           const colors = [
@@ -331,19 +329,19 @@ export default function MemoryNetworkModal() {
             "#1ABC9C", // Level 6 (turquoise)
             "#D35400", // Level 7 (dark orange)
             "#8E44AD", // Level 8 (dark purple)
-            "#27AE60", // Level 9 (dark green)
-          ];
+            "#27AE60" // Level 9 (dark green)
+          ]
 
           // Get color based on depth, cycling through colors if depth exceeds array length
           const nodeColor =
-            depth === 0 ? colors[0] : colors[(depth % (colors.length - 1)) + 1];
+            depth === 0 ? colors[0] : colors[(depth % (colors.length - 1)) + 1]
 
           try {
             // Make label more readable
             const label = memory.prompt
               ? memory.prompt.substring(0, 30) +
                 (memory.prompt.length > 30 ? "..." : "")
-              : "No prompt";
+              : "No prompt"
 
             // Add the node with simplified properties
             nodes.add({
@@ -356,16 +354,16 @@ export default function MemoryNetworkModal() {
               font: {
                 color: "#FFFFFF",
                 size: 14,
-                face: "Arial",
-              },
-            });
+                face: "Arial"
+              }
+            })
 
             // Store the complete memory data with added properties
             const memoryWithLevel = {
               ...memory,
               level: depth,
-              nodeId: nodeId,
-            };
+              nodeId: nodeId
+            }
 
             // Add edge if this is not the root node
             if (parentNodeId) {
@@ -376,8 +374,8 @@ export default function MemoryNetworkModal() {
                 arrows: { to: { enabled: true } },
                 width: Math.max(3 - depth * 0.5, 1),
                 color: { color: nodeColor, opacity: 0.8 },
-                smooth: { enabled: true, type: "continuous", roundness: 0.5 },
-              });
+                smooth: { enabled: true, type: "continuous", roundness: 0.5 }
+              })
             }
 
             // Process child nodes
@@ -390,21 +388,21 @@ export default function MemoryNetworkModal() {
                     depth + 1,
                     parentPath
                       ? `${parentPath}-${depth}-${index}`
-                      : `root-${depth}-${index}`,
-                  );
+                      : `root-${depth}-${index}`
+                  )
                   // No need to do anything with the return value now as we're storing directly in memoryMap
                 }
-              });
+              })
             }
 
             // Return just the nodeId and directly store the memory with level info in the memoryMap
-            memoryMap.set(nodeId, memoryWithLevel);
-            return nodeId;
+            memoryMap.set(nodeId, memoryWithLevel)
+            return nodeId
           } catch (error) {
-            console.error("Error adding node to network:", error);
-            return null;
+            console.error("Error adding node to network:", error)
+            return null
           }
-        };
+        }
 
         // Create the network options object
         const options = {
@@ -412,7 +410,7 @@ export default function MemoryNetworkModal() {
             shape: "dot",
             font: { color: "#ffffff", size: 14 },
             borderWidth: 2,
-            shadow: false,
+            shadow: false
           },
           edges: {
             color: { opacity: 0.3 },
@@ -420,9 +418,9 @@ export default function MemoryNetworkModal() {
             smooth: {
               enabled: true,
               type: "continuous",
-              roundness: 0.5,
+              roundness: 0.5
             },
-            arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+            arrows: { to: { enabled: true, scaleFactor: 0.5 } }
           },
           interaction: {
             hover: false, // Disable hover completely to prevent errors
@@ -434,7 +432,7 @@ export default function MemoryNetworkModal() {
             selectable: true,
             selectConnectedEdges: false,
             hoverConnectedEdges: false, // Disable hover on edges
-            navigationButtons: false, // Disable navigation buttons
+            navigationButtons: false // Disable navigation buttons
           },
           physics: {
             enabled: true,
@@ -445,50 +443,50 @@ export default function MemoryNetworkModal() {
               springLength: 100,
               springConstant: 0.08,
               damping: 0.4,
-              avoidOverlap: 0.8,
+              avoidOverlap: 0.8
             },
             stabilization: {
               enabled: true,
               iterations: 100, // Reduce iterations for faster stabilization
-              updateInterval: 50,
-            },
-          },
-        };
+              updateInterval: 50
+            }
+          }
+        }
 
         // Process all root memories
         nodesData.forEach((memory, index) => {
-          addMemoryNodes(memory, null, 0, `root-${index}`);
-        });
+          addMemoryNodes(memory, null, 0, `root-${index}`)
+        })
 
         // Log the node and edge counts for debugging
-        console.log(`Created ${nodes.length} nodes and ${edges.length} edges`);
+        console.log(`Created ${nodes.length} nodes and ${edges.length} edges`)
 
         // Verify memory map contains entries
-        console.log(`Memory map contains ${memoryMap.size} entries`);
+        console.log(`Memory map contains ${memoryMap.size} entries`)
 
         // Return the data for creating a network
-        return { nodes, edges, options };
+        return { nodes, edges, options }
       } catch (error) {
-        console.error("Error building memory network:", error);
-        toast.error("Failed to build memory network visualization");
-        return null;
+        console.error("Error building memory network:", error)
+        toast.error("Failed to build memory network visualization")
+        return null
       }
-    };
-  }, [memoryMap]); // Only depends on memoryMap, which is itself memoized
+    }
+  }, [memoryMap]) // Only depends on memoryMap, which is itself memoized
 
   // Memoize the network data based on memories
   const networkData = useMemo(() => {
     if (Array.isArray(memories) && memories.length > 0 && !loading) {
-      return buildNetwork(memories);
+      return buildNetwork(memories)
     }
-    return null;
-  }, [memories, loading, buildNetwork]);
+    return null
+  }, [memories, loading, buildNetwork])
 
   // Initialize or update the network when necessary
   useEffect(() => {
     // Only attempt to create/update network when the network tab is active and we have data
     if (activeTab !== "network" || !networkData) {
-      return;
+      return
     }
 
     // Skip if already have a network and don't need update
@@ -497,35 +495,35 @@ export default function MemoryNetworkModal() {
       network &&
       !networkIsStabilizing.current
     ) {
-      return;
+      return
     }
 
     // Skip if already stabilizing
     if (networkIsStabilizing.current) {
-      return;
+      return
     }
 
     // Get the container
-    const container = document.getElementById("memory-network-container");
+    const container = document.getElementById("memory-network-container")
     if (!container) {
-      console.error("Container not found for memory network");
-      return;
+      console.error("Container not found for memory network")
+      return
     }
 
     // Reset the update flag
-    networkNeedsUpdate.current = false;
+    networkNeedsUpdate.current = false
 
     // Add a small delay to ensure the DOM is ready
     const timer = setTimeout(() => {
       try {
         // Clean up old network if it exists
         if (network) {
-          network.destroy();
+          network.destroy()
         }
 
         // Create a new network with the data
         if (networkData) {
-          const { nodes, edges, options } = networkData;
+          const { nodes, edges, options } = networkData
 
           // Set stabilization options
           const networkOptions = {
@@ -536,24 +534,24 @@ export default function MemoryNetworkModal() {
                 enabled: true,
                 iterations: 100,
                 updateInterval: 50,
-                fit: true,
-              },
-            },
-          };
+                fit: true
+              }
+            }
+          }
 
           // Create the network
           const networkInstance = new Network(
             container,
             { nodes, edges },
-            networkOptions,
-          );
+            networkOptions
+          )
 
           // Set stabilizing flag
-          networkIsStabilizing.current = true;
+          networkIsStabilizing.current = true
 
           // Save the network
-          setNetwork(networkInstance);
-          networkInitializedRef.current = true;
+          setNetwork(networkInstance)
+          networkInitializedRef.current = true
 
           // Set up node click handler
           networkInstance.on(
@@ -564,46 +562,46 @@ export default function MemoryNetworkModal() {
                 !Array.isArray(params.nodes) ||
                 params.nodes.length === 0
               ) {
-                return;
+                return
               }
 
               try {
-                const nodeId = params.nodes[0].toString();
+                const nodeId = params.nodes[0].toString()
                 if (nodeId) {
-                  const nodeData = memoryMap.get(nodeId);
+                  const nodeData = memoryMap.get(nodeId)
                   if (nodeData) {
-                    showMemoryNode(nodeData, handleNodeDelete);
+                    showMemoryNode(nodeData, handleNodeDelete)
                   }
                 }
               } catch (error) {
-                console.error("Error handling node click:", error);
+                console.error("Error handling node click:", error)
               }
-            },
-          );
+            }
+          )
 
           // Handle stabilization completion
           networkInstance.once("stabilized", () => {
-            networkIsStabilizing.current = false;
-            networkInstance.fit();
-          });
+            networkIsStabilizing.current = false
+            networkInstance.fit()
+          })
         }
       } catch (error) {
-        console.error("Error initializing memory network:", error);
-        toast.error("Failed to initialize memory network visualization");
-        networkIsStabilizing.current = false;
-        networkNeedsUpdate.current = false;
+        console.error("Error initializing memory network:", error)
+        toast.error("Failed to initialize memory network visualization")
+        networkIsStabilizing.current = false
+        networkNeedsUpdate.current = false
       }
-    }, 300);
+    }, 300)
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer)
   }, [
     activeTab,
     networkData,
     network,
     handleNodeDelete,
     showMemoryNode,
-    memoryMap,
-  ]);
+    memoryMap
+  ])
 
   // Fit the network when it's visible and active
   useEffect(() => {
@@ -615,19 +613,19 @@ export default function MemoryNetworkModal() {
           network.fit({
             animation: {
               duration: 300,
-              easingFunction: "easeInOutQuad",
-            },
-          });
-        }, 100);
+              easingFunction: "easeInOutQuad"
+            }
+          })
+        }, 100)
       } catch (err) {
-        console.error("Error fitting network:", err);
+        console.error("Error fitting network:", err)
       }
     }
-  }, [network, activeTab, networkIsStabilizing]);
+  }, [network, activeTab, networkIsStabilizing])
 
   // Create the network view component
   const NetworkView = useMemo(() => {
-    console.log("Rendering NetworkView");
+    console.log("Rendering NetworkView")
     return (
       <div className="memory-network-graph">
         {loading ? (
@@ -636,12 +634,12 @@ export default function MemoryNetworkModal() {
           <div id="memory-network-container" ref={containerRef}></div>
         )}
       </div>
-    );
-  }, [loading, containerRef]);
+    )
+  }, [loading, containerRef])
 
   // Create the table view component
   const TableViewContent = useMemo(() => {
-    console.log("Rendering TableViewContent");
+    console.log("Rendering TableViewContent")
 
     return (
       <div className="memory-network-table">
@@ -653,8 +651,8 @@ export default function MemoryNetworkModal() {
           </div>
         )}
       </div>
-    );
-  }, [loading, memories]);
+    )
+  }, [loading, memories])
 
   return (
     <Modal
@@ -664,13 +662,13 @@ export default function MemoryNetworkModal() {
         {
           id: "network",
           label: "Network View",
-          content: null, // We'll render this via children
+          content: null // We'll render this via children
         },
         {
           id: "table",
           label: "Table View",
-          content: TableViewContent, // Table view comes from the tab content
-        },
+          content: TableViewContent // Table view comes from the tab content
+        }
       ]}
       defaultTabId="network"
       onTabChange={handleTabChange}
@@ -682,5 +680,5 @@ export default function MemoryNetworkModal() {
         {NetworkView}
       </div>
     </Modal>
-  );
+  )
 }

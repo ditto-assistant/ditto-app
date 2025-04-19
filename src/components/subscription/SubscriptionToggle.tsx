@@ -1,15 +1,15 @@
-import React from "react";
-import { Switch, FormControlLabel } from "@mui/material";
-import "./SubscriptionToggle.css";
+import React from "react"
+import { Switch, FormControlLabel } from "@mui/material"
+import "./SubscriptionToggle.css"
 
 interface SubscriptionToggleProps {
-  isYearly: boolean;
-  onChange: (isYearly: boolean) => void;
+  isYearly: boolean
+  onChange: (isYearly: boolean) => void
 }
 
 const SubscriptionToggle: React.FC<SubscriptionToggleProps> = ({
   isYearly,
-  onChange,
+  onChange
 }) => {
   return (
     <div className="subscription-toggle-container">
@@ -30,7 +30,7 @@ const SubscriptionToggle: React.FC<SubscriptionToggleProps> = ({
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SubscriptionToggle;
+export default SubscriptionToggle

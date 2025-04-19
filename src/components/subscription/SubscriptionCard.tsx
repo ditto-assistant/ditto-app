@@ -1,16 +1,16 @@
-import React from "react";
-import { Button } from "@mui/material";
-import { SubscriptionTier } from "@/api/subscriptions";
-import "./SubscriptionCard.css";
+import React from "react"
+import { Button } from "@mui/material"
+import { SubscriptionTier } from "@/api/subscriptions"
+import "./SubscriptionCard.css"
 
 interface SubscriptionCardProps {
-  tier: SubscriptionTier;
-  isYearly: boolean;
-  isSelected: boolean;
-  authToken: string;
-  userID: string;
-  email: string | null;
-  checkoutURL: string;
+  tier: SubscriptionTier
+  isYearly: boolean
+  isSelected: boolean
+  authToken: string
+  userID: string
+  email: string | null
+  checkoutURL: string
 }
 
 const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
@@ -20,13 +20,13 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   authToken,
   userID,
   email,
-  checkoutURL,
+  checkoutURL
 }) => {
   const price = tier.prices.find(
-    (p) => p.interval === (isYearly ? "year" : "month"),
-  );
+    (p) => p.interval === (isYearly ? "year" : "month")
+  )
 
-  if (!price) return null;
+  if (!price) return null
 
   return (
     <div
@@ -79,19 +79,19 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SubscriptionCard;
+export default SubscriptionCard
 
 function formatPrice(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: 0,
-  }).format(amount);
+    minimumFractionDigits: 0
+  }).format(amount)
 }
 
 function formatInterval(interval: string) {
-  return interval === "year" ? "/yr" : "/mo";
+  return interval === "year" ? "/yr" : "/mo"
 }

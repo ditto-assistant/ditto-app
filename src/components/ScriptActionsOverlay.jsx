@@ -1,8 +1,8 @@
-import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { FaPlay, FaPen, FaTimes } from "react-icons/fa";
-import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
-import "./ScriptActionsOverlay.css";
+import { useRef, useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { FaPlay, FaPen, FaTimes } from "react-icons/fa"
+import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
+import "./ScriptActionsOverlay.css"
 
 function ScriptActionsOverlay({
   scriptName,
@@ -10,45 +10,45 @@ function ScriptActionsOverlay({
   onEdit,
   onDeselect,
   onClose,
-  script, // This is the full script object
+  script // This is the full script object
 }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const overlayContentRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false)
+  const [showEditor, setShowEditor] = useState(false)
+  const overlayContentRef = useRef(null)
 
   useEffect(() => {
-    setTimeout(() => setIsVisible(true), 50);
+    setTimeout(() => setIsVisible(true), 50)
 
     const handleClickOutside = (event) => {
       if (
         overlayContentRef.current &&
         !overlayContentRef.current.contains(event.target)
       ) {
-        setIsVisible(false);
-        setTimeout(onClose, 300);
+        setIsVisible(false)
+        setTimeout(onClose, 300)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  });
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  })
 
   const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 300);
-  };
+    setIsVisible(false)
+    setTimeout(onClose, 300)
+  }
 
   const handleDeselectClick = () => {
     if (onDeselect) {
-      onDeselect();
+      onDeselect()
     }
-    handleClose();
-  };
+    handleClose()
+  }
 
   const handleEdit = () => {
-    setShowEditor(true);
-    setIsVisible(false);
-  };
+    setShowEditor(true)
+    setIsVisible(false)
+  }
 
   return (
     <>
@@ -112,25 +112,25 @@ function ScriptActionsOverlay({
             width: "100%",
             height: "100%",
             zIndex: 5000,
-            backgroundColor: "#1E1F22",
+            backgroundColor: "#1E1F22"
           }}
         >
           <FullScreenEditor
             script={{
               name: scriptName,
               content: script.content || "",
-              scriptType: script.scriptType,
+              scriptType: script.scriptType
             }}
             onClose={() => {
-              setShowEditor(false);
-              handleClose();
+              setShowEditor(false)
+              handleClose()
             }}
             onSave={async (updatedContent) => {
               if (onEdit) {
-                await onEdit(updatedContent);
+                await onEdit(updatedContent)
               }
-              setShowEditor(false);
-              handleClose();
+              setShowEditor(false)
+              handleClose()
             }}
             theme="monokai"
             hideStatusIcons={true}
@@ -138,7 +138,7 @@ function ScriptActionsOverlay({
         </div>
       )}
     </>
-  );
+  )
 }
 
-export default ScriptActionsOverlay;
+export default ScriptActionsOverlay

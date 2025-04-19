@@ -1,16 +1,16 @@
-import React from "react";
-import { MdClose, MdFullscreen, MdFullscreenExit } from "react-icons/md";
-import { motion } from "framer-motion";
-import "./ModalHeader.css";
+import React from "react"
+import { MdClose, MdFullscreen, MdFullscreenExit } from "react-icons/md"
+import { motion } from "framer-motion"
+import "./ModalHeader.css"
 
 interface ModalHeaderProps {
-  title: string;
-  onClose: () => void;
-  className?: string;
-  isFullscreen?: boolean;
-  onToggleFullscreen?: () => void;
-  icon?: React.ReactNode;
-  useGradient?: boolean;
+  title: string
+  onClose: () => void
+  className?: string
+  isFullscreen?: boolean
+  onToggleFullscreen?: () => void
+  icon?: React.ReactNode
+  useGradient?: boolean
 }
 
 export const ModalHeader: React.FC<ModalHeaderProps> = ({
@@ -20,14 +20,14 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
   isFullscreen = false,
   onToggleFullscreen,
   icon,
-  useGradient = true,
+  useGradient = true
 }) => {
   // Handle touch events separately to prevent iOS Safari issues
   const handleButtonTouch = (e: React.TouchEvent, callback: () => void) => {
-    e.stopPropagation(); // Prevent event bubbling
-    e.preventDefault(); // Prevent default behavior
-    callback();
-  };
+    e.stopPropagation() // Prevent event bubbling
+    e.preventDefault() // Prevent default behavior
+    callback()
+  }
 
   return (
     <div className={`header modal ${className}`}>
@@ -70,5 +70,5 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
         </motion.button>
       </div>
     </div>
-  );
-};
+  )
+}

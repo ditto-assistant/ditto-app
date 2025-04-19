@@ -1,38 +1,38 @@
-import React, { useState, useEffect, useRef } from "react";
-import { MdAdd, MdSort } from "react-icons/md";
-import { FaTrash, FaUndo, FaCog } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react"
+import { MdAdd, MdSort } from "react-icons/md"
+import { FaTrash, FaUndo, FaCog } from "react-icons/fa"
 // import { downloadOpenscadScript } from "../control/agentTools";
-import { motion, AnimatePresence } from "framer-motion";
-import "./ScriptsOverlay.css";
-import CardMenu from "@/components/ui/CardMenu";
-import SearchBar from "./SearchBar";
-import AddScriptOverlay from "./AddScriptOverlay";
-import OpenSCADViewer from "./OpenSCADViewer";
-import { useScripts } from "@/hooks/useScripts.tsx";
-import { useModal } from "@/hooks/useModal";
-import VersionsOverlay from "./VersionsOverlay";
-import Modal from "@/components/ui/modals/Modal";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { motion, AnimatePresence } from "framer-motion"
+import "./ScriptsOverlay.css"
+import CardMenu from "@/components/ui/CardMenu"
+import SearchBar from "./SearchBar"
+import AddScriptOverlay from "./AddScriptOverlay"
+import OpenSCADViewer from "./OpenSCADViewer"
+import { useScripts } from "@/hooks/useScripts.tsx"
+import { useModal } from "@/hooks/useModal"
+import VersionsOverlay from "./VersionsOverlay"
+import Modal from "@/components/ui/modals/Modal"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 
 const formatTimestamp = (timestamp) => {
-  if (!timestamp) return "";
-  const now = new Date();
-  const date = new Date(timestamp.seconds * 1000);
-  const diffInSeconds = Math.floor((now - date) / 1000);
-  if (diffInSeconds < 60) return "just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (!timestamp) return ""
+  const now = new Date()
+  const date = new Date(timestamp.seconds * 1000)
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  if (diffInSeconds < 60) return "just now"
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
   // If more than 24 hours, show the date
   return date.toLocaleDateString("en-US", {
     month: "short",
-    day: "numeric",
-  });
-};
+    day: "numeric"
+  })
+}
 
 export default function ScriptsOverlay() {
-  const { createCloseHandler, createOpenHandler } = useModal();
-  const { showConfirmationDialog } = useConfirmationDialog();
-  const closeOverlay = createCloseHandler("scripts");
+  const { createCloseHandler, createOpenHandler } = useModal()
+  const { showConfirmationDialog } = useConfirmationDialog()
+  const closeOverlay = createCloseHandler("scripts")
 
   // Use the scripts context hook instead of useScriptsManager
   const {
@@ -46,38 +46,38 @@ export default function ScriptsOverlay() {
     deleteScript,
     renameScript,
     revertScript,
-    refreshScripts,
-  } = useScripts();
+    refreshScripts
+  } = useScripts()
 
-  const [activeTab, setActiveTab] = useState("webApps");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState("recent");
+  const [activeTab, setActiveTab] = useState("webApps")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sortOrder, setSortOrder] = useState("recent")
   const [showAddForm, setShowAddForm] = useState({
     webApps: false,
-    openSCAD: false,
-  });
-  const [activeCard, setActiveCard] = useState(null);
-  const [menuPosition, setMenuPosition] = useState(null);
-  const [renameScriptId, setRenameScriptId] = useState(null);
-  const [versionOverlay, setVersionOverlay] = useState(null);
-  const [openScadViewer, setOpenScadViewer] = useState(null);
-  const cardRefs = useRef({});
+    openSCAD: false
+  })
+  const [activeCard, setActiveCard] = useState(null)
+  const [menuPosition, setMenuPosition] = useState(null)
+  const [renameScriptId, setRenameScriptId] = useState(null)
+  const [versionOverlay, setVersionOverlay] = useState(null)
+  const [openScadViewer, setOpenScadViewer] = useState(null)
+  const cardRefs = useRef({})
 
   const getBaseName = (name) => {
-    const match = name.match(/^[^\-]+/);
-    return match ? match[0].replace(/([a-z])([A-Z])/g, "$1 $2").trim() : name;
-  };
+    const match = name.match(/^[^\-]+/)
+    return match ? match[0].replace(/([a-z])([A-Z])/g, "$1 $2").trim() : name
+  }
 
   const getLocalTimestamps = (category) => {
-    return category === "webApps" ? webAppsTimestamps : openSCADTimestamps;
-  };
+    return category === "webApps" ? webAppsTimestamps : openSCADTimestamps
+  }
 
   const getBaseNameAndVersion = (name) => {
-    const versionMatch = name.match(/-v(\d+)$/);
-    const version = versionMatch ? versionMatch[1] : null;
-    const baseName = name.replace(/-v\d+$/, "");
-    return { baseName, version };
-  };
+    const versionMatch = name.match(/-v(\d+)$/)
+    const version = versionMatch ? versionMatch[1] : null
+    const baseName = name.replace(/-v\d+$/, "")
+    return { baseName, version }
+  }
 
   // MARK: -  Event Handlers
   const handleSelectScript = (script) => {
@@ -85,23 +85,23 @@ export default function ScriptsOverlay() {
     setSelectedScript({
       name: script.name,
       content: script.content,
-      scriptType: script.scriptType,
-    });
+      scriptType: script.scriptType
+    })
 
     // Trigger a global event to notify other components
-    window.dispatchEvent(new Event("scriptSelected"));
-  };
+    window.dispatchEvent(new Event("scriptSelected"))
+  }
 
   const openDeleteConfirmation = (script, category) => {
-    const content = `Are you sure you want to delete "${script?.name}"? This action cannot be undone.`;
+    const content = `Are you sure you want to delete "${script?.name}"? This action cannot be undone.`
     showConfirmationDialog({
       title: "Confirm Delete",
       content,
       confirmLabel: "Delete",
       variant: "danger",
-      onConfirm: () => handleDeleteScript(category, script),
-    });
-  };
+      onConfirm: () => handleDeleteScript(category, script)
+    })
+  }
 
   const openRevertConfirmation = (script, category, version) => {
     showConfirmationDialog({
@@ -118,7 +118,7 @@ export default function ScriptsOverlay() {
               padding: "2px 6px",
               fontSize: "12px",
               display: "inline-block",
-              margin: "0 4px",
+              margin: "0 4px"
             }}
           >
             v{version}
@@ -128,132 +128,132 @@ export default function ScriptsOverlay() {
       ),
       confirmLabel: "Revert",
       variant: "primary",
-      onConfirm: () => handleRevertScript(category, script),
-    });
-  };
+      onConfirm: () => handleRevertScript(category, script)
+    })
+  }
 
   const handleDeleteScript = async (category, currentScript) => {
-    const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName;
+    const baseScriptName = getBaseNameAndVersion(currentScript.name).baseName
 
     try {
       const relatedScripts = scripts[category].filter(
         (script) =>
-          getBaseNameAndVersion(script.name).baseName === baseScriptName,
-      );
+          getBaseNameAndVersion(script.name).baseName === baseScriptName
+      )
 
       for (const script of relatedScripts) {
-        await deleteScript(category, script.name);
+        await deleteScript(category, script.name)
       }
 
       // Close version overlay since all versions are deleted
-      setVersionOverlay(null);
+      setVersionOverlay(null)
     } catch (error) {
-      console.error("Error deleting script:", error);
+      console.error("Error deleting script:", error)
     }
-  };
+  }
 
   const handleSelectVersion = (script) => {
     // Update selected script
-    setSelectedScript(script);
+    setSelectedScript(script)
 
     // Close overlays
-    setVersionOverlay(null);
-    setActiveCard(null);
-    setMenuPosition(null);
-  };
+    setVersionOverlay(null)
+    setActiveCard(null)
+    setMenuPosition(null)
+  }
 
   const handleEditScript = (script) => {
     if (script.scriptType === "webApps") {
-      closeOverlay();
+      closeOverlay()
       window.dispatchEvent(
         new CustomEvent("editScript", {
-          detail: { script },
-        }),
-      );
+          detail: { script }
+        })
+      )
     } else if (script.scriptType === "openSCAD") {
-      setOpenScadViewer(script);
+      setOpenScadViewer(script)
     }
-  };
+  }
 
   const handleAddScriptClick = (category) => {
-    setShowAddForm((prev) => ({ ...prev, [category]: true }));
-  };
+    setShowAddForm((prev) => ({ ...prev, [category]: true }))
+  }
 
   const handleSaveScript = async (category, name, content) => {
-    console.log("Attempting to save script:", { category, name, content });
+    console.log("Attempting to save script:", { category, name, content })
     if (!name || !content) {
-      console.error("Script name or content is missing:", { name, content });
-      return;
+      console.error("Script name or content is missing:", { name, content })
+      return
     }
 
     try {
-      await saveScript(content, category, name);
-      setShowAddForm((prev) => ({ ...prev, [category]: false }));
+      await saveScript(content, category, name)
+      setShowAddForm((prev) => ({ ...prev, [category]: false }))
     } catch (error) {
-      console.error("Error saving script:", error);
+      console.error("Error saving script:", error)
     }
-  };
+  }
 
-  const openDittoCanvas = createOpenHandler("dittoCanvas");
+  const openDittoCanvas = createOpenHandler("dittoCanvas")
   const handlePlayScript = (script) => {
     if (script.scriptType === "webApps") {
-      setSelectedScript(script);
-      openDittoCanvas();
+      setSelectedScript(script)
+      openDittoCanvas()
     } else {
       // Handle OpenSCAD scripts (download)
-      const blob = new Blob([script.content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${script.name}.scad`;
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      closeOverlay();
+      const blob = new Blob([script.content], { type: "text/plain" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${script.name}.scad`
+      document.body.appendChild(a)
+      a.click()
+      URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      closeOverlay()
     }
-  };
+  }
 
   const handleDownloadScript = (script) => {
-    const blob = new Blob([script.content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
+    const blob = new Blob([script.content], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
     a.download =
       script.scriptType === "webApps"
         ? `${script.name}.html`
-        : `${script.name}.scad`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+        : `${script.name}.scad`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   const handleRenameScript = async (scriptId, newName) => {
-    const category = activeTab;
-    const script = scripts[category].find((s) => s.id === scriptId);
+    const category = activeTab
+    const script = scripts[category].find((s) => s.id === scriptId)
 
     if (script) {
       try {
-        const timestamps = getLocalTimestamps(category);
-        const timestampString = timestamps[script.name]?.timestampString;
-        await renameScript(timestampString, category, script.name, newName);
+        const timestamps = getLocalTimestamps(category)
+        const timestampString = timestamps[script.name]?.timestampString
+        await renameScript(timestampString, category, script.name, newName)
       } catch (error) {
-        console.error("Error renaming script:", error);
+        console.error("Error renaming script:", error)
       }
     }
 
-    setRenameScriptId(null);
-  };
+    setRenameScriptId(null)
+  }
 
   const handleRevertScript = async (category, currentScript) => {
     try {
       // Delete the current version (which will become the new version)
-      await revertScript(category, currentScript.name);
+      await revertScript(category, currentScript.name)
     } catch (error) {
-      console.error("Error reverting script:", error);
+      console.error("Error reverting script:", error)
     }
-  };
+  }
 
   // Close overlays when clicking outside
   useEffect(() => {
@@ -263,104 +263,104 @@ export default function ScriptsOverlay() {
         !event.target.closest(".card-menu") &&
         !event.target.closest(".more-icon")
       ) {
-        setActiveCard(null);
-        setMenuPosition(null);
+        setActiveCard(null)
+        setMenuPosition(null)
       }
       if (versionOverlay && !event.target.closest(".card-menu")) {
-        setVersionOverlay(null);
+        setVersionOverlay(null)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside)
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuPosition, versionOverlay]);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [menuPosition, versionOverlay])
 
   // Sort and filter functions
   const sortScripts = (scripts) => {
     // First, group scripts by their base name (without version numbers)
-    const groupedScripts = {};
+    const groupedScripts = {}
     scripts.forEach((script) => {
-      const baseName = getBaseName(script.name.replace(/ /g, ""));
+      const baseName = getBaseName(script.name.replace(/ /g, ""))
       if (!groupedScripts[baseName]) {
-        groupedScripts[baseName] = [];
+        groupedScripts[baseName] = []
       }
-      groupedScripts[baseName].push(script);
-    });
+      groupedScripts[baseName].push(script)
+    })
     // Get the main version of each script group (the one without -v suffix)
     const mainVersions = Object.values(groupedScripts).map((group) => {
-      return group.find((script) => !script.name.includes("-v")) || group[0];
-    });
+      return group.find((script) => !script.name.includes("-v")) || group[0]
+    })
 
     if (sortOrder === "alphabetical") {
       return mainVersions.sort((a, b) => {
-        const nameA = getBaseName(a.name).toLowerCase();
-        const nameB = getBaseName(b.name).toLowerCase();
-        return nameA.localeCompare(nameB);
-      });
+        const nameA = getBaseName(a.name).toLowerCase()
+        const nameB = getBaseName(b.name).toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
     } else {
       // Sort by most recent first using the timestamp
       return mainVersions.sort((a, b) => {
-        const timestampsA = getLocalTimestamps(a.scriptType)[a.name];
-        const timestampsB = getLocalTimestamps(b.scriptType)[b.name];
-        if (!timestampsA || !timestampsB) return 0;
-        const timeA = timestampsA.timestamp?.seconds * 1000 || 0;
-        const timeB = timestampsB.timestamp?.seconds * 1000 || 0;
-        return timeB - timeA;
-      });
+        const timestampsA = getLocalTimestamps(a.scriptType)[a.name]
+        const timestampsB = getLocalTimestamps(b.scriptType)[b.name]
+        if (!timestampsA || !timestampsB) return 0
+        const timeA = timestampsA.timestamp?.seconds * 1000 || 0
+        const timeB = timestampsB.timestamp?.seconds * 1000 || 0
+        return timeB - timeA
+      })
     }
-  };
+  }
 
   const filterScripts = (scripts, searchTerm) => {
-    let filteredScripts = scripts || [];
+    let filteredScripts = scripts || []
     if (searchTerm) {
-      const normalizedSearch = searchTerm.toLowerCase();
+      const normalizedSearch = searchTerm.toLowerCase()
       filteredScripts = filteredScripts.filter((script) => {
         const baseName = getBaseName(
-          script.name.replace(/ /g, ""),
-        ).toLowerCase();
-        return baseName.includes(normalizedSearch);
-      });
+          script.name.replace(/ /g, "")
+        ).toLowerCase()
+        return baseName.includes(normalizedSearch)
+      })
     }
-    return sortScripts(filteredScripts);
-  };
+    return sortScripts(filteredScripts)
+  }
 
   const getScriptsByBaseName = (scripts) => {
-    const grouped = {};
+    const grouped = {}
     scripts.forEach((script) => {
-      const baseName = getBaseName(script.name.replace(/ /g, ""));
-      if (!grouped[baseName]) grouped[baseName] = [];
-      grouped[baseName].push(script);
-    });
+      const baseName = getBaseName(script.name.replace(/ /g, ""))
+      if (!grouped[baseName]) grouped[baseName] = []
+      grouped[baseName].push(script)
+    })
 
     // Sort versions with the selected version at the top, followed by latest (no -v tag),
     // then other versions in descending order
     Object.keys(grouped).forEach((baseName) => {
       grouped[baseName].sort((a, b) => {
         // If one is selected, it should be first
-        if (a.name === selectedScript?.script) return -1;
-        if (b.name === selectedScript?.script) return 1;
+        if (a.name === selectedScript?.script) return -1
+        if (b.name === selectedScript?.script) return 1
         // Then check for version numbers
-        const aMatch = a.name.match(/v(\d+)/);
-        const bMatch = b.name.match(/v(\d+)/);
+        const aMatch = a.name.match(/v(\d+)/)
+        const bMatch = b.name.match(/v(\d+)/)
         // If neither has a version, maintain current order
-        if (!aMatch && !bMatch) return 0;
+        if (!aMatch && !bMatch) return 0
         // If only one has a version, the one without version (latest) should be first
-        if (!aMatch) return -1;
-        if (!bMatch) return 1;
+        if (!aMatch) return -1
+        if (!bMatch) return 1
         // Otherwise sort by version number in descending order
-        return parseInt(bMatch[1]) - parseInt(aMatch[1]);
-      });
-    });
+        return parseInt(bMatch[1]) - parseInt(aMatch[1])
+      })
+    })
 
-    return grouped;
-  };
+    return grouped
+  }
 
   const renderScripts = (category) => {
-    const scriptsForCategory = scripts[category] || [];
-    const filteredScripts = filterScripts(scriptsForCategory, searchTerm);
-    const groupedScripts = getScriptsByBaseName(filteredScripts);
+    const scriptsForCategory = scripts[category] || []
+    const filteredScripts = filterScripts(scriptsForCategory, searchTerm)
+    const groupedScripts = getScriptsByBaseName(filteredScripts)
 
     if (Object.keys(groupedScripts).length === 0) {
       if (searchTerm) {
@@ -368,7 +368,7 @@ export default function ScriptsOverlay() {
           <div className="no-results">
             No scripts found matching &quot;{searchTerm}&quot;
           </div>
-        );
+        )
       } else {
         return (
           <div className="no-results">
@@ -378,29 +378,29 @@ export default function ScriptsOverlay() {
               Click + to add one or ask Ditto to make you an app.
             </div>
           </div>
-        );
+        )
       }
     }
 
     return Object.keys(groupedScripts).map((baseName) => {
-      const scriptsList = groupedScripts[baseName];
+      const scriptsList = groupedScripts[baseName]
       const currentScript =
         scriptsList.find((s) => s.name === selectedScript?.script) ||
         scriptsList.find((s) => !s.name.includes("-v")) ||
-        scriptsList[0];
+        scriptsList[0]
       // Check for multiple versions by looking at the base name
       const hasMultipleVersions =
         scriptsForCategory.filter(
-          (script) => getBaseName(script.name.replace(/ /g, "")) === baseName,
-        ).length > 1;
+          (script) => getBaseName(script.name.replace(/ /g, "")) === baseName
+        ).length > 1
 
       if (!cardRefs.current[currentScript.id]) {
-        cardRefs.current[currentScript.id] = React.createRef();
+        cardRefs.current[currentScript.id] = React.createRef()
       }
 
       const { baseName: scriptBaseName, version } = getBaseNameAndVersion(
-        currentScript.name,
-      );
+        currentScript.name
+      )
 
       return (
         <motion.div
@@ -410,15 +410,15 @@ export default function ScriptsOverlay() {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{
             y: -4,
-            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)"
           }}
           whileTap={{ scale: 0.98 }}
           onClick={() => {
-            handleSelectScript(currentScript);
+            handleSelectScript(currentScript)
             if (category === "webApps") {
-              handlePlayScript(currentScript);
+              handlePlayScript(currentScript)
             } else {
-              handleDownloadScript(currentScript);
+              handleDownloadScript(currentScript)
             }
           }}
           className={`script-card ${
@@ -435,9 +435,9 @@ export default function ScriptsOverlay() {
                 }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    handleRenameScript(currentScript.id, e.target.value);
+                    handleRenameScript(currentScript.id, e.target.value)
                   } else if (e.key === "Escape") {
-                    setRenameScriptId(null);
+                    setRenameScriptId(null)
                   }
                 }}
                 className="rename-input"
@@ -455,7 +455,7 @@ export default function ScriptsOverlay() {
           <div className="timestamp-container">
             <span className="timestamp">
               {formatTimestamp(
-                getLocalTimestamps(category)[currentScript.name]?.timestamp,
+                getLocalTimestamps(category)[currentScript.name]?.timestamp
               )}
             </span>
           </div>
@@ -466,8 +466,8 @@ export default function ScriptsOverlay() {
               whileTap={{ scale: 0.95 }}
               className="edit-button"
               onClick={(e) => {
-                e.stopPropagation();
-                handleEditScript(currentScript);
+                e.stopPropagation()
+                handleEditScript(currentScript)
               }}
             >
               Edit
@@ -475,13 +475,13 @@ export default function ScriptsOverlay() {
             <FaCog
               className="more-icon"
               onClick={(e) => {
-                e.stopPropagation();
-                const rect = e.currentTarget.getBoundingClientRect();
+                e.stopPropagation()
+                const rect = e.currentTarget.getBoundingClientRect()
                 setMenuPosition({
                   top: rect.bottom + 8,
-                  left: rect.left,
-                });
-                setActiveCard(currentScript.id);
+                  left: rect.left
+                })
+                setActiveCard(currentScript.id)
               }}
             />
           </div>
@@ -492,7 +492,7 @@ export default function ScriptsOverlay() {
               style={{
                 top: menuPosition.top,
                 left: menuPosition.left,
-                transformOrigin: menuPosition.openUpward ? "bottom" : "top",
+                transformOrigin: menuPosition.openUpward ? "bottom" : "top"
               }}
             >
               <motion.div
@@ -500,12 +500,12 @@ export default function ScriptsOverlay() {
                 whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 onClick={(e) => {
                   if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }
-                  setRenameScriptId(currentScript.id);
-                  setActiveCard(null);
-                  setMenuPosition(null);
+                  setRenameScriptId(currentScript.id)
+                  setActiveCard(null)
+                  setMenuPosition(null)
                 }}
               >
                 Rename
@@ -515,12 +515,12 @@ export default function ScriptsOverlay() {
                 whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 onClick={(e) => {
                   if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }
-                  handleDownloadScript(currentScript);
-                  setActiveCard(null);
-                  setMenuPosition(null);
+                  handleDownloadScript(currentScript)
+                  setActiveCard(null)
+                  setMenuPosition(null)
                 }}
               >
                 Download
@@ -529,23 +529,23 @@ export default function ScriptsOverlay() {
                 <motion.div
                   className="card-menu-item"
                   whileHover={{
-                    backgroundColor: "rgba(88, 101, 242, 0.1)",
+                    backgroundColor: "rgba(88, 101, 242, 0.1)"
                   }}
                   onClick={(e) => {
                     if (e) {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                     }
                     const versions = scripts[activeTab].filter(
                       (script) =>
-                        getBaseName(script.name.replace(/ /g, "")) === baseName,
-                    );
+                        getBaseName(script.name.replace(/ /g, "")) === baseName
+                    )
                     setVersionOverlay({
                       baseScriptName: baseName,
-                      versions: versions,
-                    });
-                    setActiveCard(null);
-                    setMenuPosition(null);
+                      versions: versions
+                    })
+                    setActiveCard(null)
+                    setMenuPosition(null)
                   }}
                 >
                   Version
@@ -557,16 +557,16 @@ export default function ScriptsOverlay() {
                   <motion.div
                     className="card-menu-item primary"
                     whileHover={{
-                      backgroundColor: "rgba(88, 101, 242, 0.1)",
+                      backgroundColor: "rgba(88, 101, 242, 0.1)"
                     }}
                     onClick={(e) => {
                       if (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
+                        e.preventDefault()
+                        e.stopPropagation()
                       }
-                      openRevertConfirmation(currentScript, category, version);
-                      setActiveCard(null);
-                      setMenuPosition(null);
+                      openRevertConfirmation(currentScript, category, version)
+                      setActiveCard(null)
+                      setMenuPosition(null)
                     }}
                   >
                     <FaUndo style={{ marginRight: "8px" }} />
@@ -579,12 +579,12 @@ export default function ScriptsOverlay() {
                 whileHover={{ backgroundColor: "rgba(218, 55, 60, 0.1)" }}
                 onClick={(e) => {
                   if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }
-                  openDeleteConfirmation(currentScript, category);
-                  setActiveCard(null);
-                  setMenuPosition(null);
+                  openDeleteConfirmation(currentScript, category)
+                  setActiveCard(null)
+                  setMenuPosition(null)
                 }}
               >
                 <FaTrash style={{ marginRight: "8px" }} />
@@ -593,9 +593,9 @@ export default function ScriptsOverlay() {
             </CardMenu>
           )}
         </motion.div>
-      );
-    });
-  };
+      )
+    })
+  }
 
   // SortButton component
   const SortButton = () => (
@@ -605,9 +605,9 @@ export default function ScriptsOverlay() {
       className="sort-button"
       onClick={() => {
         setSortOrder((prev) => {
-          const newOrder = prev === "recent" ? "alphabetical" : "recent";
-          return newOrder;
-        });
+          const newOrder = prev === "recent" ? "alphabetical" : "recent"
+          return newOrder
+        })
       }}
     >
       <MdSort className="sort-icon" />
@@ -615,7 +615,7 @@ export default function ScriptsOverlay() {
         {sortOrder === "recent" ? "Most Recent" : "Alphabetical"}
       </span>
     </motion.div>
-  );
+  )
 
   const modalContent = (
     <>
@@ -631,8 +631,8 @@ export default function ScriptsOverlay() {
               type: "spring",
               stiffness: 300,
               damping: 25,
-              mass: 0.5,
-            },
+              mass: 0.5
+            }
           }}
           exit={{
             opacity: 0,
@@ -643,8 +643,8 @@ export default function ScriptsOverlay() {
               stiffness: 300,
               damping: 25,
               mass: 0.5,
-              opacity: { duration: 0.2 },
-            },
+              opacity: { duration: 0.2 }
+            }
           }}
         >
           <motion.div
@@ -658,15 +658,15 @@ export default function ScriptsOverlay() {
                 type: "spring",
                 stiffness: 400,
                 damping: 25,
-                mass: 0.5,
-              },
+                mass: 0.5
+              }
             }}
             exit={{
               scale: 0.95,
               opacity: 0,
               transition: {
-                duration: 0.2,
-              },
+                duration: 0.2
+              }
             }}
           >
             <motion.div
@@ -677,8 +677,8 @@ export default function ScriptsOverlay() {
                 y: 0,
                 transition: {
                   delay: 0.2,
-                  duration: 0.3,
-                },
+                  duration: 0.3
+                }
               }}
             >
               <p className="selected-script-label">Currently Selected</p>
@@ -689,9 +689,9 @@ export default function ScriptsOverlay() {
                   className="edit-selected-button"
                   onClick={() => {
                     const script = scripts[activeTab]?.find(
-                      (s) => s.name === selectedScript.script,
-                    );
-                    if (script) handleEditScript(script);
+                      (s) => s.name === selectedScript.script
+                    )
+                    if (script) handleEditScript(script)
                   }}
                 >
                   Edit
@@ -716,8 +716,8 @@ export default function ScriptsOverlay() {
                   delay: 0.3,
                   type: "spring",
                   stiffness: 400,
-                  damping: 30,
-                },
+                  damping: 30
+                }
               }}
             >
               {selectedScript.script}
@@ -732,8 +732,8 @@ export default function ScriptsOverlay() {
             <div
               className={`tab ${activeTab === "webApps" ? "active" : ""}`}
               onClick={() => {
-                refreshScripts();
-                setActiveTab("webApps");
+                refreshScripts()
+                setActiveTab("webApps")
               }}
             >
               Web Apps
@@ -741,8 +741,8 @@ export default function ScriptsOverlay() {
             <div
               className={`tab ${activeTab === "openSCAD" ? "active" : ""}`}
               onClick={() => {
-                refreshScripts();
-                setActiveTab("openSCAD");
+                refreshScripts()
+                setActiveTab("openSCAD")
               }}
             >
               Open SCAD
@@ -795,12 +795,12 @@ export default function ScriptsOverlay() {
             }
             onSave={() => {
               const nameInput = document.getElementById(
-                `${activeTab}-name-input`,
-              ).value;
+                `${activeTab}-name-input`
+              ).value
               const contentInput = document.getElementById(
-                `${activeTab}-content-input`,
-              ).value;
-              handleSaveScript(activeTab, nameInput, contentInput);
+                `${activeTab}-content-input`
+              ).value
+              handleSaveScript(activeTab, nameInput, contentInput)
             }}
             category={activeTab}
           />
@@ -825,11 +825,11 @@ export default function ScriptsOverlay() {
         />
       )}
     </>
-  );
+  )
 
   return (
     <Modal id="scripts" title="Scripts">
       {modalContent}
     </Modal>
-  );
+  )
 }

@@ -1,27 +1,27 @@
-import React, { useEffect, useState } from "react";
-import toast, { Toast } from "react-hot-toast";
-import "./BalanceDropToast.css";
+import React, { useEffect, useState } from "react"
+import toast, { Toast } from "react-hot-toast"
+import "./BalanceDropToast.css"
 
 interface BalanceDropToastProps {
-  t: Toast; // Toast object from react-hot-toast
-  amount: string;
+  t: Toast // Toast object from react-hot-toast
+  amount: string
 }
 
 const BalanceDropToast: React.FC<BalanceDropToastProps> = ({ t, amount }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false)
 
   // Handle animation states
   useEffect(() => {
     // Set visible with a slight delay for better animation effect
     const timer = setTimeout(() => {
-      setIsVisible(t.visible);
-    }, 50);
+      setIsVisible(t.visible)
+    }, 50)
 
-    return () => clearTimeout(timer);
-  }, [t.visible]);
+    return () => clearTimeout(timer)
+  }, [t.visible])
 
   // Combine classes for animations
-  const containerClass = `balance-drop-toast ${isVisible ? "animate-enter" : "animate-leave"}`;
+  const containerClass = `balance-drop-toast ${isVisible ? "animate-enter" : "animate-leave"}`
 
   return (
     <div className={containerClass}>
@@ -32,7 +32,7 @@ const BalanceDropToast: React.FC<BalanceDropToastProps> = ({ t, amount }) => {
         &times;
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default BalanceDropToast;
+export default BalanceDropToast

@@ -1,5 +1,5 @@
-import React from "react";
-import { VersionSection, Section } from "./VersionTemplate";
+import React from "react"
+import { VersionSection, Section } from "./VersionTemplate"
 
 const sections: Section[] = [
   {
@@ -9,21 +9,21 @@ const sections: Section[] = [
         type: "new",
         title: "Subscription Plans",
         description:
-          "Choose from multiple subscription tiers to enhance your Ditto experience, with both monthly and yearly options available.",
+          "Choose from multiple subscription tiers to enhance your Ditto experience, with both monthly and yearly options available."
       },
       {
         type: "new",
         title: "Token System",
         description:
-          "Purchase and manage tokens for additional usage when you need a boost in capabilities.",
+          "Purchase and manage tokens for additional usage when you need a boost in capabilities."
       },
       {
         type: "new",
         title: "Subscription Management",
         description:
-          "Easily manage your subscription status, view current plan details, and access the customer portal.",
-      },
-    ],
+          "Easily manage your subscription status, view current plan details, and access the customer portal."
+      }
+    ]
   },
   {
     title: "Improvements",
@@ -32,17 +32,17 @@ const sections: Section[] = [
         type: "improved",
         title: "Enhanced User Profile",
         description:
-          "User profiles now include subscription status and token balance information.",
+          "User profiles now include subscription status and token balance information."
       },
       {
         type: "improved",
         title: "Error Handling",
         description:
-          "Better error handling for payment-related operations and subscription status checks.",
-      },
-    ],
-  },
-];
+          "Better error handling for payment-related operations and subscription status checks."
+      }
+    ]
+  }
+]
 
 const V0_12_0 = () => (
   <div>
@@ -50,6 +50,6 @@ const V0_12_0 = () => (
       <VersionSection key={index} {...section} />
     ))}
   </div>
-);
+)
 
-export default V0_12_0;
+export default V0_12_0

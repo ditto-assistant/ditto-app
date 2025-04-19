@@ -1,6 +1,6 @@
-import React from "react";
-import WhatsNew from "./WhatsNew";
-import useWhatsNew from "@/hooks/useWhatsNew";
+import React from "react"
+import WhatsNew from "./WhatsNew"
+import useWhatsNew from "@/hooks/useWhatsNew"
 
 /**
  * Test component for manually testing WhatsNew dialog
@@ -8,7 +8,7 @@ import useWhatsNew from "@/hooks/useWhatsNew";
  * Different versions of the WhatsNew dialog
  */
 const TestWhatsNew: React.FC = () => {
-  const { openWhatsNew } = useWhatsNew();
+  const { openWhatsNew } = useWhatsNew()
 
   return (
     <div style={{ padding: "20px" }}>
@@ -24,7 +24,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
         >
           Show v0.11.54
@@ -35,7 +35,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
         >
           Show v0.11.55
@@ -46,7 +46,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
         >
           Show v0.11.56
@@ -57,7 +57,7 @@ const TestWhatsNew: React.FC = () => {
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
         >
           Show v0.11.57
@@ -67,7 +67,7 @@ const TestWhatsNew: React.FC = () => {
       {/* Render the WhatsNew component so it's available */}
       <WhatsNew version="0.11.57" />
     </div>
-  );
-};
+  )
+}
 
-export default TestWhatsNew;
+export default TestWhatsNew

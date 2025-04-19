@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { FaCodeBranch, FaTrash } from "react-icons/fa";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { motion } from "framer-motion"
+import { FaCodeBranch, FaTrash } from "react-icons/fa"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 
 const VersionsOverlay = ({
   isOpen,
@@ -8,32 +8,32 @@ const VersionsOverlay = ({
   onSelect,
   onDelete,
   versions,
-  category,
+  category
 }) => {
-  const { showConfirmationDialog } = useConfirmationDialog();
+  const { showConfirmationDialog } = useConfirmationDialog()
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   // Sort versions: latest first, then descending order
   const sortedVersions = [...versions].sort((a, b) => {
-    const aMatch = a.name.match(/-v(\d+)$/);
-    const bMatch = b.name.match(/-v(\d+)$/);
+    const aMatch = a.name.match(/-v(\d+)$/)
+    const bMatch = b.name.match(/-v(\d+)$/)
 
     // If neither has a version number (latest), maintain current order
-    if (!aMatch && !bMatch) return 0;
+    if (!aMatch && !bMatch) return 0
 
     // If one doesn't have a version number, it's latest and should be first
-    if (!aMatch) return -1;
-    if (!bMatch) return 1;
+    if (!aMatch) return -1
+    if (!bMatch) return 1
 
     // Otherwise sort by version number in descending order
-    return parseInt(bMatch[1]) - parseInt(aMatch[1]);
-  });
+    return parseInt(bMatch[1]) - parseInt(aMatch[1])
+  })
 
   const handleModalClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   const handleDelete = (script) => {
     showConfirmationDialog({
@@ -41,13 +41,13 @@ const VersionsOverlay = ({
       content: `Are you sure you want to delete "${script.name}"? This action cannot be undone.`,
       confirmLabel: "Delete",
       variant: "danger",
-      onConfirm: () => onDelete(category, script),
-    });
-  };
+      onConfirm: () => onDelete(category, script)
+    })
+  }
 
   const handleOverlayClick = () => {
-    onClose();
-  };
+    onClose()
+  }
 
   return (
     <motion.div
@@ -73,10 +73,10 @@ const VersionsOverlay = ({
           onMouseDown={handleModalClick}
         >
           {sortedVersions.map((script, index) => {
-            const versionMatch = script.name.match(/-v(\d+)$/);
-            const version = versionMatch ? versionMatch[1] : null;
-            const baseName = script.name.replace(/-v\d+$/, "");
-            const isLatest = !version;
+            const versionMatch = script.name.match(/-v(\d+)$/)
+            const version = versionMatch ? versionMatch[1] : null
+            const baseName = script.name.replace(/-v\d+$/, "")
+            const isLatest = !version
 
             return (
               <motion.div
@@ -84,13 +84,13 @@ const VersionsOverlay = ({
                 style={styles.versionItem}
                 whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onSelect(script);
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onSelect(script)
                 }}
                 onMouseDown={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  e.preventDefault()
+                  e.stopPropagation()
                 }}
               >
                 <span style={styles.versionName}>{baseName}</span>
@@ -100,19 +100,19 @@ const VersionsOverlay = ({
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDelete(script);
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleDelete(script)
                   }}
                   onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }}
                 >
                   <FaTrash style={styles.deleteIcon} />
                 </motion.div>
               </motion.div>
-            );
+            )
           })}
         </div>
         <motion.button
@@ -120,21 +120,21 @@ const VersionsOverlay = ({
           whileTap={{ scale: 0.95 }}
           style={styles.cancelButton}
           onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose();
+            e.preventDefault()
+            e.stopPropagation()
+            onClose()
           }}
           onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault()
+            e.stopPropagation()
           }}
         >
           Cancel
         </motion.button>
       </motion.div>
     </motion.div>
-  );
-};
+  )
+}
 
 const styles = {
   overlay: {
@@ -150,7 +150,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 100001,
+    zIndex: 100001
   },
   modal: {
     position: "relative",
@@ -163,7 +163,7 @@ const styles = {
     maxWidth: "480px",
     textAlign: "center",
     border: "1px solid rgba(255, 255, 255, 0.1)",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
   },
   deleteConfirmationWrapper: {
     position: "fixed",
@@ -171,18 +171,18 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 100003,
+    zIndex: 100003
   },
   icon: {
     color: "#5865F2",
     fontSize: "48px",
-    marginBottom: "24px",
+    marginBottom: "24px"
   },
   title: {
     color: "#FFFFFF",
     margin: "0 0 24px 0",
     fontSize: "24px",
-    fontWeight: "600",
+    fontWeight: "600"
   },
   versionsContainer: {
     display: "flex",
@@ -191,7 +191,7 @@ const styles = {
     maxHeight: "300px",
     overflowY: "auto",
     marginBottom: "24px",
-    padding: "4px",
+    padding: "4px"
   },
   versionItem: {
     display: "flex",
@@ -200,13 +200,13 @@ const styles = {
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: "8px",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition: "all 0.2s ease"
   },
   versionName: {
     flex: 1,
     color: "#FFFFFF",
     fontSize: "14px",
-    textAlign: "left",
+    textAlign: "left"
   },
   versionBadge: {
     backgroundColor: "#5865F2",
@@ -214,7 +214,7 @@ const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    marginLeft: "8px",
+    marginLeft: "8px"
   },
   latestBadge: {
     backgroundColor: "#28A745",
@@ -222,13 +222,13 @@ const styles = {
     borderRadius: "4px",
     padding: "2px 6px",
     fontSize: "10px",
-    marginLeft: "8px",
+    marginLeft: "8px"
   },
   deleteIcon: {
     color: "#DA373C",
     cursor: "pointer",
     fontSize: "14px",
-    marginLeft: "12px",
+    marginLeft: "12px"
   },
   cancelButton: {
     backgroundColor: "#4F545C",
@@ -241,8 +241,8 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.2s ease",
     marginTop: "8px",
-    width: "100%",
-  },
-};
+    width: "100%"
+  }
+}
 
-export default VersionsOverlay;
+export default VersionsOverlay

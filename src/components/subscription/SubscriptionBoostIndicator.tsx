@@ -1,16 +1,16 @@
-import React from "react";
-import { Tooltip } from "@mui/material";
-import TokenIcon from "@/components/ui/icons/TokenIcon";
-import "./SubscriptionBoostIndicator.css";
+import React from "react"
+import { Tooltip } from "@mui/material"
+import TokenIcon from "@/components/ui/icons/TokenIcon"
+import "./SubscriptionBoostIndicator.css"
 
 interface SubscriptionBoostIndicatorProps {
-  isBoosted: boolean;
+  isBoosted: boolean
 }
 
 const SubscriptionBoostIndicator: React.FC<SubscriptionBoostIndicatorProps> = ({
-  isBoosted,
+  isBoosted
 }) => {
-  if (!isBoosted) return null;
+  if (!isBoosted) return null
 
   return (
     <Tooltip
@@ -23,7 +23,7 @@ const SubscriptionBoostIndicator: React.FC<SubscriptionBoostIndicatorProps> = ({
         <span className="boost-text">Boosted</span>
       </div>
     </Tooltip>
-  );
-};
+  )
+}
 
-export default SubscriptionBoostIndicator;
+export default SubscriptionBoostIndicator

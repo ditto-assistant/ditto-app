@@ -1,43 +1,43 @@
-import React from "react";
-import { Button } from "@mui/material";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import { useBalance } from "@/hooks/useBalance";
-import { useAuth, useAuthToken } from "@/hooks/useAuth";
-import { routes } from "@/firebaseConfig";
-import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
-import { useUser } from "@/hooks/useUser";
-import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
-import SubscriptionCard from "@/components/subscription/SubscriptionCard";
-import { FaCreditCard } from "react-icons/fa";
-import { useModal } from "@/hooks/useModal";
-import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator";
-import "./SubscriptionTabContent.css";
+import React from "react"
+import { Button } from "@mui/material"
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { useBalance } from "@/hooks/useBalance"
+import { useAuth, useAuthToken } from "@/hooks/useAuth"
+import { routes } from "@/firebaseConfig"
+import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
+import { useUser } from "@/hooks/useUser"
+import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
+import SubscriptionCard from "@/components/subscription/SubscriptionCard"
+import { FaCreditCard } from "react-icons/fa"
+import { useModal } from "@/hooks/useModal"
+import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
+import "./SubscriptionTabContent.css"
 
 const SubscriptionTabContent: React.FC = () => {
-  const { data: user, isLoading: isUserLoading } = useUser();
-  const [isYearly, setIsYearly] = React.useState(false);
-  const balance = useBalance();
-  const auth = useAuth();
-  const token = useAuthToken();
+  const { data: user, isLoading: isUserLoading } = useUser()
+  const [isYearly, setIsYearly] = React.useState(false)
+  const balance = useBalance()
+  const auth = useAuth()
+  const token = useAuthToken()
   const { data: subscriptionData, isLoading: isLoadingSubscriptions } =
-    useSubscriptionTiers();
-  const [selectedPlan, setSelectedPlan] = React.useState<string>("");
-  const { createOpenHandler, createCloseHandler } = useModal();
-  const openTokenModal = createOpenHandler("tokenCheckout");
-  const closeSettingsModal = createCloseHandler("settings");
+    useSubscriptionTiers()
+  const [selectedPlan, setSelectedPlan] = React.useState<string>("")
+  const { createOpenHandler, createCloseHandler } = useModal()
+  const openTokenModal = createOpenHandler("tokenCheckout")
+  const closeSettingsModal = createCloseHandler("settings")
 
   React.useEffect(() => {
     if (subscriptionData?.tiers) {
       // Select the first available plan of the current interval
-      const defaultTier = subscriptionData.tiers[0];
+      const defaultTier = subscriptionData.tiers[0]
       const defaultPrice = defaultTier.prices.find(
-        (p) => p.interval === (isYearly ? "year" : "month"),
-      );
+        (p) => p.interval === (isYearly ? "year" : "month")
+      )
       if (defaultPrice) {
-        setSelectedPlan(defaultPrice.lookupKey);
+        setSelectedPlan(defaultPrice.lookupKey)
       }
     }
-  }, [subscriptionData, isYearly]);
+  }, [subscriptionData, isYearly])
 
   if (
     auth.isLoading ||
@@ -50,38 +50,38 @@ const SubscriptionTabContent: React.FC = () => {
       <div className="subscription-loading-container">
         <LoadingSpinner size={45} />
       </div>
-    );
+    )
   }
 
   if (!auth.user) {
-    return <div>Please log in to manage your subscription.</div>;
+    return <div>Please log in to manage your subscription.</div>
   }
 
-  const { uid, email } = auth.user;
+  const { uid, email } = auth.user
 
   const handleIntervalChange = (yearly: boolean) => {
-    setIsYearly(yearly);
+    setIsYearly(yearly)
     if (selectedPlan && subscriptionData) {
       // Find the corresponding plan for the new interval
       const currentTier = subscriptionData.tiers.find((tier) =>
-        tier.prices.some((price) => price.lookupKey === selectedPlan),
-      );
+        tier.prices.some((price) => price.lookupKey === selectedPlan)
+      )
       if (currentTier) {
         const newPrice = currentTier.prices.find(
-          (p) => p.interval === (yearly ? "year" : "month"),
-        );
+          (p) => p.interval === (yearly ? "year" : "month")
+        )
         if (newPrice) {
-          setSelectedPlan(newPrice.lookupKey);
+          setSelectedPlan(newPrice.lookupKey)
         }
       }
     }
-  };
+  }
 
   // If user is already subscribed, show manage subscription content
   if (user && user.subscriptionStatus !== "free") {
     const planName = subscriptionData?.tiers.find(
-      (tier) => tier.planTier === user.planTier,
-    )?.name;
+      (tier) => tier.planTier === user.planTier
+    )?.name
     return (
       <div className="subscription-manage-container">
         <div className="subscription-content-wrapper">
@@ -163,8 +163,8 @@ const SubscriptionTabContent: React.FC = () => {
               variant="outlined"
               color="primary"
               onClick={() => {
-                closeSettingsModal();
-                openTokenModal();
+                closeSettingsModal()
+                openTokenModal()
               }}
               className="buy-tokens-button"
               startIcon={<FaCreditCard />}
@@ -174,7 +174,7 @@ const SubscriptionTabContent: React.FC = () => {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Otherwise, show subscription options for free users
@@ -204,8 +204,8 @@ const SubscriptionTabContent: React.FC = () => {
             variant="contained"
             color="primary"
             onClick={() => {
-              closeSettingsModal();
-              openTokenModal();
+              closeSettingsModal()
+              openTokenModal()
             }}
             className="buy-tokens-button"
             startIcon={<FaCreditCard />}
@@ -234,7 +234,7 @@ const SubscriptionTabContent: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SubscriptionTabContent;
+export default SubscriptionTabContent

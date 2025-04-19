@@ -1,5 +1,5 @@
-import React from "react";
-import { VersionSection, Section } from "./VersionTemplate";
+import React from "react"
+import { VersionSection, Section } from "./VersionTemplate"
 
 const sections: Section[] = [
   {
@@ -9,11 +9,11 @@ const sections: Section[] = [
         type: "fixed",
         title: "Scripts",
         description:
-          "Ditto now automatically opens and plays scripts in the canvas when they are created. This improves the user experience by eliminating the need to manually open scripts after they are generated.",
-      },
-    ],
-  },
-];
+          "Ditto now automatically opens and plays scripts in the canvas when they are created. This improves the user experience by eliminating the need to manually open scripts after they are generated."
+      }
+    ]
+  }
+]
 
 const V0_11_65 = () => (
   <div>
@@ -21,6 +21,6 @@ const V0_11_65 = () => (
       <VersionSection key={index} {...section} />
     ))}
   </div>
-);
+)
 
-export default V0_11_65;
+export default V0_11_65

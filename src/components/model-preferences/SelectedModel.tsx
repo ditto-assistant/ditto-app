@@ -1,41 +1,35 @@
-import { useCallback } from "react";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { usePromptModels, useImageModels } from "@/hooks/useServices";
-import { Badge } from "../ui/badge";
-import { ImageModel } from "@/api/services";
+import React, { useMemo } from "react"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { Badge } from "../ui/badge"
+import { useModelDetails } from "@/hooks/useModelDetails"
+import { Model } from "@/types/llm"
+import { ImageModel } from "@/api/modelServices"
 
 interface SelectedModelProps {
-  type: "mainModel" | "programmerModel" | "imageGeneration";
+  modelType: "mainModel" | "programmerModel" | "imageGeneration"
 }
 
-export const SelectedModel = ({ type }: SelectedModelProps) => {
-  const { preferences } = useModelPreferences();
-  const { data: promptModels } = usePromptModels();
-  const { data: imageModels } = useImageModels();
+export function SelectedModel({ modelType }: SelectedModelProps) {
+  const { preferences } = useModelPreferences()
 
-  const getSelectedModelDetails = useCallback(
-    (modelType: "mainModel" | "programmerModel" | "imageGeneration") => {
-      if (!preferences || !promptModels || !imageModels) return null;
+  // Get the selected model ID
+  const selectedModelId = useMemo(() => {
+    if (!preferences) return undefined
+    return modelType === "imageGeneration"
+      ? (preferences.imageGeneration.model as Model)
+      : (preferences[modelType] as Model)
+  }, [preferences, modelType])
 
-      if (modelType === "imageGeneration") {
-        const selectedModel = imageModels.find(
-          (model) => model.name === preferences.imageGeneration.model,
-        );
-        return selectedModel;
-      }
+  // Use the combined hook with isImageModel flag
+  const isImageModel = modelType === "imageGeneration"
+  const { data: selectedModel, isLoading } = useModelDetails(
+    selectedModelId,
+    isImageModel
+  )
 
-      // Find the model from the API
-      const selectedModelId = preferences[modelType];
-      const selectedModel = promptModels.find(
-        (model) => model.name === selectedModelId,
-      );
-
-      return selectedModel;
-    },
-    [preferences, promptModels, imageModels],
-  );
-
-  const selectedModel = getSelectedModelDetails(type);
+  if (isLoading) {
+    return <div className="text-foreground/60 text-sm">Loading...</div>
+  }
 
   if (!selectedModel) {
     return (
@@ -43,50 +37,47 @@ export const SelectedModel = ({ type }: SelectedModelProps) => {
         <h3 className="text-sm text-muted-foreground font-medium mb-1">
           Selected Model
         </h3>
-        <div className="text-lg font-semibold text-muted-foreground">No model selected</div>
+        <div className="text-lg font-semibold text-muted-foreground">
+          No model selected
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="border-b p-4 bg-muted/5">
-      <h3 className="text-sm text-muted-foreground font-medium mb-1">
-        Selected Model
-      </h3>
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-lg font-semibold">
-            {selectedModel.displayName}
-          </div>
-          {type === "imageGeneration" && preferences?.imageGeneration?.size && (
-            <div className="text-sm text-muted-foreground">
-              {preferences.imageGeneration.size.description}
-            </div>
-          )}
+    <div className="flex flex-col gap-1">
+      <div className="font-medium">{selectedModel.displayName}</div>
+
+      {/* Show image size for image models */}
+      {isImageModel && preferences?.imageGeneration?.size && (
+        <div className="text-xs text-foreground/60">
+          {preferences.imageGeneration.size.description}
         </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          {type === "imageGeneration" && (
-            <Badge variant="outline" className="text-xs">
-              {(selectedModel as ImageModel).imageSize}
-            </Badge>
-          )}
+      <div className="flex items-center gap-1 mt-1">
+        {/* Show specific badges based on model type */}
+        {isImageModel && (
+          <Badge variant="outline" className="text-xs">
+            {(selectedModel as ImageModel).imageSize}
+          </Badge>
+        )}
 
-          {(type === "mainModel" || type === "programmerModel") && (
-            <Badge variant="outline" className="text-xs">
-              {selectedModel.modelFlavor}
-            </Badge>
-          )}
+        {!isImageModel && (
+          <Badge variant="outline" className="text-xs">
+            {selectedModel.modelFlavor}
+          </Badge>
+        )}
 
-          {selectedModel.provider && (
-            <Badge variant="secondary" className="text-xs">
-              {selectedModel.provider}
-            </Badge>
-          )}
-        </div>
+        {/* Always show provider badge */}
+        {selectedModel.provider && (
+          <Badge variant="secondary" className="text-xs">
+            {selectedModel.provider}
+          </Badge>
+        )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SelectedModel;
+export default SelectedModel

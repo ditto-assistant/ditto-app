@@ -1,53 +1,53 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { DEFAULT_MODAL_STATE, ModalId, useModal } from "@/hooks/useModal";
-import { ModalHeader } from "./ModalHeader";
-import { motion } from "framer-motion";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
-import { ModalButton } from "../buttons/ModalButton";
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
+import { DEFAULT_MODAL_STATE, ModalId, useModal } from "@/hooks/useModal"
+import { ModalHeader } from "./ModalHeader"
+import { motion } from "framer-motion"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
+import { ModalButton } from "../buttons/ModalButton"
 
-const id: ModalId = "confirmationDialog";
+const id: ModalId = "confirmationDialog"
 
 export default function ConfirmationModal() {
-  const { getModalState, createCloseHandler } = useModal();
-  const { config, hideConfirmationDialog } = useConfirmationDialog();
-  const closeModal = createCloseHandler(id);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size] = useState({ width: 450, height: 200 });
-  const modalState = getModalState(id);
-  const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex;
+  const { getModalState, createCloseHandler } = useModal()
+  const { config, hideConfirmationDialog } = useConfirmationDialog()
+  const closeModal = createCloseHandler(id)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [size] = useState({ width: 450, height: 200 })
+  const modalState = getModalState(id)
+  const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex
 
   // Center the modal on mount and window resize
   useEffect(() => {
     const centerModal = () => {
       setPosition({
         x: Math.max(0, (window.innerWidth - size.width) / 2),
-        y: Math.max(0, (window.innerHeight - size.height) / 3), // Position 1/3 from the top
-      });
-    };
+        y: Math.max(0, (window.innerHeight - size.height) / 3) // Position 1/3 from the top
+      })
+    }
 
-    centerModal();
-    window.addEventListener("resize", centerModal);
-    return () => window.removeEventListener("resize", centerModal);
-  }, [size.width, size.height]);
+    centerModal()
+    window.addEventListener("resize", centerModal)
+    return () => window.removeEventListener("resize", centerModal)
+  }, [size.width, size.height])
 
   const handleCancel = () => {
     if (config?.onCancel) {
-      config.onCancel();
+      config.onCancel()
     }
-    closeModal();
-    hideConfirmationDialog();
-  };
+    closeModal()
+    hideConfirmationDialog()
+  }
 
   const handleConfirm = () => {
     if (config?.onConfirm) {
-      config.onConfirm();
+      config.onConfirm()
     }
-    closeModal();
-    hideConfirmationDialog();
-  };
+    closeModal()
+    hideConfirmationDialog()
+  }
 
-  if (!modalState || !config) return null;
+  if (!modalState || !config) return null
 
   return createPortal(
     <motion.div
@@ -62,7 +62,7 @@ export default function ConfirmationModal() {
           zIndex,
           left: `${position.x}px`,
           top: `${position.y}px`,
-          width: `${size.width}px`,
+          width: `${size.width}px`
         }}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -93,6 +93,6 @@ export default function ConfirmationModal() {
         </div>
       </motion.div>
     </motion.div>,
-    document.getElementById("modal-root")!,
-  );
+    document.getElementById("modal-root")!
+  )
 }

@@ -9,36 +9,36 @@
 
 // Define the return type with the cancel method
 export type DebouncedFunction<T extends (...args: any[]) => any> = {
-  (...args: Parameters<T>): void;
-  cancel: () => void;
-};
+  (...args: Parameters<T>): void
+  cancel: () => void
+}
 
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number,
+  wait: number
 ): DebouncedFunction<T> {
-  let timeout: number | null = null;
+  let timeout: number | null = null
 
   const debounced = ((...args: Parameters<T>): void => {
     const later = () => {
-      timeout = null;
-      func(...args);
-    };
-
-    if (timeout !== null) {
-      clearTimeout(timeout);
+      timeout = null
+      func(...args)
     }
 
-    timeout = window.setTimeout(later, wait) as unknown as number;
-  }) as DebouncedFunction<T>;
+    if (timeout !== null) {
+      clearTimeout(timeout)
+    }
+
+    timeout = window.setTimeout(later, wait) as unknown as number
+  }) as DebouncedFunction<T>
 
   // Add a cancel method to clear the timeout
   debounced.cancel = () => {
     if (timeout !== null) {
-      clearTimeout(timeout);
-      timeout = null;
+      clearTimeout(timeout)
+      timeout = null
     }
-  };
+  }
 
-  return debounced;
+  return debounced
 }

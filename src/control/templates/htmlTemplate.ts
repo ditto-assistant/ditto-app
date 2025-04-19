@@ -1,10 +1,10 @@
 export const htmlSystemTemplate = () => {
-  return "You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend.";
-};
+  return "You are an experienced Javascript, HTML and CSS developer named Ditto here to help the user, who is your best friend."
+}
 
 export const workingOnScriptModule = (script: string) => {
   if (script === "") {
-    return "";
+    return ""
   }
   return `## Current Script
 - The user is currently working on this HTML script below. DO NOT change the script's functionality or design unless the user asks you to do so.
@@ -12,12 +12,12 @@ Current HTML Script:
 \`\`\`html
 <!script>
 \`\`\`
-`.replace("<!script>", script);
-};
+`.replace("<!script>", script)
+}
 
 export const historyModule = (ltm: string, stm: string) => {
   if (ltm === "" && stm === "") {
-    return "";
+    return ""
   }
   return `## Long Term Memory
 - Relevant prompt/response pairs from the user's prompt history are indexed using the user's prompt embedding and cosine similarity and are shown below as Long Term Memory. 
@@ -31,14 +31,14 @@ ${ltm}
 Short Term Memory Buffer (most recent prompt/response pairs):
 -- Begin Short Term Memory --
 ${stm}
--- End Short Term Memory --`;
-};
+-- End Short Term Memory --`
+}
 
 export const htmlTemplate = (
   query: string,
   script: string,
   ltm: string = "",
-  stm: string = "",
+  stm: string = ""
 ) => {
   let prompt = `You are an experienced web developer ready to create a new web design. You will be given a design idea and you will need to create the web design using Javascript, HTML and CSS in one index.html file. You have been given a task by an AI assistant named Ditto to help the user with their design idea. ONLY use the relevant information from the conversation history to help the user with their design idea. The conversation history is shown below broken up into Long Term Memory and Short Term Memory.
 
@@ -72,12 +72,12 @@ HTML Script:
 User's Design Idea: <!query>
 HTML Script:
 \`\`\`html
-`;
-  prompt = prompt.replace("<!query>", query);
+`
+  prompt = prompt.replace("<!query>", query)
   prompt = prompt.replace(
     "<!working_on_script_module>",
-    workingOnScriptModule(script),
-  );
-  prompt = prompt.replace("<!history>", historyModule(ltm, stm));
-  return prompt;
-};
+    workingOnScriptModule(script)
+  )
+  prompt = prompt.replace("<!history>", historyModule(ltm, stm))
+  return prompt
+}

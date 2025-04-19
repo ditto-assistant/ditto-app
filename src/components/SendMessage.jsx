@@ -1,5 +1,5 @@
-import "./SendMessage.css";
-import { useState, useEffect, useRef, useCallback } from "react";
+import "./SendMessage.css"
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
   FaPlus,
   FaImage,
@@ -12,28 +12,28 @@ import {
   FaCode,
   FaCreditCard,
   FaCrown,
-  FaBolt,
-} from "react-icons/fa";
-import { sendPrompt } from "../control/agent";
-import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase";
-import { motion, AnimatePresence } from "framer-motion";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { useImageViewerHandler } from "@/hooks/useImageViewerHandler";
-import { useBalance } from "@/hooks/useBalance";
-import { usePlatform } from "@/hooks/usePlatform";
-import { useConversationHistory } from "@/hooks/useConversationHistory";
-import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal";
-import { usePromptStorage } from "@/hooks/usePromptStorage";
-import { useScripts } from "@/hooks/useScripts.tsx";
-import { useModal } from "@/hooks/useModal";
-import SlidingMenu from "@/components/ui/SlidingMenu";
-import { IoSettingsOutline } from "react-icons/io5";
-import { MdFeedback } from "react-icons/md";
-import { FaLaptopCode } from "react-icons/fa";
-import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants";
-import { toast } from "react-hot-toast";
-import { useUser } from "@/hooks/useUser";
-import { ErrorPaymentRequired } from "@/types/errors";
+  FaBolt
+} from "react-icons/fa"
+import { sendPrompt } from "../control/agent"
+import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
+import { motion, AnimatePresence } from "framer-motion"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
+import { useBalance } from "@/hooks/useBalance"
+import { usePlatform } from "@/hooks/usePlatform"
+import { useConversationHistory } from "@/hooks/useConversationHistory"
+import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal"
+import { usePromptStorage } from "@/hooks/usePromptStorage"
+import { useScripts } from "@/hooks/useScripts.tsx"
+import { useModal } from "@/hooks/useModal"
+import SlidingMenu from "@/components/ui/SlidingMenu"
+import { IoSettingsOutline } from "react-icons/io5"
+import { MdFeedback } from "react-icons/md"
+import { FaLaptopCode } from "react-icons/fa"
+import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
+import { toast } from "react-hot-toast"
+import { useUser } from "@/hooks/useUser"
+import { ErrorPaymentRequired } from "@/types/errors"
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -52,125 +52,125 @@ export default function SendMessage({
   showMediaOptions,
   onOpenMediaOptions,
   onCloseMediaOptions,
-  onStop,
+  onStop
 }) {
-  const [image, setImage] = useState(capturedImage || "");
-  const textAreaRef = useRef(null);
-  const preferences = useModelPreferences();
-  const { openImageViewer } = useImageViewerHandler();
-  const balance = useBalance();
-  const { isMobile } = usePlatform();
+  const [image, setImage] = useState(capturedImage || "")
+  const textAreaRef = useRef(null)
+  const preferences = useModelPreferences()
+  const { openImageViewer } = useImageViewerHandler()
+  const balance = useBalance()
+  const { isMobile } = usePlatform()
   const {
     refetch,
     addOptimisticMessage,
     updateOptimisticResponse,
-    finalizeOptimisticMessage,
-  } = useConversationHistory();
+    finalizeOptimisticMessage
+  } = useConversationHistory()
   const {
     message,
     setMessage,
     openComposeModal,
     isWaitingForResponse,
     setIsWaitingForResponse,
-    registerSubmitCallback,
-  } = useCompose();
-  const { clearPrompt } = usePromptStorage();
-  const canvasRef = useRef();
+    registerSubmitCallback
+  } = useCompose()
+  const { clearPrompt } = usePromptStorage()
+  const canvasRef = useRef()
 
   // Ditto logo button state and refs
-  const logoButtonRef = useRef(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const modal = useModal();
-  const openSettingsModal = modal.createOpenHandler("settings");
-  const openSubscriptionsTab = modal.createOpenHandler("settings", "general");
-  const openFeedbackModal = modal.createOpenHandler("feedback");
-  const openScriptsOverlay = modal.createOpenHandler("scripts");
-  const openTokenModal = modal.createOpenHandler("tokenCheckout");
+  const logoButtonRef = useRef(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const modal = useModal()
+  const openSettingsModal = modal.createOpenHandler("settings")
+  const openSubscriptionsTab = modal.createOpenHandler("settings", "general")
+  const openFeedbackModal = modal.createOpenHandler("feedback")
+  const openScriptsOverlay = modal.createOpenHandler("scripts")
+  const openTokenModal = modal.createOpenHandler("tokenCheckout")
 
   // Script indicator state and refs
-  const scriptIndicatorRef = useRef(null);
-  const [showScriptActions, setShowScriptActions] = useState(false);
-  const openDittoCanvas = modal.createOpenHandler("dittoCanvas");
+  const scriptIndicatorRef = useRef(null)
+  const [showScriptActions, setShowScriptActions] = useState(false)
+  const openDittoCanvas = modal.createOpenHandler("dittoCanvas")
   const { selectedScript, setSelectedScript, handleDeselectScript } =
-    useScripts();
-  const user = useUser();
+    useScripts()
+  const user = useUser()
 
-  const [showSalesPitch, setShowSalesPitch] = useState(false);
+  const [showSalesPitch, setShowSalesPitch] = useState(false)
 
   // Track if we're in an invalid configuration (zero balance with paid model)
-  const [isInvalidConfig, setIsInvalidConfig] = useState(false);
+  const [isInvalidConfig, setIsInvalidConfig] = useState(false)
 
   useEffect(() => {
     if (balance.data && preferences.preferences) {
-      const balanceRaw = balance.data.balanceRaw || 0;
-      const hasZeroBalance = balanceRaw <= 0;
-      const currentModelID = preferences.preferences.mainModel;
+      const balanceRaw = balance.data.balanceRaw || 0
+      const hasZeroBalance = balanceRaw <= 0
+      const currentModelID = preferences.preferences.mainModel
       const selectedModel = DEFAULT_MODELS.find(
-        (model) => model.id === currentModelID,
-      );
-      const selectedModelHasTier = selectedModel?.minimumTier > 0;
+        (model) => model.id === currentModelID
+      )
+      const selectedModelHasTier = selectedModel?.minimumTier > 0
 
-      const isInvalid = hasZeroBalance && selectedModelHasTier;
-      setShowSalesPitch(isInvalid);
-      setIsInvalidConfig(isInvalid);
+      const isInvalid = hasZeroBalance && selectedModelHasTier
+      setShowSalesPitch(isInvalid)
+      setIsInvalidConfig(isInvalid)
     }
-  }, [balance.data, preferences.preferences]);
+  }, [balance.data, preferences.preferences])
 
   const handleSubmit = useCallback(
     async (event) => {
-      if (event) event.preventDefault();
-      if (isWaitingForResponse) return;
-      if (message === "" && !image) return;
+      if (event) event.preventDefault()
+      if (isWaitingForResponse) return
+      if (message === "" && !image) return
 
       if (isMenuOpen) {
-        setIsMenuOpen(false);
-        setMenuPinned(false);
+        setIsMenuOpen(false)
+        setMenuPinned(false)
       }
 
-      setIsWaitingForResponse(true);
+      setIsWaitingForResponse(true)
       try {
-        const userID = auth.currentUser?.uid;
+        const userID = auth.currentUser?.uid
         if (!userID) {
-          toast.error("Please log in to send a message");
-          setIsWaitingForResponse(false);
-          return;
+          toast.error("Please log in to send a message")
+          setIsWaitingForResponse(false)
+          return
         }
         if (!preferences.preferences) {
-          toast.error("Please set your model preferences");
-          setIsWaitingForResponse(false);
-          return;
+          toast.error("Please set your model preferences")
+          setIsWaitingForResponse(false)
+          return
         }
-        const firstName = localStorage.getItem("firstName") || "";
-        let messageToSend = message;
-        let imageURI = "";
+        const firstName = localStorage.getItem("firstName") || ""
+        let messageToSend = message
+        let imageURI = ""
         if (image) {
           try {
-            imageURI = await uploadImageToFirebaseStorageBucket(image, userID);
-            messageToSend = `![image](${imageURI})\n\n${messageToSend}`;
+            imageURI = await uploadImageToFirebaseStorageBucket(image, userID)
+            messageToSend = `![image](${imageURI})\n\n${messageToSend}`
           } catch (uploadError) {
-            console.error("Error uploading image:", uploadError);
-            toast.error("Failed to upload image");
+            console.error("Error uploading image:", uploadError)
+            toast.error("Failed to upload image")
           }
         }
-        clearPrompt();
-        setMessage("");
-        setImage("");
-        resizeTextArea();
-        console.log("🚀 [SendMessage] Creating optimistic message");
-        const timestamp = Date.now().toString();
-        const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`;
+        clearPrompt()
+        setMessage("")
+        setImage("")
+        resizeTextArea()
+        console.log("🚀 [SendMessage] Creating optimistic message")
+        const timestamp = Date.now().toString()
+        const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`
         const optimisticMessageId = addOptimisticMessage(
           messageToSend,
           imageURI,
-          optimisticId,
-        );
+          optimisticId
+        )
         const streamingCallback = (chunk) => {
-          updateOptimisticResponse(optimisticMessageId, chunk);
-        };
+          updateOptimisticResponse(optimisticMessageId, chunk)
+        }
         const openScriptCallback = (script) => {
-          setSelectedScript(script);
-          openDittoCanvas();
-        };
+          setSelectedScript(script)
+          openDittoCanvas()
+        }
         try {
           await sendPrompt(
             userID,
@@ -184,27 +184,27 @@ export default function SendMessage({
             finalizeOptimisticMessage,
             openScriptCallback,
             selectedScript,
-            user?.data?.planTier,
-          );
-          console.log("✅ [SendMessage] Prompt completed successfully");
+            user?.data?.planTier
+          )
+          console.log("✅ [SendMessage] Prompt completed successfully")
         } catch (error) {
           if (error === ErrorPaymentRequired) {
-            toast.error("Please upgrade to a paid plan to continue");
-            setShowSalesPitch(true);
-            setIsInvalidConfig(true);
+            toast.error("Please upgrade to a paid plan to continue")
+            setShowSalesPitch(true)
+            setIsInvalidConfig(true)
           } else {
-            console.error("❌ [SendMessage] Error in sendPrompt:", error);
+            console.error("❌ [SendMessage] Error in sendPrompt:", error)
             finalizeOptimisticMessage(
               optimisticMessageId,
-              "Sorry, an error occurred while processing your request. Please try again.",
-            );
+              "Sorry, an error occurred while processing your request. Please try again."
+            )
           }
         }
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error("Error sending message:", error)
       } finally {
-        setIsWaitingForResponse(false);
-        onStop();
+        setIsWaitingForResponse(false)
+        onStop()
       }
     },
     [
@@ -224,157 +224,157 @@ export default function SendMessage({
       finalizeOptimisticMessage,
       selectedScript,
       user?.data?.planTier,
-      onStop,
-    ],
-  );
+      onStop
+    ]
+  )
 
   useEffect(() => {
-    registerSubmitCallback(() => handleSubmit());
-  }, [registerSubmitCallback, handleSubmit]);
+    registerSubmitCallback(() => handleSubmit())
+  }, [registerSubmitCallback, handleSubmit])
 
   useEffect(() => {
     if (capturedImage) {
-      setImage(capturedImage);
+      setImage(capturedImage)
     }
-  }, [capturedImage]);
+  }, [capturedImage])
 
   useEffect(() => {
-    resizeTextArea();
-  }, []);
+    resizeTextArea()
+  }, [])
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0]
     if (file) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = (e) => {
-        setImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
+        setImage(e.target.result)
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const handleClearImage = () => {
-    setImage("");
-    onClearCapturedImage();
-  };
+    setImage("")
+    onClearCapturedImage()
+  }
 
   const handleKeyDown = (e) => {
     if (isMobile) {
       if (e.key === "Enter") {
-        e.preventDefault();
-        setMessage((prevMessage) => prevMessage + "\n");
-        resizeTextArea();
+        e.preventDefault()
+        setMessage((prevMessage) => prevMessage + "\n")
+        resizeTextArea()
       }
     } else {
       if (e.key === "Enter") {
         if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          setMessage((prevMessage) => prevMessage + "\n");
-          resizeTextArea();
+          e.preventDefault()
+          setMessage((prevMessage) => prevMessage + "\n")
+          resizeTextArea()
         } else if (e.shiftKey) {
           // Allow shift+enter for newlines
-          resizeTextArea();
+          resizeTextArea()
         } else {
-          e.preventDefault();
-          handleSubmit();
+          e.preventDefault()
+          handleSubmit()
         }
       }
     }
-  };
+  }
 
   const resizeTextArea = () => {
-    const textArea = textAreaRef.current;
+    const textArea = textAreaRef.current
     if (textArea) {
-      textArea.style.height = "24px";
-      const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200));
-      textArea.style.height = `${newHeight}px`;
+      textArea.style.height = "24px"
+      const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200))
+      textArea.style.height = `${newHeight}px`
       if (textArea.scrollHeight >= 200) {
-        textArea.style.overflowY = "auto";
+        textArea.style.overflowY = "auto"
       } else {
-        textArea.style.overflowY = "hidden";
+        textArea.style.overflowY = "hidden"
       }
-      const imagePreview = document.querySelector(".image-preview");
+      const imagePreview = document.querySelector(".image-preview")
       if (imagePreview) {
-        imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`;
+        imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`
       }
     }
-  };
+  }
 
   useEffect(() => {
-    const handleResize = () => resizeTextArea();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    const handleResize = () => resizeTextArea()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
-  useEffect(() => resizeTextArea(), [message, image]);
+  useEffect(() => resizeTextArea(), [message, image])
 
   const handlePaste = (event) => {
-    const items = event.clipboardData.items;
+    const items = event.clipboardData.items
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
-        const blob = items[i].getAsFile();
-        const reader = new FileReader();
+        const blob = items[i].getAsFile()
+        const reader = new FileReader()
         reader.onload = () => {
-          setImage(reader.result);
-        };
-        reader.readAsDataURL(blob);
-        event.preventDefault();
-        break;
+          setImage(reader.result)
+        }
+        reader.readAsDataURL(blob)
+        event.preventDefault()
+        break
       }
     }
-  };
+  }
 
   const handlePlusClick = (e) => {
-    e.stopPropagation();
-    onOpenMediaOptions();
-  };
+    e.stopPropagation()
+    onOpenMediaOptions()
+  }
 
   const handleGalleryClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    document.getElementById("image-upload").click();
-    onCloseMediaOptions();
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    document.getElementById("image-upload").click()
+    onCloseMediaOptions()
+  }
 
   const handleCameraClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onCameraOpen();
-    onCloseMediaOptions();
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    onCameraOpen()
+    onCloseMediaOptions()
+  }
 
   // Ditto logo button handlers
   const handleHoverStart = () => {
     // No hover behavior - we only use click/tap to toggle the menu
-  };
+  }
 
   const handleHoverEnd = () => {
     // No hover behavior - we only use click/tap to toggle the menu
-  };
+  }
 
   const handleLogoClick = () => {
     // Simple toggle behavior for all platforms
-    setIsMenuOpen(!isMenuOpen);
-  };
+    setIsMenuOpen(!isMenuOpen)
+  }
 
   // Script indicator handlers
   const handleScriptNameClick = () => {
-    setShowScriptActions(!showScriptActions);
-  };
+    setShowScriptActions(!showScriptActions)
+  }
 
   const handlePlayScript = () => {
     if (selectedScript) {
-      openDittoCanvas();
+      openDittoCanvas()
     }
-  };
+  }
 
   // Handle accessibility keyboard events for buttons
   const handleButtonKeyDown = (event, callback) => {
     if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      callback();
+      event.preventDefault()
+      callback()
     }
-  };
+  }
 
   return (
     <>
@@ -386,7 +386,7 @@ export default function SendMessage({
               <button
                 className="sales-pitch-close"
                 onClick={() => {
-                  setShowSalesPitch(false);
+                  setShowSalesPitch(false)
                 }}
                 aria-label="Close sales pitch"
               >
@@ -403,10 +403,10 @@ export default function SendMessage({
               <button
                 className="sales-pitch-option free-model-option"
                 onClick={() => {
-                  preferences.updatePreferences({ mainModel: FREE_MODEL_ID });
-                  setShowSalesPitch(false);
-                  setIsInvalidConfig(false);
-                  toast.success("Switched to a free model");
+                  preferences.updatePreferences({ mainModel: FREE_MODEL_ID })
+                  setShowSalesPitch(false)
+                  setIsInvalidConfig(false)
+                  toast.success("Switched to a free model")
                 }}
               >
                 <FaBolt /> Switch to Free Model
@@ -425,9 +425,9 @@ export default function SendMessage({
                 className="sales-pitch-option token-option"
                 onClick={() => {
                   if (user?.data?.subscription) {
-                    openSubscriptionsTab();
+                    openSubscriptionsTab()
                   } else {
-                    openTokenModal();
+                    openTokenModal()
                   }
                 }}
               >
@@ -448,13 +448,13 @@ export default function SendMessage({
                 type="text"
                 value={message}
                 onChange={(e) => {
-                  setMessage(e.target.value);
+                  setMessage(e.target.value)
                 }}
                 placeholder="Message Ditto"
                 rows={3}
                 style={{
                   overflowY: "hidden",
-                  marginRight: "-5px",
+                  marginRight: "-5px"
                 }}
               />
             </div>
@@ -488,7 +488,7 @@ export default function SendMessage({
                     whileHover={{
                       scale: 1.1,
                       backgroundColor: "rgba(255, 255, 255, 0.2)",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)"
                     }}
                     onMouseEnter={handleHoverStart}
                     onMouseLeave={handleHoverEnd}
@@ -510,7 +510,7 @@ export default function SendMessage({
                     <SlidingMenu
                       isOpen={isMenuOpen}
                       onClose={() => {
-                        setIsMenuOpen(false);
+                        setIsMenuOpen(false)
                       }}
                       position="center"
                       triggerRef={logoButtonRef}
@@ -520,18 +520,18 @@ export default function SendMessage({
                         {
                           icon: <FaLaptopCode className="icon" />,
                           text: "Scripts",
-                          onClick: openScriptsOverlay,
+                          onClick: openScriptsOverlay
                         },
                         {
                           icon: <MdFeedback className="icon" />,
                           text: "Feedback",
-                          onClick: openFeedbackModal,
+                          onClick: openFeedbackModal
                         },
                         {
                           icon: <IoSettingsOutline className="icon" />,
                           text: "Settings",
-                          onClick: openSettingsModal,
-                        },
+                          onClick: openSettingsModal
+                        }
                       ]}
                     />
                   </div>
@@ -594,7 +594,7 @@ export default function SendMessage({
                 {
                   icon: <FaPlay className="icon" />,
                   text: "Launch Script",
-                  onClick: handlePlayScript,
+                  onClick: handlePlayScript
                 },
                 {
                   icon: <FaPen className="icon" />,
@@ -606,19 +606,19 @@ export default function SendMessage({
                           script: {
                             name: selectedScript.script,
                             content: selectedScript.contents,
-                            scriptType: selectedScript.scriptType,
-                          },
-                        },
-                      });
-                      window.dispatchEvent(event);
+                            scriptType: selectedScript.scriptType
+                          }
+                        }
+                      })
+                      window.dispatchEvent(event)
                     }
-                  },
+                  }
                 },
                 {
                   icon: <FaTimes className="icon" />,
                   text: "Deselect Script",
-                  onClick: handleDeselectScript,
-                },
+                  onClick: handleDeselectScript
+                }
               ]}
             />
           </div>
@@ -630,8 +630,8 @@ export default function SendMessage({
             <FaTimes
               className="remove-image"
               onClick={(e) => {
-                e.stopPropagation();
-                handleClearImage();
+                e.stopPropagation()
+                handleClearImage()
               }}
             />
           </div>
@@ -678,5 +678,5 @@ export default function SendMessage({
 
       <FullscreenComposeModal />
     </>
-  );
+  )
 }

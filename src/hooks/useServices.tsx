@@ -1,143 +1,119 @@
-import { useContext, createContext } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import {
-  getPromptModels,
-  getImageModels,
-  LLMModel,
-  ImageModel,
-  PageParams,
-} from "@/api/services";
-import { useAuth } from "@/hooks/useAuth";
+import { useContext, createContext } from "react"
+import { useInfiniteQuery } from "@tanstack/react-query"
+import { getPromptModels, getImageModels, PageParams } from "@/api/services"
+import { useAuth } from "@/hooks/useAuth"
+
+// Define hook function types using ReturnType for proper inference
+type PromptModelsQuery = ReturnType<typeof usePromptModelsQuery>
+type ImageModelsQuery = ReturnType<typeof useImageModelsQuery>
 
 type ServicesContextType = {
-  promptModels: {
-    data: LLMModel[] | undefined;
-    isLoading: boolean;
-    isFetchingNextPage: boolean;
-    hasNextPage: boolean;
-    fetchNextPage: () => void;
-    refetch: () => void;
-  };
-  imageModels: {
-    data: ImageModel[] | undefined;
-    isLoading: boolean;
-    isFetchingNextPage: boolean;
-    hasNextPage: boolean;
-    fetchNextPage: () => void;
-    refetch: () => void;
-  };
-};
+  promptModels: PromptModelsQuery
+  imageModels: ImageModelsQuery
+}
 
-const ServicesContext = createContext<ServicesContextType | null>(null);
+const ServicesContext = createContext<ServicesContextType | null>(null)
+
+// Extract query hooks for proper type inference
+function usePromptModelsQuery(userId?: string) {
+  return useInfiniteQuery({
+    queryKey: ["promptModels", userId],
+    queryFn: async ({ pageParam = 1 }) => {
+      const params: PageParams = {
+        page: pageParam as number,
+        pageSize: 20
+      }
+      const result = await getPromptModels(params)
+      if (result.err) {
+        throw new Error(result.err)
+      }
+      return result.ok
+    },
+    initialPageParam: 1,
+    getPreviousPageParam: (page) => page?.prevPage,
+    getNextPageParam: (page) => {
+      if (!page || !page.items) {
+        return undefined
+      }
+      if (page.items.length < page.pageSize) {
+        return undefined // there are no more pages
+      }
+      return page.nextPage
+    },
+    enabled: !!userId
+  })
+}
+
+function useImageModelsQuery(userId?: string) {
+  return useInfiniteQuery({
+    queryKey: ["imageModels", userId],
+    queryFn: async ({ pageParam = 1 }) => {
+      const params: PageParams = {
+        page: pageParam as number,
+        pageSize: 20
+      }
+      const result = await getImageModels(params)
+      if (result.err) {
+        throw new Error(result.err)
+      }
+      return result.ok
+    },
+    initialPageParam: 1,
+    getPreviousPageParam: (page) => page?.prevPage,
+    getNextPageParam: (page) => {
+      if (!page || !page.items) {
+        return undefined
+      }
+      if (page.items.length < page.pageSize) {
+        return undefined // there are no more pages
+      }
+      return page.nextPage
+    },
+    enabled: !!userId
+  })
+}
 
 export function ServicesProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
-  // Query for prompt models
-  const promptQuery = useInfiniteQuery({
-    queryKey: ["promptModels", user?.uid],
-    queryFn: async ({ pageParam = 1 }) => {
-      const params: PageParams = {
-        page: pageParam as number,
-        pageSize: 50,
-      };
-      const result = await getPromptModels(params);
-      if (result.err) {
-        throw new Error(result.err);
-      }
-      return result.ok;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage || !lastPage.items) {
-        return undefined;
-      }
-      return lastPage.nextPage;
-    },
-    enabled: !!user,
-  });
-
-  // Query for image models
-  const imageQuery = useInfiniteQuery({
-    queryKey: ["imageModels", user?.uid],
-    queryFn: async ({ pageParam = 1 }) => {
-      const params: PageParams = {
-        page: pageParam as number,
-        pageSize: 50,
-      };
-      const result = await getImageModels(params);
-      if (result.err) {
-        throw new Error(result.err);
-      }
-      return result.ok;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage || !lastPage.items) {
-        return undefined;
-      }
-      return lastPage.nextPage;
-    },
-    enabled: !!user,
-  });
-
-  // Flatten the paginated data into a single array
-  const flattenedPromptModels = promptQuery.data?.pages.flatMap(
-    (page) => page?.items ?? [],
-  );
-  const flattenedImageModels = imageQuery.data?.pages.flatMap(
-    (page) => page?.items ?? [],
-  );
+  const promptQuery = usePromptModelsQuery(user?.uid)
+  const imageQuery = useImageModelsQuery(user?.uid)
 
   const value: ServicesContextType = {
-    promptModels: {
-      data: flattenedPromptModels,
-      isLoading: promptQuery.isLoading,
-      isFetchingNextPage: promptQuery.isFetchingNextPage,
-      hasNextPage: !!promptQuery.hasNextPage,
-      fetchNextPage: promptQuery.fetchNextPage,
-      refetch: promptQuery.refetch,
-    },
-    imageModels: {
-      data: flattenedImageModels,
-      isLoading: imageQuery.isLoading,
-      isFetchingNextPage: imageQuery.isFetchingNextPage,
-      hasNextPage: !!imageQuery.hasNextPage,
-      fetchNextPage: imageQuery.fetchNextPage,
-      refetch: imageQuery.refetch,
-    },
-  };
+    promptModels: promptQuery,
+    imageModels: imageQuery
+  }
 
   return (
     <ServicesContext.Provider value={value}>
       {children}
     </ServicesContext.Provider>
-  );
+  )
 }
 
 /**
  * Hook to access prompt and image model services with pagination support
  */
 export function useServices() {
-  const context = useContext(ServicesContext);
+  const context = useContext(ServicesContext)
   if (!context) {
-    throw new Error("useServices must be used within a ServicesProvider");
+    throw new Error("useServices must be used within a ServicesProvider")
   }
-  return context;
+  return context
 }
 
 /**
  * Hook to access only prompt models with pagination support
  */
 export function usePromptModels() {
-  const services = useServices();
-  return services.promptModels;
+  const services = useServices()
+  return services.promptModels
 }
 
 /**
  * Hook to access only image models with pagination support
  */
 export function useImageModels() {
-  const services = useServices();
-  return services.imageModels;
+  const services = useServices()
+  return services.imageModels
 }
