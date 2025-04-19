@@ -78,7 +78,7 @@ export async function getLLMModel(modelId: Model): Promise<Result<LLMModel>> {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/api/v2/services/prompt/${modelId}`,
+      `${BASE_URL}/api/v2/services/prompt/${encodeURIComponent(modelId)}`,
       {
         method: "GET",
         headers: {
@@ -127,7 +127,7 @@ export async function getImageModel(
 
   try {
     const response = await fetch(
-      `${BASE_URL}/api/v2/services/image/${modelId}`,
+      `${BASE_URL}/api/v2/services/image/${encodeURIComponent(modelId)}`,
       {
         method: "GET",
         headers: {

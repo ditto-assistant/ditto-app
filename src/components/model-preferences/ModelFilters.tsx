@@ -4,6 +4,12 @@ import { ScrollArea } from "../ui/scroll-area"
 import { Switch } from "../ui/switch"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from "../ui/accordion"
 // Types
 
 import {
@@ -32,33 +38,7 @@ const VENDOR_COLORS: Record<Vendor, string> = {
 };
 */
 
-interface FilterGroupProps {
-  title: string
-  expanded: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}
-
-const FilterGroup = ({
-  title,
-  expanded,
-  onToggle,
-  children,
-}: FilterGroupProps) => {
-  return (
-    <div className="mb-4">
-      <div
-        className="flex justify-between items-center py-2 cursor-pointer text-muted-foreground hover:text-foreground"
-        onClick={onToggle}
-      >
-        <span className="font-medium text-sm">{title}</span>
-        {expanded ? <MdExpandLess /> : <MdExpandMore />}
-      </div>
-
-      {expanded && <div className="pl-1 mt-2 space-y-2">{children}</div>}
-    </div>
-  )
-}
+// FilterGroup component is replaced by Accordion from shadcn
 
 interface FilterValues {
   speed: string | null
@@ -86,28 +66,12 @@ export const ModelFilters = ({
 }: ModelFiltersProps) => {
   const { isMobile } = usePlatform()
   const [expanded, setExpanded] = useState(false)
-  const [expandedGroups, setExpandedGroups] = useState({
-    speed: !isMobile,
-    pricing: !isMobile,
-    features: !isMobile,
-    vendor: !isMobile,
-    family: !isMobile,
-    provider: !isMobile,
-    dimensions: !isMobile,
-    quality: !isMobile,
-  })
-
+  // Accordion component handles expanded state internally
+  // We still need the filter toggle functionality
   const toggleFilter = (filterKey: keyof FilterValues, value: string) => {
     setActiveFilters({
       ...activeFilters,
       [filterKey]: activeFilters[filterKey] === value ? null : value,
-    })
-  }
-
-  const toggleGroup = (group: string) => {
-    setExpandedGroups({
-      ...expandedGroups,
-      [group]: !expandedGroups[group],
     })
   }
 
@@ -132,315 +96,306 @@ export const ModelFilters = ({
       >
         <ScrollArea className="h-[calc(100vh-14rem)] max-h-60 md:max-h-none overflow-auto">
           {filterType === "prompt" && (
-            <>
-              <FilterGroup
-                title="Speed"
-                expanded={expandedGroups.speed}
-                onToggle={() => toggleGroup("speed")}
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant={
-                      activeFilters.speed === "slow" ? "default" : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("speed", "slow")}
-                  >
-                    <FaClock className="mr-1" /> Slow
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.speed === "medium" ? "default" : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("speed", "medium")}
-                  >
-                    <FaRobot className="mr-1" /> Medium
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.speed === "fast" ? "default" : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("speed", "fast")}
-                  >
-                    <FaBolt className="mr-1" /> Fast
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.speed === "insane" ? "default" : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("speed", "insane")}
-                  >
-                    <FaFire className="mr-1" style={{ color: "#FF0000" }} />{" "}
-                    Insane
-                  </Badge>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Pricing"
-                expanded={expandedGroups.pricing}
-                onToggle={() => toggleGroup("pricing")}
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant={
-                      activeFilters.pricing === "free" ? "default" : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("pricing", "free")}
-                  >
-                    <FaCrown className="mr-1" style={{ opacity: 0.5 }} /> Free
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.pricing === "premium"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("pricing", "premium")}
-                  >
-                    <FaCrown className="mr-1" /> Premium
-                  </Badge>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Features"
-                expanded={expandedGroups.features}
-                onToggle={() => toggleGroup("features")}
-              >
-                <div className="flex items-center space-x-2 mb-2">
-                  <Switch
-                    id="image-support"
-                    checked={activeFilters.imageSupport}
-                    onCheckedChange={(checked) =>
-                      setActiveFilters({
-                        ...activeFilters,
-                        imageSupport: checked,
-                      })
-                    }
-                  />
-                  <label
-                    htmlFor="image-support"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Image support
-                  </label>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Vendor"
-                expanded={expandedGroups.vendor}
-                onToggle={() => toggleGroup("vendor")}
-              >
-                <div className="flex flex-col space-y-2">
-                  <Badge
-                    variant={
-                      activeFilters.vendor === "openai" ? "default" : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("vendor", "openai")}
-                  >
-                    <SiOpenai className="mr-1" /> OpenAI
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.vendor === "anthropic"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("vendor", "anthropic")}
-                  >
-                    <FaBrain className="mr-1" /> Anthropic
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.vendor === "google" ? "default" : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("vendor", "google")}
-                  >
-                    <FaGoogle className="mr-1" /> Google
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.vendor === "mistral" ? "default" : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("vendor", "mistral")}
-                  >
-                    <FaBolt className="mr-1" /> Mistral
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.vendor === "meta" ? "default" : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("vendor", "meta")}
-                  >
-                    <TbBrandMeta className="mr-1" /> Meta
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.vendor === "cerebras"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("vendor", "cerebras")}
-                  >
-                    <FaMicrochip className="mr-1" /> Cerebras
-                  </Badge>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Model Family"
-                expanded={expandedGroups.family}
-                onToggle={() => toggleGroup("family")}
-              >
-                <div className="flex flex-col space-y-2">
-                  {Object.keys(groupedModels).map((family) => (
+            <Accordion type="multiple" defaultValue={["speed", "pricing", "features", "vendor", "family"]} className="w-full">
+              <AccordionItem value="speed">
+                <AccordionTrigger>Speed</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2">
                     <Badge
-                      key={family}
                       variant={
-                        activeFilters.modelFamily === family
+                        activeFilters.speed === "slow" ? "default" : "outline"
+                      }
+                      className="cursor-pointer"
+                      onClick={() => toggleFilter("speed", "slow")}
+                    >
+                      <FaClock className="mr-1" /> Slow
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.speed === "medium" ? "default" : "outline"
+                      }
+                      className="cursor-pointer"
+                      onClick={() => toggleFilter("speed", "medium")}
+                    >
+                      <FaRobot className="mr-1" /> Medium
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.speed === "fast" ? "default" : "outline"
+                      }
+                      className="cursor-pointer"
+                      onClick={() => toggleFilter("speed", "fast")}
+                    >
+                      <FaBolt className="mr-1" /> Fast
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.speed === "insane" ? "default" : "outline"
+                      }
+                      className="cursor-pointer"
+                      onClick={() => toggleFilter("speed", "insane")}
+                    >
+                      <FaFire className="mr-1" style={{ color: "#FF0000" }} />{" "}
+                      Insane
+                    </Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="pricing">
+                <AccordionTrigger>Pricing</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant={
+                        activeFilters.pricing === "free" ? "default" : "outline"
+                      }
+                      className="cursor-pointer"
+                      onClick={() => toggleFilter("pricing", "free")}
+                    >
+                      <FaCrown className="mr-1" style={{ opacity: 0.5 }} /> Free
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.pricing === "premium"
+                          ? "default"
+                          : "outline"
+                      }
+                      className="cursor-pointer"
+                      onClick={() => toggleFilter("pricing", "premium")}
+                    >
+                      <FaCrown className="mr-1" /> Premium
+                    </Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="features">
+                <AccordionTrigger>Features</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Switch
+                      id="image-support"
+                      checked={activeFilters.imageSupport}
+                      onCheckedChange={(checked) =>
+                        setActiveFilters({
+                          ...activeFilters,
+                          imageSupport: checked,
+                        })
+                      }
+                    />
+                    <label
+                      htmlFor="image-support"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Image support
+                    </label>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="vendor">
+                <AccordionTrigger>Vendor</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col space-y-2">
+                    <Badge
+                      variant={
+                        activeFilters.vendor === "openai" ? "default" : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("vendor", "openai")}
+                    >
+                      <SiOpenai className="mr-1" /> OpenAI
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.vendor === "anthropic"
                           ? "default"
                           : "outline"
                       }
                       className="cursor-pointer justify-start w-full"
-                      onClick={() => toggleFilter("modelFamily", family)}
+                      onClick={() => toggleFilter("vendor", "anthropic")}
                     >
-                      {family}
+                      <FaBrain className="mr-1" /> Anthropic
                     </Badge>
-                  ))}
-                </div>
-              </FilterGroup>
-            </>
+                    <Badge
+                      variant={
+                        activeFilters.vendor === "google" ? "default" : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("vendor", "google")}
+                    >
+                      <FaGoogle className="mr-1" /> Google
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.vendor === "mistral" ? "default" : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("vendor", "mistral")}
+                    >
+                      <FaBolt className="mr-1" /> Mistral
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.vendor === "meta" ? "default" : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("vendor", "meta")}
+                    >
+                      <TbBrandMeta className="mr-1" /> Meta
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.vendor === "cerebras"
+                          ? "default"
+                          : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("vendor", "cerebras")}
+                    >
+                      <FaMicrochip className="mr-1" /> Cerebras
+                    </Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="family">
+                <AccordionTrigger>Model Family</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col space-y-2">
+                    {Object.keys(groupedModels).map((family) => (
+                      <Badge
+                        key={family}
+                        variant={
+                          activeFilters.modelFamily === family
+                            ? "default"
+                            : "outline"
+                        }
+                        className="cursor-pointer justify-start w-full"
+                        onClick={() => toggleFilter("modelFamily", family)}
+                      >
+                        {family}
+                      </Badge>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
 
           {filterType === "image" && (
-            <>
-              <FilterGroup
-                title="Provider"
-                expanded={expandedGroups.provider}
-                onToggle={() => toggleGroup("provider")}
-              >
-                <div className="flex flex-col space-y-2">
-                  <Badge
-                    variant={
-                      activeFilters.provider === "openai"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("provider", "openai")}
-                  >
-                    <SiOpenai className="mr-1" /> OpenAI
-                  </Badge>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Dimensions"
-                expanded={expandedGroups.dimensions}
-                onToggle={() => toggleGroup("dimensions")}
-              >
-                <div className="flex flex-col space-y-2">
-                  <Badge
-                    variant={
-                      activeFilters.dimensions === "square"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("dimensions", "square")}
-                  >
-                    □ Square
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.dimensions === "landscape"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("dimensions", "landscape")}
-                  >
-                    ▭ Landscape
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.dimensions === "portrait"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("dimensions", "portrait")}
-                  >
-                    ▯ Portrait
-                  </Badge>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Quality"
-                expanded={expandedGroups.quality}
-                onToggle={() => toggleGroup("quality")}
-              >
-                <div className="flex flex-col space-y-2">
-                  <Badge
-                    variant={
-                      activeFilters.quality === "standard"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("quality", "standard")}
-                  >
-                    Standard
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFilters.quality === "hd" ? "default" : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("quality", "hd")}
-                  >
-                    HD
-                  </Badge>
-                </div>
-              </FilterGroup>
-
-              <FilterGroup
-                title="Model Family"
-                expanded={expandedGroups.family}
-                onToggle={() => toggleGroup("family")}
-              >
-                <div className="flex flex-col space-y-2">
-                  {Object.keys(groupedModels).map((family) => (
+            <Accordion type="multiple" defaultValue={["provider", "dimensions", "quality", "family"]} className="w-full">
+              <AccordionItem value="provider">
+                <AccordionTrigger>Provider</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col space-y-2">
                     <Badge
-                      key={family}
                       variant={
-                        activeFilters.modelFamily === family
+                        activeFilters.provider === "openai"
                           ? "default"
                           : "outline"
                       }
                       className="cursor-pointer justify-start w-full"
-                      onClick={() => toggleFilter("modelFamily", family)}
+                      onClick={() => toggleFilter("provider", "openai")}
                     >
-                      {family}
+                      <SiOpenai className="mr-1" /> OpenAI
                     </Badge>
-                  ))}
-                </div>
-              </FilterGroup>
-            </>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="dimensions">
+                <AccordionTrigger>Dimensions</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col space-y-2">
+                    <Badge
+                      variant={
+                        activeFilters.dimensions === "square"
+                          ? "default"
+                          : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("dimensions", "square")}
+                    >
+                      □ Square
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.dimensions === "landscape"
+                          ? "default"
+                          : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("dimensions", "landscape")}
+                    >
+                      ▭ Landscape
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.dimensions === "portrait"
+                          ? "default"
+                          : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("dimensions", "portrait")}
+                    >
+                      ▯ Portrait
+                    </Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="quality">
+                <AccordionTrigger>Quality</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col space-y-2">
+                    <Badge
+                      variant={
+                        activeFilters.quality === "standard"
+                          ? "default"
+                          : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("quality", "standard")}
+                    >
+                      Standard
+                    </Badge>
+                    <Badge
+                      variant={
+                        activeFilters.quality === "hd" ? "default" : "outline"
+                      }
+                      className="cursor-pointer justify-start w-full"
+                      onClick={() => toggleFilter("quality", "hd")}
+                    >
+                      HD
+                    </Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="family">
+                <AccordionTrigger>Model Family</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col space-y-2">
+                    {Object.keys(groupedModels).map((family) => (
+                      <Badge
+                        key={family}
+                        variant={
+                          activeFilters.modelFamily === family
+                            ? "default"
+                            : "outline"
+                        }
+                        className="cursor-pointer justify-start w-full"
+                        onClick={() => toggleFilter("modelFamily", family)}
+                      >
+                        {family}
+                      </Badge>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
         </ScrollArea>
       </div>

@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
-import { useServices } from "@/hooks/useServices"
+import { useAllServices } from "@/hooks/useAllServices"
 
 import { FaRobot, FaMicrochip, FaImage } from "react-icons/fa"
 
@@ -17,181 +17,31 @@ export const ModelPreferencesModal: React.FC = () => {
   useUser()
   useModelPreferences()
 
+  // Track active tab
   const [activeTab, setActiveTab] = useState<"main" | "programmer" | "image">(
     "main"
   )
 
-  // State for filters
-  const [activeFilters, setActiveFilters] = useState({
-    speed: null,
-    pricing: null,
-    imageSupport: false,
-    vendor: null,
-    modelFamily: null,
-  })
+  // Get all models data with filtering, grouping, etc.
+  const {
+    // Grouped data
+    groupedPromptModels,
+    groupedImageModels,
 
-  const [imageFilters, setImageFilters] = useState({
-    provider: null,
-    dimensions: null,
-    quality: null,
-    modelFamily: null,
-  })
+    // Filtered data
+    filteredPromptModels,
+    filteredImageModels,
 
-  // Fetch models from API
-  const { promptModels, imageModels } = useServices()
-  const { data: promptModelsData, isLoading: isLoadingModels } = promptModels
-  const { data: imageModelsData, isLoading: isLoadingImageModels } = imageModels
+    // Loading states
+    isLoadingPromptModels,
+    isLoadingImageModels,
 
-  // Group prompt models by model family
-  const groupedPromptModels = useMemo(() => {
-    if (!promptModelsData) return {}
-
-    return promptModelsData.reduce((acc, model) => {
-      // If model has no family, use provider as family
-      const family = model.modelFamily || model.provider
-
-      if (!acc[family]) {
-        acc[family] = []
-      }
-
-      acc[family].push(model)
-      return acc
-    }, {})
-  }, [promptModelsData])
-
-  // Group image models by family and orientation
-  const groupedImageModels = useMemo(() => {
-    if (!imageModelsData) return {}
-
-    return imageModelsData.reduce((acc, model) => {
-      // Group by family first
-      const family = model.modelFamily || model.provider
-
-      if (!acc[family]) {
-        acc[family] = {
-          square: [],
-          landscape: [],
-          portrait: [],
-        }
-      }
-
-      // Then by orientation
-      const orientation = model.imageOrientation.toLowerCase()
-      if (acc[family][orientation]) {
-        acc[family][orientation].push(model)
-      }
-
-      return acc
-    }, {})
-  }, [imageModelsData])
-
-  // Filter models based on active filters
-  const filteredPromptModels = useMemo(() => {
-    if (!promptModelsData) return []
-
-    let filtered = [...promptModelsData]
-
-    // Apply filters here
-    // Filter by price/tier (free/premium)
-    if (activeFilters.pricing === "free") {
-      filtered = filtered.filter((model) => {
-        // Models are free if they have no cost OR if their name contains llama-4
-        return (
-          (model.costPerMillionInputTokens === 0 &&
-            model.costPerMillionOutputTokens === 0) ||
-          model.name.toLowerCase().includes("llama-4")
-        )
-      })
-    } else if (activeFilters.pricing === "premium") {
-      filtered = filtered.filter((model) => {
-        // Models are premium if they have cost AND don't contain llama-4
-        return (
-          (model.costPerMillionInputTokens > 0 ||
-            model.costPerMillionOutputTokens > 0) &&
-          !model.name.toLowerCase().includes("llama-4")
-        )
-      })
-    }
-
-    // Filter by image support
-    if (activeFilters.imageSupport) {
-      filtered = filtered.filter((model) => model.attachableImageCount > 0)
-    }
-
-    // Filter by vendor
-    if (activeFilters.vendor) {
-      filtered = filtered.filter(
-        (model) => model.provider.toLowerCase() === activeFilters.vendor
-      )
-    }
-
-    // Filter by model family
-    if (activeFilters.modelFamily) {
-      filtered = filtered.filter(
-        (model) =>
-          (model.modelFamily || model.provider) === activeFilters.modelFamily
-      )
-    }
-
-    // Filter by speed
-    if (activeFilters.speed) {
-      const speedMap = {
-        slow: [1, 2],
-        medium: [3],
-        fast: [4],
-        insane: [5, 6, 7, 8, 9, 10],
-      }
-
-      filtered = filtered.filter((model) => {
-        if (!activeFilters.speed) return true
-        return speedMap[activeFilters.speed].includes(model.speedLevel)
-      })
-    }
-
-    return filtered
-  }, [activeFilters, promptModelsData])
-
-  // Filter image models based on active image filters
-  const filteredImageModels = useMemo(() => {
-    if (!imageModelsData) return []
-
-    let filtered = [...imageModelsData]
-
-    // Apply image filters here
-    if (imageFilters.provider) {
-      filtered = filtered.filter(
-        (model) => model.provider.toLowerCase() === imageFilters.provider
-      )
-    }
-
-    if (imageFilters.dimensions) {
-      filtered = filtered.filter(
-        (model) =>
-          model.imageOrientation.toLowerCase() === imageFilters.dimensions
-      )
-    }
-
-    if (imageFilters.quality) {
-      if (imageFilters.quality === "hd") {
-        filtered = filtered.filter((model) =>
-          model.modelFlavor.toLowerCase().includes("hd")
-        )
-      } else {
-        filtered = filtered.filter(
-          (model) => !model.modelFlavor.toLowerCase().includes("hd")
-        )
-      }
-    }
-
-    if (imageFilters.modelFamily) {
-      filtered = filtered.filter(
-        (model) =>
-          (model.modelFamily || model.provider) === imageFilters.modelFamily
-      )
-    }
-
-    return filtered
-  }, [imageFilters, imageModelsData])
+    // Filters state
+    promptFilters,
+    imageFilters,
+    setPromptFilters,
+    setImageFilters,
+  } = useAllServices()
 
   return (
     <div className="bg-background text-foreground w-full h-full flex flex-col overflow-hidden">
@@ -223,17 +73,17 @@ export const ModelPreferencesModal: React.FC = () => {
           className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden"
         >
           <ModelFilters
-            activeFilters={activeFilters}
-            setActiveFilters={setActiveFilters}
+            activeFilters={promptFilters}
+            setActiveFilters={setPromptFilters}
             filterType="prompt"
             groupedModels={groupedPromptModels}
           />
 
           <div className="flex-1 overflow-hidden flex flex-col">
-            <SelectedModel type="mainModel" />
+            <SelectedModel modelType="mainModel" />
 
             <ScrollArea className="flex-1 h-full">
-              {isLoadingModels ? (
+              {isLoadingPromptModels ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -253,17 +103,17 @@ export const ModelPreferencesModal: React.FC = () => {
           className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden"
         >
           <ModelFilters
-            activeFilters={activeFilters}
-            setActiveFilters={setActiveFilters}
+            activeFilters={promptFilters}
+            setActiveFilters={setPromptFilters}
             filterType="prompt"
             groupedModels={groupedPromptModels}
           />
 
           <div className="flex-1 overflow-hidden flex flex-col">
-            <SelectedModel type="programmerModel" />
+            <SelectedModel modelType="programmerModel" />
 
             <ScrollArea className="flex-1 h-full">
-              {isLoadingModels ? (
+              {isLoadingPromptModels ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -290,7 +140,7 @@ export const ModelPreferencesModal: React.FC = () => {
           />
 
           <div className="flex-1 overflow-hidden flex flex-col">
-            <SelectedModel type="imageGeneration" />
+            <SelectedModel modelType="imageGeneration" />
 
             <ScrollArea className="flex-1 h-full">
               {isLoadingImageModels ? (

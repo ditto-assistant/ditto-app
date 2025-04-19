@@ -44,24 +44,24 @@ export const ModelList = ({
             // For image models, we group by family and then by orientation
             return (
               <div key={family} className="space-y-6">
-                {Object.entries(orientations).map(
-                  ([orientation, orientationModels]) => {
-                    if ((orientationModels as ImageModel[]).length === 0)
-                      return null
+                {Object.entries(
+                  orientations as Record<string, ImageModel[]>
+                ).map(([orientation, orientationModels]) => {
+                  if ((orientationModels as ImageModel[]).length === 0)
+                    return null
 
-                    return (
-                      <ModelGroup
-                        key={`${family}-${orientation}`}
-                        title={family}
-                        models={orientationModels as ImageModel[]}
-                        userTier={user?.planTier || 0}
-                        activeTab={activeTab}
-                        redirectToSubscription={redirectToGeneralTab}
-                        orientationFilter={orientation}
-                      />
-                    )
-                  }
-                )}
+                  return (
+                    <ModelGroup
+                      key={`${family}-${orientation}`}
+                      title={family}
+                      models={orientationModels as ImageModel[]}
+                      userTier={user?.planTier || 0}
+                      activeTab={activeTab}
+                      redirectToSubscription={redirectToGeneralTab}
+                      orientationFilter={orientation}
+                    />
+                  )
+                })}
               </div>
             )
           })}
