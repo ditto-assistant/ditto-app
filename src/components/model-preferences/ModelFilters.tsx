@@ -4,11 +4,11 @@ import { ScrollArea } from "../ui/scroll-area"
 import { Switch } from "../ui/switch"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
-import { 
-  Accordion, 
-  AccordionItem, 
-  AccordionTrigger, 
-  AccordionContent 
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
 } from "../ui/accordion"
 // Types
 
@@ -96,7 +96,17 @@ export const ModelFilters = ({
       >
         <ScrollArea className="h-[calc(100vh-14rem)] max-h-60 md:max-h-none overflow-auto">
           {filterType === "prompt" && (
-            <Accordion type="multiple" defaultValue={["speed", "pricing", "features", "vendor", "family"]} className="w-full">
+            <Accordion
+              type="multiple"
+              defaultValue={[
+                "speed",
+                "pricing",
+                "features",
+                "vendor",
+                "family",
+              ]}
+              className="w-full"
+            >
               <AccordionItem value="speed">
                 <AccordionTrigger>Speed</AccordionTrigger>
                 <AccordionContent>
@@ -200,7 +210,9 @@ export const ModelFilters = ({
                   <div className="flex flex-col space-y-2">
                     <Badge
                       variant={
-                        activeFilters.vendor === "openai" ? "default" : "outline"
+                        activeFilters.vendor === "openai"
+                          ? "default"
+                          : "outline"
                       }
                       className="cursor-pointer justify-start w-full"
                       onClick={() => toggleFilter("vendor", "openai")}
@@ -220,7 +232,9 @@ export const ModelFilters = ({
                     </Badge>
                     <Badge
                       variant={
-                        activeFilters.vendor === "google" ? "default" : "outline"
+                        activeFilters.vendor === "google"
+                          ? "default"
+                          : "outline"
                       }
                       className="cursor-pointer justify-start w-full"
                       onClick={() => toggleFilter("vendor", "google")}
@@ -229,7 +243,9 @@ export const ModelFilters = ({
                     </Badge>
                     <Badge
                       variant={
-                        activeFilters.vendor === "mistral" ? "default" : "outline"
+                        activeFilters.vendor === "mistral"
+                          ? "default"
+                          : "outline"
                       }
                       className="cursor-pointer justify-start w-full"
                       onClick={() => toggleFilter("vendor", "mistral")}
@@ -285,7 +301,11 @@ export const ModelFilters = ({
           )}
 
           {filterType === "image" && (
-            <Accordion type="multiple" defaultValue={["provider", "dimensions", "quality", "family"]} className="w-full">
+            <Accordion
+              type="multiple"
+              defaultValue={["provider", "dimensions", "quality", "family"]}
+              className="w-full"
+            >
               <AccordionItem value="provider">
                 <AccordionTrigger>Provider</AccordionTrigger>
                 <AccordionContent>
