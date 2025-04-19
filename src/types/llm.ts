@@ -20,6 +20,8 @@ export function modelSupportsImageAttachments(model: Model): boolean {
     model === "claude-3-5-sonnet-v2" ||
     model === "claude-3-5-sonnet-v2@20241022" ||
     model === "meta/llama-3.3-70b-instruct-maas" ||
+    model === "meta/llama-4-scout-17b-16e-instruct-maas" ||
+    model === "meta/llama-4-maverick-17b-128e-instruct-maas" ||
     model === "gpt-4o" ||
     model === "gpt-4o-2024-11-20" ||
     model === "gpt-4o-mini" ||
@@ -53,7 +55,9 @@ export type Model =
   | "o1-mini"
   | "o1-mini-2024-09-12"
   | "llama3.1-8b"
-  | "llama-3.3-70b";
+  | "llama-3.3-70b"
+  | "meta/llama-4-scout-17b-16e-instruct-maas"
+  | "meta/llama-4-maverick-17b-128e-instruct-maas";
 
 export type Vendor =
   | "openai"

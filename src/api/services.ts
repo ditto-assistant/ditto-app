@@ -19,6 +19,9 @@ const BaseModelCapabilitiesSchema = z.object({
   description: z.string(),
   version: z.string(),
   provider: z.string(),
+  modelFamily: z.string(),
+  modelFamilyDisplayName: z.string(),
+  modelFlavor: z.string(),
   speedLevel: z.number(),
   intelligenceLevel: z.number(),
   creativityLevel: z.number(),
@@ -34,6 +37,8 @@ const BaseModelCapabilitiesSchema = z.object({
 
 // Schema for image model capabilities
 const ImageModelSchema = BaseModelCapabilitiesSchema.extend({
+  imageSize: z.string(),
+  imageOrientation: z.string(),
   cost: z.number(),
 });
 

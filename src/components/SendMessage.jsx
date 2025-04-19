@@ -110,15 +110,6 @@ export default function SendMessage({
       );
       const selectedModelHasTier = selectedModel?.minimumTier > 0;
 
-      console.log("🔍 Balance check:", {
-        balance: balanceRaw,
-        hasZeroBalance,
-        currentModelID,
-        selectedModel,
-        selectedModelHasTier,
-      });
-
-      // Update both sale pitch visibility and invalid config status
       const isInvalid = hasZeroBalance && selectedModelHasTier;
       setShowSalesPitch(isInvalid);
       setIsInvalidConfig(isInvalid);

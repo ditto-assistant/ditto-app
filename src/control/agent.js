@@ -127,7 +127,7 @@ export const sendPrompt = async (
       if (isPremiumUser) {
         mainAgentModel = "claude-3-5-sonnet";
       } else {
-        mainAgentModel = "meta/llama-3.3-70b-instruct-maas";
+        mainAgentModel = "meta/llama-4-scout-17b-16e-instruct-maas";
       }
     }
 
