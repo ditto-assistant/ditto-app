@@ -4,8 +4,10 @@ import React, {
   useRef,
   ReactNode,
   useState,
+  useEffect,
 } from "react"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
+import { debounce } from "@/utils/debounce"
 
 interface ComposeContextType {
   message: string
@@ -28,8 +30,28 @@ export const ComposeProvider: React.FC<{ children: ReactNode }> = ({
   const { promptData, savePrompt } = usePromptStorage()
   const [isOpen, setIsOpen] = useState(false)
 
-  const message = promptData?.prompt || ""
-  const setMessage = (msg: string) => savePrompt(msg)
+  // Use local state for better typing performance
+  const [localMessage, setLocalMessage] = useState("")
+
+  // Initialize with saved prompt data when available
+  useEffect(() => {
+    if (promptData?.prompt) {
+      setLocalMessage(promptData.prompt)
+    }
+  }, [promptData?.prompt])
+
+  // Debounced function to save to storage
+  const debouncedSave = useRef(
+    debounce((text: string) => {
+      savePrompt(text)
+    }, 500)
+  ).current
+
+  // Custom setter that updates local state immediately and debounces storage
+  const setMessage = (msg: string) => {
+    setLocalMessage(msg)
+    debouncedSave(msg)
+  }
 
   const submitCallback = useRef<(() => void) | null>(null)
   const registerSubmitCallback = (callback: () => void) => {
@@ -41,15 +63,23 @@ export const ComposeProvider: React.FC<{ children: ReactNode }> = ({
       submitCallback.current()
     }
   }
+
   const openComposeModal = () => setIsOpen(true)
   const closeComposeModal = () => setIsOpen(false)
 
   const [isWaitingForResponse, setIsWaitingForResponse] = React.useState(false)
 
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSave.cancel()
+    }
+  }, [debouncedSave])
+
   return (
     <ComposeContext.Provider
       value={{
-        message,
+        message: localMessage,
         setMessage,
         handleSubmit,
         isWaitingForResponse,

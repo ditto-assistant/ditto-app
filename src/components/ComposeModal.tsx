@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react"
+import React, { useRef, useEffect, useCallback, memo } from "react"
 import { PlaneTakeoff, X } from "lucide-react"
 import { usePlatform } from "@/hooks/usePlatform"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,25 @@ const ComposeModal: React.FC = () => {
     closeComposeModal,
   } = useComposeContext()
   const { isMobile } = usePlatform()
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setMessage(e.target.value)
+    },
+    [setMessage]
+  )
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      if (message.trim()) {
+        handleSubmit()
+      }
+      closeComposeModal()
+    },
+    [message, handleSubmit, closeComposeModal]
+  )
 
   useEffect(() => {
     // Handle keyboard shortcuts (Cmd/Ctrl+Enter)
@@ -42,13 +61,15 @@ const ComposeModal: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [message, handleSubmit, isMobile])
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (message.trim()) {
-      handleSubmit()
+  // Focus the textarea when the modal opens
+  useEffect(() => {
+    if (isOpen && textAreaRef.current) {
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        textAreaRef.current?.focus()
+      }, 50)
     }
-    closeComposeModal()
-  }
+  }, [isOpen])
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -93,12 +114,13 @@ const ComposeModal: React.FC = () => {
             onSubmit={handleFormSubmit}
           >
             <Textarea
+              ref={textAreaRef}
               autoFocus
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleChange}
               placeholder="Type your message here..."
               spellCheck="true"
-              className="text-foreground placeholder:text-muted-foreground/70"
+              className="text-foreground placeholder:text-muted-foreground/70 resize-none h-full border-none focus-visible:ring-0 p-4"
             />
           </form>
         </div>

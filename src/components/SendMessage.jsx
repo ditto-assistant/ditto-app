@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, memo } from "react"
 import {
   Plus,
   Image,
@@ -95,8 +95,7 @@ export default function SendMessage({
   const scriptIndicatorRef = useRef(null)
   const [showScriptActions, setShowScriptActions] = useState(false)
   const openDittoCanvas = modal.createOpenHandler("dittoCanvas")
-  const { selectedScript, setSelectedScript, handleDeselectScript } =
-    useScripts()
+  const { selectedScript, setSelectedScript } = useScripts()
   const user = useUser()
 
   const [showSalesPitch, setShowSalesPitch] = useState(false)
@@ -257,26 +256,37 @@ export default function SendMessage({
     onClearCapturedImage()
   }
 
-  const handleKeyDown = (e) => {
-    if (isMobile) {
-      if (e.key === "Enter") {
-        e.preventDefault()
-        setMessage((prevMessage) => prevMessage + "\n")
-      }
-    } else {
-      if (e.key === "Enter") {
-        if (e.ctrlKey || e.metaKey) {
+  // Memoized handler functions to prevent unnecessary re-renders
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (isMobile) {
+        if (e.key === "Enter") {
           e.preventDefault()
           setMessage((prevMessage) => prevMessage + "\n")
-        } else if (e.shiftKey) {
-          // Allow shift+enter for newlines
-        } else {
-          e.preventDefault()
-          handleSubmit()
+        }
+      } else {
+        if (e.key === "Enter") {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault()
+            setMessage((prevMessage) => prevMessage + "\n")
+          } else if (e.shiftKey) {
+            // Allow shift+enter for newlines
+          } else {
+            e.preventDefault()
+            handleSubmit()
+          }
         }
       }
-    }
-  }
+    },
+    [isMobile, setMessage, handleSubmit]
+  )
+
+  const handleInputChange = useCallback(
+    (e) => {
+      setMessage(e.target.value)
+    },
+    [setMessage]
+  )
 
   const handlePaste = (event) => {
     const items = event.clipboardData.items
@@ -302,15 +312,6 @@ export default function SendMessage({
     onCameraOpen()
   }
 
-  // Ditto logo button handlers
-  const handleHoverStart = () => {
-    // No hover behavior - we only use click/tap to toggle the menu
-  }
-
-  const handleHoverEnd = () => {
-    // No hover behavior - we only use click/tap to toggle the menu
-  }
-
   const handleLogoClick = () => {
     // Simple toggle behavior for all platforms
     setIsMenuOpen(!isMenuOpen)
@@ -319,12 +320,6 @@ export default function SendMessage({
   // Script indicator handlers
   const handleScriptNameClick = () => {
     setShowScriptActions(!showScriptActions)
-  }
-
-  const handlePlayScript = () => {
-    if (selectedScript) {
-      openDittoCanvas()
-    }
   }
 
   // Handle accessibility keyboard events for buttons
@@ -338,22 +333,14 @@ export default function SendMessage({
   // Add auto-resize function
   const autoResizeTextarea = useCallback(() => {
     if (textAreaRef.current) {
-      // Store current scroll position
-      const scrollTop = textAreaRef.current.scrollTop
-
       // Reset height temporarily to get the correct scrollHeight
       textAreaRef.current.style.height = "auto"
 
       // Calculate the new height (capped at 200px)
-      const scrollHeight = textAreaRef.current.scrollHeight
-      const maxHeight = 200
-      const newHeight = Math.min(scrollHeight, maxHeight)
+      const scrollHeight = Math.min(textAreaRef.current.scrollHeight, 200)
 
       // Set the height
-      textAreaRef.current.style.height = `${newHeight}px`
-
-      // Restore scroll position
-      textAreaRef.current.scrollTop = scrollTop
+      textAreaRef.current.style.height = `${scrollHeight}px`
     }
   }, [])
 
@@ -430,7 +417,7 @@ export default function SendMessage({
                 ref={textAreaRef}
                 onKeyDown={handleKeyDown}
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Message Ditto"
                 className={cn(
                   "text-area",
