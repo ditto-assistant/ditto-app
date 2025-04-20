@@ -30,6 +30,7 @@ import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler"
 import UpdateNotification from "@/components/UpdateNotification"
 import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
+import { ThemeProvider } from "@/components/theme-provider"
 
 initUpdateService()
 
@@ -138,23 +139,28 @@ function App() {
                             <ServicesProvider>
                               <PromptStorageProvider>
                                 <ComposeProvider>
-                                  <ComposeModal />
-                                  <ModalProvider registry={modalRegistry}>
-                                    <AppErrorBoundary>
-                                      <RouterProvider router={router} />
-                                    </AppErrorBoundary>
-                                    <UpdateNotification />
+                                  <ThemeProvider
+                                    defaultTheme="system"
+                                    storageKey="ditto-ui-theme"
+                                  >
+                                    <ComposeModal />
+                                    <ModalProvider registry={modalRegistry}>
+                                      <AppErrorBoundary>
+                                        <RouterProvider router={router} />
+                                      </AppErrorBoundary>
+                                      <UpdateNotification />
 
-                                    <Toaster
-                                      position="top-center"
-                                      closeButton
-                                      richColors
-                                    />
-                                    <ReactQueryDevtools
-                                      buttonPosition="top-right"
-                                      initialIsOpen={false}
-                                    />
-                                  </ModalProvider>
+                                      <Toaster
+                                        position="top-center"
+                                        closeButton
+                                        richColors
+                                      />
+                                      <ReactQueryDevtools
+                                        buttonPosition="top-right"
+                                        initialIsOpen={false}
+                                      />
+                                    </ModalProvider>
+                                  </ThemeProvider>
                                 </ComposeProvider>
                               </PromptStorageProvider>
                             </ServicesProvider>

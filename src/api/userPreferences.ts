@@ -1,4 +1,3 @@
-import { z } from "zod"
 import { BASE_URL } from "../firebaseConfig"
 import { getToken } from "./auth"
 import { PreferredModels, UserSchema, User } from "./getUser"

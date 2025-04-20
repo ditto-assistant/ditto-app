@@ -7,7 +7,7 @@ import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
 import { useUser } from "@/hooks/useUser"
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
 import SubscriptionCard from "@/components/subscription/SubscriptionCard"
-import { CreditCard, LogOut, User } from "lucide-react"
+import { CreditCard, LogOut, User, Moon, Sun } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
 import {
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ModeToggle } from "@/components/mode-toggle"
+import { useTheme } from "@/components/theme-provider"
 
 const SubscriptionTabContent: React.FC = () => {
   const { data: user, isLoading: isUserLoading } = useUser()
@@ -138,7 +140,16 @@ const SubscriptionTabContent: React.FC = () => {
             </Badge>
           )}
         </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Moon className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm">Theme</span>
+          </div>
+          <ModeToggle />
+        </div>
       </CardContent>
+
       <CardFooter className="flex gap-4">
         <Button
           variant="default"
