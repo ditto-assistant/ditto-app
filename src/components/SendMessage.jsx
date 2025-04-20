@@ -24,7 +24,6 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useBalance } from "@/hooks/useBalance"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
-import { useCompose } from "@/components/ComposeModal"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useScripts } from "@/hooks/useScripts.tsx"
 import { useModal } from "@/hooks/useModal"
@@ -35,24 +34,28 @@ import { useUser } from "@/hooks/useUser"
 import { ErrorPaymentRequired } from "@/types/errors"
 import { Button } from "@/components/ui/button"
 import ButtonRow from "@/components/ui/ButtonRow"
+import { useComposeContext } from "@/contexts/ComposeContext"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
  * @param {function(): void} props.onCameraOpen - A function that opens the camera
  * @param {string} props.capturedImage - The URL of the captured image
  * @param {function(): void} props.onClearCapturedImage - A function that clears the captured image
- * @param {boolean} props.showMediaOptions - Whether the media options are shown
- * @param {function(): void} props.onOpenMediaOptions - A function that opens the media options
- * @param {function(): void} props.onCloseMediaOptions - A function that closes the media options
  * @param {function(): void} props.onStop - A function that handles the stop event
  */
 export default function SendMessage({
   onCameraOpen,
   capturedImage,
   onClearCapturedImage,
-  showMediaOptions,
-  onOpenMediaOptions,
-  onCloseMediaOptions,
   onStop,
 }) {
   const [image, setImage] = useState(capturedImage || "")
@@ -74,7 +77,7 @@ export default function SendMessage({
     isWaitingForResponse,
     setIsWaitingForResponse,
     registerSubmitCallback,
-  } = useCompose()
+  } = useComposeContext()
   const { clearPrompt } = usePromptStorage()
   const canvasRef = useRef()
 
@@ -156,7 +159,6 @@ export default function SendMessage({
         clearPrompt()
         setMessage("")
         setImage("")
-        resizeTextArea()
         console.log("🚀 [SendMessage] Creating optimistic message")
         const timestamp = Date.now().toString()
         const optimisticId = `msg_${timestamp}_${Math.random().toString(36).substring(2, 9)}`
@@ -239,10 +241,6 @@ export default function SendMessage({
     }
   }, [capturedImage])
 
-  useEffect(() => {
-    resizeTextArea()
-  }, [])
-
   const handleImageUpload = (event) => {
     const file = event.target.files[0]
     if (file) {
@@ -264,17 +262,14 @@ export default function SendMessage({
       if (e.key === "Enter") {
         e.preventDefault()
         setMessage((prevMessage) => prevMessage + "\n")
-        resizeTextArea()
       }
     } else {
       if (e.key === "Enter") {
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault()
           setMessage((prevMessage) => prevMessage + "\n")
-          resizeTextArea()
         } else if (e.shiftKey) {
           // Allow shift+enter for newlines
-          resizeTextArea()
         } else {
           e.preventDefault()
           handleSubmit()
@@ -282,32 +277,6 @@ export default function SendMessage({
       }
     }
   }
-
-  const resizeTextArea = () => {
-    const textArea = textAreaRef.current
-    if (textArea) {
-      textArea.style.height = "24px"
-      const newHeight = Math.max(24, Math.min(textArea.scrollHeight, 200))
-      textArea.style.height = `${newHeight}px`
-      if (textArea.scrollHeight >= 200) {
-        textArea.style.overflowY = "auto"
-      } else {
-        textArea.style.overflowY = "hidden"
-      }
-      const imagePreview = document.querySelector(".image-preview")
-      if (imagePreview) {
-        imagePreview.style.bottom = `${textArea.offsetHeight + 10}px`
-      }
-    }
-  }
-
-  useEffect(() => {
-    const handleResize = () => resizeTextArea()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
-  useEffect(() => resizeTextArea(), [message, image])
 
   const handlePaste = (event) => {
     const items = event.clipboardData.items
@@ -325,23 +294,12 @@ export default function SendMessage({
     }
   }
 
-  const handlePlusClick = (e) => {
-    e.stopPropagation()
-    onOpenMediaOptions()
-  }
-
   const handleGalleryClick = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
     document.getElementById("image-upload").click()
-    onCloseMediaOptions()
   }
 
   const handleCameraClick = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
     onCameraOpen()
-    onCloseMediaOptions()
   }
 
   // Ditto logo button handlers
@@ -376,6 +334,33 @@ export default function SendMessage({
       callback()
     }
   }
+
+  // Add auto-resize function
+  const autoResizeTextarea = useCallback(() => {
+    if (textAreaRef.current) {
+      // Store current scroll position
+      const scrollTop = textAreaRef.current.scrollTop
+
+      // Reset height temporarily to get the correct scrollHeight
+      textAreaRef.current.style.height = "auto"
+
+      // Calculate the new height (capped at 200px)
+      const scrollHeight = textAreaRef.current.scrollHeight
+      const maxHeight = 200
+      const newHeight = Math.min(scrollHeight, maxHeight)
+
+      // Set the height
+      textAreaRef.current.style.height = `${newHeight}px`
+
+      // Restore scroll position
+      textAreaRef.current.scrollTop = scrollTop
+    }
+  }, [])
+
+  // Auto-resize when message changes
+  useEffect(() => {
+    autoResizeTextarea()
+  }, [message, autoResizeTextarea])
 
   return (
     <>
@@ -441,60 +426,74 @@ export default function SendMessage({
           // Regular send message UI
           <>
             <div className="input-wrapper">
-              <textarea
+              <Textarea
                 ref={textAreaRef}
                 onKeyDown={handleKeyDown}
-                onInput={resizeTextArea}
-                className="text-area"
-                type="text"
                 value={message}
-                onChange={(e) => {
-                  setMessage(e.target.value)
-                }}
+                onChange={(e) => setMessage(e.target.value)}
                 placeholder="Message Ditto"
-                rows={3}
-                style={{
-                  overflowY: "hidden",
-                  marginRight: "-5px",
-                }}
+                className={cn(
+                  "text-area",
+                  "resize-none",
+                  message.length > 0 && "has-content"
+                )}
               />
             </div>
 
             <div className="bottom-buttons-bar">
-              <ButtonRow>
-                {/* Full screen button on the left using shadcn/ui */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={openComposeModal}
-                  aria-label="Expand message"
-                >
-                  <Expand />
-                </Button>
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  {/* Full screen button on the left using shadcn/ui */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openComposeModal()
+                    }}
+                    aria-label="Expand message"
+                    className="h-9 w-9"
+                  >
+                    <Expand className="h-5 w-5" />
+                  </Button>
 
-                {/* Add Media button next to full screen using shadcn/ui */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handlePlusClick}
-                  aria-label="Add media"
-                >
-                  <Plus />
-                </Button>
+                  {/* Add Media dropdown menu using shadcn/ui */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Add media"
+                        className="h-9 w-9"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem onClick={handleGalleryClick}>
+                        <Image className="mr-2 h-4 w-4" />
+                        <span>Photo Gallery</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleCameraClick}>
+                        <Camera className="mr-2 h-4 w-4" />
+                        <span>Camera</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
 
                 {/* Center Ditto logo button */}
                 <div className="ditto-button-container">
                   <motion.div
                     ref={logoButtonRef}
-                    className="ditto-logo-button"
+                    className="h-9 w-9 rounded-full flex items-center justify-center cursor-pointer"
                     whileTap={{ scale: 0.9 }}
                     whileHover={{
                       scale: 1.1,
                       backgroundColor: "rgba(255, 255, 255, 0.2)",
                       boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
                     }}
-                    onMouseEnter={handleHoverStart}
-                    onMouseLeave={handleHoverEnd}
                     onClick={handleLogoClick}
                     onKeyDown={(e) => handleButtonKeyDown(e, handleLogoClick)}
                     aria-label="Menu"
@@ -504,7 +503,7 @@ export default function SendMessage({
                     <img
                       src={DITTO_AVATAR}
                       alt="Ditto"
-                      className="ditto-icon-circular"
+                      className="h-7 w-7 rounded-full"
                     />
                   </motion.div>
 
@@ -540,89 +539,49 @@ export default function SendMessage({
                   </div>
                 </div>
 
-                {/* Script indicator button using shadcn/ui */}
-                {selectedScript && (
+                <div className="flex items-center gap-2">
+                  {/* Script indicator button using shadcn/ui */}
+                  {selectedScript && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleScriptNameClick}
+                      ref={scriptIndicatorRef}
+                      title={selectedScript.script}
+                      className="h-9 w-9"
+                    >
+                      <Code className="h-5 w-5" />
+                    </Button>
+                  )}
+
+                  {/* Send button on the right using shadcn/ui */}
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon"
-                    onClick={handleScriptNameClick}
-                    ref={scriptIndicatorRef}
-                    title={selectedScript.script}
+                    type="submit"
+                    disabled={isWaitingForResponse || isInvalidConfig}
+                    aria-label="Send message"
+                    title={
+                      isInvalidConfig
+                        ? "You need tokens to use this model. Please select a free model or add tokens."
+                        : ""
+                    }
+                    className="h-9 w-9"
                   >
-                    <Code />
+                    <LucidePlane className="h-5 w-5" />
                   </Button>
-                )}
+                </div>
+              </div>
 
-                {/* Send button on the right using shadcn/ui */}
-                <Button
-                  variant="default"
-                  size="icon"
-                  type="submit"
-                  disabled={isWaitingForResponse || isInvalidConfig}
-                  aria-label="Send message"
-                  title={
-                    isInvalidConfig
-                      ? "You need tokens to use this model. Please select a free model or add tokens."
-                      : ""
-                  }
-                >
-                  <LucidePlane />
-                </Button>
-
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={handleImageUpload}
-                />
-              </ButtonRow>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImageUpload}
+              />
             </div>
           </>
-        )}
-
-        {/* Hidden sliding menu container for script actions */}
-        {selectedScript && (
-          <div style={{ position: "relative", width: "0", height: "0" }}>
-            <SlidingMenu
-              isOpen={showScriptActions}
-              onClose={() => setShowScriptActions(false)}
-              position="right"
-              triggerRef={scriptIndicatorRef}
-              menuPosition="bottom"
-              menuTitle={selectedScript.script}
-              menuItems={[
-                {
-                  icon: <Play className="icon" />,
-                  text: "Launch Script",
-                  onClick: handlePlayScript,
-                },
-                {
-                  icon: <Pen className="icon" />,
-                  text: "Edit Script",
-                  onClick: () => {
-                    if (selectedScript) {
-                      const event = new CustomEvent("editScript", {
-                        detail: {
-                          script: {
-                            name: selectedScript.script,
-                            content: selectedScript.contents,
-                            scriptType: selectedScript.scriptType,
-                          },
-                        },
-                      })
-                      window.dispatchEvent(event)
-                    }
-                  },
-                },
-                {
-                  icon: <X className="icon" />,
-                  text: "Deselect Script",
-                  onClick: handleDeselectScript,
-                },
-              ]}
-            />
-          </div>
         )}
 
         {image && (
@@ -637,42 +596,6 @@ export default function SendMessage({
             />
           </div>
         )}
-
-        <AnimatePresence>
-          {showMediaOptions && (
-            <motion.div
-              className="action-menu-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onCloseMediaOptions}
-            >
-              <motion.div
-                className="action-menu"
-                initial={{ x: "-100%", opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: "-100%", opacity: 0 }}
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  className="action-menu-item"
-                  onClick={handleGalleryClick}
-                >
-                  <Image /> Photo Gallery
-                </button>
-                <button
-                  type="button"
-                  className="action-menu-item"
-                  onClick={handleCameraClick}
-                >
-                  <Camera /> Camera
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>

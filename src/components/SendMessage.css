@@ -7,11 +7,9 @@
  * 1. Form container
  * 2. Input area
  * 3. Button bar
- * 4. Action buttons
+ * 4. Ditto logo container
  * 5. Image preview and media
- * 6. Overlays and menus
- * 7. Fullscreen mode
- * 8. Responsive styles
+ * 6. Sales pitch
  */
 
 /* ===== 1. Form container ===== */
@@ -23,23 +21,7 @@
   z-index: 10;
   flex-direction: column;
   padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: 0; /* Removed rounded corners */
-}
-
-.contents {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.bar {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  justify-content: center;
-  align-items: flex-end;
-  position: relative;
+  border-radius: 0;
 }
 
 /* ===== 2. Input area ===== */
@@ -48,39 +30,48 @@
   width: 100%;
   display: flex;
   align-items: center;
-  height: 100%;
   margin-bottom: 6px;
 }
 
 .text-area {
   flex: 1;
-  border: none;
-  resize: none;
   background-color: var(--background-input);
   color: var(--interactive-active);
-  padding: var(--spacing-sm) var(--spacing-md);
   line-height: 1.5;
   font-size: 16px;
-  max-height: 200px;
-  min-height: 24px;
-  height: 24px;
   width: 100%;
-  border-radius: var(--border-radius-sm);
-  overflow-y: hidden;
+  min-height: 24px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-right: -5px;
   transition:
     border var(--transition-normal),
-    box-shadow var(--transition-normal);
+    box-shadow var(--transition-normal),
+    height 0.1s ease;
+}
+
+/* Custom scrollbar for better appearance */
+.text-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.text-area::-webkit-scrollbar-track {
+  background: var(--background-input);
+  border-radius: 4px;
+}
+
+.text-area::-webkit-scrollbar-thumb {
+  background: var(--background-tertiary);
+  border-radius: 4px;
+}
+
+.text-area::-webkit-scrollbar-thumb:hover {
+  background: var(--background-floating);
 }
 
 .text-area::placeholder {
   color: var(--text-muted);
   opacity: 0.7;
-}
-
-.text-area:focus {
-  outline: none;
-  border: 1px solid var(--primary);
-  box-shadow: 0 0 3px var(--primary);
 }
 
 /* ===== 3. Button bar ===== */
@@ -89,141 +80,25 @@
   width: 100%;
   justify-content: center;
   align-items: center;
-  padding: 6px 10px;
+  padding: 6px 5px;
   position: relative;
 }
 
-.button-hub {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--background-secondary);
-  padding: 6px 12px;
-  border-radius: 24px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  gap: 10px;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-/* ===== 4. Action buttons ===== */
-/* Script indicator container */
-.script-indicator-container {
+/* ===== 4. Ditto logo container ===== */
+.ditto-button-container {
   position: relative;
-}
-
-/* Ditto logo button */
-.ditto-logo-button {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background-color: var(--background-secondary);
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  overflow: hidden;
-  z-index: 10;
-  transition: all var(--transition-normal);
+  align-items: center;
 }
 
-/* Center button container for Ditto logo - keeping for backward compatibility */
-.center-button-container {
+.ditto-menu-container {
   position: absolute;
+  bottom: 100%;
   left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Right buttons container - keeping for backward compatibility */
-.right-buttons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Make the ditto icon circular */
-.ditto-icon-circular {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-/* Action button styling */
-.action-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--background-tertiary);
-  color: var(--interactive-normal);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  font-size: 14px;
-}
-
-.action-button:hover {
-  background-color: var(--background-floating);
-  color: var(--interactive-hover);
-}
-
-/* Submit button styling */
-.icon-button.submit {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: var(--primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  margin-left: 2px;
-}
-
-/* Media queries for responsive design */
-@media screen and (max-width: 480px) {
-  .button-hub {
-    padding: 4px 8px;
-    gap: 8px;
-    border-radius: 20px;
-  }
-
-  .action-button,
-  .icon-button.submit,
-  .script-icon-button {
-    width: 28px;
-    height: 28px;
-  }
-
-  .ditto-logo-button {
-    width: 34px;
-    height: 34px;
-  }
-
-  .ditto-icon-circular {
-    width: 24px;
-    height: 24px;
-  }
-
-  .icon-button.submit svg,
-  .action-button svg,
-  .script-icon-button svg {
-    width: 12px;
-    height: 12px;
-  }
+  transform: translateX(-90%);
+  width: 180px;
+  z-index: 1002;
 }
 
 /* ===== 5. Image preview and media ===== */
@@ -262,373 +137,7 @@
   color: var(--status-danger);
 }
 
-.camera-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: var(--z-index-overlay);
-}
-
-.camera-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 90%;
-  max-height: 90%;
-  background-color: var(--background-secondary);
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-}
-
-.camera-feed {
-  width: 100%;
-  height: auto;
-  max-height: calc(90vh - 100px);
-  object-fit: contain;
-}
-
-.camera-controls {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  width: 100%;
-  padding: 15px;
-  background-color: var(--background-input);
-}
-
-.flip-camera-icon {
-  color: var(--text-white);
-  font-size: 30px;
-  cursor: pointer;
-  transition: color var(--transition-quick);
-}
-
-.flip-camera-icon:hover {
-  color: var(--primary);
-}
-
-.camera-snap,
-.camera-close {
-  background-color: var(--primary);
-  color: var(--text-white);
-  border: none;
-  border-radius: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color var(--transition-quick);
-}
-
-.camera-snap:hover,
-.camera-close:hover {
-  background-color: var(--primary-hover);
-}
-
-.camera-snap:active,
-.camera-close:active {
-  background-color: var(--primary-active);
-}
-
-.fullscreen-image-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: var(--z-index-overlay);
-  animation: fadeIn var(--transition-normal);
-}
-
-.fullscreen-image-overlay img {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  border-radius: var(--border-radius-md);
-  animation: scaleIn var(--transition-normal);
-}
-
-/* ===== 6. Overlays and menus ===== */
-.action-menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  z-index: var(--z-index-dropdown);
-  align-items: center;
-}
-
-.action-menu {
-  background-color: var(--background-secondary);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  width: auto;
-  margin-left: var(--spacing-md);
-}
-
-.action-menu-item {
-  background-color: var(--background-input);
-  border: none;
-  border-radius: var(--border-radius-md);
-  color: var(--text-white);
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all var(--transition-quick);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-}
-
-.action-menu-item:hover {
-  background-color: var(--hover-element);
-  transform: translateX(2px);
-}
-
-.action-menu-item:active {
-  transform: translateX(4px) scale(0.98);
-}
-
-.action-menu-item svg {
-  font-size: 18px;
-}
-
-/* ===== 7. Fullscreen mode ===== */
-.fullscreen-message-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--background-primary);
-  z-index: var(--z-index-modal);
-  display: flex;
-  flex-direction: column;
-  animation: slide-up var(--transition-normal);
-}
-
-.fullscreen-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.fullscreen-header h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-normal);
-}
-
-.close-button {
-  font-size: 20px;
-  color: var(--interactive-active);
-}
-
-.fullscreen-text-area {
-  flex: 1;
-  border: none;
-  background-color: var(--background-primary);
-  color: var(--interactive-active);
-  padding: 20px;
-  font-size: 16px;
-  line-height: 1.6;
-  resize: none;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.fullscreen-text-area:focus {
-  outline: none;
-}
-
-.fullscreen-footer {
-  padding: var(--spacing-md);
-  display: flex;
-  justify-content: flex-end;
-  border-top: 1px solid var(--border-color);
-}
-
-.fullscreen-submit {
-  background-color: var(--primary-active);
-  border: none;
-  border-radius: var(--border-radius-md);
-  color: var(--text-white);
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  transition: all var(--transition-quick);
-}
-
-.fullscreen-submit:hover {
-  background-color: var(--primary-hover);
-}
-
-.fullscreen-submit:active {
-  transform: scale(0.98);
-}
-
-.fullscreen-submit:disabled {
-  background-color: var(--background-secondary);
-  color: var(--text-muted);
-  cursor: not-allowed;
-}
-
-/* ===== 8. Responsive styles ===== */
-@media screen and (max-width: 480px) {
-  .form {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    margin: 0;
-    border-radius: 0;
-  }
-
-  .input-wrapper {
-    margin-bottom: 3px;
-  }
-
-  .text-area {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 14px;
-    margin: 0;
-    min-height: 20px;
-    height: 20px;
-  }
-
-  .submit {
-    height: 32px;
-    width: 32px;
-    min-width: unset;
-    min-height: 32px;
-  }
-
-  .submit svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .action-buttons {
-    gap: var(--spacing-sm);
-  }
-
-  .action-button {
-    font-size: 15px;
-    width: 32px;
-    height: 32px;
-  }
-
-  .bottom-buttons-bar {
-    padding: 6px 5px;
-  }
-
-  .ditto-logo-button {
-    width: 38px;
-    height: 38px;
-  }
-
-  .ditto-icon-circular {
-    width: 28px;
-    height: 28px;
-  }
-
-  .script-icon-button {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-  }
-
-  .icon-button.submit {
-    width: 32px;
-    height: 32px;
-  }
-
-  .right-buttons {
-    gap: var(--spacing-sm);
-  }
-
-  .fullscreen-header {
-    padding: 12px;
-  }
-
-  .fullscreen-text-area {
-    padding: 12px;
-    font-size: 15px;
-  }
-
-  .fullscreen-footer {
-    padding: 12px;
-  }
-
-  .fullscreen-submit {
-    padding: 10px 20px;
-    font-size: 15px;
-  }
-}
-
-/* iOS and PWA specific styles are now in platform/ios.css */
-
-/* Script icon button */
-.script-icon-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  color: var(--text-white);
-  font-size: 14px;
-  transition: all var(--transition-normal);
-  margin: 0 2px;
-}
-
-.script-icon-button:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-/* Submit button - additional styles */
-.icon-button.submit svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-white);
-}
-
-.icon-button.submit.disabled {
-  background-color: var(--background-secondary);
-  color: var(--text-muted);
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.icon-button.submit:not(.disabled):hover {
-  background-color: var(--primary-hover);
-}
-
-/* Sales pitch overlay styles */
+/* ===== 6. Sales pitch styles ===== */
 .sales-pitch-content-container {
   width: 100%;
   padding: var(--spacing-md);
@@ -662,23 +171,11 @@
   justify-content: center;
 }
 
-.sales-pitch-close:hover {
-  color: var(--text-white);
-}
-
 .sales-pitch-content {
   margin-bottom: var(--spacing-md);
   font-size: 14px;
   color: var(--text-normal);
   line-height: 1.4;
-}
-
-.sales-pitch.model-name {
-  background: var(--gradient-lavender-pink-peach);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
 }
 
 .sales-pitch-options {
@@ -730,50 +227,20 @@
   background-color: var(--hover-element);
 }
 
-@keyframes slide-up-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* Responsive styles */
+@media screen and (max-width: 480px) {
+  .form {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin: 0;
+    border-radius: 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .input-wrapper {
+    margin-bottom: 3px;
   }
-}
 
-/* Expand button specific styling */
-.expand-button {
-  color: var(--interactive-normal);
-}
-
-.expand-button:hover {
-  color: var(--interactive-hover);
-  background-color: var(--background-floating);
-}
-
-/* Add Media button specific styling */
-.add-media-button {
-  color: var(--interactive-normal);
-}
-
-.add-media-button:hover {
-  color: var(--interactive-hover);
-  background-color: var(--background-floating);
-}
-
-/* Ditto button container for centered menu alignment */
-.ditto-button-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.ditto-menu-container {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-90%);
-  width: 180px;
-  z-index: 1002;
+  .text-area {
+    font-size: 14px;
+    max-height: calc(40vh - 70px);
+  }
 }

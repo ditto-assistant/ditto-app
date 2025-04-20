@@ -3,7 +3,7 @@ import { useNavigate } from "react-router"
 import { useSearchParams } from "react-router"
 import { useAuth } from "@/hooks/useAuth"
 import { Eye, EyeOff } from "lucide-react"
-import { Google } from "lucide-react"
+import { SiGoogle } from "@icons-pack/react-simple-icons"
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -264,7 +264,7 @@ const Login = () => {
         </button>
         {!isCreatingAccount && (
           <button onClick={handleGoogleSignIn} className="google-button">
-            <Google className="google-icon" /> Continue with Google
+            <SiGoogle className="google-icon" /> Continue with Google
           </button>
         )}
         <p>

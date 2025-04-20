@@ -23,6 +23,7 @@ import { MemoryNetworkProvider } from "@/hooks/useMemoryNetwork"
 import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer"
 import { ConversationProvider } from "./hooks/useConversationHistory"
 import { PromptStorageProvider } from "@/hooks/usePromptStorage"
+import { ComposeProvider } from "@/contexts/ComposeContext"
 import { ServicesProvider } from "@/hooks/useServices"
 import { initUpdateService } from "@/utils/updateService"
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler"
@@ -118,9 +119,6 @@ const modalRegistry: ModalRegistry = {
   tokenCheckout: {
     component: <TokenModal />,
   },
-  composeModal: {
-    component: <ComposeModal />,
-  },
 } as const
 
 function App() {
@@ -139,22 +137,25 @@ function App() {
                           <ConversationProvider>
                             <ServicesProvider>
                               <PromptStorageProvider>
-                                <ModalProvider registry={modalRegistry}>
-                                  <AppErrorBoundary>
-                                    <RouterProvider router={router} />
-                                  </AppErrorBoundary>
-                                  <UpdateNotification />
+                                <ComposeProvider>
+                                  <ComposeModal />
+                                  <ModalProvider registry={modalRegistry}>
+                                    <AppErrorBoundary>
+                                      <RouterProvider router={router} />
+                                    </AppErrorBoundary>
+                                    <UpdateNotification />
 
-                                  <Toaster
-                                    position="top-center"
-                                    closeButton
-                                    richColors
-                                  />
-                                  <ReactQueryDevtools
-                                    buttonPosition="top-right"
-                                    initialIsOpen={false}
-                                  />
-                                </ModalProvider>
+                                    <Toaster
+                                      position="top-center"
+                                      closeButton
+                                      richColors
+                                    />
+                                    <ReactQueryDevtools
+                                      buttonPosition="top-right"
+                                      initialIsOpen={false}
+                                    />
+                                  </ModalProvider>
+                                </ComposeProvider>
                               </PromptStorageProvider>
                             </ServicesProvider>
                           </ConversationProvider>
