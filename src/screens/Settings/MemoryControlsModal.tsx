@@ -56,7 +56,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
   if (!preferences) return null
 
   return (
-    <div className={`memory-controls-content ${isLocked ? "locked" : ""}`}>
+    <div className="memory-controls-content space-y-4">
       <MemorySlider
         label="Short Term Memory"
         values={[preferences.memory.shortTermMemoryCount]}
