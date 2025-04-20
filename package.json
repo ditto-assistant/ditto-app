@@ -53,6 +53,7 @@
     "@tanstack/react-query-devtools": "^5.74.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@types/bun": "latest",
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
@@ -62,10 +63,12 @@
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
     "depcheck": "^1.4.7",
+    "dotenv": "^16.4.5",
     "eslint": "^9.25.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
+    "playwright": "^1.44.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "shadcn": "^2.4.1",
@@ -85,7 +88,13 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint-fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "generate:whats-new": "bun scripts/generate-whats-new.ts",
-    "generate:icons": "bun scripts/generate-icons.js"
+    "generate:icons": "bun scripts/generate-icons.js",
+    "test:login": "bun scripts/tests/playwright-login.ts",
+    "test:screenshots": "bun scripts/tests/screenshot.ts",
+    "test": "bun scripts/tests/screenshot.ts",
+    "mcp:login": "bun scripts/mcp-tools.ts login",
+    "screenshot": "bun scripts/mcp-tools.ts take-screenshot",
+    "mcp": "bun scripts/mcp-tools.ts"
   },
   "browserslist": {
     "production": [
@@ -98,5 +107,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "module": "src/index.jsx",
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }
