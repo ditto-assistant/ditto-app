@@ -50,7 +50,7 @@ export const ModelGroup = ({
       updatePreferences({
         imageGeneration: {
           model: model.name,
-          size: preferences.imageGeneration?.size || {
+          size: preferences.imageGeneration?.size ?? {
             wh: "1024x1024",
           },
         },

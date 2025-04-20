@@ -7,7 +7,7 @@ import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
 import { useUser } from "@/hooks/useUser"
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
 import SubscriptionCard from "@/components/subscription/SubscriptionCard"
-import { CreditCard, LogOut, User, Moon, Sun } from "lucide-react"
+import { CreditCard, LogOut, User, Moon } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
 import {
@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ModeToggle } from "@/components/mode-toggle"
-import { useTheme } from "@/components/theme-provider"
 
 const SubscriptionTabContent: React.FC = () => {
   const { data: user, isLoading: isUserLoading } = useUser()

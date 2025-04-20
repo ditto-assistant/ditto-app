@@ -1,9 +1,7 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-interface ButtonRowProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const ButtonRow: React.FC<ButtonRowProps> = ({
+const ButtonRow: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   children,
   ...props
