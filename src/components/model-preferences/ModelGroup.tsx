@@ -49,7 +49,6 @@ export const ModelGroup = ({
           model: model.name,
           size: preferences?.imageGeneration?.size || {
             wh: "1024x1024",
-            description: "Square (1024×1024)",
           },
         },
       })

@@ -1,7 +1,8 @@
 import { z } from "zod"
 import { BASE_URL } from "../firebaseConfig"
 import { getToken } from "./auth"
-import { Model } from "@/types/llm"
+import { PreferredModels } from "./getUser"
+import { ToolPreferences, MemoryPreferences } from "@/types/llm"
 
 // Define success response schema
 export const UpdateUserPreferencesResponseSchema = z.object({
@@ -15,13 +16,12 @@ export type UpdateUserPreferencesResponse = z.infer<
 // Special error for payment required
 export const ErrorPaymentRequired = new Error("Payment required")
 
-// The fields in the update are optional because we only need to send
-// the fields that are changing, but the fields themselves are required in the database
+// Type definitions for preference updates
 export type UserPreferencesUpdate = {
-  preferredMainModel?: Model
-  preferredProgrammerModel?: Model
-  preferredImageModel?: Model
+  preferredModels?: Partial<PreferredModels>
   theme?: "light" | "dark" | "system"
+  tools?: Partial<ToolPreferences>
+  memory?: Partial<MemoryPreferences>
 }
 
 /**

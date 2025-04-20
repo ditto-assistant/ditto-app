@@ -4,6 +4,36 @@ import { BASE_URL } from "../firebaseConfig"
 import { getToken } from "./auth"
 import { Model } from "@/types/llm"
 
+// Define the preferred models schema
+const PreferredModelsSchema = z.object({
+  mainModel: z.string() as z.ZodType<Model>,
+  programmerModel: z.string() as z.ZodType<Model>,
+  imageModel: z.string() as z.ZodType<Model>,
+  imageModelSize: z.string(),
+})
+
+// Define the tools preferences schema
+const ToolPreferencesSchema = z.object({
+  htmlScript: z.boolean(),
+  imageGeneration: z.boolean(),
+  googleSearch: z.boolean(),
+})
+
+// Define the memory preferences schema
+const MemoryPreferencesSchema = z.object({
+  shortTermMemoryCount: z.number(),
+  longTermMemoryChain: z.array(z.number()),
+})
+
+// Define the preferences schema
+const UserPreferencesSchema = z.object({
+  preferredModels: PreferredModelsSchema,
+  theme: z.enum(["light", "dark", "system"]),
+  tools: ToolPreferencesSchema,
+  memory: MemoryPreferencesSchema,
+})
+
+// Define the user schema with the new preferences structure
 const UserSchema = z.object({
   balance: z.number(),
   email: z.string().optional(),
@@ -22,13 +52,11 @@ const UserSchema = z.object({
   planTier: z.number(),
   stripeCustomerID: z.string().optional(),
   isTierBoostedFromBalance: z.boolean().optional(),
-  // New preference fields
-  preferredMainModel: z.string() as z.ZodType<Model>,
-  preferredProgrammerModel: z.string() as z.ZodType<Model>,
-  preferredImageModel: z.string() as z.ZodType<Model>,
-  theme: z.enum(["light", "dark", "system"]),
+  preferences: UserPreferencesSchema,
 })
 
+export type UserPreferences = z.infer<typeof UserPreferencesSchema>
+export type PreferredModels = z.infer<typeof PreferredModelsSchema>
 export type User = z.infer<typeof UserSchema>
 
 export async function getUser(): Promise<Result<User>> {

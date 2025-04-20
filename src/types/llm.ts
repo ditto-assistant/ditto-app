@@ -3,7 +3,7 @@ export type ModelPreferences = {
   programmerModel: Model
   imageGeneration: {
     model: Model
-    size: Omit<ImageGenerationSize, "supportedModels">
+    size: { wh: string }
   }
   tools: ToolPreferences
   memory: MemoryPreferences

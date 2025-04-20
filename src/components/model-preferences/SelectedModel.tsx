@@ -51,7 +51,7 @@ export function SelectedModel({ modelType }: SelectedModelProps) {
       {/* Show image size for image models */}
       {isImageModel && preferences?.imageGeneration?.size && (
         <div className="text-xs text-foreground/60">
-          {preferences.imageGeneration.size.description}
+          {preferences.imageGeneration.size.wh}
         </div>
       )}
 

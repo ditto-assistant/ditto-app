@@ -24,10 +24,6 @@ import {
   listAll,
 } from "firebase/storage"
 import { getAuth } from "firebase/auth"
-import { DEFAULT_PREFERENCES } from "@/constants"
-
-/**@typedef {import("@/types/llm").Model} Model */
-/**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig)
@@ -723,65 +719,6 @@ export const syncLocalScriptsWithFirestore = async (userID, scriptType) => {
   } catch (e) {
     console.error("Error getting documents from scripts collection: ", e)
     return []
-  }
-}
-
-/**
- * Saves model preferences to Firestore.
- * @param {string} userID - The user's ID.
- * @param {Model} mainModel - The main model.
- * @param {Model} programmerModel - The programmer model.
- * @param {Model} imageGenerationModel - The image generation model.
- */
-export const saveModelPreferencesToFirestore = async (userID, preferences) => {
-  try {
-    const querySnapshot = await getDocs(
-      collection(db, "users", userID, "preferences")
-    )
-    if (!querySnapshot.empty) {
-      querySnapshot.forEach((doc) => {
-        updateDoc(doc.ref, {
-          preferences: {
-            ...preferences,
-            tools: preferences.tools || DEFAULT_PREFERENCES.tools,
-          },
-          timestamp: Date.now(),
-        })
-      })
-    } else {
-      await addDoc(collection(db, "users", userID, "preferences"), {
-        preferences: {
-          ...preferences,
-          tools: preferences.tools || DEFAULT_PREFERENCES.tools,
-        },
-        timestamp: Date.now(),
-      })
-    }
-  } catch (e) {
-    console.error("Error saving model preferences to Firestore: ", e)
-  }
-}
-
-/**
- * Gets model preferences from Firestore.
- * @param {string} userID - The user's ID.
- * @returns {Promise<ModelPreferences>}
- */
-export const getModelPreferencesFromFirestore = async (userID) => {
-  try {
-    const querySnapshot = await getDocs(
-      collection(db, "users", userID, "preferences")
-    )
-    if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0]
-      return doc.data().preferences ?? DEFAULT_PREFERENCES
-    }
-    // Return default preferences for new users
-    return DEFAULT_PREFERENCES
-  } catch (e) {
-    console.error("Error getting model preferences from Firestore: ", e)
-    // Return default preferences if there's an error
-    return DEFAULT_PREFERENCES
   }
 }
 

@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { useModelPreferences } from "@/hooks/useModelPreferences"
-import { useUser } from "@/hooks/useUser"
 import { useAllServices } from "@/hooks/useAllServices"
 import { Button } from "@/components/ui/button"
 import {
@@ -8,7 +6,6 @@ import {
   LayoutGrid,
   ImageIcon,
   Code,
-  ChevronLeft,
   ChevronRight,
 } from "lucide-react"
 
@@ -52,10 +49,6 @@ const FilterToggleButton = () => {
 }
 
 export const ModelPreferencesModal: React.FC = () => {
-  // These hooks are used by the child components, so we need to call them here
-  useUser()
-  useModelPreferences()
-
   // Track active tab
   const [activeTab, setActiveTab] = useState<"main" | "programmer" | "image">(
     "main"
