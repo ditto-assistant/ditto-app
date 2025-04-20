@@ -5,6 +5,7 @@ import { useUser } from "@/hooks/useUser"
 import { Crown, Maximize2, Minimize2, X } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 export interface ModalTab {
   id: string
@@ -13,6 +14,8 @@ export interface ModalTab {
   customClass?: string
   minimumTier?: number
   icon?: ReactNode
+  /** Optional custom sales pitch shown on locked tabs */
+  salesPitch?: ReactNode
 }
 
 interface ModalProps {
@@ -47,8 +50,12 @@ export default function Modal({
   headerRightContent,
   notResizable = false,
 }: ModalProps) {
-  const { createBringToFrontHandler, createCloseHandler, getModalState } =
-    useModal()
+  const {
+    createBringToFrontHandler,
+    createCloseHandler,
+    getModalState,
+    createOpenHandler,
+  } = useModal()
   const { data: user } = useUser()
   const modalRef = useRef<HTMLDivElement>(null)
   const tabsContainerRef = useRef<HTMLDivElement>(null)
@@ -226,6 +233,28 @@ export default function Modal({
     localTransform,
   ])
 
+  // Close modal on Escape key press
+  useEffect(() => {
+    if (!modalState) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal()
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [modalState, closeModal])
+
+  // Focus the active tab content container to capture key events
+  useEffect(() => {
+    if (!modalState || !tabsContainerRef.current) return
+    const activeTab =
+      tabsContainerRef.current.querySelector(`[data-state=active]`)
+    if (activeTab instanceof HTMLElement) {
+      activeTab.focus()
+    }
+  }, [modalState, activeTabId])
+
   const handleTabChange = (tabId: string) => {
     setActiveTabId(tabId)
     if (onTabChange) {
@@ -348,6 +377,10 @@ export default function Modal({
             >
               {tabs.map((tab) => {
                 const locked = isTabLocked(tab.minimumTier)
+                // Determine upgrade tier name
+                const tier = tab.minimumTier || 0
+                const tierName =
+                  tier >= 3 ? "Hero" : tier >= 2 ? "Strong" : "Spark"
                 return (
                   <TabsTrigger
                     key={tab.id}
@@ -378,6 +411,9 @@ export default function Modal({
 
           {tabs.map((tab) => {
             const locked = isTabLocked(tab.minimumTier)
+            // Determine upgrade tier name for overlay button
+            const tier = tab.minimumTier || 0
+            const tierName = tier >= 3 ? "Hero" : tier >= 2 ? "Strong" : "Spark"
             return (
               <TabsContent
                 key={tab.id}
@@ -386,19 +422,33 @@ export default function Modal({
               >
                 {locked ? (
                   <div className="h-full w-full flex flex-col">
-                    <div className="flex-1 opacity-50 pointer-events-none overflow-hidden">
+                    {/* Dimmed content underneath */}
+                    <div className="flex-1 opacity-30 pointer-events-none overflow-hidden">
                       {tab.content}
                     </div>
-                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/80">
-                      <div className="text-center p-6 max-w-md">
-                        <Crown className="h-12 w-12 mx-auto mb-4 text-primary" />
-                        <h3 className="text-xl font-bold mb-2">
-                          Premium Feature
-                        </h3>
-                        <p className="text-muted-foreground">
-                          This feature requires a premium subscription. Upgrade
-                          to access {tab.label} and other premium features.
-                        </p>
+                    {/* Overlay with upgrade prompt */}
+                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/60">
+                      <div className="text-center p-8 space-y-4 max-w-lg">
+                        <Crown className="h-12 w-12 mx-auto text-primary" />
+                        <h3 className="text-2xl font-bold">Premium Feature</h3>
+                        {/* Custom sales pitch if provided */}
+                        {tab.salesPitch ? (
+                          <div className="text-lg text-muted-foreground">
+                            {tab.salesPitch}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground">
+                            Unlock {tab.label} and other premium features by
+                            upgrading your plan.
+                          </p>
+                        )}
+                        <Button
+                          variant="default"
+                          className="mt-4"
+                          onClick={() => createOpenHandler(id, "general")()}
+                        >
+                          Upgrade to {tierName}
+                        </Button>
                       </div>
                     </div>
                   </div>

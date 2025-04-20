@@ -3,7 +3,6 @@ import {
   Plus,
   Image,
   Camera,
-  Times,
   LucidePlane,
   Expand,
   Play,
@@ -15,6 +14,7 @@ import {
   Laptop,
   Settings,
   MessageCircle,
+  X,
 } from "lucide-react"
 import { sendPrompt } from "../control/agent"
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
@@ -24,7 +24,7 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useBalance } from "@/hooks/useBalance"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
-import { useCompose, FullscreenComposeModal } from "@/components/ComposeModal"
+import { useCompose } from "@/components/ComposeModal"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useScripts } from "@/hooks/useScripts.tsx"
 import { useModal } from "@/hooks/useModal"
@@ -33,6 +33,8 @@ import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/useUser"
 import { ErrorPaymentRequired } from "@/types/errors"
+import { Button } from "@/components/ui/button"
+import ButtonRow from "@/components/ui/ButtonRow"
 /**
  * A component that allows the user to send a message to the agent
  * @param {Object} props - The component props
@@ -389,7 +391,7 @@ export default function SendMessage({
                 }}
                 aria-label="Close sales pitch"
               >
-                <Times />
+                <X />
               </button>
             </div>
             <div className="sales-pitch-content">
@@ -459,24 +461,26 @@ export default function SendMessage({
             </div>
 
             <div className="bottom-buttons-bar">
-              <div className="button-hub">
-                {/* Full screen button on the left */}
-                <div
-                  className="icon-button action-button expand-button"
+              <ButtonRow>
+                {/* Full screen button on the left using shadcn/ui */}
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={openComposeModal}
                   aria-label="Expand message"
                 >
                   <Expand />
-                </div>
+                </Button>
 
-                {/* Add Media button next to full screen */}
-                <div
-                  className="icon-button action-button add-media-button"
+                {/* Add Media button next to full screen using shadcn/ui */}
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handlePlusClick}
                   aria-label="Add media"
                 >
                   <Plus />
-                </div>
+                </Button>
 
                 {/* Center Ditto logo button */}
                 <div className="ditto-button-container">
@@ -536,25 +540,23 @@ export default function SendMessage({
                   </div>
                 </div>
 
-                {/* Script indicator button (shows only when a script is selected) */}
+                {/* Script indicator button using shadcn/ui */}
                 {selectedScript && (
-                  <motion.div
-                    className="script-icon-button"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    whileTap={{ scale: 0.95 }}
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={handleScriptNameClick}
                     ref={scriptIndicatorRef}
                     title={selectedScript.script}
                   >
                     <Code />
-                  </motion.div>
+                  </Button>
                 )}
 
-                {/* Send button on the right */}
-                <button
-                  className={`icon-button submit ${isWaitingForResponse || isInvalidConfig ? "disabled" : ""}`}
+                {/* Send button on the right using shadcn/ui */}
+                <Button
+                  variant="default"
+                  size="icon"
                   type="submit"
                   disabled={isWaitingForResponse || isInvalidConfig}
                   aria-label="Send message"
@@ -565,7 +567,7 @@ export default function SendMessage({
                   }
                 >
                   <LucidePlane />
-                </button>
+                </Button>
 
                 <input
                   id="image-upload"
@@ -574,7 +576,7 @@ export default function SendMessage({
                   style={{ display: "none" }}
                   onChange={handleImageUpload}
                 />
-              </div>
+              </ButtonRow>
             </div>
           </>
         )}
@@ -614,7 +616,7 @@ export default function SendMessage({
                   },
                 },
                 {
-                  icon: <Times className="icon" />,
+                  icon: <X className="icon" />,
                   text: "Deselect Script",
                   onClick: handleDeselectScript,
                 },
@@ -626,7 +628,7 @@ export default function SendMessage({
         {image && (
           <div className="image-preview" onClick={() => openImageViewer(image)}>
             <img src={image} alt="Preview" />
-            <Times
+            <X
               className="remove-image"
               onClick={(e) => {
                 e.stopPropagation()
@@ -674,8 +676,6 @@ export default function SendMessage({
 
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>
-
-      <FullscreenComposeModal />
     </>
   )
 }

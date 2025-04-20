@@ -1,13 +1,6 @@
 import { useState } from "react"
 import { useAllServices } from "@/hooks/useAllServices"
-import { Button } from "@/components/ui/button"
-import {
-  SlidersHorizontal,
-  LayoutGrid,
-  ImageIcon,
-  Code,
-  ChevronRight,
-} from "lucide-react"
+import { LayoutGrid, ImageIcon, Code } from "lucide-react"
 
 import { ModelList } from "./ModelList"
 import { ModelFilters } from "./ModelFilters"
@@ -15,38 +8,6 @@ import { SelectedModel } from "./SelectedModel"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { ScrollArea } from "../ui/scroll-area"
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarTrigger,
-  SidebarInset,
-  useSidebar,
-} from "../ui/sidebar"
-
-// Filter toggle component that appears when sidebar is closed
-const FilterToggleButton = () => {
-  const { open, toggleSidebar } = useSidebar()
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="fixed right-4 top-32 z-20 shadow-md border bg-background rounded-full p-2 h-10 w-10"
-      onClick={toggleSidebar}
-      aria-label={open ? "Hide filters" : "Show filters"}
-    >
-      {open ? (
-        <ChevronRight className="h-5 w-5" />
-      ) : (
-        <>
-          <SlidersHorizontal className="h-5 w-5" />
-        </>
-      )}
-    </Button>
-  )
-}
 
 export const ModelPreferencesModal: React.FC = () => {
   // Track active tab
@@ -111,33 +72,30 @@ export const ModelPreferencesModal: React.FC = () => {
 
         <TabsContent
           value="main"
-          className="flex-1 flex flex-col overflow-hidden"
+          className="flex-1 flex flex-col overflow-hidden min-h-0"
         >
-          <SidebarProvider defaultOpen={false}>
-            <FilterToggleButton />
-            <div className="flex h-full overflow-hidden">
-              <Sidebar side="right" className="border-l">
-                <SidebarHeader className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Filters</h3>
-                  <SidebarTrigger>
-                    <ChevronRight className="h-4 w-4" />
-                  </SidebarTrigger>
-                </SidebarHeader>
-                <SidebarContent>
-                  <ModelFilters
-                    activeFilters={promptFilters}
-                    setActiveFilters={setPromptFilters}
-                    filterType="prompt"
-                    groupedModels={groupedPromptModels}
-                  />
-                </SidebarContent>
-              </Sidebar>
-              <SidebarInset className="flex-1 w-full">
-                <div className="flex flex-col h-full w-full">
-                  <div className="border-b p-4 bg-muted/5">
-                    <SelectedModel modelType="mainModel" />
+          <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full min-h-0">
+              {/* Selected model header */}
+              <div className="border-b p-4 bg-muted/5">
+                <SelectedModel modelType="mainModel" />
+              </div>
+
+              {/* Scrollable content area for both filters and model list */}
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full">
+                  {/* Filters section */}
+                  <div className="border-b py-4">
+                    <ModelFilters
+                      activeFilters={promptFilters}
+                      setActiveFilters={setPromptFilters}
+                      filterType="prompt"
+                      groupedModels={groupedPromptModels}
+                    />
                   </div>
-                  <ScrollArea className="flex-1">
+
+                  {/* Models list */}
+                  <div className="pt-2">
                     {isLoadingPromptModels ? (
                       <div className="flex items-center justify-center h-full">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -149,42 +107,39 @@ export const ModelPreferencesModal: React.FC = () => {
                         groupedModels={groupedPromptModels}
                       />
                     )}
-                  </ScrollArea>
-                </div>
-              </SidebarInset>
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
-          </SidebarProvider>
+          </div>
         </TabsContent>
 
         <TabsContent
           value="programmer"
-          className="flex-1 flex flex-col overflow-hidden"
+          className="flex-1 flex flex-col overflow-hidden min-h-0"
         >
-          <SidebarProvider defaultOpen={false}>
-            <FilterToggleButton />
-            <div className="flex h-full overflow-hidden">
-              <Sidebar side="right" className="border-l">
-                <SidebarHeader className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Filters</h3>
-                  <SidebarTrigger>
-                    <ChevronRight className="h-4 w-4" />
-                  </SidebarTrigger>
-                </SidebarHeader>
-                <SidebarContent>
-                  <ModelFilters
-                    activeFilters={promptFilters}
-                    setActiveFilters={setPromptFilters}
-                    filterType="prompt"
-                    groupedModels={groupedPromptModels}
-                  />
-                </SidebarContent>
-              </Sidebar>
-              <SidebarInset className="flex-1 w-full">
-                <div className="flex flex-col h-full w-full">
-                  <div className="border-b p-4 bg-muted/5">
-                    <SelectedModel modelType="programmerModel" />
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col h-full min-h-0">
+              {/* Selected model header */}
+              <div className="border-b p-4 bg-muted/5">
+                <SelectedModel modelType="programmerModel" />
+              </div>
+
+              {/* Scrollable content area for both filters and model list */}
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full">
+                  {/* Filters section */}
+                  <div className="border-b py-4">
+                    <ModelFilters
+                      activeFilters={promptFilters}
+                      setActiveFilters={setPromptFilters}
+                      filterType="prompt"
+                      groupedModels={groupedPromptModels}
+                    />
                   </div>
-                  <ScrollArea className="flex-1">
+
+                  {/* Models list */}
+                  <div className="pt-2">
                     {isLoadingPromptModels ? (
                       <div className="flex items-center justify-center h-full">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -196,42 +151,39 @@ export const ModelPreferencesModal: React.FC = () => {
                         groupedModels={groupedPromptModels}
                       />
                     )}
-                  </ScrollArea>
-                </div>
-              </SidebarInset>
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
-          </SidebarProvider>
+          </div>
         </TabsContent>
 
         <TabsContent
           value="image"
-          className="flex-1 flex flex-col overflow-hidden"
+          className="flex-1 flex flex-col overflow-hidden min-h-0"
         >
-          <SidebarProvider defaultOpen={false}>
-            <FilterToggleButton />
-            <div className="flex h-full overflow-hidden">
-              <Sidebar side="right" className="border-l">
-                <SidebarHeader className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Filters</h3>
-                  <SidebarTrigger>
-                    <ChevronRight className="h-4 w-4" />
-                  </SidebarTrigger>
-                </SidebarHeader>
-                <SidebarContent>
-                  <ModelFilters
-                    activeFilters={imageFilters}
-                    setActiveFilters={setImageFilters}
-                    filterType="image"
-                    groupedModels={groupedImageModels}
-                  />
-                </SidebarContent>
-              </Sidebar>
-              <SidebarInset className="flex-1 w-full">
-                <div className="flex flex-col h-full w-full">
-                  <div className="border-b p-4 bg-muted/5">
-                    <SelectedModel modelType="imageGeneration" />
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col h-full min-h-0">
+              {/* Selected model header */}
+              <div className="border-b p-4 bg-muted/5">
+                <SelectedModel modelType="imageGeneration" />
+              </div>
+
+              {/* Scrollable content area for both filters and model list */}
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full">
+                  {/* Filters section */}
+                  <div className="border-b py-4">
+                    <ModelFilters
+                      activeFilters={imageFilters}
+                      setActiveFilters={setImageFilters}
+                      filterType="image"
+                      groupedModels={groupedImageModels}
+                    />
                   </div>
-                  <ScrollArea className="flex-1">
+
+                  {/* Models list */}
+                  <div className="pt-2">
                     {isLoadingImageModels ? (
                       <div className="flex items-center justify-center h-full">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -244,11 +196,11 @@ export const ModelPreferencesModal: React.FC = () => {
                         isImageModel
                       />
                     )}
-                  </ScrollArea>
-                </div>
-              </SidebarInset>
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
-          </SidebarProvider>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

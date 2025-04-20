@@ -1,12 +1,5 @@
 import { Switch } from "../ui/switch"
 import { Badge } from "../ui/badge"
-import { ScrollArea } from "../ui/scroll-area"
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "../ui/accordion"
 import {
   SiOpenai,
   SiGoogle,
@@ -14,13 +7,19 @@ import {
   SiMeta,
 } from "@icons-pack/react-simple-icons"
 import { Bolt, Microchip, Flame, Clock, Bot, Crown } from "lucide-react"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 interface FilterValues {
   speed: string | null
   pricing: string | null
   imageSupport: boolean
   vendor: string | null
-  modelFamily: string | null
+  modelFamily: string | null // keep in interface but not using in UI
   provider?: string | null
   dimensions?: string | null
   quality?: string | null
@@ -37,6 +36,7 @@ export const ModelFilters = ({
   activeFilters,
   setActiveFilters,
   filterType,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   groupedModels,
 }: ModelFiltersProps) => {
   // Toggle filter values
@@ -47,86 +47,93 @@ export const ModelFilters = ({
     })
   }
 
+  // Common badge styles
+  const badgeClasses = "cursor-pointer h-10 py-2 text-sm"
+
   return (
-    <ScrollArea className="h-[calc(100vh-12rem)] w-full pr-2">
+    <div className="px-4 space-y-2">
       {filterType === "prompt" && (
-        <Accordion
-          type="multiple"
-          defaultValue={["speed", "pricing", "features", "vendor", "family"]}
-          className="w-full"
-        >
-          <AccordionItem value="speed">
-            <AccordionTrigger>Speed</AccordionTrigger>
+        <Accordion type="multiple" defaultValue={[]}>
+          {/* Speed Filter */}
+          <AccordionItem value="speed" className="border-b-0">
+            <AccordionTrigger className="py-2">Speed</AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-wrap gap-2">
                 <Badge
                   variant={
                     activeFilters.speed === "slow" ? "default" : "outline"
                   }
-                  className="cursor-pointer"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("speed", "slow")}
                 >
-                  <Clock className="mr-1" /> Slow
+                  <Clock className="mr-2 h-4 w-4" /> Slow
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.speed === "medium" ? "default" : "outline"
                   }
-                  className="cursor-pointer"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("speed", "medium")}
                 >
-                  <Bot className="mr-1" /> Medium
+                  <Bot className="mr-2 h-4 w-4" /> Medium
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.speed === "fast" ? "default" : "outline"
                   }
-                  className="cursor-pointer"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("speed", "fast")}
                 >
-                  <Bolt className="mr-1" /> Fast
+                  <Bolt className="mr-2 h-4 w-4" /> Fast
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.speed === "insane" ? "default" : "outline"
                   }
-                  className="cursor-pointer"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("speed", "insane")}
                 >
-                  <Flame className="mr-1" style={{ color: "#FF0000" }} /> Insane
+                  <Flame
+                    className="mr-2 h-4 w-4"
+                    style={{ color: "#FF0000" }}
+                  />{" "}
+                  Insane
                 </Badge>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="pricing">
-            <AccordionTrigger>Pricing</AccordionTrigger>
+          {/* Pricing Filter */}
+          <AccordionItem value="pricing" className="border-b-0">
+            <AccordionTrigger className="py-2">Pricing</AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-wrap gap-2">
                 <Badge
                   variant={
                     activeFilters.pricing === "free" ? "default" : "outline"
                   }
-                  className="cursor-pointer"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("pricing", "free")}
                 >
-                  <Crown className="mr-1" style={{ opacity: 0.5 }} /> Free
+                  <Crown className="mr-2 h-4 w-4" style={{ opacity: 0.5 }} />{" "}
+                  Free
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.pricing === "premium" ? "default" : "outline"
                   }
-                  className="cursor-pointer"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("pricing", "premium")}
                 >
-                  <Crown className="mr-1" /> Premium
+                  <Crown className="mr-2 h-4 w-4" /> Premium
                 </Badge>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="features">
-            <AccordionTrigger>Features</AccordionTrigger>
+          {/* Features Filter */}
+          <AccordionItem value="features" className="border-b-0">
+            <AccordionTrigger className="py-2">Features</AccordionTrigger>
             <AccordionContent>
               <div className="flex items-center space-x-2 mb-2">
                 <Switch
@@ -149,86 +156,65 @@ export const ModelFilters = ({
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="vendor">
-            <AccordionTrigger>Vendor</AccordionTrigger>
+          {/* Vendor Filter */}
+          <AccordionItem value="vendor" className="border-b-0">
+            <AccordionTrigger className="py-2">Vendor</AccordionTrigger>
             <AccordionContent>
-              <div className="flex flex-col space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Badge
                   variant={
                     activeFilters.vendor === "openai" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("vendor", "openai")}
                 >
-                  <SiOpenai className="mr-1" /> OpenAI
+                  <SiOpenai className="mr-2 h-4 w-4" /> OpenAI
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.vendor === "anthropic" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("vendor", "anthropic")}
                 >
-                  <SiAnthropic className="mr-1" /> Anthropic
+                  <SiAnthropic className="mr-2 h-4 w-4" /> Anthropic
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.vendor === "google" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("vendor", "google")}
                 >
-                  <SiGoogle className="mr-1" /> Google
+                  <SiGoogle className="mr-2 h-4 w-4" /> Google
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.vendor === "mistral" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("vendor", "mistral")}
                 >
-                  <Bolt className="mr-1" /> Mistral
+                  <Bolt className="mr-2 h-4 w-4" /> Mistral
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.vendor === "meta" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("vendor", "meta")}
                 >
-                  <SiMeta className="mr-1" /> Meta
+                  <SiMeta className="mr-2 h-4 w-4" /> Meta
                 </Badge>
                 <Badge
                   variant={
                     activeFilters.vendor === "cerebras" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("vendor", "cerebras")}
                 >
-                  <Microchip className="mr-1" /> Cerebras
+                  <Microchip className="mr-2 h-4 w-4" /> Cerebras
                 </Badge>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="family">
-            <AccordionTrigger>Model Family</AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col space-y-2">
-                {Object.keys(groupedModels).map((family) => (
-                  <Badge
-                    key={family}
-                    variant={
-                      activeFilters.modelFamily === family
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("modelFamily", family)}
-                  >
-                    {family}
-                  </Badge>
-                ))}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -236,39 +222,37 @@ export const ModelFilters = ({
       )}
 
       {filterType === "image" && (
-        <Accordion
-          type="multiple"
-          defaultValue={["provider", "dimensions", "quality", "family"]}
-          className="w-full"
-        >
-          <AccordionItem value="provider">
-            <AccordionTrigger>Provider</AccordionTrigger>
+        <Accordion type="multiple" defaultValue={[]}>
+          {/* Provider Filter */}
+          <AccordionItem value="provider" className="border-b-0">
+            <AccordionTrigger className="py-2">Provider</AccordionTrigger>
             <AccordionContent>
-              <div className="flex flex-col space-y-2">
+              <div className="flex flex-wrap gap-2">
                 <Badge
                   variant={
                     activeFilters.provider === "openai" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses}`}
                   onClick={() => toggleFilter("provider", "openai")}
                 >
-                  <SiOpenai className="mr-1" /> OpenAI
+                  <SiOpenai className="mr-2 h-4 w-4" /> OpenAI
                 </Badge>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="dimensions">
-            <AccordionTrigger>Dimensions</AccordionTrigger>
+          {/* Dimensions Filter */}
+          <AccordionItem value="dimensions" className="border-b-0">
+            <AccordionTrigger className="py-2">Dimensions</AccordionTrigger>
             <AccordionContent>
-              <div className="flex flex-col space-y-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Badge
                   variant={
                     activeFilters.dimensions === "square"
                       ? "default"
                       : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("dimensions", "square")}
                 >
                   □ Square
@@ -279,7 +263,7 @@ export const ModelFilters = ({
                       ? "default"
                       : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("dimensions", "landscape")}
                 >
                   ▭ Landscape
@@ -290,7 +274,7 @@ export const ModelFilters = ({
                       ? "default"
                       : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("dimensions", "portrait")}
                 >
                   ▯ Portrait
@@ -299,15 +283,16 @@ export const ModelFilters = ({
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="quality">
-            <AccordionTrigger>Quality</AccordionTrigger>
+          {/* Quality Filter */}
+          <AccordionItem value="quality" className="border-b-0">
+            <AccordionTrigger className="py-2">Quality</AccordionTrigger>
             <AccordionContent>
-              <div className="flex flex-col space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Badge
                   variant={
                     activeFilters.quality === "standard" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("quality", "standard")}
                 >
                   Standard
@@ -316,7 +301,7 @@ export const ModelFilters = ({
                   variant={
                     activeFilters.quality === "hd" ? "default" : "outline"
                   }
-                  className="cursor-pointer justify-start w-full"
+                  className={`${badgeClasses} justify-center`}
                   onClick={() => toggleFilter("quality", "hd")}
                 >
                   HD
@@ -324,31 +309,9 @@ export const ModelFilters = ({
               </div>
             </AccordionContent>
           </AccordionItem>
-
-          <AccordionItem value="family">
-            <AccordionTrigger>Model Family</AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col space-y-2">
-                {Object.keys(groupedModels).map((family) => (
-                  <Badge
-                    key={family}
-                    variant={
-                      activeFilters.modelFamily === family
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer justify-start w-full"
-                    onClick={() => toggleFilter("modelFamily", family)}
-                  >
-                    {family}
-                  </Badge>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
         </Accordion>
       )}
-    </ScrollArea>
+    </div>
   )
 }
 

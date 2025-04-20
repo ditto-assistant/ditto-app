@@ -52,6 +52,37 @@ export interface AllServicesData {
 }
 
 /**
+ * Extracts the version number from a model family name
+ * For example: "Llama 4" returns 4, "GPT-3.5" returns 3.5
+ */
+function extractVersionNumber(modelName: string): number {
+  const matches = modelName.match(/\d+(\.\d+)?/)
+  return matches ? parseFloat(matches[0]) : 0
+}
+
+/**
+ * Compares two models by their family version in descending order
+ */
+function compareModelsByFamily<
+  T extends { modelFamilyDisplayName?: string; provider: string },
+>(a: T, b: T): number {
+  const familyA = a.modelFamilyDisplayName || a.provider
+  const familyB = b.modelFamilyDisplayName || b.provider
+
+  // Extract version numbers
+  const versionA = extractVersionNumber(familyA)
+  const versionB = extractVersionNumber(familyB)
+
+  if (versionA === versionB) {
+    // If versions are the same, sort alphabetically
+    return familyA.localeCompare(familyB)
+  }
+
+  // Sort by version in descending order (higher numbers first)
+  return versionB - versionA
+}
+
+/**
  * Hook that fetches all models data and provides pre-processed data
  * with filtering, grouping and other data manipulations
  */
@@ -235,6 +266,9 @@ export function useAllServices(): AllServicesData {
       })
     }
 
+    // Sort models by family version in descending order (newer models first)
+    filtered.sort(compareModelsByFamily)
+
     return filtered
   }, [allPromptModels, promptFilters])
 
@@ -277,6 +311,9 @@ export function useAllServices(): AllServicesData {
           imageFilters.modelFamily
       )
     }
+
+    // Sort image models by family version in descending order (newer models first)
+    filtered.sort(compareModelsByFamily)
 
     return filtered
   }, [allImageModels, imageFilters])

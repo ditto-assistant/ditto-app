@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Play, Pen, Times } from "lucide-react"
+import { Play, Pen, X } from "lucide-react"
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
 import "./ScriptActionsOverlay.css"
 
@@ -63,7 +63,7 @@ function ScriptActionsOverlay({
             transition={{ duration: 0.2 }}
           >
             <button className="CloseButton" onClick={handleClose}>
-              <Times />
+              <X />
             </button>
             <div className="ScriptActionsHeader">
               <h3>Currently Selected Script</h3>

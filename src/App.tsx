@@ -22,7 +22,6 @@ import { ConfirmationDialogProvider } from "@/hooks/useConfirmationDialog"
 import { MemoryNetworkProvider } from "@/hooks/useMemoryNetwork"
 import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer"
 import { ConversationProvider } from "./hooks/useConversationHistory"
-import { ComposeProvider } from "@/components/ComposeModal"
 import { PromptStorageProvider } from "@/hooks/usePromptStorage"
 import { ServicesProvider } from "@/hooks/useServices"
 import { initUpdateService } from "@/utils/updateService"
@@ -66,6 +65,7 @@ const ScriptsOverlay = loadE(
 )
 const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
+const ComposeModal = loadE(() => import("@/components/ComposeModal"))
 const queryClient = new QueryClient()
 
 const router = createBrowserRouter(
@@ -118,6 +118,9 @@ const modalRegistry: ModalRegistry = {
   tokenCheckout: {
     component: <TokenModal />,
   },
+  composeModal: {
+    component: <ComposeModal />,
+  },
 } as const
 
 function App() {
@@ -135,26 +138,24 @@ function App() {
                         <MemoryNodeViewerProvider>
                           <ConversationProvider>
                             <ServicesProvider>
-                              <ModalProvider registry={modalRegistry}>
-                                <PromptStorageProvider>
-                                  <ComposeProvider>
-                                    <AppErrorBoundary>
-                                      <RouterProvider router={router} />
-                                    </AppErrorBoundary>
-                                    <UpdateNotification />
+                              <PromptStorageProvider>
+                                <ModalProvider registry={modalRegistry}>
+                                  <AppErrorBoundary>
+                                    <RouterProvider router={router} />
+                                  </AppErrorBoundary>
+                                  <UpdateNotification />
 
-                                    <Toaster
-                                      position="top-center"
-                                      closeButton
-                                      richColors
-                                    />
-                                    <ReactQueryDevtools
-                                      buttonPosition="top-right"
-                                      initialIsOpen={false}
-                                    />
-                                  </ComposeProvider>
-                                </PromptStorageProvider>
-                              </ModalProvider>
+                                  <Toaster
+                                    position="top-center"
+                                    closeButton
+                                    richColors
+                                  />
+                                  <ReactQueryDevtools
+                                    buttonPosition="top-right"
+                                    initialIsOpen={false}
+                                  />
+                                </ModalProvider>
+                              </PromptStorageProvider>
                             </ServicesProvider>
                           </ConversationProvider>
                         </MemoryNodeViewerProvider>

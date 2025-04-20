@@ -2,6 +2,7 @@
 import { useUser } from "@/hooks/useUser"
 import { LLMModel, ImageModel } from "@/api/services"
 import { ModelGroup } from "./ModelGroup"
+import { useModal } from "@/hooks/useModal"
 
 interface ModelListProps {
   models: (LLMModel | ImageModel)[]
@@ -17,6 +18,7 @@ export const ModelList = ({
   isImageModel = false,
 }: ModelListProps) => {
   const { data: user } = useUser()
+  const { createOpenHandler } = useModal()
 
   if (models.length === 0) {
     return (
@@ -26,13 +28,10 @@ export const ModelList = ({
     )
   }
 
+  // Open Settings modal with initial tab "general" (Subscription)
+  const openSettingsGeneral = createOpenHandler("settings", "general")
   const redirectToGeneralTab = () => {
-    const generalTab = document.querySelector(
-      '.modal-tab[data-tab-id="general"]'
-    )
-    if (generalTab) {
-      ;(generalTab as HTMLElement).click()
-    }
+    openSettingsGeneral()
   }
 
   // Render models grouped by family/flavor

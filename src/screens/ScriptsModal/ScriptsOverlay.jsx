@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
-import { Plus, Sort, Trash, Undo, Cogs } from "lucide-react"
+import { Plus, SortAsc, Trash, Undo, Settings } from "lucide-react"
 // import { downloadOpenscadScript } from "../control/agentTools";
 import { motion, AnimatePresence } from "framer-motion"
 import "./ScriptsOverlay.css"
@@ -471,7 +471,7 @@ export default function ScriptsOverlay() {
             >
               Edit
             </motion.button>
-            <Cogs
+            <Settings
               className="more-icon"
               onClick={(e) => {
                 e.stopPropagation()
@@ -609,7 +609,7 @@ export default function ScriptsOverlay() {
         })
       }}
     >
-      <Sort className="sort-icon" />
+      <SortAsc className="sort-icon" />
       <span className="sort-text">
         {sortOrder === "recent" ? "Most Recent" : "Alphabetical"}
       </span>

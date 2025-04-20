@@ -62,7 +62,11 @@ const SubscriptionTabContent: React.FC = () => {
   }
 
   if (!auth.user) {
-    return <div>Please log in to manage your subscription.</div>
+    return (
+      <div data-subscription-section>
+        Please log in to manage your subscription.
+      </div>
+    )
   }
 
   const { uid, email, displayName } = auth.user
@@ -204,7 +208,7 @@ const SubscriptionTabContent: React.FC = () => {
 
   // Otherwise, show account + subscription options for free users
   return (
-    <div className="p-4 space-y-6">
+    <div data-subscription-section className="p-4 space-y-6">
       {accountCard}
 
       <div className="mb-6">

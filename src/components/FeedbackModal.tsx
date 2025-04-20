@@ -1,119 +1,150 @@
-import { Bug, Lightbulb } from "lucide-react"
-import { useActionState, useCallback, useEffect } from "react"
-import { useState, useRef } from "react"
+import React, { useState } from "react"
+import { X, Bug, Lightbulb } from "lucide-react"
+import Modal from "./ui/modals/Modal"
+import { Button } from "./ui/button"
+import { useModal } from "@/hooks/useModal"
+import { toast } from "sonner"
 import { BASE_URL } from "@/firebaseConfig"
 import { getDeviceID, APP_VERSION } from "@/utils/deviceId"
 import { useAuth, useAuthToken } from "@/hooks/useAuth"
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
-import { toast } from "sonner"
-import { SubmitButton } from "@/components/ui/buttons/SubmitButton"
-import SocialLinks from "@/components/ui/links/SocialLinks"
-import "./FeedbackModal.css"
-import { useModal } from "@/hooks/useModal"
-import Modal from "@/components/ui/modals/Modal"
-import { Result } from "@/types/common"
+import { LoadingSpinner } from "./ui/loading/LoadingSpinner"
+import SocialLinks from "./ui/links/SocialLinks"
+import { cn } from "@/lib/utils"
 
 type FeedbackType = "bug" | "feature-request"
 
-type FeedbackState = Result<boolean>
-
-async function submitFeedback(_: FeedbackState, formData: FormData) {
-  try {
-    const response = await fetch(`${BASE_URL}/v1/feedback`, {
-      method: "POST",
-      body: formData,
-    })
-    if (response.status === 201) {
-      return { ok: true }
-    }
-    const error = await response.text()
-    return { err: error }
-  } catch (error: unknown) {
-    return { err: error instanceof Error ? error.message : "Unknown error" }
-  }
-}
-
 export default function FeedbackModal() {
   const { createCloseHandler } = useModal()
+  const closeModal = createCloseHandler("feedback")
   const [selectedType, setSelectedType] = useState<FeedbackType>("bug")
-  const createSelectTypeCallback = useCallback(
-    (type: FeedbackType) => () => setSelectedType(type),
-    []
-  )
+  const [feedback, setFeedback] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const auth = useAuth()
   const token = useAuthToken()
-  const [state, formAction] = useActionState(submitFeedback, { ok: false })
-  const formRef = useRef<HTMLFormElement>(null)
-  const closeModal = createCloseHandler("feedback")
-  useEffect(() => {
-    if (state?.err) {
-      toast.error(state.err)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!feedback.trim()) return
+
+    setIsSubmitting(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("userID", auth.user?.uid || "")
+      formData.append("deviceID", getDeviceID())
+      formData.append("version", APP_VERSION)
+      formData.append("type", selectedType)
+      formData.append("feedback", feedback)
+
+      const response = await fetch(`${BASE_URL}/v1/feedback`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.data}`,
+        },
+        body: formData,
+      })
+
+      if (response.status === 201) {
+        toast.success("Feedback submitted successfully!")
+        setFeedback("")
+        closeModal()
+      } else {
+        const error = await response.text()
+        toast.error(error || "Failed to submit feedback")
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error)
+      toast.error("Failed to submit feedback. Please try again later.")
+    } finally {
+      setIsSubmitting(false)
     }
-    if (state?.ok) {
-      toast.success("Feedback submitted successfully!")
-      formRef.current?.reset()
-      state.ok = false
-      closeModal()
-    }
-  }, [state, closeModal])
+  }
+
   if (auth.isLoading || token.isLoading) {
     return <LoadingSpinner />
   }
+
   if (auth.error || token.error) {
-    return <div className="error-message">Authentication required</div>
+    return (
+      <div className="bg-destructive/10 text-destructive p-3 rounded-md border border-destructive/20 text-sm">
+        Authentication required
+      </div>
+    )
   }
 
   return (
-    <Modal id="feedback" title="Feedback">
-      <form ref={formRef} action={formAction}>
-        <input type="hidden" name="userID" value={auth.user?.uid || ""} />
-        <input type="hidden" name="deviceID" value={getDeviceID()} />
-        <input type="hidden" name="version" value={APP_VERSION} />
-        <input
-          type="hidden"
-          name="authorization"
-          value={`Bearer ${token.data}`}
-        />
-
-        <div className="feedback-type-selector">
-          <div className="feedback-buttons">
-            <button
-              type="button"
-              onClick={createSelectTypeCallback("bug")}
-              className={`ditto-button secondary modal-feedback-button feedback-bug-button ${
-                selectedType === "bug" ? "selected" : ""
-              }`}
-            >
-              <Bug className="feedback-icon bug-icon" />
-              Bug
-            </button>
-            <button
-              type="button"
-              onClick={createSelectTypeCallback("feature-request")}
-              className={`ditto-button secondary modal-feedback-button feedback-feature-button ${
-                selectedType === "feature-request" ? "selected" : ""
-              }`}
-            >
-              <Lightbulb className="feedback-icon feature-icon" />
-              Idea
-            </button>
+    <Modal
+      id="feedback"
+      title="Send Feedback"
+      headerRightContent={
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={closeModal}
+          className="h-8 w-8"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      }
+    >
+      <div className="flex flex-col space-y-4 p-4">
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium">Feedback Type</label>
+            <div className="flex gap-3 sm:flex-row flex-col">
+              <Button
+                type="button"
+                variant={selectedType === "bug" ? "default" : "outline"}
+                onClick={() => setSelectedType("bug")}
+                className={cn(
+                  "flex-1",
+                  selectedType === "bug" &&
+                    "bg-gradient-to-r from-red-900 to-red-400"
+                )}
+              >
+                <Bug className="mr-2 h-4 w-4 text-red-400" />
+                Report Bug
+              </Button>
+              <Button
+                type="button"
+                variant={
+                  selectedType === "feature-request" ? "default" : "outline"
+                }
+                onClick={() => setSelectedType("feature-request")}
+                className={cn(
+                  "flex-1",
+                  selectedType === "feature-request" &&
+                    "bg-gradient-to-r from-amber-800 to-amber-300"
+                )}
+              >
+                <Lightbulb className="mr-2 h-4 w-4 text-amber-300" />
+                Suggest Idea
+              </Button>
+            </div>
           </div>
-          <input type="hidden" name="type" value={selectedType} />
-        </div>
-
-        <div className="feedback-form">
-          <textarea
-            id="feedback"
-            name="feedback"
-            className="feedback-textarea"
-            placeholder="Write your feedback here..."
-            required
-            rows={6}
-          />
-        </div>
-        <SubmitButton />
-        <SocialLinks />
-      </form>
+          <div className="flex flex-col space-y-2">
+            <label htmlFor="feedback" className="text-sm font-medium">
+              Your Feedback
+            </label>
+            <textarea
+              id="feedback"
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Please share your thoughts, suggestions, or report any issues..."
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            disabled={isSubmitting || !feedback.trim()}
+            className="w-full"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Feedback"}
+          </Button>
+          <SocialLinks />
+        </form>
+      </div>
     </Modal>
   )
 }

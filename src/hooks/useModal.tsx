@@ -23,7 +23,7 @@ export type ModalId =
   | "fullscreenCompose"
   | "whatsNew"
   | "tokenCheckout"
-
+  | "composeModal"
 type ModalRegistration = {
   component: ReactNode
 }

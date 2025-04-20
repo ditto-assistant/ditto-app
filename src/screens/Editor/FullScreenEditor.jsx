@@ -12,13 +12,13 @@ import {
   Play,
   Code,
   Expand,
-  Compress,
+  Minimize,
   Search,
-  ProjectDiagram,
+  Projector,
   Undo,
   Redo,
   AlignLeft,
-  Comments,
+  MessageSquare,
   X,
   ChevronDown,
   Brain,
@@ -846,7 +846,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               onClick={() => setShowScriptChat((prev) => !prev)}
               className={`icon-button app ${showScriptChat ? "active" : ""}`}
             >
-              <Comments size={16} />
+              <MessageSquare size={16} />
             </IconButton>
           </Tooltip>
           <div className="divider" />
@@ -960,7 +960,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   className="icon-button"
                 >
                   {isMaximized === "editor" ? (
-                    <Compress size={12} />
+                    <Minimize size={12} />
                   ) : (
                     <Expand size={12} />
                   )}
@@ -982,7 +982,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 onClick={() => setViewMode("tree")}
                 className={`icon-button ${viewMode === "tree" ? "active" : ""}`}
               >
-                <ProjectDiagram size={16} />
+                <Projector size={16} />
               </IconButton>
             </Tooltip>
           </div>
