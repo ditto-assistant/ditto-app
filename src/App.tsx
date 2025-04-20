@@ -64,9 +64,6 @@ const TokenModal = loadE(() => import("@/components/TokenModal"))
 const ScriptsOverlay = loadE(
   () => import("@/screens/ScriptsModal/ScriptsOverlay")
 )
-const ConfirmationDialog = loadE(
-  () => import("@/components/ui/modals/ConfirmationModal")
-)
 const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
 const queryClient = new QueryClient()
@@ -111,9 +108,6 @@ const modalRegistry: ModalRegistry = {
   },
   dittoCanvas: {
     component: <DittoCanvasModal />,
-  },
-  confirmationDialog: {
-    component: <ConfirmationDialog />,
   },
   memoryNodeViewer: {
     component: <MemoryNodeModal />,

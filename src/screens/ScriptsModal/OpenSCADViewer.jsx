@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { FaTimes, FaSave } from "react-icons/fa"
+import { X, Save } from "lucide-react"
 import { IconButton } from "@mui/material"
 import { useState } from "react"
 import { saveScriptToFirestore } from "../../control/firebase"
@@ -82,14 +82,14 @@ const OpenSCADViewer = ({ script, onClose }) => {
                 disabled={isSaving}
                 style={styles.saveButton}
               >
-                <FaSave size={16} color={darkModeColors.textSecondary} />
+                <Save size={16} color={darkModeColors.textSecondary} />
               </IconButton>
               <IconButton
                 size="small"
                 onClick={onClose}
                 style={styles.closeButton}
               >
-                <FaTimes size={16} color={darkModeColors.textSecondary} />
+                <X size={16} color={darkModeColors.textSecondary} />
               </IconButton>
             </div>
           </div>

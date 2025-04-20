@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
-import { MdAdd, MdSort } from "react-icons/md"
-import { FaTrash, FaUndo, FaCog } from "react-icons/fa"
+import { Plus, Sort, Trash, Undo, Cogs } from "lucide-react"
 // import { downloadOpenscadScript } from "../control/agentTools";
 import { motion, AnimatePresence } from "framer-motion"
 import "./ScriptsOverlay.css"
@@ -472,7 +471,7 @@ export default function ScriptsOverlay() {
             >
               Edit
             </motion.button>
-            <FaCog
+            <Cogs
               className="more-icon"
               onClick={(e) => {
                 e.stopPropagation()
@@ -569,7 +568,7 @@ export default function ScriptsOverlay() {
                       setMenuPosition(null)
                     }}
                   >
-                    <FaUndo style={{ marginRight: "8px" }} />
+                    <Undo style={{ marginRight: "8px" }} />
                     Revert
                   </motion.div>
                 </>
@@ -587,7 +586,7 @@ export default function ScriptsOverlay() {
                   setMenuPosition(null)
                 }}
               >
-                <FaTrash style={{ marginRight: "8px" }} />
+                <Trash style={{ marginRight: "8px" }} />
                 Delete
               </motion.div>
             </CardMenu>
@@ -610,7 +609,7 @@ export default function ScriptsOverlay() {
         })
       }}
     >
-      <MdSort className="sort-icon" />
+      <Sort className="sort-icon" />
       <span className="sort-text">
         {sortOrder === "recent" ? "Most Recent" : "Alphabetical"}
       </span>
@@ -763,7 +762,7 @@ export default function ScriptsOverlay() {
                   className="add-script-button"
                   onClick={() => handleAddScriptClick("webApps")}
                 >
-                  <MdAdd style={{ fontSize: "24px", color: "#7289da" }} />
+                  <Plus style={{ fontSize: "24px", color: "#7289da" }} />
                 </div>
               </div>
               <div className="scripts-grid">{renderScripts("webApps")}</div>
@@ -777,7 +776,7 @@ export default function ScriptsOverlay() {
                   className="add-script-button"
                   onClick={() => handleAddScriptClick("openSCAD")}
                 >
-                  <MdAdd style={{ fontSize: "24px", color: "#7289da" }} />
+                  <Plus style={{ fontSize: "24px", color: "#7289da" }} />
                 </div>
               </div>
               <div className="scripts-grid">{renderScripts("openSCAD")}</div>

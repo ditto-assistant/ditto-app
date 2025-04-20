@@ -1,5 +1,10 @@
 {
   "ignores": [
-    "virtual:pwa-register"
+    "virtual:pwa-register",
+    "tw-animate-css",
+    "tailwindcss",
+    "shadcn",
+    "autoprefixer",
+    "postcss"
   ]
 } 

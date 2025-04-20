@@ -2,8 +2,8 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import { useSearchParams } from "react-router"
 import { useAuth } from "@/hooks/useAuth"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
-import { FcGoogle } from "react-icons/fc"
+import { Eye, EyeOff } from "lucide-react"
+import { Google } from "lucide-react"
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -34,9 +34,9 @@ const PasswordInput = ({
       onChange={onChange}
     />
     {showPassword ? (
-      <FaEyeSlash onClick={togglePasswordVisibility} className="icon" />
+      <EyeOff onClick={togglePasswordVisibility} className="icon" />
     ) : (
-      <FaEye onClick={togglePasswordVisibility} className="icon" />
+      <Eye onClick={togglePasswordVisibility} className="icon" />
     )}
   </div>
 )
@@ -264,7 +264,7 @@ const Login = () => {
         </button>
         {!isCreatingAccount && (
           <button onClick={handleGoogleSignIn} className="google-button">
-            <FcGoogle className="google-icon" /> Continue with Google
+            <Google className="google-icon" /> Continue with Google
           </button>
         )}
         <p>

@@ -8,21 +8,21 @@ import "ace-builds/src-noconflict/theme-tomorrow_night"
 import "ace-builds/src-min-noconflict/ext-language_tools"
 import "ace-builds/src-min-noconflict/ext-searchbox"
 import {
-  FaArrowLeft,
-  FaPlay,
-  FaCode,
-  FaExpand,
-  FaCompress,
-  FaSearch,
-  FaProjectDiagram,
-  FaUndo,
-  FaRedo,
-  FaAlignLeft,
-  FaComments,
-  FaTimes,
-  FaChevronDown,
-  FaBrain,
-} from "react-icons/fa"
+  ArrowLeft,
+  Play,
+  Code,
+  Expand,
+  Compress,
+  Search,
+  ProjectDiagram,
+  Undo,
+  Redo,
+  AlignLeft,
+  Comments,
+  X,
+  ChevronDown,
+  Brain,
+} from "lucide-react"
 import { Button, IconButton, Tooltip } from "@mui/material"
 import { motion, AnimatePresence } from "framer-motion"
 import DOMTreeViewer from "@/screens/Editor/DOMTreeViewer"
@@ -106,7 +106,7 @@ const SearchOverlay = ({
             <motion.div className="search-overlay" layoutId="searchOverlay">
               <div className="search-input-wrapper">
                 <div className="search-icon-wrapper">
-                  <FaSearch size={14} className="search-icon" />
+                  <Search size={14} className="search-icon" />
                 </div>
                 <input
                   type="text"
@@ -830,7 +830,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
         <div className="header-left">
           <Tooltip title="Back">
             <IconButton onClick={handleClose} className="icon-button app">
-              <FaArrowLeft />
+              <ArrowLeft />
             </IconButton>
           </Tooltip>
           <div className="title-container">
@@ -846,13 +846,13 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               onClick={() => setShowScriptChat((prev) => !prev)}
               className={`icon-button app ${showScriptChat ? "active" : ""}`}
             >
-              <FaComments size={16} />
+              <Comments size={16} />
             </IconButton>
           </Tooltip>
           <div className="divider" />
           <Tooltip title="Run">
             <IconButton onClick={handleRunPreview} className="icon-button app">
-              <FaPlay size={16} />
+              <Play size={16} />
             </IconButton>
           </Tooltip>
           <Button
@@ -895,7 +895,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   disabled={historyIndex === 0}
                   className="icon-button"
                 >
-                  <FaUndo
+                  <Undo
                     size={12}
                     color={
                       historyIndex === 0
@@ -911,7 +911,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   disabled={historyIndex === editHistory.length - 1}
                   className="icon-button"
                 >
-                  <FaRedo
+                  <Redo
                     size={12}
                     color={
                       historyIndex === editHistory.length - 1
@@ -939,7 +939,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     onClick={() => setSearchVisible(!searchVisible)}
                     className={`icon-button ${searchVisible ? "active" : ""}`}
                   >
-                    <FaSearch size={12} />
+                    <Search size={12} />
                   </IconButton>
                 </Tooltip>
               </div>
@@ -948,7 +948,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   onClick={() => setWrapEnabled((prev) => !prev)}
                   className={`icon-button ${wrapEnabled ? "active" : ""}`}
                 >
-                  <FaAlignLeft size={12} />
+                  <AlignLeft size={12} />
                 </IconButton>
               </Tooltip>
               <div className="divider" />
@@ -960,9 +960,9 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   className="icon-button"
                 >
                   {isMaximized === "editor" ? (
-                    <FaCompress size={12} />
+                    <Compress size={12} />
                   ) : (
-                    <FaExpand size={12} />
+                    <Expand size={12} />
                   )}
                 </IconButton>
               </Tooltip>
@@ -974,7 +974,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 onClick={() => setViewMode("code")}
                 className={`icon-button ${viewMode === "code" ? "active" : ""}`}
               >
-                <FaCode size={16} />
+                <Code size={16} />
               </IconButton>
             </Tooltip>
             <Tooltip title="DOM Tree View">
@@ -982,7 +982,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 onClick={() => setViewMode("tree")}
                 className={`icon-button ${viewMode === "tree" ? "active" : ""}`}
               >
-                <FaProjectDiagram size={16} />
+                <ProjectDiagram size={16} />
               </IconButton>
             </Tooltip>
           </div>
@@ -1062,7 +1062,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       disabled={historyIndex === 0}
                       className="icon-button"
                     >
-                      <FaUndo
+                      <Undo
                         size={12}
                         color={
                           historyIndex === 0
@@ -1078,7 +1078,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       disabled={historyIndex === editHistory.length - 1}
                       className="icon-button"
                     >
-                      <FaRedo
+                      <Redo
                         size={12}
                         color={
                           historyIndex === editHistory.length - 1
@@ -1098,10 +1098,10 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 {isMaximized === "preview" ? (
                   <>
                     <span className="show-editor-text">Show Editor</span>
-                    <FaChevronDown size={12} />
+                    <ChevronDown size={12} />
                   </>
                 ) : (
-                  <FaExpand size={12} />
+                  <Expand size={12} />
                 )}
               </button>
             </div>
@@ -1176,14 +1176,14 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     className={`icon-button settings-button ${showMemoryOverlay ? "active" : ""}`}
                     onClick={() => setShowMemoryOverlay((prev) => !prev)}
                   >
-                    <FaBrain size={16} />
+                    <Brain size={16} />
                   </IconButton>
                 </Tooltip>
                 <IconButton
                   onClick={() => setShowScriptChat(false)}
                   className="icon-button"
                 >
-                  <FaTimes size={16} />
+                  <X size={16} />
                 </IconButton>
               </div>
 
@@ -1428,7 +1428,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       ? selectedCodeAttachment.substring(0, 100) + "..."
                       : selectedCodeAttachment}
                   </pre>
-                  <FaTimes
+                  <X
                     className="remove-code-button"
                     onClick={() => setSelectedCodeAttachment(null)}
                   />

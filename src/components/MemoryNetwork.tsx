@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react"
-import { FaTrash, FaEye } from "react-icons/fa"
+import { Trash, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { DataSet } from "vis-data"
 import ChatMessage from "./ChatMessage"
@@ -147,7 +147,7 @@ const TableView: React.FC<{
                 }}
                 title="View memory details"
               >
-                <FaEye /> View
+                <Eye /> View
               </button>
               <button
                 className="memory-delete-button"
@@ -157,7 +157,7 @@ const TableView: React.FC<{
                 }}
                 title="Delete this memory"
               >
-                <FaTrash /> Delete
+                <Trash /> Delete
               </button>
             </div>
           </div>

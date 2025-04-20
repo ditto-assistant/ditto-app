@@ -2,8 +2,8 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
-import { FiCopy } from "react-icons/fi"
 import { toast } from "sonner"
+import { Copy } from "lucide-react"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { usePlatform } from "@/hooks/usePlatform"
 import "./MarkdownRenderer.css"
@@ -75,7 +75,7 @@ const MarkdownRenderer = ({
                   }}
                   title="Copy code"
                 >
-                  <FiCopy />
+                  <Copy />
                 </button>
               </span>
             )
@@ -125,7 +125,7 @@ const MarkdownRenderer = ({
                       }}
                       title="Copy code"
                     >
-                      <FiCopy />
+                      <Copy />
                     </button>
                   </div>
 

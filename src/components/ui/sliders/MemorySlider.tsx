@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from "react"
 import { Slider } from "@mui/material"
-import { IoAdd, IoRemove } from "react-icons/io5"
+import { Plus, Minus } from "lucide-react"
 import { useUser } from "@/hooks/useUser"
 import "./MemorySlider.css"
 
@@ -138,7 +138,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
               disabled={localValues.length <= 1 || isLocked}
               title="Remove last chain level"
             >
-              <IoRemove />
+              <Minus />
             </button>
             <button
               className="chain-control-button"
@@ -146,7 +146,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
               disabled={localValues.length >= maxChainLength || isLocked}
               title="Add chain level"
             >
-              <IoAdd />
+              <Plus />
             </button>
           </div>
         </div>

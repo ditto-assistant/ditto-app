@@ -1,7 +1,16 @@
 import React from "react"
-import { Button } from "@mui/material"
 import { SubscriptionTier } from "@/api/subscriptions"
-import "./SubscriptionCard.css"
+import { cn } from "@/lib/utils"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Check } from "lucide-react"
 
 interface SubscriptionCardProps {
   tier: SubscriptionTier
@@ -11,6 +20,7 @@ interface SubscriptionCardProps {
   userID: string
   email: string | null
   checkoutURL: string
+  className?: string
 }
 
 const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
@@ -21,6 +31,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   userID,
   email,
   checkoutURL,
+  className,
 }) => {
   const price = tier.prices.find(
     (p) => p.interval === (isYearly ? "year" : "month")
@@ -29,34 +40,47 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   if (!price) return null
 
   return (
-    <div
-      className={`subscription-card ${isSelected ? "selected" : ""} ${tier.mostPopular ? "popular" : ""}`}
+    <Card
+      className={cn(
+        "relative overflow-hidden h-full",
+        isSelected && "border-primary ring-1 ring-primary",
+        tier.mostPopular && "border-primary",
+        className
+      )}
     >
       {tier.mostPopular && (
-        <div className="subscription-popular-badge">Most Popular</div>
+        <div className="absolute top-0 right-0 left-0 bg-primary/10 text-primary text-xs font-semibold text-center py-1">
+          Most Popular
+        </div>
       )}
-      <div className="subscription-card-content">
-        <h3 className="subscription-card-name">{tier.name}</h3>
-        <p className="subscription-card-description">{tier.description}</p>
 
-        <div className="subscription-card-price">
-          <span className="price">{formatPrice(price.amount)}</span>
-          <span className="interval">{formatInterval(price.interval)}</span>
+      <CardHeader className={cn(tier.mostPopular && "pt-8")}>
+        <CardTitle className="text-xl font-bold">{tier.name}</CardTitle>
+        <CardDescription>{tier.description}</CardDescription>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-bold">
+            {formatPrice(price.amount)}
+          </span>
+          <span className="text-muted-foreground text-sm">
+            {formatInterval(price.interval)}
+          </span>
         </div>
 
-        <ul className="subscription-card-features">
+        <ul className="space-y-2">
           {tier.features.map((feature, index) => (
-            <li key={index} className="subscription-feature-item">
-              {feature}
+            <li key={index} className="flex items-start">
+              <Check className="h-4 w-4 text-primary mr-2 mt-1 flex-shrink-0" />
+              <span className="text-sm">{feature}</span>
             </li>
           ))}
         </ul>
+      </CardContent>
 
-        <form
-          action={checkoutURL}
-          method="POST"
-          className="subscription-card-form"
-        >
+      <CardFooter className="pt-4 mt-auto">
+        <form action={checkoutURL} method="POST" className="w-full">
           <input type="hidden" name="user_id" value={userID} />
           <input type="hidden" name="email" value={email || ""} />
           <input type="hidden" name="base_url" value={window.location.origin} />
@@ -68,17 +92,12 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
             name="authorization"
             value={`Bearer ${authToken}`}
           />
-          <Button
-            type="submit"
-            variant="contained"
-            className="subscription-card-button"
-            fullWidth
-          >
+          <Button type="submit" className="w-full" size="lg">
             SUBSCRIBE NOW
           </Button>
         </form>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }
 

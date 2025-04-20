@@ -6,7 +6,7 @@ import { CheckoutForm } from "@/components/CheckoutForm"
 import Modal from "@/components/ui/modals/Modal"
 import { useModal } from "@/hooks/useModal"
 import "./TokenModal.css"
-import { FaCheckCircle, FaCoins } from "react-icons/fa"
+import { CheckCircle, Coins } from "lucide-react"
 import { motion } from "framer-motion"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors"
@@ -72,7 +72,7 @@ export default function TokenModal() {
             }}
             className="token-success-icon-container"
           >
-            <FaCheckCircle className="token-success-icon" />
+            <CheckCircle className="token-success-icon" />
           </motion.div>
 
           <motion.h2
@@ -132,7 +132,7 @@ export default function TokenModal() {
       fullScreen={true}
       icon={
         <div className="token-pricing-icon">
-          <FaCoins />
+          <Coins />
         </div>
       }
     >

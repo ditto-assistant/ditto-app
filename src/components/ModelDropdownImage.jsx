@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { MdExpandMore } from "react-icons/md"
-import { FaCrown } from "react-icons/fa"
+import { ChevronDown, Crown } from "lucide-react"
 import { IMAGE_GENERATION_MODELS } from "../constants"
 import { styles as modelDropdownStyles } from "./ModelDropdown"
 import { createPortal } from "react-dom"
@@ -77,7 +76,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
           <span style={styles.sizeIndicator}>{value.size.description}</span>
           {selectedModel?.minimumTier && (
             <span style={styles.premiumBadge}>
-              <FaCrown style={styles.crownIcon} />
+              <Crown style={styles.crownIcon} />
               Premium
             </span>
           )}
@@ -86,7 +85,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <MdExpandMore style={styles.expandIcon} />
+          <ChevronDown style={styles.expandIcon} />
         </motion.div>
       </motion.div>
 
@@ -127,7 +126,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                       {model.minimumTier && (
                         <>
                           <span style={styles.premiumBadge}>
-                            <FaCrown style={styles.crownIcon} />
+                            <Crown style={styles.crownIcon} />
                             Premium
                           </span>
                         </>
@@ -138,7 +137,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                     animate={{ rotate: expandedModel === model.id ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <MdExpandMore style={styles.expandIcon} />
+                    <ChevronDown style={styles.expandIcon} />
                   </motion.div>
                 </motion.div>
 

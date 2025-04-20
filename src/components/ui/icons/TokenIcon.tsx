@@ -1,5 +1,5 @@
 import React from "react"
-import { FaCoins } from "react-icons/fa"
+import { Coins } from "lucide-react"
 import "./TokenIcon.css"
 
 interface TokenIconProps {
@@ -18,7 +18,7 @@ const TokenIcon: React.FC<TokenIconProps> = ({
       className={`token-icon-container ${className}`}
       style={{ fontSize: size }}
     >
-      <FaCoins className="token-icon" style={color ? { color } : undefined} />
+      <Coins className="token-icon" style={color ? { color } : undefined} />
     </div>
   )
 }

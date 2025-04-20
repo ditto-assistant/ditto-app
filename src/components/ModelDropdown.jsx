@@ -1,7 +1,6 @@
 import { useRef, useEffect } from "react"
 import { motion } from "framer-motion"
-import { MdExpandMore } from "react-icons/md"
-import { FaCrown } from "react-icons/fa"
+import { Crown, ChevronDown } from "lucide-react"
 import { DEFAULT_MODELS } from "../constants"
 import { createPortal } from "react-dom"
 /**@typedef {import("@/types/llm").Model} Model */
@@ -76,7 +75,7 @@ const ModelDropdown = ({
           <span>{selectedModel?.name}</span>
           {selectedModel?.minimumTier && (
             <span style={styles.premiumBadge}>
-              <FaCrown style={styles.crownIcon} />
+              <Crown style={styles.crownIcon} />
               Premium
             </span>
           )}
@@ -89,7 +88,7 @@ const ModelDropdown = ({
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <MdExpandMore style={styles.expandIcon} />
+          <ChevronDown style={styles.expandIcon} />
         </motion.div>
       </motion.div>
 
@@ -147,7 +146,7 @@ const ModelDropdown = ({
                 <div style={styles.badges}>
                   {model.minimumTier && (
                     <span style={styles.premiumBadge}>
-                      <FaCrown style={styles.crownIcon} />
+                      <Crown style={styles.crownIcon} />
                       Premium
                     </span>
                   )}

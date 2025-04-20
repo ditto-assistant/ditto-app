@@ -1,19 +1,21 @@
-import "./SendMessage.css"
 import { useState, useEffect, useRef, useCallback } from "react"
 import {
-  FaPlus,
-  FaImage,
-  FaCamera,
-  FaTimes,
-  FaPaperPlane,
-  FaExpand,
-  FaPlay,
-  FaPen,
-  FaCode,
-  FaCreditCard,
-  FaCrown,
-  FaBolt,
-} from "react-icons/fa"
+  Plus,
+  Image,
+  Camera,
+  Times,
+  LucidePlane,
+  Expand,
+  Play,
+  Pen,
+  Code,
+  CreditCard,
+  Crown,
+  Bolt,
+  Laptop,
+  Settings,
+  MessageCircle,
+} from "lucide-react"
 import { sendPrompt } from "../control/agent"
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
 import { motion, AnimatePresence } from "framer-motion"
@@ -27,9 +29,6 @@ import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useScripts } from "@/hooks/useScripts.tsx"
 import { useModal } from "@/hooks/useModal"
 import SlidingMenu from "@/components/ui/SlidingMenu"
-import { IoSettingsOutline } from "react-icons/io5"
-import { MdFeedback } from "react-icons/md"
-import { FaLaptopCode } from "react-icons/fa"
 import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/useUser"
@@ -390,7 +389,7 @@ export default function SendMessage({
                 }}
                 aria-label="Close sales pitch"
               >
-                <FaTimes />
+                <Times />
               </button>
             </div>
             <div className="sales-pitch-content">
@@ -409,7 +408,7 @@ export default function SendMessage({
                   toast.success("Switched to a free model")
                 }}
               >
-                <FaBolt /> Switch to Free Model
+                <Bolt /> Switch to Free Model
               </button>
 
               {!user?.data?.subscription && (
@@ -417,7 +416,7 @@ export default function SendMessage({
                   className="sales-pitch-option subscribe-option"
                   onClick={openSubscriptionsTab}
                 >
-                  <FaCrown /> Subscribe to a Plan
+                  <Crown /> Subscribe to a Plan
                 </button>
               )}
 
@@ -431,7 +430,7 @@ export default function SendMessage({
                   }
                 }}
               >
-                <FaCreditCard />{" "}
+                <CreditCard />{" "}
                 {user?.data?.subscription ? "Upgrade Plan" : "Buy Tokens"}
               </button>
             </div>
@@ -467,7 +466,7 @@ export default function SendMessage({
                   onClick={openComposeModal}
                   aria-label="Expand message"
                 >
-                  <FaExpand />
+                  <Expand />
                 </div>
 
                 {/* Add Media button next to full screen */}
@@ -476,7 +475,7 @@ export default function SendMessage({
                   onClick={handlePlusClick}
                   aria-label="Add media"
                 >
-                  <FaPlus />
+                  <Plus />
                 </div>
 
                 {/* Center Ditto logo button */}
@@ -518,17 +517,17 @@ export default function SendMessage({
                       menuTitle="Options"
                       menuItems={[
                         {
-                          icon: <FaLaptopCode className="icon" />,
+                          icon: <Laptop className="icon" />,
                           text: "Scripts",
                           onClick: openScriptsOverlay,
                         },
                         {
-                          icon: <MdFeedback className="icon" />,
+                          icon: <MessageCircle className="icon" />,
                           text: "Feedback",
                           onClick: openFeedbackModal,
                         },
                         {
-                          icon: <IoSettingsOutline className="icon" />,
+                          icon: <Settings className="icon" />,
                           text: "Settings",
                           onClick: openSettingsModal,
                         },
@@ -549,7 +548,7 @@ export default function SendMessage({
                     ref={scriptIndicatorRef}
                     title={selectedScript.script}
                   >
-                    <FaCode />
+                    <Code />
                   </motion.div>
                 )}
 
@@ -565,7 +564,7 @@ export default function SendMessage({
                       : ""
                   }
                 >
-                  <FaPaperPlane />
+                  <LucidePlane />
                 </button>
 
                 <input
@@ -592,12 +591,12 @@ export default function SendMessage({
               menuTitle={selectedScript.script}
               menuItems={[
                 {
-                  icon: <FaPlay className="icon" />,
+                  icon: <Play className="icon" />,
                   text: "Launch Script",
                   onClick: handlePlayScript,
                 },
                 {
-                  icon: <FaPen className="icon" />,
+                  icon: <Pen className="icon" />,
                   text: "Edit Script",
                   onClick: () => {
                     if (selectedScript) {
@@ -615,7 +614,7 @@ export default function SendMessage({
                   },
                 },
                 {
-                  icon: <FaTimes className="icon" />,
+                  icon: <Times className="icon" />,
                   text: "Deselect Script",
                   onClick: handleDeselectScript,
                 },
@@ -627,7 +626,7 @@ export default function SendMessage({
         {image && (
           <div className="image-preview" onClick={() => openImageViewer(image)}>
             <img src={image} alt="Preview" />
-            <FaTimes
+            <Times
               className="remove-image"
               onClick={(e) => {
                 e.stopPropagation()
@@ -659,14 +658,14 @@ export default function SendMessage({
                   className="action-menu-item"
                   onClick={handleGalleryClick}
                 >
-                  <FaImage /> Photo Gallery
+                  <Image /> Photo Gallery
                 </button>
                 <button
                   type="button"
                   className="action-menu-item"
                   onClick={handleCameraClick}
                 >
-                  <FaCamera /> Camera
+                  <Camera /> Camera
                 </button>
               </motion.div>
             </motion.div>

@@ -3,8 +3,7 @@ import MarkdownRenderer from "./MarkdownRenderer"
 import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserAvatar } from "@/hooks/useUserAvatar"
-import { FiCopy } from "react-icons/fi"
-import { FaBrain, FaTrash } from "react-icons/fa"
+import { Copy, Brain, Trash } from "lucide-react"
 import "./ChatMessage.css"
 
 const detectToolType = (text: string) => {
@@ -61,21 +60,21 @@ const AvatarActionMenu = ({
         onClick={onCopy}
         aria-label="Copy message"
       >
-        <FiCopy />
+        <Copy />
       </button>
       <button
         className="action-icon-button"
         onClick={onShowMemories}
         aria-label="Show memories"
       >
-        <FaBrain />
+        <Brain />
       </button>
       <button
         className="action-icon-button delete"
         onClick={onDelete}
         aria-label="Delete message"
       >
-        <FaTrash />
+        <Trash />
       </button>
     </motion.div>
   )

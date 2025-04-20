@@ -1,11 +1,11 @@
-import { FaSearch } from "react-icons/fa"
+import { Search } from "lucide-react"
 import "./SearchBar.css"
 
 export default function SearchBar({ searchTerm, onSearchChange }) {
   return (
     <div className="search-wrapper">
       <div className="search-container">
-        <FaSearch className="search-icon" />
+        <Search className="search-icon" />
         <input
           type="text"
           placeholder="Search scripts..."

@@ -1,4 +1,4 @@
-import { FaTrash } from "react-icons/fa"
+import { Trash } from "lucide-react"
 import { toast } from "sonner"
 import Modal from "./ui/modals/Modal"
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
@@ -59,7 +59,7 @@ export default function MemoryNodeModal() {
             </div>
             <div className="node-footer">
               <button onClick={handleDelete} className="delete-button">
-                <FaTrash /> Delete
+                <Trash /> Delete
               </button>
             </div>
           </>

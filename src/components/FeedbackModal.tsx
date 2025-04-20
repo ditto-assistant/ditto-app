@@ -1,4 +1,4 @@
-import { MdBugReport, MdLightbulb } from "react-icons/md"
+import { Bug, Lightbulb } from "lucide-react"
 import { useActionState, useCallback, useEffect } from "react"
 import { useState, useRef } from "react"
 import { BASE_URL } from "@/firebaseConfig"
@@ -84,7 +84,7 @@ export default function FeedbackModal() {
                 selectedType === "bug" ? "selected" : ""
               }`}
             >
-              <MdBugReport className="feedback-icon bug-icon" />
+              <Bug className="feedback-icon bug-icon" />
               Bug
             </button>
             <button
@@ -94,7 +94,7 @@ export default function FeedbackModal() {
                 selectedType === "feature-request" ? "selected" : ""
               }`}
             >
-              <MdLightbulb className="feedback-icon feature-icon" />
+              <Lightbulb className="feedback-icon feature-icon" />
               Idea
             </button>
           </div>

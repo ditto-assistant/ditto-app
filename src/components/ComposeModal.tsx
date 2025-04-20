@@ -5,7 +5,7 @@ import React, {
   useRef,
   useEffect,
 } from "react"
-import { FaPaperPlane, FaTimes } from "react-icons/fa"
+import { X, PlaneTakeoff } from "lucide-react"
 import { createPortal } from "react-dom"
 import { usePlatform } from "@/hooks/usePlatform"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
@@ -156,7 +156,7 @@ export const FullscreenComposeModal: React.FC = () => {
           <h3>Compose Message</h3>
           <div className="modal-controls">
             <div className="modal-control close" onClick={closeComposeModal}>
-              <FaTimes size={20} />
+              <X size={20} />
             </div>
           </div>
         </div>
@@ -187,7 +187,7 @@ export const FullscreenComposeModal: React.FC = () => {
               disabled={isWaitingForResponse || !message.trim()}
             >
               <span className="button-icon">
-                <FaPaperPlane />
+                <PlaneTakeoff />
               </span>{" "}
               Send {!isMobile && <span className="shortcut-hint">⌘↵</span>}
             </button>

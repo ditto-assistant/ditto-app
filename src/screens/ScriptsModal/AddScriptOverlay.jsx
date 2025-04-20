@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@mui/material"
-import { MdClose } from "react-icons/md"
+import { X } from "lucide-react"
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -38,7 +38,7 @@ const AddScriptOverlay = ({ isOpen, onClose, onSave, category }) => {
               <h3 style={styles.title}>
                 New {category === "webApps" ? "Web App" : "OpenSCAD"} Script
               </h3>
-              <MdClose style={styles.closeIcon} onClick={onClose} />
+              <X style={styles.closeIcon} onClick={onClose} />
             </div>
             <div style={styles.content}>
               <input

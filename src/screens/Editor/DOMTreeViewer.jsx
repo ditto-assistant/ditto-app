@@ -11,7 +11,7 @@ import "ace-builds/src-min-noconflict/ext-language_tools"
 import "ace-builds/src-min-noconflict/ext-searchbox"
 import { motion, AnimatePresence } from "framer-motion"
 import { IconButton } from "@mui/material"
-import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa"
+import { X, Check, MessageCircle, AlignLeft } from "lucide-react"
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
 
 if (import.meta.env.PROD) {
@@ -77,7 +77,7 @@ const NodeEditor = ({
             onClick={() => setWrapEnabled((prev) => !prev)}
             style={styles.nodeEditorButton}
           >
-            <FaAlignLeft
+            <AlignLeft
               size={16}
               color={
                 wrapEnabled
@@ -91,21 +91,21 @@ const NodeEditor = ({
             onClick={handleChatClick}
             style={styles.nodeEditorButton}
           >
-            <FaComments size={16} color={darkModeColors.textSecondary} />
+            <MessageCircle size={16} color={darkModeColors.textSecondary} />
           </IconButton>
           <IconButton
             size="small"
             onClick={handleSave}
             style={styles.nodeEditorButton}
           >
-            <FaCheck size={16} color={darkModeColors.primary} />
+            <Check size={16} color={darkModeColors.primary} />
           </IconButton>
           <IconButton
             size="small"
             onClick={onClose}
             style={styles.nodeEditorButton}
           >
-            <FaTimes size={16} color={darkModeColors.textSecondary} />
+            <X size={16} color={darkModeColors.textSecondary} />
           </IconButton>
         </div>
       </div>

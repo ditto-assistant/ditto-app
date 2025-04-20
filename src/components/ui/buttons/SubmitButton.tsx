@@ -13,7 +13,7 @@ interface SubmitButtonProps
 export const SubmitButton: React.FC<SubmitButtonProps> = ({
   submittingText = "Submitting...",
   submitText = "Submit",
-  variant = "primary",
+  variant = "default",
   className = "",
   enableKeyboardShortcut = true,
   ...props

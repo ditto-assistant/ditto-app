@@ -341,38 +341,40 @@ export default function Modal({
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 overflow-hidden"
         >
-          <TabsList
-            className="h-12 w-full bg-transparent justify-start px-2 rounded-none border-b border-border"
-            ref={tabsContainerRef}
-          >
-            {tabs.map((tab) => {
-              const locked = isTabLocked(tab.minimumTier)
-              return (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={cn(
-                    "data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 h-full data-[state=active]:shadow-none",
-                    tab.customClass === "danger" && "text-destructive",
-                    locked && "premium-tab relative"
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    {tab.icon && (
-                      <span className="flex-shrink-0">{tab.icon}</span>
+          <div className="overflow-x-auto scrollbar-thin">
+            <TabsList
+              className="h-12 w-max min-w-full bg-transparent justify-start px-2 rounded-none border-b border-border flex-nowrap"
+              ref={tabsContainerRef}
+            >
+              {tabs.map((tab) => {
+                const locked = isTabLocked(tab.minimumTier)
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={cn(
+                      "data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 h-full data-[state=active]:shadow-none",
+                      tab.customClass === "danger" && "text-destructive",
+                      locked && "premium-tab relative"
                     )}
-                    <span>{tab.label}</span>
-                    {locked && (
-                      <div className="flex items-center gap-1 bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ml-1">
-                        <Crown className="h-3 w-3" />
-                        <span>PRO</span>
-                      </div>
-                    )}
-                  </div>
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
+                  >
+                    <div className="flex items-center gap-2">
+                      {tab.icon && (
+                        <span className="flex-shrink-0">{tab.icon}</span>
+                      )}
+                      <span>{tab.label}</span>
+                      {locked && (
+                        <div className="flex items-center gap-1 bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ml-1">
+                          <Crown className="h-3 w-3" />
+                          <span>PRO</span>
+                        </div>
+                      )}
+                    </div>
+                  </TabsTrigger>
+                )
+              })}
+            </TabsList>
+          </div>
 
           {tabs.map((tab) => {
             const locked = isTabLocked(tab.minimumTier)

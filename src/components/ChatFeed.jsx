@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import "./ChatFeed.css"
-import { FaChevronDown } from "react-icons/fa"
+import { ChevronDown } from "lucide-react"
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
 import { toast } from "sonner"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
@@ -260,7 +260,7 @@ const CustomScrollToBottom = ({
             e.stopPropagation()
           }}
         >
-          <FaChevronDown size={18} />
+          <ChevronDown size={18} />
         </button>
       )}
     </div>

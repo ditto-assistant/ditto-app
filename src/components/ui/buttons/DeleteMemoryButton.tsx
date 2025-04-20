@@ -1,5 +1,5 @@
 import React from "react"
-import { FaTrash } from "react-icons/fa"
+import { Trash } from "lucide-react"
 import { ModalButton } from "./ModalButton"
 import {
   resetConversation,
@@ -24,24 +24,9 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
 
   const handleDeleteMemory = async () => {
     console.log("Resetting conversation history...")
-    localStorage.setItem("resetMemory", "true")
     if (!user?.uid) return
-
-    localStorage.removeItem("prompts")
-    localStorage.removeItem("responses")
-    localStorage.removeItem("timestamps")
-    localStorage.removeItem("pairIDs")
-    localStorage.removeItem("histCount")
-
     await resetConversation(user?.uid)
     await deleteAllUserImagesFromFirebaseStorageBucket(user?.uid)
-
-    window.dispatchEvent(
-      new CustomEvent("memoryDeleted", {
-        detail: { newHistCount: 0 },
-      })
-    )
-
     onSuccess?.()
   }
 
@@ -53,16 +38,16 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       onConfirm: handleDeleteMemory,
-      variant: "danger",
+      variant: "destructive",
     })
   }
 
   return (
     <ModalButton
-      variant="danger"
+      variant="destructive"
       onClick={handleOpenDialog}
       className={className}
-      icon={<FaTrash />}
+      icon={<Trash />}
       fixedWidth={fixedWidth}
     >
       Delete All Memory

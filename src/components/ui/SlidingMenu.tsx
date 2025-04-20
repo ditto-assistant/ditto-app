@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import "./SlidingMenu.css"
 import { useUser } from "@/hooks/useUser"
-import { FaCrown } from "react-icons/fa"
+import { Crown } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 
 interface MenuItem {
@@ -130,12 +130,12 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
                 {locked && (
                   <div className="premium-indicator">
                     <div className="premium-badge">
-                      <FaCrown className="crown-icon" />
+                      <Crown className="crown-icon" />
                       <span>PRO</span>
                     </div>
                     <div className="upgrade-tooltip">
                       <span>Upgrade to unlock</span>
-                      <FaCrown className="crown-icon" />
+                      <Crown className="crown-icon" />
                     </div>
                   </div>
                 )}

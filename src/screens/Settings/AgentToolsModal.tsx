@@ -3,7 +3,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { ToolPreferences } from "@/types/llm"
 import { useState, useEffect } from "react"
 import { useUser } from "@/hooks/useUser"
-import { FaBolt } from "react-icons/fa"
+import { Zap } from "lucide-react"
 import "./AgentToolsModal.css"
 
 const redirectToGeneralTab = () => {
@@ -75,7 +75,7 @@ export const AgentToolsModal: React.FC<AgentToolsModalProps> = ({
 
       {isLocked && (
         <div onClick={redirectToGeneralTab} className="upgrade-overlay">
-          <FaBolt />
+          <Zap className="h-4 w-4" />
           <span>Upgrade to Spark to enable agent tools</span>
         </div>
       )}

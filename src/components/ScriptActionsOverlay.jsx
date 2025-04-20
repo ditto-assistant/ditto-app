@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { FaPlay, FaPen, FaTimes } from "react-icons/fa"
+import { Play, Pen, Times } from "lucide-react"
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
 import "./ScriptActionsOverlay.css"
 
@@ -63,7 +63,7 @@ function ScriptActionsOverlay({
             transition={{ duration: 0.2 }}
           >
             <button className="CloseButton" onClick={handleClose}>
-              <FaTimes />
+              <Times />
             </button>
             <div className="ScriptActionsHeader">
               <h3>Currently Selected Script</h3>
@@ -78,7 +78,7 @@ function ScriptActionsOverlay({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <FaPen className="button-icon" />
+                <Pen className="button-icon" />
                 Edit Script
               </motion.button>
               <motion.button
@@ -87,7 +87,7 @@ function ScriptActionsOverlay({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <FaPlay className="button-icon" />
+                <Play className="button-icon" />
                 Launch Script
               </motion.button>
               <motion.button

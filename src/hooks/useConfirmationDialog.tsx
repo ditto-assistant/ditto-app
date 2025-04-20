@@ -1,5 +1,13 @@
 import { ReactNode, createContext, useContext, useState } from "react"
-import { useModal } from "./useModal"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 interface ConfirmationDialogConfig {
   title: string
@@ -8,12 +16,13 @@ interface ConfirmationDialogConfig {
   cancelLabel?: string
   onConfirm?: () => void
   onCancel?: () => void
-  variant?: "primary" | "secondary" | "danger" | "ghost"
+  variant?: "default" | "destructive"
 }
 
 interface ConfirmationDialogContextType {
   config: ConfirmationDialogConfig | null
-  setConfig: (config: ConfirmationDialogConfig | null) => void
+  showConfirmationDialog: (config: ConfirmationDialogConfig) => void
+  hideConfirmationDialog: () => void
 }
 
 const ConfirmationDialogContext = createContext<
@@ -26,15 +35,72 @@ export function ConfirmationDialogProvider({
   children: ReactNode
 }) {
   const [config, setConfig] = useState<ConfirmationDialogConfig | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const showConfirmationDialog = (newConfig: ConfirmationDialogConfig) => {
+    setConfig(newConfig)
+    setOpen(true)
+  }
+
+  const hideConfirmationDialog = () => {
+    setOpen(false)
+    // Clear config after dialog animation finishes
+    setTimeout(() => setConfig(null), 300)
+  }
+
+  const handleCancel = () => {
+    if (config?.onCancel) {
+      config.onCancel()
+    }
+    hideConfirmationDialog()
+  }
+
+  const handleConfirm = () => {
+    if (config?.onConfirm) {
+      config.onConfirm()
+    }
+    hideConfirmationDialog()
+  }
 
   return (
     <ConfirmationDialogContext.Provider
       value={{
         config,
-        setConfig,
+        showConfirmationDialog,
+        hideConfirmationDialog,
       }}
     >
       {children}
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md">
+          {config && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{config.title}</DialogTitle>
+                {typeof config.content === "string" ? (
+                  <DialogDescription>{config.content}</DialogDescription>
+                ) : (
+                  <div className="mt-2">{config.content}</div>
+                )}
+              </DialogHeader>
+              <DialogFooter className="flex gap-2 justify-end mt-4">
+                <Button variant="outline" onClick={handleCancel}>
+                  {config.cancelLabel || "Cancel"}
+                </Button>
+                <Button
+                  variant={
+                    config.variant === "destructive" ? "destructive" : "default"
+                  }
+                  onClick={handleConfirm}
+                >
+                  {config.confirmLabel || "Confirm"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </ConfirmationDialogContext.Provider>
   )
 }
@@ -48,23 +114,5 @@ export function useConfirmationDialog() {
     )
   }
 
-  const { createOpenHandler, createCloseHandler } = useModal()
-  const openModal = createOpenHandler("confirmationDialog")
-  const closeModal = createCloseHandler("confirmationDialog")
-
-  const showConfirmationDialog = (newConfig: ConfirmationDialogConfig) => {
-    context.setConfig(newConfig)
-    openModal()
-  }
-
-  const hideConfirmationDialog = () => {
-    closeModal()
-    context.setConfig(null)
-  }
-
-  return {
-    ...context,
-    showConfirmationDialog,
-    hideConfirmationDialog,
-  }
+  return context
 }

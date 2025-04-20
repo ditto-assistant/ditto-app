@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { FaCodeBranch, FaTrash } from "react-icons/fa"
+import { Code, Trash } from "lucide-react"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 
 const VersionsOverlay = ({
@@ -65,7 +65,7 @@ const VersionsOverlay = ({
         onClick={handleModalClick}
         onMouseDown={handleModalClick}
       >
-        <FaCodeBranch style={styles.icon} />
+        <Code style={styles.icon} />
         <h3 style={styles.title}>Script Versions</h3>
         <div
           style={styles.versionsContainer}
@@ -109,7 +109,7 @@ const VersionsOverlay = ({
                     e.stopPropagation()
                   }}
                 >
-                  <FaTrash style={styles.deleteIcon} />
+                  <Trash style={styles.deleteIcon} />
                 </motion.div>
               </motion.div>
             )

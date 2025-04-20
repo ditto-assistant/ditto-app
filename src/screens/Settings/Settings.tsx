@@ -18,7 +18,6 @@ import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
 import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
 import {
-  CreditCard,
   MemoryStick,
   Settings as SettingsIcon,
   Wrench,
@@ -29,9 +28,8 @@ import {
 export default function Settings() {
   const { signOut, user } = useAuth()
   const auth = getAuth()
-  const { createCloseHandler, createOpenHandler } = useModal()
+  const { createCloseHandler } = useModal()
   const { showConfirmationDialog } = useConfirmationDialog()
-  const openTokenModal = createOpenHandler("tokenCheckout")
   const closeModal = createCloseHandler("settings")
 
   // Memoize the modal components
@@ -69,7 +67,7 @@ export default function Settings() {
         confirmLabel: "Sign Out",
         cancelLabel: "Cancel",
         onConfirm: handleLogout,
-        variant: "primary",
+        variant: "default",
       })
 
     try {
@@ -119,7 +117,7 @@ export default function Settings() {
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       onConfirm: handleDeleteAccount,
-      variant: "danger",
+      variant: "destructive",
     })
   }
 
@@ -130,28 +128,6 @@ export default function Settings() {
       <div className="flex-1">{subscriptionContent}</div>
 
       <div className="border-t my-2"></div>
-
-      {/* Account Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Account</h3>
-        <div className="flex flex-wrap gap-4">
-          <ModalButton
-            variant="primary"
-            onClick={() => {
-              closeModal()
-              openTokenModal()
-            }}
-            fixedWidth
-            icon={<CreditCard className="h-4 w-4" />}
-          >
-            BUY TOKENS
-          </ModalButton>
-
-          <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
-            LOG OUT
-          </ModalButton>
-        </div>
-      </div>
 
       <footer className="mt-auto pt-4">
         <div className="text-muted-foreground text-sm text-center">
@@ -170,7 +146,11 @@ export default function Settings() {
         </p>
       </div>
       <div className="flex flex-col gap-4">
-        <ModalButton variant="danger" onClick={openDeleteDialog} fixedWidth>
+        <ModalButton
+          variant="destructive"
+          onClick={openDeleteDialog}
+          fixedWidth
+        >
           DELETE ACCOUNT
         </ModalButton>
         <DeleteMemoryButton onSuccess={closeModal} fixedWidth />

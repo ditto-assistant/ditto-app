@@ -3,7 +3,7 @@ import { MemorySlider } from "@/components/ui/sliders/MemorySlider"
 import { MEMORY_CONFIG } from "@/constants"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
-import { FaBolt } from "react-icons/fa"
+import { Zap } from "lucide-react"
 import "./MemoryControlsModal.css"
 
 const redirectToGeneralTab = () => {
@@ -85,7 +85,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
 
       {isLocked && (
         <div onClick={redirectToGeneralTab} className="upgrade-overlay">
-          <FaBolt />
+          <Zap className="h-4 w-4" />
           <span>Upgrade to Spark to customize memory settings</span>
         </div>
       )}

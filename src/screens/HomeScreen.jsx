@@ -5,7 +5,7 @@ import { useBalance } from "@/hooks/useBalance"
 import { useModal } from "@/hooks/useModal"
 import TermsOfService from "@/components/TermsOfService"
 import { motion, AnimatePresence } from "framer-motion"
-import { MdFlipCameraIos } from "react-icons/md"
+import { FlipVertical } from "lucide-react"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
@@ -242,7 +242,7 @@ export default function HomeScreen() {
             >
               <video ref={videoRef} autoPlay className="camera-feed"></video>
               <div className="camera-controls">
-                <MdFlipCameraIos
+                <FlipVertical
                   className="flip-camera-icon"
                   onClick={toggleCamera}
                 />

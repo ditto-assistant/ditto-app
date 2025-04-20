@@ -3,7 +3,6 @@ import { LLMModel, ImageModel } from "@/api/services"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { Model, Vendor } from "@/types/llm"
 import { IMAGE_GENERATION_SIZES } from "@/constants"
-
 import {
   Card,
   CardContent,
@@ -13,12 +12,16 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-
-import { FaBolt, FaBrain, FaMicrochip, FaGoogle } from "react-icons/fa"
-import { SiOpenai } from "react-icons/si"
-import { TbBrandMeta } from "react-icons/tb"
-import { MdInfoOutline } from "react-icons/md"
 import {
+  SiOpenai,
+  SiGoogle,
+  SiAnthropic,
+  SiMeta,
+} from "@icons-pack/react-simple-icons"
+import {
+  Bolt,
+  Microchip,
+  Info,
   ZapIcon,
   ImageIcon,
   CpuIcon,
@@ -51,17 +54,17 @@ const getSpeedIcon = (level: number) => {
 const getVendorIcon = (vendor: Vendor) => {
   switch (vendor) {
     case "google":
-      return <FaGoogle />
+      return <SiGoogle />
     case "openai":
       return <SiOpenai />
     case "anthropic":
-      return <FaBrain />
+      return <SiAnthropic />
     case "mistral":
-      return <FaBolt />
+      return <Bolt />
     case "meta":
-      return <TbBrandMeta />
+      return <SiMeta />
     case "cerebras":
-      return <FaMicrochip />
+      return <Microchip />
     default:
       return null
   }
@@ -167,7 +170,7 @@ export const ModelCard = ({
               onShowDetails()
             }}
           >
-            <MdInfoOutline className="h-4 w-4" />
+            <Info className="h-4 w-4" />
           </Button>
 
           {model.provider && (

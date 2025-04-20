@@ -7,19 +7,13 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "../ui/accordion"
-
 import {
-  FaBolt,
-  FaClock,
-  FaCrown,
-  FaGoogle,
-  FaRobot,
-  FaBrain,
-  FaFire,
-  FaMicrochip,
-} from "react-icons/fa"
-import { SiOpenai } from "react-icons/si"
-import { TbBrandMeta } from "react-icons/tb"
+  SiOpenai,
+  SiGoogle,
+  SiAnthropic,
+  SiMeta,
+} from "@icons-pack/react-simple-icons"
+import { Bolt, Microchip, Flame, Clock, Bot, Crown } from "lucide-react"
 
 interface FilterValues {
   speed: string | null
@@ -72,7 +66,7 @@ export const ModelFilters = ({
                   className="cursor-pointer"
                   onClick={() => toggleFilter("speed", "slow")}
                 >
-                  <FaClock className="mr-1" /> Slow
+                  <Clock className="mr-1" /> Slow
                 </Badge>
                 <Badge
                   variant={
@@ -81,7 +75,7 @@ export const ModelFilters = ({
                   className="cursor-pointer"
                   onClick={() => toggleFilter("speed", "medium")}
                 >
-                  <FaRobot className="mr-1" /> Medium
+                  <Bot className="mr-1" /> Medium
                 </Badge>
                 <Badge
                   variant={
@@ -90,7 +84,7 @@ export const ModelFilters = ({
                   className="cursor-pointer"
                   onClick={() => toggleFilter("speed", "fast")}
                 >
-                  <FaBolt className="mr-1" /> Fast
+                  <Bolt className="mr-1" /> Fast
                 </Badge>
                 <Badge
                   variant={
@@ -99,8 +93,7 @@ export const ModelFilters = ({
                   className="cursor-pointer"
                   onClick={() => toggleFilter("speed", "insane")}
                 >
-                  <FaFire className="mr-1" style={{ color: "#FF0000" }} />{" "}
-                  Insane
+                  <Flame className="mr-1" style={{ color: "#FF0000" }} /> Insane
                 </Badge>
               </div>
             </AccordionContent>
@@ -117,7 +110,7 @@ export const ModelFilters = ({
                   className="cursor-pointer"
                   onClick={() => toggleFilter("pricing", "free")}
                 >
-                  <FaCrown className="mr-1" style={{ opacity: 0.5 }} /> Free
+                  <Crown className="mr-1" style={{ opacity: 0.5 }} /> Free
                 </Badge>
                 <Badge
                   variant={
@@ -126,7 +119,7 @@ export const ModelFilters = ({
                   className="cursor-pointer"
                   onClick={() => toggleFilter("pricing", "premium")}
                 >
-                  <FaCrown className="mr-1" /> Premium
+                  <Crown className="mr-1" /> Premium
                 </Badge>
               </div>
             </AccordionContent>
@@ -176,7 +169,7 @@ export const ModelFilters = ({
                   className="cursor-pointer justify-start w-full"
                   onClick={() => toggleFilter("vendor", "anthropic")}
                 >
-                  <FaBrain className="mr-1" /> Anthropic
+                  <SiAnthropic className="mr-1" /> Anthropic
                 </Badge>
                 <Badge
                   variant={
@@ -185,7 +178,7 @@ export const ModelFilters = ({
                   className="cursor-pointer justify-start w-full"
                   onClick={() => toggleFilter("vendor", "google")}
                 >
-                  <FaGoogle className="mr-1" /> Google
+                  <SiGoogle className="mr-1" /> Google
                 </Badge>
                 <Badge
                   variant={
@@ -194,7 +187,7 @@ export const ModelFilters = ({
                   className="cursor-pointer justify-start w-full"
                   onClick={() => toggleFilter("vendor", "mistral")}
                 >
-                  <FaBolt className="mr-1" /> Mistral
+                  <Bolt className="mr-1" /> Mistral
                 </Badge>
                 <Badge
                   variant={
@@ -203,7 +196,7 @@ export const ModelFilters = ({
                   className="cursor-pointer justify-start w-full"
                   onClick={() => toggleFilter("vendor", "meta")}
                 >
-                  <TbBrandMeta className="mr-1" /> Meta
+                  <SiMeta className="mr-1" /> Meta
                 </Badge>
                 <Badge
                   variant={
@@ -212,7 +205,7 @@ export const ModelFilters = ({
                   className="cursor-pointer justify-start w-full"
                   onClick={() => toggleFilter("vendor", "cerebras")}
                 >
-                  <FaMicrochip className="mr-1" /> Cerebras
+                  <Microchip className="mr-1" /> Cerebras
                 </Badge>
               </div>
             </AccordionContent>
