@@ -2,6 +2,7 @@ import { z } from "zod"
 import { Result } from "@/types/common"
 import { BASE_URL } from "../firebaseConfig"
 import { getToken } from "./auth"
+import { Model } from "@/types/llm"
 
 const UserSchema = z.object({
   balance: z.number(),
@@ -21,6 +22,11 @@ const UserSchema = z.object({
   planTier: z.number(),
   stripeCustomerID: z.string().optional(),
   isTierBoostedFromBalance: z.boolean().optional(),
+  // New preference fields
+  preferredMainModel: z.string(),
+  preferredProgrammerModel: z.string(),
+  preferredImageModel: z.string(),
+  theme: z.enum(["light", "dark", "system"]),
 })
 
 export type User = z.infer<typeof UserSchema>

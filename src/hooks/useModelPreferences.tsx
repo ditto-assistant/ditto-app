@@ -1,12 +1,11 @@
 import { useContext, createContext } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/useAuth"
-import {
-  saveModelPreferencesToFirestore,
-  getModelPreferencesFromFirestore,
-} from "@/control/firebase"
+import { useUser } from "@/hooks/useUser"
 import { DEFAULT_PREFERENCES } from "@/constants"
 import { ModelPreferences } from "@/types/llm"
+import { updateUserPreferences } from "@/api/updateUserPreferences"
+import { toast } from "sonner"
 
 const ModelPreferencesContext = createContext<
   ReturnType<typeof useModels> | undefined
@@ -38,32 +37,50 @@ export function ModelPreferencesProvider({
 function useModels() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  
+  // Get user profile from API which includes preferences
+  const { data: userProfile, isLoading: isUserLoading } = useUser()
 
-  const query = useQuery({
-    queryKey: ["modelPreferences", user?.uid],
-    queryFn: async () => {
-      if (!user?.uid) throw new Error("No user")
-      const prefs = (await getModelPreferencesFromFirestore(
-        user.uid
-      )) as ModelPreferences | null
-      if (!prefs) return DEFAULT_PREFERENCES
+  // Build model preferences from user profile data
+  const preferences = useQuery({
+    queryKey: ["modelPreferences", user?.uid, userProfile],
+    queryFn: () => {
+      // Return default preferences if no user
+      if (!user?.uid) return DEFAULT_PREFERENCES
 
-      return {
-        ...DEFAULT_PREFERENCES,
-        ...prefs,
-        memory: {
-          ...DEFAULT_PREFERENCES.memory,
-          ...prefs.memory,
-        },
+      // Start with defaults
+      let modelPreferences = { ...DEFAULT_PREFERENCES }
+
+      // Add API preferences if available
+      if (userProfile) {
+        if (userProfile.preferredMainModel) {
+          modelPreferences.mainModel = userProfile.preferredMainModel
+        }
+        if (userProfile.preferredProgrammerModel) {
+          modelPreferences.programmerModel = userProfile.preferredProgrammerModel
+        }
+        if (userProfile.preferredImageModel) {
+          modelPreferences.imageGeneration = {
+            ...modelPreferences.imageGeneration,
+            model: userProfile.preferredImageModel,
+          }
+        }
       }
+
+      return modelPreferences
     },
     enabled: !!user,
   })
 
+  // Update preferences mutation
   const mutation = useMutation({
     mutationFn: async (newPreferences: Partial<ModelPreferences>) => {
       if (!user?.uid) throw new Error("No user")
-      const currentPrefs = query.data || DEFAULT_PREFERENCES
+      
+      // Get current preferences
+      const currentPrefs = preferences.data || DEFAULT_PREFERENCES
+      
+      // Merge with new preferences (only for local state)
       const updatedPreferences = {
         ...currentPrefs,
         ...newPreferences,
@@ -72,18 +89,49 @@ function useModels() {
           ...(newPreferences.memory || {}),
         },
       }
-      await saveModelPreferencesToFirestore(user.uid, updatedPreferences)
+      
+      // Create update for API
+      const userPreferencesUpdate = {
+        preferredMainModel: newPreferences.mainModel,
+        preferredProgrammerModel: newPreferences.programmerModel,
+        preferredImageModel: newPreferences.imageGeneration?.model,
+        // theme is handled separately, not included here
+      }
+      
+      // Only include defined preferences in the update
+      const filteredUpdate = Object.fromEntries(
+        Object.entries(userPreferencesUpdate).filter(([_, v]) => v !== undefined)
+      )
+      
+      // Update backend if there's anything to update
+      if (Object.keys(filteredUpdate).length > 0) {
+        const result = await updateUserPreferences(user.uid, filteredUpdate)
+        if (result instanceof Error) {
+          throw result
+        }
+      }
+      
       return updatedPreferences
     },
     onSuccess: (data) => {
+      // Update local cache immediately
       queryClient.setQueryData(["modelPreferences", user?.uid], data)
+      // Invalidate user query to refetch from API
+      queryClient.invalidateQueries({ queryKey: ["user"] })
     },
+    onError: (error) => {
+      if (error instanceof Error) {
+        toast.error(`Failed to update preferences: ${error.message}`)
+      } else {
+        toast.error("Failed to update preferences")
+      }
+    }
   })
 
   return {
-    preferences: query.data,
+    preferences: preferences.data,
     updatePreferences: mutation.mutate,
-    isLoading: query.isLoading,
+    isLoading: isUserLoading || preferences.isLoading,
     isPending: mutation.isPending,
   }
 }
