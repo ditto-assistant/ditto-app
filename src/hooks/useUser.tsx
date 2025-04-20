@@ -5,7 +5,6 @@ import { useAuth } from "./useAuth"
 import {
   updateUserPreferences,
   ErrorPaymentRequired,
-  UpdateUserPreferencesResponse,
   UserPreferencesUpdate,
 } from "@/api/userPreferences"
 
@@ -36,11 +35,7 @@ export function useUserPreferences() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
-  return useMutation<
-    UpdateUserPreferencesResponse,
-    Error,
-    UserPreferencesUpdate
-  >({
+  return useMutation<User, Error, UserPreferencesUpdate>({
     mutationFn: async (preferences: UserPreferencesUpdate) => {
       if (!user?.uid) throw new Error("User not authenticated")
 
@@ -53,10 +48,10 @@ export function useUserPreferences() {
 
       return result
     },
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       toast.success("Preferences updated successfully")
-      // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["user"] })
+      // Directly update user data in cache instead of invalidating
+      queryClient.setQueryData(["user"], updatedUser)
     },
     onError: (error) => {
       // Special handling for payment errors

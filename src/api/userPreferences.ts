@@ -1,17 +1,8 @@
 import { z } from "zod"
 import { BASE_URL } from "../firebaseConfig"
 import { getToken } from "./auth"
-import { PreferredModels } from "./getUser"
+import { PreferredModels, UserSchema, User } from "./getUser"
 import { ToolPreferences, MemoryPreferences } from "@/types/llm"
-
-// Define success response schema
-export const UpdateUserPreferencesResponseSchema = z.object({
-  success: z.boolean(),
-})
-
-export type UpdateUserPreferencesResponse = z.infer<
-  typeof UpdateUserPreferencesResponseSchema
->
 
 // Special error for payment required
 export const ErrorPaymentRequired = new Error("Payment required")
@@ -28,12 +19,12 @@ export type UserPreferencesUpdate = {
  * Updates user preferences on the server
  * @param userID The user ID to update preferences for
  * @param preferences The preferences to update
- * @returns Either UpdateUserPreferencesResponse on success or Error on failure
+ * @returns Either User object on success or Error on failure
  */
 export async function updateUserPreferences(
   userID: string,
   preferences: UserPreferencesUpdate
-): Promise<UpdateUserPreferencesResponse | Error> {
+): Promise<User | Error> {
   const tok = await getToken()
   if (tok.err) {
     return new Error(`Unable to get token: ${tok.err}`)
@@ -64,16 +55,11 @@ export async function updateUserPreferences(
       )
     }
 
-    // For endpoints returning 204 No Content
-    if (response.status === 204) {
-      return { success: true }
-    }
-
-    // If the endpoint returns a JSON response, parse and validate it
+    // Parse and validate response
     const data = await response.json()
 
     // Validate response with Zod
-    const validatedData = UpdateUserPreferencesResponseSchema.safeParse(data)
+    const validatedData = UserSchema.safeParse(data)
     if (!validatedData.success) {
       console.error("Validation error:", validatedData.error)
       return new Error("Invalid response from server")

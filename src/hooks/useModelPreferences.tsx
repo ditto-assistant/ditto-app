@@ -9,6 +9,7 @@ import {
   UserPreferencesUpdate,
   updateUserPreferences,
 } from "@/api/userPreferences"
+import { User } from "@/api/getUser"
 
 const ModelPreferencesContext = createContext<
   ReturnType<typeof useModels> | undefined
@@ -173,6 +174,7 @@ function useModels() {
       }
 
       // Update backend if there's anything to update
+      let updatedUser: User | null = null
       if (Object.keys(userPreferencesUpdate).length > 0) {
         const result = await updateUserPreferences(
           user.uid,
@@ -181,15 +183,22 @@ function useModels() {
         if (result instanceof Error) {
           throw result
         }
+        updatedUser = result
       }
 
-      return updatedPreferences
+      return { updatedPreferences, updatedUser }
     },
     onSuccess: (data) => {
       // Update local cache immediately
-      queryClient.setQueryData(["modelPreferences", user?.uid], data)
-      // Invalidate user query to refetch from API
-      queryClient.invalidateQueries({ queryKey: ["user"] })
+      queryClient.setQueryData(
+        ["modelPreferences", user?.uid],
+        data.updatedPreferences
+      )
+
+      // Update user data directly if we got it from the API
+      if (data.updatedUser) {
+        queryClient.setQueryData(["user"], data.updatedUser)
+      }
     },
     onError: (error) => {
       if (error instanceof Error) {

@@ -34,7 +34,7 @@ const UserPreferencesSchema = z.object({
 })
 
 // Define the user schema with the new preferences structure
-const UserSchema = z.object({
+export const UserSchema = z.object({
   balance: z.number(),
   email: z.string().optional(),
   subscriptionStatus: z.enum([
