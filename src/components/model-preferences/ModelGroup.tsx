@@ -43,24 +43,36 @@ export const ModelGroup = ({
 
   // Select appropriate model
   const handleSelectModel = (model: LLMModel | ImageModel) => {
+    if (!preferences) return
+
     if (activeTab === "image" && !isLLMGroup) {
+      // For image models, preserve existing size settings
       updatePreferences({
         imageGeneration: {
           model: model.name,
-          size: preferences?.imageGeneration?.size || {
+          size: preferences.imageGeneration?.size || {
             wh: "1024x1024",
           },
         },
       })
     } else if (isLLMGroup) {
-      updatePreferences({
-        [activeTab === "main" ? "mainModel" : "programmerModel"]: model.name,
-      })
+      // For LLM models, update the appropriate model type
+      if (activeTab === "main") {
+        updatePreferences({
+          mainModel: model.name,
+        })
+      } else if (activeTab === "programmer") {
+        updatePreferences({
+          programmerModel: model.name,
+        })
+      }
     }
   }
 
   // Check if model is selected
   const isModelSelected = (model: LLMModel | ImageModel) => {
+    if (!preferences) return false
+
     if (activeTab === "image" && !isLLMGroup) {
       return model.name === preferences?.imageGeneration?.model
     } else if (isLLMGroup) {

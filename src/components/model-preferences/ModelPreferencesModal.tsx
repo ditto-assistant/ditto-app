@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useAllServices } from "@/hooks/useAllServices"
 import { LayoutGrid, ImageIcon, Code } from "lucide-react"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
 
 import { ModelList } from "./ModelList"
 import { ModelFilters } from "./ModelFilters"
@@ -14,6 +15,9 @@ export const ModelPreferencesModal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"main" | "programmer" | "image">(
     "main"
   )
+
+  // Get preferences to track changes
+  const { preferences } = useModelPreferences()
 
   // Get all models data with filtering, grouping, etc.
   const {
@@ -102,6 +106,7 @@ export const ModelPreferencesModal: React.FC = () => {
                       </div>
                     ) : (
                       <ModelList
+                        key={`main-${preferences?.mainModel || "default"}`}
                         models={filteredPromptModels}
                         activeTab={activeTab}
                         groupedModels={groupedPromptModels}
@@ -146,6 +151,7 @@ export const ModelPreferencesModal: React.FC = () => {
                       </div>
                     ) : (
                       <ModelList
+                        key={`programmer-${preferences?.programmerModel || "default"}`}
                         models={filteredPromptModels}
                         activeTab={activeTab}
                         groupedModels={groupedPromptModels}
@@ -190,6 +196,7 @@ export const ModelPreferencesModal: React.FC = () => {
                       </div>
                     ) : (
                       <ModelList
+                        key={`image-${preferences?.imageGeneration?.model || "default"}`}
                         models={filteredImageModels}
                         activeTab={activeTab}
                         groupedModels={groupedImageModels}

@@ -81,8 +81,11 @@ function useModels() {
 
           // Update image size if specified
           if (prefs.preferredModels.imageModelSize) {
-            modelPreferences.imageGeneration.size = {
-              wh: prefs.preferredModels.imageModelSize,
+            modelPreferences.imageGeneration = {
+              ...modelPreferences.imageGeneration,
+              size: {
+                wh: prefs.preferredModels.imageModelSize,
+              },
             }
           }
         }
@@ -104,6 +107,7 @@ function useModels() {
         }
       }
 
+      console.log("Built preferences from user profile:", modelPreferences)
       return modelPreferences
     },
     enabled: !!user,
@@ -113,6 +117,9 @@ function useModels() {
   const mutation = useMutation({
     mutationFn: async (newPreferences: Partial<ModelPreferences>) => {
       if (!user?.uid) throw new Error("No user")
+
+      // For debugging
+      console.log("Updating preferences:", newPreferences)
 
       // Get current preferences
       const currentPrefs = preferences.data || DEFAULT_PREFERENCES
@@ -129,7 +136,14 @@ function useModels() {
           ...currentPrefs.tools,
           ...(newPreferences.tools || {}),
         },
+        imageGeneration: {
+          ...currentPrefs.imageGeneration,
+          ...(newPreferences.imageGeneration || {}),
+        },
       }
+
+      // For debugging
+      console.log("Merged preferences:", updatedPreferences)
 
       // Create update for API with the new format
       const userPreferencesUpdate: UserPreferencesUpdate = {}
@@ -173,6 +187,8 @@ function useModels() {
         userPreferencesUpdate.memory = newPreferences.memory
       }
 
+      console.log("API update payload:", userPreferencesUpdate)
+
       // Update backend if there's anything to update
       let updatedUser: User | null = null
       if (Object.keys(userPreferencesUpdate).length > 0) {
@@ -184,23 +200,20 @@ function useModels() {
           throw result
         }
         updatedUser = result
+        console.log("Updated user from API:", updatedUser)
       }
 
       return { updatedPreferences, updatedUser }
     },
     onSuccess: (data) => {
-      // Update local cache immediately
-      queryClient.setQueryData(
-        ["modelPreferences", user?.uid],
-        data.updatedPreferences
-      )
-
       // Update user data directly if we got it from the API
       if (data.updatedUser) {
+        console.log("Updating user cache with:", data.updatedUser)
         queryClient.setQueryData(["user"], data.updatedUser)
       }
     },
     onError: (error) => {
+      console.error("Preference update error:", error)
       if (error instanceof Error) {
         toast.error(`Failed to update preferences: ${error.message}`)
       } else {

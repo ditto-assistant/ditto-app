@@ -147,9 +147,12 @@ export const ModelCard = ({
   return (
     <Card
       className={`overflow-hidden transition-all cursor-pointer h-full ${isSelected ? "border-2 border-primary ring-2 ring-primary/20" : "border hover:border-primary/50"} ${!isAccessible ? "opacity-75" : ""}`}
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation()
         if (isAccessible) {
           onSelect()
+        } else if (redirectToSubscription) {
+          redirectToSubscription()
         }
       }}
     >
