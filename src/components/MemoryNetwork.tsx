@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import { FaTrash, FaEye } from "react-icons/fa"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 import { DataSet } from "vis-data"
 import ChatMessage from "./ChatMessage"
 import Modal from "./ui/modals/Modal"

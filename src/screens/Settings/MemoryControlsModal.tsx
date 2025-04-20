@@ -5,7 +5,6 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
 import { FaBolt } from "react-icons/fa"
 import "./MemoryControlsModal.css"
-import "@/components/ui/modals/Modal.css"
 
 const redirectToGeneralTab = () => {
   const generalTab = document.querySelector('.modal-tab[data-tab-id="general"]')

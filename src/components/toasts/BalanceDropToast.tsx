@@ -1,37 +1,38 @@
-import React, { useEffect, useState } from "react"
-import toast, { Toast } from "react-hot-toast"
+import React from "react"
+import { toast } from "sonner"
 import "./BalanceDropToast.css"
 
 interface BalanceDropToastProps {
-  t: Toast // Toast object from react-hot-toast
   amount: string
+  onDismiss?: () => void
 }
 
-const BalanceDropToast: React.FC<BalanceDropToastProps> = ({ t, amount }) => {
-  const [isVisible, setIsVisible] = useState(false)
-
-  // Handle animation states
-  useEffect(() => {
-    // Set visible with a slight delay for better animation effect
-    const timer = setTimeout(() => {
-      setIsVisible(t.visible)
-    }, 50)
-
-    return () => clearTimeout(timer)
-  }, [t.visible])
-
-  // Combine classes for animations
-  const containerClass = `balance-drop-toast ${isVisible ? "animate-enter" : "animate-leave"}`
-
+const BalanceDropToast: React.FC<BalanceDropToastProps> = ({
+  amount,
+  onDismiss,
+}) => {
   return (
-    <div className={containerClass}>
+    <div className="balance-drop-toast animate-enter">
       <div className="token-glow"></div>
       <span className="icon">💰</span>
       <span className="message">+{amount}</span>
-      <button onClick={() => toast.dismiss(t.id)} className="close-button">
+      <button onClick={onDismiss} className="close-button">
         &times;
       </button>
     </div>
+  )
+}
+
+// Helper function to show the toast
+export const showBalanceDropToast = (amount: string) => {
+  toast.custom(
+    (id) => (
+      <BalanceDropToast amount={amount} onDismiss={() => toast.dismiss(id)} />
+    ),
+    {
+      duration: 5000,
+      position: "top-center",
+    }
   )
 }
 

@@ -1,5 +1,5 @@
 import { FaTrash } from "react-icons/fa"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 import Modal from "./ui/modals/Modal"
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
 import "./MemoryNodeModal.css"

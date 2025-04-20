@@ -2,7 +2,7 @@ import { useContext, createContext } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { getBalance } from "@/api/getBalance"
 import { useAuth } from "@/hooks/useAuth"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 import BalanceDropToast from "@/components/toasts/BalanceDropToast"
 
 // TODO: Make this server-side

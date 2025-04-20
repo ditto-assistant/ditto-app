@@ -23,9 +23,9 @@ const UserSchema = z.object({
   stripeCustomerID: z.string().optional(),
   isTierBoostedFromBalance: z.boolean().optional(),
   // New preference fields
-  preferredMainModel: z.string(),
-  preferredProgrammerModel: z.string(),
-  preferredImageModel: z.string(),
+  preferredMainModel: z.string() as z.ZodType<Model>,
+  preferredProgrammerModel: z.string() as z.ZodType<Model>,
+  preferredImageModel: z.string() as z.ZodType<Model>,
   theme: z.enum(["light", "dark", "system"]),
 })
 

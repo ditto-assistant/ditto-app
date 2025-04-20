@@ -36,7 +36,7 @@ import updaterAgent from "@/control/agentflows/updaterAgentFlow"
 import ModelDropdown from "@/components/ModelDropdown"
 import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 import { usePlatform } from "@/hooks/usePlatform"
 import "./FullScreenEditor.css" // Import the CSS file
 

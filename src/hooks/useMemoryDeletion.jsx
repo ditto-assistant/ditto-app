@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { deleteConversation } from "../control/memory"
 import { useConfirmationDialog } from "./useConfirmationDialog"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 import { useAuth } from "./useAuth"
 
 export const useMemoryDeletion = (updateConversation) => {

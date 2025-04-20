@@ -138,24 +138,29 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 When adding a new backend API endpoint, follow these steps to create a corresponding frontend client function:
 
 1. **Create a New File in `src/api/`**:
+
    - Name it according to function (e.g., `updateUserPreferences.ts`)
    - Use existing files as templates (e.g., `getUser.ts`, `refreshSubscription.ts`)
 
 2. **Define Response Schema with Zod**:
+
    ```typescript
-   import { z } from "zod";
+   import { z } from "zod"
 
    // Define the response schema
    export const UpdateUserPreferencesResponseSchema = z.object({
      success: z.boolean(),
      // Add any other fields returned by the API
-   });
+   })
 
    // Create type from schema
-   export type UpdateUserPreferencesResponse = z.infer<typeof UpdateUserPreferencesResponseSchema>;
+   export type UpdateUserPreferencesResponse = z.infer<
+     typeof UpdateUserPreferencesResponseSchema
+   >
    ```
 
 3. **Implement API Function**:
+
    ```typescript
    // Define payment required error as a constant if needed
    export const ErrorPaymentRequired = new Error("Payment required")
@@ -163,10 +168,10 @@ When adding a new backend API endpoint, follow these steps to create a correspon
    export async function updateUserPreferences(
      userID: string,
      preferences: {
-       preferredMainModel?: string;
-       preferredProgrammerModel?: string;
-       preferredImageModel?: string;
-       theme?: "light" | "dark" | "system";
+       preferredMainModel?: string
+       preferredProgrammerModel?: string
+       preferredImageModel?: string
+       theme?: "light" | "dark" | "system"
      }
    ): Promise<UpdateUserPreferencesResponse | Error> {
      try {
@@ -176,109 +181,116 @@ When adding a new backend API endpoint, follow these steps to create a correspon
            "Content-Type": "application/json",
          },
          body: JSON.stringify(preferences),
-       });
+       })
 
        // Special error handling for payment issues
        if (response.status === 402) {
-         return ErrorPaymentRequired;
+         return ErrorPaymentRequired
        }
 
        if (!response.ok) {
-         const errorText = await response.text();
-         return new Error(`Failed to update preferences: HTTP ${response.status} - ${errorText}`);
+         const errorText = await response.text()
+         return new Error(
+           `Failed to update preferences: HTTP ${response.status} - ${errorText}`
+         )
        }
 
        // For endpoints returning 204 No Content
        if (response.status === 204) {
-         return { success: true };
+         return { success: true }
        }
 
-       const data = await response.json();
-       
+       const data = await response.json()
+
        // Validate response with Zod
-       const validatedData = UpdateUserPreferencesResponseSchema.safeParse(data);
+       const validatedData = UpdateUserPreferencesResponseSchema.safeParse(data)
        if (!validatedData.success) {
-         console.error("Validation error:", validatedData.error);
-         return new Error("Invalid response from server");
+         console.error("Validation error:", validatedData.error)
+         return new Error("Invalid response from server")
        }
 
-       return validatedData.data;
+       return validatedData.data
      } catch (error) {
-       console.error("Error updating user preferences:", error);
-       return error instanceof Error 
-         ? error 
-         : new Error("Unknown error occurred");
+       console.error("Error updating user preferences:", error)
+       return error instanceof Error
+         ? error
+         : new Error("Unknown error occurred")
      }
    }
    ```
 
 4. **Create a Custom Hook in `src/hooks/`**:
+
    ```typescript
    // src/hooks/useUpdatePreferences.tsx
-   import { useMutation, useQueryClient } from "@tanstack/react-query";
-   import { updateUserPreferences, ErrorPaymentRequired } from "@/api/updateUserPreferences";
-   import { useAuth } from "@/hooks/useAuth";
-   import { toast } from "sonner";
+   import { useMutation, useQueryClient } from "@tanstack/react-query"
+   import {
+     updateUserPreferences,
+     ErrorPaymentRequired,
+   } from "@/api/updateUserPreferences"
+   import { useAuth } from "@/hooks/useAuth"
+   import { toast } from "sonner"
 
    export function useUpdatePreferences() {
-     const { user } = useAuth();
-     const queryClient = useQueryClient();
+     const { user } = useAuth()
+     const queryClient = useQueryClient()
 
      return useMutation({
        mutationFn: async (preferences: {
-         preferredMainModel?: string;
-         preferredProgrammerModel?: string;
-         preferredImageModel?: string;
-         theme?: "light" | "dark" | "system";
+         preferredMainModel?: string
+         preferredProgrammerModel?: string
+         preferredImageModel?: string
+         theme?: "light" | "dark" | "system"
        }) => {
-         if (!user?.uid) throw new Error("User not authenticated");
-         
-         const result = await updateUserPreferences(user.uid, preferences);
-         
+         if (!user?.uid) throw new Error("User not authenticated")
+
+         const result = await updateUserPreferences(user.uid, preferences)
+
          // Check if result is an Error and throw it to trigger onError
          if (result instanceof Error) {
-           throw result;
+           throw result
          }
-         
-         return result;
+
+         return result
        },
        onSuccess: () => {
-         toast.success("Preferences updated successfully");
+         toast.success("Preferences updated successfully")
          // Invalidate relevant queries to refresh data
-         queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+         queryClient.invalidateQueries({ queryKey: ["userProfile"] })
        },
        onError: (error) => {
          // Special handling for payment errors
          if (error === ErrorPaymentRequired) {
-           toast.error("Please add more tokens to your account");
-           return;
+           toast.error("Please add more tokens to your account")
+           return
          }
-         
+
          // Generic error handling
          if (error instanceof Error) {
-           toast.error(error.message);
+           toast.error(error.message)
          } else {
-           toast.error("An unknown error occurred");
+           toast.error("An unknown error occurred")
          }
-       }
-     });
+       },
+     })
    }
    ```
 
 5. **Use the Hook in Components**:
+
    ```tsx
-   import { useUpdatePreferences } from "@/hooks/useUpdatePreferences";
+   import { useUpdatePreferences } from "@/hooks/useUpdatePreferences"
 
    function PreferencesComponent() {
-     const { mutate: updatePreferences, isPending } = useUpdatePreferences();
+     const { mutate: updatePreferences, isPending } = useUpdatePreferences()
 
      const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-       e.preventDefault();
+       e.preventDefault()
        updatePreferences({
          theme: "dark",
          preferredMainModel: "gpt-4o",
-       });
-     };
+       })
+     }
 
      return (
        <form onSubmit={handleSubmit}>
@@ -287,12 +299,12 @@ When adding a new backend API endpoint, follow these steps to create a correspon
            {isPending ? "Updating..." : "Save Preferences"}
          </button>
        </form>
-     );
+     )
    }
    ```
 
 6. **Error Handling Best Practices**:
-   - Return union types in the form of `SuccessType | Error` 
+   - Return union types in the form of `SuccessType | Error`
    - Use standard Error objects (`new Error("message")`) rather than custom error classes
    - Handle errors with `instanceof Error` checks
    - Define special case errors as constants where needed (e.g., `ErrorPaymentRequired`)

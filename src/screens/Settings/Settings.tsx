@@ -10,18 +10,21 @@ import Modal, { ModalTab } from "@/components/ui/modals/Modal"
 import { useModal } from "@/hooks/useModal"
 import { ModalButton } from "@/components/ui/buttons/ModalButton"
 import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
-import { FaCreditCard } from "react-icons/fa"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
-import "./Settings.css"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 import { useMemo } from "react"
 import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal"
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
 import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
-import { BiMemoryCard } from "react-icons/bi"
-import { MdSettings } from "react-icons/md"
-import { FaTools, FaCrown, FaSkull } from "react-icons/fa"
+import {
+  CreditCard,
+  MemoryStick,
+  Settings as SettingsIcon,
+  Wrench,
+  Crown,
+  Skull,
+} from "lucide-react"
 
 export default function Settings() {
   const { signOut, user } = useAuth()
@@ -51,7 +54,9 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     if (!user) {
       console.error("No user currently signed in")
-      alert("You are not currently signed in. Please sign in and try again.")
+      toast.error(
+        "You are not currently signed in. Please sign in and try again."
+      )
       handleLogout()
       return
     }
@@ -120,39 +125,37 @@ export default function Settings() {
 
   // Create the combined general and subscription tab content
   const generalTabContent = (
-    <div className="settings-content">
+    <div className="p-4 flex flex-col gap-6 h-full">
       {/* Subscription Section */}
-      <div className="subscription-section">{subscriptionContent}</div>
+      <div className="flex-1">{subscriptionContent}</div>
 
-      <div className="settings-divider"></div>
+      <div className="border-t my-2"></div>
 
       {/* Account Section */}
-      <div className="account-section">
-        <h3 className="settings-section-title">Account</h3>
-        <div className="settings-options">
-          <div className="settings-buttons-row">
-            <ModalButton
-              variant="primary"
-              onClick={() => {
-                closeModal()
-                openTokenModal()
-              }}
-              fixedWidth
-              icon={<FaCreditCard />}
-            >
-              BUY TOKENS
-            </ModalButton>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Account</h3>
+        <div className="flex flex-wrap gap-4">
+          <ModalButton
+            variant="primary"
+            onClick={() => {
+              closeModal()
+              openTokenModal()
+            }}
+            fixedWidth
+            icon={<CreditCard className="h-4 w-4" />}
+          >
+            BUY TOKENS
+          </ModalButton>
 
-            <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
-              LOG OUT
-            </ModalButton>
-          </div>
+          <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
+            LOG OUT
+          </ModalButton>
         </div>
       </div>
 
-      <footer className="settings-footer">
-        <div className="version-container">
-          <small>Version: {packageJson.version}</small>
+      <footer className="mt-auto pt-4">
+        <div className="text-muted-foreground text-sm text-center">
+          Version: {packageJson.version}
         </div>
       </footer>
     </div>
@@ -160,19 +163,17 @@ export default function Settings() {
 
   // Create the tab content for the danger zone
   const dangerTabContent = (
-    <div className="danger-content">
-      <div className="danger-description">
+    <div className="p-4 space-y-6">
+      <div className="bg-destructive/10 p-4 rounded-md text-sm text-destructive">
         <p>
           Warning: Actions in this section can result in irreversible data loss.
         </p>
       </div>
-      <div className="danger-buttons">
+      <div className="flex flex-col gap-4">
         <ModalButton variant="danger" onClick={openDeleteDialog} fixedWidth>
           DELETE ACCOUNT
         </ModalButton>
-        <div className="memory-manager-container">
-          <DeleteMemoryButton onSuccess={closeModal} fixedWidth />
-        </div>
+        <DeleteMemoryButton onSuccess={closeModal} fixedWidth />
       </div>
     </div>
   )
@@ -183,35 +184,34 @@ export default function Settings() {
       id: "general",
       label: "Account",
       content: generalTabContent,
-      icon: <FaCrown />,
+      icon: <Crown className="h-4 w-4" />,
     },
     {
       id: "models",
       label: "Models",
       content: modelPreferences,
-      minimumTier: 1,
-      icon: <MdSettings />,
+      icon: <SettingsIcon className="h-4 w-4" />,
     },
     {
       id: "memory",
       label: "Memory",
       content: memoryControls,
       minimumTier: 1,
-      icon: <BiMemoryCard />,
+      icon: <MemoryStick className="h-4 w-4" />,
     },
     {
       id: "tools",
       label: "Tools",
       content: agentTools,
       minimumTier: 1,
-      icon: <FaTools />,
+      icon: <Wrench className="h-4 w-4" />,
     },
     {
       id: "danger",
       label: "Danger Zone",
       content: dangerTabContent,
       customClass: "danger",
-      icon: <FaSkull />,
+      icon: <Skull className="h-4 w-4" />,
     },
   ]
 
@@ -221,8 +221,7 @@ export default function Settings() {
       title="Settings"
       tabs={modalTabs}
       defaultTabId="general"
-    >
-      {/* Footer will be conditionally rendered in each tab's content */}
-    </Modal>
+      notResizable={false}
+    />
   )
 }

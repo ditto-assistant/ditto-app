@@ -31,7 +31,7 @@ import { IoSettingsOutline } from "react-icons/io5"
 import { MdFeedback } from "react-icons/md"
 import { FaLaptopCode } from "react-icons/fa"
 import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 import { useUser } from "@/hooks/useUser"
 import { ErrorPaymentRequired } from "@/types/errors"
 /**

@@ -37,7 +37,7 @@ export function ModelPreferencesProvider({
 function useModels() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  
+
   // Get user profile from API which includes preferences
   const { data: userProfile, isLoading: isUserLoading } = useUser()
 
@@ -57,7 +57,8 @@ function useModels() {
           modelPreferences.mainModel = userProfile.preferredMainModel
         }
         if (userProfile.preferredProgrammerModel) {
-          modelPreferences.programmerModel = userProfile.preferredProgrammerModel
+          modelPreferences.programmerModel =
+            userProfile.preferredProgrammerModel
         }
         if (userProfile.preferredImageModel) {
           modelPreferences.imageGeneration = {
@@ -76,10 +77,10 @@ function useModels() {
   const mutation = useMutation({
     mutationFn: async (newPreferences: Partial<ModelPreferences>) => {
       if (!user?.uid) throw new Error("No user")
-      
+
       // Get current preferences
       const currentPrefs = preferences.data || DEFAULT_PREFERENCES
-      
+
       // Merge with new preferences (only for local state)
       const updatedPreferences = {
         ...currentPrefs,
@@ -89,7 +90,7 @@ function useModels() {
           ...(newPreferences.memory || {}),
         },
       }
-      
+
       // Create update for API
       const userPreferencesUpdate = {
         preferredMainModel: newPreferences.mainModel,
@@ -97,12 +98,14 @@ function useModels() {
         preferredImageModel: newPreferences.imageGeneration?.model,
         // theme is handled separately, not included here
       }
-      
+
       // Only include defined preferences in the update
       const filteredUpdate = Object.fromEntries(
-        Object.entries(userPreferencesUpdate).filter(([_, v]) => v !== undefined)
+        Object.entries(userPreferencesUpdate).filter(
+          ([_, v]) => v !== undefined
+        )
       )
-      
+
       // Update backend if there's anything to update
       if (Object.keys(filteredUpdate).length > 0) {
         const result = await updateUserPreferences(user.uid, filteredUpdate)
@@ -110,7 +113,7 @@ function useModels() {
           throw result
         }
       }
-      
+
       return updatedPreferences
     },
     onSuccess: (data) => {
@@ -125,7 +128,7 @@ function useModels() {
       } else {
         toast.error("Failed to update preferences")
       }
-    }
+    },
   })
 
   return {

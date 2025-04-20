@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 import { useUser } from "@/hooks/useUser"
 import { FaBolt } from "react-icons/fa"
 import "./AgentToolsModal.css"
-import "@/components/ui/modals/Modal.css"
 
 const redirectToGeneralTab = () => {
   const generalTab = document.querySelector('.modal-tab[data-tab-id="general"]')
