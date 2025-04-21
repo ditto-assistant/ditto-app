@@ -90,11 +90,7 @@
     "generate:whats-new": "bun scripts/generate-whats-new.ts",
     "generate:icons": "bun scripts/generate-icons.js",
     "test:login": "bun scripts/tests/playwright-login.ts",
-    "test:screenshots": "bun scripts/tests/screenshot.ts",
-    "test": "bun scripts/tests/screenshot.ts",
-    "mcp:login": "bun scripts/mcp-tools.ts login",
-    "screenshot": "bun scripts/mcp-tools.ts take-screenshot",
-    "mcp": "bun scripts/mcp-tools.ts"
+    "browsertools": "bun scripts/browsertools.ts"
   },
   "browserslist": {
     "production": [

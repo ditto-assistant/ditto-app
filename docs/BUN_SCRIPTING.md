@@ -5,14 +5,16 @@ This document provides resources and examples for writing efficient scripts usin
 ## Essential Bun Documentation
 
 ### Core APIs
-- [Bun Runtime APIs](https://bun.sh/docs/runtime/bun-apis)
-- [Bun Shell Scripting](https://bun.sh/docs/runtime/shell)
-- [Bun Process Spawning](https://bun.sh/docs/api/spawn)
-- [Bun HTTP](https://bun.sh/docs/api/http)
-- [Bun File I/O](https://bun.sh/docs/api/file-io)
+
+- [Bun Runtime APIs](https://bun.sh/docs/runtime/bun-apis.md)
+- [Bun Shell Scripting](https://bun.sh/docs/runtime/shell.md)
+- [Bun Process Spawning](https://bun.sh/docs/api/spawn.md)
+- [Bun HTTP](https://bun.sh/docs/api/http.md)
+- [Bun File I/O](https://bun.sh/docs/api/file-io.md)
 
 ### TypeScript Integration
-- [Bun with TypeScript](https://bun.sh/docs/runtime/typescript)
+
+- [Bun with TypeScript](https://bun.sh/docs/runtime/typescript.md)
 - Install `@types/bun` for type definitions
 
 ## Common Patterns
@@ -27,17 +29,17 @@ const proc = Bun.spawn(["command", "arg1", "arg2"], {
   stdin: "inherit",
   cwd: process.cwd(),
   env: process.env,
-});
+})
 
 // Wait for process to complete
-const exitCode = await proc.exited;
+const exitCode = await proc.exited
 
 // Background process
 const daemon = Bun.spawn(["server", "--daemon"], {
   stdio: ["ignore", "ignore", "ignore"],
   detached: true,
-});
-daemon.unref(); // Detach from parent process
+})
+daemon.unref() // Detach from parent process
 ```
 
 ### Network Operations
@@ -50,53 +52,53 @@ async function isPortInUse(port: number): Promise<boolean> {
       port,
       hostname: "localhost",
       timeout: 1000,
-    });
-    return true; // Connected successfully, port is in use
+    })
+    return true // Connected successfully, port is in use
   } catch {
-    return false; // Connection failed, port is not in use
+    return false // Connection failed, port is not in use
   }
 }
 
 // Make HTTP requests
-const response = await fetch("http://localhost:3000/api");
-const data = await response.json();
+const response = await fetch("http://localhost:3000/api")
+const data = await response.json()
 ```
 
 ### File Operations
 
 ```typescript
 // Read a file
-const file = Bun.file("path/to/file.txt");
-const content = await file.text();
+const file = Bun.file("path/to/file.txt")
+const content = await file.text()
 
 // Write a file
-await Bun.write("path/to/output.txt", "File content");
+await Bun.write("path/to/output.txt", "File content")
 
 // Check if directory exists
 try {
-  const stats = Bun.file("/path/to/dir").statSync();
-  const exists = stats.isDirectory();
+  const stats = Bun.file("/path/to/dir").statSync()
+  const exists = stats.isDirectory()
 } catch {
   // Directory doesn't exist
 }
 
 // Create directory
-Bun.spawn(["mkdir", "-p", "/path/to/dir"], { stdio: "inherit" });
+Bun.spawn(["mkdir", "-p", "/path/to/dir"], { stdio: "inherit" })
 ```
 
 ### Shell Commands
 
 ```typescript
 // Using $ template literal for shell commands
-import { $ } from "bun";
+import { $ } from "bun"
 
 // Run a command and get output
-const result = await $`echo "Hello World!"`.text();
+const result = await $`echo "Hello World!"`.text()
 
 // Run a command with error handling
-const { exitCode, stdout } = await $`npm install`.nothrow();
+const { exitCode, stdout } = await $`npm install`.nothrow()
 if (exitCode !== 0) {
-  console.error("Installation failed");
+  console.error("Installation failed")
 }
 ```
 
@@ -105,28 +107,28 @@ if (exitCode !== 0) {
 ```typescript
 // Load environment variables
 function loadEnv(): Record<string, string> {
-  const envPath = "./env.local";
-  
+  const envPath = "./env.local"
+
   if (!Bun.file(envPath).existsSync()) {
-    return process.env;
+    return process.env
   }
-  
-  const content = Bun.readFileSync(envPath, { string: true });
-  const env: Record<string, string> = {};
-  
+
+  const content = Bun.readFileSync(envPath, { string: true })
+  const env: Record<string, string> = {}
+
   for (const line of content.split("\n")) {
-    if (!line || line.startsWith("#")) continue;
-    
-    const equalsPos = line.indexOf("=");
-    if (equalsPos === -1) continue;
-    
-    const key = line.slice(0, equalsPos).trim();
-    const value = line.slice(equalsPos + 1).trim();
-    
-    env[key] = value.replace(/^["']|["']$/g, "");
+    if (!line || line.startsWith("#")) continue
+
+    const equalsPos = line.indexOf("=")
+    if (equalsPos === -1) continue
+
+    const key = line.slice(0, equalsPos).trim()
+    const value = line.slice(equalsPos + 1).trim()
+
+    env[key] = value.replace(/^["']|["']$/g, "")
   }
-  
-  return { ...env, ...process.env };
+
+  return { ...env, ...process.env }
 }
 ```
 
