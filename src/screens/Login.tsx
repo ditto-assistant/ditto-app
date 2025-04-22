@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { useSearchParams } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router"
 import { useAuth } from "@/hooks/useAuth"
 import { Eye, EyeOff, AlertCircle } from "lucide-react"
 import { SiGoogle } from "@icons-pack/react-simple-icons"
