@@ -9,6 +9,7 @@ export type ModelPreferences = {
   memory: MemoryPreferences
 }
 
+// TODO: use services.ts and useServices hook to check if the model supports image attachments
 export function modelSupportsImageAttachments(model: Model): boolean {
   return (
     model === "gemini-1.5-pro" ||
@@ -25,7 +26,8 @@ export function modelSupportsImageAttachments(model: Model): boolean {
     model === "gpt-4o" ||
     model === "gpt-4o-2024-11-20" ||
     model === "gpt-4o-mini" ||
-    model === "gpt-4o-mini-2024-07-18"
+    model === "gpt-4o-mini-2024-07-18" ||
+    model === "mistral-small"
   )
 }
 
@@ -42,6 +44,7 @@ export type Model =
   | "claude-3-5-sonnet-v2@20241022"
   | "mistral-nemo"
   | "mistral-large"
+  | "mistral-small"
   | "meta/llama-3.3-70b-instruct-maas"
   | "dall-e-2"
   | "dall-e-3"

@@ -296,8 +296,6 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     model: "dall-e-3",
     size: {
       wh: "1024x1024",
-      description: "Square (1024x1024)",
-      supportedModels: ["dall-e-2", "dall-e-3"],
     },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
