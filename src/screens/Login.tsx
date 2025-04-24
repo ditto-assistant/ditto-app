@@ -243,7 +243,7 @@ const Login = () => {
 
         <div className="border-b border-border/40 bg-primary/5 px-8 py-7">
           <h1 className="text-center text-3xl font-bold tracking-tight text-foreground">
-            {isCreatingAccount ? "Create Account" : "Sign In"}
+            {isCreatingAccount ? "Create Account" : "Sign In to Ditto"}
           </h1>
         </div>
 
