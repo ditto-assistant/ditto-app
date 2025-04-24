@@ -8,12 +8,6 @@ import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePlatform } from "@/hooks/usePlatform"
 import ChatMessage from "./ChatMessage"
 
-const triggerHapticFeedback = () => {
-  if (navigator.vibrate) {
-    navigator.vibrate(10)
-  }
-}
-
 const CustomScrollToBottom = ({
   children,
   onScroll,
@@ -290,23 +284,11 @@ export default function ChatFeed({
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const bottomRef = useRef(null)
   const { isMobile } = usePlatform()
-  const [activeAvatarIndex, setActiveAvatarIndex] = useState(null)
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
   const initialRenderRef = useRef(true)
   const fetchingRef = useRef(false)
   const detectScrollToTopRef = useRef(null)
-
-  const handleAvatarClick = (e, index) => {
-    e.stopPropagation()
-
-    if (activeAvatarIndex === index) {
-      setActiveAvatarIndex(null)
-    } else {
-      setActiveAvatarIndex(index)
-      triggerHapticFeedback()
-    }
-  }
 
   useEffect(() => {
     let isMounted = true
@@ -392,39 +374,6 @@ export default function ChatFeed({
     }
   }, [shouldFetchNext, fetchNextPage])
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (activeAvatarIndex !== null) {
-        let targetElement = e.target
-        let isClickOnMenu = false
-
-        while (targetElement && !isClickOnMenu) {
-          if (
-            targetElement.classList &&
-            (targetElement.classList.contains("avatar-action-menu") ||
-              targetElement.classList.contains("message-avatar") ||
-              targetElement.classList.contains("action-icon-button"))
-          ) {
-            isClickOnMenu = true
-          }
-          targetElement = targetElement.parentElement
-        }
-
-        if (!isClickOnMenu) {
-          setActiveAvatarIndex(null)
-        }
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    document.addEventListener("touchstart", handleClickOutside)
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.removeEventListener("touchstart", handleClickOutside)
-    }
-  }, [activeAvatarIndex])
-
   const handleCopy = (message, type = "prompt") => {
     const textToCopy = type === "prompt" ? message.prompt : message.response
     if (!textToCopy) {
@@ -435,7 +384,6 @@ export default function ChatFeed({
     navigator.clipboard.writeText(textToCopy).then(
       () => {
         toast.success("Copied to clipboard")
-        setActiveAvatarIndex(null)
       },
       (err) => {
         console.error("Could not copy text: ", err)
@@ -445,7 +393,6 @@ export default function ChatFeed({
   }
 
   const handleMessageDelete = async (message) => {
-    setActiveAvatarIndex(null)
     if (!message.id) {
       console.error("Cannot delete message: missing ID")
       return
@@ -463,7 +410,6 @@ export default function ChatFeed({
   }
 
   const handleShowMemories = async (message) => {
-    setActiveAvatarIndex(null)
     try {
       await showMemoryNetwork(message)
     } catch (error) {
@@ -507,17 +453,10 @@ export default function ChatFeed({
                 message.prompt && !message.prompt.includes("SYSTEM:")
               const isLast = index === messages.length - 1
 
-              const promptId = `prompt-${message.id || index}`
-              const responseId = `response-${message.id || index}`
-
-              const isPromptActive = activeAvatarIndex === promptId
-              const isResponseActive = activeAvatarIndex === responseId
-
               return (
                 <div key={message.id || index} className="message-pair">
                   {message.prompt && isUser && (
                     <ChatMessage
-                      pairID={message.id}
                       content={message.prompt}
                       timestamp={
                         message.timestamp
@@ -528,8 +467,6 @@ export default function ChatFeed({
                       isLast={isLast}
                       isOptimistic={message.isOptimistic}
                       bubbleStyles={bubbleStyles}
-                      onAvatarClick={(e) => handleAvatarClick(e, promptId)}
-                      showMenu={isPromptActive}
                       menuProps={{
                         onCopy: () => handleCopy(message, "prompt"),
                         onDelete: () => handleMessageDelete(message),
@@ -550,8 +487,6 @@ export default function ChatFeed({
                       isLast={isLast}
                       isOptimistic={message.isOptimistic}
                       bubbleStyles={bubbleStyles}
-                      onAvatarClick={(e) => handleAvatarClick(e, responseId)}
-                      showMenu={isResponseActive}
                       menuProps={{
                         onCopy: () => handleCopy(message, "response"),
                         onDelete: () => handleMessageDelete(message),

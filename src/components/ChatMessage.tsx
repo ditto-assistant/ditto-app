@@ -60,9 +60,7 @@ interface ChatMessageProps {
       padding?: number
     }
   }
-  onAvatarClick?: (e: React.MouseEvent) => void
-  showMenu?: boolean
-  menuProps?: {
+  menuProps: {
     onCopy: () => void
     onDelete: () => void
     onShowMemories: () => void
@@ -79,8 +77,6 @@ export default function ChatMessage({
     text: { fontSize: 14 },
     chatbubble: { borderRadius: 20, padding: 10 },
   },
-  onAvatarClick,
-  showMenu = false,
   menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth()
@@ -197,7 +193,7 @@ export default function ChatMessage({
           <DropdownMenuTrigger asChild>
             <Avatar
               className="h-7 w-7 cursor-pointer transition-transform hover:scale-110"
-              onClick={onAvatarClick}
+              onPointerDown={() => navigator.vibrate?.(10)}
             >
               <AvatarImage
                 src={avatar}
@@ -208,7 +204,7 @@ export default function ChatMessage({
               <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          {showMenu && menuProps && (
+          {menuProps && (
             <DropdownMenuContent
               align={isUser ? "end" : "start"}
               className="w-auto"
