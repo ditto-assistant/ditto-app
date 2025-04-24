@@ -144,7 +144,7 @@ export default function ChatMessage({
             {/* Tool label: Positioned above message with background color */}
             {toolType && (
               <div
-                className="absolute top-0 left-4 -translate-y-1/2 px-2 py-0.5 text-xs font-bold rounded-full text-white"
+                className="absolute top-32 left-4 px-2 py-0.5 text-xs font-bold rounded-full text-white"
                 style={{
                   backgroundColor: toolLabels[toolType].color,
                 }}
