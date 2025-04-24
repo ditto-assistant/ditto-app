@@ -55,9 +55,7 @@
   .app-body {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: calc(
-      80px + env(safe-area-inset-bottom, 0px)
-    ); /* Adjust for fixed footer */
+    padding-bottom: 0; /* Remove padding, handle in chat feed instead */
   }
 
   /* Chat feed adjustments to account for fixed footer */

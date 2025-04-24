@@ -993,16 +993,6 @@
   }
 }
 
-/* Add smooth transition for message containers */
-.message-container {
-  transition: all 0.3s ease-out;
-}
-
-/* Add animation for new messages */
-.message-container.new-message {
-  animation: slideIn 0.3s ease-out;
-}
-
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -1253,24 +1243,9 @@
   transform-origin: center center;
 }
 
-/* Smooth animation for generating state */
-.message-container.Ditto .avatar.ditto-avatar.animating {
-  animation: generateRotation 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-/* Smooth animation for completion */
-.message-container.Ditto .avatar.ditto-avatar.spinning {
-  animation: completionSpin 0.8s cubic-bezier(0.2, 0, 0.8, 1);
-}
-
 /* Typing indicator animation */
 .typing-indicator-container .avatar.ditto-avatar {
   animation: generateRotation 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-/* Clear any previous animations */
-.message-container.Ditto .avatar.ditto-avatar:not(.animating):not(.spinning) {
-  animation: none;
 }
 
 /* Add hardware acceleration */
@@ -1373,11 +1348,6 @@ ul.chat-bubble-list {
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Adjust message container margins in PWA mode */
-  .message-container {
-    margin-bottom: 8px; /* Consistent spacing in PWA mode */
-  }
-
   /* Fix any modal positioning in PWA mode */
   .action-overlay,
   .reaction-overlay {
@@ -1417,15 +1387,7 @@ ul.chat-bubble-list {
 
   /* Position follow button for desktop and Android */
   .follow-button {
-    bottom: 110px !important; /* Position well above send message on desktop/Android */
     touch-action: manipulation !important; /* Prevent scroll interference */
-  }
-
-  /* Specific handling for Android devices */
-  @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
-    .follow-button {
-      bottom: 120px !important; /* Position even higher on Android */
-    }
   }
 }
 
@@ -1481,7 +1443,7 @@ ul.chat-bubble-list {
   align-items: center;
   justify-content: center;
   position: fixed;
-  bottom: 100px; /* Position above the send message bar */
+  bottom: 90px;
   right: 20px;
   width: 40px;
   height: 40px;
@@ -1559,7 +1521,7 @@ ul.chat-bubble-list {
   will-change: transform, opacity;
   display: flex;
   flex-direction: column;
-  padding: 0 10px;
+  padding: 0px 10px;
 }
 
 .loading-indicator {

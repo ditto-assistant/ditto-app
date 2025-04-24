@@ -24,7 +24,6 @@ export default function HomeScreen() {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [capturedImage, setCapturedImage] = useState(null)
-  const [showMediaOptions, setShowMediaOptions] = useState(false)
   const [showTOS, setShowTOS] = useState(() => {
     return !localStorage.getItem("hasSeenTOS")
   })
@@ -137,14 +136,6 @@ export default function HomeScreen() {
     startCamera(!isFrontCamera)
   }
 
-  const handleCloseMediaOptions = () => {
-    setShowMediaOptions(false)
-  }
-
-  const handleOpenMediaOptions = () => {
-    setShowMediaOptions(true)
-  }
-
   useEffect(() => {
     const handleEditScript = (event) => {
       const { script } = event.detail
@@ -195,16 +186,10 @@ export default function HomeScreen() {
   }, [])
 
   return (
-    <div className="app" onClick={handleCloseMediaOptions}>
-      {/* Floating header has been moved to the bottom buttons bar */}
-      {/* Status bar has been removed */}
+    <div className="app">
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="app-content-wrapper">
-          <div
-            className="app-body"
-            ref={appBodyRef}
-            onClick={handleCloseMediaOptions}
-          >
+          <div className="app-body" ref={appBodyRef}>
             <ChatFeed />
           </div>
           <div className="app-footer">
@@ -212,9 +197,6 @@ export default function HomeScreen() {
               onCameraOpen={handleCameraOpen}
               capturedImage={capturedImage}
               onClearCapturedImage={() => setCapturedImage(null)}
-              showMediaOptions={showMediaOptions}
-              onOpenMediaOptions={handleOpenMediaOptions}
-              onCloseMediaOptions={handleCloseMediaOptions}
               onStop={() => {
                 balance.refetch()
               }}

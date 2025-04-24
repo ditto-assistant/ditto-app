@@ -23,9 +23,7 @@
   .app-body {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: calc(
-      var(--footer-height) + var(--android-nav-height)
-    ); /* Use CSS variables */
+    padding-bottom: 0; /* Remove padding, handle in chat feed instead */
   }
 
   @supports (padding: env(viewport-segment-bottom 0 0)) {

@@ -72,7 +72,7 @@
 }
 
 /* Override ChatMessage styles within memory node context */
-.memory-node-modal .message-container {
+.memory-node-modal {
   margin-bottom: 0;
   max-width: 100% !important;
   width: 100% !important;

@@ -12,6 +12,7 @@ import { debounce } from "@/utils/debounce"
 interface ComposeContextType {
   message: string
   setMessage: (message: string) => void
+  appendToMessage: (textToAppend: string) => void
   handleSubmit: () => void
   isWaitingForResponse: boolean
   setIsWaitingForResponse: (isWaiting: boolean) => void
@@ -53,6 +54,13 @@ export const ComposeProvider: React.FC<{ children: ReactNode }> = ({
     debouncedSave(msg)
   }
 
+  // Function to append text to existing message
+  const appendToMessage = (textToAppend: string) => {
+    const newMessage = localMessage + textToAppend
+    setLocalMessage(newMessage)
+    debouncedSave(newMessage)
+  }
+
   const submitCallback = useRef<(() => void) | null>(null)
   const registerSubmitCallback = (callback: () => void) => {
     submitCallback.current = callback
@@ -81,6 +89,7 @@ export const ComposeProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         message: localMessage,
         setMessage,
+        appendToMessage,
         handleSubmit,
         isWaitingForResponse,
         setIsWaitingForResponse,

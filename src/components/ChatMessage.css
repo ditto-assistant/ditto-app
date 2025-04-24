@@ -1,20 +1,3 @@
-.message-container {
-  display: flex;
-  margin: 6px 0;
-  max-width: 100%;
-  position: relative;
-  flex-direction: column;
-  width: 100%;
-}
-
-.message-container.ditto {
-  align-items: flex-start;
-}
-
-.message-container.user {
-  align-items: flex-end;
-}
-
 .message-avatar {
   flex-shrink: 0;
   width: 28px;
@@ -251,31 +234,6 @@
 .message-bubble.optimistic {
   border: 1px dashed rgba(255, 255, 255, 0.2);
   position: relative;
-}
-
-.message-container.optimistic::after {
-  content: "";
-  position: absolute;
-  bottom: -12px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(71, 82, 196, 0) 0%,
-    rgba(71, 82, 196, 0.5) 50%,
-    rgba(71, 82, 196, 0) 100%
-  );
-  animation: progress 1.5s infinite;
-}
-
-@keyframes progress {
-  0% {
-    background-position: -100% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
 }
 
 /* Typing indicator for optimistic assistant messages */

@@ -403,11 +403,6 @@
   margin: 20px;
 }
 
-/* Customize ChatMessage styling in memory nodes */
-.memory-node-messages .message-container {
-  margin-bottom: 0;
-}
-
 .memory-node-messages .message-bubble {
   max-width: 100%;
 }

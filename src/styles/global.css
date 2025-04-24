@@ -9,8 +9,6 @@
 @custom-variant dark (&:is(.dark *));
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
@@ -35,7 +33,10 @@
   background-color: var(--scrollbar-thumb-hover-color);
 }
 
-html {
+html,
+body {
+  margin: 0;
+  padding: 0;
   height: 100%;
   overflow: hidden;
   position: fixed;
@@ -55,9 +56,6 @@ body {
   background-color: var(--background-primary);
   color: var(--text-normal);
   overflow-x: hidden;
-  height: 100%;
-  margin: 0;
-  padding: 0;
   position: fixed;
   width: 100%;
   touch-action: pan-y;

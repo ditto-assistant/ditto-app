@@ -5,12 +5,6 @@
       "command": "bunx",
       "args": ["@playwright/mcp@latest"],
       "env": {}
-    },
-    "browsertools": {
-      "type": "stdio",
-      "command": "bun",
-      "args": ["browsertools"],
-      "env": {}
     }
   }
 }
