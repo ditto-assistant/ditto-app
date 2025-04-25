@@ -5,6 +5,8 @@
     "tailwindcss",
     "shadcn",
     "autoprefixer",
-    "postcss"
+    "postcss",
+    "bun",
+    "@tailwindcss/postcss"
   ]
 } 
