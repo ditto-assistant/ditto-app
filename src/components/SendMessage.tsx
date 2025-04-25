@@ -58,7 +58,7 @@ import {
 
 interface SendMessageProps {
   onCameraOpen: () => void
-  capturedImage?: string
+  capturedImage: string | null
   onClearCapturedImage: () => void
   onStop: () => void
 }
@@ -356,7 +356,7 @@ export default function SendMessage({
   }, [message, autoResizeTextarea])
 
   return (
-    <div className="w-full bg-background border-t border-border">
+    <div className="w-full">
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}

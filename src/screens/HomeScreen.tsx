@@ -8,18 +8,17 @@ import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
 import { useBalance } from "@/hooks/useBalance"
-import { useModal } from "@/hooks/useModal"
+import { ModalId, useModal } from "@/hooks/useModal"
 import { useTOSCheck } from "@/hooks/useTOSCheck"
-import { useScripts } from "@/hooks/useScripts"
+import { ScriptType, useScripts } from "@/hooks/useScripts"
 import useWhatsNew from "@/hooks/useWhatsNew"
 import { getUpdateState } from "@/utils/updateService"
-import { cn } from "@/lib/utils"
 
 interface ScriptData {
-  name: string;
-  content: string;
-  scriptType: string;
-  onSaveCallback?: (newContent: string) => Promise<void>;
+  name: string
+  content: string
+  scriptType: ScriptType
+  onSaveCallback?: (newContent: string) => Promise<void>
 }
 
 export default function HomeScreen() {
@@ -41,7 +40,7 @@ export default function HomeScreen() {
 
   // Handle URL parameters to open modals directly
   useEffect(() => {
-    const openModal = searchParams.get("openModal")
+    const openModal = searchParams.get("openModal") as ModalId
     const openTab = searchParams.get("openTab")
     const tokenSuccess = searchParams.get("tokenSuccess")
 
@@ -174,7 +173,10 @@ export default function HomeScreen() {
 
     window.addEventListener("editScript", handleEditScript as EventListener)
     return () => {
-      window.removeEventListener("editScript", handleEditScript as EventListener)
+      window.removeEventListener(
+        "editScript",
+        handleEditScript as EventListener
+      )
     }
   }, [saveScript, setSelectedScript])
 
@@ -196,13 +198,11 @@ export default function HomeScreen() {
   }, [])
 
   return (
-    <div className="fixed inset-0 touch-pan-y flex flex-col h-screen w-screen bg-background overflow-hidden">
+    <div className="app h-screen fixed inset-0 touch-pan-y flex flex-col">
       <Suspense fallback={<FullScreenSpinner />}>
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <div ref={appBodyRef} className="flex-1 flex flex-col w-full">
-            <ChatFeed />
-          </div>
-          <div className="bg-card backdrop-blur-md border-t border-border w-full z-10">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ChatFeed ref={appBodyRef} />
+          <div className="fixed bottom-0 left-0 right-0 w-full z-[300] bg-background backdrop-blur-md border-t border-border">
             <SendMessage
               onCameraOpen={handleCameraOpen}
               capturedImage={capturedImage}
@@ -232,7 +232,11 @@ export default function HomeScreen() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <video ref={videoRef} autoPlay className="w-full object-contain max-h-[calc(90vh-100px)]"></video>
+              <video
+                ref={videoRef}
+                autoPlay
+                className="w-full object-contain max-h-[calc(90vh-100px)]"
+              ></video>
               <div className="flex justify-around items-center w-full p-4 bg-muted">
                 <button
                   onClick={toggleCamera}

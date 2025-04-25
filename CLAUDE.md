@@ -27,7 +27,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 ## Essential Commands
 
 - Build: `bun run build` or `vite build`
-- Dev server: `bun run start`
+- Dev server: assume the user is running their dev server already
 - Preview: `vite preview`
 - Lint: `bun run lint` or `bun lint`
 - Fix linting: `bun run lint-fix` or `bun lint-fix`
