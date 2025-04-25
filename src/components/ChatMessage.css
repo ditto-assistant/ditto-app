@@ -52,8 +52,12 @@
   }
 }
 
+/* 
+ * Active avatar with theme-consistent highlight color 
+ * Uses primary color from our theme variables
+ */
 .message-avatar.active .avatar-image {
-  border-color: #4752c4;
+  border-color: var(--primary);
 }
 
 .message-content {
@@ -78,10 +82,14 @@
   }
 }
 
+/* 
+ * Message bubble base styling with improved text contrast
+ * Uses theme foreground color to ensure text is always readable
+ */
 .message-bubble {
   padding: 12px;
   padding-top: 14px;
-  color: white;
+  color: var(--foreground);
   position: relative;
   width: fit-content;
   max-width: 100%;
@@ -123,9 +131,13 @@
   }
 }
 
-/* Teardrop message styling */
+/* 
+ * Teardrop message styling with WCAG AA compliant contrast
+ * User and Ditto messages have distinct, high-contrast colors
+ */
 .message-bubble.user {
-  background-color: #007aff;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   margin-left: auto;
   margin-right: 0;
   border-radius: 18px;
@@ -133,7 +145,8 @@
 }
 
 .message-bubble.ditto {
-  background-color: #1c1c1e;
+  background-color: var(--card);
+  color: var(--card-foreground);
   margin-right: auto;
   margin-left: 0;
   border-radius: 18px;
@@ -159,7 +172,10 @@
   text-align: right;
 }
 
-/* Tool label styling */
+/* 
+ * Tool label styling with improved contrast
+ * Uses primary color with proper contrast against its background
+ */
 .tool-label {
   position: absolute;
   top: -8px;
@@ -167,19 +183,23 @@
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 10px;
-  color: white;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   font-weight: bold;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   text-transform: uppercase;
   z-index: 1;
 }
 
-/* Avatar action menu styling */
+/* 
+ * Avatar action menu styling with improved accessibility
+ * Uses theme variables for consistent styling and better contrast
+ */
 .avatar-action-menu {
   position: absolute;
   display: flex;
   flex-direction: row;
-  background-color: rgba(30, 30, 32, 0.85);
+  background-color: var(--popover);
   backdrop-filter: blur(8px);
   border-radius: 8px;
   padding: 4px;
@@ -188,6 +208,7 @@
   transform: translateY(-50%);
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
 }
 
 .avatar-action-menu.right {
@@ -200,10 +221,14 @@
   top: -36px;
 }
 
+/* 
+ * Action icon buttons with improved contrast and accessibility
+ * Uses theme variables for consistent styling and proper contrast
+ */
 .action-icon-button {
   background: none;
   border: none;
-  color: white;
+  color: var(--popover-foreground);
   width: 32px;
   height: 32px;
   border-radius: 6px;
@@ -218,7 +243,7 @@
 }
 
 .action-icon-button:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--secondary);
   transform: scale(1.05);
 }
 
@@ -226,13 +251,22 @@
   transform: scale(0.95);
 }
 
-.action-icon-button.delete {
-  color: #ff4444;
+/* Focus styles for keyboard navigation */
+.action-icon-button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
-/* Optimistic message styling */
+.action-icon-button.delete {
+  color: var(--destructive);
+}
+
+/* 
+ * Optimistic message styling with theme-consistent colors
+ * Uses theme border colors for better contrast and consistency
+ */
 .message-bubble.optimistic {
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border: 1px dashed var(--border);
   position: relative;
 }
 
@@ -304,9 +338,14 @@
   }
 }
 
-/* Dark mode specific styles */
-@media (prefers-color-scheme: dark) {
-  .message-bubble.ditto {
-    background-color: #2c2c2e;
-  }
+/* 
+ * Replace media query with .dark class selector for theme system compatibility
+ * This ensures it works correctly with the app's class-based theme switching
+ */
+.dark .message-bubble.optimistic {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .optimistic-placeholder {
+  color: var(--muted-foreground);
 }

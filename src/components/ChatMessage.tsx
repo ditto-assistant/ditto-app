@@ -134,7 +134,7 @@ export default function ChatMessage({
             "overflow-hidden",
             isUser
               ? "bg-primary text-primary-foreground rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
-              : "bg-muted text-muted-foreground rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
+              : "bg-card text-card-foreground rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
             isOptimistic && "border border-dashed border-opacity-20"
           )}
         >
@@ -160,9 +160,9 @@ export default function ChatMessage({
                 <div className="flex space-x-1">
                   {" "}
                   {/* Horizontal layout with spacing */}
-                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:0ms]"></div>
-                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:150ms]"></div>
-                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:300ms]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:0ms]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:150ms]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:300ms]"></div>
                 </div>
               </div>
             ) : (

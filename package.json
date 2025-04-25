@@ -47,6 +47,8 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/postcss": "^4.1.4",
     "@tailwindcss/vite": "^4.1.4",
     "@tanstack/eslint-plugin-query": "^5.73.3",
     "@tanstack/react-query-devtools": "^5.74.6",
@@ -72,6 +74,7 @@
     "prettier": "^3.5.3",
     "shadcn": "^2.5.0",
     "tailwindcss": "^4.1.4",
+    "tailwindcss-animate": "^1.0.7",
     "vite": "^6.3.3"
   },
   "scripts": {

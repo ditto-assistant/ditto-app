@@ -1,11 +1,15 @@
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
+import {
+  vscDarkPlus,
+  oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism"
 import { toast } from "sonner"
 import { Copy } from "lucide-react"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { usePlatform } from "@/hooks/usePlatform"
+import { useTheme } from "@/components/theme-provider"
 import "./MarkdownRenderer.css"
 
 interface MarkdownRendererProps {
@@ -19,6 +23,7 @@ const MarkdownRenderer = ({
 }: MarkdownRendererProps) => {
   const { handleImageClick } = useImageViewerHandler()
   const { isIOS } = usePlatform()
+  const { theme } = useTheme()
 
   if (!content) return null
 
@@ -27,6 +32,9 @@ const MarkdownRenderer = ({
       toast.success("Copied to clipboard")
     })
   }
+
+  // Choose the appropriate syntax highlighting theme based on the current theme
+  const syntaxTheme = theme === "dark" ? vscDarkPlus : oneLight
 
   return (
     <div className={`markdown-content ${className}`}>
@@ -47,7 +55,10 @@ const MarkdownRenderer = ({
               style={{
                 minHeight: isIOS ? "180px" : "auto",
                 minWidth: "100px",
-                background: "rgba(0, 0, 0, 0.05)",
+                background:
+                  theme === "dark"
+                    ? "rgba(0, 0, 0, 0.2)"
+                    : "rgba(0, 0, 0, 0.05)",
                 position: "relative",
               }}
               onClick={() => src && handleImageClick(src)}
@@ -57,7 +68,7 @@ const MarkdownRenderer = ({
             />
           ),
           // Handle inline code with copy button - this component only handles inline code
-          // since code blocks are handled by the pre component above
+          // since code blocks are handled by the pre component below
           code: ({ className, children, ...props }) => {
             const value = String(children).trim()
 
@@ -141,10 +152,10 @@ const MarkdownRenderer = ({
                         padding: "16px",
                         borderRadius: "6px",
                         minWidth: "min-content",
+                        backgroundColor: "var(--more-muted)",
+                        color: theme === "dark" ? "#f1f3f5" : "#2b2d31",
                       }}
-                      style={
-                        vscDarkPlus as { [key: string]: React.CSSProperties }
-                      }
+                      style={syntaxTheme}
                     >
                       {code}
                     </SyntaxHighlighter>
