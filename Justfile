@@ -50,3 +50,6 @@ lint:
 
 lint-fix:
 	bun lint-fix
+
+merge-dependabot:
+	./scripts/github/merge_dependabot.sh
