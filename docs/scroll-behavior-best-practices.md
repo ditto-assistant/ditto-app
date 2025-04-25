@@ -22,7 +22,7 @@ While UI component libraries like shadcn provide elegant scroll components (like
 
 ```jsx
 // Prefer this for complex scrolling like infinite scroll
-<div 
+<div
   ref={scrollContainerRef}
   className="custom-scroll-view"
   onScroll={handleScroll}
@@ -35,7 +35,7 @@ While UI component libraries like shadcn provide elegant scroll components (like
 </div>
 
 // Instead of component libraries for complex scroll patterns
-<ScrollArea 
+<ScrollArea
   className="h-full w-full"
   onScroll={handleScroll}
 >
@@ -49,20 +49,20 @@ When loading older messages at the top, calculate and maintain the relative posi
 
 ```javascript
 // Get position before loading
-let prevHeight = scrollContainer.scrollHeight;
-let prevScrollTop = scrollContainer.scrollTop;
+let prevHeight = scrollContainer.scrollHeight
+let prevScrollTop = scrollContainer.scrollTop
 
 // After loading new content
 setTimeout(() => {
-  const newHeight = scrollContainer.scrollHeight;
-  const heightDifference = newHeight - prevHeight;
-  
+  const newHeight = scrollContainer.scrollHeight
+  const heightDifference = newHeight - prevHeight
+
   // Position the scroll to maintain the same view
   if (heightDifference > 0) {
     // This keeps the content the user was looking at in the same position
-    scrollContainer.scrollTop = prevScrollTop + heightDifference;
+    scrollContainer.scrollTop = prevScrollTop + heightDifference
   }
-}, 150); // Allow time for DOM to update
+}, 150) // Allow time for DOM to update
 ```
 
 ### 3. Debouncing Scroll Events
@@ -70,27 +70,27 @@ setTimeout(() => {
 Always debounce scroll handlers to prevent performance issues:
 
 ```javascript
-let scrollTimer = null;
+let scrollTimer = null
 const handleUserScrolling = () => {
-  userScrollingRef.current = true;
-  clearTimeout(scrollTimer);
+  userScrollingRef.current = true
+  clearTimeout(scrollTimer)
   scrollTimer = setTimeout(() => {
-    userScrollingRef.current = false;
-  }, 200);
-};
+    userScrollingRef.current = false
+  }, 200)
+}
 ```
 
 ### 4. Proper Cleanup of Event Listeners
 
 ```javascript
 useEffect(() => {
-  const scrollContainer = scrollContainerRef.current;
-  scrollContainer.addEventListener("scroll", handleScroll);
-  
+  const scrollContainer = scrollContainerRef.current
+  scrollContainer.addEventListener("scroll", handleScroll)
+
   return () => {
-    scrollContainer.removeEventListener("scroll", handleScroll);
-  };
-}, []);
+    scrollContainer.removeEventListener("scroll", handleScroll)
+  }
+}, [])
 ```
 
 ### 5. Adaptive Bottom Spacing for Mobile
@@ -98,11 +98,15 @@ useEffect(() => {
 Account for safe areas and keyboard appearance:
 
 ```jsx
-<div ref={bottomRef} className="bottom-spacer" style={{ 
-  height: 'env(safe-area-inset-bottom, 120px)',
-  minHeight: '120px',
-  padding: '24px',
-}} />
+<div
+  ref={bottomRef}
+  className="bottom-spacer"
+  style={{
+    height: "env(safe-area-inset-bottom, 120px)",
+    minHeight: "120px",
+    padding: "24px",
+  }}
+/>
 ```
 
 ### 6. Handling Keyboard Visibility on Mobile
@@ -111,20 +115,20 @@ Detect keyboard visibility changes and adjust UI accordingly:
 
 ```javascript
 const handleResize = () => {
-  const currentHeight = window.innerHeight;
-  const heightDiff = initialHeight - currentHeight;
-  
+  const currentHeight = window.innerHeight
+  const heightDiff = initialHeight - currentHeight
+
   if (heightDiff > MIN_KEYBOARD_HEIGHT && !isKeyboardVisible) {
     // Keyboard is now visible
-    isKeyboardVisible = true;
+    isKeyboardVisible = true
     // Adjust scroll-to-bottom button position
-    scrollToBottomButton.style.bottom = `${heightDiff + 20}px`;
+    scrollToBottomButton.style.bottom = `${heightDiff + 20}px`
   } else if (heightDiff <= MIN_KEYBOARD_HEIGHT && isKeyboardVisible) {
     // Keyboard is now hidden
-    isKeyboardVisible = false;
-    scrollToBottomButton.style.bottom = "";
+    isKeyboardVisible = false
+    scrollToBottomButton.style.bottom = ""
   }
-};
+}
 ```
 
 ### 7. Initial Scrolling Behavior
@@ -136,8 +140,8 @@ if (isInitialScrollRef.current) {
   scrollContainer.scrollTo({
     top: scrollContainer.scrollHeight,
     behavior: "auto", // Use 'auto' instead of 'smooth' to avoid animation
-  });
-  isInitialScrollRef.current = false;
+  })
+  isInitialScrollRef.current = false
 }
 ```
 
@@ -169,10 +173,12 @@ When implementing or modifying scroll behavior, test the following scenarios:
 ## Platform-Specific Considerations
 
 ### iOS
+
 - Use `-webkit-overflow-scrolling: touch` for smooth inertial scrolling
 - Account for notch and home indicator with safe-area-inset variables
 
 ### Android
+
 - Test on various Android versions as scroll behavior can vary
 - Use hardware acceleration (`transform: translateZ(0)`) for smooth scrolling
 
