@@ -127,24 +127,23 @@ export default function ChatMessage({
       )}
     >
       {/* Chat bubble */}
-      <div className="max-w-[95%]">
+      <div className="max-w-[95%] pt-2 overflow-visible relative">
         <Card
           className={cn(
             "py-0",
-            "overflow-hidden",
             isUser
               ? "bg-primary text-primary-foreground rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
               : "bg-card text-card-foreground rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
             isOptimistic && "border border-dashed border-opacity-20"
           )}
         >
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-3 sm:p-4 relative">
             {" "}
             {/* Responsive padding */}
             {/* Tool label: Positioned above message with background color */}
             {toolType && (
               <div
-                className="absolute top-32 left-4 px-2 py-0.5 text-xs font-bold rounded-full text-white"
+                className="absolute -top-1.5 left-3 px-2 py-0.5 text-xs font-bold rounded-full text-white z-10"
                 style={{
                   backgroundColor: toolLabels[toolType].color,
                 }}
