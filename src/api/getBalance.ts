@@ -17,6 +17,8 @@ const BalanceSchema = z.object({
   totalAirdroppedRaw: z.number().optional(),
   totalAirdropped: z.string().optional(),
   lastAirdropAt: z.coerce.date().optional(),
+  planTier: z.number(),
+  planTierName: z.string(),
 })
 
 export type Balance = z.infer<typeof BalanceSchema>

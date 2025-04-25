@@ -30,7 +30,7 @@ import {
   Zap,
   Rocket,
 } from "lucide-react"
-
+import { cn } from "@/lib/utils"
 // Vendor color mappings for visual consistency
 const VENDOR_COLORS: Record<Vendor, string> = {
   google: "#4285F4",
@@ -128,11 +128,6 @@ export const ModelCard = ({
   const isAccessible = isModelAccessible(model, userTier)
   const isLLMModel = "costPerMillionInputTokens" in model
 
-  // Special handling no longer needed with updated design
-
-  // Not needed anymore as we simplified the UI
-
-  // Handle size selection for image models
   const handleSizeChange = (size: { wh: string; description: string }) => {
     if (isLLMModel || !preferences) return
 
@@ -146,7 +141,13 @@ export const ModelCard = ({
 
   return (
     <Card
-      className={`overflow-hidden transition-all cursor-pointer h-full ${isSelected ? "border-2 border-primary ring-2 ring-primary/20" : "border hover:border-primary/50"} ${!isAccessible ? "opacity-75" : ""}`}
+      className={cn(
+        "py-4 gap-2 overflow-hidden transition-all cursor-pointer h-full",
+        isSelected
+          ? "border-2 border-primary ring-2 ring-primary/20"
+          : "border hover:border-primary/50",
+        !isAccessible && "opacity-75"
+      )}
       onClick={(e) => {
         e.stopPropagation()
         if (isAccessible) {

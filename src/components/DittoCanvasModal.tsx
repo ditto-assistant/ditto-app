@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
-import { IconButton } from "@mui/material"
-import FullscreenIcon from "@mui/icons-material/Fullscreen"
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit"
+import { Button } from "@/components/ui/button"
+import { Fullscreen, X } from "lucide-react"
 import Modal from "@/components/ui/modals/Modal"
 import { useModal } from "@/hooks/useModal"
 import { useScripts } from "@/hooks/useScripts"
@@ -78,13 +77,13 @@ export default function DittoCanvasModal() {
       <div className="ditto-canvas-container">
         {!isFullscreen && (
           <div className="ditto-canvas-header">
-            <IconButton
+            <Button
               className="fullscreen-button"
               onClick={toggleFullscreen}
               aria-label="fullscreen"
             >
-              <FullscreenIcon />
-            </IconButton>
+              <Fullscreen />
+            </Button>
           </div>
         )}
 
@@ -99,9 +98,9 @@ export default function DittoCanvasModal() {
 
         {isFullscreen && isMobile && (
           <div className="fullscreen-mobile-nav">
-            <IconButton className="close-button" onClick={closeModal}>
-              <FullscreenExitIcon />
-            </IconButton>
+            <Button className="close-button" onClick={closeModal}>
+              <X />
+            </Button>
           </div>
         )}
       </div>

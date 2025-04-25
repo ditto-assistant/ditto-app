@@ -1,7 +1,7 @@
 import { useAuth, useAuthToken } from "@/hooks/useAuth"
 import { routes } from "../firebaseConfig"
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
-import { Button } from "@mui/material"
+import { Button } from "@/components/ui/button"
 import { JSX } from "react"
 import "./CheckoutForm.css"
 
@@ -51,7 +51,7 @@ export function CheckoutForm({
         name="authorization"
         value={`Bearer ${token.data}`}
       />
-      <Button type="submit" variant="contained" className="purchase-button">
+      <Button type="submit" variant="default" className="purchase-button">
         Purchase Tokens
       </Button>
     </form>

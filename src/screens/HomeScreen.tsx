@@ -1,20 +1,26 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "react-router"
-import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
-import { useBalance } from "@/hooks/useBalance"
-import { useModal } from "@/hooks/useModal"
-import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
-import { useTOSCheck } from "@/hooks/useTOSCheck"
 import { motion, AnimatePresence } from "framer-motion"
-import { FlipVertical } from "lucide-react"
+import { FlipVertical, X } from "lucide-react"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
+import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
+import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
+import { useBalance } from "@/hooks/useBalance"
+import { useModal } from "@/hooks/useModal"
+import { useTOSCheck } from "@/hooks/useTOSCheck"
 import { useScripts } from "@/hooks/useScripts"
 import useWhatsNew from "@/hooks/useWhatsNew"
 import { getUpdateState } from "@/utils/updateService"
-import "@/styles/buttons.css"
-import "./HomeScreen.css"
+import { cn } from "@/lib/utils"
+
+interface ScriptData {
+  name: string;
+  content: string;
+  scriptType: string;
+  onSaveCallback?: (newContent: string) => Promise<void>;
+}
 
 export default function HomeScreen() {
   const balance = useBalance()
@@ -22,16 +28,16 @@ export default function HomeScreen() {
   const [searchParams] = useSearchParams()
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isFrontCamera, setIsFrontCamera] = useState(true)
-  const videoRef = useRef(null)
-  const canvasRef = useRef(null)
-  const [capturedImage, setCapturedImage] = useState(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
   // Use the TOS check hook to determine if we need to show the TOS dialog
   const { showTOS, setShowTOS } = useTOSCheck()
-  const [fullScreenEdit, setFullScreenEdit] = useState(null)
+  const [fullScreenEdit, setFullScreenEdit] = useState<ScriptData | null>(null)
   const { setSelectedScript, saveScript } = useScripts()
   const { openWhatsNew } = useWhatsNew()
 
-  const appBodyRef = useRef(null)
+  const appBodyRef = useRef<HTMLDivElement>(null)
 
   // Handle URL parameters to open modals directly
   useEffect(() => {
@@ -94,7 +100,7 @@ export default function HomeScreen() {
     stopCameraFeed()
   }
 
-  const startCamera = (useFrontCamera) => {
+  const startCamera = (useFrontCamera: boolean) => {
     navigator.mediaDevices
       .getUserMedia({
         video: { facingMode: useFrontCamera ? "user" : "environment" },
@@ -110,23 +116,27 @@ export default function HomeScreen() {
   }
 
   const stopCameraFeed = () => {
-    const stream = videoRef.current?.srcObject
+    const stream = videoRef.current?.srcObject as MediaStream
     if (stream) {
       const tracks = stream.getTracks()
       tracks.forEach((track) => track.stop())
-      videoRef.current.srcObject = null
+      if (videoRef.current) {
+        videoRef.current.srcObject = null
+      }
     }
   }
 
   const handleSnap = () => {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext("2d")
-      canvasRef.current.width = videoRef.current.videoWidth
-      canvasRef.current.height = videoRef.current.videoHeight
-      context.drawImage(videoRef.current, 0, 0)
-      const imageDataURL = canvasRef.current.toDataURL("image/png")
-      setCapturedImage(imageDataURL)
-      handleCameraClose()
+      if (context) {
+        canvasRef.current.width = videoRef.current.videoWidth
+        canvasRef.current.height = videoRef.current.videoHeight
+        context.drawImage(videoRef.current, 0, 0)
+        const imageDataURL = canvasRef.current.toDataURL("image/png")
+        setCapturedImage(imageDataURL)
+        handleCameraClose()
+      }
     }
   }
 
@@ -137,11 +147,11 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    const handleEditScript = (event) => {
+    const handleEditScript = (event: CustomEvent<{ script: ScriptData }>) => {
       const { script } = event.detail
       setFullScreenEdit({
         ...script,
-        onSaveCallback: async (newContent) => {
+        onSaveCallback: async (newContent: string) => {
           try {
             // Use the script manager to save
             await saveScript(newContent, script.scriptType, script.name)
@@ -162,9 +172,9 @@ export default function HomeScreen() {
       })
     }
 
-    window.addEventListener("editScript", handleEditScript)
+    window.addEventListener("editScript", handleEditScript as EventListener)
     return () => {
-      window.removeEventListener("editScript", handleEditScript)
+      window.removeEventListener("editScript", handleEditScript as EventListener)
     }
   }, [saveScript, setSelectedScript])
 
@@ -186,13 +196,13 @@ export default function HomeScreen() {
   }, [])
 
   return (
-    <div className="app">
+    <div className="fixed inset-0 touch-pan-y flex flex-col h-screen w-screen bg-background overflow-hidden">
       <Suspense fallback={<FullScreenSpinner />}>
-        <div className="app-content-wrapper">
-          <div className="app-body" ref={appBodyRef}>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div ref={appBodyRef} className="flex-1 flex flex-col w-full">
             <ChatFeed />
           </div>
-          <div className="app-footer">
+          <div className="bg-card backdrop-blur-md border-t border-border w-full z-10">
             <SendMessage
               onCameraOpen={handleCameraOpen}
               capturedImage={capturedImage}
@@ -208,30 +218,38 @@ export default function HomeScreen() {
       <AnimatePresence>
         {isCameraOpen && (
           <motion.div
-            className="camera-overlay"
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleCameraClose}
           >
             <motion.div
-              className="camera-container"
+              className="bg-card rounded-lg overflow-hidden max-w-[90%] max-h-[90%] flex flex-col"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <video ref={videoRef} autoPlay className="camera-feed"></video>
-              <div className="camera-controls">
-                <FlipVertical
-                  className="flip-camera-icon"
+              <video ref={videoRef} autoPlay className="w-full object-contain max-h-[calc(90vh-100px)]"></video>
+              <div className="flex justify-around items-center w-full p-4 bg-muted">
+                <button
                   onClick={toggleCamera}
-                />
-                <button className="camera-snap" onClick={handleSnap}>
+                  className="p-2 rounded-full bg-background/10 text-foreground hover:bg-background/20 transition"
+                >
+                  <FlipVertical className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={handleSnap}
+                  className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
+                >
                   Snap
                 </button>
-                <button className="camera-close" onClick={handleCameraClose}>
+                <button
+                  onClick={handleCameraClose}
+                  className="px-4 py-2 rounded-full bg-background/20 text-foreground hover:bg-background/30 transition"
+                >
                   Close
                 </button>
               </div>
@@ -240,7 +258,7 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
 
-      <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+      <canvas ref={canvasRef} className="hidden"></canvas>
 
       <TermsOfServiceDialog
         open={showTOS}

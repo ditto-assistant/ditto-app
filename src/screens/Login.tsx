@@ -15,7 +15,7 @@ import {
   getUserObjectFromFirestore,
   auth,
 } from "@/control/firebase"
-import TermsOfService from "@/components/TermsOfService"
+import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -362,16 +362,15 @@ const Login = () => {
         </div>
       </div>
 
-      {showTOS && (
-        <TermsOfService
-          onClose={() => {
-            setShowTOS(false)
-            setIsViewingTOS(false)
-          }}
-          isNewAccount={!isViewingTOS && isCreatingAccount}
-          onAccept={handleSignUp}
-        />
-      )}
+      <TermsOfServiceDialog
+        open={showTOS}
+        onOpenChange={(open) => {
+          setShowTOS(open)
+          if (!open) setIsViewingTOS(false)
+        }}
+        isNewAccount={!isViewingTOS && isCreatingAccount}
+        onAccept={handleSignUp}
+      />
     </div>
   )
 }

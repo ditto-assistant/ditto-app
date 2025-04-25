@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Button } from "@mui/material"
+import { Button } from "@/components/ui/button"
 import { useBalance } from "@/hooks/useBalance"
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
 import { CheckoutForm } from "@/components/CheckoutForm"
@@ -111,11 +111,7 @@ export default function TokenModal() {
             transition={{ delay: 0.6 }}
             className="token-success-button-container"
           >
-            <Button
-              variant="contained"
-              onClick={closeModal}
-              className="token-success-button"
-            >
+            <Button onClick={closeModal} className="token-success-button">
               Close
             </Button>
           </motion.div>
