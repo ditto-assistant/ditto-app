@@ -263,33 +263,47 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
 
 ## Implementation Progress
 
-### 1. ChatMessage.tsx (Completed)
+### 1. ChatMessage.tsx (Completed ✅)
 
 - Replaced legacy CSS with Tailwind-only layout and shadcn/ui components
 - Removed `ChatMessage.css` and migrated bubble + avatar to Tailwind
 - Simplified flex logic: outer `flex-col` for vertical stacking, inner margin for avatar placement
 - Scoped and cleaned up global margin resets to allow component margins
+- Implemented shadcn/ui components: Avatar, Card, DropdownMenu
+- Added animation classes for smooth message entry
 
-### 2. ChatFeed.jsx → ChatFeed.tsx (Partial)
+### 2. SendMessage.tsx (Completed ✅)
 
-- Added central `gap` in `.messages-container` for consistent vertical spacing
-- Removed per-item `mb-2` and override hacks in CSS
-- Scoped scroll container logic while preserving infinite-scroll and custom ScrollToBottom behavior
-- Updated global CSS to remove aggressive universal margin/padding reset
+- Migrated to TypeScript with proper type definitions
+- Implemented shadcn/ui components: Button, Textarea, DropdownMenu, Card, Avatar, Tooltip
+- Added auto-resizing `<Textarea>` up to 200px height with overflow handling
+- Ensured mobile keyboard behavior works correctly
+- Integrated with all hooks and contexts
 
-### 3. SendMessage.tsx (In Progress)
+### 3. ChatFeed.jsx (Partial)
 
-- Switched away from unused `SendMessage.css`, adopting Tailwind classes
-- Implemented auto-resizing `<Textarea>` up to 200px height, toggling `overflow-y-auto` when content exceeds limit
-- Ensured mobile keyboard remains open while scrolling inside message composer
+- Retaining `ChatFeed.css` intentionally for complex scroll behavior
+- Custom `CustomScrollToBottom` component handles important scroll behaviors that shadcn's ScrollArea cannot
+- Per our scroll-behavior-best-practices, using native scrolling for infinite scrolling and position maintenance
+- Added consistent vertical spacing in message container
+- Still needs TypeScript conversion and partial shadcn integration where appropriate
+
+### 4. HomeScreen.tsx (Partial)
+
+- Converted to TypeScript
+- Using Tailwind classes for layout elements
+- Still needs to integrate more shadcn components and remove CSS dependencies
+- Camera overlay functionality is implemented
 
 ---
 
 > **Next Steps:**
 >
-> - Complete full TypeScript conversion of `ChatFeed.jsx` and migrate to Tailwind/shadcn primitives
-> - Remove remaining component-specific CSS files (`ChatFeed.css`, `SendMessage.css`)
-> - Validate responsiveness and test keyboard/scroll interactions on mobile
+> - Convert `ChatFeed.jsx` to TypeScript while **preserving** the custom scroll behavior
+> - Apply selective Tailwind classes where possible in ChatFeed without breaking scroll functionality
+> - Convert `HomeScreen.tsx` to use more shadcn components
+> - Tackle medium-priority components from Phase 4-5 (FullScreenEditor, ScriptsOverlay)
+> - For key scrolling components, follow scroll-behavior-best-practices.md guidance
 
 _Documentation updated to capture the CSS cleanup, layout refactoring, and component migrations completed today._
 
@@ -301,7 +315,8 @@ Several legacy CSS files still apply broad or component-specific styles that can
 - **src/styles/buttons.css**: Provides custom button styling (padding, border-radius, transitions) on non-Tailwind classes (`.icon-button`, `.app-icon`, etc.), which may clash with shadcn/ui `Button` variants.
 - **src/styles/animations.css**: Contains keyframes (`spin`, `windUp`, etc.) and animation utility selectors that duplicate or conflict with `tw-animate-css` and Tailwind's built-in animation classes.
 - **src/styles/layouts/**: Any layout-specific CSS (flex containers, margins) could override responsive Tailwind utilities.
-- **src/screens/HomeScreen.css** and **ChatFeed.css**: These component-level CSS files define layout, padding, and scroll behavior that should be replaced by Tailwind and shadcn primitives.
+- **src/screens/HomeScreen.css**: Component-level CSS defining layout and padding that should be migrated to Tailwind classes.
+- **src/components/\*.css**: Several remaining component CSS files that need to be evaluated.
 
 > **TODOs:**
 >
@@ -309,6 +324,28 @@ Several legacy CSS files still apply broad or component-specific styles that can
 > - [ ] Replace `buttons.css` with shadcn `Button` component variants and remove residual CSS.
 > - [ ] Consolidate animation keyframes in `animations.css` into Tailwind or `tw-animate-css`, then remove unused definitions.
 > - [ ] Audit `layouts/` CSS and integrate into component-level Tailwind styles; remove legacy layout files.
-> - [ ] Convert `HomeScreen.css` and `ChatFeed.css` to Tailwind-based styling and delete the CSS files once migration is validated.
+> - [ ] Convert `HomeScreen.css` to Tailwind-based styling and delete the CSS file once migration is validated.
+> - [ ] Review other component CSS files and maintain only those essential for complex behaviors (e.g., `ChatFeed.css`).
+> - [ ] Create custom Tailwind variants for specialized functionality that can't be easily achieved with utility classes.
 
-With these tasks done, Tailwind and shadcn/ui primitives will fully control the visual styling without overrides from legacy CSS.
+### Special Considerations for Custom Scroll Behavior
+
+Based on our scroll-behavior-best-practices documentation, we should approach scrolling components with care:
+
+1. **Intentionally Preserve**: Retain custom scroll implementations (like in `ChatFeed.jsx`) that handle:
+
+   - Infinite scrolling with position maintenance
+   - Dynamic content loading at the top
+   - Keyboard appearance adjustments on mobile
+   - Image loading scroll position handling
+
+2. **Selective Migration**: For these components, use a hybrid approach:
+
+   - Keep core scroll functionality with its CSS
+   - Apply Tailwind for non-scroll-related styling
+   - Convert to TypeScript for type safety
+   - Use shadcn components for UI elements that don't impact scrolling
+
+3. **Documentation**: For any preserved CSS file, add a comment explaining why it's being maintained.
+
+With this approach, we'll achieve a balance between modern styling architecture and reliable user experience for complex interactions.
