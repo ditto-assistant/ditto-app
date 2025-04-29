@@ -5,7 +5,8 @@ import {
   UPDATE_READY,
   UPDATE_ERROR,
 } from "@/utils/updateService"
-import "./UpdateNotification.css"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { UpdateServiceState } from "@/types/common"
 
 const UpdateNotification = () => {
@@ -87,19 +88,23 @@ const UpdateNotification = () => {
   const isForced = updateState.status === "outdated"
 
   return (
-    <div className={`update-notification ${isForced ? "forced" : ""}`}>
-      <div className="update-notification-content">
-        <div className="update-notification-icon">{isForced ? "⚠️" : "🔄"}</div>
-        <div className="update-notification-message">{getMessage()}</div>
-        <div className="update-notification-actions">
-          <button className="update-button" onClick={handleUpdate}>
-            Update Now
-          </button>
-
+    <div
+      className={cn(
+        "fixed z-50 rounded-lg shadow-lg transition-all",
+        isForced
+          ? "inset-x-0 bottom-0 bg-background/95 backdrop-blur-md"
+          : "bottom-4 right-4 bg-background"
+      )}
+    >
+      <div className="flex items-center justify-between px-4 py-3 space-x-4">
+        <div className="text-xl">{isForced ? "⚠️" : "🔄"}</div>
+        <div className="flex-1 text-sm">{getMessage()}</div>
+        <div className="flex items-center space-x-2">
+          <Button onClick={handleUpdate}>Update Now</Button>
           {!isForced && (
-            <button className="dismiss-button" onClick={handleDismiss}>
+            <Button variant="outline" onClick={handleDismiss}>
               Later
-            </button>
+            </Button>
           )}
         </div>
       </div>
