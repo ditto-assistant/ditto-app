@@ -6,7 +6,7 @@ import { Model } from "@/types/llm"
 // Common schema for pagination
 const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemsSchema: T) =>
   z.object({
-    items: z.array(itemsSchema).optional(),
+    items: z.array(itemsSchema).nullable(),
     page: z.number(),
     nextPage: z.number(),
     prevPage: z.number().optional(),
