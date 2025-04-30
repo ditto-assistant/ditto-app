@@ -41,6 +41,7 @@ function usePromptModelsQuery(userId?: string) {
       return page.nextPage
     },
     enabled: !!userId,
+    placeholderData: (prev) => prev ?? undefined,
   })
 }
 
@@ -70,6 +71,7 @@ function useImageModelsQuery(userId?: string) {
       return page.nextPage
     },
     enabled: !!userId,
+    placeholderData: (prev) => prev ?? undefined,
   })
 }
 

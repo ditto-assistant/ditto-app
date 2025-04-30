@@ -118,7 +118,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
                 whileHover={
                   locked
                     ? { backgroundColor: "rgba(var(--primary-rgb), 0.1)" }
-                    : { backgroundColor: "rgba(255, 255, 255, 0.15)" }
+                    : { backgroundColor: "var(--hover-overlay)" }
                 }
                 onClick={(e) => handleItemClick(item, e)}
                 aria-label={item.text}

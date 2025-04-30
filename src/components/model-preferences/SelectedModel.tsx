@@ -28,7 +28,30 @@ export function SelectedModel({ modelType }: SelectedModelProps) {
   )
 
   if (isLoading) {
-    return <div className="text-foreground/60 text-sm">Loading...</div>
+    // Render invisible placeholders matching the real content structure to prevent layout shift
+    return (
+      <div className="flex flex-col gap-1">
+        {/* Title placeholder */}
+        <div className="font-medium text-transparent select-none">
+          Loading...
+        </div>
+        {/* Size placeholder for image models */}
+        {isImageModel && (
+          <div className="text-xs text-transparent select-none">Loading...</div>
+        )}
+        {/* Badges placeholder row */}
+        <div className="flex items-center gap-1 mt-1">
+          {/* Flavor or size badge placeholder */}
+          <Badge variant="outline" className="invisible text-xs">
+            placeholder
+          </Badge>
+          {/* Provider badge placeholder */}
+          <Badge variant="secondary" className="invisible text-xs">
+            placeholder
+          </Badge>
+        </div>
+      </div>
+    )
   }
 
   if (!selectedModel) {
@@ -47,13 +70,6 @@ export function SelectedModel({ modelType }: SelectedModelProps) {
   return (
     <div className="flex flex-col gap-1">
       <div className="font-medium">{selectedModel.displayName}</div>
-
-      {/* Show image size for image models */}
-      {isImageModel && preferences?.imageGeneration?.size && (
-        <div className="text-xs text-foreground/60">
-          {preferences.imageGeneration.size.wh}
-        </div>
-      )}
 
       <div className="flex items-center gap-1 mt-1">
         {/* Show specific badges based on model type */}

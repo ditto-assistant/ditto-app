@@ -6,6 +6,7 @@ import {
   createRoutesFromElements,
 } from "react-router"
 import { Toaster } from "@/components/ui/sonner"
+import { createPortal } from "react-dom"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
 import AuthenticatedRoute from "@/hooks/AuthenticatedRoute"
 import { AuthProvider } from "@/hooks/useAuth"
@@ -150,11 +151,14 @@ function App() {
                                       </AppErrorBoundary>
                                       <UpdateNotification />
 
-                                      <Toaster
-                                        position="top-center"
-                                        closeButton
-                                        richColors
-                                      />
+                                      {createPortal(
+                                        <Toaster
+                                          position="top-center"
+                                          closeButton
+                                          richColors
+                                        />,
+                                        document.getElementById("toast-root")!
+                                      )}
                                       <ReactQueryDevtools
                                         buttonPosition="top-right"
                                         initialIsOpen={false}

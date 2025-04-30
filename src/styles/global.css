@@ -85,4 +85,23 @@ code {
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Global gradient title classes */
+  .gradient-title {
+    @apply text-transparent bg-clip-text;
+    background-image: var(--gradient-title-light);
+  }
+
+  .dark .gradient-title {
+    background-image: var(--gradient-title-dark);
+  }
+
+  .gradient-header {
+    @apply text-transparent bg-clip-text;
+    background-image: var(--gradient-header-light);
+  }
+
+  .dark .gradient-header {
+    background-image: var(--gradient-header-dark);
+  }
 }

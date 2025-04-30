@@ -59,31 +59,31 @@
 
   /* 
     Light mode colors 
-    - Main background: #FFFFFF
+    - Main background: Sepia-tone off-white for reduced eye strain
     - Text: #121212 (near black for high contrast)
   */
 
   /* Core theme colors - light mode (WCAG AA compliant) */
-  --background: #ffffff;
+  --background: #f8f4e9; /* Sepia-toned background to reduce eye strain */
   --foreground: #121212;
-  --card: #f8f9fa;
+  --card: #f2ede1; /* Slightly darker sepia for cards */
   --card-foreground: #121212;
-  --popover: #ffffff;
+  --popover: #f8f4e9;
   --popover-foreground: #121212;
-  --primary: #e1f0ff; /* Light blue for user messages in light mode */
+  --primary: #cce4ff; /* Slightly deeper light blue for user messages */
   --primary-foreground: #0d3b66; /* Dark blue text for good contrast on light blue */
-  --secondary: #e9ecef;
+  --secondary: #e9e2d0; /* Sepia-compatible secondary */
   --secondary-foreground: #2b2d31;
-  --muted: #f1f3f5;
-  --more-muted: #e9ecef; /* Use secondary as more muted */
-  --muted-foreground: #495057; /* Improved contrast from original */
-  --accent: #e9ecef;
+  --muted: #f0ebe0; /* Sepia-compatible muted */
+  --more-muted: #f0f0f0; /* Light grey for code block background */
+  --muted-foreground: #3d3629; /* Warmer dark tone for muted text */
+  --accent: #ebe3d5; /* Sepia-compatible accent */
   --accent-foreground: #2b2d31;
   --destructive: #d32f2f; /* Improved red with better contrast */
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.15);
-  --input: rgba(0, 0, 0, 0.1);
-  --ring: rgba(0, 0, 0, 0.2);
+  --border: rgba(61, 54, 41, 0.15); /* Warmer border color */
+  --input: rgba(61, 54, 41, 0.1); /* Warmer input background */
+  --ring: rgba(61, 54, 41, 0.2); /* Warmer ring color */
 
   /* Status colors - light mode */
   --status-positive: #2e7d32; /* Darkened for better contrast */
@@ -91,20 +91,20 @@
   --status-danger: #d32f2f;
 
   /* Sidebar colors - light mode */
-  --sidebar: #f8f9fa;
+  --sidebar: #f2ede1; /* Sepia-toned sidebar background */
   --sidebar-foreground: #121212;
   --sidebar-primary: #1167b1;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e9ecef;
+  --sidebar-accent: #e9e2d0; /* Sepia-compatible accent */
   --sidebar-accent-foreground: #2b2d31;
-  --sidebar-border: rgba(0, 0, 0, 0.1);
-  --sidebar-ring: rgba(0, 0, 0, 0.2);
+  --sidebar-border: rgba(61, 54, 41, 0.1); /* Warmer sidebar border */
+  --sidebar-ring: rgba(61, 54, 41, 0.2); /* Warmer sidebar ring */
 
   /* Interactive colors - light mode */
-  --interactive-normal: #495057;
-  --interactive-hover: #343a40;
-  --interactive-active: #212529;
-  --interactive-muted: #adb5bd;
+  --interactive-normal: #3d3629; /* Warmer interactive normal */
+  --interactive-hover: #2a261c; /* Warmer interactive hover */
+  --interactive-active: #1e1a15; /* Warmer interactive active */
+  --interactive-muted: #a49e8d; /* Warmer interactive muted */
 
   /* Legacy compatibility colors - light mode */
   --background-primary: var(--background);
@@ -114,8 +114,8 @@
   --background-floating: var(--popover);
   --background-editor: var(--card);
   --background-editor-header: var(--secondary);
-  --background-hover: rgba(0, 0, 0, 0.05);
-  --background-active: rgba(0, 0, 0, 0.1);
+  --background-hover: rgba(61, 54, 41, 0.05); /* Warmer hover state */
+  --background-active: rgba(61, 54, 41, 0.1); /* Warmer active state */
 
   /* Text colors - light mode */
   --text-normal: var(--foreground);
@@ -130,15 +130,25 @@
 
   /* UI element colors - light mode */
   --border-color: var(--border);
-  --border-strong: rgba(0, 0, 0, 0.2);
-  --header-background: rgba(255, 255, 255, 0.9);
-  --hover-overlay: rgba(0, 0, 0, 0.05);
-  --hover-element: rgba(0, 0, 0, 0.05);
+  --border-strong: rgba(61, 54, 41, 0.2); /* Warmer strong border */
+  --header-background: rgba(
+    248,
+    244,
+    233,
+    0.92
+  ); /* Sepia header with slight transparency */
+  --hover-overlay: rgba(61, 54, 41, 0.05); /* Warmer hover overlay */
+  --hover-element: rgba(61, 54, 41, 0.05); /* Warmer hover element */
 
   /* Scrollbar colors - light mode */
-  --scrollbar-track-color: rgba(0, 0, 0, 0.05);
-  --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
-  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-track-color: rgba(61, 54, 41, 0.05); /* Warmer scrollbar track */
+  --scrollbar-thumb-color: rgba(61, 54, 41, 0.2); /* Warmer scrollbar thumb */
+  --scrollbar-thumb-hover-color: rgba(
+    61,
+    54,
+    41,
+    0.3
+  ); /* Warmer scrollbar thumb hover */
 
   /* Chart colors - light mode */
   --chart-1: #1167b1;
@@ -173,7 +183,22 @@
     #ff6eb2 50%,
     #ffad66 100%
   );
-  --gradient-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+  --gradient-bg: linear-gradient(
+    135deg,
+    #f8f4e9 0%,
+    #f2ede1 50%,
+    #e9e2d0 100%
+  ); /* Sepia-toned gradient */
+  --gradient-header-light: linear-gradient(
+    120deg,
+    #3d3629 0%,
+    #1167b1 100%
+  ); /* Warm to cool gradient for light mode headers */
+  --gradient-title-light: linear-gradient(
+    120deg,
+    #794a19 0%,
+    #1167b1 80%
+  ); /* Warm brown to blue gradient for light mode titles */
 }
 
 /* 
@@ -300,6 +325,14 @@
     rgba(35, 35, 35, 1) 50%,
     rgba(25, 25, 25, 1) 100%
   );
+  --gradient-header-dark: linear-gradient(
+    120deg,
+    #3684c9 0%,
+    #a78bfa 100%
+  ); /* Blue to purple gradient for dark mode headers */
+  --gradient-title-dark: var(
+    --gradient-header-dark
+  ); /* Alias to the header gradient */
 }
 
 /* 

@@ -31,6 +31,7 @@ import {
   Rocket,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import React, { useMemo } from "react"
 // Vendor color mappings for visual consistency
 const VENDOR_COLORS: Record<Vendor, string> = {
   google: "#4285F4",
@@ -105,6 +106,8 @@ const isModelAccessible = (
 }
 
 interface ModelCardProps {
+  /** Optional override for the card title (defaults to model.modelFlavor) */
+  title?: string
   model: LLMModel | ImageModel
   isSelected: boolean
   userTier: number
@@ -112,9 +115,14 @@ interface ModelCardProps {
   onShowDetails: () => void
   type: "main" | "programmer" | "image"
   redirectToSubscription?: () => void
+  /**
+   * For image models, the list of all variants (different orientations/sizes)
+   */
+  variants?: ImageModel[]
 }
 
 export const ModelCard = ({
+  title,
   model,
   isSelected,
   userTier,
@@ -122,11 +130,21 @@ export const ModelCard = ({
   onShowDetails,
   type,
   redirectToSubscription,
+  variants,
 }: ModelCardProps) => {
   const { preferences, updatePreferences } = useModelPreferences()
 
   const isAccessible = isModelAccessible(model, userTier)
   const isLLMModel = "costPerMillionInputTokens" in model
+
+  // Compute supported sizes from passed variants, covering all orientations
+  const supportedSizeVariants = useMemo(() => {
+    if (isLLMModel || !variants) return []
+    const uniqueSizes = Array.from(new Set(variants.map((m) => m.imageSize)))
+    return uniqueSizes.map(
+      (wh) => IMAGE_GENERATION_SIZES[wh] || { wh, description: wh }
+    )
+  }, [isLLMModel, variants])
 
   const handleSizeChange = (size: { wh: string; description: string }) => {
     if (isLLMModel || !preferences) return
@@ -160,7 +178,7 @@ export const ModelCard = ({
       <CardHeader className="p-4 pb-1 flex flex-row items-center justify-between space-y-0">
         <div className="flex-1 mr-2 overflow-hidden">
           <CardTitle className="text-base font-semibold truncate">
-            {model.modelFlavor}
+            {title ?? model.modelFlavor}
           </CardTitle>
         </div>
 
@@ -232,14 +250,15 @@ export const ModelCard = ({
       </CardFooter>
 
       {/* Size options for image models */}
-      {type === "image" && isSelected && isAccessible && (
+      {type === "image" && isAccessible && variants && (
         <div className="border-t p-4">
           <h4 className="text-sm font-medium mb-2">Size Options</h4>
           <div className="flex flex-wrap gap-2">
-            {Object.values(IMAGE_GENERATION_SIZES).map((size) => (
+            {supportedSizeVariants.map((size) => (
               <Button
                 key={size.wh}
                 variant={
+                  model.name === preferences?.imageGeneration?.model &&
                   preferences?.imageGeneration?.size?.wh === size.wh
                     ? "default"
                     : "outline"

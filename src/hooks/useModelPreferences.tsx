@@ -111,6 +111,7 @@ function useModels() {
       return modelPreferences
     },
     enabled: !!user,
+    placeholderData: (prev) => prev as ModelPreferences | undefined,
   })
 
   // Update preferences mutation

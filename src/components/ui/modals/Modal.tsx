@@ -334,8 +334,7 @@ export default function Modal({
           <h2
             className={cn(
               "text-lg font-medium truncate",
-              useGradientTitle &&
-                "bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent"
+              useGradientTitle && "gradient-title font-semibold"
             )}
           >
             {title}

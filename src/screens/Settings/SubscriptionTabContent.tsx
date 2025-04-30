@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ModeToggle } from "@/components/mode-toggle"
+import { cn } from "@/lib/utils"
 
 const SubscriptionTabContent: React.FC = () => {
   const { data: user, isLoading: isUserLoading } = useUser()
@@ -102,25 +103,38 @@ const SubscriptionTabContent: React.FC = () => {
         <CardTitle>Account</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col space-y-1">
-            <div className="flex items-center space-x-2">
-              <User className="h-5 w-5 text-muted-foreground" />
-              {displayName ? (
-                <span className="text-sm font-medium">{displayName}</span>
-              ) : null}
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0 mb-1">
+          <div className="flex items-center space-x-2">
+            <User className="h-5 w-5 text-muted-foreground" />
+            {displayName ? (
+              <span className="text-sm font-medium">{displayName}</span>
+            ) : null}
+          </div>
+          <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">{email}</span>
           </div>
           {user && user.subscriptionStatus !== "free" && (
-            <Badge variant="outline" className="bg-primary/10 text-primary">
+            <Badge
+              className={cn(
+                "rounded",
+                "gradient-title",
+                "border-transparent",
+                "dark:bg-gradient-to-r dark:from-primary dark:to-blue-400",
+                "p-0 py-0.5"
+              )}
+              title={
+                subscriptionData?.tiers.find(
+                  (tier) => tier.planTier === user.planTier
+                )?.name
+              }
+            >
               {
                 subscriptionData?.tiers.find(
                   (tier) => tier.planTier === user.planTier
                 )?.name
               }
               {user.isTierBoostedFromBalance && (
-                <SubscriptionBoostIndicator isBoosted={true} className="ml-2" />
+                <SubscriptionBoostIndicator isBoosted={true} className="ml-1" />
               )}
             </Badge>
           )}

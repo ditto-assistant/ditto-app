@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react"
+import React, { useState, useCallback, useRef, useEffect } from "react"
 import { Plus, Minus, Zap } from "lucide-react"
 import { useUser } from "@/hooks/useUser"
 import { Slider } from "@/components/ui/slider"
@@ -56,7 +56,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   min = 0,
   max = 10,
   step = 1,
-  debounceMs = 500,
+  debounceMs = 1500,
   description,
   marks,
   showChainControls = false,
@@ -65,20 +65,52 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
 }) => {
   const { data: user } = useUser()
   const [localValues, setLocalValues] = useState<number[]>(values)
+
+  // Debounced callback to avoid spamming the API. Only called on *commit*.
   const [debouncedOnChange, isSaving] = useDebounce(onChange, debounceMs)
+
+  // Keep local state in sync if parent props change (e.g. external reset)
+  useEffect(() => {
+    setLocalValues(values)
+  }, [values])
 
   const isLocked =
     minimumTier !== undefined && (user?.planTier || 0) < minimumTier
 
-  const handleChange = useCallback(
+  /**
+   * Fires on every slide movement – updates local UI only.
+   * We purposefully do *not* call the debounced API hook here to
+   * keep the component snappy while dragging.
+   */
+  const handleSlideChange = useCallback(
     (index: number) => (newValue: number[]) => {
       const value = newValue[0]
-      const newValues = [...localValues]
-      newValues[index] = value
-      setLocalValues(newValues)
-      debouncedOnChange(newValues)
+      // Functional update to avoid stale closures
+      setLocalValues((prev) => {
+        const next = [...prev]
+        next[index] = value
+        return next
+      })
     },
-    [localValues, debouncedOnChange]
+    []
+  )
+
+  /**
+   * Fires once the user releases the thumb. This is the place to
+   * propagate the change upstream (debounced).
+   */
+  const handleSlideCommit = useCallback(
+    (index: number) => (newValue: number[]) => {
+      const value = newValue[0]
+      setLocalValues((prev) => {
+        const next = [...prev]
+        next[index] = value
+        // Debounce API call on commit only
+        debouncedOnChange(next)
+        return next
+      })
+    },
+    [debouncedOnChange]
   )
 
   const handleAddChain = useCallback(() => {
@@ -179,8 +211,10 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
               </div>
             )}
             <Slider
-              value={[value]}
-              onValueChange={handleChange(index)}
+              key={`memory-slider-${index}`}
+              defaultValue={[value]}
+              onValueChange={handleSlideChange(index)}
+              onValueCommit={handleSlideCommit(index)}
               min={min}
               max={max}
               step={step}
