@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from "react"
+import { useEffect, useRef, useCallback, useState } from "react"
 import { toast } from "sonner"
 import { DataSet } from "vis-data"
 import Modal from "./ui/modals/Modal"
@@ -7,30 +7,29 @@ import { Memory } from "@/api/getMemories"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
 import { Network, Node, Edge } from "vis-network"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
 import "./MemoryNetwork.css"
-import TableView from "./memory-network/TableView"
+
+// Global cache of node positions to preserve layout across modal instances
+const persistedNodePositions: Record<string, { x: number; y: number }> = {}
 
 export default function MemoryNetworkModal() {
-  // Using useState for network to trigger renders when it changes
-  const [network, setNetwork] = useState<Network | null>(null)
-  const [activeTab, setActiveTab] = useState<"network" | "table">("network")
+  // State and refs
+  const nodesDatasetRef = useRef<DataSet<Node> | null>(null)
+  const edgesDatasetRef = useRef<DataSet<Edge> | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const networkRef = useRef<Network | null>(null)
   const { memories, loading, deleteMemory } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { showMemoryNode } = useMemoryNodeViewer()
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const networkInitializedRef = useRef<boolean>(false)
-  const networkNeedsUpdate = useRef<boolean>(true)
-  const networkIsStabilizing = useRef<boolean>(false)
-  const networkRef = useRef<Network | null>(null) // Store network in ref to persist between renders
-  const nodesDatasetRef = useRef<DataSet<Node> | null>(null)
-  const edgesDatasetRef = useRef<DataSet<Edge> | null>(null)
 
   // Keep memoryMap in a ref so it persists even when component re-renders
   const memoryMapRef = useRef<Map<string, any>>(new Map())
   // For easy access in the JSX (access the current value)
   const memoryMap = memoryMapRef.current
+  // Track if network needs to be refreshed
+  const networkNeedsUpdate = useRef<boolean>(false)
+  // State to avoid showing graph until it's fit
+  const [isReady, setIsReady] = useState(false)
 
   // Handle deleting a node - use useCallback to prevent recreation on each render
   const handleNodeDelete = useCallback(
@@ -73,35 +72,9 @@ export default function MemoryNetworkModal() {
     [confirmMemoryDeletion, deleteMemory]
   )
 
-  // Handle tab changes
-  const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId as "network" | "table")
-  }, [])
-
-  // We have refactored the building logic into the useEffect directly
-  // This is no longer needed with our new approach
-
-  // This is no longer needed with our new approach
-  // We build the datasets directly in the first useEffect
-
-  // Create network datasets without attaching to DOM
+  // Build datasets
   useEffect(() => {
-    // Force rebuild when memories change or when explicitly requested
-    if (
-      !networkNeedsUpdate.current &&
-      nodesDatasetRef.current &&
-      edgesDatasetRef.current
-    ) {
-      console.log("Using existing datasets")
-      return
-    }
-
-    // Reset the update flag
-    networkNeedsUpdate.current = false
-
-    // When memories change, rebuild the network data
     try {
-      // Create datasets with explicit types
       const nodes = new DataSet<Node>([])
       const edges = new DataSet<Edge>([])
 
@@ -216,11 +189,21 @@ export default function MemoryNetworkModal() {
         // Log the node and edge counts for debugging
         console.log(`Created ${nodes.length} nodes and ${edges.length} edges`)
         console.log(`Memory map contains ${memoryMap.size} entries`)
-      }
 
-      // Store the datasets in refs
-      nodesDatasetRef.current = nodes
-      edgesDatasetRef.current = edges
+        // Store the datasets in refs
+        // Hydrate previous positions without fixing to allow gravity to adjust
+        if (Object.keys(persistedNodePositions).length > 0) {
+          Object.entries(persistedNodePositions).forEach(([id, pos]) => {
+            try {
+              nodes.update({ id, x: pos.x, y: pos.y })
+            } catch {
+              // ignore missing nodes
+            }
+          })
+        }
+        nodesDatasetRef.current = nodes
+        edgesDatasetRef.current = edges
+      }
     } catch (error) {
       console.error("Error building memory network data:", error)
       nodesDatasetRef.current = null
@@ -228,27 +211,12 @@ export default function MemoryNetworkModal() {
     }
   }, [memories, loading, memoryMap])
 
-  // Create and attach network when tab is active
+  // Create network once when component mounts
   useEffect(() => {
-    // Only attempt to create/update network when the network tab is active and container is available
-    if (activeTab !== "network") {
-      return // Not on network tab, do nothing
-    }
-
-    // Get the container
-    const container = containerRef.current
-    if (!container) {
-      console.error("Container ref not set for memory network")
+    const netContainer = containerRef.current
+    if (!netContainer || !nodesDatasetRef.current || !edgesDatasetRef.current) {
       return
     }
-
-    // Make sure we have datasets
-    if (!nodesDatasetRef.current || !edgesDatasetRef.current) {
-      console.error("Network datasets not available")
-      return
-    }
-
-    // Create options
     const options = {
       nodes: {
         shape: "dot",
@@ -267,20 +235,20 @@ export default function MemoryNetworkModal() {
         arrows: { to: { enabled: true, scaleFactor: 0.5 } },
       },
       interaction: {
-        hover: false, // Disable hover completely to prevent errors
+        hover: false,
         dragNodes: true,
         dragView: true,
         zoomView: true,
-        tooltipDelay: 2000, // Increase delay to reduce hover errors
+        tooltipDelay: 2000,
         multiselect: false,
         selectable: true,
         selectConnectedEdges: false,
-        hoverConnectedEdges: false, // Disable hover on edges
-        navigationButtons: false, // Disable navigation buttons
+        hoverConnectedEdges: false,
+        navigationButtons: false,
       },
       physics: {
         enabled: true,
-        solver: "forceAtlas2Based", // Use different solver that works better for tree structures
+        solver: "forceAtlas2Based",
         forceAtlas2Based: {
           gravitationalConstant: -50,
           centralGravity: 0.01,
@@ -291,288 +259,81 @@ export default function MemoryNetworkModal() {
         },
         stabilization: {
           enabled: true,
-          iterations: 100, // Reduce iterations for faster stabilization
+          iterations: 100,
           updateInterval: 50,
+          // only relax dynamic edges on initialization for speed
+          onlyDynamicEdges: true,
         },
       },
     }
-
-    // Check if we already have a network
-    if (networkRef.current) {
-      console.log("Network already exists, updating container and redrawing")
-
-      try {
-        // Get current size
-        const width = container.clientWidth
-        const height = container.clientHeight
-
-        // Force network to redraw at the right size
-        networkRef.current.setSize(width.toString(), height.toString())
-        networkRef.current.redraw()
-
-        // Fit to view
-        setTimeout(() => {
-          if (networkRef.current) {
-            networkRef.current.fit()
-          }
-        }, 100)
-
-        return // Exit early as we've updated existing network
-      } catch (error) {
-        console.error("Error updating existing network:", error)
-        // Fall through to recreation
-      }
-    }
-
-    // We need to create a new network
-    console.log("Creating new network instance")
-
-    try {
-      // Clean up old network if it exists (belt and suspenders)
-      if (networkRef.current) {
-        networkRef.current.destroy()
-      }
-
-      // Create new network
-      const networkInstance = new Network(
-        container,
-        {
-          nodes: nodesDatasetRef.current,
-          edges: edgesDatasetRef.current,
-        },
-        options
-      )
-
-      // Store in both ref (for persistence) and state (for triggering renders)
-      networkRef.current = networkInstance
-      setNetwork(networkInstance)
-
-      // Mark as initialized
-      networkInitializedRef.current = true
-      networkIsStabilizing.current = true
-
-      // Set up node click handler
-      networkInstance.on("click", (params: { nodes?: string[] | number[] }) => {
-        if (
-          !params.nodes ||
-          !Array.isArray(params.nodes) ||
-          params.nodes.length === 0
-        ) {
-          return
-        }
-
-        try {
-          const nodeId = params.nodes[0].toString()
-          if (nodeId) {
-            const nodeData = memoryMap.get(nodeId)
-            if (nodeData) {
-              showMemoryNode(nodeData, handleNodeDelete)
+    const net = new Network(
+      netContainer,
+      { nodes: nodesDatasetRef.current, edges: edgesDatasetRef.current },
+      options
+    )
+    networkRef.current = net
+    // Fit view after stabilization
+    net.once("stabilized", () => {
+      net.fit()
+      setIsReady(true)
+      // Store and cache node positions for next initialization
+      net.storePositions()
+      if (nodesDatasetRef.current) {
+        nodesDatasetRef.current.get().forEach((node) => {
+          if (node.x != null && node.y != null) {
+            persistedNodePositions[node.id.toString()] = {
+              x: node.x,
+              y: node.y,
             }
           }
-        } catch (error) {
-          console.error("Error handling node click:", error)
-        }
-      })
-
-      // Handle stabilization completion
-      networkInstance.once("stabilized", () => {
-        console.log("Network stabilized, fitting to view")
-        networkIsStabilizing.current = false
-        networkInstance.fit()
-      })
-
-      // Add handler for resize events
-      window.addEventListener("resize", () => {
-        if (networkRef.current && containerRef.current) {
-          const width = containerRef.current.clientWidth
-          const height = containerRef.current.clientHeight
-          networkRef.current.setSize(width.toString(), height.toString())
-          networkRef.current.redraw()
-        }
-      })
-    } catch (error) {
-      console.error("Error initializing memory network:", error)
-      toast.error("Failed to initialize memory network visualization")
-      networkIsStabilizing.current = false
-      networkNeedsUpdate.current = false
-      networkInitializedRef.current = false
-      networkRef.current = null
-    }
-  }, [activeTab, handleNodeDelete, showMemoryNode, memoryMap])
-
-  // Remove the old effect for handling tab changes since we have a better approach now
-
-  // Monitor DOM visibility of the container when network tab is active
-  useEffect(() => {
-    if (activeTab !== "network" || !networkRef.current) {
-      return
-    }
-
-    // Create a MutationObserver to watch for visibility changes
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (
-          mutation.type === "attributes" &&
-          (mutation.attributeName === "style" ||
-            mutation.attributeName === "class")
-        ) {
-          // The container's visibility might have changed
-          console.log("Container attributes changed, checking visibility")
-
-          // Get the container
-          const container = containerRef.current
-          if (!container) return
-
-          // Container is visible, make sure network is correctly sized
-          const width = container.clientWidth
-          const height = container.clientHeight
-
-          // If dimensions are valid, trigger redraw
-          if (width > 0 && height > 0 && networkRef.current) {
-            console.log(`Resizing network to ${width}x${height}`)
-            try {
-              networkRef.current.setSize(width.toString(), height.toString())
-              networkRef.current.redraw()
-
-              // Fit view with a small delay to ensure rendering completes
-              setTimeout(() => {
-                if (networkRef.current) {
-                  networkRef.current.fit()
-                }
-              }, 50)
-            } catch (error) {
-              console.error(
-                "Error updating network on visibility change:",
-                error
-              )
-            }
-          }
-        }
+        })
       }
     })
+    // Click handler
+    net.on("click", (params) => {
+      if (!params.nodes || params.nodes.length === 0) return
 
-    // Get the container
-    const container = containerRef.current
-    if (container) {
-      // Start observing
-      observer.observe(container, {
-        attributes: true,
-        attributeFilter: ["style", "class"],
-      })
-
-      // Force an immediate size update
-      if (networkRef.current) {
-        const width = container.clientWidth
-        const height = container.clientHeight
-        if (width > 0 && height > 0) {
-          console.log(`Initial sizing network to ${width}x${height}`)
-          try {
-            networkRef.current.setSize(width.toString(), height.toString())
-            networkRef.current.redraw()
-            networkRef.current.fit()
-          } catch (error) {
-            console.error("Error with initial network sizing:", error)
+      // Persist current positions before opening memory node modal
+      net.storePositions()
+      if (nodesDatasetRef.current) {
+        nodesDatasetRef.current.get().forEach((node) => {
+          if (node.x != null && node.y != null) {
+            persistedNodePositions[node.id.toString()] = {
+              x: node.x,
+              y: node.y,
+            }
           }
-        }
+        })
       }
+
+      const nodeId = params.nodes[0].toString()
+      const data = memoryMapRef.current.get(nodeId)
+      if (data) showMemoryNode(data, handleNodeDelete)
+    })
+    // Handle resize
+    const onResize = () => {
+      if (!netContainer) return
+      const w = netContainer.clientWidth
+      const h = netContainer.clientHeight
+      if (w > 0 && h > 0) net.setSize(w.toString(), h.toString())
     }
-
-    // Clean up observer
-    return () => observer.disconnect()
-  }, [activeTab])
-
-  // Fit the network when it's visible and active
-  useEffect(() => {
-    // Only execute this effect when on network tab with an existing network
-    if (activeTab === "network" && network && !networkIsStabilizing.current) {
-      try {
-        // Use a small timeout to ensure the container is properly sized in the DOM
-        setTimeout(() => {
-          network.fit({
-            animation: {
-              duration: 300,
-              easingFunction: "easeInOutQuad",
-            },
-          })
-        }, 100)
-      } catch (err) {
-        console.error("Error fitting network:", err)
-      }
-    }
-  }, [network, activeTab, networkIsStabilizing])
-
-  // Ensure proper cleanup on unmount
-  useEffect(() => {
+    window.addEventListener("resize", onResize)
+    // Cleanup
     return () => {
-      // Use networkRef for cleanup since it's our source of truth
-      if (networkRef.current) {
-        console.log("Cleaning up network on component unmount")
-        try {
-          networkRef.current.destroy()
-          networkRef.current = null
-          setNetwork(null)
-        } catch (err) {
-          console.error("Error destroying network:", err)
-        }
-      }
-
-      // Clear window resize listener
-      window.removeEventListener("resize", () => {
-        console.log("Removed resize listener")
-      })
+      net.destroy()
+      window.removeEventListener("resize", onResize)
     }
-  }, [])
+  }, [handleNodeDelete, showMemoryNode])
 
-  // Render network view content
-  const NetworkView = (
-    <div className="w-full h-full min-h-[500px] flex flex-col">
-      {loading ? (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          Loading memories...
-        </div>
-      ) : (
-        <div
-          className="w-full h-[calc(100vh-160px)] min-h-[400px] border border-border/10 bg-background/10 relative overflow-hidden"
-          ref={containerRef}
-          id="memory-network-container" // Add ID to help with debugging
-        ></div>
-      )}
-    </div>
-  )
-
-  // Render table view content
-  const TableViewContent = (
-    <div className="w-full h-full min-h-[500px] flex flex-col relative">
-      {loading ? (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          Loading memories...
-        </div>
-      ) : (
-        <div className="relative overflow-y-auto overflow-x-hidden pb-10 pt-2 h-full">
-          <TableView memories={memories} />
-        </div>
-      )}
-    </div>
-  )
-
+  // Render tabs as before
   return (
-    <Modal
-      id="memoryNetwork"
-      title="Memory Network"
-      tabs={[
-        {
-          id: "network",
-          label: "Network View",
-          content: NetworkView,
-        },
-        {
-          id: "table",
-          label: "Table View",
-          content: TableViewContent,
-        },
-      ]}
-      defaultTabId="network"
-      onTabChange={handleTabChange}
-    />
+    <Modal id="memoryNetwork" title="Memory Network">
+      <div
+        ref={containerRef}
+        id="memory-network-container"
+        className="w-full h-full min-h-[500px] flex flex-col"
+        style={{ visibility: isReady ? "visible" : "hidden" }}
+      />
+    </Modal>
   )
 }

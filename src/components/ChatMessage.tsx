@@ -47,7 +47,7 @@ const toolLabels: Record<string, { color: string; text: string }> = {
 
 interface ChatMessageProps {
   content: string
-  timestamp: number
+  timestamp: number | Date
   isUser: boolean
   isLast?: boolean
   isOptimistic?: boolean
@@ -83,8 +83,8 @@ export default function ChatMessage({
   const userAvatar = useUserAvatar(user?.photoURL)
   const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp)
+  const formatTimestamp = (timestamp: number | Date) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
     const now = new Date()
     const diffInHours = Math.abs(now.getTime() - date.getTime()) / 36e5
 
