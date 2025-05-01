@@ -356,7 +356,7 @@ export default function SendMessage({
   }, [message, autoResizeTextarea])
 
   return (
-    <div className="w-full z-[300] bg-background backdrop-blur-md border-t border-border">
+    <div className="w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}

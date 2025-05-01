@@ -74,11 +74,6 @@
       /* In Safari, account for browser chrome */
       bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
     }
-
-    /* In Safari more bottom padding needed */
-    .bottom-spacer {
-      height: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
-    }
   }
 
   /* Fix for iOS Safari in standalone PWA mode */
@@ -103,12 +98,6 @@
     .form {
       padding-bottom: 0;
       margin-bottom: 0;
-    }
-
-    /* Fix for modal buttons in PWA mode */
-    .modal-close-button,
-    .modal-maximize-button {
-      top: calc(env(safe-area-inset-top, 0px) + 10px);
     }
   }
 

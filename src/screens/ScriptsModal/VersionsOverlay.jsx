@@ -144,7 +144,7 @@ const styles = {
     right: 0,
     bottom: 0,
     width: "100vw",
-    height: "100vh",
+    height: "100svh",
     backgroundColor: "rgba(0, 0, 0, 0.85)",
     backdropFilter: "blur(4px)",
     display: "flex",

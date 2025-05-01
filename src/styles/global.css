@@ -61,7 +61,8 @@ body {
 }
 
 #root {
-  min-height: 100vh;
+  /* Ensure root takes up full height, using small viewport height for mobile */
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   width: 100%;
