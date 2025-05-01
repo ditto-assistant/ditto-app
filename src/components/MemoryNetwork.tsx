@@ -191,16 +191,21 @@ export default function MemoryNetworkModal() {
         console.log(`Memory map contains ${memoryMap.size} entries`)
 
         // Store the datasets in refs
-        // Hydrate previous positions without fixing to allow gravity to adjust
-        if (Object.keys(persistedNodePositions).length > 0) {
-          Object.entries(persistedNodePositions).forEach(([id, pos]) => {
-            try {
-              nodes.update({ id, x: pos.x, y: pos.y })
-            } catch {
-              // ignore missing nodes
-            }
-          })
-        }
+        // Keep only positions for nodes present in this dataset
+        const existingIds = new Set(nodes.get().map((n) => n.id.toString()))
+        Object.keys(persistedNodePositions).forEach((id) => {
+          if (!existingIds.has(id)) {
+            delete persistedNodePositions[id]
+          }
+        })
+        // Hydrate positions for remaining nodes
+        Object.entries(persistedNodePositions).forEach(([id, pos]) => {
+          try {
+            nodes.update({ id, x: pos.x, y: pos.y })
+          } catch {
+            // ignore missing nodes
+          }
+        })
         nodesDatasetRef.current = nodes
         edgesDatasetRef.current = edges
       }
