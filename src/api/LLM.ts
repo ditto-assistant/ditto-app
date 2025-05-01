@@ -158,6 +158,19 @@ export async function openaiImageGeneration(
   return await response.text()
 }
 
+// For request cancellation
+let abortController: AbortController | null = null;
+
+export function cancelPromptLLMV2() {
+  if (abortController) {
+    console.log("🛑 [LLM] Cancelling prompt request")
+    abortController.abort()
+    abortController = null
+    return true
+  }
+  return false
+}
+
 export async function promptLLMV2(
   userPrompt: string,
   systemPrompt: string,
@@ -176,6 +189,11 @@ export async function promptLLMV2(
   if (!tok.ok) {
     throw new Error("Unable to get LLM response")
   }
+
+  // Create a new AbortController for this request
+  abortController = new AbortController()
+  const signal = abortController.signal
+
   while (retries < maxRetries) {
     try {
       const requestBody: PromptRequestBody = {
@@ -193,6 +211,7 @@ export async function promptLLMV2(
           Authorization: `Bearer ${tok.ok.token}`,
         },
         body: JSON.stringify(requestBody),
+        signal, // Add the abort signal to the fetch request
       })
 
       if (response.status === 402) {
@@ -210,6 +229,12 @@ export async function promptLLMV2(
 
       // Read and process the SSE stream
       while (true) {
+        // Check if we've been aborted
+        if (signal.aborted) {
+          console.log("🛑 [LLM] Request was aborted during streaming")
+          throw new Error("Request cancelled")
+        }
+
         const { value, done } = await reader.read()
         if (done) break
 
@@ -248,8 +273,17 @@ export async function promptLLMV2(
       console.log(
         `✅ [LLM V2] Completed streaming, total length: ${responseMessage.length} chars`
       )
+      // Clear the abortController since the request is complete
+      abortController = null
       return responseMessage
     } catch (error) {
+      // Check if this was an abort error
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log("Request was aborted by user")
+        abortController = null
+        throw new Error("Request cancelled")
+      }
+
       console.error("Error in promptLLMV2:", error)
       retries++
       console.log("Retry: ", retries)
@@ -259,9 +293,11 @@ export async function promptLLMV2(
         (error instanceof Error && error.message?.includes("402")) ||
         (error instanceof Error && error.message?.includes("Payment Required"))
       ) {
+        abortController = null
         throw ErrorPaymentRequired
       }
     }
   }
+  abortController = null
   throw new Error("promptLLMV2: Max retries reached.")
 }

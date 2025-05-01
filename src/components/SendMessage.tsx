@@ -13,8 +13,9 @@ import {
   Settings,
   MessageCircle,
   X,
+  Square,
 } from "lucide-react"
-import { sendPrompt } from "../control/agent"
+import { sendPrompt, cancelPrompt } from "../control/agent"
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
@@ -133,6 +134,18 @@ export default function SendMessage({
     }
   }, [balance.data, preferences.preferences])
 
+  const handleStopGeneration = useCallback(() => {
+    if (isWaitingForResponse) {
+      console.log("🛑 [SendMessage] Stopping response generation")
+      const wasCancelled = cancelPrompt()
+      if (wasCancelled) {
+        toast.info("Response generation stopped")
+      }
+      setIsWaitingForResponse(false)
+      onStop()
+    }
+  }, [isWaitingForResponse, onStop, setIsWaitingForResponse])
+
   const handleSubmit = useCallback(
     async (event?: React.FormEvent) => {
       if (event) event.preventDefault()
@@ -205,6 +218,15 @@ export default function SendMessage({
             toast.error("Please upgrade to a paid plan to continue")
             setShowSalesPitch(true)
             setIsInvalidConfig(true)
+          } else if (
+            error instanceof Error &&
+            error.message === "Request cancelled"
+          ) {
+            console.log("⏹️ [SendMessage] Prompt was cancelled by user")
+            finalizeOptimisticMessage(
+              optimisticMessageId,
+              "Response generation stopped."
+            )
           } else {
             console.error("❌ [SendMessage] Error in sendPrompt:", error)
             finalizeOptimisticMessage(
@@ -346,7 +368,7 @@ export default function SendMessage({
     ta.style.height = "auto"
     const newHeight = Math.min(ta.scrollHeight, 200)
     ta.style.height = `${newHeight}px`
-    // If scrollHeight > newHeight, we’re clipped ⇒ allow scroll.
+    // If scrollHeight > newHeight, we're clipped ⇒ allow scroll.
     setAutoScroll(ta.scrollHeight > newHeight)
   }, [])
 
@@ -446,7 +468,7 @@ export default function SendMessage({
               />
             </div>
 
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-center justify-between w-full relative">
               <div className="flex items-center gap-1.5">
                 {/* Expand button */}
                 <Tooltip>
@@ -499,7 +521,7 @@ export default function SendMessage({
               </div>
 
               {/* Center Ditto logo button */}
-              <div className="relative">
+              <div className="absolute left-1/2 -translate-x-1/2">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Avatar
@@ -518,7 +540,7 @@ export default function SendMessage({
                 </Tooltip>
 
                 {/* Menu container */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 z-50">
+                <div className="absolute inset-x-0 bottom-full z-50 flex justify-center">
                   <SlidingMenu
                     isOpen={isMenuOpen}
                     onClose={() => {
@@ -569,24 +591,39 @@ export default function SendMessage({
                   </Tooltip>
                 )}
 
-                {/* Send button */}
+                {/* Send/Stop button */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="default"
-                      size="icon"
-                      type="submit"
-                      disabled={isWaitingForResponse || isInvalidConfig}
-                      aria-label="Send message"
-                      className="h-9 w-9"
-                    >
-                      <SendHorizonal className="h-5 w-5" />
-                    </Button>
+                    {isWaitingForResponse ? (
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        type="button"
+                        onClick={handleStopGeneration}
+                        aria-label="Stop generation"
+                        className="h-9 w-9"
+                      >
+                        <Square className="h-5 w-5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="default"
+                        size="icon"
+                        type="submit"
+                        disabled={isInvalidConfig}
+                        aria-label="Send message"
+                        className="h-9 w-9"
+                      >
+                        <SendHorizonal className="h-5 w-5" />
+                      </Button>
+                    )}
                   </TooltipTrigger>
                   <TooltipContent>
                     {isInvalidConfig
                       ? "You need tokens to use this model"
-                      : "Send message"}
+                      : isWaitingForResponse
+                        ? "Stop generation"
+                        : "Send message"}
                   </TooltipContent>
                 </Tooltip>
               </div>

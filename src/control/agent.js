@@ -1,4 +1,4 @@
-import { promptLLMV2 } from "../api/LLM"
+import { promptLLMV2, cancelPromptLLMV2 } from "../api/LLM"
 import { mainTemplate, systemTemplate } from "../control/templates/mainTemplate"
 import {
   openscadTemplate,
@@ -20,6 +20,14 @@ import { searchExamples } from "@/api/searchExamples"
 import { DEFAULT_PREFERENCES } from "@/constants"
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
+/**
+ * Cancels any ongoing prompt request
+ * @returns {boolean} Whether a prompt was cancelled
+ */
+export const cancelPrompt = () => {
+  return cancelPromptLLMV2();
+}
+
 /**
  * Sends a prompt to Ditto.
  * @param {string} userID - The user's ID.
