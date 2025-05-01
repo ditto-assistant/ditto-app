@@ -159,7 +159,7 @@ export async function openaiImageGeneration(
 }
 
 // For request cancellation
-let abortController: AbortController | null = null;
+let abortController: AbortController | null = null
 
 export function cancelPromptLLMV2() {
   if (abortController) {
@@ -278,7 +278,7 @@ export async function promptLLMV2(
       return responseMessage
     } catch (error) {
       // Check if this was an abort error
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         console.log("Request was aborted by user")
         abortController = null
         throw new Error("Request cancelled")

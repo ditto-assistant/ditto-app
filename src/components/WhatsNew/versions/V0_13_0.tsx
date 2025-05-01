@@ -44,7 +44,7 @@ const sections: Section[] = [
         type: "new",
         title: "Message Stop Button",
         description:
-          "Easily stop any AI response mid-generation with our new stop button when you have the information you need.",
+          "Easily stop any AI response mid-generation with our new stop button, and keep the partial response for reference.",
       },
     ],
   },

@@ -138,8 +138,8 @@ export default function Settings() {
               key={size}
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
               className={`px-3 py-1.5 rounded-md text-sm ${
-                fontSize === size 
-                  ? "bg-primary text-primary-foreground" 
+                fontSize === size
+                  ? "bg-primary text-primary-foreground"
                   : "bg-secondary hover:bg-secondary/80"
               }`}
             >

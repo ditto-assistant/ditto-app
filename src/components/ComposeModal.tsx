@@ -75,8 +75,8 @@ const ComposeModal: React.FC = () => {
       <DialogContent
         className={cn(
           "bg-background flex flex-col overflow-hidden",
-          isMobile 
-            ? "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0" 
+          isMobile
+            ? "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
             : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
         )}
       >

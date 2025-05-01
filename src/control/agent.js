@@ -20,12 +20,44 @@ import { searchExamples } from "@/api/searchExamples"
 import { DEFAULT_PREFERENCES } from "@/constants"
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
+
+// Keep track of the currently streaming response data
+let currentResponse = ""
+let currentPairID = ""
+let currentOptimisticID = ""
+let currentFinalizeCallback = null
+
 /**
- * Cancels any ongoing prompt request
+ * Cancels any ongoing prompt request but saves the partial response if available
  * @returns {boolean} Whether a prompt was cancelled
  */
-export const cancelPrompt = () => {
-  return cancelPromptLLMV2();
+export const cancelPrompt = async () => {
+  const wasCancelled = cancelPromptLLMV2()
+
+  if (wasCancelled && currentResponse && currentPairID) {
+    try {
+      console.log(
+        `🛑 [Agent] Saving partial response for ${currentPairID} (${currentResponse.length} chars)`
+      )
+      // Save the partial response to the backend
+      await saveResponse(currentPairID, currentResponse)
+
+      // Update the UI with the finalized response if we have a callback
+      if (currentOptimisticID && currentFinalizeCallback) {
+        currentFinalizeCallback(currentOptimisticID, currentResponse)
+      }
+
+      // Clear the current response data
+      currentResponse = ""
+      currentPairID = ""
+      currentOptimisticID = ""
+      currentFinalizeCallback = null
+    } catch (error) {
+      console.error("Error saving partial response:", error)
+    }
+  }
+
+  return wasCancelled
 }
 
 /**
@@ -36,7 +68,6 @@ export const cancelPrompt = () => {
  * @param {string} image - The user's image.
  * @param {ModelPreferences} preferences - The user's preferences.
  * @param {function} refetch - Whether to refetch the conversation history.
- * @param {boolean} isPremiumUser - Whether the user is a premium user.
  * @param {function} streamingCallback - A callback for streaming response chunks.
  * @param {string} optimisticId - The ID of the optimistic message update.
  * @param {function} finalizeMessage - A function to finalize a message.
@@ -76,6 +107,13 @@ export const sendPrompt = async (
     if (!pairID) {
       throw new Error("No pairID")
     }
+
+    // Store the pairID and optimisticId for potential cancellation
+    currentPairID = pairID
+    currentOptimisticID = optimisticId
+    currentFinalizeCallback = finalizeMessage
+    currentResponse = "" // Reset the current response
+
     // Free tier is not allowed to change memory settings
     const nodeCounts =
       planTier > 0
@@ -136,9 +174,14 @@ export const sendPrompt = async (
       }
     }
 
-    // Create a simple callback to update the optimistic message
+    // Create a simple callback to update the optimistic message and track the response
     const textCallback = streamingCallback
-      ? (text) => streamingCallback(text)
+      ? (text) => {
+          // Call the original streaming callback
+          streamingCallback(text)
+          // Track the current response
+          currentResponse += text
+        }
       : null
 
     // Get the response from the LLM using the V2 endpoint with SSE streaming
@@ -149,6 +192,12 @@ export const sendPrompt = async (
       image,
       textCallback
     )
+
+    // Clear the current response data since we've completed successfully
+    currentResponse = ""
+    currentPairID = ""
+    currentOptimisticID = ""
+    currentFinalizeCallback = null
 
     const toolTriggers = [
       "<OPENSCAD>",

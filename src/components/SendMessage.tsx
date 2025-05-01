@@ -154,7 +154,6 @@ export default function SendMessage({
 
       if (isMenuOpen) {
         setIsMenuOpen(false)
-        // We removed the setMenuPinned function since it's not defined
       }
 
       setIsWaitingForResponse(true)
@@ -223,10 +222,6 @@ export default function SendMessage({
             error.message === "Request cancelled"
           ) {
             console.log("⏹️ [SendMessage] Prompt was cancelled by user")
-            finalizeOptimisticMessage(
-              optimisticMessageId,
-              "Response generation stopped."
-            )
           } else {
             console.error("❌ [SendMessage] Error in sendPrompt:", error)
             finalizeOptimisticMessage(
