@@ -23,14 +23,6 @@
   min-height: 100vh;
 }
 
-/* Container that wraps both the chat body and footer for better layout control */
-.app-content-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-}
-
 /* The floating header styles have been moved to SendMessage.css */
 
 /* Status indicator styles */
@@ -44,11 +36,6 @@
   background: none;
 }
 
-/* Adjust title container to work well with the larger buttons */
-.app-title-container {
-  max-width: calc(100% - 140px); /* Adjust for larger buttons */
-}
-
 .ditto-icon {
   width: 30px;
   height: 30px;
@@ -56,38 +43,6 @@
   max-width: 30px;
   max-height: 30px;
   object-fit: contain;
-}
-
-.app-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-  background: linear-gradient(90deg, var(--primary) 0%, #5b6eae 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.app-body {
-  flex: 1;
-  /* overflow-y: auto; */
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-.app-footer {
-  background-color: var(--header-background);
-  backdrop-filter: blur(10px);
-  width: 100%;
-  z-index: 100; /* Ensure it stays on top */
-  padding: 0; /* Removed padding to avoid the gray border */
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  /* flex-shrink: 0; */
 }
 
 .loading-placeholder {
@@ -181,10 +136,6 @@
 
 /* Mobile-specific adjustments */
 @media screen and (max-width: 768px) {
-  header.app-header {
-    padding: 8px 12px;
-  }
-
   .chat-card {
     margin: 0;
   }
@@ -193,11 +144,6 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-  }
-
-  .app-footer {
-    padding: 0;
-    /* Let platform-specific CSS handle the padding-bottom */
   }
 }
 

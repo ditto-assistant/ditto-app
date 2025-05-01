@@ -1,27 +1,6 @@
 @import "../styles/variables.css";
 @import "../styles/animations.css";
 
-.chat-feed {
-  background-color: transparent;
-  padding: 10px 20px;
-  overflow-y: auto;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: none;
-  box-sizing: border-box;
-  transition: padding-top 0.3s ease-out;
-  scroll-behavior: auto;
-  padding-bottom: 20px; /* Reduced since we no longer need to account for fixed footer */
-}
-
-/* Ensure smooth animation for the bottom ref */
-.chat-feed > div:last-child {
-  transition: margin-top 0.3s ease-out;
-  margin-bottom: 30px;
-}
-
 .chat-feed-container {
   display: flex;
   flex-direction: column;
@@ -36,38 +15,9 @@
 
 /* Non-iOS specific styles */
 @supports not (-webkit-touch-callout: none) {
-  /* For desktop and Android browsers */
-  .bottom-spacer {
-    height: 0px !important; /* Moderate spacing for desktop */
-  }
-
   /* Position follow button for desktop and Android */
   .follow-button {
     touch-action: manipulation !important; /* Prevent scroll interference */
-  }
-}
-
-/* iOS specific styles */
-@supports (-webkit-touch-callout: none) {
-  .chat-feed-container {
-    margin-bottom: env(safe-area-inset-bottom, 0px); /* Respect iOS safe area */
-  }
-
-  /* Bottom spacer should provide more room for iOS */
-  .bottom-spacer {
-    height: 120px !important; /* Overrides the inline style */
-    margin-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  /* Adjust bottom padding in PWA mode */
-  @media all and (display-mode: standalone) {
-    .chat-feed-container {
-      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    }
-
-    .messages-container {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
   }
 }
 
@@ -220,12 +170,5 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* PWA-specific adjustments to fix the bottom spacing */
-@media all and (display-mode: standalone) {
-  .chat-feed-container {
-    padding-bottom: 60px; /* Add extra padding at the bottom when in PWA mode */
   }
 }

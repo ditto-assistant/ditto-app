@@ -198,20 +198,18 @@ export default function HomeScreen() {
   }, [])
 
   return (
-    <div className="app h-screen fixed inset-0 touch-pan-y flex flex-col">
+    <div className="app h-[100svh] fixed inset-0 touch-pan-y flex flex-col">
       <Suspense fallback={<FullScreenSpinner />}>
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden pb-0">
           <ChatFeed ref={appBodyRef} />
-          <div className="fixed bottom-0 left-0 right-0 w-full z-[300] bg-background backdrop-blur-md border-t border-border">
-            <SendMessage
-              onCameraOpen={handleCameraOpen}
-              capturedImage={capturedImage}
-              onClearCapturedImage={() => setCapturedImage(null)}
-              onStop={() => {
-                balance.refetch()
-              }}
-            />
-          </div>
+          <SendMessage
+            onCameraOpen={handleCameraOpen}
+            capturedImage={capturedImage}
+            onClearCapturedImage={() => setCapturedImage(null)}
+            onStop={() => {
+              balance.refetch()
+            }}
+          />
         </div>
       </Suspense>
 

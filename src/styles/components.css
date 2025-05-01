@@ -21,47 +21,11 @@
   height: 60px;
 }
 
-/* Common title container styles */
-.app-title-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  position: relative;
-  margin: 0 auto;
-  max-width: calc(100% - 120px); /* Leave space for buttons */
-  white-space: nowrap; /* Prevent text wrapping */
-  overflow: hidden; /* Prevent content overflow */
-  z-index: 5; /* Ensure it's above other elements */
-}
-
-.app-title-container:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: scale(1.02);
-}
-
-.app-title-container:active {
-  transform: scale(0.98);
-}
-
 /* App-specific icon button */
 .icon-button.app {
   width: 40px;
   height: 40px;
   z-index: 10;
-}
-
-/* Common icon styles */
-.app-icon {
-  font-size: 20px;
-  color: var(--text-normal);
-  width: 20px;
-  height: 20px;
-  background: none;
 }
 
 /* Editor specific components */
@@ -117,12 +81,6 @@
     height: 36px;
     min-width: 36px;
     min-height: 36px;
-  }
-
-  .app-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
   }
 }
 

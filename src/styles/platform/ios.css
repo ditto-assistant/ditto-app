@@ -23,44 +23,9 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Header adjustments for notch */
-  .app-header {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-
-  /* Footer adjustments for home indicator and iOS Safari bottom bar */
-  .app-footer {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    position: fixed; /* Keep fixed positioning for iOS Safari */
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 300;
-  }
-
   /* Input field adjustments */
   .form {
     margin-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  /* Content wrapper adjustments for iOS */
-  .app-content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    /* No padding - footer is fixed */
-  }
-
-  /* Make sure body fills available space but doesn't overlap footer */
-  .app-body {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 0; /* Remove padding, handle in chat feed instead */
-  }
-
-  /* Chat feed adjustments to account for fixed footer */
-  .chat-feed {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Fix for follow button and bottom spacer in chat feed */
@@ -101,11 +66,6 @@
       /* In PWA mode, no browser chrome to account for */
       bottom: 140px !important;
     }
-
-    /* In PWA mode less bottom padding needed */
-    .bottom-spacer {
-      height: 70px !important;
-    }
   }
 
   /* Safari browser mode */
@@ -119,13 +79,6 @@
     .bottom-spacer {
       height: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
     }
-  }
-
-  /* Ensure bottom spacer provides enough room but not excessive */
-  .bottom-spacer {
-    display: block !important;
-    position: relative;
-    width: 100%;
   }
 
   /* Fix for iOS Safari in standalone PWA mode */
@@ -144,21 +97,6 @@
       padding-bottom: 0;
       /* Ensure content uses the full height */
       height: 100%;
-    }
-
-    /* Direct application of safe areas to header in PWA mode */
-    .app-header {
-      padding-top: env(safe-area-inset-top, 0px);
-    }
-
-    /* Footer adjustments for PWA mode */
-    .app-footer {
-      position: fixed !important;
-      bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      z-index: 1000 !important;
-      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
     }
 
     /* Bottom area spacing for PWA mode */

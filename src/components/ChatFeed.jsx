@@ -349,7 +349,7 @@ const ChatFeed = forwardRef(
           }
 
           console.log("Fetching older messages...")
-          await fetchNextPage()
+          fetchNextPage()
           console.log("Fetch complete")
 
           // Set a reasonable timeout to ensure DOM is updated
@@ -518,15 +518,6 @@ const ChatFeed = forwardRef(
                 )
               })
               .reverse()}
-            <div
-              ref={bottomRef}
-              className="bottom-spacer"
-              style={{
-                height: "env(safe-area-inset-bottom, 120px)",
-                minHeight: "120px",
-                padding: "24px",
-              }}
-            />
           </CustomScrollToBottom>
         ) : (
           <div className="empty-chat-message">

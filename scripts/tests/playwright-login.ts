@@ -111,7 +111,7 @@ export async function loginToDitto(): Promise<LoginResult> {
       // Either wait for navigation or for an element that appears after login
       await Promise.race([
         page.waitForNavigation({ timeout: 5000 }),
-        page.waitForSelector(".chat-feed", { timeout: 5000 }),
+        page.waitForSelector(".chat-feed-container", { timeout: 5000 }),
       ])
 
       console.log("Login successful!")
