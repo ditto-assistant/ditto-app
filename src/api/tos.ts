@@ -29,13 +29,6 @@ export type TOSAcceptanceStatus = z.infer<typeof TOSAcceptanceStatusSchema>
 export async function fetchTermsOfService(
   version?: string
 ): Promise<TermsOfService | Error> {
-  const tok = await getToken()
-  if (tok.err) {
-    return new Error(`Unable to get token: ${tok.err}`)
-  }
-  if (!tok.ok) {
-    return new Error("No token")
-  }
   try {
     const url = version
       ? `${BASE_URL}/api/v2/terms-of-service/${version}`
@@ -44,7 +37,6 @@ export async function fetchTermsOfService(
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tok.ok.token}`,
       },
     })
 
