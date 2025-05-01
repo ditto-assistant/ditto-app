@@ -56,7 +56,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   min = 0,
   max = 10,
   step = 1,
-  debounceMs = 1500,
+  debounceMs = 500,
   description,
   marks,
   showChainControls = false,
