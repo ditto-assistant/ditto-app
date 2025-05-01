@@ -38,6 +38,12 @@
   --transition-normal: 0.2s ease;
   --transition-slow: 0.3s ease;
 
+  /* Font Sizes */
+  --font-size-small: 13px !important; 
+  --font-size-medium: 14px !important;
+  --font-size-large: 16px !important;
+  --font-size-default: var(--font-size-medium) !important;
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;

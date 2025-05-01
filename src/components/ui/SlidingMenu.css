@@ -42,7 +42,7 @@
 /* Center-aligned + bottom-aligned adjustment */
 .sliding-menu.center-aligned.bottom-aligned {
   position: absolute;
-  bottom: 10px;
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
 }

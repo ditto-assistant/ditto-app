@@ -34,6 +34,18 @@ const sections: Section[] = [
         description:
           "See your memory connections with greater clarity and beauty through our enhanced visualization.",
       },
+      {
+        type: "new",
+        title: "Adjustable Font Size",
+        description:
+          "Customize your reading experience with small, medium, or large text options in the Settings panel.",
+      },
+      {
+        type: "new",
+        title: "Message Stop Button",
+        description:
+          "Easily stop any AI response mid-generation with our new stop button when you have the information you need.",
+      },
     ],
   },
   {

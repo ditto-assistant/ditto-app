@@ -4,6 +4,7 @@ import "./SlidingMenu.css"
 import { useUser } from "@/hooks/useUser"
 import { Crown } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
+import { createPortal } from "react-dom"
 
 interface MenuItem {
   icon: React.ReactNode
@@ -99,7 +100,8 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
 
   const menuAnimation = getMenuAnimation()
 
-  return (
+  // Render menu in a portal so it's positioned relative to viewport
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -144,7 +146,8 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
           })}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 

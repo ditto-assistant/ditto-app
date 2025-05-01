@@ -65,6 +65,21 @@ export function ThemeProvider({
 
     root.classList.add(theme)
   }, [theme])
+  
+  // Initialize font size from local storage
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem("fontSizePreference")
+    if (savedFontSize) {
+      const fontSizeVar = savedFontSize === "small" 
+        ? "var(--font-size-small) !important" 
+        : savedFontSize === "large" 
+          ? "var(--font-size-large) !important" 
+          : "var(--font-size-medium) !important"
+      document.documentElement.style.setProperty("--font-size-default", fontSizeVar)
+      // Force update across all elements with attribute
+      document.body.setAttribute("data-font-size", savedFontSize)
+    }
+  }, [])
 
   const value = {
     theme,

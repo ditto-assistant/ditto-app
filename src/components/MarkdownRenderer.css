@@ -3,7 +3,6 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
-  font-size: 14px;
   line-height: 1.4;
 }
 
@@ -232,7 +231,6 @@
   .markdown-content pre code,
   .markdown-content .code-block,
   .markdown-content .code-container * {
-    font-size: 14px !important; /* Force consistent font size on iOS */
     -webkit-text-size-adjust: none !important; /* Prevent iOS text size adjustment */
     max-height: none !important; /* Prevent height restrictions */
   }
@@ -241,7 +239,6 @@
   .code-container .react-syntax-highlighter,
   .code-container .react-syntax-highlighter code,
   .code-container .react-syntax-highlighter pre {
-    font-size: 14px !important;
     line-height: 1.4 !important;
   }
 }
@@ -306,7 +303,6 @@
   white-space: pre;
   padding: 1em;
   border-radius: 6px;
-  font-size: 14px;
   line-height: 1.5;
   /* Override syntax highlighter inline styles */
   background: var(--more-muted) !important;

@@ -1,12 +1,11 @@
-import React, { useRef, useEffect, useCallback, memo } from "react"
-import { PlaneTakeoff, X } from "lucide-react"
+import React, { useRef, useEffect, useCallback } from "react"
+import { PlaneTakeoff } from "lucide-react"
 import { usePlatform } from "@/hooks/usePlatform"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
-  DialogClose,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -76,8 +75,9 @@ const ComposeModal: React.FC = () => {
       <DialogContent
         className={cn(
           "bg-background flex flex-col overflow-hidden",
-          "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0",
-          "translate-x-0 translate-y-0"
+          isMobile 
+            ? "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0" 
+            : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
         )}
       >
         {/* Accessibility additions */}

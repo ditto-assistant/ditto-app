@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useUserAvatar } from "@/hooks/useUserAvatar"
 import { Copy, Brain, Trash } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useFontSize } from "@/hooks/useFontSize"
 
 // UI component imports
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -82,6 +83,7 @@ export default function ChatMessage({
   const { user } = useAuth()
   const userAvatar = useUserAvatar(user?.photoURL)
   const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
+  const { fontSize } = useFontSize()
 
   const formatTimestamp = (timestamp: number | Date) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
@@ -167,8 +169,12 @@ export default function ChatMessage({
             ) : (
               // Message content with markdown rendering
               <div
-                className="prose dark:prose-invert max-w-none"
-                style={{ fontSize: bubbleStyles.text?.fontSize }}
+                className={cn(
+                  "prose dark:prose-invert max-w-none",
+                  fontSize === "small" && "text-sm",
+                  fontSize === "medium" && "text-base",
+                  fontSize === "large" && "text-lg"
+                )}
               >
                 <MarkdownRenderer content={content} />
               </div>

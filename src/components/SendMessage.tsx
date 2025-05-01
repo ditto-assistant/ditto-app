@@ -520,55 +520,55 @@ export default function SendMessage({
                 </DropdownMenu>
               </div>
 
-              {/* Center Ditto logo button */}
+              {/* Center Ditto logo dropdown */}
               <div className="absolute left-1/2 -translate-x-1/2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Avatar
-                      ref={logoButtonRef as React.RefObject<HTMLDivElement>}
-                      className="h-9 w-9 cursor-pointer hover:scale-110 transition-transform"
-                      onClick={handleLogoClick}
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Avatar
+                          ref={logoButtonRef as React.RefObject<HTMLDivElement>}
+                          className="h-9 w-9 cursor-pointer hover:scale-110 transition-transform"
+                          onClick={handleLogoClick}
+                        >
+                          <AvatarImage
+                            src={DITTO_AVATAR}
+                            alt="Ditto"
+                            className="h-9 w-9 rounded-full"
+                          />
+                        </Avatar>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Menu</TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent
+                    side="top"
+                    align="center"
+                    className="w-40 p-2"
+                  >
+                    <DropdownMenuItem
+                      onClick={openScriptsOverlay}
+                      className="flex items-center py-3"
                     >
-                      <AvatarImage
-                        src={DITTO_AVATAR}
-                        alt="Ditto"
-                        className="h-9 w-9 rounded-full"
-                      />
-                    </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>Menu</TooltipContent>
-                </Tooltip>
-
-                {/* Menu container */}
-                <div className="absolute inset-x-0 bottom-full z-50 flex justify-center">
-                  <SlidingMenu
-                    isOpen={isMenuOpen}
-                    onClose={() => {
-                      setIsMenuOpen(false)
-                    }}
-                    position="center"
-                    triggerRef={logoButtonRef as React.RefObject<HTMLElement>}
-                    menuPosition="bottom"
-                    menuTitle="Options"
-                    menuItems={[
-                      {
-                        icon: <Laptop className="icon" />,
-                        text: "Scripts",
-                        onClick: openScriptsOverlay,
-                      },
-                      {
-                        icon: <MessageCircle className="icon" />,
-                        text: "Feedback",
-                        onClick: openFeedbackModal,
-                      },
-                      {
-                        icon: <Settings className="icon" />,
-                        text: "Settings",
-                        onClick: openSettingsModal,
-                      },
-                    ]}
-                  />
-                </div>
+                      <Laptop className="mr-3 h-5 w-5" />{" "}
+                      <span className="text-lg">Scripts</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={openFeedbackModal}
+                      className="flex items-center py-3"
+                    >
+                      <MessageCircle className="mr-3 h-5 w-5" />{" "}
+                      <span className="text-lg">Feedback</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={openSettingsModal}
+                      className="flex items-center py-3"
+                    >
+                      <Settings className="mr-3 h-5 w-5" />{" "}
+                      <span className="text-lg">Settings</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               <div className="flex items-center gap-1.5">

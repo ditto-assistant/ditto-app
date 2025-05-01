@@ -249,6 +249,7 @@ const CustomScrollToBottom = ({
             pointerEvents: "auto",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
             touchAction: "none",
+            fontSize: "var(--font-size-default)",
           }}
           onTouchStart={(e) => {
             e.stopPropagation()
@@ -266,7 +267,7 @@ const ChatFeed = forwardRef(
     {
       bubbleStyles = {
         text: {
-          fontSize: 14,
+          fontSize: "var(--font-size-default)",
         },
         chatbubble: {
           borderRadius: 20,

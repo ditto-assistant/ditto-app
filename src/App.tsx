@@ -32,6 +32,7 @@ import UpdateNotification from "@/components/UpdateNotification"
 import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
+import { FontSizeProvider } from "@/hooks/useFontSize"
 
 initUpdateService()
 
@@ -144,26 +145,28 @@ function App() {
                                     defaultTheme="system"
                                     storageKey="ditto-ui-theme"
                                   >
-                                    <ComposeModal />
-                                    <ModalProvider registry={modalRegistry}>
-                                      <AppErrorBoundary>
-                                        <RouterProvider router={router} />
-                                      </AppErrorBoundary>
-                                      <UpdateNotification />
+                                    <FontSizeProvider>
+                                      <ComposeModal />
+                                      <ModalProvider registry={modalRegistry}>
+                                        <AppErrorBoundary>
+                                          <RouterProvider router={router} />
+                                        </AppErrorBoundary>
+                                        <UpdateNotification />
 
-                                      {createPortal(
-                                        <Toaster
-                                          position="top-center"
-                                          closeButton
-                                          richColors
-                                        />,
-                                        document.getElementById("toast-root")!
-                                      )}
-                                      <ReactQueryDevtools
-                                        buttonPosition="top-right"
-                                        initialIsOpen={false}
-                                      />
-                                    </ModalProvider>
+                                        {createPortal(
+                                          <Toaster
+                                            position="top-center"
+                                            closeButton
+                                            richColors
+                                          />,
+                                          document.getElementById("toast-root")!
+                                        )}
+                                        <ReactQueryDevtools
+                                          buttonPosition="top-right"
+                                          initialIsOpen={false}
+                                        />
+                                      </ModalProvider>
+                                    </FontSizeProvider>
                                   </ThemeProvider>
                                 </ComposeProvider>
                               </PromptStorageProvider>

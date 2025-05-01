@@ -13,6 +13,7 @@ import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 import { toast } from "sonner"
 import { useMemo } from "react"
+import { useFontSize } from "@/hooks/useFontSize"
 import ModelPreferencesModal from "@/components/model-preferences/ModelPreferencesModal"
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
 import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
@@ -31,6 +32,7 @@ export default function Settings() {
   const { createCloseHandler } = useModal()
   const { showConfirmationDialog } = useConfirmationDialog()
   const closeModal = createCloseHandler("settings")
+  const { fontSize, setFontSize } = useFontSize()
 
   // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, [])
@@ -126,6 +128,26 @@ export default function Settings() {
     <div className="p-4 flex flex-col gap-6 h-full">
       {/* Subscription Section */}
       <div className="flex-1">{subscriptionContent}</div>
+
+      {/* Font Size Setting */}
+      <div className="border-t pt-4">
+        <h3 className="font-medium mb-2">Font Size</h3>
+        <div className="flex gap-2">
+          {["small", "medium", "large"].map((size) => (
+            <button
+              key={size}
+              onClick={() => setFontSize(size as "small" | "medium" | "large")}
+              className={`px-3 py-1.5 rounded-md text-sm ${
+                fontSize === size 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-secondary hover:bg-secondary/80"
+              }`}
+            >
+              {size.charAt(0).toUpperCase() + size.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="border-t my-2"></div>
 
