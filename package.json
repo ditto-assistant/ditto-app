@@ -25,6 +25,7 @@
     "@radix-ui/react-tooltip": "^1.2.4",
     "@tanstack/react-query": "^5.74.4",
     "ace-builds": "^1.40.1",
+    "caniuse-lite": "^1.0.30001716",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "~11.4.0",
