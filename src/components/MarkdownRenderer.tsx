@@ -11,7 +11,7 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
 import "./MarkdownRenderer.css"
-
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 interface MarkdownRendererProps {
   content: string
   className?: string
@@ -24,10 +24,12 @@ const MarkdownRenderer = ({
   const { handleImageClick } = useImageViewerHandler()
   const { isIOS } = usePlatform()
   const { theme } = useTheme()
+  const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
   if (!content) return null
 
   const handleCopy = (text: string) => {
+    triggerLightHaptic()
     navigator.clipboard.writeText(text).then(() => {
       toast.success("Copied to clipboard")
     })
