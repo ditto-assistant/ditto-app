@@ -105,7 +105,7 @@ export default function useWhatsNew(): UseWhatsNewReturn {
       const versionToShow = version || getUpdateState().currentVersion
 
       // Always open if force=true, otherwise check if it has been dismissed
-      if (force || await shouldShowForVersion(versionToShow)) {
+      if (force || (await shouldShowForVersion(versionToShow))) {
         setCurrentVersion(versionToShow)
         openWhatsNewModal()
 

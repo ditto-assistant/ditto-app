@@ -75,10 +75,7 @@ export default function FeedbackModal() {
   }
 
   return (
-    <Modal
-      id="feedback"
-      title="Send Feedback"
-    >
+    <Modal id="feedback" title="Send Feedback">
       <form onSubmit={handleSubmit} className="px-4 py-2 flex flex-col gap-6">
         <div className="space-y-3">
           <label className="text-sm font-medium">Feedback Type</label>
@@ -89,39 +86,47 @@ export default function FeedbackModal() {
               onClick={() => setSelectedType("bug")}
               className={cn(
                 "h-12 relative overflow-hidden transition-all duration-200 active:scale-95 cursor-pointer",
-                selectedType === "bug" 
+                selectedType === "bug"
                   ? "bg-gradient-to-r from-red-950/70 to-red-900/50 border border-red-500/30 text-white"
                   : "border border-border/50 hover:bg-background/80 hover:border-border/70"
               )}
             >
               <div className="flex items-center justify-center gap-2">
-                <Bug className={cn(
-                  "h-5 w-5 transition-colors duration-200",
-                  selectedType === "bug" ? "text-red-400" : "text-muted-foreground group-hover:text-red-400/70"
-                )} />
+                <Bug
+                  className={cn(
+                    "h-5 w-5 transition-colors duration-200",
+                    selectedType === "bug"
+                      ? "text-red-400"
+                      : "text-muted-foreground group-hover:text-red-400/70"
+                  )}
+                />
                 <span>Report Bug</span>
               </div>
               {selectedType === "bug" && (
                 <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-red-400/5 pointer-events-none" />
               )}
             </Button>
-            
+
             <Button
               type="button"
               variant="ghost"
               onClick={() => setSelectedType("feature-request")}
               className={cn(
                 "h-12 relative overflow-hidden transition-all duration-200 active:scale-95 cursor-pointer",
-                selectedType === "feature-request" 
+                selectedType === "feature-request"
                   ? "bg-gradient-to-r from-amber-950/70 to-amber-900/50 border border-amber-500/30 text-white"
                   : "border border-border/50 hover:bg-background/80 hover:border-border/70"
               )}
             >
               <div className="flex items-center justify-center gap-2">
-                <Lightbulb className={cn(
-                  "h-5 w-5 transition-colors duration-200",
-                  selectedType === "feature-request" ? "text-amber-300" : "text-muted-foreground group-hover:text-amber-300/70"
-                )} />
+                <Lightbulb
+                  className={cn(
+                    "h-5 w-5 transition-colors duration-200",
+                    selectedType === "feature-request"
+                      ? "text-amber-300"
+                      : "text-muted-foreground group-hover:text-amber-300/70"
+                  )}
+                />
                 <span>Suggest Idea</span>
               </div>
               {selectedType === "feature-request" && (
@@ -130,7 +135,7 @@ export default function FeedbackModal() {
             </Button>
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <label htmlFor="feedback" className="text-sm font-medium">
             Your Feedback
@@ -144,7 +149,7 @@ export default function FeedbackModal() {
             className="min-h-[150px] bg-background/50 border-border/60 focus-visible:border-primary/50"
           />
         </div>
-        
+
         <Button
           type="submit"
           disabled={isSubmitting || !feedback.trim()}
@@ -152,9 +157,9 @@ export default function FeedbackModal() {
         >
           {isSubmitting ? "Submitting..." : "Submit Feedback"}
         </Button>
-        
+
         <Separator className="bg-border/40" />
-        
+
         <div className="flex flex-col items-center text-center space-y-3">
           <p className="text-sm text-foreground/80">
             Want to help us improve Ditto even more?
@@ -165,7 +170,7 @@ export default function FeedbackModal() {
             className="gap-2 bg-secondary/40 hover:bg-secondary/60 border-secondary/50 text-secondary-foreground transition-all duration-200 hover:shadow-[0_0_15px_rgba(148,163,184,0.2)] active:scale-95 cursor-pointer"
             asChild
           >
-            <a 
+            <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSeG3aEOYCgcLHTNQUN1DT9c0_-cghIvG-PWfw7AIFweELMubQ/viewform"
               target="_blank"
               rel="noopener noreferrer"
@@ -175,9 +180,11 @@ export default function FeedbackModal() {
             </a>
           </Button>
         </div>
-        
+
         <div className="mt-4">
-          <h3 className="text-sm font-medium mb-2 text-foreground/90">Connect with us</h3>
+          <h3 className="text-sm font-medium mb-2 text-foreground/90">
+            Connect with us
+          </h3>
           <SocialLinks />
         </div>
       </form>

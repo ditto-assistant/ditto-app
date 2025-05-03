@@ -47,11 +47,11 @@ function Button({
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
-  
+
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     // Vibrate on press for tactile feedback (10ms is subtle, 20ms for destructive)
     navigator.vibrate?.(variant === "destructive" ? 20 : 10)
-    
+
     // Forward the original onPointerDown handler if it exists
     props.onPointerDown?.(e)
   }

@@ -21,12 +21,12 @@ function Slider({
           : [min, max],
     [value, defaultValue, min, max]
   )
-  
+
   // Create a custom handler for value commit (when user releases the slider)
   const handleValueCommit = (values: number[]) => {
     // Vibrate when value is committed to provide tactile feedback
     navigator.vibrate?.(10)
-    
+
     // Call the original handler if it exists
     onValueCommit?.(values)
   }

@@ -17,7 +17,14 @@ const TestWhatsNew: React.FC = () => {
         New dialog
       </p>
 
-      <div style={{ display: "flex", gap: "10px", marginTop: "20px", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginTop: "20px",
+          flexWrap: "wrap",
+        }}
+      >
         <button
           onClick={() => openWhatsNew("0.11.54", true)}
           style={{
@@ -70,7 +77,7 @@ const TestWhatsNew: React.FC = () => {
             cursor: "pointer",
             backgroundColor: "#4CAF50",
             color: "white",
-            fontWeight: "bold"
+            fontWeight: "bold",
           }}
         >
           Show v0.13.0 (New)

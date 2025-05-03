@@ -504,14 +504,14 @@ export default function SendMessage({
                     <TooltipContent>Add media</TooltipContent>
                   </Tooltip>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={handleGalleryClick}
                       onPointerDown={() => navigator.vibrate?.(10)}
                     >
                       <Image className="mr-2 h-4 w-4" />
                       <span>Photo Gallery</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={handleCameraClick}
                       onPointerDown={() => navigator.vibrate?.(10)}
                     >

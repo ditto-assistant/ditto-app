@@ -12,11 +12,11 @@ function Switch({
   const handleCheckedChange = (checked: boolean) => {
     // Vibrate when toggled - 15ms is a good balance for toggle feedback
     navigator.vibrate?.(15)
-    
+
     // Forward to original handler if provided
     onCheckedChange?.(checked)
   }
-  
+
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
