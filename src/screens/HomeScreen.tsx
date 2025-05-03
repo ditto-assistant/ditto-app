@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
-import { FlipVertical, X } from "lucide-react"
+import { FlipVertical } from "lucide-react"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
 import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
