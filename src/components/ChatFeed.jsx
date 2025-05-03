@@ -287,7 +287,6 @@ const ChatFeed = forwardRef(
     } = useConversationHistory()
     const { showMemoryNetwork } = useMemoryNetwork()
     const { confirmMemoryDeletion } = useMemoryDeletion()
-    const bottomRef = useRef(null)
     const { isMobile } = usePlatform()
     const [messagesVisible, setMessagesVisible] = useState(false)
     const [shouldFetchNext, setShouldFetchNext] = useState(false)
@@ -328,7 +327,6 @@ const ChatFeed = forwardRef(
         !isFetchingNextPage &&
         !fetchingRef.current
       ) {
-        console.log("AT TOP DETECTED: Triggering fetch")
         fetchingRef.current = true
         setShouldFetchNext(true)
       }
@@ -349,9 +347,9 @@ const ChatFeed = forwardRef(
             prevHeight = scrollContainer.scrollHeight
           }
 
-          console.log("Fetching older messages...")
-          fetchNextPage()
-          console.log("Fetch complete")
+          // console.log("Fetching older messages...")
+          await fetchNextPage()
+          // console.log("Fetch complete")
 
           // Set a reasonable timeout to ensure DOM is updated
           setTimeout(() => {
@@ -361,6 +359,7 @@ const ChatFeed = forwardRef(
               const heightDifference = newHeight - prevHeight
 
               // Position just below the new content
+              // This is the key implementation from main branch that works correctly
               if (heightDifference > 0) {
                 scrollContainer.scrollTop = heightDifference
               }
@@ -402,10 +401,11 @@ const ChatFeed = forwardRef(
     const handleMessageDelete = async (message) => {
       if (!message.id) {
         console.error("Cannot delete message: missing ID")
+        toast.error("Failed to delete message")
         return
       }
       try {
-        await confirmMemoryDeletion(message.id, {
+        confirmMemoryDeletion(message.id, {
           onSuccess: () => {
             refetch()
           },

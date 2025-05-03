@@ -23,13 +23,17 @@ interface OptimisticMemory extends Memory {
   imageURL?: string
 }
 
+type InfiniteQueryResult = ReturnType<
+  typeof useInfiniteQuery<ConversationResponse>
+>
+
 interface ConversationContextType {
   messages: OptimisticMemory[]
-  isLoading: boolean
-  isFetchingNextPage: boolean
-  hasNextPage: boolean
-  fetchNextPage: () => void
-  refetch: () => void
+  isLoading: InfiniteQueryResult["isLoading"]
+  isFetchingNextPage: InfiniteQueryResult["isFetchingNextPage"]
+  hasNextPage: InfiniteQueryResult["hasNextPage"]
+  fetchNextPage: InfiniteQueryResult["fetchNextPage"]
+  refetch: InfiniteQueryResult["refetch"]
   addOptimisticMessage: (userPrompt: string, imageURL?: string) => string
   updateOptimisticResponse: (pairId: string, responseChunk: string) => void
   finalizeOptimisticMessage: (
@@ -330,7 +334,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     messages,
     isLoading,
     isFetchingNextPage,
-    hasNextPage: !!hasNextPage,
+    hasNextPage,
     fetchNextPage,
     refetch,
     addOptimisticMessage,
