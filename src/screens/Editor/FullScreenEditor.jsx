@@ -1,72 +1,72 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import AceEditor from "react-ace";
-import ace from "ace-builds";
-import "ace-builds/src-min-noconflict/ace";
-import "ace-builds/src-min-noconflict/mode-html";
-import "ace-builds/src-min-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-tomorrow_night";
-import "ace-builds/src-min-noconflict/ext-language_tools";
-import "ace-builds/src-min-noconflict/ext-searchbox";
+import { useState, useEffect, useRef, useCallback } from "react"
+import AceEditor from "react-ace"
+import ace from "ace-builds"
+import "ace-builds/src-min-noconflict/ace"
+import "ace-builds/src-min-noconflict/mode-html"
+import "ace-builds/src-min-noconflict/mode-javascript"
+import "ace-builds/src-noconflict/theme-tomorrow_night"
+import "ace-builds/src-min-noconflict/ext-language_tools"
+import "ace-builds/src-min-noconflict/ext-searchbox"
 import {
-  FaArrowLeft,
-  FaPlay,
-  FaCode,
-  FaExpand,
-  FaCompress,
-  FaSearch,
-  FaProjectDiagram,
-  FaUndo,
-  FaRedo,
-  FaAlignLeft,
-  FaComments,
-  FaTimes,
-  FaChevronDown,
-  FaBrain,
-} from "react-icons/fa";
-import { Button, IconButton, Tooltip } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
-import DOMTreeViewer from "@/screens/Editor/DOMTreeViewer";
-import { syncLocalScriptsWithFirestore } from "@/control/firebase"; // Changed from '../control/agent'
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner";
-import updaterAgent from "@/control/agentflows/updaterAgentFlow";
-import ModelDropdown from "@/components/ModelDropdown";
-import { useAuth } from "@/hooks/useAuth";
-import { useModelPreferences } from "@/hooks/useModelPreferences";
-import { toast } from "react-hot-toast";
-import { usePlatform } from "@/hooks/usePlatform";
-import "./FullScreenEditor.css"; // Import the CSS file
+  ArrowLeft,
+  Play,
+  Code,
+  Expand,
+  Minimize,
+  Search,
+  Projector,
+  Undo,
+  Redo,
+  AlignLeft,
+  MessageSquare,
+  X,
+  ChevronDown,
+  Brain,
+} from "lucide-react"
+import { Button, IconButton, Tooltip } from "@mui/material"
+import { motion, AnimatePresence } from "framer-motion"
+import DOMTreeViewer from "@/screens/Editor/DOMTreeViewer"
+import { syncLocalScriptsWithFirestore } from "@/control/firebase" // Changed from '../control/agent'
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import ReactMarkdown from "react-markdown"
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
+import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
+import updaterAgent from "@/control/agentflows/updaterAgentFlow"
+import ModelDropdown from "@/components/ModelDropdown"
+import { useAuth } from "@/hooks/useAuth"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { toast } from "sonner"
+import { usePlatform } from "@/hooks/usePlatform"
+import "./FullScreenEditor.css" // Import the CSS file
 
 // Initialize ace for production
 if (import.meta.env.PROD) {
   ace.config.set(
     "basePath",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
-  );
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/"
+  )
   ace.config.setModuleUrl(
     "ace/mode/html_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js",
-  );
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js"
+  )
   ace.config.setModuleUrl(
     "ace/mode/javascript_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js",
-  );
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
+  )
 }
 
 const useSplitPane = (initialPosition = 50) => {
-  const [isMaximized, setIsMaximized] = useState("preview");
-  const containerRef = useRef(null);
+  const [isMaximized, setIsMaximized] = useState("preview")
+  const containerRef = useRef(null)
 
   return {
     splitPosition: initialPosition,
     isMaximized,
     setIsMaximized,
     containerRef,
-  };
-};
+  }
+}
 
 const SearchOverlay = ({
   visible,
@@ -78,13 +78,13 @@ const SearchOverlay = ({
 }) => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      e.preventDefault();
-      onSearch(searchTerm, e.shiftKey ? "backward" : "forward");
+      e.preventDefault()
+      onSearch(searchTerm, e.shiftKey ? "backward" : "forward")
     }
     if (e.key === "Escape") {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   return (
     <AnimatePresence>
@@ -106,7 +106,7 @@ const SearchOverlay = ({
             <motion.div className="search-overlay" layoutId="searchOverlay">
               <div className="search-input-wrapper">
                 <div className="search-icon-wrapper">
-                  <FaSearch size={14} className="search-icon" />
+                  <Search size={14} className="search-icon" />
                 </div>
                 <input
                   type="text"
@@ -160,57 +160,57 @@ const SearchOverlay = ({
         </>
       )}
     </AnimatePresence>
-  );
-};
+  )
+}
 
 export default function FullScreenEditor({ script, onClose, onSave }) {
-  const { user } = useAuth();
-  const [code, setCode] = useState(script.content);
-  const [previewKey, setPreviewKey] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchVisible, setSearchVisible] = useState(false);
-  const editorRef = useRef(null);
-  const { isMobile } = usePlatform();
-  const [searchResults, setSearchResults] = useState({ total: 0, current: 0 });
-  const [viewMode, setViewMode] = useState("code"); // Changed from 'tree' to 'code'
-  const [isSaving, setIsSaving] = useState(false);
-  const [showScriptChat, setShowScriptChat] = useState(false);
-  const [scriptChatMessages, setScriptChatMessages] = useState([]);
-  const [scriptChatInput, setScriptChatInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const { preferences, updatePreferences } = useModelPreferences();
-  const scriptChatMessagesEndRef = useRef(null);
+  const { user } = useAuth()
+  const [code, setCode] = useState(script.content)
+  const [previewKey, setPreviewKey] = useState(0)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchVisible, setSearchVisible] = useState(false)
+  const editorRef = useRef(null)
+  const { isMobile } = usePlatform()
+  const [searchResults, setSearchResults] = useState({ total: 0, current: 0 })
+  const [viewMode, setViewMode] = useState("code") // Changed from 'tree' to 'code'
+  const [isSaving, setIsSaving] = useState(false)
+  const [showScriptChat, setShowScriptChat] = useState(false)
+  const [scriptChatMessages, setScriptChatMessages] = useState([])
+  const [scriptChatInput, setScriptChatInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const { preferences, updatePreferences } = useModelPreferences()
+  const scriptChatMessagesEndRef = useRef(null)
   const [scriptChatSize, setScriptChatSize] = useState({
     width: isMobile ? window.innerWidth * 0.9 : 400,
     height: isMobile ? window.innerHeight * 0.6 : 500,
-  });
-  const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null);
+  })
+  const [scriptChatActionOverlay, setScriptChatActionOverlay] = useState(null)
   const [scriptChatPosition, setScriptChatPosition] = useState({
     x: isMobile ? (window.innerWidth - window.innerWidth * 0.9) / 2 : null,
     y: isMobile ? (window.innerHeight - window.innerHeight * 0.6) / 2 : null,
-  });
-  const dragRef = useRef(null);
-  const [selectedCodeAttachment, setSelectedCodeAttachment] = useState(null);
-  const [codeViewerOverlay, setCodeViewerOverlay] = useState(null);
-  const [showUnsavedChanges, setShowUnsavedChanges] = useState(false);
-  const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
-  const [scriptChatHistory, setScriptChatHistory] = useState([]);
-  const [showMemoryOverlay, setShowMemoryOverlay] = useState(false);
+  })
+  const dragRef = useRef(null)
+  const [selectedCodeAttachment, setSelectedCodeAttachment] = useState(null)
+  const [codeViewerOverlay, setCodeViewerOverlay] = useState(null)
+  const [showUnsavedChanges, setShowUnsavedChanges] = useState(false)
+  const [showLoadingSpinner, setShowLoadingSpinner] = useState(false)
+  const [scriptChatHistory, setScriptChatHistory] = useState([])
+  const [showMemoryOverlay, setShowMemoryOverlay] = useState(false)
 
   const handleEditorSelection = () => {
-    const editor = editorRef.current?.editor;
+    const editor = editorRef.current?.editor
     if (editor) {
-      const selectedText = editor.getSelectedText();
+      const selectedText = editor.getSelectedText()
       if (selectedText) {
-        setSelectedCodeAttachment(selectedText);
+        setSelectedCodeAttachment(selectedText)
       }
     }
-  };
+  }
 
   const handleScriptChatSend = async () => {
-    if (!scriptChatInput.trim()) return;
-    const userMessage = scriptChatInput.trim();
-    const timestamp = new Date().toISOString();
+    if (!scriptChatInput.trim()) return
+    const userMessage = scriptChatInput.trim()
+    const timestamp = new Date().toISOString()
 
     try {
       // Create the message content with code attachment and history
@@ -221,18 +221,18 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               .slice(-20)
               .map(
                 (h) =>
-                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`,
+                  `[${new Date(h.timestamp).toLocaleTimeString()}] ${h.message}`
               )
               .join("\n")
-          : "";
+          : ""
 
       const messageContent = selectedCodeAttachment
         ? `\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\n${userMessage}`
-        : userMessage;
+        : userMessage
 
       // Add to history before sending, maintaining 20 item window
-      const newHistoryEntry = { message: userMessage, timestamp };
-      setScriptChatHistory((prev) => [...prev.slice(-19), newHistoryEntry]);
+      const newHistoryEntry = { message: userMessage, timestamp }
+      setScriptChatHistory((prev) => [...prev.slice(-19), newHistoryEntry])
 
       // Also maintain 20 message window for chat messages
       setScriptChatMessages((prev) => {
@@ -243,45 +243,45 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             content: messageContent,
             timestamp,
           },
-        ];
+        ]
         // Keep only the last 40 messages (20 pairs of user/assistant messages)
-        return newMessages.slice(-40);
-      });
+        return newMessages.slice(-40)
+      })
 
-      setScriptChatInput("");
-      setSelectedCodeAttachment(null);
-      setIsTyping(true);
+      setScriptChatInput("")
+      setSelectedCodeAttachment(null)
+      setIsTyping(true)
 
       // Clear the selection in the editor
-      const editor = editorRef.current?.editor;
+      const editor = editorRef.current?.editor
       if (editor) {
-        editor.clearSelection();
+        editor.clearSelection()
       }
 
       // Construct the prompt with history
       const usersPrompt = selectedCodeAttachment
         ? `The user has selected this section of the code to focus on:\n\`\`\`html\n${selectedCodeAttachment}\n\`\`\`\n\nThe user has also provided the following instructions:\n${userMessage}${historyText}`
-        : `${userMessage}${historyText}`;
+        : `${userMessage}${historyText}`
 
       const response = await updaterAgent(
         usersPrompt,
         code,
-        preferences.programmerModel,
-      );
+        preferences.programmerModel
+      )
 
       // Log the response in yellow
-      console.log("\x1b[33m%s\x1b[0m", response);
+      console.log("\x1b[33m%s\x1b[0m", response)
 
       if (response) {
         // Add current state to history before updating
-        const newHistory = editHistory.slice(0, historyIndex + 1);
-        newHistory.push({ content: response });
-        setEditHistory(newHistory);
-        setHistoryIndex(newHistory.length - 1);
+        const newHistory = editHistory.slice(0, historyIndex + 1)
+        newHistory.push({ content: response })
+        setEditHistory(newHistory)
+        setHistoryIndex(newHistory.length - 1)
 
         // Update the code
-        setCode(response);
-        setPreviewKey((prev) => prev + 1);
+        setCode(response)
+        setPreviewKey((prev) => prev + 1)
 
         // Add a message indicating task completion, maintaining message window
         setScriptChatMessages((prev) => {
@@ -292,9 +292,9 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               content: "Task completed",
               fullScript: response,
             },
-          ];
-          return newMessages.slice(-40);
-        });
+          ]
+          return newMessages.slice(-40)
+        })
       } else {
         setScriptChatMessages((prev) => {
           const newMessages = [
@@ -303,12 +303,12 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               role: "assistant",
               content: response,
             },
-          ];
-          return newMessages.slice(-40);
-        });
+          ]
+          return newMessages.slice(-40)
+        })
       }
     } catch (error) {
-      console.error("Error in chat:", error);
+      console.error("Error in chat:", error)
       setScriptChatMessages((prev) => {
         const newMessages = [
           ...prev,
@@ -316,135 +316,135 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             role: "assistant",
             content: "Sorry, there was an error processing your request.",
           },
-        ];
-        return newMessages.slice(-40);
-      });
+        ]
+        return newMessages.slice(-40)
+      })
     }
 
-    setIsTyping(false);
-  };
+    setIsTyping(false)
+  }
 
   useEffect(() => {
     if (scriptChatMessagesEndRef.current) {
-      scriptChatMessagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      scriptChatMessagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [scriptChatMessages]);
+  }, [scriptChatMessages])
 
   const { splitPosition, isMaximized, setIsMaximized, containerRef } =
-    useSplitPane();
+    useSplitPane()
 
   // Add state to track editor initialization
-  const [isEditorReady, setIsEditorReady] = useState(false);
+  const [isEditorReady, setIsEditorReady] = useState(false)
 
   // Add state for edit history
-  const [editHistory, setEditHistory] = useState([{ content: script.content }]);
-  const [historyIndex, setHistoryIndex] = useState(0);
+  const [editHistory, setEditHistory] = useState([{ content: script.content }])
+  const [historyIndex, setHistoryIndex] = useState(0)
 
   // Add wrapEnabled state
-  const [wrapEnabled, setWrapEnabled] = useState(true);
+  const [wrapEnabled, setWrapEnabled] = useState(true)
 
   // Add undo/redo handlers
   const handleUndo = () => {
     if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setCode(editHistory[newIndex].content);
+      const newIndex = historyIndex - 1
+      setHistoryIndex(newIndex)
+      setCode(editHistory[newIndex].content)
     }
-  };
+  }
 
   const handleRedo = () => {
     if (historyIndex < editHistory.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setCode(editHistory[newIndex].content);
+      const newIndex = historyIndex + 1
+      setHistoryIndex(newIndex)
+      setCode(editHistory[newIndex].content)
     }
-  };
+  }
 
   const handleRunPreview = () => {
-    setPreviewKey((prev) => prev + 1);
-  };
+    setPreviewKey((prev) => prev + 1)
+  }
 
   const handleSave = async () => {
     try {
       if (code === script.content) {
-        toast.error("No Changes to Save!");
-        return;
+        toast.error("No Changes to Save!")
+        return
       }
 
-      setIsSaving(true);
+      setIsSaving(true)
 
       if (script.onSaveCallback) {
         // This is being called from HomeScreen
-        await script.onSaveCallback(code);
+        await script.onSaveCallback(code)
 
         // Clear undo/redo history after successful save
-        setEditHistory([{ content: code }]);
-        setHistoryIndex(0);
+        setEditHistory([{ content: code }])
+        setHistoryIndex(0)
 
-        toast.success("Changes saved successfully!");
+        toast.success("Changes saved successfully!")
       } else {
         // This is being called from ScriptsScreen
-        await onSave(code);
+        await onSave(code)
 
         // Clear undo/redo history after successful save
-        setEditHistory([{ content: code }]);
-        setHistoryIndex(0);
+        setEditHistory([{ content: code }])
+        setHistoryIndex(0)
 
-        toast.success("Changes saved successfully!");
+        toast.success("Changes saved successfully!")
       }
 
-      setIsSaving(false);
+      setIsSaving(false)
     } catch (error) {
-      console.error("Error saving:", error);
-      setIsSaving(false);
-      toast.error("Error saving changes");
+      console.error("Error saving:", error)
+      setIsSaving(false)
+      toast.error("Error saving changes")
     }
-  };
+  }
 
   const toggleMaximize = (pane) => {
-    setIsMaximized((current) => (current === pane ? null : pane));
-  };
+    setIsMaximized((current) => (current === pane ? null : pane))
+  }
 
   const handleSearch = useCallback((term, direction = "forward") => {
-    if (!editorRef.current || !term) return;
+    if (!editorRef.current || !term) return
 
-    const editor = editorRef.current.editor;
+    const editor = editorRef.current.editor
     const searchOptions = {
       backwards: direction === "backward",
       wrap: true,
       caseSensitive: false,
       wholeWord: false,
       regExp: false,
-    };
+    }
 
     // Find all matches to get total count
-    let matches = 0;
+    let matches = 0
     editor.session
       .getDocument()
       .getAllLines()
       .forEach((line) => {
-        let index = -1;
+        let index = -1
         while (
           (index = line
             .toLowerCase()
             .indexOf(term.toLowerCase(), index + 1)) !== -1
         ) {
-          matches++;
+          matches++
         }
-      });
+      })
 
     // Perform the search
-    editor.find(term, searchOptions);
+    editor.find(term, searchOptions)
 
     // Get current match number
-    let current = 1;
-    const currentPos = editor.selection.getCursor();
+    let current = 1
+    const currentPos = editor.selection.getCursor()
     editor.session
       .getDocument()
       .getAllLines()
       .slice(0, currentPos.row)
       .forEach((line, row) => {
-        let index = -1;
+        let index = -1
         while (
           (index = line
             .toLowerCase()
@@ -454,111 +454,111 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
             row < currentPos.row ||
             (row === currentPos.row && index < currentPos.column)
           ) {
-            current++;
+            current++
           }
         }
-      });
+      })
 
-    setSearchResults({ total: matches, current: matches > 0 ? current : 0 });
-  }, []);
+    setSearchResults({ total: matches, current: matches > 0 ? current : 0 })
+  }, [])
 
   useEffect(() => {
     if (searchTerm) {
-      handleSearch(searchTerm);
+      handleSearch(searchTerm)
     } else {
-      setSearchResults({ total: 0, current: 0 });
+      setSearchResults({ total: 0, current: 0 })
     }
-  }, [searchTerm, handleSearch]);
+  }, [searchTerm, handleSearch])
 
   // Update useEffect for keyboard shortcuts
   useEffect(() => {
-    const eRef = editorRef.current;
+    const eRef = editorRef.current
     const handleKeyboardShortcuts = (e) => {
       // Check for Ctrl/Cmd + F
       if ((e.ctrlKey || e.metaKey) && e.key === "f") {
-        e.preventDefault(); // Prevent default browser find
-        setSearchVisible((prev) => !prev);
+        e.preventDefault() // Prevent default browser find
+        setSearchVisible((prev) => !prev)
         if (!searchVisible) {
-          setSearchTerm("");
+          setSearchTerm("")
         }
       }
-    };
+    }
 
     // Add event listener to the editor instance only when it's ready
     if (eRef?.editor && isEditorReady) {
-      const editor = eRef.editor;
+      const editor = eRef.editor
       editor.commands.addCommand({
         name: "toggleSearch",
         bindKey: { win: "Ctrl-F", mac: "Command-F" },
         exec: () => {
-          setSearchVisible((prev) => !prev);
+          setSearchVisible((prev) => !prev)
           if (!searchVisible) {
-            setSearchTerm("");
+            setSearchTerm("")
           }
         },
-      });
+      })
     }
 
     // Add event listener to document for when editor is not focused
-    document.addEventListener("keydown", handleKeyboardShortcuts);
+    document.addEventListener("keydown", handleKeyboardShortcuts)
 
     // Cleanup
     return () => {
-      document.removeEventListener("keydown", handleKeyboardShortcuts);
+      document.removeEventListener("keydown", handleKeyboardShortcuts)
       if (eRef?.editor && isEditorReady) {
-        const editor = eRef.editor;
-        editor.commands.removeCommand("toggleSearch");
+        const editor = eRef.editor
+        editor.commands.removeCommand("toggleSearch")
       }
-    };
-  }, [searchVisible, isEditorReady]);
+    }
+  }, [searchVisible, isEditorReady])
 
   // Add editor onLoad handler
   const handleEditorLoad = () => {
-    setIsEditorReady(true);
-  };
+    setIsEditorReady(true)
+  }
 
   const handleNodeUpdate = (node, updatedHTML) => {
     // Update the code state with the new HTML
-    setCode(updatedHTML);
+    setCode(updatedHTML)
 
     // Add to edit history
-    const newHistory = editHistory.slice(0, historyIndex + 1);
-    newHistory.push({ content: updatedHTML });
-    setEditHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
+    const newHistory = editHistory.slice(0, historyIndex + 1)
+    newHistory.push({ content: updatedHTML })
+    setEditHistory(newHistory)
+    setHistoryIndex(newHistory.length - 1)
 
     // Force preview refresh
-    setPreviewKey((prev) => prev + 1);
-  };
+    setPreviewKey((prev) => prev + 1)
+  }
 
   const handleClose = () => {
     // Check if content has changed
-    const hasUnsavedChanges = code !== script.content;
+    const hasUnsavedChanges = code !== script.content
 
     if (hasUnsavedChanges) {
-      setShowUnsavedChanges(true);
-      return;
+      setShowUnsavedChanges(true)
+      return
     }
 
     // If launched from mini overlay (has onClose callback)
     if (onClose) {
-      onClose();
+      onClose()
     } else {
       // If launched from scripts overlay
-      window.dispatchEvent(new Event("closeFullScreenEditor"));
+      window.dispatchEvent(new Event("closeFullScreenEditor"))
     }
-  };
+  }
 
   useEffect(() => {
     if (isSaving) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto"
     }
     return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isSaving]);
+      document.body.style.overflow = "auto"
+    }
+  }, [isSaving])
 
   // Add typing indicator CSS
   useEffect(() => {
@@ -589,69 +589,69 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     transform: translateY(-10px);
                 }
             }
-        `;
+        `
 
     // Inject the CSS
-    const style = document.createElement("style");
-    style.textContent = typingIndicatorCSS;
-    document.head.appendChild(style);
+    const style = document.createElement("style")
+    style.textContent = typingIndicatorCSS
+    document.head.appendChild(style)
 
     return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
+      document.head.removeChild(style)
+    }
+  }, [])
 
   const adjustTextareaHeight = (textarea) => {
-    if (!textarea) return;
+    if (!textarea) return
 
     // Reset height to auto to get the correct scrollHeight
-    textarea.style.height = "auto";
+    textarea.style.height = "auto"
 
     // Calculate line height (assuming 14px font size and 1.5 line height)
-    const lineHeight = 21; // 14px * 1.5
-    const padding = 16; // 8px top + 8px bottom
-    const maxHeight = lineHeight * 6 + padding; // 6 rows max
+    const lineHeight = 21 // 14px * 1.5
+    const padding = 16 // 8px top + 8px bottom
+    const maxHeight = lineHeight * 6 + padding // 6 rows max
 
     // Set new height
-    const newHeight = Math.min(textarea.scrollHeight, maxHeight);
-    textarea.style.height = `${newHeight}px`;
-  };
+    const newHeight = Math.min(textarea.scrollHeight, maxHeight)
+    textarea.style.height = `${newHeight}px`
+  }
 
   const handleScriptChatBubbleClick = (e, index, role) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = e.currentTarget.getBoundingClientRect()
     const clientX =
-      e.touches?.[0]?.clientX || e.clientX || rect.left + rect.width / 2;
+      e.touches?.[0]?.clientX || e.clientX || rect.left + rect.width / 2
     const clientY =
-      e.touches?.[0]?.clientY || e.clientY || rect.top + rect.height / 2;
+      e.touches?.[0]?.clientY || e.clientY || rect.top + rect.height / 2
 
     setScriptChatActionOverlay({
       index,
       role,
       clientX,
       clientY,
-    });
-  };
+    })
+  }
 
   const handleScriptChatCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied!");
-    setScriptChatActionOverlay(null);
-  };
+    navigator.clipboard.writeText(text)
+    toast.success("Copied!")
+    setScriptChatActionOverlay(null)
+  }
 
   const handleScriptChatDelete = (index) => {
-    const messageToDelete = scriptChatMessages[index];
+    const messageToDelete = scriptChatMessages[index]
     if (messageToDelete.role === "user") {
       // Remove from history if it exists
       setScriptChatHistory((prev) =>
-        prev.filter((h) => h.timestamp !== messageToDelete.timestamp),
-      );
+        prev.filter((h) => h.timestamp !== messageToDelete.timestamp)
+      )
     }
-    setScriptChatMessages((prev) => prev.filter((_, i) => i !== index));
-    setScriptChatActionOverlay(null);
-  };
+    setScriptChatMessages((prev) => prev.filter((_, i) => i !== index))
+    setScriptChatActionOverlay(null)
+  }
 
   const handleDragStart = (e) => {
     if (
@@ -659,63 +659,63 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
       e.target.closest("button") ||
       e.target === dragRef.current
     )
-      return;
+      return
 
-    const container = dragRef.current;
-    if (!container) return;
+    const container = dragRef.current
+    if (!container) return
 
-    const rect = container.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
+    const rect = container.getBoundingClientRect()
+    const offsetX = e.clientX - rect.left
+    const offsetY = e.clientY - rect.top
 
     const handleDrag = (e) => {
       requestAnimationFrame(() => {
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
+        const x = e.clientX - offsetX
+        const y = e.clientY - offsetY
 
         // Keep window within viewport bounds
-        const maxX = window.innerWidth - rect.width;
-        const maxY = window.innerHeight - rect.height;
+        const maxX = window.innerWidth - rect.width
+        const maxY = window.innerHeight - rect.height
 
         setScriptChatPosition({
           x: Math.max(0, Math.min(x, maxX)),
           y: Math.max(0, Math.min(y, maxY)),
-        });
-      });
-    };
+        })
+      })
+    }
 
     const handleDragEnd = () => {
-      document.removeEventListener("mousemove", handleDrag);
-      document.removeEventListener("mouseup", handleDragEnd);
-    };
+      document.removeEventListener("mousemove", handleDrag)
+      document.removeEventListener("mouseup", handleDragEnd)
+    }
 
-    document.addEventListener("mousemove", handleDrag);
-    document.addEventListener("mouseup", handleDragEnd);
-  };
+    document.addEventListener("mousemove", handleDrag)
+    document.addEventListener("mouseup", handleDragEnd)
+  }
 
   // Add this useEffect to handle window resizing
   useEffect(() => {
     const handleWindowResize = () => {
-      const maxWidth = window.innerWidth - 24; // Account for margins
-      const maxHeight = window.innerHeight - 24; // Account for margins
+      const maxWidth = window.innerWidth - 24 // Account for margins
+      const maxHeight = window.innerHeight - 24 // Account for margins
 
       setScriptChatSize((prevSize) => ({
         width: Math.min(prevSize.width, maxWidth),
         height: Math.min(prevSize.height, maxHeight),
-      }));
+      }))
 
       setScriptChatPosition((prevPosition) => ({
         x: Math.min(prevPosition.x, maxWidth - scriptChatSize.width),
         y: Math.min(prevPosition.y, maxHeight - scriptChatSize.height),
-      }));
-    };
+      }))
+    }
 
-    window.addEventListener("resize", handleWindowResize);
+    window.addEventListener("resize", handleWindowResize)
 
     return () => {
-      window.removeEventListener("resize", handleWindowResize);
-    };
-  }, [scriptChatSize]);
+      window.removeEventListener("resize", handleWindowResize)
+    }
+  }, [scriptChatSize])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -723,26 +723,26 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
         scriptChatActionOverlay &&
         !e.target.closest(".scriptChatActionOverlay")
       ) {
-        setScriptChatActionOverlay(null);
+        setScriptChatActionOverlay(null)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside)
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [scriptChatActionOverlay]);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [scriptChatActionOverlay])
 
   // Add helper function for closing editor
   const closeEditor = async () => {
-    setShowLoadingSpinner(true); // Show the loading spinner
+    setShowLoadingSpinner(true) // Show the loading spinner
 
-    await syncLocalScriptsWithFirestore(user?.uid, "webApps");
-    await syncLocalScriptsWithFirestore(user?.uid, "openSCAD");
+    await syncLocalScriptsWithFirestore(user?.uid, "webApps")
+    await syncLocalScriptsWithFirestore(user?.uid, "openSCAD")
 
-    const localWebApps = JSON.parse(localStorage.getItem("webApps")) || [];
-    const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || [];
+    const localWebApps = JSON.parse(localStorage.getItem("webApps")) || []
+    const localOpenSCAD = JSON.parse(localStorage.getItem("openSCAD")) || []
 
     window.dispatchEvent(
       new CustomEvent("scriptsUpdated", {
@@ -750,38 +750,38 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
           webApps: localWebApps,
           openSCAD: localOpenSCAD,
         },
-      }),
-    );
+      })
+    )
 
-    setShowLoadingSpinner(false); // Hide the loading spinner
-    onClose();
-  };
+    setShowLoadingSpinner(false) // Hide the loading spinner
+    onClose()
+  }
 
   // Add handler for history reset
   const handleResetHistory = () => {
-    setScriptChatMessages([]);
-    setScriptChatHistory([]);
-  };
+    setScriptChatMessages([])
+    setScriptChatHistory([])
+  }
 
   // Add this useEffect to handle viewport height changes (e.g., when keyboard opens)
   useEffect(() => {
     const handleResize = () => {
       // Only update if we're on mobile
       if (window.innerWidth <= 768) {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty("--vh", `${vh}px`);
+        const vh = window.innerHeight * 0.01
+        document.documentElement.style.setProperty("--vh", `${vh}px`)
       }
-    };
+    }
 
-    handleResize(); // Initial call
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", handleResize);
+    handleResize() // Initial call
+    window.addEventListener("resize", handleResize)
+    window.addEventListener("orientationchange", handleResize)
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", handleResize);
-    };
-  }, []);
+      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("orientationchange", handleResize)
+    }
+  }, [])
 
   // Update the scriptChatMessages ref scroll behavior
   useEffect(() => {
@@ -791,19 +791,19 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
         scriptChatMessagesEndRef.current.scrollIntoView({
           behavior: "smooth",
           block: "end",
-        });
-      }, 100);
+        })
+      }, 100)
     }
-  }, [scriptChatMessages]);
+  }, [scriptChatMessages])
 
   // Add useEffect to handle clicking outside the settings panel
   useEffect(() => {
-    if (!showMemoryOverlay) return;
+    if (!showMemoryOverlay) return
 
     const handleClickOutside = (event) => {
       // Check if click is outside the settings panel and not on the settings button
-      const settingsPanel = document.querySelector(".script-chat-settings");
-      const settingsButton = document.querySelector(".settings-button");
+      const settingsPanel = document.querySelector(".script-chat-settings")
+      const settingsButton = document.querySelector(".settings-button")
 
       if (
         settingsPanel &&
@@ -811,13 +811,13 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
         !settingsPanel.contains(event.target) &&
         !settingsButton.contains(event.target)
       ) {
-        setShowMemoryOverlay(false);
+        setShowMemoryOverlay(false)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showMemoryOverlay]);
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [showMemoryOverlay])
 
   return (
     <div className="editor-container">
@@ -830,7 +830,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
         <div className="header-left">
           <Tooltip title="Back">
             <IconButton onClick={handleClose} className="icon-button app">
-              <FaArrowLeft />
+              <ArrowLeft />
             </IconButton>
           </Tooltip>
           <div className="title-container">
@@ -846,13 +846,13 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               onClick={() => setShowScriptChat((prev) => !prev)}
               className={`icon-button app ${showScriptChat ? "active" : ""}`}
             >
-              <FaComments size={16} />
+              <MessageSquare size={16} />
             </IconButton>
           </Tooltip>
           <div className="divider" />
           <Tooltip title="Run">
             <IconButton onClick={handleRunPreview} className="icon-button app">
-              <FaPlay size={16} />
+              <Play size={16} />
             </IconButton>
           </Tooltip>
           <Button
@@ -895,7 +895,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   disabled={historyIndex === 0}
                   className="icon-button"
                 >
-                  <FaUndo
+                  <Undo
                     size={12}
                     color={
                       historyIndex === 0
@@ -911,7 +911,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   disabled={historyIndex === editHistory.length - 1}
                   className="icon-button"
                 >
-                  <FaRedo
+                  <Redo
                     size={12}
                     color={
                       historyIndex === editHistory.length - 1
@@ -929,8 +929,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   setSearchTerm={setSearchTerm}
                   onSearch={handleSearch}
                   onClose={() => {
-                    setSearchVisible(false);
-                    setSearchTerm("");
+                    setSearchVisible(false)
+                    setSearchTerm("")
                   }}
                   searchResults={searchResults}
                 />
@@ -939,7 +939,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     onClick={() => setSearchVisible(!searchVisible)}
                     className={`icon-button ${searchVisible ? "active" : ""}`}
                   >
-                    <FaSearch size={12} />
+                    <Search size={12} />
                   </IconButton>
                 </Tooltip>
               </div>
@@ -948,7 +948,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   onClick={() => setWrapEnabled((prev) => !prev)}
                   className={`icon-button ${wrapEnabled ? "active" : ""}`}
                 >
-                  <FaAlignLeft size={12} />
+                  <AlignLeft size={12} />
                 </IconButton>
               </Tooltip>
               <div className="divider" />
@@ -960,9 +960,9 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                   className="icon-button"
                 >
                   {isMaximized === "editor" ? (
-                    <FaCompress size={12} />
+                    <Minimize size={12} />
                   ) : (
-                    <FaExpand size={12} />
+                    <Expand size={12} />
                   )}
                 </IconButton>
               </Tooltip>
@@ -974,7 +974,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 onClick={() => setViewMode("code")}
                 className={`icon-button ${viewMode === "code" ? "active" : ""}`}
               >
-                <FaCode size={16} />
+                <Code size={16} />
               </IconButton>
             </Tooltip>
             <Tooltip title="DOM Tree View">
@@ -982,7 +982,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 onClick={() => setViewMode("tree")}
                 className={`icon-button ${viewMode === "tree" ? "active" : ""}`}
               >
-                <FaProjectDiagram size={16} />
+                <Projector size={16} />
               </IconButton>
             </Tooltip>
           </div>
@@ -1062,7 +1062,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       disabled={historyIndex === 0}
                       className="icon-button"
                     >
-                      <FaUndo
+                      <Undo
                         size={12}
                         color={
                           historyIndex === 0
@@ -1078,7 +1078,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       disabled={historyIndex === editHistory.length - 1}
                       className="icon-button"
                     >
-                      <FaRedo
+                      <Redo
                         size={12}
                         color={
                           historyIndex === editHistory.length - 1
@@ -1098,10 +1098,10 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                 {isMaximized === "preview" ? (
                   <>
                     <span className="show-editor-text">Show Editor</span>
-                    <FaChevronDown size={12} />
+                    <ChevronDown size={12} />
                   </>
                 ) : (
-                  <FaExpand size={12} />
+                  <Expand size={12} />
                 )}
               </button>
             </div>
@@ -1176,14 +1176,14 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     className={`icon-button settings-button ${showMemoryOverlay ? "active" : ""}`}
                     onClick={() => setShowMemoryOverlay((prev) => !prev)}
                   >
-                    <FaBrain size={16} />
+                    <Brain size={16} />
                   </IconButton>
                 </Tooltip>
                 <IconButton
                   onClick={() => setShowScriptChat(false)}
                   className="icon-button"
                 >
-                  <FaTimes size={16} />
+                  <X size={16} />
                 </IconButton>
               </div>
 
@@ -1210,7 +1210,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                         <ModelDropdown
                           value={preferences.programmerModel}
                           onChange={(newModel) => {
-                            updatePreferences({ programmerModel: newModel });
+                            updatePreferences({ programmerModel: newModel })
                           }}
                         />
                       </div>
@@ -1261,8 +1261,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       {msg.content.includes("```html") && (
                         <button
                           onClick={(e) => {
-                            e.stopPropagation();
-                            setCodeViewerOverlay(msg.content);
+                            e.stopPropagation()
+                            setCodeViewerOverlay(msg.content)
                           }}
                           className="view-code-button"
                         >
@@ -1285,9 +1285,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       <ReactMarkdown
                         components={{
                           code({ inline, className, children, ...props }) {
-                            const match = /language-(\w+)/.exec(
-                              className || "",
-                            );
+                            const match = /language-(\w+)/.exec(className || "")
                             return !inline && match ? (
                               <SyntaxHighlighter
                                 style={vscDarkPlus}
@@ -1301,7 +1299,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                               <code className={className} {...props}>
                                 {children}
                               </code>
-                            );
+                            )
                           },
                         }}
                       >
@@ -1310,9 +1308,9 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       {msg.fullScript && (
                         <button
                           onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(msg.fullScript);
-                            toast.success("Copied!");
+                            e.stopPropagation()
+                            navigator.clipboard.writeText(msg.fullScript)
+                            toast.success("Copied!")
                           }}
                           className="copy-full-script-button"
                         >
@@ -1355,15 +1353,15 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                         </SyntaxHighlighter>
                         <button
                           onClick={(e) => {
-                            e.stopPropagation();
+                            e.stopPropagation()
                             navigator.clipboard.writeText(
                               codeViewerOverlay
                                 .split("```html\n")[1]
                                 .split("```")[0]
-                                .trim(),
-                            );
-                            toast.success("Copied!");
-                            setCodeViewerOverlay(null);
+                                .trim()
+                            )
+                            toast.success("Copied!")
+                            setCodeViewerOverlay(null)
                           }}
                           className="code-viewer-copy-button"
                         >
@@ -1392,11 +1390,11 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     <button
                       onClick={() => {
                         const message =
-                          scriptChatMessages[scriptChatActionOverlay.index];
+                          scriptChatMessages[scriptChatActionOverlay.index]
                         const textToCopy =
                           message.content.split("```")[2]?.split("\n\n")[1] ||
-                          message.content;
-                        handleScriptChatCopy(textToCopy);
+                          message.content
+                        handleScriptChatCopy(textToCopy)
                       }}
                       className="script-chat-action-button"
                     >
@@ -1430,7 +1428,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                       ? selectedCodeAttachment.substring(0, 100) + "..."
                       : selectedCodeAttachment}
                   </pre>
-                  <FaTimes
+                  <X
                     className="remove-code-button"
                     onClick={() => setSelectedCodeAttachment(null)}
                   />
@@ -1439,28 +1437,28 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
               <textarea
                 value={scriptChatInput}
                 onChange={(e) => {
-                  setScriptChatInput(e.target.value);
-                  adjustTextareaHeight(e.target);
+                  setScriptChatInput(e.target.value)
+                  adjustTextareaHeight(e.target)
                 }}
                 onKeyDown={(e) => {
                   if (isMobile) {
                     // Mobile behavior - just add newlines
                     if (e.key === "Enter") {
-                      e.preventDefault();
-                      const newValue = scriptChatInput + "\n";
-                      setScriptChatInput(newValue);
-                      setTimeout(() => adjustTextareaHeight(e.target), 0);
+                      e.preventDefault()
+                      const newValue = scriptChatInput + "\n"
+                      setScriptChatInput(newValue)
+                      setTimeout(() => adjustTextareaHeight(e.target), 0)
                     }
                   } else {
                     // Desktop behavior - Enter sends, Shift+Enter adds newline
                     if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleScriptChatSend();
+                      e.preventDefault()
+                      handleScriptChatSend()
                     } else if (e.key === "Enter" && e.shiftKey) {
-                      e.preventDefault();
-                      const newValue = scriptChatInput + "\n";
-                      setScriptChatInput(newValue);
-                      setTimeout(() => adjustTextareaHeight(e.target), 0);
+                      e.preventDefault()
+                      const newValue = scriptChatInput + "\n"
+                      setScriptChatInput(newValue)
+                      setTimeout(() => adjustTextareaHeight(e.target), 0)
                     }
                   }
                 }}
@@ -1517,7 +1515,7 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={async () => {
-                      await closeEditor();
+                      await closeEditor()
                     }}
                     className="unsaved-danger-button"
                   >
@@ -1530,8 +1528,8 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={async () => {
-                      await handleSave();
-                      await closeEditor();
+                      await handleSave()
+                      await closeEditor()
                     }}
                     className="unsaved-primary-button"
                   >
@@ -1556,5 +1554,5 @@ export default function FullScreenEditor({ script, onClose, onSave }) {
         </motion.div>
       )}
     </div>
-  );
+  )
 }

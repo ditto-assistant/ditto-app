@@ -1,9 +1,9 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaSave } from "react-icons/fa";
-import { IconButton } from "@mui/material";
-import { useState } from "react";
-import { saveScriptToFirestore } from "../../control/firebase";
-import { useAuth } from "../../hooks/useAuth";
+import { motion, AnimatePresence } from "framer-motion"
+import { X, Save } from "lucide-react"
+import { IconButton } from "@mui/material"
+import { useState } from "react"
+import { saveScriptToFirestore } from "../../control/firebase"
+import { useAuth } from "../../hooks/useAuth"
 const darkModeColors = {
   background: "#1E1F22",
   foreground: "#2B2D31",
@@ -12,31 +12,31 @@ const darkModeColors = {
   text: "#FFFFFF",
   textSecondary: "#B5BAC1",
   border: "#1E1F22",
-};
+}
 
 const OpenSCADViewer = ({ script, onClose }) => {
-  const [content, setContent] = useState(script.content);
-  const [isSaving, setIsSaving] = useState(false);
-  const { user } = useAuth();
+  const [content, setContent] = useState(script.content)
+  const [isSaving, setIsSaving] = useState(false)
+  const { user } = useAuth()
 
   const handleSave = async () => {
-    setIsSaving(true);
+    setIsSaving(true)
     try {
-      await saveScriptToFirestore(user?.uid, content, "openSCAD", script.name);
+      await saveScriptToFirestore(user?.uid, content, "openSCAD", script.name)
 
       // Update localStorage
       const openSCADScripts = JSON.parse(
-        localStorage.getItem("openSCAD") || "[]",
-      );
+        localStorage.getItem("openSCAD") || "[]"
+      )
       const updatedScripts = openSCADScripts.map((s) =>
-        s.name === script.name ? { ...s, content } : s,
-      );
-      localStorage.setItem("openSCAD", JSON.stringify(updatedScripts));
+        s.name === script.name ? { ...s, content } : s
+      )
+      localStorage.setItem("openSCAD", JSON.stringify(updatedScripts))
 
       // Update workingOnScript if this is the current script
       const workingOnScript = JSON.parse(
-        localStorage.getItem("workingOnScript"),
-      );
+        localStorage.getItem("workingOnScript")
+      )
       if (workingOnScript && workingOnScript.script === script.name) {
         localStorage.setItem(
           "workingOnScript",
@@ -44,18 +44,18 @@ const OpenSCADViewer = ({ script, onClose }) => {
             script: script.name,
             contents: content,
             scriptType: "openSCAD",
-          }),
-        );
+          })
+        )
       }
 
       // Trigger UI updates
-      window.dispatchEvent(new Event("scriptsUpdated"));
+      window.dispatchEvent(new Event("scriptsUpdated"))
     } catch (error) {
-      console.error("Error saving script:", error);
+      console.error("Error saving script:", error)
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   return (
     <AnimatePresence>
@@ -82,14 +82,14 @@ const OpenSCADViewer = ({ script, onClose }) => {
                 disabled={isSaving}
                 style={styles.saveButton}
               >
-                <FaSave size={16} color={darkModeColors.textSecondary} />
+                <Save size={16} color={darkModeColors.textSecondary} />
               </IconButton>
               <IconButton
                 size="small"
                 onClick={onClose}
                 style={styles.closeButton}
               >
-                <FaTimes size={16} color={darkModeColors.textSecondary} />
+                <X size={16} color={darkModeColors.textSecondary} />
               </IconButton>
             </div>
           </div>
@@ -102,8 +102,8 @@ const OpenSCADViewer = ({ script, onClose }) => {
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  );
-};
+  )
+}
 
 const styles = {
   overlay: {
@@ -177,6 +177,6 @@ const styles = {
     color: darkModeColors.text,
     lineHeight: "1.5",
   },
-};
+}
 
-export default OpenSCADViewer;
+export default OpenSCADViewer

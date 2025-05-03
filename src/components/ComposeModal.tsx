@@ -1,200 +1,132 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useRef,
-  useEffect,
-} from "react";
-import { FaPaperPlane, FaTimes } from "react-icons/fa";
-import { createPortal } from "react-dom";
-import { usePlatform } from "@/hooks/usePlatform";
-import { usePromptStorage } from "@/hooks/usePromptStorage";
-import "./ComposeModal.css";
+import React, { useRef, useEffect, useCallback } from "react"
+import { PlaneTakeoff } from "lucide-react"
+import { usePlatform } from "@/hooks/usePlatform"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { useComposeContext } from "@/contexts/ComposeContext"
+import { Textarea } from "./ui/textarea"
 
-// Define context types
-interface ComposeContextType {
-  message: string;
-  setMessage: React.Dispatch<React.SetStateAction<string>>;
-  isComposeModalOpen: boolean;
-  openComposeModal: () => void;
-  closeComposeModal: () => void;
-  handleSubmit: () => void;
-  isWaitingForResponse: boolean;
-  setIsWaitingForResponse: (isWaiting: boolean) => void;
-  registerSubmitCallback: (callback: () => void) => void;
-}
-
-// Create compose context
-const ComposeContext = createContext<ComposeContextType | null>(null);
-
-// Provider component
-interface ComposeProviderProps {
-  children: React.ReactNode;
-}
-
-export const ComposeProvider: React.FC<ComposeProviderProps> = ({
-  children,
-}) => {
-  const { promptData, savePrompt } = usePromptStorage();
-  const [message, setMessage] = useState("");
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
-  const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
-
-  // Load saved prompt from storage when component mounts
-  useEffect(() => {
-    if (promptData && promptData.prompt) {
-      setMessage(promptData.prompt);
-    }
-  }, [promptData]);
-
-  const submitCallback = useRef<() => void | null>(null);
-
-  const registerSubmitCallback = (callback: () => void) => {
-    submitCallback.current = callback;
-  };
-
-  const handleSubmit = () => {
-    if (submitCallback.current) {
-      submitCallback.current();
-    }
-    closeComposeModal();
-  };
-
-  useEffect(() => {
-    savePrompt(message);
-  }, [message, savePrompt]);
-
-  const openComposeModal = () => setIsComposeModalOpen(true);
-  const closeComposeModal = () => setIsComposeModalOpen(false);
-
-  return (
-    <ComposeContext.Provider
-      value={{
-        message,
-        setMessage,
-        isComposeModalOpen,
-        openComposeModal,
-        closeComposeModal,
-        handleSubmit,
-        isWaitingForResponse,
-        setIsWaitingForResponse,
-        registerSubmitCallback,
-      }}
-    >
-      {children}
-    </ComposeContext.Provider>
-  );
-};
-
-// Custom hook to use the compose context
-export const useCompose = () => {
-  const context = useContext(ComposeContext);
-  if (!context) {
-    throw new Error("useCompose must be used within a ComposeProvider");
-  }
-  return context;
-};
-
-// Modal component for fullscreen compose
-export const FullscreenComposeModal: React.FC = () => {
+// Modal component for fullscreen compose using ShadCN Dialog
+const ComposeModal: React.FC = () => {
   const {
     message,
     setMessage,
-    isComposeModalOpen,
-    closeComposeModal,
     handleSubmit,
     isWaitingForResponse,
-  } = useCompose();
+    isOpen,
+    setIsOpen,
+    closeComposeModal,
+  } = useComposeContext()
+  const { isMobile } = usePlatform()
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const { isMobile } = usePlatform();
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setMessage(e.target.value)
+    },
+    [setMessage]
+  )
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      if (message.trim()) {
+        handleSubmit()
+      }
+      closeComposeModal()
+    },
+    [message, handleSubmit, closeComposeModal]
+  )
 
   useEffect(() => {
-    // Focus textarea when modal opens and position cursor at the end of the text
-    if (isComposeModalOpen && textAreaRef.current) {
-      setTimeout(() => {
-        const textarea = textAreaRef.current;
-        if (!textarea) return;
-        textarea.focus();
-        // Place cursor at the end of the text
-        const textLength = textarea.value.length;
-        textarea.setSelectionRange(textLength, textLength);
-      }, 100);
-    }
-
-    // Handle keyboard shortcuts
+    // Handle keyboard shortcuts (Cmd/Ctrl+Enter)
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Escape to close modal
-      if (e.key === "Escape" && isComposeModalOpen) {
-        closeComposeModal();
-      }
-
-      // Cmd/Ctrl+Enter to submit
-      if (
-        !isMobile &&
-        isComposeModalOpen &&
-        (e.metaKey || e.ctrlKey) &&
-        e.key === "Enter"
-      ) {
-        e.preventDefault();
+      if (!isMobile && (e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault()
         if (message.trim()) {
-          handleSubmit();
+          handleSubmit()
         }
       }
-    };
+    }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isComposeModalOpen, closeComposeModal, message, handleSubmit, isMobile]);
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [message, handleSubmit, isMobile])
 
-  if (!isComposeModalOpen) return null;
+  // Focus the textarea when the modal opens
+  useEffect(() => {
+    if (isOpen && textAreaRef.current) {
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        textAreaRef.current?.focus()
+      }, 50)
+    }
+  }, [isOpen])
 
-  return createPortal(
-    <div className="modal container fullscreen compose-modal">
-      <div className="modal content">
-        <div className="header modal fullscreen">
-          <h3>Compose Message</h3>
-          <div className="modal-controls">
-            <div className="modal-control close" onClick={closeComposeModal}>
-              <FaTimes size={20} />
-            </div>
-          </div>
-        </div>
-        <form
-          className="modal wrapper"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (message.trim()) {
-              handleSubmit();
-            }
-          }}
-        >
-          <div className="modal body">
-            <textarea
-              ref={textAreaRef}
-              className="compose-textarea"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message here..."
-              spellCheck="true"
-              autoFocus
-            />
-          </div>
-          <div className="modal footer">
-            <button
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent
+        className={cn(
+          "bg-background flex flex-col overflow-hidden",
+          isMobile
+            ? "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
+            : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
+        )}
+      >
+        {/* Accessibility additions */}
+        <DialogHeader className="border-b flex items-center justify-between p-3 select-none">
+          <div>
+            <Button
               type="submit"
-              className={`ditto-button primary ${isWaitingForResponse ? "disabled" : ""}`}
+              form="compose-form"
+              variant="default"
+              size="sm"
+              className={cn(
+                "bg-gradient-to-r from-primary to-blue-400",
+                "flex items-center gap-2",
+                "mr-2 h-8"
+              )}
               disabled={isWaitingForResponse || !message.trim()}
             >
-              <span className="button-icon">
-                <FaPaperPlane />
-              </span>{" "}
-              Send {!isMobile && <span className="shortcut-hint">⌘↵</span>}
-            </button>
+              <PlaneTakeoff className="h-4 w-4" />
+              <span>Send</span>
+              {!isMobile && <span className="text-xs opacity-75">⌘↵</span>}
+            </Button>
           </div>
-        </form>
-      </div>
-    </div>,
-    document.getElementById("modal-root") || document.body,
-  );
-};
+          <DialogTitle className="sr-only">Compose Message</DialogTitle>
+          <DialogDescription className="sr-only">
+            Type your message in the text area below and press Send.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Body with form */}
+        <div className="flex flex-col flex-1 h-full w-full">
+          <form
+            id="compose-form"
+            className="flex flex-col h-full w-full"
+            onSubmit={handleFormSubmit}
+          >
+            <Textarea
+              ref={textAreaRef}
+              autoFocus
+              value={message}
+              onChange={handleChange}
+              placeholder="Type your message here..."
+              spellCheck="true"
+              className="text-foreground placeholder:text-muted-foreground/70 resize-none h-full border-none focus-visible:ring-0 p-4"
+            />
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export default ComposeModal

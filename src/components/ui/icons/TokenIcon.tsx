@@ -1,11 +1,11 @@
-import React from "react";
-import { FaCoins } from "react-icons/fa";
-import "./TokenIcon.css";
+import React from "react"
+import { Coins } from "lucide-react"
+import "./TokenIcon.css"
 
 interface TokenIconProps {
-  className?: string;
-  size?: number;
-  color?: string;
+  className?: string
+  size?: number
+  color?: string
 }
 
 const TokenIcon: React.FC<TokenIconProps> = ({
@@ -18,9 +18,9 @@ const TokenIcon: React.FC<TokenIconProps> = ({
       className={`token-icon-container ${className}`}
       style={{ fontSize: size }}
     >
-      <FaCoins className="token-icon" style={color ? { color } : undefined} />
+      <Coins className="token-icon" style={color ? { color } : undefined} />
     </div>
-  );
-};
+  )
+}
 
-export default TokenIcon;
+export default TokenIcon

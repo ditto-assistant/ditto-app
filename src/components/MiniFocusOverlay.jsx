@@ -1,10 +1,10 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React from "react"
+import { motion } from "framer-motion"
 
 const darkModeColors = {
   primary: "#7289DA",
   text: "#FFFFFF",
-};
+}
 
 function MiniFocusOverlay({ scriptName, onOverlayTrigger }) {
   return (
@@ -19,7 +19,7 @@ function MiniFocusOverlay({ scriptName, onOverlayTrigger }) {
 
       <div style={styles.rightActions} />
     </div>
-  );
+  )
 }
 
 const styles = {
@@ -60,6 +60,6 @@ const styles = {
     minWidth: "40px",
     marginLeft: "8px",
   },
-};
+}
 
-export default MiniFocusOverlay;
+export default MiniFocusOverlay

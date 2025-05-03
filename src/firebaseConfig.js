@@ -1,21 +1,21 @@
 // Your web app's Firebase configuration
-const MODE = import.meta.env.MODE;
+const MODE = import.meta.env.MODE
 // const MODE = "staging";
 
 function getBaseURL(dittoEnv) {
   switch (dittoEnv) {
     case "development":
-      return "http://localhost:3400";
+      return "http://localhost:3400"
     case "production":
-      return "https://backend-22790208601.us-central1.run.app";
+      return "https://backend-22790208601.us-central1.run.app"
     case "staging":
-      return "https://staging-backend-22790208601.us-central1.run.app";
+      return "https://staging-backend-22790208601.us-central1.run.app"
     default:
-      return "https://backend-22790208601.us-central1.run.app";
+      return "https://backend-22790208601.us-central1.run.app"
   }
 }
 
-export const BASE_URL = getBaseURL(MODE);
+export const BASE_URL = getBaseURL(MODE)
 
 export const routes = {
   // v1 API
@@ -36,12 +36,12 @@ export const routes = {
    * @returns {string} The complete URL for the balance endpoint.
    */
   balance: (userID, email, version, deviceID) => {
-    const url = new URL(`${BASE_URL}/v1/balance`);
-    url.searchParams.append("userID", userID);
-    url.searchParams.append("email", email ?? "");
-    url.searchParams.append("version", version);
-    url.searchParams.append("deviceID", deviceID);
-    return url.toString();
+    const url = new URL(`${BASE_URL}/v1/balance`)
+    url.searchParams.append("userID", userID)
+    url.searchParams.append("email", email ?? "")
+    url.searchParams.append("version", version)
+    url.searchParams.append("deviceID", deviceID)
+    return url.toString()
   },
   checkoutSession: BASE_URL + "/v1/stripe/checkout-session",
   presignURL: BASE_URL + "/v1/presign-url",
@@ -50,7 +50,7 @@ export const routes = {
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
   promptV2: BASE_URL + "/api/v2/prompt",
-};
+}
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const firebaseConfig = {
@@ -62,4 +62,4 @@ export const firebaseConfig = {
   appId: "1:22790208601:web:b6ee532b2e8a048d1a0548",
   measurementId: "G-KJFMK6PHML",
   webSocketURL: "wss://websocket-server-m4cg7rn54q-uc.a.run.app",
-};
+}

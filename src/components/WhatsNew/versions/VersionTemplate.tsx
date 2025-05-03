@@ -1,34 +1,34 @@
-import React from "react";
+import React from "react"
 
 // Feature types
-export type FeatureType = "new" | "improved" | "fixed";
+export type FeatureType = "new" | "improved" | "fixed"
 
 // Feature item interface
 export interface Feature {
-  type: FeatureType;
-  title: string;
-  description: string;
+  type: FeatureType
+  title: string
+  description: string
 }
 
 // Section interface
 export interface Section {
-  title: string;
-  features: Feature[];
+  title: string
+  features: Feature[]
 }
 
 // Icons for each feature type
 export const FeatureIcon = ({ type }: { type: FeatureType }) => {
   switch (type) {
     case "new":
-      return <span>✨</span>;
+      return <span>✨</span>
     case "improved":
-      return <span>⚡️</span>;
+      return <span>⚡️</span>
     case "fixed":
-      return <span>🐛</span>;
+      return <span>🐛</span>
     default:
-      return null;
+      return null
   }
-};
+}
 
 // Feature item component
 export const FeatureItem = ({ type, title, description }: Feature) => (
@@ -41,7 +41,7 @@ export const FeatureItem = ({ type, title, description }: Feature) => (
       <p>{description}</p>
     </div>
   </li>
-);
+)
 
 // Section component
 export const VersionSection = ({ title, features }: Section) => (
@@ -58,7 +58,7 @@ export const VersionSection = ({ title, features }: Section) => (
       ))}
     </ul>
   </div>
-);
+)
 
 /**
  * Instructions for creating a new version component:

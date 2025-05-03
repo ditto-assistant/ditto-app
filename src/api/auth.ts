@@ -1,14 +1,14 @@
-import { auth } from "../control/firebase";
+import { auth } from "../control/firebase"
 
 interface TokenSuccess {
-  token: string;
-  userID: string;
-  email: string | null;
+  token: string
+  userID: string
+  email: string | null
 }
 
 interface TokenResult {
-  ok?: TokenSuccess;
-  err?: Error;
+  ok?: TokenSuccess
+  err?: Error
 }
 
 /**
@@ -18,18 +18,18 @@ interface TokenResult {
  */
 export async function getToken(): Promise<TokenResult> {
   if (!auth.currentUser) {
-    return { err: new Error("User not logged in") };
+    return { err: new Error("User not logged in") }
   }
   try {
-    const token = await auth.currentUser.getIdToken();
+    const token = await auth.currentUser.getIdToken()
     return {
       ok: {
         token: token,
         userID: auth.currentUser.uid,
         email: auth.currentUser.email,
       },
-    };
+    }
   } catch (error) {
-    return { err: error instanceof Error ? error : new Error(String(error)) };
+    return { err: error instanceof Error ? error : new Error(String(error)) }
   }
 }

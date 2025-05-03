@@ -1,9 +1,9 @@
-import React from "react";
+import React from "react"
 
 interface FilterGroupProps {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
+  label: string
+  children: React.ReactNode
+  className?: string
 }
 
 export const FilterGroup: React.FC<FilterGroupProps> = ({
@@ -16,5 +16,5 @@ export const FilterGroup: React.FC<FilterGroupProps> = ({
       <span className="filter-label">{label}</span>
       <div className="filter-buttons">{children}</div>
     </div>
-  );
-};
+  )
+}

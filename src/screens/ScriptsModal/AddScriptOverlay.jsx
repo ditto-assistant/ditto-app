@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@mui/material";
-import { MdClose } from "react-icons/md";
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "@mui/material"
+import { X } from "lucide-react"
 
 const darkModeColors = {
   background: "#1E1F22",
@@ -14,7 +14,7 @@ const darkModeColors = {
   cardBackground: "#313338",
   headerBackground: "#2B2D31",
   inputBackground: "#1E1F22",
-};
+}
 
 const AddScriptOverlay = ({ isOpen, onClose, onSave, category }) => {
   return (
@@ -38,7 +38,7 @@ const AddScriptOverlay = ({ isOpen, onClose, onSave, category }) => {
               <h3 style={styles.title}>
                 New {category === "webApps" ? "Web App" : "OpenSCAD"} Script
               </h3>
-              <MdClose style={styles.closeIcon} onClick={onClose} />
+              <X style={styles.closeIcon} onClick={onClose} />
             </div>
             <div style={styles.content}>
               <input
@@ -74,8 +74,8 @@ const AddScriptOverlay = ({ isOpen, onClose, onSave, category }) => {
         </motion.div>
       )}
     </AnimatePresence>
-  );
-};
+  )
+}
 
 const styles = {
   backdrop: {
@@ -205,6 +205,6 @@ const styles = {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
   },
-};
+}
 
-export default AddScriptOverlay;
+export default AddScriptOverlay

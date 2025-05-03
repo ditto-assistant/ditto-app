@@ -1,10 +1,10 @@
 export const urlReaderSystemTemplate = () => {
-  return "You are an experienced URL Reader ready to read and summarize information from a website. You will be given a website URL and you will need to read the information and summarize / respond to the user.";
-};
+  return "You are an experienced URL Reader ready to read and summarize information from a website. You will be given a website URL and you will need to read the information and summarize / respond to the user."
+}
 
 export const urlReaderTemplate = (
   usersPrompt: string,
-  websiteContents: string,
+  websiteContents: string
 ) => {
   return `You will be given a user's prompt and a website's contents. You will need to read the information from the website and summarize it for the user.
 
@@ -19,5 +19,5 @@ User's Prompt: <!prompt>
 Response:
 `
     .replace("<!contents>", websiteContents)
-    .replace("<!prompt>", usersPrompt);
-};
+    .replace("<!prompt>", usersPrompt)
+}

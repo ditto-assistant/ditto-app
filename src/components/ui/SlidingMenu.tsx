@@ -1,25 +1,26 @@
-import React, { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import "./SlidingMenu.css";
-import { useUser } from "@/hooks/useUser";
-import { FaCrown } from "react-icons/fa";
-import { useModal } from "@/hooks/useModal";
+import React, { useEffect, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import "./SlidingMenu.css"
+import { useUser } from "@/hooks/useUser"
+import { Crown } from "lucide-react"
+import { useModal } from "@/hooks/useModal"
+import { createPortal } from "react-dom"
 
 interface MenuItem {
-  icon: React.ReactNode;
-  text: string;
-  onClick: () => void;
-  minimumTier?: number;
+  icon: React.ReactNode
+  text: string
+  onClick: () => void
+  minimumTier?: number
 }
 
 interface SlidingMenuProps {
-  menuItems: MenuItem[];
-  isOpen: boolean;
-  onClose: () => void;
-  position?: "left" | "right" | "center";
-  triggerRef?: React.RefObject<HTMLElement>;
-  menuPosition?: "top" | "bottom";
-  menuTitle?: string;
+  menuItems: MenuItem[]
+  isOpen: boolean
+  onClose: () => void
+  position?: "left" | "right" | "center"
+  triggerRef?: React.RefObject<HTMLElement>
+  menuPosition?: "top" | "bottom"
+  menuTitle?: string
 }
 
 const SlidingMenu: React.FC<SlidingMenuProps> = ({
@@ -31,30 +32,30 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   menuPosition = "top",
   menuTitle,
 }) => {
-  const menuRef = useRef<HTMLDivElement>(null);
-  const { data: user } = useUser();
-  const { createOpenHandler } = useModal();
+  const menuRef = useRef<HTMLDivElement>(null)
+  const { data: user } = useUser()
+  const { createOpenHandler } = useModal()
 
   const isItemLocked = (minimumTier?: number) => {
-    if (!minimumTier) return false;
-    const userTier = user?.planTier || 0;
-    return userTier < minimumTier;
-  };
+    if (!minimumTier) return false
+    const userTier = user?.planTier || 0
+    return userTier < minimumTier
+  }
 
   const handleItemClick = (item: MenuItem, e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation()
     if (isItemLocked(item.minimumTier)) {
       // Create a new handler with the general tab specified
       const openSettingsWithGeneralTab = createOpenHandler(
         "settings",
-        "general",
-      );
-      openSettingsWithGeneralTab();
+        "general"
+      )
+      openSettingsWithGeneralTab()
     } else {
-      item.onClick();
-      onClose();
+      item.onClick()
+      onClose()
     }
-  };
+  }
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -66,15 +67,15 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         (!triggerRef || !triggerRef.current?.contains(event.target as Node))
       ) {
         // Always close when clicking outside, even if pinned
-        onClose();
+        onClose()
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside)
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose, triggerRef]);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isOpen, onClose, triggerRef])
 
   const getMenuAnimation = () => {
     // For bottom-aligned menus, animate vertically
@@ -84,22 +85,23 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         animate: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: 20 },
         transition: { duration: 0.15 },
-      };
+      }
     }
 
     // For standard top menus, animate horizontally
-    const initialX = position === "left" ? -20 : 20;
+    const initialX = position === "left" ? -20 : 20
     return {
       initial: { opacity: 0, x: initialX },
       animate: { opacity: 1, x: 0 },
       exit: { opacity: 0, x: initialX },
       transition: { duration: 0.15 },
-    };
-  };
+    }
+  }
 
-  const menuAnimation = getMenuAnimation();
+  const menuAnimation = getMenuAnimation()
 
-  return (
+  // Render menu in a portal so it's positioned relative to viewport
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -109,7 +111,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
         >
           {menuTitle && <div className="menu-title">{menuTitle}</div>}
           {menuItems.map((item, index) => {
-            const locked = isItemLocked(item.minimumTier);
+            const locked = isItemLocked(item.minimumTier)
             return (
               <motion.div
                 key={index}
@@ -118,7 +120,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
                 whileHover={
                   locked
                     ? { backgroundColor: "rgba(var(--primary-rgb), 0.1)" }
-                    : { backgroundColor: "rgba(255, 255, 255, 0.15)" }
+                    : { backgroundColor: "var(--hover-overlay)" }
                 }
                 onClick={(e) => handleItemClick(item, e)}
                 aria-label={item.text}
@@ -130,22 +132,23 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
                 {locked && (
                   <div className="premium-indicator">
                     <div className="premium-badge">
-                      <FaCrown className="crown-icon" />
+                      <Crown className="crown-icon" />
                       <span>PRO</span>
                     </div>
                     <div className="upgrade-tooltip">
                       <span>Upgrade to unlock</span>
-                      <FaCrown className="crown-icon" />
+                      <Crown className="crown-icon" />
                     </div>
                   </div>
                 )}
               </motion.div>
-            );
+            )
           })}
         </motion.div>
       )}
-    </AnimatePresence>
-  );
-};
+    </AnimatePresence>,
+    document.body
+  )
+}
 
-export default SlidingMenu;
+export default SlidingMenu

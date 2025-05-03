@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MdExpandMore } from "react-icons/md";
-import { FaCrown } from "react-icons/fa";
-import { IMAGE_GENERATION_MODELS } from "../constants";
-import { styles as modelDropdownStyles } from "./ModelDropdown";
-import { createPortal } from "react-dom";
+import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronDown, Crown } from "lucide-react"
+import { IMAGE_GENERATION_MODELS } from "../constants"
+import { styles as modelDropdownStyles } from "./ModelDropdown"
+import { createPortal } from "react-dom"
 /**@typedef {import("@/types/llm").Model} Model */
 /**@typedef {import("@/types/llm").ImageGenerationSize} ImageGenerationSize */
 
@@ -19,17 +18,17 @@ import { createPortal } from "react-dom";
  * @returns {JSX.Element} The ModelDropdownImage component
  */
 const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
-  const [expandedModel, setExpandedModel] = useState(null);
-  const dropdownRef = useRef(null);
+  const [expandedModel, setExpandedModel] = useState(null)
+  const dropdownRef = useRef(null)
 
   const selectedModel = IMAGE_GENERATION_MODELS.find(
-    (model) => model.id === value.model,
-  );
+    (model) => model.id === value.model
+  )
 
   const handleClick = (e) => {
-    e.stopPropagation();
-    onOpenChange?.(!isOpen);
-  };
+    e.stopPropagation()
+    onOpenChange?.(!isOpen)
+  }
 
   /**
    * Handles the selection of a model and size option
@@ -37,32 +36,32 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
    * @param {ImageGenerationSize} size - The selected size option
    */
   const handleSelect = (model, size) => {
-    const modelOption = IMAGE_GENERATION_MODELS.find((m) => m.id === model);
-    if (modelOption.isMaintenance) return;
-    onChange(model, size);
-    onOpenChange?.(false);
-    setExpandedModel(null);
-  };
+    const modelOption = IMAGE_GENERATION_MODELS.find((m) => m.id === model)
+    if (modelOption.isMaintenance) return
+    onChange(model, size)
+    onOpenChange?.(false)
+    setExpandedModel(null)
+  }
 
   useEffect(() => {
     if (isOpen && dropdownRef.current) {
-      const dropdown = dropdownRef.current.querySelector(".model-dropdown");
+      const dropdown = dropdownRef.current.querySelector(".model-dropdown")
       if (dropdown) {
-        dropdown.style.position = "absolute";
-        dropdown.style.top = "100%";
-        dropdown.style.left = "0";
-        dropdown.style.width = "100%";
+        dropdown.style.position = "absolute"
+        dropdown.style.top = "100%"
+        dropdown.style.left = "0"
+        dropdown.style.width = "100%"
 
-        const dropdownRect = dropdown.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
+        const dropdownRect = dropdown.getBoundingClientRect()
+        const viewportHeight = window.innerHeight
 
         if (dropdownRect.bottom > viewportHeight) {
-          dropdown.style.top = "auto";
-          dropdown.style.bottom = "100%";
+          dropdown.style.top = "auto"
+          dropdown.style.bottom = "100%"
         }
       }
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   return (
     <div ref={dropdownRef} style={styles.container}>
@@ -77,7 +76,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
           <span style={styles.sizeIndicator}>{value.size.description}</span>
           {selectedModel?.minimumTier && (
             <span style={styles.premiumBadge}>
-              <FaCrown style={styles.crownIcon} />
+              <Crown style={styles.crownIcon} />
               Premium
             </span>
           )}
@@ -86,7 +85,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <MdExpandMore style={styles.expandIcon} />
+          <ChevronDown style={styles.expandIcon} />
         </motion.div>
       </motion.div>
 
@@ -116,8 +115,8 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                   }}
                   onClick={() => {
                     setExpandedModel(
-                      expandedModel === model.id ? null : model.id,
-                    );
+                      expandedModel === model.id ? null : model.id
+                    )
                   }}
                   whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 >
@@ -127,7 +126,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                       {model.minimumTier && (
                         <>
                           <span style={styles.premiumBadge}>
-                            <FaCrown style={styles.crownIcon} />
+                            <Crown style={styles.crownIcon} />
                             Premium
                           </span>
                         </>
@@ -138,7 +137,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                     animate={{ rotate: expandedModel === model.id ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <MdExpandMore style={styles.expandIcon} />
+                    <ChevronDown style={styles.expandIcon} />
                   </motion.div>
                 </motion.div>
 
@@ -175,11 +174,11 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
               </div>
             ))}
           </motion.div>,
-          document.body,
+          document.body
         )}
     </div>
-  );
-};
+  )
+}
 
 const styles = {
   ...modelDropdownStyles,
@@ -205,6 +204,6 @@ const styles = {
     cursor: "pointer",
     transition: "background-color 0.2s ease",
   },
-};
+}
 
-export default ModelDropdownImage;
+export default ModelDropdownImage

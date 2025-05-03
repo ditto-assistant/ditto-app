@@ -1,55 +1,45 @@
-import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
-import "@/styles/buttons.css";
+import React from "react"
+import { Button } from "@/components/ui/button"
+import { Loader } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-interface ModalButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "submit";
-  icon?: React.ReactNode;
-  isLoading?: boolean;
-  fullWidth?: boolean;
-  fixedWidth?: boolean;
-  size?: "small" | "default" | "large";
-  children?: React.ReactNode;
+interface ModalButtonProps extends React.ComponentProps<typeof Button> {
+  icon?: React.ReactNode
+  isLoading?: boolean
+  fullWidth?: boolean
+  fixedWidth?: boolean
+  children?: React.ReactNode
 }
 
 export const ModalButton: React.FC<ModalButtonProps> = ({
   children,
-  variant = "primary",
+  variant = "default",
   icon,
   isLoading,
   fullWidth,
   fixedWidth,
-  size,
+  size = "default",
   className = "",
   ...props
 }) => {
-  const buttonClasses = [
-    "ditto-button",
-    variant,
-    fullWidth ? "full-width" : "",
-    fixedWidth ? "fixed-width" : "",
-    size ? size : "",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   return (
-    <motion.button
-      className={buttonClasses}
-      whileHover={{ y: -2, boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)" }}
-      whileTap={{ scale: 0.98 }}
+    <Button
+      variant={variant}
+      size={size}
       disabled={isLoading || props.disabled}
+      className={cn(
+        fullWidth && "w-full",
+        fixedWidth && "min-w-[150px]",
+        className
+      )}
       {...props}
     >
       {isLoading ? (
-        <div className="spinner button" />
+        <Loader className="mr-2 h-4 w-4 animate-spin" />
       ) : (
-        <>
-          {icon && <span className="button-icon">{icon}</span>}
-          <span className="button-text">{children}</span>
-        </>
+        icon && icon
       )}
-    </motion.button>
-  );
-};
+      {children}
+    </Button>
+  )
+}

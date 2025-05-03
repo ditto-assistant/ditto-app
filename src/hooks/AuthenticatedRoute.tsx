@@ -1,22 +1,22 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import { useAuth } from "./useAuth";
+import { useEffect } from "react"
+import { useNavigate } from "react-router"
+import { useAuth } from "./useAuth"
 
 type AuthenticatedRouteProps = {
-  children: React.ReactNode;
-};
+  children: React.ReactNode
+}
 
 export default function AuthenticatedRoute({
   children,
 }: AuthenticatedRouteProps) {
-  const { user, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { user, isLoading } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      navigate("/login");
+      navigate("/login")
     }
-  }, [isLoading, user, navigate]);
+  }, [isLoading, user, navigate])
 
-  return children;
+  return children
 }

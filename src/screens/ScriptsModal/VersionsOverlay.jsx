@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { FaCodeBranch, FaTrash } from "react-icons/fa";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { motion } from "framer-motion"
+import { Code, Trash } from "lucide-react"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 
 const VersionsOverlay = ({
   isOpen,
@@ -10,30 +10,30 @@ const VersionsOverlay = ({
   versions,
   category,
 }) => {
-  const { showConfirmationDialog } = useConfirmationDialog();
+  const { showConfirmationDialog } = useConfirmationDialog()
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   // Sort versions: latest first, then descending order
   const sortedVersions = [...versions].sort((a, b) => {
-    const aMatch = a.name.match(/-v(\d+)$/);
-    const bMatch = b.name.match(/-v(\d+)$/);
+    const aMatch = a.name.match(/-v(\d+)$/)
+    const bMatch = b.name.match(/-v(\d+)$/)
 
     // If neither has a version number (latest), maintain current order
-    if (!aMatch && !bMatch) return 0;
+    if (!aMatch && !bMatch) return 0
 
     // If one doesn't have a version number, it's latest and should be first
-    if (!aMatch) return -1;
-    if (!bMatch) return 1;
+    if (!aMatch) return -1
+    if (!bMatch) return 1
 
     // Otherwise sort by version number in descending order
-    return parseInt(bMatch[1]) - parseInt(aMatch[1]);
-  });
+    return parseInt(bMatch[1]) - parseInt(aMatch[1])
+  })
 
   const handleModalClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   const handleDelete = (script) => {
     showConfirmationDialog({
@@ -42,12 +42,12 @@ const VersionsOverlay = ({
       confirmLabel: "Delete",
       variant: "danger",
       onConfirm: () => onDelete(category, script),
-    });
-  };
+    })
+  }
 
   const handleOverlayClick = () => {
-    onClose();
-  };
+    onClose()
+  }
 
   return (
     <motion.div
@@ -65,7 +65,7 @@ const VersionsOverlay = ({
         onClick={handleModalClick}
         onMouseDown={handleModalClick}
       >
-        <FaCodeBranch style={styles.icon} />
+        <Code style={styles.icon} />
         <h3 style={styles.title}>Script Versions</h3>
         <div
           style={styles.versionsContainer}
@@ -73,10 +73,10 @@ const VersionsOverlay = ({
           onMouseDown={handleModalClick}
         >
           {sortedVersions.map((script, index) => {
-            const versionMatch = script.name.match(/-v(\d+)$/);
-            const version = versionMatch ? versionMatch[1] : null;
-            const baseName = script.name.replace(/-v\d+$/, "");
-            const isLatest = !version;
+            const versionMatch = script.name.match(/-v(\d+)$/)
+            const version = versionMatch ? versionMatch[1] : null
+            const baseName = script.name.replace(/-v\d+$/, "")
+            const isLatest = !version
 
             return (
               <motion.div
@@ -84,13 +84,13 @@ const VersionsOverlay = ({
                 style={styles.versionItem}
                 whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onSelect(script);
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onSelect(script)
                 }}
                 onMouseDown={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  e.preventDefault()
+                  e.stopPropagation()
                 }}
               >
                 <span style={styles.versionName}>{baseName}</span>
@@ -100,19 +100,19 @@ const VersionsOverlay = ({
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDelete(script);
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleDelete(script)
                   }}
                   onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }}
                 >
-                  <FaTrash style={styles.deleteIcon} />
+                  <Trash style={styles.deleteIcon} />
                 </motion.div>
               </motion.div>
-            );
+            )
           })}
         </div>
         <motion.button
@@ -120,21 +120,21 @@ const VersionsOverlay = ({
           whileTap={{ scale: 0.95 }}
           style={styles.cancelButton}
           onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose();
+            e.preventDefault()
+            e.stopPropagation()
+            onClose()
           }}
           onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault()
+            e.stopPropagation()
           }}
         >
           Cancel
         </motion.button>
       </motion.div>
     </motion.div>
-  );
-};
+  )
+}
 
 const styles = {
   overlay: {
@@ -144,7 +144,7 @@ const styles = {
     right: 0,
     bottom: 0,
     width: "100vw",
-    height: "100vh",
+    height: "100svh",
     backgroundColor: "rgba(0, 0, 0, 0.85)",
     backdropFilter: "blur(4px)",
     display: "flex",
@@ -243,6 +243,6 @@ const styles = {
     marginTop: "8px",
     width: "100%",
   },
-};
+}
 
-export default VersionsOverlay;
+export default VersionsOverlay

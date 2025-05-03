@@ -1,4 +1,4 @@
-import "../../../styles/animations.css";
+import "../../../styles/animations.css"
 
 export default function FullScreenSpinner({ text }: { text?: string }) {
   return (
@@ -6,17 +6,17 @@ export default function FullScreenSpinner({ text }: { text?: string }) {
       <LoadingSpinner size={100} />
       {text && <div className="loading-spinner-text">{text}</div>}
     </div>
-  );
+  )
 }
 
 export function LoadingSpinner({
   size = 50,
   inline = false,
 }: {
-  size?: number;
-  inline?: boolean;
+  size?: number
+  inline?: boolean
 }) {
-  const containerClassName = `loading-spinner-container ${inline ? "inline" : "fullscreen"}`;
+  const containerClassName = `loading-spinner-container ${inline ? "inline" : "fullscreen"}`
 
   return (
     <div
@@ -31,5 +31,5 @@ export function LoadingSpinner({
         <div key={i} className="spinner-ring" />
       ))}
     </div>
-  );
+  )
 }

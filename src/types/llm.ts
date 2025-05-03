@@ -1,14 +1,15 @@
 export type ModelPreferences = {
-  mainModel: Model;
-  programmerModel: Model;
+  mainModel: Model
+  programmerModel: Model
   imageGeneration: {
-    model: Model;
-    size: ImageGenerationSize;
-  };
-  tools: ToolPreferences;
-  memory: MemoryPreferences;
-};
+    model: Model
+    size: { wh: string }
+  }
+  tools: ToolPreferences
+  memory: MemoryPreferences
+}
 
+// TODO: use services.ts and useServices hook to check if the model supports image attachments
 export function modelSupportsImageAttachments(model: Model): boolean {
   return (
     model === "gemini-1.5-pro" ||
@@ -20,11 +21,14 @@ export function modelSupportsImageAttachments(model: Model): boolean {
     model === "claude-3-5-sonnet-v2" ||
     model === "claude-3-5-sonnet-v2@20241022" ||
     model === "meta/llama-3.3-70b-instruct-maas" ||
+    model === "meta/llama-4-scout-17b-16e-instruct-maas" ||
+    model === "meta/llama-4-maverick-17b-128e-instruct-maas" ||
     model === "gpt-4o" ||
     model === "gpt-4o-2024-11-20" ||
     model === "gpt-4o-mini" ||
-    model === "gpt-4o-mini-2024-07-18"
-  );
+    model === "gpt-4o-mini-2024-07-18" ||
+    model === "mistral-small"
+  )
 }
 
 export type Model =
@@ -40,6 +44,7 @@ export type Model =
   | "claude-3-5-sonnet-v2@20241022"
   | "mistral-nemo"
   | "mistral-large"
+  | "mistral-small"
   | "meta/llama-3.3-70b-instruct-maas"
   | "dall-e-2"
   | "dall-e-3"
@@ -53,7 +58,9 @@ export type Model =
   | "o1-mini"
   | "o1-mini-2024-09-12"
   | "llama3.1-8b"
-  | "llama-3.3-70b";
+  | "llama-3.3-70b"
+  | "meta/llama-4-scout-17b-16e-instruct-maas"
+  | "meta/llama-4-maverick-17b-128e-instruct-maas"
 
 export type Vendor =
   | "openai"
@@ -61,44 +68,44 @@ export type Vendor =
   | "google"
   | "mistral"
   | "meta"
-  | "cerebras";
+  | "cerebras"
 
 export type ImageGenerationSize = {
-  wh: string;
-  description: string;
-  supportedModels: Model[];
-};
+  wh: string
+  description: string
+  supportedModels: Model[]
+}
 
 export type ModelOption = {
-  id: Model;
-  name: string;
-  minimumTier?: number;
-  isMaintenance?: boolean;
-  isTaggedModel?: boolean;
-  sizeOptions?: ImageGenerationSize[];
-  vendor?: Vendor;
+  id: Model
+  name: string
+  minimumTier?: number
+  isMaintenance?: boolean
+  isTaggedModel?: boolean
+  sizeOptions?: ImageGenerationSize[]
+  vendor?: Vendor
   supports?: {
-    imageAttachments?: "single" | "multiple";
-    imageGeneration?: boolean;
-    tools?: boolean;
-  };
-  speedLevel?: "slow" | "medium" | "fast" | "insane";
-};
+    imageAttachments?: "single" | "multiple"
+    imageGeneration?: boolean
+    tools?: boolean
+  }
+  speedLevel?: "slow" | "medium" | "fast" | "insane"
+}
 
 export type Tool = {
-  id: keyof ToolPreferences;
-  name: string;
-  description: string;
-  trigger: string;
-};
+  id: keyof ToolPreferences
+  name: string
+  description: string
+  trigger: string
+}
 
 export type ToolPreferences = {
-  htmlScript: boolean;
-  imageGeneration: boolean;
-  googleSearch: boolean;
-};
+  htmlScript: boolean
+  imageGeneration: boolean
+  googleSearch: boolean
+}
 
 export type MemoryPreferences = {
-  shortTermMemoryCount: number;
-  longTermMemoryChain: number[];
-};
+  shortTermMemoryCount: number
+  longTermMemoryChain: number[]
+}

@@ -1,4 +1,4 @@
-import { VersionSection, Section } from "./VersionTemplate";
+import { VersionSection, Section } from "./VersionTemplate"
 
 const sections: Section[] = [
   {
@@ -12,7 +12,7 @@ const sections: Section[] = [
       },
     ],
   },
-];
+]
 
 const V0_11_66 = () => (
   <div>
@@ -20,6 +20,6 @@ const V0_11_66 = () => (
       <VersionSection key={index} {...section} />
     ))}
   </div>
-);
+)
 
-export default V0_11_66;
+export default V0_11_66

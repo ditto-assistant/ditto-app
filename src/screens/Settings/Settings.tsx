@@ -1,59 +1,64 @@
-import { deleteUser, getAuth } from "firebase/auth";
+import { deleteUser, getAuth } from "firebase/auth"
 import {
   removeUserFromFirestore,
   deleteAllUserScriptsFromFirestore,
-} from "@/control/firebase";
-import packageJson from "../../../package.json";
-import { useAuth } from "@/hooks/useAuth";
-import { clearStorage } from "@/utils/deviceId";
-import Modal, { ModalTab } from "@/components/ui/modals/Modal";
-import { useModal } from "@/hooks/useModal";
-import { ModalButton } from "@/components/ui/buttons/ModalButton";
-import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton";
-import { FaCreditCard } from "react-icons/fa";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
-import "./Settings.css";
-import toast from "react-hot-toast";
-import { useMemo } from "react";
-import ModelPreferencesModal from "@/screens/Settings/ModelPreferencesModal";
-import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal";
-import AgentToolsModal from "@/screens/Settings/AgentToolsModal";
-import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent";
-import { BiMemoryCard } from "react-icons/bi";
-import { MdSettings } from "react-icons/md";
-import { FaTools, FaCrown, FaSkull } from "react-icons/fa";
+} from "@/control/firebase"
+import packageJson from "../../../package.json"
+import { useAuth } from "@/hooks/useAuth"
+import { clearStorage } from "@/utils/deviceId"
+import Modal, { ModalTab } from "@/components/ui/modals/Modal"
+import { useModal } from "@/hooks/useModal"
+import { ModalButton } from "@/components/ui/buttons/ModalButton"
+import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
+import { toast } from "sonner"
+import { useMemo } from "react"
+import { useFontSize } from "@/hooks/useFontSize"
+import ModelPreferencesModal from "@/components/model-preferences/ModelPreferencesModal"
+import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
+import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
+import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
+import {
+  MemoryStick,
+  Settings as SettingsIcon,
+  Wrench,
+  Crown,
+  Skull,
+} from "lucide-react"
 
 export default function Settings() {
-  const { signOut, user } = useAuth();
-  const auth = getAuth();
-  const { createCloseHandler, createOpenHandler } = useModal();
-  const { showConfirmationDialog } = useConfirmationDialog();
-  const openTokenModal = createOpenHandler("tokenCheckout");
-  const closeModal = createCloseHandler("settings");
+  const { signOut, user } = useAuth()
+  const auth = getAuth()
+  const { createCloseHandler } = useModal()
+  const { showConfirmationDialog } = useConfirmationDialog()
+  const closeModal = createCloseHandler("settings")
+  const { fontSize, setFontSize } = useFontSize()
 
   // Memoize the modal components
-  const modelPreferences = useMemo(() => <ModelPreferencesModal />, []);
-  const memoryControls = useMemo(() => <MemoryControlsModal />, []);
-  const agentTools = useMemo(() => <AgentToolsModal />, []);
-  const subscriptionContent = useMemo(() => <SubscriptionTabContent />, []);
+  const modelPreferences = useMemo(() => <ModelPreferencesModal />, [])
+  const memoryControls = useMemo(() => <MemoryControlsModal />, [])
+  const agentTools = useMemo(() => <AgentToolsModal />, [])
+  const subscriptionContent = useMemo(() => <SubscriptionTabContent />, [])
 
   const handleLogout = () => {
-    console.log("logging out");
-    const hasSeenTOS = localStorage.getItem("hasSeenTOS");
-    localStorage.clear();
+    console.log("logging out")
+    const hasSeenTOS = localStorage.getItem("hasSeenTOS")
+    localStorage.clear()
     if (hasSeenTOS) {
-      localStorage.setItem("hasSeenTOS", hasSeenTOS);
+      localStorage.setItem("hasSeenTOS", hasSeenTOS)
     }
-    signOut();
-    closeModal();
-  };
+    signOut()
+    closeModal()
+  }
 
   const handleDeleteAccount = async () => {
     if (!user) {
-      console.error("No user currently signed in");
-      alert("You are not currently signed in. Please sign in and try again.");
-      handleLogout();
-      return;
+      console.error("No user currently signed in")
+      toast.error(
+        "You are not currently signed in. Please sign in and try again."
+      )
+      handleLogout()
+      return
     }
 
     const openReauthenticationDialog = () =>
@@ -64,47 +69,47 @@ export default function Settings() {
         confirmLabel: "Sign Out",
         cancelLabel: "Cancel",
         onConfirm: handleLogout,
-        variant: "primary",
-      });
+        variant: "default",
+      })
 
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = auth.currentUser
       if (!currentUser) {
-        throw new Error("Firebase auth user not found");
+        throw new Error("Firebase auth user not found")
       }
 
-      const metadata = currentUser.metadata;
+      const metadata = currentUser.metadata
       // Handle case where lastSignInTime might be undefined
       const lastSignInTime = metadata.lastSignInTime
         ? new Date(metadata.lastSignInTime).getTime()
-        : 0;
-      const now = new Date().getTime();
-      const fiveMinutes = 5 * 60 * 1000;
+        : 0
+      const now = new Date().getTime()
+      const fiveMinutes = 5 * 60 * 1000
 
       if (now - lastSignInTime > fiveMinutes) {
-        openReauthenticationDialog();
-        return;
+        openReauthenticationDialog()
+        return
       }
 
-      await deleteUser(currentUser);
-      console.log("Account deleted");
-      await removeUserFromFirestore(currentUser.uid);
-      await deleteAllUserScriptsFromFirestore(currentUser.uid);
-      clearStorage();
-      closeModal();
+      await deleteUser(currentUser)
+      console.log("Account deleted")
+      await removeUserFromFirestore(currentUser.uid)
+      await deleteAllUserScriptsFromFirestore(currentUser.uid)
+      clearStorage()
+      closeModal()
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error("Error deleting account: ", error);
+        console.error("Error deleting account: ", error)
         if (error.message === "auth/requires-recent-login") {
-          openReauthenticationDialog();
+          openReauthenticationDialog()
         } else {
-          toast.error(`Error deleting account: ${error.message}`);
+          toast.error(`Error deleting account: ${error.message}`)
         }
       } else {
-        console.error("Error deleting account: ", error);
+        console.error("Error deleting account: ", error)
       }
     }
-  };
+  }
 
   const openDeleteDialog = () => {
     showConfirmationDialog({
@@ -114,68 +119,66 @@ export default function Settings() {
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       onConfirm: handleDeleteAccount,
-      variant: "danger",
-    });
-  };
+      variant: "destructive",
+    })
+  }
 
   // Create the combined general and subscription tab content
   const generalTabContent = (
-    <div className="settings-content">
+    <div className="p-4 flex flex-col gap-6 h-full">
       {/* Subscription Section */}
-      <div className="subscription-section">{subscriptionContent}</div>
+      <div className="flex-1">{subscriptionContent}</div>
 
-      <div className="settings-divider"></div>
-
-      {/* Account Section */}
-      <div className="account-section">
-        <h3 className="settings-section-title">Account</h3>
-        <div className="settings-options">
-          <div className="settings-buttons-row">
-            <ModalButton
-              variant="primary"
-              onClick={() => {
-                closeModal();
-                openTokenModal();
-              }}
-              fixedWidth
-              icon={<FaCreditCard />}
+      {/* Font Size Setting */}
+      <div className="border-t pt-4">
+        <h3 className="font-medium mb-2">Font Size</h3>
+        <div className="flex gap-2">
+          {["small", "medium", "large"].map((size) => (
+            <button
+              key={size}
+              onClick={() => setFontSize(size as "small" | "medium" | "large")}
+              className={`px-3 py-1.5 rounded-md text-sm ${
+                fontSize === size
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary hover:bg-secondary/80"
+              }`}
             >
-              BUY TOKENS
-            </ModalButton>
-
-            <ModalButton variant="secondary" onClick={handleLogout} fixedWidth>
-              LOG OUT
-            </ModalButton>
-          </div>
+              {size.charAt(0).toUpperCase() + size.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
 
-      <footer className="settings-footer">
-        <div className="version-container">
-          <small>Version: {packageJson.version}</small>
+      <div className="border-t my-2"></div>
+
+      <footer className="mt-auto pt-4">
+        <div className="text-muted-foreground text-sm text-center">
+          Version: {packageJson.version}
         </div>
       </footer>
     </div>
-  );
+  )
 
   // Create the tab content for the danger zone
   const dangerTabContent = (
-    <div className="danger-content">
-      <div className="danger-description">
+    <div className="p-4 space-y-6">
+      <div className="bg-destructive/10 p-4 rounded-md text-sm text-destructive">
         <p>
           Warning: Actions in this section can result in irreversible data loss.
         </p>
       </div>
-      <div className="danger-buttons">
-        <ModalButton variant="danger" onClick={openDeleteDialog} fixedWidth>
+      <div className="flex flex-col gap-4">
+        <ModalButton
+          variant="destructive"
+          onClick={openDeleteDialog}
+          fixedWidth
+        >
           DELETE ACCOUNT
         </ModalButton>
-        <div className="memory-manager-container">
-          <DeleteMemoryButton onSuccess={closeModal} fixedWidth />
-        </div>
+        <DeleteMemoryButton onSuccess={closeModal} fixedWidth />
       </div>
     </div>
-  );
+  )
 
   // Define the tabs with icons
   const modalTabs: ModalTab[] = [
@@ -183,37 +186,36 @@ export default function Settings() {
       id: "general",
       label: "Account",
       content: generalTabContent,
-      icon: <FaCrown />,
+      icon: <Crown className="h-4 w-4" />,
     },
     {
       id: "models",
       label: "Models",
       content: modelPreferences,
-      minimumTier: 1,
-      icon: <MdSettings />,
+      icon: <SettingsIcon className="h-4 w-4" />,
     },
     {
       id: "memory",
       label: "Memory",
       content: memoryControls,
       minimumTier: 1,
-      icon: <BiMemoryCard />,
+      icon: <MemoryStick className="h-4 w-4" />,
     },
     {
       id: "tools",
       label: "Tools",
       content: agentTools,
       minimumTier: 1,
-      icon: <FaTools />,
+      icon: <Wrench className="h-4 w-4" />,
     },
     {
       id: "danger",
       label: "Danger Zone",
       content: dangerTabContent,
       customClass: "danger",
-      icon: <FaSkull />,
+      icon: <Skull className="h-4 w-4" />,
     },
-  ];
+  ]
 
   return (
     <Modal
@@ -221,8 +223,7 @@ export default function Settings() {
       title="Settings"
       tabs={modalTabs}
       defaultTabId="general"
-    >
-      {/* Footer will be conditionally rendered in each tab's content */}
-    </Modal>
-  );
+      notResizable={false}
+    />
+  )
 }

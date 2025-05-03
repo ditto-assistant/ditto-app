@@ -1,32 +1,32 @@
-import { useEffect, useRef, useState } from "react";
-import { Network } from "vis-network";
-import { DataSet } from "vis-data";
-import AceEditor from "react-ace";
-import ace from "ace-builds";
-import "ace-builds/src-min-noconflict/ace";
-import "ace-builds/src-min-noconflict/mode-html";
-import "ace-builds/src-min-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-tomorrow_night";
-import "ace-builds/src-min-noconflict/ext-language_tools";
-import "ace-builds/src-min-noconflict/ext-searchbox";
-import { motion, AnimatePresence } from "framer-motion";
-import { IconButton } from "@mui/material";
-import { FaTimes, FaCheck, FaComments, FaAlignLeft } from "react-icons/fa";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
+import { useEffect, useRef, useState } from "react"
+import { Network } from "vis-network"
+import { DataSet } from "vis-data"
+import AceEditor from "react-ace"
+import ace from "ace-builds"
+import "ace-builds/src-min-noconflict/ace"
+import "ace-builds/src-min-noconflict/mode-html"
+import "ace-builds/src-min-noconflict/mode-javascript"
+import "ace-builds/src-noconflict/theme-tomorrow_night"
+import "ace-builds/src-min-noconflict/ext-language_tools"
+import "ace-builds/src-min-noconflict/ext-searchbox"
+import { motion, AnimatePresence } from "framer-motion"
+import { IconButton } from "@mui/material"
+import { X, Check, MessageCircle, AlignLeft } from "lucide-react"
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
 
 if (import.meta.env.PROD) {
   ace.config.set(
     "basePath",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/",
-  );
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/"
+  )
   ace.config.setModuleUrl(
     "ace/mode/html_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js",
-  );
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-html.js"
+  )
   ace.config.setModuleUrl(
     "ace/mode/javascript_worker",
-    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js",
-  );
+    "https://cdn.jsdelivr.net/npm/ace-builds@1.15.3/src-min-noconflict/worker-javascript.js"
+  )
 }
 
 const darkModeColors = {
@@ -37,7 +37,7 @@ const darkModeColors = {
   text: "#FFFFFF",
   textSecondary: "#B5BAC1",
   border: "#1E1F22",
-};
+}
 
 const NodeEditor = ({
   node,
@@ -46,24 +46,24 @@ const NodeEditor = ({
   setShowScriptChat,
   setSelectedCodeAttachment,
 }) => {
-  const [code, setCode] = useState(node.outerHTML);
-  const [wrapEnabled, setWrapEnabled] = useState(true);
+  const [code, setCode] = useState(node.outerHTML)
+  const [wrapEnabled, setWrapEnabled] = useState(true)
 
   const handleSave = () => {
     if (code !== node.outerHTML) {
-      onSave(node, code);
+      onSave(node, code)
     }
-    onClose();
-  };
+    onClose()
+  }
 
   const handleChatClick = () => {
     // Set the selected node's code as the code attachment
-    setSelectedCodeAttachment(node.outerHTML);
+    setSelectedCodeAttachment(node.outerHTML)
     // Open the script chat
-    setShowScriptChat(true);
+    setShowScriptChat(true)
     // Close the node editor overlay
-    onClose();
-  };
+    onClose()
+  }
 
   return (
     <motion.div style={styles.nodeEditor}>
@@ -77,7 +77,7 @@ const NodeEditor = ({
             onClick={() => setWrapEnabled((prev) => !prev)}
             style={styles.nodeEditorButton}
           >
-            <FaAlignLeft
+            <AlignLeft
               size={16}
               color={
                 wrapEnabled
@@ -91,21 +91,21 @@ const NodeEditor = ({
             onClick={handleChatClick}
             style={styles.nodeEditorButton}
           >
-            <FaComments size={16} color={darkModeColors.textSecondary} />
+            <MessageCircle size={16} color={darkModeColors.textSecondary} />
           </IconButton>
           <IconButton
             size="small"
             onClick={handleSave}
             style={styles.nodeEditorButton}
           >
-            <FaCheck size={16} color={darkModeColors.primary} />
+            <Check size={16} color={darkModeColors.primary} />
           </IconButton>
           <IconButton
             size="small"
             onClick={onClose}
             style={styles.nodeEditorButton}
           >
-            <FaTimes size={16} color={darkModeColors.textSecondary} />
+            <X size={16} color={darkModeColors.textSecondary} />
           </IconButton>
         </div>
       </div>
@@ -114,7 +114,7 @@ const NodeEditor = ({
           mode="html"
           theme="tomorrow_night"
           onChange={(newCode) => {
-            setCode(newCode);
+            setCode(newCode)
           }}
           value={code}
           name="node-editor"
@@ -142,8 +142,8 @@ const NodeEditor = ({
         />
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
 const DOMTreeViewer = ({
   htmlContent,
@@ -151,41 +151,41 @@ const DOMTreeViewer = ({
   setShowScriptChat,
   setSelectedCodeAttachment,
 }) => {
-  const containerRef = useRef(null);
-  const networkRef = useRef(null);
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const stabilizationTimeout = useRef(null);
+  const containerRef = useRef(null)
+  const networkRef = useRef(null)
+  const [selectedNode, setSelectedNode] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const stabilizationTimeout = useRef(null)
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) return
 
-    setIsLoading(true);
+    setIsLoading(true)
 
-    const nodes = new DataSet();
-    const edges = new DataSet();
-    let nodeId = 1;
+    const nodes = new DataSet()
+    const edges = new DataSet()
+    let nodeId = 1
 
     const parseHTMLtoTree = (html) => {
-      nodes.clear();
-      edges.clear();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+      nodes.clear()
+      edges.clear()
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, "text/html")
 
       const traverse = (node, parentId) => {
-        if (node.nodeType !== 1) return;
+        if (node.nodeType !== 1) return
 
-        const currentId = nodeId++;
+        const currentId = nodeId++
 
         // Get tag name and class names
-        const tagName = node.nodeName.toLowerCase();
+        const tagName = node.nodeName.toLowerCase()
         const className =
           node.className && typeof node.className === "string"
             ? `.${node.className.trim().replace(/\s+/g, ".")}`
-            : "";
+            : ""
 
         // Create label with tag name and class names
-        const label = `${tagName}${className}`;
+        const label = `${tagName}${className}`
 
         // Assign color based on tag name
         const tagColors = {
@@ -198,8 +198,8 @@ const DOMTreeViewer = ({
           li: "#16A085", // Dark Teal
           // Add more tag colors as needed
           default: darkModeColors.primary, // Fallback color
-        };
-        const nodeColor = tagColors[tagName] || tagColors.default;
+        }
+        const nodeColor = tagColors[tagName] || tagColors.default
 
         nodes.add({
           id: currentId,
@@ -217,7 +217,7 @@ const DOMTreeViewer = ({
             color: darkModeColors.text,
             face: "Inter, system-ui, sans-serif",
           },
-        });
+        })
 
         if (parentId !== null) {
           edges.add({
@@ -227,20 +227,20 @@ const DOMTreeViewer = ({
               color: darkModeColors.textSecondary,
               highlight: darkModeColors.text,
             },
-          });
+          })
         }
 
         node.childNodes.forEach((child) => {
           if (child.nodeType === 1) {
-            traverse(child, currentId);
+            traverse(child, currentId)
           }
-        });
-      };
+        })
+      }
 
-      traverse(doc.body, null);
-    };
+      traverse(doc.body, null)
+    }
 
-    parseHTMLtoTree(htmlContent);
+    parseHTMLtoTree(htmlContent)
 
     const options = {
       nodes: {
@@ -305,41 +305,41 @@ const DOMTreeViewer = ({
         navigationButtons: false,
         tooltipDelay: 0,
       },
-    };
+    }
 
     networkRef.current = new Network(
       containerRef.current,
       { nodes, edges },
-      options,
-    );
+      options
+    )
 
     networkRef.current.on("click", (params) => {
       if (params.nodes.length > 0) {
-        const clickedNode = nodes.get(params.nodes[0]);
-        setSelectedNode(clickedNode.refNode);
+        const clickedNode = nodes.get(params.nodes[0])
+        setSelectedNode(clickedNode.refNode)
       }
-    });
+    })
 
-    let isDragging = false;
-    let draggedNode = null;
+    let isDragging = false
+    let draggedNode = null
 
     networkRef.current.on("dragStart", (params) => {
       if (params.nodes.length > 0) {
-        isDragging = true;
-        draggedNode = params.nodes[0];
+        isDragging = true
+        draggedNode = params.nodes[0]
       }
-    });
+    })
 
     networkRef.current.on("dragEnd", () => {
       if (isDragging && draggedNode) {
         const position = networkRef.current.getPositions([draggedNode])[
           draggedNode
-        ];
+        ]
 
         const velocity = {
           x: (Math.random() - 0.5) * 30,
           y: (Math.random() - 0.5) * 30,
-        };
+        }
 
         networkRef.current.body.data.nodes.update([
           {
@@ -349,105 +349,105 @@ const DOMTreeViewer = ({
             vx: velocity.x,
             vy: velocity.y,
           },
-        ]);
+        ])
 
-        isDragging = false;
-        draggedNode = null;
+        isDragging = false
+        draggedNode = null
       }
-    });
+    })
 
     const preventDefaultTouch = (e) => {
       if (e.target.closest(".vis-network")) {
-        e.stopPropagation();
+        e.stopPropagation()
       } else {
-        e.preventDefault();
+        e.preventDefault()
       }
-    };
+    }
 
     document.addEventListener("touchmove", preventDefaultTouch, {
       passive: false,
-    });
+    })
 
     networkRef.current.on("stabilizationProgress", function () {
-      setIsLoading(true);
+      setIsLoading(true)
       if (stabilizationTimeout.current) {
-        clearTimeout(stabilizationTimeout.current);
+        clearTimeout(stabilizationTimeout.current)
       }
-    });
+    })
 
     networkRef.current.on("stabilizationIterationsDone", function () {
       stabilizationTimeout.current = setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-    });
+        setIsLoading(false)
+      }, 500)
+    })
 
     stabilizationTimeout.current = setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+      setIsLoading(false)
+    }, 3000)
 
     return () => {
       if (networkRef.current) {
-        networkRef.current.destroy();
+        networkRef.current.destroy()
       }
       if (stabilizationTimeout.current) {
-        clearTimeout(stabilizationTimeout.current);
+        clearTimeout(stabilizationTimeout.current)
       }
-      document.removeEventListener("touchmove", preventDefaultTouch);
-    };
-  }, [htmlContent]);
+      document.removeEventListener("touchmove", preventDefaultTouch)
+    }
+  }, [htmlContent])
 
   const handleNodeUpdate = (node, newCode) => {
     try {
       // Create a temporary container to parse the new code
-      const parser = new DOMParser();
-      const tempDoc = parser.parseFromString(htmlContent, "text/html");
+      const parser = new DOMParser()
+      const tempDoc = parser.parseFromString(htmlContent, "text/html")
 
       // Find the corresponding node in the current document
-      const nodeToUpdate = findCorrespondingNode(tempDoc, node);
+      const nodeToUpdate = findCorrespondingNode(tempDoc, node)
 
       if (nodeToUpdate) {
         // Create a temporary element to hold the new code
-        const tempContainer = document.createElement("div");
-        tempContainer.innerHTML = newCode;
+        const tempContainer = document.createElement("div")
+        tempContainer.innerHTML = newCode
 
         // Replace the old node with the new content
         nodeToUpdate.parentNode.replaceChild(
           tempContainer.firstChild,
-          nodeToUpdate,
-        );
+          nodeToUpdate
+        )
 
         // Get the updated HTML content
-        const updatedHTML = tempDoc.documentElement.outerHTML;
+        const updatedHTML = tempDoc.documentElement.outerHTML
 
         // Call the onNodeUpdate callback with the updated HTML
         if (onNodeUpdate) {
-          onNodeUpdate(node, updatedHTML);
+          onNodeUpdate(node, updatedHTML)
         }
       }
     } catch (error) {
-      console.error("Error updating node:", error);
+      console.error("Error updating node:", error)
     }
-    setSelectedNode(null);
-  };
+    setSelectedNode(null)
+  }
 
   const findCorrespondingNode = (doc, targetNode) => {
     const findNode = (node) => {
       if (node.nodeName === targetNode.nodeName) {
         // Compare innerHTML or other attributes to ensure it's the right node
         if (node.innerHTML === targetNode.innerHTML) {
-          return node;
+          return node
         }
       }
 
       for (let child of node.childNodes) {
-        const result = findNode(child);
-        if (result) return result;
+        const result = findNode(child)
+        if (result) return result
       }
-      return null;
-    };
+      return null
+    }
 
-    return findNode(doc.documentElement);
-  };
+    return findNode(doc.documentElement)
+  }
 
   return (
     <div style={styles.container}>
@@ -493,8 +493,8 @@ const DOMTreeViewer = ({
         )}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}
 
 const styles = {
   container: {
@@ -518,7 +518,7 @@ const styles = {
     top: 0,
     left: 0,
     width: "100vw",
-    height: "100vh",
+    height: "100svh",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     backdropFilter: "blur(4px)",
     WebkitBackdropFilter: "blur(4px)",
@@ -613,6 +613,6 @@ const styles = {
     fontSize: "14px",
     fontWeight: 500,
   },
-};
+}
 
-export default DOMTreeViewer;
+export default DOMTreeViewer

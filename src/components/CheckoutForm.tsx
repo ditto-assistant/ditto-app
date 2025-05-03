@@ -1,14 +1,14 @@
-import { useAuth, useAuthToken } from "@/hooks/useAuth";
-import { routes } from "../firebaseConfig";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import { Button } from "@mui/material";
-import { JSX } from "react";
-import "./CheckoutForm.css";
+import { useAuth, useAuthToken } from "@/hooks/useAuth"
+import { routes } from "../firebaseConfig"
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { Button } from "@/components/ui/button"
+import { JSX } from "react"
+import "./CheckoutForm.css"
 
 interface CheckoutFormProps {
-  usd: number;
-  successURL: string;
-  cancelURL: string;
+  usd: number
+  successURL: string
+  cancelURL: string
 }
 
 export function CheckoutForm({
@@ -16,22 +16,22 @@ export function CheckoutForm({
   successURL,
   cancelURL,
 }: CheckoutFormProps): JSX.Element {
-  const auth = useAuth();
-  const token = useAuthToken();
+  const auth = useAuth()
+  const token = useAuthToken()
   if (auth.isLoading || token.isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner />
   }
   if (auth.error) {
-    return <div>Auth Error: {auth.error.message}</div>;
+    return <div>Auth Error: {auth.error.message}</div>
   }
   if (token.error) {
-    return <div>Token Error: {token.error.message}</div>;
+    return <div>Token Error: {token.error.message}</div>
   }
   if (!auth.user) {
-    return <div>User not found</div>;
+    return <div>User not found</div>
   }
   if (!auth.user.email) {
-    return <div>Email not found</div>;
+    return <div>Email not found</div>
   }
 
   return (
@@ -51,9 +51,9 @@ export function CheckoutForm({
         name="authorization"
         value={`Bearer ${token.data}`}
       />
-      <Button type="submit" variant="contained" className="purchase-button">
+      <Button type="submit" variant="default" className="purchase-button">
         Purchase Tokens
       </Button>
     </form>
-  );
+  )
 }

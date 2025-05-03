@@ -1,18 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import "./ChatFeed.css";
-import { FaChevronDown } from "react-icons/fa";
-import { useMemoryDeletion } from "../hooks/useMemoryDeletion";
-import { toast } from "react-hot-toast";
-import { useMemoryNetwork } from "@/hooks/useMemoryNetwork";
-import { useConversationHistory } from "@/hooks/useConversationHistory";
-import { usePlatform } from "@/hooks/usePlatform";
-import ChatMessage from "./ChatMessage";
-
-const triggerHapticFeedback = () => {
-  if (navigator.vibrate) {
-    navigator.vibrate(10);
-  }
-};
+import { useEffect, useRef, useState, forwardRef } from "react"
+import "./ChatFeed.css"
+import { ChevronDown } from "lucide-react"
+import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
+import { toast } from "sonner"
+import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
+import { useConversationHistory } from "@/hooks/useConversationHistory"
+import { usePlatform } from "@/hooks/usePlatform"
+import ChatMessage from "./ChatMessage"
 
 const CustomScrollToBottom = ({
   children,
@@ -25,205 +19,205 @@ const CustomScrollToBottom = ({
   detectScrollToTop = () => {},
   onScrollToTopRef,
 }) => {
-  const scrollContainerRef = useRef(null);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
-  const isInitialScrollRef = useRef(true);
-  const prevScrollTopRef = useRef(0);
-  const scrollHeightRef = useRef(0);
+  const scrollContainerRef = useRef(null)
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
+  const isInitialScrollRef = useRef(true)
+  const prevScrollTopRef = useRef(0)
+  const scrollHeightRef = useRef(0)
 
   const scrollToBottom = (behavior = "smooth") => {
-    if (!scrollContainerRef.current) return;
+    if (!scrollContainerRef.current) return
 
-    const scrollContainer = scrollContainerRef.current;
+    const scrollContainer = scrollContainerRef.current
 
     setTimeout(() => {
       scrollContainer.scrollTo({
         top: scrollContainer.scrollHeight,
         behavior: behavior,
-      });
-    }, 50);
-  };
+      })
+    }, 50)
+  }
 
-  const userScrollingImageRef = useRef(false);
-  const userScrollingKeyboardRef = useRef(false);
+  const userScrollingImageRef = useRef(false)
+  const userScrollingKeyboardRef = useRef(false)
 
   useEffect(() => {
     if (onScrollToTopRef) {
-      onScrollToTopRef.current = detectScrollToTop;
+      onScrollToTopRef.current = detectScrollToTop
     }
 
     if (scrollContainerRef.current) {
       if (isInitialScrollRef.current) {
-        scrollToBottom(initialScrollBehavior);
-        isInitialScrollRef.current = false;
+        scrollToBottom(initialScrollBehavior)
+        isInitialScrollRef.current = false
       }
 
-      let scrollTimer = null;
+      let scrollTimer = null
 
       const trackUserScrolling = () => {
-        userScrollingImageRef.current = true;
-        clearTimeout(scrollTimer);
+        userScrollingImageRef.current = true
+        clearTimeout(scrollTimer)
         scrollTimer = setTimeout(() => {
-          userScrollingImageRef.current = false;
-        }, 200);
-      };
+          userScrollingImageRef.current = false
+        }, 200)
+      }
 
       // Store the ref value in a variable to avoid issues in cleanup function
-      const currentScrollContainer = scrollContainerRef.current;
+      const currentScrollContainer = scrollContainerRef.current
 
       if (currentScrollContainer) {
-        currentScrollContainer.addEventListener("scroll", trackUserScrolling);
+        currentScrollContainer.addEventListener("scroll", trackUserScrolling)
       }
 
       const handleImageLoad = () => {
         if (isScrolledToBottom && !userScrollingImageRef.current) {
-          setTimeout(() => scrollToBottom("auto"), 50);
+          setTimeout(() => scrollToBottom("auto"), 50)
         }
-      };
+      }
 
-      const images = currentScrollContainer.querySelectorAll("img");
+      const images = currentScrollContainer.querySelectorAll("img")
       images.forEach((img) => {
         if (!img.complete) {
-          img.addEventListener("load", handleImageLoad);
+          img.addEventListener("load", handleImageLoad)
         }
-      });
+      })
 
       return () => {
         if (currentScrollContainer) {
           currentScrollContainer.removeEventListener(
             "scroll",
-            trackUserScrolling,
-          );
+            trackUserScrolling
+          )
 
-          const images = currentScrollContainer.querySelectorAll("img");
+          const images = currentScrollContainer.querySelectorAll("img")
           images.forEach((img) => {
-            img.removeEventListener("load", handleImageLoad);
-          });
+            img.removeEventListener("load", handleImageLoad)
+          })
         }
-        clearTimeout(scrollTimer);
-      };
+        clearTimeout(scrollTimer)
+      }
     }
   }, [
     detectScrollToTop,
     initialScrollBehavior,
     isScrolledToBottom,
     onScrollToTopRef,
-  ]);
+  ])
 
   useEffect(() => {
-    const initialHeight = window.innerHeight;
-    let isKeyboardVisible = false;
-    let previousDiff = 0;
-    const MIN_KEYBOARD_HEIGHT = 200;
-    let scrollTimeout = null;
+    const initialHeight = window.innerHeight
+    let isKeyboardVisible = false
+    let previousDiff = 0
+    const MIN_KEYBOARD_HEIGHT = 200
+    let scrollTimeout = null
 
     const setScrolling = () => {
-      userScrollingKeyboardRef.current = true;
-      clearTimeout(scrollTimeout);
+      userScrollingKeyboardRef.current = true
+      clearTimeout(scrollTimeout)
       scrollTimeout = setTimeout(() => {
-        userScrollingKeyboardRef.current = false;
-      }, 150);
-    };
+        userScrollingKeyboardRef.current = false
+      }, 150)
+    }
 
     // Store the ref value in a variable to avoid issues in cleanup function
-    const currentScrollContainer = scrollContainerRef.current;
+    const currentScrollContainer = scrollContainerRef.current
 
     if (currentScrollContainer) {
-      currentScrollContainer.addEventListener("scroll", setScrolling);
+      currentScrollContainer.addEventListener("scroll", setScrolling)
     }
 
     const handleResize = () => {
-      if (userScrollingKeyboardRef.current) return;
+      if (userScrollingKeyboardRef.current) return
 
-      const currentHeight = window.innerHeight;
-      const heightDiff = initialHeight - currentHeight;
+      const currentHeight = window.innerHeight
+      const heightDiff = initialHeight - currentHeight
 
-      if (Math.abs(heightDiff - previousDiff) < 50) return;
-      previousDiff = heightDiff;
+      if (Math.abs(heightDiff - previousDiff) < 50) return
+      previousDiff = heightDiff
 
       if (heightDiff > MIN_KEYBOARD_HEIGHT) {
         if (!isKeyboardVisible) {
-          isKeyboardVisible = true;
+          isKeyboardVisible = true
 
-          const button = document.querySelector(".follow-button");
+          const button = document.querySelector(".follow-button")
           if (button) {
-            button.style.bottom = `${heightDiff + 20}px`;
-            button.style.transition = "bottom 0.2s ease-out";
+            button.style.bottom = `${heightDiff + 20}px`
+            button.style.transition = "bottom 0.2s ease-out"
           }
 
           if (isScrolledToBottom) {
-            setTimeout(() => scrollToBottom("auto"), 100);
+            setTimeout(() => scrollToBottom("auto"), 100)
           }
         }
       } else {
         if (isKeyboardVisible) {
-          isKeyboardVisible = false;
+          isKeyboardVisible = false
 
-          const button = document.querySelector(".follow-button");
+          const button = document.querySelector(".follow-button")
           if (button) {
-            button.style.bottom = "";
-            button.style.transition = "bottom 0.3s ease-out";
+            button.style.bottom = ""
+            button.style.transition = "bottom 0.3s ease-out"
           }
         }
       }
-    };
+    }
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", handleResize)
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", handleResize)
       if (currentScrollContainer) {
-        currentScrollContainer.removeEventListener("scroll", setScrolling);
+        currentScrollContainer.removeEventListener("scroll", setScrolling)
       }
-      clearTimeout(scrollTimeout);
-    };
-  }, [isScrolledToBottom]);
+      clearTimeout(scrollTimeout)
+    }
+  }, [isScrolledToBottom])
 
   const handleScroll = (e) => {
-    if (!scrollContainerRef.current) return;
+    if (!scrollContainerRef.current) return
 
-    const scrollContainer = scrollContainerRef.current;
-    const scrollTop = scrollContainer.scrollTop;
-    const scrollHeight = scrollContainer.scrollHeight;
-    const clientHeight = scrollContainer.clientHeight;
+    const scrollContainer = scrollContainerRef.current
+    const scrollTop = scrollContainer.scrollTop
+    const scrollHeight = scrollContainer.scrollHeight
+    const clientHeight = scrollContainer.clientHeight
 
-    const isBottom = scrollHeight - scrollTop - clientHeight < 30;
-    setIsScrolledToBottom(isBottom);
-    setShowScrollToBottom(!isBottom);
+    const isBottom = scrollHeight - scrollTop - clientHeight < 30
+    setIsScrolledToBottom(isBottom)
+    setShowScrollToBottom(!isBottom)
 
-    const isNearTop = scrollTop < 50;
+    const isNearTop = scrollTop < 50
 
     if (
       isNearTop &&
       scrollTop < prevScrollTopRef.current &&
       scrollHeightRef.current === scrollHeight
     ) {
-      detectScrollToTop();
+      detectScrollToTop()
     }
 
-    prevScrollTopRef.current = scrollTop;
-    scrollHeightRef.current = scrollHeight;
+    prevScrollTopRef.current = scrollTop
+    scrollHeightRef.current = scrollHeight
 
     if (onScroll) {
-      onScroll(e);
+      onScroll(e)
     }
-  };
+  }
 
   useEffect(() => {
     if (scrollContainerRef.current && isScrolledToBottom) {
-      scrollToBottom(initialScrollBehavior);
+      scrollToBottom(initialScrollBehavior)
 
       setTimeout(() => {
         if (isScrolledToBottom) {
-          scrollToBottom(initialScrollBehavior);
+          scrollToBottom(initialScrollBehavior)
         }
-      }, 300);
+      }, 300)
     }
 
     if (onScrollComplete) {
-      onScrollComplete();
+      onScrollComplete()
     }
-  }, [children, isScrolledToBottom, initialScrollBehavior, onScrollComplete]);
+  }, [children, isScrolledToBottom, initialScrollBehavior, onScrollComplete])
 
   return (
     <div className={containerClassName} style={containerStyle}>
@@ -244,9 +238,9 @@ const CustomScrollToBottom = ({
         <button
           className="follow-button"
           onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            scrollToBottom();
+            e.stopPropagation()
+            e.preventDefault()
+            scrollToBottom()
           }}
           aria-label="Scroll to bottom"
           style={{
@@ -255,29 +249,20 @@ const CustomScrollToBottom = ({
             pointerEvents: "auto",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
             touchAction: "none",
+            fontSize: "var(--font-size-default)",
           }}
           onTouchStart={(e) => {
-            e.stopPropagation();
+            e.stopPropagation()
           }}
         >
-          <FaChevronDown size={18} />
+          <ChevronDown size={18} />
         </button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default function ChatFeed({
-  bubbleStyles = {
-    text: {
-      fontSize: 14,
-    },
-    chatbubble: {
-      borderRadius: 20,
-      padding: 10,
-    },
-  },
-}) {
+const ChatFeed = forwardRef(({}, ref) => {
   const {
     messages,
     isLoading,
@@ -285,54 +270,41 @@ export default function ChatFeed({
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useConversationHistory();
-  const { showMemoryNetwork } = useMemoryNetwork();
-  const { confirmMemoryDeletion } = useMemoryDeletion();
-  const bottomRef = useRef(null);
-  const { isMobile } = usePlatform();
-  const [activeAvatarIndex, setActiveAvatarIndex] = useState(null);
-  const [messagesVisible, setMessagesVisible] = useState(false);
-  const [shouldFetchNext, setShouldFetchNext] = useState(false);
-  const initialRenderRef = useRef(true);
-  const fetchingRef = useRef(false);
-  const detectScrollToTopRef = useRef(null);
-
-  const handleAvatarClick = (e, index) => {
-    e.stopPropagation();
-
-    if (activeAvatarIndex === index) {
-      setActiveAvatarIndex(null);
-    } else {
-      setActiveAvatarIndex(index);
-      triggerHapticFeedback();
-    }
-  };
+  } = useConversationHistory()
+  const { showMemoryNetwork } = useMemoryNetwork()
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { isMobile } = usePlatform()
+  const [messagesVisible, setMessagesVisible] = useState(false)
+  const [shouldFetchNext, setShouldFetchNext] = useState(false)
+  const initialRenderRef = useRef(true)
+  const fetchingRef = useRef(false)
+  const detectScrollToTopRef = useRef(null)
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
 
     if (!isLoading && messages.length > 0) {
       requestAnimationFrame(() => {
-        if (!isMounted) return;
+        if (!isMounted) return
 
         if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
           setTimeout(() => {
             if (isMounted) {
-              setMessagesVisible(true);
-              initialRenderRef.current = false;
+              setMessagesVisible(true)
+              initialRenderRef.current = false
             }
-          }, 200);
+          }, 200)
         } else {
-          setMessagesVisible(true);
-          initialRenderRef.current = false;
+          setMessagesVisible(true)
+          initialRenderRef.current = false
         }
-      });
+      })
     }
 
     return () => {
-      isMounted = false;
-    };
-  }, [isLoading, messages, isMobile]);
+      isMounted = false
+    }
+  }, [isLoading, messages, isMobile])
 
   const handleScrollToTop = () => {
     if (
@@ -341,136 +313,115 @@ export default function ChatFeed({
       !isFetchingNextPage &&
       !fetchingRef.current
     ) {
-      console.log("AT TOP DETECTED: Triggering fetch");
-      fetchingRef.current = true;
-      setShouldFetchNext(true);
+      fetchingRef.current = true
+      setShouldFetchNext(true)
     }
-  };
+  }
 
   useEffect(() => {
     const fetchOlderMessages = async () => {
-      if (!shouldFetchNext) return;
+      if (!shouldFetchNext) return
 
       try {
         // Get initial scroll position
-        const scrollContainer = document.querySelector(".messages-scroll-view");
-        let prevHeight = 0;
+        const scrollContainer = document.querySelector(".messages-scroll-view")
+        let prevHeight = 0
 
         if (scrollContainer) {
-          prevHeight = scrollContainer.scrollHeight;
+          prevHeight = scrollContainer.scrollHeight
         }
 
-        console.log("Fetching older messages...");
-        await fetchNextPage();
-        console.log("Fetch complete");
+        // console.log("Fetching older messages...")
+        await fetchNextPage()
+        // console.log("Fetch complete")
 
         // Set a reasonable timeout to ensure DOM is updated
         setTimeout(() => {
           if (scrollContainer) {
             // Get the new scroll height and calculate difference
-            const newHeight = scrollContainer.scrollHeight;
-            const heightDifference = newHeight - prevHeight;
+            const newHeight = scrollContainer.scrollHeight
+            const heightDifference = newHeight - prevHeight
 
             // Position just below the new content
+            // This is the key implementation from main branch that works correctly
             if (heightDifference > 0) {
-              scrollContainer.scrollTop = heightDifference;
+              scrollContainer.scrollTop = heightDifference
             }
           }
 
-          fetchingRef.current = false;
-          setShouldFetchNext(false);
-        }, 150);
+          fetchingRef.current = false
+          setShouldFetchNext(false)
+        }, 150)
       } catch (error) {
-        console.error("Error loading more messages:", error);
-        fetchingRef.current = false;
-        setShouldFetchNext(false);
+        console.error("Error loading more messages:", error)
+        fetchingRef.current = false
+        setShouldFetchNext(false)
       }
-    };
+    }
 
     if (shouldFetchNext) {
-      fetchOlderMessages();
+      fetchOlderMessages()
     }
-  }, [shouldFetchNext, fetchNextPage]);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (activeAvatarIndex !== null) {
-        let targetElement = e.target;
-        let isClickOnMenu = false;
-
-        while (targetElement && !isClickOnMenu) {
-          if (
-            targetElement.classList &&
-            (targetElement.classList.contains("avatar-action-menu") ||
-              targetElement.classList.contains("message-avatar") ||
-              targetElement.classList.contains("action-icon-button"))
-          ) {
-            isClickOnMenu = true;
-          }
-          targetElement = targetElement.parentElement;
-        }
-
-        if (!isClickOnMenu) {
-          setActiveAvatarIndex(null);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [activeAvatarIndex]);
+  }, [shouldFetchNext, fetchNextPage])
 
   const handleCopy = (message, type = "prompt") => {
-    const textToCopy = type === "prompt" ? message.prompt : message.response;
+    const textToCopy = type === "prompt" ? message.prompt : message.response
     if (!textToCopy) {
-      toast.error("No content to copy");
-      return;
+      toast.error("No content to copy")
+      return
     }
 
     navigator.clipboard.writeText(textToCopy).then(
       () => {
-        toast.success("Copied to clipboard");
-        setActiveAvatarIndex(null);
+        toast.success("Copied to clipboard")
       },
       (err) => {
-        console.error("Could not copy text: ", err);
-        toast.error("Failed to copy text");
-      },
-    );
-  };
+        console.error("Could not copy text: ", err)
+        toast.error("Failed to copy text")
+      }
+    )
+  }
 
   const handleMessageDelete = async (message) => {
-    setActiveAvatarIndex(null);
     if (!message.id) {
-      console.error("Cannot delete message: missing ID");
-      return;
+      console.error("Cannot delete message: missing ID")
+      toast.error("Failed to delete message")
+      return
     }
     try {
-      await confirmMemoryDeletion(message.id, {
+      confirmMemoryDeletion(message.id, {
         onSuccess: () => {
-          refetch();
+          refetch()
         },
-      });
+      })
     } catch (error) {
-      console.error("Error deleting message:", error);
-      toast.error("Failed to delete message");
+      console.error("Error deleting message:", error)
+      toast.error("Failed to delete message")
     }
-  };
+  }
 
   const handleShowMemories = async (message) => {
-    setActiveAvatarIndex(null);
     try {
-      await showMemoryNetwork(message);
+      await showMemoryNetwork(message)
     } catch (error) {
-      console.error("Error showing memory network:", error);
-      toast.error("Failed to show memory network");
+      console.error("Error showing memory network:", error)
+      toast.error("Failed to show memory network")
     }
-  };
+  }
+
+  // Use the externally passed ref for scroll position detection
+  useEffect(() => {
+    if (ref) {
+      // If a ref is passed from parent, use it to access internal scrolling functionality
+      if (typeof ref === "function") {
+        // Function refs get called with the DOM element
+        ref(detectScrollToTopRef.current)
+      } else if (ref.current !== undefined) {
+        // Object refs need their .current property assigned
+        ref.current = detectScrollToTopRef.current
+      }
+    }
+  }, [ref])
 
   return (
     <div className="chat-feed-container">
@@ -504,20 +455,13 @@ export default function ChatFeed({
           {messages
             .map((message, index) => {
               const isUser =
-                message.prompt && !message.prompt.includes("SYSTEM:");
-              const isLast = index === messages.length - 1;
-
-              const promptId = `prompt-${message.id || index}`;
-              const responseId = `response-${message.id || index}`;
-
-              const isPromptActive = activeAvatarIndex === promptId;
-              const isResponseActive = activeAvatarIndex === responseId;
+                message.prompt && !message.prompt.includes("SYSTEM:")
+              const isLast = index === messages.length - 1
 
               return (
                 <div key={message.id || index} className="message-pair">
                   {message.prompt && isUser && (
                     <ChatMessage
-                      pairID={message.id}
                       content={message.prompt}
                       timestamp={
                         message.timestamp
@@ -527,9 +471,6 @@ export default function ChatFeed({
                       isUser={true}
                       isLast={isLast}
                       isOptimistic={message.isOptimistic}
-                      bubbleStyles={bubbleStyles}
-                      onAvatarClick={(e) => handleAvatarClick(e, promptId)}
-                      showMenu={isPromptActive}
                       menuProps={{
                         onCopy: () => handleCopy(message, "prompt"),
                         onDelete: () => handleMessageDelete(message),
@@ -549,9 +490,6 @@ export default function ChatFeed({
                       isUser={false}
                       isLast={isLast}
                       isOptimistic={message.isOptimistic}
-                      bubbleStyles={bubbleStyles}
-                      onAvatarClick={(e) => handleAvatarClick(e, responseId)}
-                      showMenu={isResponseActive}
                       menuProps={{
                         onCopy: () => handleCopy(message, "response"),
                         onDelete: () => handleMessageDelete(message),
@@ -560,10 +498,9 @@ export default function ChatFeed({
                     />
                   )}
                 </div>
-              );
+              )
             })
             .reverse()}
-          <div ref={bottomRef} className="bottom-spacer" />
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">
@@ -571,5 +508,8 @@ export default function ChatFeed({
         </div>
       )}
     </div>
-  );
-}
+  )
+})
+
+ChatFeed.displayName = "ChatFeed"
+export default ChatFeed

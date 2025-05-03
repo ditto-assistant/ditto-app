@@ -1,8 +1,8 @@
-import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { FaPlay, FaPen, FaTimes } from "react-icons/fa";
-import FullScreenEditor from "@/screens/Editor/FullScreenEditor";
-import "./ScriptActionsOverlay.css";
+import { useRef, useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { Play, Pen, X } from "lucide-react"
+import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
+import "./ScriptActionsOverlay.css"
 
 function ScriptActionsOverlay({
   scriptName,
@@ -12,43 +12,43 @@ function ScriptActionsOverlay({
   onClose,
   script, // This is the full script object
 }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const overlayContentRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false)
+  const [showEditor, setShowEditor] = useState(false)
+  const overlayContentRef = useRef(null)
 
   useEffect(() => {
-    setTimeout(() => setIsVisible(true), 50);
+    setTimeout(() => setIsVisible(true), 50)
 
     const handleClickOutside = (event) => {
       if (
         overlayContentRef.current &&
         !overlayContentRef.current.contains(event.target)
       ) {
-        setIsVisible(false);
-        setTimeout(onClose, 300);
+        setIsVisible(false)
+        setTimeout(onClose, 300)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  });
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  })
 
   const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 300);
-  };
+    setIsVisible(false)
+    setTimeout(onClose, 300)
+  }
 
   const handleDeselectClick = () => {
     if (onDeselect) {
-      onDeselect();
+      onDeselect()
     }
-    handleClose();
-  };
+    handleClose()
+  }
 
   const handleEdit = () => {
-    setShowEditor(true);
-    setIsVisible(false);
-  };
+    setShowEditor(true)
+    setIsVisible(false)
+  }
 
   return (
     <>
@@ -63,7 +63,7 @@ function ScriptActionsOverlay({
             transition={{ duration: 0.2 }}
           >
             <button className="CloseButton" onClick={handleClose}>
-              <FaTimes />
+              <X />
             </button>
             <div className="ScriptActionsHeader">
               <h3>Currently Selected Script</h3>
@@ -78,7 +78,7 @@ function ScriptActionsOverlay({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <FaPen className="button-icon" />
+                <Pen className="button-icon" />
                 Edit Script
               </motion.button>
               <motion.button
@@ -87,7 +87,7 @@ function ScriptActionsOverlay({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <FaPlay className="button-icon" />
+                <Play className="button-icon" />
                 Launch Script
               </motion.button>
               <motion.button
@@ -122,15 +122,15 @@ function ScriptActionsOverlay({
               scriptType: script.scriptType,
             }}
             onClose={() => {
-              setShowEditor(false);
-              handleClose();
+              setShowEditor(false)
+              handleClose()
             }}
             onSave={async (updatedContent) => {
               if (onEdit) {
-                await onEdit(updatedContent);
+                await onEdit(updatedContent)
               }
-              setShowEditor(false);
-              handleClose();
+              setShowEditor(false)
+              handleClose()
             }}
             theme="monokai"
             hideStatusIcons={true}
@@ -138,7 +138,7 @@ function ScriptActionsOverlay({
         </div>
       )}
     </>
-  );
+  )
 }
 
-export default ScriptActionsOverlay;
+export default ScriptActionsOverlay

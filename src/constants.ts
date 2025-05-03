@@ -4,14 +4,14 @@ import {
   ImageGenerationSize,
   ToolPreferences,
   Model,
-} from "@/types/llm";
+} from "@/types/llm"
 
-export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png";
-export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png";
-export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png";
-export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png";
-export const DITTO_AVATAR = "/icons/round/android-chrome-192x192.png";
-export const FREE_MODEL_ID: Model = "meta/llama-3.3-70b-instruct-maas";
+export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png"
+export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png"
+export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png"
+export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png"
+export const DITTO_AVATAR = "/icons/round/android-chrome-192x192.png"
+export const FREE_MODEL_ID: Model = "meta/llama-3.3-70b-instruct-maas"
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
@@ -226,7 +226,7 @@ export const DEFAULT_MODELS: ModelOption[] = [
     },
     speedLevel: "insane",
   },
-] as const;
+] as const
 
 export const IMAGE_GENERATION_SIZES: Record<string, ImageGenerationSize> = {
   "256x256": {
@@ -254,7 +254,7 @@ export const IMAGE_GENERATION_SIZES: Record<string, ImageGenerationSize> = {
     description: "Portrait (1024x1792)",
     supportedModels: ["dall-e-3"],
   },
-} as const;
+} as const
 
 export const IMAGE_GENERATION_MODELS: ModelOption[] = [
   {
@@ -262,7 +262,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 2",
     minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-2"),
+      size.supportedModels.includes("dall-e-2")
     ),
   },
   {
@@ -270,7 +270,7 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 3",
     minimumTier: 1,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-3"),
+      size.supportedModels.includes("dall-e-3")
     ),
   },
   {
@@ -278,16 +278,16 @@ export const IMAGE_GENERATION_MODELS: ModelOption[] = [
     name: "DALL-E 3 HD",
     minimumTier: 3,
     sizeOptions: Object.values(IMAGE_GENERATION_SIZES).filter((size) =>
-      size.supportedModels.includes("dall-e-3"),
+      size.supportedModels.includes("dall-e-3")
     ),
   },
-] as const;
+] as const
 
 export const DEFAULT_TOOL_PREFERENCES: ToolPreferences = {
   htmlScript: true,
   imageGeneration: true,
   googleSearch: true,
-} as const;
+} as const
 
 export const DEFAULT_PREFERENCES: ModelPreferences = {
   mainModel: "meta/llama-3.3-70b-instruct-maas",
@@ -296,8 +296,6 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     model: "dall-e-3",
     size: {
       wh: "1024x1024",
-      description: "Square (1024x1024)",
-      supportedModels: ["dall-e-2", "dall-e-3"],
     },
   },
   tools: DEFAULT_TOOL_PREFERENCES,
@@ -305,7 +303,7 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
     shortTermMemoryCount: 5,
     longTermMemoryChain: [3, 2, 1],
   },
-} as const;
+} as const
 
 export const TOOLS = [
   {
@@ -326,18 +324,21 @@ export const TOOLS = [
     description: "Generate web applications using HTML, CSS, and JavaScript",
     trigger: "<HTML_SCRIPT>",
   },
-] as const;
+] as const
 
 export const MEMORY_CONFIG = {
   shortTerm: {
     min: 0,
-    max: 5,
+    max: 10,
     step: 1,
     marks: [
       { value: 0, label: "0" },
       { value: 1, label: "1" },
       { value: 3, label: "3" },
       { value: 5, label: "5" },
+      { value: 7, label: "7" },
+      { value: 9, label: "9" },
+      { value: 10, label: "10" },
     ],
   },
   longTerm: {
@@ -352,4 +353,4 @@ export const MEMORY_CONFIG = {
     ],
     maxChainLength: 5,
   },
-} as const;
+} as const

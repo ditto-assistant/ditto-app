@@ -1,5 +1,5 @@
-import React from "react";
-import { VersionSection, Section } from "./VersionTemplate";
+import React from "react"
+import { VersionSection, Section } from "./VersionTemplate"
 
 // Define sections for version 0.11.58
 const sections: Section[] = [
@@ -49,7 +49,7 @@ const sections: Section[] = [
       },
     ],
   },
-];
+]
 
 // Version details component for v0.11.58
 const V0_11_58 = () => (
@@ -58,6 +58,6 @@ const V0_11_58 = () => (
       <VersionSection key={index} {...section} />
     ))}
   </div>
-);
+)
 
-export default V0_11_58;
+export default V0_11_58

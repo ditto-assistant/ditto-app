@@ -1,37 +1,12 @@
 # Ditto App - Development Guide
 
-## Business Overview
-
-Ditto is a therapy-focused AI assistant that understands who YOU are, similar to NotebookLM but with a deep understanding of the individual user. Our platform helps individuals process thoughts, explore ideas, and receive personalized emotional support through meaningful conversations that evolve over time.
-
-Our core technology is built around advanced long-term memory algorithms that enable Ditto to remember personal details, preferences, and past conversations, creating genuinely personalized experiences tailored to each user's unique needs and emotional context.
-
-Key features include:
-
-- **Personalized therapeutic conversations** powered by memory of your unique history
-- **AI-powered reflective journaling** and thought processing
-- **Emotional support companion** that adapts to your communication style
-- **Research assistant** that remembers your interests and past explorations
-- **Customizable knowledge integration** for personal growth
-- **Personal development insights** based on conversation patterns
-
-## Licensing Model
-
-Ditto uses a dual-licensing approach:
-
-- **Apache License 2.0**: For individuals and businesses with <$1M annual revenue
-- **Commercial License**: Required for organizations with >$1M annual revenue
-
-Contributions to the repository are covered under MIT-0 (MIT No Attribution) Contributor License Agreement.
-
 ## Essential Commands
 
-- Build: `bun run build` or `vite build`
-- Dev server: `bun run start`
-- Preview: `vite preview`
+- Build: `bun run build`
+- Dev server: assume the user is running their dev server already
 - Lint: `bun run lint` or `bun lint`
-- Fix linting: `bun run lint-fix` or `bun lint-fix`
-- Format: `bun run format` or `prettier --write "**/*.{ts,tsx,js,jsx,md,json,css}" --config .prettierrc`
+- Fix linting: `bun lint-fix`
+- Format: `bun run format`
 
 ## Version Update Flow
 
@@ -46,11 +21,15 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 ## Project Structure
 
 - **src/api/**: API client code and external service integrations
+  - API endpoints with Zod validation (e.g., `services.ts`, `getBalance.ts`)
+  - Result type pattern for error handling
 - **src/components/**: Reusable UI components, organized by function
 - **src/components/ui/**: Low-level, generic UI components (buttons, modals, etc.)
 - **src/control/**: Core application logic, agent functionality, and flow controllers
 - **src/control/templates/**: Templates used for different agent capabilities
 - **src/hooks/**: Custom React hooks for shared functionality
+  - Data fetching hooks with React Query
+  - Pagination hooks (e.g., `useServices.tsx`)
 - **src/screens/**: Top-level page components
 - **src/styles/**: Global CSS, variables, and platform-specific styling
 - **src/types/**: TypeScript type definitions
@@ -62,7 +41,7 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 - **src/components/ChatFeed.jsx**: Main conversation display component
 - **src/components/ComposeModal.tsx**: Modal for composing longer messages
 - **src/components/SendMessage.jsx**: Primary user input component
-- **src/components/ui/modals/Modal.tsx**: Core modal component with standardized behavior
+- **src/components/ui/modals/Modal.tsx**: Core resizable modal component with tab support, draggable and resizable windows
 - **src/hooks/useModal.tsx**: Central hook for managing modal state throughout the app
 - **src/control/agent.js**: Core agent logic and orchestration
 - **src/hooks/useConversationHistory.tsx**: Manages conversation state and history
@@ -86,26 +65,29 @@ Contributions to the repository are covered under MIT-0 (MIT No Attribution) Con
 - **TypeScript**: Strict mode enabled, use explicit types for function params and returns
 - **React**: Functional components with hooks, avoid class components
 - **Naming**: PascalCase for components/types, camelCase for variables/functions
-- **CSS**: Component-specific CSS files with the same name as the component
+- **UI Components**: Use shadcn/ui components (install with `bun shadcn add <component>`)
+- **CSS**: Utility classes with Tailwind, avoid component-specific CSS files
 - **Error Handling**: Use try/catch for async operations, provide meaningful error messages
 - **Imports**: Group imports by external libs first, then internal modules
 - **Components**: Keep components focused on a single responsibility
+- **Icons**: Use Lucide React for icons (`import { Icon } from "lucide-react"`)
+- **Toasts**: Use Sonner for toast notifications (`import { toast } from "sonner"`)
 
-## Mobile & Cross-Platform UI Guidelines
+## UI Migration Best Practices
 
-- **iOS Safe Areas**: Use CSS variables (`--safe-area-top`, `--safe-area-bottom`, etc.) for iOS notch and home indicator space
-- **Keyboard Behavior**:
-  - For text inputs that should adjust to keyboard, use `position: relative` instead of `sticky/fixed`
-  - Use `-webkit-fill-available` height for iOS viewport issues
-  - `SendMessage.jsx` shows the correct pattern for keyboard-aware text inputs
-- **Modal System**:
-  - All modals are automatically fullscreen by default (fullScreen prop defaults to true in Modal component)
-  - For custom modal behavior, use the Modal component's props as needed
-- **Platform Detection**: Use `usePlatform` hook (`const { isMobile } = usePlatform()`) for platform-specific logic
+- **Preservation of Scroll Behavior**: For components with complex scroll behavior (like ChatFeed):
+  - Preserve custom scroll implementations that handle infinite scrolling, position maintenance, and dynamic content loading
+  - Use a hybrid approach: keep core scroll functionality CSS while applying Tailwind for non-scroll-related styling
+  - Document preserved CSS files with explanatory comments
+- **CSS Transition Strategy**:
 
-## Project Roadmap
+  - Replace component-specific CSS files with Tailwind utility classes when possible
+  - Use `cn()` utility from `lib/utils.ts` for conditional class names
+  - Consolidate global animation keyframes into Tailwind or custom plugins
+  - Review and refactor global CSS in `src/styles/` to prevent Tailwind utility overrides
 
-- MVP Development (Q1 2025): Core AI capabilities, memory algorithms, chat interface, brainstorming tools
-- Enhanced Features (Q2 2025): Collaborative workspaces, emotional intelligence components
-- Scaling and Optimization (Q3 2025): Advanced AI features, task automation, cross-platform integrations
-- Community and Open Source Initiatives (Q4 2025): Building open-source community, expanding integrations
+- **Component Conversion**:
+  - Convert JSX components to TypeScript with proper interfaces and type definitions
+  - Replace MUI and other UI libraries with shadcn/ui equivalents
+  - Follow the pattern in components like ChatMessage.tsx and SendMessage.tsx for proper shadcn integration
+  - For complex components, use existing custom components (e.g., Modal.tsx) rather than shadcn primitives

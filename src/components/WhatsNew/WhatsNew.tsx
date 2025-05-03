@@ -1,21 +1,22 @@
-import Modal from "@/components/ui/modals/Modal";
-import { version as appVersion } from "../../../package.json";
-import "./WhatsNew.css";
+import Modal from "@/components/ui/modals/Modal"
+import { version as appVersion } from "../../../package.json"
+import "./WhatsNew.css"
 // Import all version components
-import V0_11_54 from "./versions/V0_11_54";
-import V0_11_55 from "./versions/V0_11_55";
-import V0_11_56 from "./versions/V0_11_56";
-import V0_11_57 from "./versions/V0_11_57";
-import V0_11_58 from "./versions/V0_11_58";
-import V0_11_60 from "./versions/V0_11_60";
-import V0_11_61 from "./versions/V0_11_61";
-import V0_11_62 from "./versions/V0_11_62";
-import V0_11_63 from "./versions/V0_11_63";
-import V0_11_64 from "./versions/V0_11_64";
-import V0_11_65 from "./versions/V0_11_65";
-import V0_11_66 from "./versions/V0_11_66";
-import V0_12_0 from "./versions/V0_12_0";
-import V0_12_1 from "./versions/V0_12_1";
+import V0_11_54 from "./versions/V0_11_54"
+import V0_11_55 from "./versions/V0_11_55"
+import V0_11_56 from "./versions/V0_11_56"
+import V0_11_57 from "./versions/V0_11_57"
+import V0_11_58 from "./versions/V0_11_58"
+import V0_11_60 from "./versions/V0_11_60"
+import V0_11_61 from "./versions/V0_11_61"
+import V0_11_62 from "./versions/V0_11_62"
+import V0_11_63 from "./versions/V0_11_63"
+import V0_11_64 from "./versions/V0_11_64"
+import V0_11_65 from "./versions/V0_11_65"
+import V0_11_66 from "./versions/V0_11_66"
+import V0_12_0 from "./versions/V0_12_0"
+import V0_12_1 from "./versions/V0_12_1"
+import V0_13_0 from "./versions/V0_13_0"
 // Add imports for future versions here
 
 // Map versions to their components
@@ -34,26 +35,27 @@ const versionComponents: Record<string, React.ComponentType> = {
   "0.11.66": V0_11_66,
   "0.12.0": V0_12_0,
   "0.12.1": V0_12_1,
+  "0.13.0": V0_13_0,
   // Add future versions here
-};
+}
 
 // Helper to convert version string to component name
 export const getVersionComponentKey = (version: string): string => {
-  return version.replace(/\./g, "_");
-};
+  return version.replace(/\./g, "_")
+}
 
 // Helper to convert component name to version string
 export const getVersionFromComponentKey = (key: string): string => {
-  return key.replace(/_/g, ".");
-};
+  return key.replace(/_/g, ".")
+}
 
 interface WhatsNewProps {
-  version?: string;
+  version?: string
 }
 
 const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
   // Find the component for the current version
-  const VersionComponent = versionComponents[version];
+  const VersionComponent = versionComponents[version]
 
   // If no component exists for this version, show a generic message
   const content = VersionComponent ? (
@@ -63,13 +65,13 @@ const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
       <p>Welcome to Ditto version {version}!</p>
       <p>Check back later for detailed release notes.</p>
     </div>
-  );
+  )
 
   return (
     <Modal id="whatsNew" title={`What's New in v${version}`}>
       <div className="whats-new-content">{content}</div>
     </Modal>
-  );
-};
+  )
+}
 
-export default WhatsNew;
+export default WhatsNew

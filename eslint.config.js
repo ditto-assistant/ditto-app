@@ -1,9 +1,9 @@
-import reactPlugin from "eslint-plugin-react";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
-import typescriptPlugin from "@typescript-eslint/eslint-plugin";
-import typescriptParser from "@typescript-eslint/parser";
-import tanstackPlugin from "@tanstack/eslint-plugin-query";
-import globals from "globals";
+import reactPlugin from "eslint-plugin-react"
+import reactHooksPlugin from "eslint-plugin-react-hooks"
+import typescriptPlugin from "@typescript-eslint/eslint-plugin"
+import typescriptParser from "@typescript-eslint/parser"
+import tanstackPlugin from "@tanstack/eslint-plugin-query"
+import globals from "globals"
 
 export default [
   {
@@ -69,4 +69,4 @@ export default [
       "react-hooks/exhaustive-deps": "warn",
     },
   },
-];
+]

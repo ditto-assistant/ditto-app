@@ -5,5 +5,5 @@ export const ErrorPaymentRequired = new Error(
       status: 402,
       message: "Payment Required. Please check your token balance.",
     },
-  },
-);
+  }
+)

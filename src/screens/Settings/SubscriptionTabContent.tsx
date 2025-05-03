@@ -1,43 +1,53 @@
-import React from "react";
-import { Button } from "@mui/material";
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner";
-import { useBalance } from "@/hooks/useBalance";
-import { useAuth, useAuthToken } from "@/hooks/useAuth";
-import { routes } from "@/firebaseConfig";
-import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers";
-import { useUser } from "@/hooks/useUser";
-import SubscriptionToggle from "@/components/subscription/SubscriptionToggle";
-import SubscriptionCard from "@/components/subscription/SubscriptionCard";
-import { FaCreditCard } from "react-icons/fa";
-import { useModal } from "@/hooks/useModal";
-import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator";
-import "./SubscriptionTabContent.css";
+import React from "react"
+import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { useBalance } from "@/hooks/useBalance"
+import { useAuth, useAuthToken } from "@/hooks/useAuth"
+import { routes } from "@/firebaseConfig"
+import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
+import { useUser } from "@/hooks/useUser"
+import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
+import SubscriptionCard from "@/components/subscription/SubscriptionCard"
+import { CreditCard, LogOut, User, Moon } from "lucide-react"
+import { useModal } from "@/hooks/useModal"
+import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ModeToggle } from "@/components/mode-toggle"
+import { cn } from "@/lib/utils"
 
 const SubscriptionTabContent: React.FC = () => {
-  const { data: user, isLoading: isUserLoading } = useUser();
-  const [isYearly, setIsYearly] = React.useState(false);
-  const balance = useBalance();
-  const auth = useAuth();
-  const token = useAuthToken();
+  const { data: user, isLoading: isUserLoading } = useUser()
+  const [isYearly, setIsYearly] = React.useState(false)
+  const balance = useBalance()
+  const auth = useAuth()
+  const token = useAuthToken()
   const { data: subscriptionData, isLoading: isLoadingSubscriptions } =
-    useSubscriptionTiers();
-  const [selectedPlan, setSelectedPlan] = React.useState<string>("");
-  const { createOpenHandler, createCloseHandler } = useModal();
-  const openTokenModal = createOpenHandler("tokenCheckout");
-  const closeSettingsModal = createCloseHandler("settings");
+    useSubscriptionTiers()
+  const [selectedPlan, setSelectedPlan] = React.useState<string>("")
+  const { createOpenHandler, createCloseHandler } = useModal()
+  const openTokenModal = createOpenHandler("tokenCheckout")
+  const closeSettingsModal = createCloseHandler("settings")
 
   React.useEffect(() => {
     if (subscriptionData?.tiers) {
       // Select the first available plan of the current interval
-      const defaultTier = subscriptionData.tiers[0];
+      const defaultTier = subscriptionData.tiers[0]
       const defaultPrice = defaultTier.prices.find(
-        (p) => p.interval === (isYearly ? "year" : "month"),
-      );
+        (p) => p.interval === (isYearly ? "year" : "month")
+      )
       if (defaultPrice) {
-        setSelectedPlan(defaultPrice.lookupKey);
+        setSelectedPlan(defaultPrice.lookupKey)
       }
     }
-  }, [subscriptionData, isYearly]);
+  }, [subscriptionData, isYearly])
 
   if (
     auth.isLoading ||
@@ -47,91 +57,151 @@ const SubscriptionTabContent: React.FC = () => {
     isUserLoading
   ) {
     return (
-      <div className="subscription-loading-container">
+      <div className="flex justify-center items-center h-40">
         <LoadingSpinner size={45} />
       </div>
-    );
+    )
   }
 
   if (!auth.user) {
-    return <div>Please log in to manage your subscription.</div>;
+    return (
+      <div data-subscription-section>
+        Please log in to manage your subscription.
+      </div>
+    )
   }
 
-  const { uid, email } = auth.user;
+  const { uid, email, displayName } = auth.user
 
   const handleIntervalChange = (yearly: boolean) => {
-    setIsYearly(yearly);
+    setIsYearly(yearly)
     if (selectedPlan && subscriptionData) {
       // Find the corresponding plan for the new interval
       const currentTier = subscriptionData.tiers.find((tier) =>
-        tier.prices.some((price) => price.lookupKey === selectedPlan),
-      );
+        tier.prices.some((price) => price.lookupKey === selectedPlan)
+      )
       if (currentTier) {
         const newPrice = currentTier.prices.find(
-          (p) => p.interval === (yearly ? "year" : "month"),
-        );
+          (p) => p.interval === (yearly ? "year" : "month")
+        )
         if (newPrice) {
-          setSelectedPlan(newPrice.lookupKey);
+          setSelectedPlan(newPrice.lookupKey)
         }
       }
     }
-  };
+  }
 
-  // If user is already subscribed, show manage subscription content
-  if (user && user.subscriptionStatus !== "free") {
-    const planName = subscriptionData?.tiers.find(
-      (tier) => tier.planTier === user.planTier,
-    )?.name;
-    return (
-      <div className="subscription-manage-container">
-        <div className="subscription-content-wrapper">
-          <div className="subscription-info">
-            <div className="subscription-header">
-              <h3>Current Subscription</h3>
-            </div>
+  const handleLogout = () => {
+    auth.signOut()
+    closeSettingsModal()
+  }
 
-            <div className="subscription-details">
-              <div className="subscription-detail-item">
-                <span className="detail-label">Status:</span>
-                <span className="subscription-active">Active</span>
-              </div>
-
-              <div className="subscription-detail-item">
-                <span className="detail-label">Plan:</span>
-                <div className="detail-value-with-boost">
-                  <span className="subscription-highlight">{planName}</span>
-                  <SubscriptionBoostIndicator
-                    isBoosted={user.isTierBoostedFromBalance ?? false}
-                  />
-                </div>
-              </div>
-
-              <div className="subscription-detail-item">
-                <span className="detail-label">Balance:</span>
-                <div className="subscription-balance-value">
-                  <span className="subscription-highlight">
-                    {balance.data?.balance}
-                  </span>
-                  <span>tokens</span>
-                </div>
-              </div>
-
-              {user.cancelAtPeriodEnd && (
-                <div className="subscription-detail-item subscription-cancellation">
-                  Your subscription will end on{" "}
-                  {user.currentPeriodEnd
-                    ? user.currentPeriodEnd.toLocaleDateString()
-                    : "unknown"}
-                </div>
-              )}
-            </div>
+  // Account card that shows for all users
+  const accountCard = (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Account</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0 mb-1">
+          <div className="flex items-center space-x-2">
+            <User className="h-5 w-5 text-muted-foreground" />
+            {displayName ? (
+              <span className="text-sm font-medium">{displayName}</span>
+            ) : null}
           </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">{email}</span>
+          </div>
+          {user && user.subscriptionStatus !== "free" && (
+            <Badge
+              className={cn(
+                "rounded",
+                "gradient-title",
+                "border-transparent",
+                "dark:bg-gradient-to-r dark:from-primary dark:to-blue-400",
+                "p-0 py-0.5"
+              )}
+              title={
+                subscriptionData?.tiers.find(
+                  (tier) => tier.planTier === user.planTier
+                )?.name
+              }
+            >
+              {
+                subscriptionData?.tiers.find(
+                  (tier) => tier.planTier === user.planTier
+                )?.name
+              }
+              {user.isTierBoostedFromBalance && (
+                <SubscriptionBoostIndicator isBoosted={true} className="ml-1" />
+              )}
+            </Badge>
+          )}
+        </div>
 
-          <div className="subscription-buttons-container">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <CreditCard className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm">
+              Balance: {balance.data?.balance} tokens
+            </span>
+          </div>
+          {user?.cancelAtPeriodEnd && user.currentPeriodEnd && (
+            <Badge variant="outline" className="bg-amber-500/10 text-amber-500">
+              Ending {user.currentPeriodEnd.toLocaleDateString()}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Moon className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm">Theme</span>
+          </div>
+          <ModeToggle />
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex gap-4">
+        <Button
+          variant="default"
+          className="flex-1"
+          onClick={() => {
+            closeSettingsModal()
+            openTokenModal()
+          }}
+        >
+          <CreditCard className="h-4 w-4 mr-2" />
+          BUY TOKENS
+        </Button>
+
+        <Button variant="outline" className="flex-1" onClick={handleLogout}>
+          <LogOut className="h-4 w-4 mr-2" />
+          LOG OUT
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+
+  // If user is already subscribed, show only account + manage subscription
+  if (user && user.subscriptionStatus !== "free") {
+    return (
+      <div className="p-4 space-y-6">
+        {accountCard}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription Management</CardTitle>
+            <CardDescription>
+              Manage your current subscription plan and billing
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <form
               action={routes.createPortalSession}
               method="POST"
-              className="subscription-manage-form"
+              className="w-full"
             >
               <input
                 type="hidden"
@@ -149,76 +219,30 @@ const SubscriptionTabContent: React.FC = () => {
                 name="authorization"
                 value={`Bearer ${token.data}`}
               />
-              <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                className="subscription-manage-button"
-              >
-                Manage Your Subscription
+
+              <Button type="submit" className="w-full">
+                MANAGE YOUR SUBSCRIPTION
               </Button>
             </form>
-
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                closeSettingsModal();
-                openTokenModal();
-              }}
-              className="buy-tokens-button"
-              startIcon={<FaCreditCard />}
-            >
-              Buy Extra Tokens
-            </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    );
+    )
   }
 
-  // Otherwise, show subscription options for free users
+  // Otherwise, show account + subscription options for free users
   return (
-    <div className="subscription-tab-container">
-      <div className="subscription-info-container">
-        <h3 className="subscription-balance-header">Current Status</h3>
-        <div className="subscription-balance-grid">
-          {!balance.isLoading ? (
-            <p className="subscription-balance-item">
-              Balance:{" "}
-              <span className="subscription-highlight-text">
-                {balance.data?.balance}
-              </span>{" "}
-              tokens
-            </p>
-          ) : (
-            <div className="subscription-spinner-container">
-              <LoadingSpinner size={45} inline={true} />
-            </div>
-          )}
-        </div>
+    <div data-subscription-section className="p-4 space-y-6">
+      {accountCard}
 
-        {/* Always show Buy Tokens button for free users */}
-        <div className="tokens-purchase-section">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              closeSettingsModal();
-              openTokenModal();
-            }}
-            className="buy-tokens-button"
-            startIcon={<FaCreditCard />}
-          >
-            Buy Ditto Tokens
-          </Button>
-        </div>
-      </div>
+      <div className="mb-6">
+        <SubscriptionToggle
+          isYearly={isYearly}
+          onChange={handleIntervalChange}
+          className="mb-6"
+        />
 
-      <SubscriptionToggle isYearly={isYearly} onChange={handleIntervalChange} />
-
-      <div className="subscription-plans">
-        <div className="subscription-plans-grid">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {subscriptionData?.tiers.map((tier) => (
             <SubscriptionCard
               key={tier.name}
@@ -234,7 +258,7 @@ const SubscriptionTabContent: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SubscriptionTabContent;
+export default SubscriptionTabContent

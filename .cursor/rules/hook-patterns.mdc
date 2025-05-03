@@ -1,0 +1,165 @@
+---
+description: creating React hooks
+globs: 
+alwaysApply: false
+---
+# React Hook Patterns
+
+## Hook Structure
+- Hooks are in `src/hooks` directory
+- Each hook has its own file (e.g., [useTermsOfService.ts](mdc:src/hooks/useTermsOfService.ts))
+- We follow the `use` prefix naming convention
+
+## React Query Pattern
+- We use TanStack Query (React Query) for data fetching and state management
+- Hooks should leverage useQuery, useMutation, and useQueryClient
+- Pattern for data fetching with useQuery:
+```typescript
+export function useMyFeature(id?: string) {
+  return useQuery({
+    queryKey: ["featureData", id],
+    queryFn: async () => {
+      if (!id) throw new Error("ID is required")
+      
+      const result = await apiFunction(id)
+      if (result instanceof Error) {
+        throw result
+      }
+      return result.ok
+    },
+    enabled: !!id, // Only run the query if we have an ID
+  })
+}
+```
+
+## Mutation Pattern
+- Use useMutation for data modifications
+- Pattern for mutations:
+```typescript
+const mutation = useMutation({
+  mutationFn: async (variables) => {
+    const result = await apiFunction(variables)
+    if (result.err) {
+      throw new Error(result.err)
+    }
+    return result.ok
+  },
+  onSuccess: () => {
+    // Invalidate and refetch queries that could be affected
+    queryClient.invalidateQueries({ queryKey: ["relatedData"] })
+  },
+})
+
+// Use mutation
+const handleSubmit = async () => {
+  try {
+    await mutation.mutateAsync(formData)
+  } catch (error) {
+    // Handle error
+  }
+}
+```
+
+
+## Hook Types
+- Define return types using TypeScript interfaces
+- Example:
+```typescript
+interface UseMyFeatureResult {
+  data: DataType | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export function useMyFeature(): UseMyFeatureResult {
+  // Implementation
+}
+```
+
+## Hook Dependencies
+- Pass dependencies as parameters
+- Use them in the useEffect dependency array
+- Example:
+```typescript
+export function useMyFeature(id?: string) {
+  // Implementation
+  
+  useEffect(() => {
+    if (id) {
+      fetchData(id);
+    }
+  }, [id]);
+  
+  // Return data
+}
+```
+
+## Complex Hook Patterns: Combining Queries and Mutations
+- For hooks that need to fetch multiple pieces of data and perform mutations, you can combine multiple `useQuery` calls and a `useMutation` in a single hook.
+- Return a cohesive result object with all data, loading and error states, and action functions.
+
+Example:
+```typescript
+interface UseTermsOfServiceResult {
+  tos: TermsOfService | null
+  status: TOSAcceptanceStatus | null
+  tosLoading: boolean
+  statusLoading: boolean
+  error: string | null
+  acceptTOS: (tosId: number) => Promise<boolean>
+}
+
+export function useTermsOfService(
+  userId?: string,
+  version?: string
+): UseTermsOfServiceResult {
+  const queryClient = useQueryClient()
+
+  // Fetch TOS content
+  const {
+    data: tos,
+    isLoading: tosLoading,
+    error: tosError,
+  } = useQuery({
+    queryKey: ["termsOfService", version],
+    queryFn: async () => fetchTermsOfService(version),
+  })
+
+  // Fetch acceptance status
+  const {
+    data: status,
+    isLoading: statusLoading,
+    error: statusError,
+  } = useQuery({
+    queryKey: ["tosStatus", userId],
+    queryFn: async () => checkTOSAcceptanceStatus(userId!),
+    enabled: !!userId,
+  })
+
+  // Mutation to accept TOS
+  const acceptMutation = useMutation({
+    mutationFn: async ({ tosId }: { tosId: number }) =>
+      acceptTermsOfService(userId!, tosId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tosStatus", userId])
+    },
+  })
+
+  const acceptTOS = (tosId: number) =>
+    acceptMutation.mutateAsync({ tosId })
+
+  // Combine data and loading/error states
+  return {
+    tos: tos || null,
+    status: status || null,
+    tosLoading,
+    statusLoading,
+    error: tosError?.message || statusError?.message || null,
+    acceptTOS,
+  }
+}
+
+## Hook Export Pattern
+- Use named exports for hooks
+- Never use default exports for hooks

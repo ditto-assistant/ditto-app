@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { usePlatform } from "@/hooks/usePlatform";
+import React, { useEffect, useState } from "react"
+import ReactDOM from "react-dom"
+import { motion, AnimatePresence } from "framer-motion"
+import { usePlatform } from "@/hooks/usePlatform"
 
 const CardMenu = ({ children, style, onDelete }) => {
-  const { ...restStyle } = style;
-  const { isMobile } = usePlatform();
-  const [shouldOpenUpward, setShouldOpenUpward] = useState(false);
+  const { ...restStyle } = style
+  const { isMobile } = usePlatform()
+  const [shouldOpenUpward, setShouldOpenUpward] = useState(false)
 
   useEffect(() => {
-    const viewportMidpoint = window.innerHeight / 2;
-    const triggerPosition = style.top;
-    setShouldOpenUpward(triggerPosition > viewportMidpoint);
-  }, [style.top]);
+    const viewportMidpoint = window.innerHeight / 2
+    const triggerPosition = style.top
+    setShouldOpenUpward(triggerPosition > viewportMidpoint)
+  }, [style.top])
 
-  const menuItems = React.Children.toArray(children).filter(Boolean);
-  const orderedItems = menuItems;
+  const menuItems = React.Children.toArray(children).filter(Boolean)
+  const orderedItems = menuItems
 
-  const menuWidth = isMobile ? 160 : 140;
-  const leftPosition = style.left - menuWidth - 8;
+  const menuWidth = isMobile ? 160 : 140
+  const leftPosition = style.left - menuWidth - 8
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -55,11 +55,11 @@ const CardMenu = ({ children, style, onDelete }) => {
           }),
         }}
         onClick={(e) => {
-          e.stopPropagation();
+          e.stopPropagation()
         }}
       >
         {orderedItems.map((child, index) => {
-          if (!child) return null;
+          if (!child) return null
 
           if (
             React.isValidElement(child) &&
@@ -75,7 +75,7 @@ const CardMenu = ({ children, style, onDelete }) => {
                   margin: isMobile ? "4px 0" : "2px 0",
                 }}
               />
-            );
+            )
           }
 
           return (
@@ -106,21 +106,21 @@ const CardMenu = ({ children, style, onDelete }) => {
               }}
               onClick={() => {
                 if (child.props.onClick) {
-                  child.props.onClick();
+                  child.props.onClick()
                 }
                 if (child.props.children === "Delete" && onDelete) {
-                  onDelete();
+                  onDelete()
                 }
               }}
             >
               {child}
             </motion.div>
-          );
+          )
         })}
       </motion.div>
     </AnimatePresence>,
-    document.body,
-  );
-};
+    document.body
+  )
+}
 
-export default CardMenu;
+export default CardMenu

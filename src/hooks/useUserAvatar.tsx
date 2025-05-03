@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { DEFAULT_USER_AVATAR } from "@/constants";
+import { useQuery } from "@tanstack/react-query"
+import { DEFAULT_USER_AVATAR } from "@/constants"
 
 // Check if the Workbox service worker API is available
-const hasServiceWorker = "serviceWorker" in navigator && "caches" in window;
+const hasServiceWorker = "serviceWorker" in navigator && "caches" in window
 
 // Create a global cache for avatars to avoid repeated requests
-const avatarCache = new Map<string, string>();
+const avatarCache = new Map<string, string>()
 
 /**
  * Custom hook to fetch and cache user avatars with built-in error handling.
@@ -16,18 +16,18 @@ const avatarCache = new Map<string, string>();
  */
 // Helper to preload avatars in the background
 export const preloadAvatar = (photoURL: string | null | undefined) => {
-  if (!photoURL) return;
+  if (!photoURL) return
 
   // Only preload if we don't have it cached already
   if (!avatarCache.has(photoURL)) {
     // Create a hidden image element to trigger loading
-    const img = new Image();
-    img.src = photoURL;
-    img.crossOrigin = "anonymous";
+    const img = new Image()
+    img.src = photoURL
+    img.crossOrigin = "anonymous"
 
     // Add to cache on successful load
     img.onload = () => {
-      avatarCache.set(photoURL, photoURL);
+      avatarCache.set(photoURL, photoURL)
 
       // Store in service worker cache too
       if (hasServiceWorker) {
@@ -36,17 +36,17 @@ export const preloadAvatar = (photoURL: string | null | undefined) => {
           .then((cache) => {
             fetch(photoURL, { method: "GET" })
               .then((response) => cache.put(photoURL, response))
-              .catch(() => {});
+              .catch(() => {})
           })
-          .catch(() => {});
+          .catch(() => {})
       }
-    };
+    }
   }
-};
+}
 
 export function useUserAvatar(
   photoURL: string | null | undefined,
-  fallbackAvatar = DEFAULT_USER_AVATAR,
+  fallbackAvatar = DEFAULT_USER_AVATAR
 ): string | null {
   // Use React Query to efficiently fetch and cache the image
   const { data: avatarUrl, isError } = useQuery({
@@ -54,12 +54,12 @@ export function useUserAvatar(
     queryFn: async (): Promise<string | null> => {
       // Return from cache if available
       if (photoURL && avatarCache.has(photoURL)) {
-        return avatarCache.get(photoURL) ?? null;
+        return avatarCache.get(photoURL) ?? null
       }
 
       // If no photo URL, return the fallback
       if (!photoURL) {
-        return fallbackAvatar;
+        return fallbackAvatar
       }
 
       try {
@@ -67,32 +67,32 @@ export function useUserAvatar(
         if (hasServiceWorker) {
           try {
             // Use the workbox cache if available
-            const cache = await caches.open("images");
-            const cachedResponse = await cache.match(photoURL);
+            const cache = await caches.open("images")
+            const cachedResponse = await cache.match(photoURL)
 
             if (cachedResponse && cachedResponse.ok) {
-              avatarCache.set(photoURL, photoURL);
-              return photoURL;
+              avatarCache.set(photoURL, photoURL)
+              return photoURL
             }
           } catch (cacheError) {
             // Silently continue if service worker cache fails
-            console.debug("Cache lookup failed:", cacheError);
+            console.debug("Cache lookup failed:", cacheError)
           }
         }
 
         // Create an image object to test if the URL loads successfully
         return await new Promise<string>((resolve, reject) => {
-          const img = new Image();
+          const img = new Image()
 
           // Set a timeout to prevent long-hanging requests
           const timeout = setTimeout(() => {
-            reject(new Error("Avatar load timeout"));
-          }, 5000);
+            reject(new Error("Avatar load timeout"))
+          }, 5000)
 
           // Set up handlers before setting src to avoid race conditions
           img.onload = () => {
-            clearTimeout(timeout);
-            avatarCache.set(photoURL, photoURL);
+            clearTimeout(timeout)
+            avatarCache.set(photoURL, photoURL)
 
             // Store in service worker cache for future requests
             if (hasServiceWorker) {
@@ -105,29 +105,27 @@ export function useUserAvatar(
                   },
                 })
                   .then((response) => cache.put(photoURL, response))
-                  .catch((err) =>
-                    console.debug("Failed to cache avatar:", err),
-                  );
-              });
+                  .catch((err) => console.debug("Failed to cache avatar:", err))
+              })
             }
 
-            resolve(photoURL);
-          };
+            resolve(photoURL)
+          }
 
           img.onerror = () => {
-            clearTimeout(timeout);
-            reject(new Error("Failed to load avatar"));
-          };
+            clearTimeout(timeout)
+            reject(new Error("Failed to load avatar"))
+          }
 
           // Start loading the image
-          img.src = photoURL;
+          img.src = photoURL
 
           // Immediately set crossOrigin to anonymous for CORS images
-          img.crossOrigin = "anonymous";
-        });
+          img.crossOrigin = "anonymous"
+        })
       } catch (error) {
-        console.warn("Avatar failed to load:", error);
-        return fallbackAvatar;
+        console.warn("Avatar failed to load:", error)
+        return fallbackAvatar
       }
     },
     // Critical settings to prevent over-fetching
@@ -135,8 +133,8 @@ export function useUserAvatar(
     retry: false, // Don't retry failed requests to avoid rate limits
     refetchOnWindowFocus: false, // Don't refetch when window focuses
     refetchOnMount: false, // Don't refetch when component mounts
-  });
+  })
 
   // Always return a valid avatar URL
-  return isError ? fallbackAvatar : (avatarUrl ?? fallbackAvatar);
+  return isError ? fallbackAvatar : (avatarUrl ?? fallbackAvatar)
 }

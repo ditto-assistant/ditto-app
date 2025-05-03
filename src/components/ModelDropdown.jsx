@@ -1,9 +1,8 @@
-import { useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { MdExpandMore } from "react-icons/md";
-import { FaCrown } from "react-icons/fa";
-import { DEFAULT_MODELS } from "../constants";
-import { createPortal } from "react-dom";
+import { useRef, useEffect } from "react"
+import { motion } from "framer-motion"
+import { Crown, ChevronDown } from "lucide-react"
+import { DEFAULT_MODELS } from "../constants"
+import { createPortal } from "react-dom"
 /**@typedef {import("@/types/llm").Model} Model */
 /**@typedef {import("@/types/llm").ModelOption} ModelOption */
 
@@ -24,10 +23,10 @@ const ModelDropdown = ({
   isOpen,
   onOpenChange,
 }) => {
-  const dropdownRef = useRef(null);
-  const portalRef = useRef(null);
+  const dropdownRef = useRef(null)
+  const portalRef = useRef(null)
 
-  const selectedModel = models.find((model) => model.id === value);
+  const selectedModel = models.find((model) => model.id === value)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,32 +36,32 @@ const ModelDropdown = ({
         portalRef.current &&
         !portalRef.current.contains(event.target)
       ) {
-        onOpenChange?.(false);
+        onOpenChange?.(false)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onOpenChange]);
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [onOpenChange])
 
   /**
    * Handles the selection of a model
    * @param {Model} modelId - The ID of the selected model
    */
   const handleSelect = (modelId) => {
-    const model = models.find((m) => m.id === modelId);
+    const model = models.find((m) => m.id === modelId)
     if (model.isMaintenance) {
-      return;
+      return
     }
 
-    onChange(modelId);
-    onOpenChange?.(false);
-  };
+    onChange(modelId)
+    onOpenChange?.(false)
+  }
 
   const handleClick = (e) => {
-    e.stopPropagation();
-    onOpenChange?.(!isOpen);
-  };
+    e.stopPropagation()
+    onOpenChange?.(!isOpen)
+  }
 
   return (
     <div ref={dropdownRef} style={styles.container}>
@@ -76,7 +75,7 @@ const ModelDropdown = ({
           <span>{selectedModel?.name}</span>
           {selectedModel?.minimumTier && (
             <span style={styles.premiumBadge}>
-              <FaCrown style={styles.crownIcon} />
+              <Crown style={styles.crownIcon} />
               Premium
             </span>
           )}
@@ -89,7 +88,7 @@ const ModelDropdown = ({
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <MdExpandMore style={styles.expandIcon} />
+          <ChevronDown style={styles.expandIcon} />
         </motion.div>
       </motion.div>
 
@@ -111,8 +110,8 @@ const ModelDropdown = ({
               overflowY: "auto",
             }}
             onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              e.preventDefault()
+              e.stopPropagation()
             }}
           >
             {models.map((model) => (
@@ -131,23 +130,23 @@ const ModelDropdown = ({
                   cursor: model.isMaintenance ? "not-allowed" : "pointer",
                 }}
                 onClick={() => {
-                  handleSelect(model.id);
+                  handleSelect(model.id)
                 }}
                 onMouseEnter={(e) => {
                   if (!model.isMaintenance) {
                     e.currentTarget.style.backgroundColor =
-                      "rgba(88, 101, 242, 0.1)";
+                      "rgba(88, 101, 242, 0.1)"
                   }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#2f3136";
+                  e.currentTarget.style.backgroundColor = "#2f3136"
                 }}
               >
                 <span>{model.name}</span>
                 <div style={styles.badges}>
                   {model.minimumTier && (
                     <span style={styles.premiumBadge}>
-                      <FaCrown style={styles.crownIcon} />
+                      <Crown style={styles.crownIcon} />
                       Premium
                     </span>
                   )}
@@ -159,11 +158,11 @@ const ModelDropdown = ({
               </div>
             ))}
           </div>,
-          document.body,
+          document.body
         )}
     </div>
-  );
-};
+  )
+}
 
 const darkModeColors = {
   primary: "#7289DA",
@@ -171,7 +170,7 @@ const darkModeColors = {
   foreground: "#23272A",
   cardBg: "#2F3136",
   border: "#1E1F22",
-};
+}
 
 export const styles = {
   container: {
@@ -269,6 +268,6 @@ export const styles = {
     fontSize: "10px",
     whiteSpace: "nowrap",
   },
-};
+}
 
-export default ModelDropdown;
+export default ModelDropdown

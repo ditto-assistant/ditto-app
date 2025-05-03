@@ -1,29 +1,39 @@
-import { motion, AnimatePresence } from "framer-motion";
-import MarkdownRenderer from "./MarkdownRenderer";
-import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserAvatar } from "@/hooks/useUserAvatar";
-import { FiCopy } from "react-icons/fi";
-import { FaBrain, FaTrash } from "react-icons/fa";
-import "./ChatMessage.css";
+import React from "react"
+import MarkdownRenderer from "./MarkdownRenderer"
+import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants"
+import { useAuth } from "@/hooks/useAuth"
+import { useUserAvatar } from "@/hooks/useUserAvatar"
+import { Copy, Brain, Trash } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useFontSize } from "@/hooks/useFontSize"
 
+// UI component imports
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 const detectToolType = (text: string) => {
-  if (!text) return null;
+  if (!text) return null
   if (text.includes("Image Task:") || text.includes("<IMAGE_GENERATION>"))
-    return "image";
+    return "image"
   if (text.includes("Google Search Query:") || text.includes("<GOOGLE_SEARCH>"))
-    return "search";
+    return "search"
   if (
     text.includes("OpenSCAD Script Generated") ||
     text.includes("<OPENSCAD_SCRIPT>")
   )
-    return "openscad";
+    return "openscad"
   if (text.includes("HTML Script Generated") || text.includes("<HTML_SCRIPT>"))
-    return "html";
-  if (text.includes("Home Assistant Task:")) return "home";
+    return "html"
+  if (text.includes("Home Assistant Task:")) return "home"
 
-  return null;
-};
+  return null
+}
 
 // Tool label colors and texts
 const toolLabels: Record<string, { color: string; text: string }> = {
@@ -32,77 +42,21 @@ const toolLabels: Record<string, { color: string; text: string }> = {
   image: { color: "#4CAF50", text: "Image" },
   search: { color: "#9C27B0", text: "Search" },
   home: { color: "#F44336", text: "Home" },
-};
+}
 
-// Avatar action menu component
-const AvatarActionMenu = ({
-  isUser,
-  onCopy,
-  onDelete,
-  onShowMemories,
-}: {
-  isUser: boolean;
-  onCopy: () => void;
-  onDelete: () => void;
-  onShowMemories: () => void;
-}) => {
-  const direction = isUser ? "right" : "left";
-
-  return (
-    <motion.div
-      className={`avatar-action-menu ${direction}`}
-      initial={{ opacity: 0, x: isUser ? -20 : 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: isUser ? -20 : 20 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-    >
-      <button
-        className="action-icon-button"
-        onClick={onCopy}
-        aria-label="Copy message"
-      >
-        <FiCopy />
-      </button>
-      <button
-        className="action-icon-button"
-        onClick={onShowMemories}
-        aria-label="Show memories"
-      >
-        <FaBrain />
-      </button>
-      <button
-        className="action-icon-button delete"
-        onClick={onDelete}
-        aria-label="Delete message"
-      >
-        <FaTrash />
-      </button>
-    </motion.div>
-  );
-};
+// Note: We've migrated from the custom AvatarActionMenu to shadcn's DropdownMenu
 
 interface ChatMessageProps {
-  content: string;
-  timestamp: number;
-  isUser: boolean;
-  isLast?: boolean;
-  isOptimistic?: boolean;
-  bubbleStyles?: {
-    text?: {
-      fontSize?: number;
-    };
-    chatbubble?: {
-      borderRadius?: number;
-      padding?: number;
-    };
-  };
-  onAvatarClick?: (e: React.MouseEvent) => void;
-  showMenu?: boolean;
-  menuProps?: {
-    onCopy: () => void;
-    onDelete: () => void;
-    onShowMemories: () => void;
-  };
+  content: string
+  timestamp: number | Date
+  isUser: boolean
+  isLast?: boolean
+  isOptimistic?: boolean
+  menuProps: {
+    onCopy: () => void
+    onDelete: () => void
+    onShowMemories: () => void
+  }
 }
 
 export default function ChatMessage({
@@ -111,115 +65,169 @@ export default function ChatMessage({
   isUser,
   isLast = false,
   isOptimistic = false,
-  bubbleStyles = {
-    text: { fontSize: 14 },
-    chatbubble: { borderRadius: 20, padding: 10 },
-  },
-  onAvatarClick,
-  showMenu = false,
   menuProps,
 }: ChatMessageProps) {
-  const { user } = useAuth();
-  const userAvatar = useUserAvatar(user?.photoURL);
-  const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR;
+  const { user } = useAuth()
+  const userAvatar = useUserAvatar(user?.photoURL)
+  const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
+  const { fontSize } = useFontSize()
+  const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInHours = Math.abs(now.getTime() - date.getTime()) / 36e5;
+  const formatTimestamp = (timestamp: number | Date) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
+    const now = new Date()
+    const diffInHours = Math.abs(now.getTime() - date.getTime()) / 36e5
 
     if (diffInHours < 24) {
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
-      });
+      })
     } else if (diffInHours < 168) {
       // 7 days
       return (
         date.toLocaleDateString([], { weekday: "short" }) +
         " " +
         date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
+      )
     } else {
       return (
         date.toLocaleDateString([], { month: "short", day: "numeric" }) +
         " " +
         date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
+      )
     }
-  };
+  }
 
-  const toolType = isUser ? null : detectToolType(content);
+  const toolType = isUser ? null : detectToolType(content)
+
+  // Animation classes for entry animation
+  const animationClass = isLast
+    ? "animate-in fade-in-0 slide-in-from-bottom-3 duration-300"
+    : ""
 
   return (
-    <motion.div
-      className={`message-container ${isUser ? "user" : "ditto"} ${isOptimistic ? "optimistic" : ""}`}
-      initial={isLast ? { opacity: 0, y: 10, scale: 0.95 } : false}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
+    // Outer wrapper: stack messages vertically, align left/right
+    <div
+      className={cn(
+        "flex flex-col w-full", // stack each message
+        isUser ? "items-end" : "items-start", // shift row right/left via flex-col cross-axis
+        isOptimistic && "opacity-80",
+        animationClass
+      )}
     >
-      <div className="message-content">
-        <div
-          className={`message-bubble ${isUser ? "user" : "ditto"} content-ready ${isOptimistic ? "optimistic" : ""}`}
-          style={{
-            ...bubbleStyles.chatbubble,
-            backgroundColor: isUser ? "#007AFF" : "#1C1C1E",
-          }}
+      {/* Chat bubble */}
+      <div className="max-w-[95%] pt-2 overflow-visible relative">
+        <Card
+          className={cn(
+            "py-0",
+            isUser
+              ? "bg-primary text-primary-foreground rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
+              : "bg-card text-card-foreground rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
+            isOptimistic && "border border-dashed border-opacity-20"
+          )}
         >
-          {toolType && (
-            <div
-              className="tool-label"
-              style={{
-                backgroundColor: toolLabels[toolType].color,
-              }}
-            >
-              {toolLabels[toolType].text}
-            </div>
-          )}
-          {isOptimistic && !isUser && content === "" ? (
-            <div className="optimistic-placeholder">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+          <CardContent className="p-3 sm:p-4 relative">
+            {" "}
+            {/* Responsive padding */}
+            {/* Tool label: Positioned above message with background color */}
+            {toolType && (
+              <div
+                className="absolute -top-1.5 left-3 px-2 py-0.5 text-xs font-bold rounded-full text-white z-10"
+                style={{
+                  backgroundColor: toolLabels[toolType].color,
+                }}
+              >
+                {toolLabels[toolType].text}
               </div>
+            )}
+            {/* Loading indicator for optimistic bot messages */}
+            {isOptimistic && !isUser && content === "" ? (
+              <div className="flex justify-center items-center py-2">
+                {" "}
+                {/* Center the loading dots */}
+                <div className="flex space-x-1">
+                  {" "}
+                  {/* Horizontal layout with spacing */}
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:0ms]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:150ms]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:300ms]"></div>
+                </div>
+              </div>
+            ) : (
+              // Message content with markdown rendering
+              <div
+                className={cn(
+                  "prose dark:prose-invert max-w-none",
+                  fontSize === "small" && "text-sm",
+                  fontSize === "medium" && "text-base",
+                  fontSize === "large" && "text-lg"
+                )}
+              >
+                <MarkdownRenderer content={content} />
+              </div>
+            )}
+            {/* Timestamp display */}
+            <div className="text-xs opacity-70 text-right mt-1">
+              {isOptimistic
+                ? content === ""
+                  ? "Thinking..."
+                  : "Streaming..."
+                : formatTimestamp(timestamp)}
             </div>
-          ) : (
-            <MarkdownRenderer content={content} />
-          )}
-          <div className="message-timestamp">
-            {isOptimistic
-              ? content === ""
-                ? "Thinking..."
-                : "Streaming..."
-              : formatTimestamp(timestamp)}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-
-      <div
-        className={`message-avatar ${isUser ? "user" : "ditto"} ${showMenu ? "active" : ""}`}
-        onClick={onAvatarClick}
-      >
-        <img
-          src={avatar}
-          alt={isUser ? "User Avatar" : "Ditto Avatar"}
-          className="avatar-image"
-          draggable="false"
-          loading="eager"
-        />
-
-        <AnimatePresence>
-          {showMenu && menuProps && (
-            <AvatarActionMenu
-              isUser={isUser}
-              onCopy={menuProps.onCopy}
-              onDelete={menuProps.onDelete}
-              onShowMemories={menuProps.onShowMemories}
-            />
+      {/* Avatar below bubble */}
+      <div className="mt-1.5 mb-1.5">
+        {" "}
+        {/* important margin for avatar spacing */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar
+              className="h-7 w-7 cursor-pointer transition-transform hover:scale-110"
+              onPointerDown={triggerLightHaptic}
+            >
+              <AvatarImage
+                src={avatar}
+                alt={isUser ? "User Avatar" : "Ditto Avatar"}
+                className="object-cover"
+                draggable="false"
+              />
+              <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          {menuProps && (
+            <DropdownMenuContent
+              align={isUser ? "end" : "start"}
+              className="w-auto"
+            >
+              <DropdownMenuItem
+                onPointerDown={triggerLightHaptic}
+                onClick={menuProps.onCopy}
+              >
+                <Copy className="mr-2 h-4 w-4" /> {/* Icon with right margin */}
+                <span>Copy</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onPointerDown={triggerLightHaptic}
+                onClick={menuProps.onShowMemories}
+              >
+                <Brain className="mr-2 h-4 w-4" />
+                <span>Memories</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onPointerDown={triggerLightHaptic}
+                onClick={menuProps.onDelete}
+                className="text-destructive focus:text-destructive" // Danger action styling
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
           )}
-        </AnimatePresence>
+        </DropdownMenu>
       </div>
-    </motion.div>
-  );
+    </div>
+  )
 }

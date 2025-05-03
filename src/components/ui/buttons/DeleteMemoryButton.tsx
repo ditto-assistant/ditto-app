@@ -1,17 +1,17 @@
-import React from "react";
-import { FaTrash } from "react-icons/fa";
-import { ModalButton } from "./ModalButton";
+import React from "react"
+import { Trash } from "lucide-react"
+import { ModalButton } from "./ModalButton"
 import {
   resetConversation,
   deleteAllUserImagesFromFirebaseStorageBucket,
-} from "@/control/firebase";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+} from "@/control/firebase"
+import { useAuth } from "@/hooks/useAuth"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 
 interface DeleteMemoryButtonProps {
-  onSuccess?: () => void;
-  className?: string;
-  fixedWidth?: boolean;
+  onSuccess?: () => void
+  className?: string
+  fixedWidth?: boolean
 }
 
 export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
@@ -19,53 +19,45 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
   className = "",
   fixedWidth,
 }) => {
-  const { user } = useAuth();
-  const { showConfirmationDialog } = useConfirmationDialog();
+  const { user } = useAuth()
+  const { showConfirmationDialog } = useConfirmationDialog()
 
   const handleDeleteMemory = async () => {
-    console.log("Resetting conversation history...");
-    localStorage.setItem("resetMemory", "true");
-    if (!user?.uid) return;
-
-    localStorage.removeItem("prompts");
-    localStorage.removeItem("responses");
-    localStorage.removeItem("timestamps");
-    localStorage.removeItem("pairIDs");
-    localStorage.removeItem("histCount");
-
-    await resetConversation(user?.uid);
-    await deleteAllUserImagesFromFirebaseStorageBucket(user?.uid);
-
-    window.dispatchEvent(
-      new CustomEvent("memoryDeleted", {
-        detail: { newHistCount: 0 },
-      }),
-    );
-
-    onSuccess?.();
-  };
+    console.log("Resetting conversation history...")
+    if (!user?.uid) return
+    await resetConversation(user?.uid)
+    await deleteAllUserImagesFromFirebaseStorageBucket(user?.uid)
+    onSuccess?.()
+  }
 
   const handleOpenDialog = () => {
+    // Vibrate with a stronger pattern for destructive action warning
+    navigator.vibrate?.(20)
+
     showConfirmationDialog({
       title: "Delete All Memory",
       content:
         "Are you sure you want to delete all memory? This action cannot be undone.",
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
-      onConfirm: handleDeleteMemory,
-      variant: "danger",
-    });
-  };
+      onConfirm: () => {
+        // Vibrate with a stronger pattern when confirmed
+        navigator.vibrate?.([20, 30, 40])
+        handleDeleteMemory()
+      },
+      variant: "destructive",
+    })
+  }
 
   return (
     <ModalButton
-      variant="danger"
+      variant="destructive"
       onClick={handleOpenDialog}
       className={className}
-      icon={<FaTrash />}
+      icon={<Trash />}
       fixedWidth={fixedWidth}
     >
       Delete All Memory
     </ModalButton>
-  );
-};
+  )
+}

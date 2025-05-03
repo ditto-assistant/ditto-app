@@ -1,72 +1,62 @@
-import { useContext, createContext } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getBalance } from "@/api/getBalance";
-import { useAuth } from "@/hooks/useAuth";
-import toast from "react-hot-toast";
-import BalanceDropToast from "@/components/toasts/BalanceDropToast";
-
-// TODO: Make this server-side
-export const PREMIUM_BALANCE_THRESHOLD = 1_000_000_000;
+import { useContext, createContext } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { getBalance } from "@/api/getBalance"
+import { useAuth } from "@/hooks/useAuth"
+import { toast } from "sonner"
 
 export function useBalance() {
-  const context = useContext(BalanceContext);
+  const context = useContext(BalanceContext)
   if (context === undefined) {
-    throw new Error("useBalance must be used within a BalanceProvider");
+    throw new Error("useBalance must be used within a BalanceProvider")
   }
-  return context;
+  return context
 }
 
 const BalanceContext = createContext<ReturnType<typeof useBal> | undefined>(
-  undefined,
-);
+  undefined
+)
 
 export function BalanceProvider({ children }: { children: React.ReactNode }) {
-  const value = useBal();
+  const value = useBal()
   return (
     <BalanceContext.Provider value={value}>{children}</BalanceContext.Provider>
-  );
+  )
 }
 
 function useBal() {
-  const { user } = useAuth();
+  const { user } = useAuth()
   return useQuery({
     queryKey: ["balance", user?.uid],
     queryFn: async () => {
-      const result = await getBalance();
+      const result = await getBalance()
       if (result.err) {
-        throw new Error(result.err);
+        throw new Error(result.err)
       }
       if (!result.ok) {
-        throw new Error("Unable to get balance");
+        throw new Error("Unable to get balance")
       }
-      if (!result.ok.dropAmount) {
-        return result.ok;
-      }
-      if (!result.ok.lastAirdropAt) {
-        return result.ok;
+      const res = result.ok
+      if (!res.dropAmount || !res.lastAirdropAt) {
+        return res
       }
       // Only show toast for recent airdrops (within last 5 seconds)
-      const now = new Date();
-      const timeSinceAirdrop =
-        now.getTime() - result.ok.lastAirdropAt.getTime();
+      const now = new Date()
+      const timeSinceAirdrop = now.getTime() - res.lastAirdropAt.getTime()
       if (timeSinceAirdrop > 5000) {
-        console.log(
-          "Skipping airdrop toast - too old:",
-          timeSinceAirdrop,
-          "ms",
-        );
-        return result.ok;
+        console.log("Skipping airdrop toast - too old:", timeSinceAirdrop, "ms")
+        return res
       }
 
-      const dropAmount = result.ok.dropAmount;
-      // Using consistent ID ensures only one toast is shown at a time
-      toast.custom((t) => <BalanceDropToast t={t} amount={dropAmount} />, {
-        // duration: 2000,
-        id: "balance-drop-toast", // Using a consistent ID prevents duplicates
-      });
+      const dropAmount = res.dropAmount
+      toast.success(`${res.planTierName} reward +${dropAmount}`, {
+        id: "balance-drop-toast",
+        icon: "💰",
+        duration: 2000,
+        className: "animate-bounce",
+      })
 
-      return result.ok;
+      return res
     },
     enabled: !!user,
-  });
+  })
 }

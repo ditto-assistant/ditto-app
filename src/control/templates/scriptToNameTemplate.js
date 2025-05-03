@@ -3,7 +3,7 @@
  */
 export function scriptToNameSystemTemplate() {
   return `You are an experienced programmer named Ditto here to help the user name their script. The user is your best friend.
-`;
+`
 }
 
 /**
@@ -40,5 +40,5 @@ Task:
 ${scriptTask}
 
 Script Name:
-`;
+`
 }

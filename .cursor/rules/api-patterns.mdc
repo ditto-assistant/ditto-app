@@ -1,0 +1,60 @@
+---
+description: API integrations with the backend
+globs: 
+alwaysApply: false
+---
+# API Integration Patterns
+
+## Core Structure
+- API functions are in `src/api` directory
+- Each API endpoint has its own file (e.g., [tos.ts](mdc:src/api/tos.ts))
+- We use Zod for schema validation and type generation
+- We use the Result type pattern for error handling
+
+## Auth Requirements
+- Authenticated endpoints use `getToken()` from [auth.ts](mdc:src/api/auth.ts)
+- Auth token validation follows this pattern:
+```typescript
+const tok = await getToken()
+if (tok.err) {
+  return { err: `Unable to get token: ${tok.err}` }
+}
+if (!tok.ok) {
+  return { err: "No token" }
+}
+```
+
+## Zod Schema Pattern
+- Define schemas at the top of the file
+- Use `z.infer<typeof Schema>` for TypeScript types
+- Example:
+```typescript
+// Schema definition
+export const MySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+// Type creation
+export type MyType = z.infer<typeof MySchema>;
+```
+
+## Response Validation
+- All API responses are validated with Zod's `safeParse()`
+- Handle validation errors with detailed messages
+- Example:
+```typescript
+const rawData: unknown = await response.json();
+const result = MySchema.safeParse(rawData);
+if (result.success) {
+  return { ok: result.data };
+} else {
+  console.error("Validation error:", result.error.flatten());
+  return { err: `Invalid data. Error: ${result.error.message}` };
+}
+```
+
+## Result Type Pattern
+- API functions return a `Result<T>` type from [common.ts](mdc:src/types/common.ts) 
+- A Result has either an `ok` or `err` property
+- This enables clear error handling in components
