@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { X, Bug, Lightbulb } from "lucide-react"
+import { X, Bug, Lightbulb, ExternalLink } from "lucide-react"
 import Modal from "./ui/modals/Modal"
 import { Button } from "./ui/button"
 import { useModal } from "@/hooks/useModal"
@@ -10,6 +10,8 @@ import { useAuth, useAuthToken } from "@/hooks/useAuth"
 import { LoadingSpinner } from "./ui/loading/LoadingSpinner"
 import SocialLinks from "./ui/links/SocialLinks"
 import { cn } from "@/lib/utils"
+import { Textarea } from "./ui/textarea"
+import { Separator } from "./ui/separator"
 
 type FeedbackType = "bug" | "feature-request"
 
@@ -76,75 +78,109 @@ export default function FeedbackModal() {
     <Modal
       id="feedback"
       title="Send Feedback"
-      headerRightContent={
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={closeModal}
-          className="h-8 w-8"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      }
     >
-      <div className="flex flex-col space-y-4 p-4">
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium">Feedback Type</label>
-            <div className="flex gap-3 sm:flex-row flex-col">
-              <Button
-                type="button"
-                variant={selectedType === "bug" ? "default" : "outline"}
-                onClick={() => setSelectedType("bug")}
-                className={cn(
-                  "flex-1",
-                  selectedType === "bug" &&
-                    "bg-gradient-to-r from-red-900 to-red-400"
-                )}
-              >
-                <Bug className="mr-2 h-4 w-4 text-red-400" />
-                Report Bug
-              </Button>
-              <Button
-                type="button"
-                variant={
-                  selectedType === "feature-request" ? "default" : "outline"
-                }
-                onClick={() => setSelectedType("feature-request")}
-                className={cn(
-                  "flex-1",
-                  selectedType === "feature-request" &&
-                    "bg-gradient-to-r from-amber-800 to-amber-300"
-                )}
-              >
-                <Lightbulb className="mr-2 h-4 w-4 text-amber-300" />
-                Suggest Idea
-              </Button>
-            </div>
+      <form onSubmit={handleSubmit} className="px-4 py-2 flex flex-col gap-6">
+        <div className="space-y-3">
+          <label className="text-sm font-medium">Feedback Type</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setSelectedType("bug")}
+              className={cn(
+                "h-12 relative overflow-hidden transition-all duration-200 active:scale-95 cursor-pointer",
+                selectedType === "bug" 
+                  ? "bg-gradient-to-r from-red-950/70 to-red-900/50 border border-red-500/30 text-white"
+                  : "border border-border/50 hover:bg-background/80 hover:border-border/70"
+              )}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Bug className={cn(
+                  "h-5 w-5 transition-colors duration-200",
+                  selectedType === "bug" ? "text-red-400" : "text-muted-foreground group-hover:text-red-400/70"
+                )} />
+                <span>Report Bug</span>
+              </div>
+              {selectedType === "bug" && (
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-red-400/5 pointer-events-none" />
+              )}
+            </Button>
+            
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setSelectedType("feature-request")}
+              className={cn(
+                "h-12 relative overflow-hidden transition-all duration-200 active:scale-95 cursor-pointer",
+                selectedType === "feature-request" 
+                  ? "bg-gradient-to-r from-amber-950/70 to-amber-900/50 border border-amber-500/30 text-white"
+                  : "border border-border/50 hover:bg-background/80 hover:border-border/70"
+              )}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Lightbulb className={cn(
+                  "h-5 w-5 transition-colors duration-200",
+                  selectedType === "feature-request" ? "text-amber-300" : "text-muted-foreground group-hover:text-amber-300/70"
+                )} />
+                <span>Suggest Idea</span>
+              </div>
+              {selectedType === "feature-request" && (
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-600/10 to-amber-400/5 pointer-events-none" />
+              )}
+            </Button>
           </div>
-          <div className="flex flex-col space-y-2">
-            <label htmlFor="feedback" className="text-sm font-medium">
-              Your Feedback
-            </label>
-            <textarea
-              id="feedback"
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Please share your thoughts, suggestions, or report any issues..."
-              required
-            />
-          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <label htmlFor="feedback" className="text-sm font-medium">
+            Your Feedback
+          </label>
+          <Textarea
+            id="feedback"
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder="Please share your thoughts, suggestions, or report any issues..."
+            required
+            className="min-h-[150px] bg-background/50 border-border/60 focus-visible:border-primary/50"
+          />
+        </div>
+        
+        <Button
+          type="submit"
+          disabled={isSubmitting || !feedback.trim()}
+          className="w-full bg-primary/90 hover:bg-primary text-primary-foreground h-11 transition-all duration-200 hover:shadow-[0_0_15px_rgba(29,78,216,0.2)] active:scale-[0.98] cursor-pointer"
+        >
+          {isSubmitting ? "Submitting..." : "Submit Feedback"}
+        </Button>
+        
+        <Separator className="bg-border/40" />
+        
+        <div className="flex flex-col items-center text-center space-y-3">
+          <p className="text-sm text-foreground/80">
+            Want to help us improve Ditto even more?
+          </p>
           <Button
-            type="submit"
-            disabled={isSubmitting || !feedback.trim()}
-            className="w-full"
+            variant="outline"
+            size="sm"
+            className="gap-2 bg-secondary/40 hover:bg-secondary/60 border-secondary/50 text-secondary-foreground transition-all duration-200 hover:shadow-[0_0_15px_rgba(148,163,184,0.2)] active:scale-95 cursor-pointer"
+            asChild
           >
-            {isSubmitting ? "Submitting..." : "Submit Feedback"}
+            <a 
+              href="https://docs.google.com/forms/d/e/1FAIpQLSeG3aEOYCgcLHTNQUN1DT9c0_-cghIvG-PWfw7AIFweELMubQ/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:translate-y-[-0.5px]" />
+              Take our User Survey
+            </a>
           </Button>
+        </div>
+        
+        <div className="mt-4">
+          <h3 className="text-sm font-medium mb-2 text-foreground/90">Connect with us</h3>
           <SocialLinks />
-        </form>
-      </div>
+        </div>
+      </form>
     </Modal>
   )
 }
