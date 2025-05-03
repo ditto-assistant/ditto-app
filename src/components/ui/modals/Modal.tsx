@@ -324,11 +324,11 @@ export default function Modal({
     >
       {/* Modal Header */}
       <div
-        className="border-b flex items-center justify-between p-3 select-none"
+        className="border-b flex items-center justify-between py-4 px-4 select-none"
         onMouseDown={handleStartDrag}
         onTouchStart={handleStartDrag}
       >
-        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+        <div className="flex items-center gap-3 min-w-0 overflow-hidden">
           {headerLeftContent}
           {icon && <span className="flex-shrink-0">{icon}</span>}
           <h2
@@ -341,23 +341,23 @@ export default function Modal({
           </h2>
         </div>
 
-        <div className="flex items-center gap-1" data-modal-control>
+        <div className="flex items-center gap-2" data-modal-control>
           {headerRightContent}
           {!notResizable && (
             <button
               onClick={() => setIsFullscreen((prev) => !prev)}
-              className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
+              className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted transition-colors"
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
           )}
           <button
             onClick={closeModal}
-            className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
+            className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted transition-colors"
             aria-label="Close"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
       </div>
