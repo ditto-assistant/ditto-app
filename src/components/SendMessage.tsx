@@ -495,6 +495,7 @@ export default function SendMessage({
                           size="icon"
                           aria-label="Add media"
                           className="h-9 w-9"
+                          onPointerDown={() => navigator.vibrate?.(10)}
                         >
                           <Plus className="h-5 w-5" />
                         </Button>
@@ -503,11 +504,17 @@ export default function SendMessage({
                     <TooltipContent>Add media</TooltipContent>
                   </Tooltip>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={handleGalleryClick}>
+                    <DropdownMenuItem 
+                      onClick={handleGalleryClick}
+                      onPointerDown={() => navigator.vibrate?.(10)}
+                    >
                       <Image className="mr-2 h-4 w-4" />
                       <span>Photo Gallery</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCameraClick}>
+                    <DropdownMenuItem 
+                      onClick={handleCameraClick}
+                      onPointerDown={() => navigator.vibrate?.(10)}
+                    >
                       <Camera className="mr-2 h-4 w-4" />
                       <span>Camera</span>
                     </DropdownMenuItem>
@@ -597,6 +604,7 @@ export default function SendMessage({
                         onClick={handleStopGeneration}
                         aria-label="Stop generation"
                         className="h-9 w-9"
+                        onPointerDown={() => navigator.vibrate?.(20)}
                       >
                         <Square className="h-5 w-5" />
                       </Button>
@@ -608,6 +616,7 @@ export default function SendMessage({
                         disabled={isInvalidConfig}
                         aria-label="Send message"
                         className="h-9 w-9"
+                        onPointerDown={() => navigator.vibrate?.(15)}
                       >
                         <SendHorizonal className="h-5 w-5" />
                       </Button>

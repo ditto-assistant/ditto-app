@@ -9,6 +9,7 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  onValueCommit,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
   const _values = React.useMemo(
@@ -20,6 +21,15 @@ function Slider({
           : [min, max],
     [value, defaultValue, min, max]
   )
+  
+  // Create a custom handler for value commit (when user releases the slider)
+  const handleValueCommit = (values: number[]) => {
+    // Vibrate when value is committed to provide tactile feedback
+    navigator.vibrate?.(10)
+    
+    // Call the original handler if it exists
+    onValueCommit?.(values)
+  }
 
   return (
     <SliderPrimitive.Root
@@ -28,6 +38,7 @@ function Slider({
       value={value}
       min={min}
       max={max}
+      onValueCommit={handleValueCommit}
       className={cn(
         "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
         className

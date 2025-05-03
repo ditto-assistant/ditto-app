@@ -31,13 +31,20 @@ export const DeleteMemoryButton: React.FC<DeleteMemoryButtonProps> = ({
   }
 
   const handleOpenDialog = () => {
+    // Vibrate with a stronger pattern for destructive action warning
+    navigator.vibrate?.(20)
+    
     showConfirmationDialog({
       title: "Delete All Memory",
       content:
         "Are you sure you want to delete all memory? This action cannot be undone.",
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
-      onConfirm: handleDeleteMemory,
+      onConfirm: () => {
+        // Vibrate with a stronger pattern when confirmed
+        navigator.vibrate?.([20, 30, 40])
+        handleDeleteMemory()
+      },
       variant: "destructive",
     })
   }
