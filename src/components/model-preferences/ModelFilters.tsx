@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 
 interface FilterValues {
   speed: string | null
@@ -41,6 +42,7 @@ export const ModelFilters = ({
 }: ModelFiltersProps) => {
   // Toggle filter values
   const toggleFilter = (filterKey: keyof FilterValues, value: string) => {
+    triggerHaptic(HapticPattern.Light)
     setActiveFilters({
       ...activeFilters,
       [filterKey]: activeFilters[filterKey] === value ? null : value,

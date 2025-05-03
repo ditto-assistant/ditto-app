@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useAllServices } from "@/hooks/useAllServices"
 import { LayoutGrid, ImageIcon, Code } from "lucide-react"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { triggerHaptic, HapticPattern, VibrationPatterns } from "@/utils/haptics"
 
 import { ModelList } from "./ModelList"
 import { ModelFilters } from "./ModelFilters"
@@ -45,9 +46,11 @@ export const ModelPreferencesModal: React.FC = () => {
       <Tabs
         defaultValue="main"
         value={activeTab}
-        onValueChange={(val) =>
-          setActiveTab(val as "main" | "programmer" | "image")
-        }
+        onValueChange={(val) => {
+          const tabValue = val as "main" | "programmer" | "image"
+          setActiveTab(tabValue)
+          triggerHaptic(HapticPattern.Light)
+        }}
         className="w-full h-full flex flex-col"
       >
         <TabsList className="w-full flex justify-center mb-2 p-1 bg-muted/10">

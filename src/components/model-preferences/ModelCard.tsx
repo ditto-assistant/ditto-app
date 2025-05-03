@@ -3,6 +3,7 @@ import { LLMModel, ImageModel } from "@/api/services"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { Model, Vendor } from "@/types/llm"
 import { IMAGE_GENERATION_SIZES } from "@/constants"
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 import {
   Card,
   CardContent,
@@ -168,9 +169,11 @@ export const ModelCard = ({
       )}
       onClick={(e) => {
         e.stopPropagation()
+        triggerHaptic(HapticPattern.Light)
         if (isAccessible) {
           onSelect()
         } else if (redirectToSubscription) {
+          triggerHaptic(HapticPattern.Warning)
           redirectToSubscription()
         }
       }}
@@ -189,6 +192,7 @@ export const ModelCard = ({
             className="p-0 h-8 w-8"
             onClick={(e) => {
               e.stopPropagation()
+              triggerHaptic(HapticPattern.Light)
               onShowDetails()
             }}
           >
@@ -236,6 +240,7 @@ export const ModelCard = ({
             className="w-full text-sm font-medium"
             onClick={(e) => {
               e.stopPropagation()
+              triggerHaptic(HapticPattern.Warning)
               redirectToSubscription?.()
             }}
           >
@@ -266,6 +271,7 @@ export const ModelCard = ({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
+                  triggerHaptic(HapticPattern.Medium)
                   handleSizeChange(size)
                 }}
               >

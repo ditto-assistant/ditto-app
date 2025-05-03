@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Vendor } from "@/types/llm"
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 
 interface ModelDetailsProps {
   model: LLMModel | ImageModel | null
@@ -72,7 +73,15 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
   const isLLMModel = "costPerMillionInputTokens" in model
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!open) {
+          triggerHaptic(HapticPattern.Medium)
+          onClose()
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">

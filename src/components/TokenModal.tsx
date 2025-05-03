@@ -10,6 +10,11 @@ import { CheckCircle, Coins } from "lucide-react"
 import { motion } from "framer-motion"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors"
+import {
+  HapticPattern,
+  VibrationPatterns,
+  triggerHaptic,
+} from "@/utils/haptics"
 
 const PricingTiers = [
   { price: 5, tokens: "5B", bonus: "0%" },
@@ -36,6 +41,8 @@ export default function TokenModal() {
     const tokenSuccess = window.sessionStorage.getItem("token_success")
     if (tokenSuccess === "true") {
       setShowSuccess(true)
+      // Play success haptic feedback
+      triggerHaptic(VibrationPatterns.Success)
       // Clear the flag
       window.sessionStorage.removeItem("token_success")
     }
@@ -43,6 +50,8 @@ export default function TokenModal() {
 
   const handleAmountChange = (value: number | string) => {
     const newAmount = Math.max(1, Number(value))
+    // Provide haptic feedback when selecting a pricing tier
+    triggerHaptic(HapticPattern.Light)
     setAmount(newAmount)
   }
 

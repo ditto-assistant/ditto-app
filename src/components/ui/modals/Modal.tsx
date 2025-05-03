@@ -6,6 +6,7 @@ import { Crown, Maximize2, Minimize2, X } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { HapticPattern, triggerHaptic } from "@/utils/haptics"
 
 export interface ModalTab {
   id: string
@@ -71,7 +72,10 @@ export default function Modal({
   const [activeTabId, setActiveTabId] = useState<string | undefined>(
     defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined)
   )
-  const closeModal = createCloseHandler(id)
+  const closeModal = () => {
+    triggerHaptic(HapticPattern.Medium)
+    createCloseHandler(id)()
+  }
   const bringToFront = createBringToFrontHandler(id)
   const modalState = getModalState(id)
   const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex
@@ -256,6 +260,7 @@ export default function Modal({
   }, [modalState, activeTabId])
 
   const handleTabChange = (tabId: string) => {
+    triggerHaptic(HapticPattern.Light)
     setActiveTabId(tabId)
     if (onTabChange) {
       onTabChange(tabId)
@@ -345,7 +350,10 @@ export default function Modal({
           {headerRightContent}
           {!notResizable && (
             <button
-              onClick={() => setIsFullscreen((prev) => !prev)}
+              onClick={() => {
+                triggerHaptic(HapticPattern.Light)
+                setIsFullscreen((prev) => !prev)
+              }}
               className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted transition-colors"
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >

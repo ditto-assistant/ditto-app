@@ -25,13 +25,13 @@ import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useScripts } from "@/hooks/useScripts"
 import { useModal } from "@/hooks/useModal"
-import SlidingMenu from "@/components/ui/SlidingMenu"
 import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/useUser"
 import { ErrorPaymentRequired } from "@/types/errors"
 import { useComposeContext } from "@/contexts/ComposeContext"
 import { cn } from "@/lib/utils"
+import { HapticPattern, triggerHaptic } from "@/utils/haptics"
 
 // UI components
 import { Button } from "@/components/ui/button"
@@ -474,6 +474,7 @@ export default function SendMessage({
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation()
+                        triggerHaptic(HapticPattern.Light)
                         openComposeModal()
                       }}
                       aria-label="Expand message"

@@ -3,6 +3,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { ModelCard } from "./ModelCard"
 import { useState } from "react"
 import { ModelDetails } from "./ModelDetails"
+import { triggerHaptic, HapticPattern, VibrationPatterns } from "@/utils/haptics"
 
 interface ModelGroupProps {
   title: string
@@ -86,6 +87,7 @@ export const ModelGroup = ({
             isSelected={isModelSelected(selectedVariant!)}
             userTier={userTier}
             onSelect={() => {
+              triggerHaptic(VibrationPatterns.Success)
               updatePreferences({
                 imageGeneration: {
                   model: selectedVariant!.name,
@@ -108,6 +110,7 @@ export const ModelGroup = ({
               isSelected={isModelSelected(item)}
               userTier={userTier}
               onSelect={() => {
+                triggerHaptic(VibrationPatterns.Success)
                 if (activeTab === "main") {
                   updatePreferences({ mainModel: item.name })
                 } else {

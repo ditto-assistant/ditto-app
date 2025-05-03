@@ -6,8 +6,10 @@ import { useUser } from "@/hooks/useUser"
 import { Zap, Info } from "lucide-react"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
+import { triggerHaptic, HapticPattern, VibrationPatterns } from "@/utils/haptics"
 
 const redirectToGeneralTab = () => {
+  triggerHaptic(HapticPattern.Warning)
   const generalTab = document.querySelector('.modal-tab[data-tab-id="general"]')
   if (generalTab) {
     ;(generalTab as HTMLElement).click()
@@ -42,6 +44,13 @@ export const AgentToolsModal: React.FC<AgentToolsModalProps> = ({
       [toolName]: !localTools[toolName],
     }
     setLocalTools(updatedTools)
+
+    // Trigger haptic feedback based on the new state
+    if (updatedTools[toolName]) {
+      triggerHaptic(VibrationPatterns.Success)
+    } else {
+      triggerHaptic(HapticPattern.Light)
+    }
 
     // Then update the backend
     updatePreferences({
