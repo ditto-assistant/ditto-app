@@ -1,5 +1,4 @@
 import React from "react"
-import WhatsNew from "./WhatsNew"
 import useWhatsNew from "@/hooks/useWhatsNew"
 
 /**
@@ -18,9 +17,9 @@ const TestWhatsNew: React.FC = () => {
         New dialog
       </p>
 
-      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+      <div style={{ display: "flex", gap: "10px", marginTop: "20px", flexWrap: "wrap" }}>
         <button
-          onClick={() => openWhatsNew("0.11.54")}
+          onClick={() => openWhatsNew("0.11.54", true)}
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
@@ -31,7 +30,7 @@ const TestWhatsNew: React.FC = () => {
         </button>
 
         <button
-          onClick={() => openWhatsNew("0.11.55")}
+          onClick={() => openWhatsNew("0.11.55", true)}
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
@@ -42,7 +41,7 @@ const TestWhatsNew: React.FC = () => {
         </button>
 
         <button
-          onClick={() => openWhatsNew("0.11.56")}
+          onClick={() => openWhatsNew("0.11.56", true)}
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
@@ -53,7 +52,7 @@ const TestWhatsNew: React.FC = () => {
         </button>
 
         <button
-          onClick={() => openWhatsNew("0.11.57")}
+          onClick={() => openWhatsNew("0.11.57", true)}
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
@@ -62,10 +61,21 @@ const TestWhatsNew: React.FC = () => {
         >
           Show v0.11.57
         </button>
-      </div>
 
-      {/* Render the WhatsNew component so it's available */}
-      <WhatsNew version="0.11.57" />
+        <button
+          onClick={() => openWhatsNew("0.13.0", true)}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            fontWeight: "bold"
+          }}
+        >
+          Show v0.13.0 (New)
+        </button>
+      </div>
     </div>
   )
 }

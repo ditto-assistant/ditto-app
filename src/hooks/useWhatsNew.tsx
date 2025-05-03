@@ -5,7 +5,7 @@ import { auth } from "@/control/firebase"
 import { doc, getDoc, setDoc, getFirestore } from "firebase/firestore"
 
 interface UseWhatsNewReturn {
-  openWhatsNew: (version?: string) => void
+  openWhatsNew: (version?: string, force?: boolean) => void
   currentVersion: string | null
 }
 
@@ -101,16 +101,18 @@ export default function useWhatsNew(): UseWhatsNewReturn {
 
   // Open What's New modal
   const openWhatsNew = useCallback(
-    async (version?: string) => {
+    async (version?: string, force: boolean = false) => {
       const versionToShow = version || getUpdateState().currentVersion
 
-      // Only open if this version hasn't been dismissed
-      if (await shouldShowForVersion(versionToShow)) {
+      // Always open if force=true, otherwise check if it has been dismissed
+      if (force || await shouldShowForVersion(versionToShow)) {
         setCurrentVersion(versionToShow)
         openWhatsNewModal()
 
-        // Mark this version as seen
-        await saveDismissedVersion(versionToShow)
+        // Mark this version as seen if not forced
+        if (!force) {
+          await saveDismissedVersion(versionToShow)
+        }
       }
     },
     [openWhatsNewModal, shouldShowForVersion, saveDismissedVersion]

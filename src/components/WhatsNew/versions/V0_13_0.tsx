@@ -66,6 +66,17 @@ const V0_13_0 = () => (
     {sections.map((section, index) => (
       <VersionSection key={index} {...section} />
     ))}
+    <div className="mt-6 text-center">
+      <p className="mb-2">We&apos;d love to hear from you!</p>
+      <a
+        href="https://docs.google.com/forms/d/e/1FAIpQLSeG3aEOYCgcLHTNQUN1DT9c0_-cghIvG-PWfw7AIFweELMubQ/viewform"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary hover:underline font-medium"
+      >
+        Share your thoughts and help us improve Ditto
+      </a>
+    </div>
   </div>
 )
 

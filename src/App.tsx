@@ -70,6 +70,7 @@ const ScriptsOverlay = loadE(
 const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
 const ComposeModal = loadE(() => import("@/components/ComposeModal"))
+// const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
 const queryClient = new QueryClient()
 
 const router = createBrowserRouter(
@@ -89,6 +90,9 @@ const router = createBrowserRouter(
         }
       >
         <Route index Component={HomeScreen} />
+        {/* <Route path="test">
+          <Route path="whatsnew" Component={TestWhatsNew} />
+        </Route> */}
       </Route>
     </Route>
   )
