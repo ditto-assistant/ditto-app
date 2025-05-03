@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 const detectToolType = (text: string) => {
   if (!text) return null
   if (text.includes("Image Task:") || text.includes("<IMAGE_GENERATION>"))
@@ -71,6 +71,7 @@ export default function ChatMessage({
   const userAvatar = useUserAvatar(user?.photoURL)
   const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
   const { fontSize } = useFontSize()
+  const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
   const formatTimestamp = (timestamp: number | Date) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
@@ -185,7 +186,7 @@ export default function ChatMessage({
           <DropdownMenuTrigger asChild>
             <Avatar
               className="h-7 w-7 cursor-pointer transition-transform hover:scale-110"
-              onPointerDown={() => navigator.vibrate?.(10)}
+              onPointerDown={triggerLightHaptic}
             >
               <AvatarImage
                 src={avatar}
@@ -201,15 +202,22 @@ export default function ChatMessage({
               align={isUser ? "end" : "start"}
               className="w-auto"
             >
-              <DropdownMenuItem onClick={menuProps.onCopy}>
+              <DropdownMenuItem
+                onPointerDown={triggerLightHaptic}
+                onClick={menuProps.onCopy}
+              >
                 <Copy className="mr-2 h-4 w-4" /> {/* Icon with right margin */}
                 <span>Copy</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={menuProps.onShowMemories}>
+              <DropdownMenuItem
+                onPointerDown={triggerLightHaptic}
+                onClick={menuProps.onShowMemories}
+              >
                 <Brain className="mr-2 h-4 w-4" />
                 <span>Memories</span>
               </DropdownMenuItem>
               <DropdownMenuItem
+                onPointerDown={triggerLightHaptic}
                 onClick={menuProps.onDelete}
                 className="text-destructive focus:text-destructive" // Danger action styling
               >

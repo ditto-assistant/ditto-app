@@ -103,6 +103,7 @@ export default function SendMessage({
   const openFeedbackModal = modal.createOpenHandler("feedback")
   const openScriptsOverlay = modal.createOpenHandler("scripts")
   const openTokenModal = modal.createOpenHandler("tokenCheckout")
+  const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
   // Script indicator state and refs
   const scriptIndicatorRef = useRef<HTMLButtonElement>(null)
@@ -474,7 +475,7 @@ export default function SendMessage({
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation()
-                        triggerHaptic(HapticPattern.Light)
+                        triggerLightHaptic()
                         openComposeModal()
                       }}
                       aria-label="Expand message"
@@ -533,6 +534,7 @@ export default function SendMessage({
                           ref={logoButtonRef as React.RefObject<HTMLDivElement>}
                           className="h-9 w-9 cursor-pointer hover:scale-110 transition-transform"
                           onClick={handleLogoClick}
+                          onPointerDown={triggerLightHaptic}
                         >
                           <AvatarImage
                             src={DITTO_AVATAR}
@@ -551,6 +553,7 @@ export default function SendMessage({
                   >
                     <DropdownMenuItem
                       onClick={openScriptsOverlay}
+                      onPointerDown={triggerLightHaptic}
                       className="flex items-center py-3"
                     >
                       <Laptop className="mr-3 h-5 w-5" />{" "}
@@ -558,6 +561,7 @@ export default function SendMessage({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={openFeedbackModal}
+                      onPointerDown={triggerLightHaptic}
                       className="flex items-center py-3"
                     >
                       <MessageCircle className="mr-3 h-5 w-5" />{" "}
@@ -565,6 +569,7 @@ export default function SendMessage({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={openSettingsModal}
+                      onPointerDown={triggerLightHaptic}
                       className="flex items-center py-3"
                     >
                       <Settings className="mr-3 h-5 w-5" />{" "}
@@ -583,6 +588,7 @@ export default function SendMessage({
                         variant="ghost"
                         size="icon"
                         onClick={handleScriptNameClick}
+                        onPointerDown={triggerLightHaptic}
                         ref={scriptIndicatorRef}
                         title={selectedScript.script}
                         className="h-9 w-9"
@@ -605,7 +611,7 @@ export default function SendMessage({
                         onClick={handleStopGeneration}
                         aria-label="Stop generation"
                         className="h-9 w-9"
-                        onPointerDown={() => navigator.vibrate?.(20)}
+                        onPointerDown={triggerLightHaptic}
                       >
                         <Square className="h-5 w-5" />
                       </Button>
@@ -617,7 +623,7 @@ export default function SendMessage({
                         disabled={isInvalidConfig}
                         aria-label="Send message"
                         className="h-9 w-9"
-                        onPointerDown={() => navigator.vibrate?.(15)}
+                        onPointerDown={triggerLightHaptic}
                       >
                         <SendHorizonal className="h-5 w-5" />
                       </Button>
