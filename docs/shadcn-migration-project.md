@@ -229,10 +229,7 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
 ### ChatFeed.tsx (Partial)
 
 - [ ] Create necessary TypeScript interfaces
-- [ ] Implement ScrollArea for message container
-- [ ] Convert CustomScrollToBottom to use shadcn primitives
-- [ ] Preserve auto-scroll functionality
-- [ ] Maintain loading indicators
+- [x] Preserve auto-scroll functionality
 - [ ] Implement message grouping logic
 - [x] Fix scroll-to-bottom button styling and behavior
 - [x] Fix message context menu actions (copy/memories/delete)
@@ -261,18 +258,19 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
 - Custom Modal implementation (to be used instead of Dialog): src/components/ui/modals/Modal.tsx
 - Tailwind documentation: https://tailwindcss.com/docs
 
-## Implementation Progress
+## Implementation Progress (Updated May 2025)
 
-### 1. ChatMessage.tsx (Completed ✅)
+### Completed Components (✅)
+
+#### 1. ChatMessage.tsx (✅)
 
 - Replaced legacy CSS with Tailwind-only layout and shadcn/ui components
 - Removed `ChatMessage.css` and migrated bubble + avatar to Tailwind
 - Simplified flex logic: outer `flex-col` for vertical stacking, inner margin for avatar placement
-- Scoped and cleaned up global margin resets to allow component margins
 - Implemented shadcn/ui components: Avatar, Card, DropdownMenu
 - Added animation classes for smooth message entry
 
-### 2. SendMessage.tsx (Completed ✅)
+#### 2. SendMessage.tsx (✅)
 
 - Migrated to TypeScript with proper type definitions
 - Implemented shadcn/ui components: Button, Textarea, DropdownMenu, Card, Avatar, Tooltip
@@ -280,7 +278,71 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
 - Ensured mobile keyboard behavior works correctly
 - Integrated with all hooks and contexts
 
-### 3. ChatFeed.jsx (Partial)
+#### 3. MemoryNodeModal.tsx (✅)
+
+- Converted to TypeScript
+- Using shadcn/ui Button components
+- Using custom Modal component instead of shadcn Dialog
+- Using Tailwind classes for styling
+- No remaining MUI dependencies
+
+#### 4. HomeScreen.tsx (✅)
+
+- Converted to TypeScript
+- Using Tailwind classes for layout elements
+- Removed HomeScreen.css completely
+- Camera overlay functionality is fully implemented
+- Preserves fullscreen editing capability
+
+### Partially Completed Components (⚠️)
+
+#### 1. TokenModal.tsx (⚠️)
+
+- Converted to TypeScript
+- Using shadcn/ui Button component
+- Using custom Modal component
+- Still has TokenModal.css to migrate
+- Still using Framer Motion animations
+
+#### 2. CheckoutForm.tsx (⚠️)
+
+- Converted to TypeScript
+- Using shadcn/ui Button component
+- Still has CheckoutForm.css to migrate
+- Preserves form validation functionality
+
+#### 3. ImageViewer.tsx (⚠️)
+
+- Converted to TypeScript
+- Using custom Modal component
+- Still has ImageViewer.css to migrate
+- Needs shadcn/ui Button components for controls
+- Preserves zoom and pan functionality
+
+#### 4. MarkdownRenderer.tsx (⚠️)
+
+- Converted to TypeScript
+- Intentionally retaining MarkdownRenderer.css for complex markdown styling
+- Contains specialized styling for code blocks, tables, and other markdown elements
+- May need partial Tailwind migration while preserving essential markdown styling
+
+#### 5. DittoCanvasModal.tsx (⚠️)
+
+- Converted to TypeScript
+- Using shadcn/ui Button components
+- Using custom Modal component
+- Still has DittoCanvasModal.css to migrate
+- Preserves draggable/resizable behavior
+
+#### 6. MemoryNetwork.tsx (⚠️)
+
+- Converted to TypeScript
+- Still has MemoryNetwork.css to migrate
+- Using custom Modal component
+- Preserves visualization functionality
+- Needs shadcn/ui components for UI elements outside visualization
+
+#### 7. ChatFeed.jsx (⚠️)
 
 - Retaining `ChatFeed.css` intentionally for complex scroll behavior
 - Custom `CustomScrollToBottom` component handles important scroll behaviors that shadcn's ScrollArea cannot
@@ -288,24 +350,56 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
 - Added consistent vertical spacing in message container
 - Still needs TypeScript conversion and partial shadcn integration where appropriate
 
-### 4. HomeScreen.tsx (Partial)
+### Not Started Components (❌)
 
-- Converted to TypeScript
-- Using Tailwind classes for layout elements
-- Still needs to integrate more shadcn components and remove CSS dependencies
-- Camera overlay functionality is implemented
+#### 1. FullScreenEditor.jsx (❌)
+
+- Still in JSX format
+- Still has FullScreenEditor.css
+- Still using MUI components (Button, IconButton, Tooltip)
+- Needs conversion to TypeScript and shadcn/ui components
+
+#### 2. ScriptsOverlay.jsx (❌)
+
+- Still in JSX format
+- Still has ScriptsOverlay.css
+- Using custom Modal component but needs other shadcn/ui components
+- Needs conversion to TypeScript
+
+### MUI Removal Status (❌)
+
+- MUI dependencies are still present in package.json:
+  - @mui/material
+  - @emotion/react
+  - @emotion/styled
+- MUI components still in use in FullScreenEditor and potentially other components
 
 ---
 
-> **Next Steps:**
->
-> - Convert `ChatFeed.jsx` to TypeScript while **preserving** the custom scroll behavior
-> - Apply selective Tailwind classes where possible in ChatFeed without breaking scroll functionality
-> - Convert `HomeScreen.tsx` to use more shadcn components
-> - Tackle medium-priority components from Phase 4-5 (FullScreenEditor, ScriptsOverlay)
-> - For key scrolling components, follow scroll-behavior-best-practices.md guidance
+## Next Steps
 
-_Documentation updated to capture the CSS cleanup, layout refactoring, and component migrations completed today._
+### Critical Priority:
+
+- Convert `ChatFeed.jsx` to TypeScript while **preserving** the custom scroll behavior
+- Complete Phase 6: Remove MUI dependencies from package.json once all components are migrated
+
+### High Priority:
+
+- Migrate remaining CSS files to Tailwind for TokenModal, CheckoutForm, ImageViewer, DittoCanvasModal
+- Replace custom buttons with shadcn/ui Button in ImageViewer and MarkdownRenderer
+- Selectively migrate MarkdownRenderer.css while preserving essential markdown styling
+
+### Medium Priority:
+
+- Convert FullScreenEditor and ScriptsOverlay to TypeScript
+- Replace MUI components in FullScreenEditor with shadcn/ui equivalents
+- Complete remaining component migrations to use more Tailwind classes
+
+### Migration Approach for Complex Components:
+
+- For ChatFeed and MarkdownRenderer: Follow the recommendation in scroll-behavior-best-practices.md to use a hybrid approach that preserves essential functionality while migrating to TypeScript and using Tailwind for non-critical styling
+
+_Documentation updated May 2025 to reflect current migration status._
 
 ## Pending CSS Conflicts & TODOs
 
