@@ -72,13 +72,14 @@ const Login = () => {
   const [showTOS, setShowTOS] = useState(false)
   const [isViewingTOS, setIsViewingTOS] = useState(false)
   const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get("redirect") || "/"
+  // Use redirect param as a full relative URL (path + query); client must encode its query portion
+  const redirectUrl = searchParams.get("redirect") || "/"
 
   useEffect(() => {
     if (user) {
-      navigate(redirectTo)
+      navigate(redirectUrl)
     }
-  }, [user, navigate, redirectTo])
+  }, [user, navigate, redirectUrl])
 
   const handleSignIn = async () => {
     try {
@@ -202,7 +203,7 @@ const Login = () => {
         return
       }
 
-      navigate(redirectTo)
+      navigate(redirectUrl)
     } catch (error) {
       console.error("Error signing in with Google:", error)
       toast.error("Error signing in with Google. Please try again.")
