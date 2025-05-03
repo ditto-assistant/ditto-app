@@ -3,7 +3,11 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { ModelCard } from "./ModelCard"
 import { useState } from "react"
 import { ModelDetails } from "./ModelDetails"
-import { triggerHaptic, HapticPattern, VibrationPatterns } from "@/utils/haptics"
+import {
+  triggerHaptic,
+  HapticPattern,
+  VibrationPatterns,
+} from "@/utils/haptics"
 
 interface ModelGroupProps {
   title: string

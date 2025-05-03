@@ -6,7 +6,11 @@ import { useUser } from "@/hooks/useUser"
 import { Zap, Info } from "lucide-react"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
-import { triggerHaptic, HapticPattern, VibrationPatterns } from "@/utils/haptics"
+import {
+  triggerHaptic,
+  HapticPattern,
+  VibrationPatterns,
+} from "@/utils/haptics"
 
 const redirectToGeneralTab = () => {
   triggerHaptic(HapticPattern.Warning)

@@ -73,8 +73,8 @@ export const ModelDetails = ({ model, isOpen, onClose }: ModelDetailsProps) => {
   const isLLMModel = "costPerMillionInputTokens" in model
 
   return (
-    <Dialog 
-      open={isOpen} 
+    <Dialog
+      open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
           triggerHaptic(HapticPattern.Medium)

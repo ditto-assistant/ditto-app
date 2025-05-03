@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useAllServices } from "@/hooks/useAllServices"
 import { LayoutGrid, ImageIcon, Code } from "lucide-react"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
-import { triggerHaptic, HapticPattern, VibrationPatterns } from "@/utils/haptics"
+import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 
 import { ModelList } from "./ModelList"
 import { ModelFilters } from "./ModelFilters"
