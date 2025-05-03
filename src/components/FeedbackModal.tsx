@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { X, Bug, Lightbulb, ExternalLink } from "lucide-react"
+import { Bug, Lightbulb, ExternalLink } from "lucide-react"
 import Modal from "./ui/modals/Modal"
 import { Button } from "./ui/button"
 import { useModal } from "@/hooks/useModal"

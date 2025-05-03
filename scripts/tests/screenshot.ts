@@ -7,7 +7,7 @@ import { $ } from "bun"
 import { loginToDitto } from "./playwright-login"
 import { fileURLToPath } from "url"
 import { dirname, resolve, join } from "path"
-import type { Browser, Page, BrowserContext } from "playwright"
+import type { Browser, Page } from "playwright"
 
 // Get current file directory
 const __filename = fileURLToPath(import.meta.url)
@@ -40,14 +40,12 @@ const PAGES_TO_CAPTURE: PageToCapture[] = [
 export async function captureScreenshots(): Promise<void> {
   let browser: Browser | undefined
   let page: Page | undefined
-  let context: BrowserContext | undefined
 
   try {
     // Login first
     const session = await loginToDitto()
     browser = session.browser
     page = session.page
-    context = session.context
 
     console.log("Successfully logged in, taking screenshots...")
 

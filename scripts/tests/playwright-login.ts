@@ -173,8 +173,8 @@ async function handleTermsOfService(page: Page): Promise<boolean> {
           await page.waitForTimeout(1000)
           return true
         }
-      } catch (e) {
-        // This selector wasn't found, try the next one
+      } catch (error) {
+        console.error("Error handling Terms of Service:", error)
         continue
       }
     }

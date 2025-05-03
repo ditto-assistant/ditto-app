@@ -85,6 +85,7 @@ export function useTermsOfService(
     try {
       return await acceptMutation.mutateAsync({ uid: userId, tosId })
     } catch (error) {
+      console.error(`Error accepting TOS: ${error}`)
       return false
     }
   }

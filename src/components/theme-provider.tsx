@@ -45,7 +45,7 @@ export function ThemeProvider({
     if (userData?.preferences?.theme && userData.preferences.theme !== theme) {
       setTheme(userData.preferences.theme)
     }
-  }, [userData?.preferences?.theme])
+  }, [theme, userData?.preferences?.theme])
 
   // Apply theme class to document
   useEffect(() => {

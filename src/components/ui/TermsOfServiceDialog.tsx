@@ -37,7 +37,7 @@ export default function TermsOfServiceDialog({
   const { user } = useAuth()
   const { showConfirmationDialog } = useConfirmationDialog()
 
-  const { tos, status, tosLoading, statusLoading, error, acceptTOS } =
+  const { tos, tosLoading, statusLoading, error, acceptTOS } =
     useTermsOfService(user?.uid, tosVersion)
 
   // Use provided content or the content from the backend

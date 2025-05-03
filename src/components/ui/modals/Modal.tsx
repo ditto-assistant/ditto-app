@@ -72,10 +72,7 @@ export default function Modal({
   const [activeTabId, setActiveTabId] = useState<string | undefined>(
     defaultTabId || (tabs && tabs.length > 0 ? tabs[0].id : undefined)
   )
-  const closeModal = () => {
-    triggerHaptic(HapticPattern.Medium)
-    createCloseHandler(id)()
-  }
+  const closeModal = createCloseHandler(id)
   const bringToFront = createBringToFrontHandler(id)
   const modalState = getModalState(id)
   const zIndex = modalState?.zIndex ?? DEFAULT_MODAL_STATE.zIndex
@@ -406,7 +403,7 @@ export default function Modal({
                       {locked && (
                         <div className="flex items-center gap-1 bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ml-1">
                           <Crown className="h-3 w-3" />
-                          <span>PRO</span>
+                          <span>{tierName}</span>
                         </div>
                       )}
                     </div>

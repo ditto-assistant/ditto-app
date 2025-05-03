@@ -1,4 +1,6 @@
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { HapticPattern } from "@/utils/haptics"
+import { triggerHaptic } from "@/utils/haptics"
 import {
   createContext,
   useCallback,
@@ -179,7 +181,10 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
               initialTabId: tabId,
             })
           },
-          close: () => dispatch({ type: "CLOSE_MODAL", id }),
+          close: () => {
+            triggerHaptic(HapticPattern.Medium)
+            dispatch({ type: "CLOSE_MODAL", id })
+          },
           bringToFront: () => dispatch({ type: "BRING_TO_FRONT", id }),
         })
       }

@@ -52,15 +52,6 @@ interface ChatMessageProps {
   isUser: boolean
   isLast?: boolean
   isOptimistic?: boolean
-  bubbleStyles?: {
-    text?: {
-      fontSize?: number
-    }
-    chatbubble?: {
-      borderRadius?: number
-      padding?: number
-    }
-  }
   menuProps: {
     onCopy: () => void
     onDelete: () => void
@@ -74,10 +65,6 @@ export default function ChatMessage({
   isUser,
   isLast = false,
   isOptimistic = false,
-  bubbleStyles = {
-    text: { fontSize: 14 },
-    chatbubble: { borderRadius: 20, padding: 10 },
-  },
   menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth()

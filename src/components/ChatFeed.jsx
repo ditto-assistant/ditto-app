@@ -262,273 +262,254 @@ const CustomScrollToBottom = ({
   )
 }
 
-const ChatFeed = forwardRef(
-  (
-    {
-      bubbleStyles = {
-        text: {
-          fontSize: "var(--font-size-default)",
-        },
-        chatbubble: {
-          borderRadius: 20,
-          padding: 10,
-        },
-      },
-    },
-    ref
-  ) => {
-    const {
-      messages,
-      isLoading,
-      isFetchingNextPage,
-      hasNextPage,
-      fetchNextPage,
-      refetch,
-    } = useConversationHistory()
-    const { showMemoryNetwork } = useMemoryNetwork()
-    const { confirmMemoryDeletion } = useMemoryDeletion()
-    const { isMobile } = usePlatform()
-    const [messagesVisible, setMessagesVisible] = useState(false)
-    const [shouldFetchNext, setShouldFetchNext] = useState(false)
-    const initialRenderRef = useRef(true)
-    const fetchingRef = useRef(false)
-    const detectScrollToTopRef = useRef(null)
+const ChatFeed = forwardRef(({}, ref) => {
+  const {
+    messages,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useConversationHistory()
+  const { showMemoryNetwork } = useMemoryNetwork()
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { isMobile } = usePlatform()
+  const [messagesVisible, setMessagesVisible] = useState(false)
+  const [shouldFetchNext, setShouldFetchNext] = useState(false)
+  const initialRenderRef = useRef(true)
+  const fetchingRef = useRef(false)
+  const detectScrollToTopRef = useRef(null)
 
-    useEffect(() => {
-      let isMounted = true
+  useEffect(() => {
+    let isMounted = true
 
-      if (!isLoading && messages.length > 0) {
-        requestAnimationFrame(() => {
-          if (!isMounted) return
+    if (!isLoading && messages.length > 0) {
+      requestAnimationFrame(() => {
+        if (!isMounted) return
 
-          if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            setTimeout(() => {
-              if (isMounted) {
-                setMessagesVisible(true)
-                initialRenderRef.current = false
-              }
-            }, 200)
-          } else {
-            setMessagesVisible(true)
-            initialRenderRef.current = false
-          }
-        })
-      }
-
-      return () => {
-        isMounted = false
-      }
-    }, [isLoading, messages, isMobile])
-
-    const handleScrollToTop = () => {
-      if (
-        hasNextPage &&
-        !isLoading &&
-        !isFetchingNextPage &&
-        !fetchingRef.current
-      ) {
-        fetchingRef.current = true
-        setShouldFetchNext(true)
-      }
+        if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+          setTimeout(() => {
+            if (isMounted) {
+              setMessagesVisible(true)
+              initialRenderRef.current = false
+            }
+          }, 200)
+        } else {
+          setMessagesVisible(true)
+          initialRenderRef.current = false
+        }
+      })
     }
 
-    useEffect(() => {
-      const fetchOlderMessages = async () => {
-        if (!shouldFetchNext) return
+    return () => {
+      isMounted = false
+    }
+  }, [isLoading, messages, isMobile])
 
-        try {
-          // Get initial scroll position
-          const scrollContainer = document.querySelector(
-            ".messages-scroll-view"
-          )
-          let prevHeight = 0
+  const handleScrollToTop = () => {
+    if (
+      hasNextPage &&
+      !isLoading &&
+      !isFetchingNextPage &&
+      !fetchingRef.current
+    ) {
+      fetchingRef.current = true
+      setShouldFetchNext(true)
+    }
+  }
 
+  useEffect(() => {
+    const fetchOlderMessages = async () => {
+      if (!shouldFetchNext) return
+
+      try {
+        // Get initial scroll position
+        const scrollContainer = document.querySelector(".messages-scroll-view")
+        let prevHeight = 0
+
+        if (scrollContainer) {
+          prevHeight = scrollContainer.scrollHeight
+        }
+
+        // console.log("Fetching older messages...")
+        await fetchNextPage()
+        // console.log("Fetch complete")
+
+        // Set a reasonable timeout to ensure DOM is updated
+        setTimeout(() => {
           if (scrollContainer) {
-            prevHeight = scrollContainer.scrollHeight
+            // Get the new scroll height and calculate difference
+            const newHeight = scrollContainer.scrollHeight
+            const heightDifference = newHeight - prevHeight
+
+            // Position just below the new content
+            // This is the key implementation from main branch that works correctly
+            if (heightDifference > 0) {
+              scrollContainer.scrollTop = heightDifference
+            }
           }
 
-          // console.log("Fetching older messages...")
-          await fetchNextPage()
-          // console.log("Fetch complete")
-
-          // Set a reasonable timeout to ensure DOM is updated
-          setTimeout(() => {
-            if (scrollContainer) {
-              // Get the new scroll height and calculate difference
-              const newHeight = scrollContainer.scrollHeight
-              const heightDifference = newHeight - prevHeight
-
-              // Position just below the new content
-              // This is the key implementation from main branch that works correctly
-              if (heightDifference > 0) {
-                scrollContainer.scrollTop = heightDifference
-              }
-            }
-
-            fetchingRef.current = false
-            setShouldFetchNext(false)
-          }, 150)
-        } catch (error) {
-          console.error("Error loading more messages:", error)
           fetchingRef.current = false
           setShouldFetchNext(false)
-        }
-      }
-
-      if (shouldFetchNext) {
-        fetchOlderMessages()
-      }
-    }, [shouldFetchNext, fetchNextPage])
-
-    const handleCopy = (message, type = "prompt") => {
-      const textToCopy = type === "prompt" ? message.prompt : message.response
-      if (!textToCopy) {
-        toast.error("No content to copy")
-        return
-      }
-
-      navigator.clipboard.writeText(textToCopy).then(
-        () => {
-          toast.success("Copied to clipboard")
-        },
-        (err) => {
-          console.error("Could not copy text: ", err)
-          toast.error("Failed to copy text")
-        }
-      )
-    }
-
-    const handleMessageDelete = async (message) => {
-      if (!message.id) {
-        console.error("Cannot delete message: missing ID")
-        toast.error("Failed to delete message")
-        return
-      }
-      try {
-        confirmMemoryDeletion(message.id, {
-          onSuccess: () => {
-            refetch()
-          },
-        })
+        }, 150)
       } catch (error) {
-        console.error("Error deleting message:", error)
-        toast.error("Failed to delete message")
+        console.error("Error loading more messages:", error)
+        fetchingRef.current = false
+        setShouldFetchNext(false)
       }
     }
 
-    const handleShowMemories = async (message) => {
-      try {
-        await showMemoryNetwork(message)
-      } catch (error) {
-        console.error("Error showing memory network:", error)
-        toast.error("Failed to show memory network")
-      }
+    if (shouldFetchNext) {
+      fetchOlderMessages()
+    }
+  }, [shouldFetchNext, fetchNextPage])
+
+  const handleCopy = (message, type = "prompt") => {
+    const textToCopy = type === "prompt" ? message.prompt : message.response
+    if (!textToCopy) {
+      toast.error("No content to copy")
+      return
     }
 
-    // Use the externally passed ref for scroll position detection
-    useEffect(() => {
-      if (ref) {
-        // If a ref is passed from parent, use it to access internal scrolling functionality
-        if (typeof ref === "function") {
-          // Function refs get called with the DOM element
-          ref(detectScrollToTopRef.current)
-        } else if (ref.current !== undefined) {
-          // Object refs need their .current property assigned
-          ref.current = detectScrollToTopRef.current
-        }
+    navigator.clipboard.writeText(textToCopy).then(
+      () => {
+        toast.success("Copied to clipboard")
+      },
+      (err) => {
+        console.error("Could not copy text: ", err)
+        toast.error("Failed to copy text")
       }
-    }, [ref])
-
-    return (
-      <div className="chat-feed-container">
-        {isFetchingNextPage && (
-          <div
-            className="loading-indicator"
-            style={{ position: "sticky", top: 0, zIndex: 10 }}
-          >
-            <div className="loading-spinner"></div>
-            <div>Loading more messages...</div>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="empty-chat-message">
-            <div className="loading-spinner"></div>
-            <p>Loading conversation...</p>
-          </div>
-        ) : messages && messages.length > 0 ? (
-          <CustomScrollToBottom
-            className="messages-container"
-            scrollViewClassName="messages-scroll-view"
-            initialScrollBehavior="auto"
-            detectScrollToTop={handleScrollToTop}
-            onScrollToTopRef={detectScrollToTopRef}
-            style={{
-              opacity: messagesVisible ? 1 : 0,
-              transition: "opacity 0.2s ease-in-out",
-            }}
-          >
-            {messages
-              .map((message, index) => {
-                const isUser =
-                  message.prompt && !message.prompt.includes("SYSTEM:")
-                const isLast = index === messages.length - 1
-
-                return (
-                  <div key={message.id || index} className="message-pair">
-                    {message.prompt && isUser && (
-                      <ChatMessage
-                        content={message.prompt}
-                        timestamp={
-                          message.timestamp
-                            ? new Date(message.timestamp).getTime()
-                            : Date.now()
-                        }
-                        isUser={true}
-                        isLast={isLast}
-                        isOptimistic={message.isOptimistic}
-                        bubbleStyles={bubbleStyles}
-                        menuProps={{
-                          onCopy: () => handleCopy(message, "prompt"),
-                          onDelete: () => handleMessageDelete(message),
-                          onShowMemories: () => handleShowMemories(message),
-                        }}
-                      />
-                    )}
-
-                    {message.response && (
-                      <ChatMessage
-                        content={message.response}
-                        timestamp={
-                          message.timestamp
-                            ? new Date(message.timestamp).getTime()
-                            : Date.now()
-                        }
-                        isUser={false}
-                        isLast={isLast}
-                        isOptimistic={message.isOptimistic}
-                        bubbleStyles={bubbleStyles}
-                        menuProps={{
-                          onCopy: () => handleCopy(message, "response"),
-                          onDelete: () => handleMessageDelete(message),
-                          onShowMemories: () => handleShowMemories(message),
-                        }}
-                      />
-                    )}
-                  </div>
-                )
-              })
-              .reverse()}
-          </CustomScrollToBottom>
-        ) : (
-          <div className="empty-chat-message">
-            <p>No messages yet. Start a conversation!</p>
-          </div>
-        )}
-      </div>
     )
   }
-)
+
+  const handleMessageDelete = async (message) => {
+    if (!message.id) {
+      console.error("Cannot delete message: missing ID")
+      toast.error("Failed to delete message")
+      return
+    }
+    try {
+      confirmMemoryDeletion(message.id, {
+        onSuccess: () => {
+          refetch()
+        },
+      })
+    } catch (error) {
+      console.error("Error deleting message:", error)
+      toast.error("Failed to delete message")
+    }
+  }
+
+  const handleShowMemories = async (message) => {
+    try {
+      await showMemoryNetwork(message)
+    } catch (error) {
+      console.error("Error showing memory network:", error)
+      toast.error("Failed to show memory network")
+    }
+  }
+
+  // Use the externally passed ref for scroll position detection
+  useEffect(() => {
+    if (ref) {
+      // If a ref is passed from parent, use it to access internal scrolling functionality
+      if (typeof ref === "function") {
+        // Function refs get called with the DOM element
+        ref(detectScrollToTopRef.current)
+      } else if (ref.current !== undefined) {
+        // Object refs need their .current property assigned
+        ref.current = detectScrollToTopRef.current
+      }
+    }
+  }, [ref])
+
+  return (
+    <div className="chat-feed-container">
+      {isFetchingNextPage && (
+        <div
+          className="loading-indicator"
+          style={{ position: "sticky", top: 0, zIndex: 10 }}
+        >
+          <div className="loading-spinner"></div>
+          <div>Loading more messages...</div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="empty-chat-message">
+          <div className="loading-spinner"></div>
+          <p>Loading conversation...</p>
+        </div>
+      ) : messages && messages.length > 0 ? (
+        <CustomScrollToBottom
+          className="messages-container"
+          scrollViewClassName="messages-scroll-view"
+          initialScrollBehavior="auto"
+          detectScrollToTop={handleScrollToTop}
+          onScrollToTopRef={detectScrollToTopRef}
+          style={{
+            opacity: messagesVisible ? 1 : 0,
+            transition: "opacity 0.2s ease-in-out",
+          }}
+        >
+          {messages
+            .map((message, index) => {
+              const isUser =
+                message.prompt && !message.prompt.includes("SYSTEM:")
+              const isLast = index === messages.length - 1
+
+              return (
+                <div key={message.id || index} className="message-pair">
+                  {message.prompt && isUser && (
+                    <ChatMessage
+                      content={message.prompt}
+                      timestamp={
+                        message.timestamp
+                          ? new Date(message.timestamp).getTime()
+                          : Date.now()
+                      }
+                      isUser={true}
+                      isLast={isLast}
+                      isOptimistic={message.isOptimistic}
+                      menuProps={{
+                        onCopy: () => handleCopy(message, "prompt"),
+                        onDelete: () => handleMessageDelete(message),
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                    />
+                  )}
+
+                  {message.response && (
+                    <ChatMessage
+                      content={message.response}
+                      timestamp={
+                        message.timestamp
+                          ? new Date(message.timestamp).getTime()
+                          : Date.now()
+                      }
+                      isUser={false}
+                      isLast={isLast}
+                      isOptimistic={message.isOptimistic}
+                      menuProps={{
+                        onCopy: () => handleCopy(message, "response"),
+                        onDelete: () => handleMessageDelete(message),
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                    />
+                  )}
+                </div>
+              )
+            })
+            .reverse()}
+        </CustomScrollToBottom>
+      ) : (
+        <div className="empty-chat-message">
+          <p>No messages yet. Start a conversation!</p>
+        </div>
+      )}
+    </div>
+  )
+})
 
 ChatFeed.displayName = "ChatFeed"
 export default ChatFeed

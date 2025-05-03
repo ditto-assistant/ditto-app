@@ -157,10 +157,6 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
                 onDelete: () => handleDelete(memory),
                 onShowMemories: () => handleViewMemory(memory),
               }}
-              bubbleStyles={{
-                text: { fontSize: 14 },
-                chatbubble: { borderRadius: 8, padding: 8 },
-              }}
             />
             <ChatMessage
               content={memory.response}
@@ -174,10 +170,6 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
                 onCopy: () => navigator.clipboard.writeText(memory.response),
                 onDelete: () => handleDelete(memory),
                 onShowMemories: () => handleViewMemory(memory),
-              }}
-              bubbleStyles={{
-                text: { fontSize: 14 },
-                chatbubble: { borderRadius: 8, padding: 8 },
               }}
             />
           </div>
