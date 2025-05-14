@@ -69,7 +69,7 @@ export default function ChatMessage({
 }: ChatMessageProps) {
   const { user } = useAuth()
   const userAvatar = useUserAvatar(user?.photoURL)
-  const avatar = isUser ? "/placeholders/user-avatar.png" : "/placeholders/ditto-avatar.png"
+  const avatar = isUser ? (user?.photoURL || userAvatar || "/placeholders/user-avatar.png") : "/placeholders/ditto-avatar.png"
   const { fontSize } = useFontSize()
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
