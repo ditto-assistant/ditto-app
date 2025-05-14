@@ -448,7 +448,7 @@ export default function SendMessage({
         ) : (
           // Regular send message UI
           <>
-            <div className="relative w-full mb-1">
+            <div className="relative w-full mb-2">
               <Textarea
                 ref={textAreaRef}
                 onKeyDown={handleKeyDown}
@@ -479,7 +479,7 @@ export default function SendMessage({
                         openComposeModal()
                       }}
                       aria-label="Expand message"
-                      className="h-9 w-9"
+                      className="h-10 w-10 rounded-full bg-background ring-2 ring-blue-500 shadow-md shadow-blue-500 hover:scale-110 transition-transform"
                     >
                       <Expand className="h-5 w-5" />
                     </Button>
@@ -496,7 +496,7 @@ export default function SendMessage({
                           variant="ghost"
                           size="icon"
                           aria-label="Add media"
-                          className="h-9 w-9"
+                          className="h-10 w-10 rounded-full bg-background ring-2 ring-blue-500 shadow-md shadow-blue-500 hover:scale-110 transition-transform"
                           onPointerDown={() => navigator.vibrate?.(10)}
                         >
                           <Plus className="h-5 w-5" />
@@ -532,14 +532,14 @@ export default function SendMessage({
                       <DropdownMenuTrigger asChild>
                         <Avatar
                           ref={logoButtonRef as React.RefObject<HTMLDivElement>}
-                          className="h-9 w-9 cursor-pointer hover:scale-110 transition-transform"
+                          className="h-10 w-10 cursor-pointer hover:scale-110 transition-transform ring-2 ring-blue-500 shadow-md shadow-blue-500"
                           onClick={handleLogoClick}
                           onPointerDown={triggerLightHaptic}
                         >
                           <AvatarImage
                             src={DITTO_AVATAR}
                             alt="Ditto"
-                            className="h-9 w-9 rounded-full"
+                            className="h-10 w-10 rounded-full"
                           />
                         </Avatar>
                       </DropdownMenuTrigger>
@@ -591,7 +591,7 @@ export default function SendMessage({
                         onPointerDown={triggerLightHaptic}
                         ref={scriptIndicatorRef}
                         title={selectedScript.script}
-                        className="h-9 w-9"
+                        className="h-10 w-10 rounded-full ring-2 ring-primary/50 shadow-lg shadow-primary/50"
                       >
                         <Code className="h-5 w-5" />
                       </Button>
@@ -610,19 +610,19 @@ export default function SendMessage({
                         type="button"
                         onClick={handleStopGeneration}
                         aria-label="Stop generation"
-                        className="h-9 w-9"
+                        className="h-10 w-10 rounded-full ring-2 ring-primary/50 shadow-lg shadow-primary/50"
                         onPointerDown={triggerLightHaptic}
                       >
                         <Square className="h-5 w-5" />
                       </Button>
                     ) : (
                       <Button
-                        variant="default"
+                        variant="ghost"
                         size="icon"
                         type="submit"
                         disabled={isInvalidConfig}
                         aria-label="Send message"
-                        className="h-9 w-9"
+                        className="h-10 w-10 p-0 rounded-full border-none ring-2 ring-blue-500 shadow-md shadow-blue-500 hover:scale-110 transition-transform hover:bg-transparent focus:bg-transparent"
                         onPointerDown={triggerLightHaptic}
                       >
                         <SendHorizonal className="h-5 w-5" />

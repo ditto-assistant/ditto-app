@@ -69,7 +69,7 @@ export default function ChatMessage({
 }: ChatMessageProps) {
   const { user } = useAuth()
   const userAvatar = useUserAvatar(user?.photoURL)
-  const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
+  const avatar = isUser ? "/placeholders/user-avatar.png" : "/placeholders/ditto-avatar.png"
   const { fontSize } = useFontSize()
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
@@ -185,14 +185,14 @@ export default function ChatMessage({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar
-              className="h-7 w-7 cursor-pointer transition-transform hover:scale-110"
+              className="h-7 w-7 cursor-pointer transition-transform hover:scale-110 ring-2 ring-blue-500 shadow-md shadow-blue-500"
               onPointerDown={triggerLightHaptic}
             >
               <AvatarImage
                 src={avatar}
                 alt={isUser ? "User Avatar" : "Ditto Avatar"}
                 className="object-cover"
-                draggable="false"
+                draggable={false}
               />
               <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
             </Avatar>
@@ -206,7 +206,7 @@ export default function ChatMessage({
                 onPointerDown={triggerLightHaptic}
                 onClick={menuProps.onCopy}
               >
-                <Copy className="mr-2 h-4 w-4" /> {/* Icon with right margin */}
+                <Copy className="mr-2 h-4 w-4" />
                 <span>Copy</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -219,7 +219,7 @@ export default function ChatMessage({
               <DropdownMenuItem
                 onPointerDown={triggerLightHaptic}
                 onClick={menuProps.onDelete}
-                className="text-destructive focus:text-destructive" // Danger action styling
+                className="text-destructive focus:text-destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />
                 <span>Delete</span>
