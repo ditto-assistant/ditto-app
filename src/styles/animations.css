@@ -156,3 +156,13 @@
   border-top-color: var(--status-positive);
   animation: spin 0.5s linear infinite reverse;
 }
+
+/* Rainbow gradient animation */
+@keyframes rainbow {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
