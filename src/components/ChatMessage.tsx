@@ -185,14 +185,14 @@ export default function ChatMessage({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar
-              className="h-7 w-7 cursor-pointer transition-transform hover:scale-110"
+              className="h-7 w-7 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
               onPointerDown={triggerLightHaptic}
             >
               <AvatarImage
                 src={avatar}
                 alt={isUser ? "User Avatar" : "Ditto Avatar"}
                 className="object-cover"
-                draggable="false"
+                draggable={false}
               />
               <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
             </Avatar>
@@ -206,7 +206,7 @@ export default function ChatMessage({
                 onPointerDown={triggerLightHaptic}
                 onClick={menuProps.onCopy}
               >
-                <Copy className="mr-2 h-4 w-4" /> {/* Icon with right margin */}
+                <Copy className="mr-2 h-4 w-4" />
                 <span>Copy</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -219,7 +219,7 @@ export default function ChatMessage({
               <DropdownMenuItem
                 onPointerDown={triggerLightHaptic}
                 onClick={menuProps.onDelete}
-                className="text-destructive focus:text-destructive" // Danger action styling
+                className="text-destructive focus:text-destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />
                 <span>Delete</span>

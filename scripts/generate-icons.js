@@ -24,10 +24,20 @@ const clearIconsDir = path.join(baseIconsDir, "clear")
   }
 })
 
-// Source icon files - now sourced directly from their respective subdirectories
-const roundIcon = path.join(roundIconsDir, "ditto-icon.png") // Source round icon
-const squareIcon = path.join(squareIconsDir, "ditto-icon-square.png") // Source square icon
-const clearIcon = path.join(clearIconsDir, "ditto-icon-clear.png") // Source clear icon
+// New: Set up originals directory as the single source of truth for all base images
+const originalsDir = path.join("public", "assets", "originals")
+const originalUserAvatar = path.join(originalsDir, "user-avatar.png")
+const originalDittoAvatar = path.join(originalsDir, "ditto-avatar.png")
+const originalDittoIcon = path.join(originalsDir, "ditto-icon.png")
+const originalDittoIconSquare = path.join(originalsDir, "ditto-icon-square.png")
+const originalDittoIconClear = path.join(originalsDir, "ditto-icon-clear.png")
+const originalNotFound = path.join(originalsDir, "not-found.png")
+const originalImageLoading = path.join(originalsDir, "image-loading.png")
+
+// Use originals for all icon generation
+const roundIcon = originalDittoIcon // round icon source
+const squareIcon = originalDittoIconSquare // square icon source
+const clearIcon = originalDittoIconClear // clear icon source
 
 // Check if source files exist
 const sourceIconsExist =
@@ -65,6 +75,29 @@ execSync(
 execSync(
   `ffmpeg -i ${roundIcon} -vf scale=512:512 ${path.join(roundIconsDir, "ditto-icon-512x512.png")} -y`
 )
+
+// Generate 192x192 user-avatar and ditto-avatar from originals
+console.log("Generating 192x192 user-avatar and ditto-avatar from originals...")
+const userAvatarOut = path.join(roundIconsDir, "user-avatar-192x192.png")
+const dittoAvatarOut = path.join(roundIconsDir, "ditto-avatar-192x192.png")
+if (fs.existsSync(originalUserAvatar)) {
+  execSync(
+    `ffmpeg -i ${originalUserAvatar} -vf scale=192:192 ${userAvatarOut} -y`
+  )
+  console.log(`Generated: ${userAvatarOut}`)
+} else {
+  console.warn(`Warning: user-avatar source not found at ${originalUserAvatar}`)
+}
+if (fs.existsSync(originalDittoAvatar)) {
+  execSync(
+    `ffmpeg -i ${originalDittoAvatar} -vf scale=192:192 ${dittoAvatarOut} -y`
+  )
+  console.log(`Generated: ${dittoAvatarOut}`)
+} else {
+  console.warn(
+    `Warning: ditto-avatar source not found at ${originalDittoAvatar}`
+  )
+}
 
 // Generate clear icon variant for the DITTO_AVATAR reference in constants.ts
 console.log("Generating clear icon for DITTO_AVATAR...")
@@ -120,8 +153,36 @@ try {
   )
 }
 
+// Generate 192x192 placeholder images from originals
+console.log("Generating 192x192 placeholder images from originals...")
+const placeholdersDir = path.join("public", "placeholders")
+if (!fs.existsSync(placeholdersDir)) {
+  fs.mkdirSync(placeholdersDir, { recursive: true })
+}
+const placeholderImages = [
+  {
+    src: originalNotFound,
+    out: path.join(placeholdersDir, "not-found-192.png"),
+  },
+  {
+    src: originalImageLoading,
+    out: path.join(placeholdersDir, "image-loading-192.png"),
+  },
+]
+placeholderImages.forEach(({ src, out }) => {
+  if (fs.existsSync(src)) {
+    execSync(`ffmpeg -i ${src} -vf scale=192:192 ${out} -y`)
+    console.log(`Generated: ${out}`)
+  } else {
+    console.warn(`Warning: placeholder source not found at ${src}`)
+  }
+})
+
 console.log("\nIcon generation and organization completed!")
 console.log("Icons are now organized in the following directories:")
 console.log(`- ${roundIconsDir} - for round icons (Android)`)
 console.log(`- ${squareIconsDir} - for square icons (Apple)`)
 console.log(`- ${clearIconsDir} - for clear icons (Favicons)`)
+console.log(
+  `- ${originalsDir} - for all original source images (avatars, logos, etc.)`
+)

@@ -6,11 +6,11 @@ import {
   Model,
 } from "@/types/llm"
 
-export const USER_PLACEHOLDER_IMAGE = "/placeholders/user-avatar-192.png"
 export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png"
+export const DITTO_LOGO = "/icons/round/android-chrome-192x192.png"
+export const DITTO_AVATAR = "/icons/round/ditto-avatar-192x192.png"
+export const DEFAULT_USER_AVATAR = "/icons/round/user-avatar-192x192.png"
 export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png"
-export const DEFAULT_USER_AVATAR = "/placeholders/user-avatar-192.png"
-export const DITTO_AVATAR = "/icons/round/android-chrome-192x192.png"
 export const FREE_MODEL_ID: Model = "meta/llama-3.3-70b-instruct-maas"
 
 // TODO: The backend should return the list of available models
