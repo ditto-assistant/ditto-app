@@ -7,6 +7,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
+import { grabConversationHistoryCount } from "@/control/firebase"
 import Modal from "@/components/ui/modals/Modal"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -27,6 +28,17 @@ import "./MemoriesDashboardOverlay.css"
 
 // Global cache of node positions to preserve layout across modal instances
 const persistedNodePositions: Record<string, { x: number; y: number }> = {}
+
+// Utility function to format numbers with abbreviations
+const formatCount = (count: number) => {
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1).replace(/\.0$/, "") + "M"
+  } else if (count >= 1000) {
+    return (count / 1000).toFixed(1).replace(/\.0$/, "") + "k"
+  } else {
+    return count.toString()
+  }
+}
 
 // Simplified SearchBar component
 function SearchBar({
@@ -500,10 +512,38 @@ export default function MemoriesDashboardOverlay() {
   const { showMemoryNode: originalShowMemoryNode } = useMemoryNodeViewer() // Get showMemoryNode here
   const { confirmMemoryDeletion } = useMemoryDeletion() // Add this hook for memory deletion
   const { showMemoryNetwork } = useMemoryNetwork() // Add this hook for showing memory network
+  const [memoryCount, setMemoryCount] = useState<number>(0) // Add state for memory count
 
   // Refs to track fit operations
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<number | null>(null)
+
+  // Fetch the total memory count on component mount
+  useEffect(() => {
+    const fetchMemoryCount = async () => {
+      if (user?.uid) {
+        try {
+          const count = await grabConversationHistoryCount(user.uid)
+          setMemoryCount(count)
+        } catch (error) {
+          console.error("Error fetching memory count:", error)
+        }
+      }
+    }
+
+    fetchMemoryCount()
+
+    // Add event listener for memory updates
+    const handleMemoryUpdate = () => {
+      fetchMemoryCount()
+    }
+
+    window.addEventListener("memoryUpdated", handleMemoryUpdate)
+
+    return () => {
+      window.removeEventListener("memoryUpdated", handleMemoryUpdate)
+    }
+  }, [user?.uid])
 
   // Memoize the showMemoryNode function to prevent unnecessary re-renders
   const showMemoryNode = useCallback(
@@ -679,23 +719,31 @@ export default function MemoriesDashboardOverlay() {
               {loading ? "Searching..." : "Search"}
             </Button>
           </div>
-          <div className="view-toggle">
-            <Button
-              variant={activeView === "list" ? "default" : "outline"}
-              onClick={() => setActiveView("list")}
-              className="view-button"
-            >
-              <List size={18} />
-              <span>List</span>
-            </Button>
-            <Button
-              variant={activeView === "network" ? "default" : "outline"}
-              onClick={() => setActiveView("network")}
-              className="view-button"
-            >
-              <Network size={18} />
-              <span>Network</span>
-            </Button>
+          
+          <div className="view-controls">
+            <div className="view-toggle">
+              <Button
+                variant={activeView === "list" ? "default" : "outline"}
+                onClick={() => setActiveView("list")}
+                className="view-button"
+              >
+                <List size={18} />
+                <span>List</span>
+              </Button>
+              <Button
+                variant={activeView === "network" ? "default" : "outline"}
+                onClick={() => setActiveView("network")}
+                className="view-button"
+              >
+                <Network size={18} />
+                <span>Network</span>
+              </Button>
+            </div>
+            
+            <div className="memory-count">
+              <span className="memory-count-value">{formatCount(memoryCount)}</span>
+              <span className="memory-count-label">memories</span>
+            </div>
           </div>
         </div>
         <div className="memories-content">

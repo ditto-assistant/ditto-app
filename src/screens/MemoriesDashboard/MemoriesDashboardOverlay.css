@@ -85,6 +85,41 @@
   gap: 12px;
 }
 
+.view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.memory-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  opacity: 0.8;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background-color: rgba(88, 101, 242, 0.1);
+  border: 1px solid rgba(88, 101, 242, 0.2);
+  transition: all 0.2s ease;
+}
+
+.memory-count:hover {
+  opacity: 1;
+  background-color: rgba(88, 101, 242, 0.15);
+  border-color: rgba(88, 101, 242, 0.3);
+}
+
+.memory-count-value {
+  font-weight: 600;
+  color: #5865f2;
+}
+
+.memory-count-label {
+  color: #b5bac1;
+}
+
 .view-button {
   display: flex;
   align-items: center;
