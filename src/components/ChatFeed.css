@@ -11,7 +11,11 @@
   padding: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-  background: linear-gradient(to bottom, var(--gradient-start-color), var(--gradient-end-color));
+  background: linear-gradient(
+    to bottom,
+    var(--gradient-start-color),
+    var(--gradient-end-color)
+  );
 }
 
 /* Non-iOS specific styles */

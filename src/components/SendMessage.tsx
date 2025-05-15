@@ -540,12 +540,13 @@ export default function SendMessage({
                             src={DITTO_AVATAR}
                             alt="Ditto"
                             className="h-10 w-10 rounded-full"
-                            style={{ 
-                              background: "radial-gradient(circle at center, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF 20%, transparent 25%)",
+                            style={{
+                              background:
+                                "radial-gradient(circle at center, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF 20%, transparent 25%)",
                               animation: "rainbow 10s linear infinite",
                               backgroundSize: "20% 20%",
                               backgroundPosition: "center",
-                              backgroundBlendMode: "soft-light"
+                              backgroundBlendMode: "soft-light",
                             }}
                           />
                         </Avatar>
