@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Search, List, Network, Info, X } from "lucide-react"
+import { Search, List, Network, Info, X, Image } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
 import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { usePlatform } from "@/hooks/usePlatform"
 import Modal from "@/components/ui/modals/Modal"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -23,6 +24,27 @@ import "./MemoriesDashboardOverlay.css"
 
 // Global cache of node positions to preserve layout across modal instances
 const persistedNodePositions: Record<string, { x: number; y: number }> = {}
+
+// Helper to extract image URLs from markdown
+function extractImagesFromMarkdown(markdown: string): { text: string, images: string[] } {
+  if (!markdown) return { text: "", images: [] };
+  
+  const imageRegex = /!\[.*?\]\((.*?)\)/g;
+  const images: string[] = [];
+  let match;
+  
+  // Find all image URLs
+  while ((match = imageRegex.exec(markdown)) !== null) {
+    if (match[1]) {
+      images.push(match[1]);
+    }
+  }
+  
+  // Remove image markdown syntax from text
+  const text = markdown.replace(imageRegex, '');
+  
+  return { text, images };
+}
 
 // Simplified SearchBar component
 function SearchBar({
@@ -62,6 +84,10 @@ const MemoryCard = ({ memory, onCardClick }: MemoryCardProps) => {
 
   // Score is 1 - distance, so higher is better. Max score displayed as 100%.
   const scorePercentage = ((1 - memory.vector_distance) * 100).toFixed(1)
+  
+  // Extract images from prompt and response
+  const { text: promptText, images: promptImages } = extractImagesFromMarkdown(memory.prompt || "");
+  const { text: responseText, images: responseImages } = extractImagesFromMarkdown(memory.response || "");
 
   return (
     <div
@@ -69,14 +95,44 @@ const MemoryCard = ({ memory, onCardClick }: MemoryCardProps) => {
       onClick={() => onCardClick(memory as MemoryWithLevel)}
     >
       <div className="memory-card-header">
-        <div className="memory-prompt">{memory.prompt}</div>
+        <div className="memory-prompt">{promptText}</div>
         <div className="memory-timestamp">
           {date.toLocaleDateString()} {date.toLocaleTimeString()}
         </div>
       </div>
-      <div className="memory-response">{memory.response}</div>
+      
+      {/* Render prompt images if any */}
+      {promptImages.length > 0 && (
+        <div className="memory-images">
+          {promptImages.map((src, index) => (
+            <div key={`prompt-img-${index}`} className="memory-image-container">
+              <img src={src} alt="Prompt" className="memory-image" />
+            </div>
+          ))}
+        </div>
+      )}
+      
+      <div className="memory-response">{responseText}</div>
+      
+      {/* Render response images if any */}
+      {responseImages.length > 0 && (
+        <div className="memory-images">
+          {responseImages.map((src, index) => (
+            <div key={`response-img-${index}`} className="memory-image-container">
+              <img src={src} alt="Response" className="memory-image" />
+            </div>
+          ))}
+        </div>
+      )}
+      
       <div className="memory-metadata">
         <span className="memory-score">Similarity: {scorePercentage}%</span>
+        {(promptImages.length > 0 || responseImages.length > 0) && (
+          <span className="memory-has-images">
+            <Image size={14} className="image-icon" />
+            {promptImages.length + responseImages.length} image{promptImages.length + responseImages.length !== 1 ? 's' : ''}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -115,34 +171,68 @@ const MemoriesNetworkGraph = ({
   const { showMemoryNode } = useMemoryNodeViewer()
   const [isReady, setIsReady] = useState(false)
   const [isOpeningNode, setIsOpeningNode] = useState(false)
+  const { isMobile } = usePlatform()
+  
+  // Refs to track fit operations
+  const isFittingRef = useRef<boolean>(false);
+  const fitTimeoutRef = useRef<number | null>(null);
 
   // Function to reliably fit all nodes
   const fitAllNodes = useCallback(() => {
+    // Don't run multiple fit operations simultaneously
+    if (isFittingRef.current) return;
+    
+    // Clear any pending fit operations
+    if (fitTimeoutRef.current) {
+      clearTimeout(fitTimeoutRef.current);
+      fitTimeoutRef.current = null;
+    }
+    
     if (networkRef.current && nodesDatasetRef.current) {
       try {
-        // Simple fit with animation
+        isFittingRef.current = true;
+        
+        // Simple fit with animation - different behavior for mobile vs desktop
         const fitOptions: FitOptions = {
           nodes: nodesDatasetRef.current.getIds(),
-          animation: true
+          animation: {
+            duration: 500,
+            easingFunction: "easeOutQuad"
+          }
         };
         
         networkRef.current.fit(fitOptions);
         
-        // Apply an additional slight zoom out for better visibility
-        setTimeout(() => {
-          if (networkRef.current) {
-            const currentScale = networkRef.current.getScale();
-            networkRef.current.moveTo({
-              scale: Math.max(0.3, currentScale * 0.85),
-              animation: true
-            });
-          }
-        }, 600);
+        // Only apply additional zoom-out on mobile
+        // On desktop we keep the default fit behavior
+        if (isMobile) {
+          fitTimeoutRef.current = setTimeout(() => {
+            if (networkRef.current) {
+              const currentScale = networkRef.current.getScale();
+              networkRef.current.moveTo({
+                scale: Math.max(0.3, currentScale * 0.85),
+                animation: {
+                  duration: 300,
+                  easingFunction: "easeOutQuad"
+                }
+              });
+            }
+            isFittingRef.current = false;
+            fitTimeoutRef.current = null;
+          }, 600);
+        } else {
+          // On desktop, just mark fitting as complete after animation
+          fitTimeoutRef.current = setTimeout(() => {
+            isFittingRef.current = false;
+            fitTimeoutRef.current = null;
+          }, 550);
+        }
       } catch (e) {
         console.error("Error fitting nodes:", e);
+        isFittingRef.current = false;
       }
     }
-  }, []);
+  }, [isMobile]);
 
   // Enhanced memory node click handler to avoid unnecessary re-renders
   const handleNodeClick = useCallback(
@@ -182,6 +272,14 @@ const MemoriesNetworkGraph = ({
     if (isOpeningNode) {
       return;
     }
+    
+    // Define the prevent touch handler at the top level of the effect
+    // so it's available in the cleanup function
+    const preventTouch = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
     
     const nodes = new DataSet<Node>()
     const edges = new DataSet<Edge>()
@@ -294,7 +392,11 @@ const MemoriesNetworkGraph = ({
           menuMobile: true,
           tooltipDelay: 200,
           hover: true,
-          zoomView: true,
+          zoomView: !isMobile,
+          dragView: !isMobile,
+          multiselect: false,
+          selectable: true,
+          selectConnectedEdges: false,
         },
         nodes: {
           borderWidth: 2,
@@ -355,9 +457,12 @@ const MemoriesNetworkGraph = ({
 
       // Handle resizing to ensure proper fit
       const resizeObserver = new ResizeObserver(() => {
-        if (isReady && networkRef.current) {
-          // Only refit if the network is already stable
-          setTimeout(() => fitAllNodes(), 200);
+        if (isReady && networkRef.current && !isFittingRef.current) {
+          // Only refit if the network is already stable and not already fitting
+          if (fitTimeoutRef.current) {
+            clearTimeout(fitTimeoutRef.current);
+          }
+          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
         }
       });
 
@@ -369,35 +474,54 @@ const MemoriesNetworkGraph = ({
         networkRef.current.stabilize(200);
       }
 
-      return () => {
-        // Cleanup resize observer
-        if (containerRef.current) {
-          resizeObserver.unobserve(containerRef.current);
-        }
-        resizeObserver.disconnect();
+      // Disable touch gestures on mobile for the container
+      if (isMobile && containerRef.current) {
+        containerRef.current.style.touchAction = "none";
+        // Add event listeners to prevent default touch behavior
+        containerRef.current.addEventListener('touchstart', preventTouch, { passive: false });
+        containerRef.current.addEventListener('touchmove', preventTouch, { passive: false });
         
-        // Store positions before unmounting
-        if (networkRef.current && nodesDatasetRef.current) {
-          networkRef.current.storePositions()
-          nodesDatasetRef.current
-            .get({ fields: ["id", "x", "y"] })
-            .forEach((node) => {
-              if (node.x != null && node.y != null) {
-                persistedNodePositions[node.id as string] = {
-                  x: node.x,
-                  y: node.y,
+        return () => {
+          // Clean up event listeners
+          if (containerRef.current) {
+            containerRef.current.removeEventListener('touchstart', preventTouch);
+            containerRef.current.removeEventListener('touchmove', preventTouch);
+          }
+          
+          // Cleanup resize observer
+          if (containerRef.current) {
+            resizeObserver.unobserve(containerRef.current);
+          }
+          resizeObserver.disconnect();
+          
+          // Store positions before unmounting
+          if (networkRef.current && nodesDatasetRef.current) {
+            networkRef.current.storePositions()
+            nodesDatasetRef.current
+              .get({ fields: ["id", "x", "y"] })
+              .forEach((node) => {
+                if (node.x != null && node.y != null) {
+                  persistedNodePositions[node.id as string] = {
+                    x: node.x,
+                    y: node.y,
+                  }
                 }
-              }
-            })
-        }
-      };
+              })
+          }
+        };
+      }
+
     }
-  }, [memories, searchQuery, handleNodeClick, isReady, isOpeningNode, fitAllNodes]);
+  }, [memories, searchQuery, handleNodeClick, isReady, isOpeningNode, fitAllNodes, isMobile]);
 
   // Attempt to refit when ready changes
   useEffect(() => {
-    if (isReady && memories.length > 0) {
-      setTimeout(() => fitAllNodes(), 200);
+    if (isReady && memories.length > 0 && !isFittingRef.current) {
+      // Only refit if not already fitting
+      if (fitTimeoutRef.current) {
+        clearTimeout(fitTimeoutRef.current);
+      }
+      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
     }
   }, [isReady, memories.length, fitAllNodes]);
 

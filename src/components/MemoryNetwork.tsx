@@ -7,6 +7,7 @@ import { Memory } from "@/api/getMemories"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
 import { Network, Node, Edge } from "vis-network"
+import { usePlatform } from "@/hooks/usePlatform"
 import "./MemoryNetwork.css"
 
 // Global cache of node positions to preserve layout across modal instances
@@ -22,6 +23,11 @@ export default function MemoryNetworkModal() {
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { showMemoryNode } = useMemoryNodeViewer()
   const [isOpeningNode, setIsOpeningNode] = useState(false)
+  const { isMobile } = usePlatform()
+  
+  // Refs to track fit operations
+  const isFittingRef = useRef<boolean>(false);
+  const fitTimeoutRef = useRef<number | null>(null);
 
   // Keep memoryMap in a ref so it persists even when component re-renders
   const memoryMapRef = useRef<Map<string, any>>(new Map())
@@ -34,29 +40,58 @@ export default function MemoryNetworkModal() {
 
   // Function to reliably fit all nodes
   const fitAllNodes = useCallback(() => {
+    // Don't run multiple fit operations simultaneously
+    if (isFittingRef.current) return;
+    
+    // Clear any pending fit operations
+    if (fitTimeoutRef.current) {
+      clearTimeout(fitTimeoutRef.current);
+      fitTimeoutRef.current = null;
+    }
+    
     if (networkRef.current && nodesDatasetRef.current) {
       try {
-        // Simple fit with animation
+        isFittingRef.current = true;
+        
+        // Simple fit with animation - different behavior for mobile vs desktop
         networkRef.current.fit({
           nodes: nodesDatasetRef.current.getIds(),
-          animation: true
+          animation: {
+            duration: 500,
+            easingFunction: "easeOutQuad"
+          }
         });
         
-        // Apply an additional slight zoom out for better visibility
-        setTimeout(() => {
-          if (networkRef.current) {
-            const currentScale = networkRef.current.getScale();
-            networkRef.current.moveTo({
-              scale: Math.max(0.3, currentScale * 0.85),
-              animation: true
-            });
-          }
-        }, 600);
+        // Only apply additional zoom-out on mobile
+        // On desktop we keep the default fit behavior
+        if (isMobile) {
+          fitTimeoutRef.current = setTimeout(() => {
+            if (networkRef.current) {
+              const currentScale = networkRef.current.getScale();
+              networkRef.current.moveTo({
+                scale: Math.max(0.3, currentScale * 0.85),
+                animation: {
+                  duration: 300,
+                  easingFunction: "easeOutQuad"
+                }
+              });
+            }
+            isFittingRef.current = false;
+            fitTimeoutRef.current = null;
+          }, 600);
+        } else {
+          // On desktop, just mark fitting as complete after animation
+          fitTimeoutRef.current = setTimeout(() => {
+            isFittingRef.current = false;
+            fitTimeoutRef.current = null;
+          }, 550);
+        }
       } catch (e) {
         console.error("Error fitting nodes:", e);
+        isFittingRef.current = false;
       }
     }
-  }, []);
+  }, [isMobile]);
 
   // Handle deleting a node - use useCallback to prevent recreation on each render
   const handleNodeDelete = useCallback(
@@ -283,6 +318,15 @@ export default function MemoryNetworkModal() {
     if (!netContainer || !nodesDatasetRef.current || !edgesDatasetRef.current) {
       return
     }
+    
+    // Define the prevent touch handler at the top level of the effect
+    // so it's available in the cleanup function
+    const preventTouch = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+    
     const options = {
       nodes: {
         shape: "dot",
@@ -303,8 +347,8 @@ export default function MemoryNetworkModal() {
       interaction: {
         hover: false,
         dragNodes: true,
-        dragView: true,
-        zoomView: true,
+        dragView: !isMobile,
+        zoomView: !isMobile,
         tooltipDelay: 2000,
         multiselect: false,
         selectable: true,
@@ -337,6 +381,14 @@ export default function MemoryNetworkModal() {
       options
     )
     networkRef.current = net
+    
+    // Disable touch gestures on mobile for the container
+    if (isMobile && netContainer) {
+      netContainer.style.touchAction = "none";
+      // Add event listeners to prevent default touch behavior
+      netContainer.addEventListener('touchstart', preventTouch, { passive: false });
+      netContainer.addEventListener('touchmove', preventTouch, { passive: false });
+    }
     
     // Fit view after stabilization
     net.once("stabilized", () => {
@@ -374,9 +426,12 @@ export default function MemoryNetworkModal() {
       const h = netContainer.clientHeight
       if (w > 0 && h > 0) {
         net.setSize(w.toString(), h.toString())
-        // Refit when resizing
-        if (isReady) {
-          setTimeout(() => fitAllNodes(), 200);
+        // Refit when resizing, but only if not already fitting
+        if (isReady && !isFittingRef.current) {
+          if (fitTimeoutRef.current) {
+            clearTimeout(fitTimeoutRef.current);
+          }
+          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
         }
       }
     }
@@ -384,9 +439,12 @@ export default function MemoryNetworkModal() {
     
     // Create a ResizeObserver to handle container size changes
     const resizeObserver = new ResizeObserver(() => {
-      if (isReady && networkRef.current) {
-        // Only refit if the network is already stable
-        setTimeout(() => fitAllNodes(), 200);
+      if (isReady && networkRef.current && !isFittingRef.current) {
+        // Only refit if the network is already stable and not already fitting
+        if (fitTimeoutRef.current) {
+          clearTimeout(fitTimeoutRef.current);
+        }
+        fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
       }
     });
     
@@ -402,13 +460,23 @@ export default function MemoryNetworkModal() {
         resizeObserver.unobserve(containerRef.current);
       }
       resizeObserver.disconnect();
+      
+      // Clean up touch event listeners for mobile
+      if (isMobile && netContainer) {
+        netContainer.removeEventListener('touchstart', preventTouch);
+        netContainer.removeEventListener('touchmove', preventTouch);
+      }
     }
-  }, [handleNodeDelete, showMemoryNode, handleNodeClick, fitAllNodes, isReady])
+  }, [handleNodeDelete, showMemoryNode, handleNodeClick, fitAllNodes, isReady, isMobile])
   
   // Attempt to refit when ready changes
   useEffect(() => {
-    if (isReady && memories.length > 0) {
-      setTimeout(() => fitAllNodes(), 200);
+    if (isReady && memories.length > 0 && !isFittingRef.current) {
+      // Only refit if not already fitting
+      if (fitTimeoutRef.current) {
+        clearTimeout(fitTimeoutRef.current);
+      }
+      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
     }
   }, [isReady, memories.length, fitAllNodes]);
 
