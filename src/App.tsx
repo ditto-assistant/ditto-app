@@ -63,7 +63,10 @@ const ImageViewer = loadE(() => import("@/components/ImageViewer"))
 const HomeScreen = loadE(() => import("@/screens/HomeScreen"))
 const Settings = loadE(() => import("@/screens/Settings"))
 const TokenModal = loadE(() => import("@/components/TokenModal"))
-const MemoriesDashboardOverlay = loadE(() => import("@/screens/MemoriesDashboard/MemoriesDashboardOverlay"))
+const MemoriesDashboardOverlay = loadE(
+  () => import("@/screens/MemoriesDashboard/MemoriesDashboardOverlay")
+)
+const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
 const ComposeModal = loadE(() => import("@/components/ComposeModal"))
 // const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
@@ -106,6 +109,9 @@ const modalRegistry: ModalRegistry = {
   },
   memories: {
     component: <MemoriesDashboardOverlay />,
+  },
+  memoryNetwork: {
+    component: <MemoryNetworkModal />,
   },
   dittoCanvas: {
     component: <DittoCanvasModal />,

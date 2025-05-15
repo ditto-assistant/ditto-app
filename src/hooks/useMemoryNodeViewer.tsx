@@ -9,7 +9,7 @@ import { useModal } from "./useModal"
 import { Memory } from "@/api/getMemories"
 
 // Just add level field for nodes that may not have it
-interface MemoryWithLevel extends Memory {
+export interface MemoryWithLevel extends Memory {
   level?: number
   nodeId?: string
 }

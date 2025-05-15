@@ -188,10 +188,7 @@ export const sendPrompt = async (
     currentOptimisticID = ""
     currentFinalizeCallback = null
 
-    const toolTriggers = [
-      "<IMAGE_GENERATION>",
-      "<GOOGLE_SEARCH>",
-    ]
+    const toolTriggers = ["<IMAGE_GENERATION>", "<GOOGLE_SEARCH>"]
 
     let toolTriggered = false
     for (const trigger of toolTriggers) {

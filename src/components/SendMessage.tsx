@@ -186,7 +186,7 @@ export default function SendMessage({
         const streamingCallback = (chunk: string) => {
           updateOptimisticResponse(optimisticMessageId, chunk)
         }
-        
+
         try {
           await sendPrompt(
             userID,
