@@ -53,3 +53,6 @@ lint-fix:
 
 merge-dependabot:
 	./scripts/github/merge_dependabot.sh
+
+generate:
+	bun generate:icons

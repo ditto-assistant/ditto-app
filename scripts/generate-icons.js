@@ -161,10 +161,6 @@ if (!fs.existsSync(placeholdersDir)) {
 }
 const placeholderImages = [
   {
-    src: originalUserAvatar,
-    out: path.join(placeholdersDir, "user-avatar-192.png"),
-  },
-  {
     src: originalNotFound,
     out: path.join(placeholdersDir, "not-found-192.png"),
   },
