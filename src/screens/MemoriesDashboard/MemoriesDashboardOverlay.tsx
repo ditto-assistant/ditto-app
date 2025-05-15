@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Search, List, Network, Info, X } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
@@ -114,12 +114,82 @@ const MemoriesNetworkGraph = ({
   >(new Map())
   const { showMemoryNode } = useMemoryNodeViewer()
   const [isReady, setIsReady] = useState(false)
+  const [isOpeningNode, setIsOpeningNode] = useState(false)
+
+  // Function to reliably fit all nodes
+  const fitAllNodes = useCallback(() => {
+    if (networkRef.current && nodesDatasetRef.current) {
+      try {
+        // Simple fit with animation
+        const fitOptions: FitOptions = {
+          nodes: nodesDatasetRef.current.getIds(),
+          animation: true
+        };
+        
+        networkRef.current.fit(fitOptions);
+        
+        // Apply an additional slight zoom out for better visibility
+        setTimeout(() => {
+          if (networkRef.current) {
+            const currentScale = networkRef.current.getScale();
+            networkRef.current.moveTo({
+              scale: Math.max(0.3, currentScale * 0.85),
+              animation: true
+            });
+          }
+        }, 600);
+      } catch (e) {
+        console.error("Error fitting nodes:", e);
+      }
+    }
+  }, []);
+
+  // Enhanced memory node click handler to avoid unnecessary re-renders
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      const clickedItem = memoryMapRef.current.get(nodeId)
+      if (
+        clickedItem &&
+        !("isQueryNode" in clickedItem && clickedItem.isQueryNode)
+      ) {
+        const clickedMemory = clickedItem as Memory
+        // Set opening node flag before showing the memory
+        setIsOpeningNode(true)
+        // Persist positions before opening node
+        if (networkRef.current && nodesDatasetRef.current) {
+          networkRef.current.storePositions()
+          nodesDatasetRef.current
+            .get({ fields: ["id", "x", "y"] })
+            .forEach((node) => {
+              if (node.x != null && node.y != null) {
+                persistedNodePositions[node.id as string] = {
+                  x: node.x,
+                  y: node.y,
+                }
+              }
+            })
+        }
+        showMemoryNode(clickedMemory as MemoryWithLevel)
+        // Reset the flag after a short delay
+        setTimeout(() => setIsOpeningNode(false), 500)
+      }
+    },
+    [showMemoryNode]
+  )
 
   useEffect(() => {
+    // Skip rebuilding the network if we're just opening a node
+    if (isOpeningNode) {
+      return;
+    }
+    
     const nodes = new DataSet<Node>()
     const edges = new DataSet<Edge>()
     memoryMapRef.current.clear()
-    setIsReady(false) // Reset ready state when memories change
+    
+    if (!isOpeningNode) {
+      setIsReady(false)
+    }
 
     const queryNodeId = "search-query-node"
     nodes.add({
@@ -196,41 +266,42 @@ const MemoriesNetworkGraph = ({
     edgesDatasetRef.current = edges
 
     if (containerRef.current) {
-      const fitOptions: FitOptions = {
-        nodes: nodes.getIds(),
-        animation: false, // Fit instantly after stabilization
-        // padding: { top: 20, right: 20, bottom: 20, left: 20 } // Optional: add padding
-      }
-
       const options: Options = {
         layout: {
-          hierarchical: false, // Prefer physics-based layout for this structure
+          hierarchical: false,
         },
         physics: {
           enabled: true,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -60, // Adjusted for better spread with central node
+            gravitationalConstant: -60,
             centralGravity: 0.01,
-            springLength: 120, // Adjusted for better spread
+            springLength: 120,
             springConstant: 0.08,
             damping: 0.5,
             avoidOverlap: 0.9,
           },
-          stabilization: { iterations: 200, fit: true }, // Longer stabilization
+          stabilization: { 
+            enabled: true,
+            iterations: 200,
+            fit: true,
+            updateInterval: 50,
+            onlyDynamicEdges: false,
+          },
         },
         interaction: {
           dragNodes: true,
           menuMobile: true,
           tooltipDelay: 200,
           hover: true,
+          zoomView: true,
         },
         nodes: {
           borderWidth: 2,
           font: { color: "#fff", size: 12, face: "Arial" },
         },
         edges: {
-          smooth: { enabled: true, type: "dynamic", roundness: 0.5 }, // dynamic for physics, added roundness
+          smooth: { enabled: true, type: "dynamic", roundness: 0.5 },
           color: {
             color: "#848484",
             highlight: "#ADD8E6",
@@ -243,6 +314,7 @@ const MemoriesNetworkGraph = ({
 
       if (networkRef.current) {
         networkRef.current.setData({ nodes, edges })
+        networkRef.current.setOptions(options)
       } else {
         networkRef.current = new VisNetwork(
           containerRef.current,
@@ -253,40 +325,19 @@ const MemoriesNetworkGraph = ({
         networkRef.current.on("click", (params) => {
           if (params.nodes.length > 0) {
             const clickedNodeId = params.nodes[0] as string
-            const clickedItem = memoryMapRef.current.get(clickedNodeId)
-            if (
-              clickedItem &&
-              !("isQueryNode" in clickedItem && clickedItem.isQueryNode)
-            ) {
-              const clickedMemory = clickedItem as Memory
-              if (networkRef.current && nodesDatasetRef.current) {
-                networkRef.current.storePositions()
-                nodesDatasetRef.current
-                  .get({ fields: ["id", "x", "y"] })
-                  .forEach((node) => {
-                    if (node.x != null && node.y != null) {
-                      persistedNodePositions[node.id as string] = {
-                        x: node.x,
-                        y: node.y,
-                      }
-                    }
-                  })
-              }
-              showMemoryNode(clickedMemory as MemoryWithLevel)
-            }
+            handleNodeClick(clickedNodeId)
           }
         })
       }
 
-      const handleFit = () => {
-        if (networkRef.current && nodes.length > 0) {
-          networkRef.current.fit(fitOptions)
-        }
-      }
-
+      // Fit the network properly when stabilized
       networkRef.current.once("stabilizationIterationsDone", () => {
         setIsReady(true)
-        handleFit()
+        // Slight delay to ensure DOM is fully updated
+        setTimeout(() => {
+          fitAllNodes();
+        }, 100);
+        
         if (networkRef.current && nodesDatasetRef.current) {
           networkRef.current.storePositions()
           nodesDatasetRef.current
@@ -302,46 +353,53 @@ const MemoriesNetworkGraph = ({
         }
       })
 
-      if (networkRef.current && memories.length > 0) {
-        networkRef.current.stabilize()
-      }
-      // Fallback fit if stabilization event doesn't fire as expected or for updates
-      if (isReady && memories.length > 0) {
-        setTimeout(handleFit, 100) // Short delay to allow DOM updates
-      }
-    }
-    return () => {
-      if (networkRef.current && nodesDatasetRef.current) {
-        networkRef.current.storePositions()
-        nodesDatasetRef.current
-          .get({ fields: ["id", "x", "y"] })
-          .forEach((node) => {
-            if (node.x != null && node.y != null) {
-              persistedNodePositions[node.id as string] = {
-                x: node.x,
-                y: node.y,
-              }
-            }
-          })
-      }
-    }
-  }, [memories, searchQuery, showMemoryNode, isReady]) // Added isReady to dependency array
+      // Handle resizing to ensure proper fit
+      const resizeObserver = new ResizeObserver(() => {
+        if (isReady && networkRef.current) {
+          // Only refit if the network is already stable
+          setTimeout(() => fitAllNodes(), 200);
+        }
+      });
 
-  useEffect(() => {
-    // Attempt to fit again when isReady becomes true, if memories are present
-    if (
-      isReady &&
-      networkRef.current &&
-      nodesDatasetRef.current &&
-      nodesDatasetRef.current.length > 0
-    ) {
-      const fitOptions: FitOptions = {
-        nodes: nodesDatasetRef.current.getIds(),
-        animation: false,
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
       }
-      networkRef.current.fit(fitOptions)
+
+      if (networkRef.current && memories.length > 0) {
+        networkRef.current.stabilize(200);
+      }
+
+      return () => {
+        // Cleanup resize observer
+        if (containerRef.current) {
+          resizeObserver.unobserve(containerRef.current);
+        }
+        resizeObserver.disconnect();
+        
+        // Store positions before unmounting
+        if (networkRef.current && nodesDatasetRef.current) {
+          networkRef.current.storePositions()
+          nodesDatasetRef.current
+            .get({ fields: ["id", "x", "y"] })
+            .forEach((node) => {
+              if (node.x != null && node.y != null) {
+                persistedNodePositions[node.id as string] = {
+                  x: node.x,
+                  y: node.y,
+                }
+              }
+            })
+        }
+      };
     }
-  }, [isReady])
+  }, [memories, searchQuery, handleNodeClick, isReady, isOpeningNode, fitAllNodes]);
+
+  // Attempt to refit when ready changes
+  useEffect(() => {
+    if (isReady && memories.length > 0) {
+      setTimeout(() => fitAllNodes(), 200);
+    }
+  }, [isReady, memories.length, fitAllNodes]);
 
   // Show placeholder or loading only if memories are being fetched or network is building
   if (
@@ -364,7 +422,7 @@ const MemoriesNetworkGraph = ({
         className="network-visualization-area"
         style={{ visibility: isReady ? "visible" : "hidden" }}
       />
-      {!isReady && memories.length > 0 && (
+      {!isReady && memories.length > 0 && !isOpeningNode && (
         <div className="loading-indicator">Building network...</div>
       )}
     </div>
@@ -380,7 +438,17 @@ export default function MemoriesDashboardOverlay() {
   const { preferences } = useModelPreferences()
   const [error, setError] = useState<string | null>(null)
   const [lastSearchedTerm, setLastSearchedTerm] = useState("") // To pass to graph
-  const { showMemoryNode } = useMemoryNodeViewer() // Get showMemoryNode here
+  const [isViewingNode, setIsViewingNode] = useState(false) // Add this to track when a node is being viewed
+  const { showMemoryNode: originalShowMemoryNode } = useMemoryNodeViewer() // Get showMemoryNode here
+
+  // Memoize the showMemoryNode function to prevent unnecessary re-renders
+  const showMemoryNode = useCallback(
+    (memory: MemoryWithLevel) => {
+      setIsViewingNode(true)
+      originalShowMemoryNode(memory)
+    },
+    [originalShowMemoryNode]
+  )
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {

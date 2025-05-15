@@ -21,6 +21,7 @@ export default function MemoryNetworkModal() {
   const { memories, loading, deleteMemory } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { showMemoryNode } = useMemoryNodeViewer()
+  const [isOpeningNode, setIsOpeningNode] = useState(false)
 
   // Keep memoryMap in a ref so it persists even when component re-renders
   const memoryMapRef = useRef<Map<string, any>>(new Map())
@@ -30,6 +31,32 @@ export default function MemoryNetworkModal() {
   const networkNeedsUpdate = useRef<boolean>(false)
   // State to avoid showing graph until it's fit
   const [isReady, setIsReady] = useState(false)
+
+  // Function to reliably fit all nodes
+  const fitAllNodes = useCallback(() => {
+    if (networkRef.current && nodesDatasetRef.current) {
+      try {
+        // Simple fit with animation
+        networkRef.current.fit({
+          nodes: nodesDatasetRef.current.getIds(),
+          animation: true
+        });
+        
+        // Apply an additional slight zoom out for better visibility
+        setTimeout(() => {
+          if (networkRef.current) {
+            const currentScale = networkRef.current.getScale();
+            networkRef.current.moveTo({
+              scale: Math.max(0.3, currentScale * 0.85),
+              animation: true
+            });
+          }
+        }, 600);
+      } catch (e) {
+        console.error("Error fitting nodes:", e);
+      }
+    }
+  }, []);
 
   // Handle deleting a node - use useCallback to prevent recreation on each render
   const handleNodeDelete = useCallback(
@@ -72,8 +99,42 @@ export default function MemoryNetworkModal() {
     [confirmMemoryDeletion, deleteMemory]
   )
 
+  // Enhanced memory node click handler to avoid unnecessary re-renders
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      const data = memoryMapRef.current.get(nodeId)
+      if (data) {
+        // Set opening node flag before showing the memory
+        setIsOpeningNode(true)
+        // Persist positions before opening node
+        if (networkRef.current && nodesDatasetRef.current) {
+          networkRef.current.storePositions()
+          nodesDatasetRef.current
+            .get({ fields: ["id", "x", "y"] })
+            .forEach((node) => {
+              if (node.x != null && node.y != null) {
+                persistedNodePositions[node.id.toString()] = {
+                  x: node.x,
+                  y: node.y,
+                }
+              }
+            })
+        }
+        showMemoryNode(data, handleNodeDelete)
+        // Reset the flag after a short delay
+        setTimeout(() => setIsOpeningNode(false), 500)
+      }
+    },
+    [showMemoryNode, handleNodeDelete]
+  )
+
   // Build datasets
   useEffect(() => {
+    // Skip rebuilding network if we're just opening a node
+    if (isOpeningNode) {
+      return;
+    }
+    
     try {
       const nodes = new DataSet<Node>([])
       const edges = new DataSet<Edge>([])
@@ -214,7 +275,7 @@ export default function MemoryNetworkModal() {
       nodesDatasetRef.current = null
       edgesDatasetRef.current = null
     }
-  }, [memories, loading, memoryMap])
+  }, [memories, loading, memoryMap, isOpeningNode])
 
   // Create network once when component mounts
   useEffect(() => {
@@ -266,7 +327,6 @@ export default function MemoryNetworkModal() {
           enabled: true,
           iterations: 100,
           updateInterval: 50,
-          // only relax dynamic edges on initialization for speed
           onlyDynamicEdges: true,
         },
       },
@@ -277,10 +337,15 @@ export default function MemoryNetworkModal() {
       options
     )
     networkRef.current = net
+    
     // Fit view after stabilization
     net.once("stabilized", () => {
-      net.fit()
       setIsReady(true)
+      // Add a slight delay to ensure DOM is fully updated
+      setTimeout(() => {
+        fitAllNodes();
+      }, 100);
+      
       // Store and cache node positions for next initialization
       net.storePositions()
       if (nodesDatasetRef.current) {
@@ -294,41 +359,58 @@ export default function MemoryNetworkModal() {
         })
       }
     })
+    
     // Click handler
     net.on("click", (params) => {
       if (!params.nodes || params.nodes.length === 0) return
-
-      // Persist current positions before opening memory node modal
-      net.storePositions()
-      if (nodesDatasetRef.current) {
-        nodesDatasetRef.current.get().forEach((node) => {
-          if (node.x != null && node.y != null) {
-            persistedNodePositions[node.id.toString()] = {
-              x: node.x,
-              y: node.y,
-            }
-          }
-        })
-      }
-
       const nodeId = params.nodes[0].toString()
-      const data = memoryMapRef.current.get(nodeId)
-      if (data) showMemoryNode(data, handleNodeDelete)
+      handleNodeClick(nodeId)
     })
+    
     // Handle resize
     const onResize = () => {
       if (!netContainer) return
       const w = netContainer.clientWidth
       const h = netContainer.clientHeight
-      if (w > 0 && h > 0) net.setSize(w.toString(), h.toString())
+      if (w > 0 && h > 0) {
+        net.setSize(w.toString(), h.toString())
+        // Refit when resizing
+        if (isReady) {
+          setTimeout(() => fitAllNodes(), 200);
+        }
+      }
     }
     window.addEventListener("resize", onResize)
+    
+    // Create a ResizeObserver to handle container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      if (isReady && networkRef.current) {
+        // Only refit if the network is already stable
+        setTimeout(() => fitAllNodes(), 200);
+      }
+    });
+    
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
     // Cleanup
     return () => {
       net.destroy()
       window.removeEventListener("resize", onResize)
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+      resizeObserver.disconnect();
     }
-  }, [handleNodeDelete, showMemoryNode])
+  }, [handleNodeDelete, showMemoryNode, handleNodeClick, fitAllNodes, isReady])
+  
+  // Attempt to refit when ready changes
+  useEffect(() => {
+    if (isReady && memories.length > 0) {
+      setTimeout(() => fitAllNodes(), 200);
+    }
+  }, [isReady, memories.length, fitAllNodes]);
 
   // Render tabs as before
   return (
@@ -339,6 +421,9 @@ export default function MemoryNetworkModal() {
         className="w-full h-full min-h-[500px] flex flex-col"
         style={{ visibility: isReady ? "visible" : "hidden" }}
       />
+      {!isReady && !isOpeningNode && memories.length > 0 && (
+        <div className="loading-indicator">Building network...</div>
+      )}
     </Modal>
   )
 }
