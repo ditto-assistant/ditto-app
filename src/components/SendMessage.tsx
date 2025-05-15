@@ -479,7 +479,7 @@ export default function SendMessage({
                         openComposeModal()
                       }}
                       aria-label="Expand message"
-                      className="h-10 w-10 rounded-full bg-background ring-2 ring-blue-500 shadow-md shadow-blue-500 hover:scale-110 transition-transform"
+                      className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
                     >
                       <Expand className="h-5 w-5" />
                     </Button>
@@ -496,7 +496,7 @@ export default function SendMessage({
                           variant="ghost"
                           size="icon"
                           aria-label="Add media"
-                          className="h-10 w-10 rounded-full bg-background ring-2 ring-blue-500 shadow-md shadow-blue-500 hover:scale-110 transition-transform"
+                          className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
                           onPointerDown={() => navigator.vibrate?.(10)}
                         >
                           <Plus className="h-5 w-5" />
@@ -532,7 +532,7 @@ export default function SendMessage({
                       <DropdownMenuTrigger asChild>
                         <Avatar
                           ref={logoButtonRef as React.RefObject<HTMLDivElement>}
-                          className="h-10 w-10 cursor-pointer hover:scale-110 transition-transform ring-2 ring-blue-500 shadow-md shadow-blue-500"
+                          className="h-10 w-10 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
                           onClick={handleLogoClick}
                           onPointerDown={triggerLightHaptic}
                         >
@@ -630,7 +630,7 @@ export default function SendMessage({
                         type="submit"
                         disabled={isInvalidConfig}
                         aria-label="Send message"
-                        className="h-10 w-10 p-0 rounded-full border-none ring-2 ring-blue-500 shadow-md shadow-blue-500 hover:scale-110 transition-transform hover:bg-transparent focus:bg-transparent"
+                        className="h-10 w-10 p-0 rounded-full border-none ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all hover:bg-transparent focus:bg-transparent"
                         onPointerDown={triggerLightHaptic}
                       >
                         <SendHorizonal className="h-5 w-5" />

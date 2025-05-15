@@ -185,7 +185,7 @@ export default function ChatMessage({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar
-              className="h-7 w-7 cursor-pointer transition-transform hover:scale-110 ring-2 ring-blue-500 shadow-md shadow-blue-500"
+              className="h-7 w-7 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
               onPointerDown={triggerLightHaptic}
             >
               <AvatarImage
