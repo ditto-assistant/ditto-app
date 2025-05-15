@@ -268,7 +268,7 @@ to function properly. The rest is handled by Tailwind.
     -webkit-user-select: none;
     user-select: none;
   }
-  
+
   .vis-network {
     touch-action: none !important;
     -webkit-user-select: none;
@@ -276,12 +276,12 @@ to function properly. The rest is handled by Tailwind.
     width: 100% !important;
     height: 100% !important;
   }
-  
+
   .memory-table {
     width: 100% !important;
     padding: 12px 8px;
   }
-  
+
   .memory-node {
     width: 100%;
     max-width: 100%;

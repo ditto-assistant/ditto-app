@@ -24,10 +24,10 @@ export default function MemoryNetworkModal() {
   const { showMemoryNode } = useMemoryNodeViewer()
   const [isOpeningNode, setIsOpeningNode] = useState(false)
   const { isMobile } = usePlatform()
-  
+
   // Refs to track fit operations
-  const isFittingRef = useRef<boolean>(false);
-  const fitTimeoutRef = useRef<number | null>(null);
+  const isFittingRef = useRef<boolean>(false)
+  const fitTimeoutRef = useRef<number | null>(null)
 
   // Keep memoryMap in a ref so it persists even when component re-renders
   const memoryMapRef = useRef<Map<string, any>>(new Map())
@@ -41,57 +41,57 @@ export default function MemoryNetworkModal() {
   // Function to reliably fit all nodes
   const fitAllNodes = useCallback(() => {
     // Don't run multiple fit operations simultaneously
-    if (isFittingRef.current) return;
-    
+    if (isFittingRef.current) return
+
     // Clear any pending fit operations
     if (fitTimeoutRef.current) {
-      clearTimeout(fitTimeoutRef.current);
-      fitTimeoutRef.current = null;
+      clearTimeout(fitTimeoutRef.current)
+      fitTimeoutRef.current = null
     }
-    
+
     if (networkRef.current && nodesDatasetRef.current) {
       try {
-        isFittingRef.current = true;
-        
+        isFittingRef.current = true
+
         // Simple fit with animation - different behavior for mobile vs desktop
         networkRef.current.fit({
           nodes: nodesDatasetRef.current.getIds(),
           animation: {
             duration: 500,
-            easingFunction: "easeOutQuad"
-          }
-        });
-        
+            easingFunction: "easeOutQuad",
+          },
+        })
+
         // Only apply additional zoom-out on mobile
         // On desktop we keep the default fit behavior
         if (isMobile) {
           fitTimeoutRef.current = setTimeout(() => {
             if (networkRef.current) {
-              const currentScale = networkRef.current.getScale();
+              const currentScale = networkRef.current.getScale()
               networkRef.current.moveTo({
                 scale: Math.max(0.3, currentScale * 0.85),
                 animation: {
                   duration: 300,
-                  easingFunction: "easeOutQuad"
-                }
-              });
+                  easingFunction: "easeOutQuad",
+                },
+              })
             }
-            isFittingRef.current = false;
-            fitTimeoutRef.current = null;
-          }, 600);
+            isFittingRef.current = false
+            fitTimeoutRef.current = null
+          }, 600)
         } else {
           // On desktop, just mark fitting as complete after animation
           fitTimeoutRef.current = setTimeout(() => {
-            isFittingRef.current = false;
-            fitTimeoutRef.current = null;
-          }, 550);
+            isFittingRef.current = false
+            fitTimeoutRef.current = null
+          }, 550)
         }
       } catch (e) {
-        console.error("Error fitting nodes:", e);
-        isFittingRef.current = false;
+        console.error("Error fitting nodes:", e)
+        isFittingRef.current = false
       }
     }
-  }, [isMobile]);
+  }, [isMobile])
 
   // Handle deleting a node - use useCallback to prevent recreation on each render
   const handleNodeDelete = useCallback(
@@ -167,9 +167,9 @@ export default function MemoryNetworkModal() {
   useEffect(() => {
     // Skip rebuilding network if we're just opening a node
     if (isOpeningNode) {
-      return;
+      return
     }
-    
+
     try {
       const nodes = new DataSet<Node>([])
       const edges = new DataSet<Edge>([])
@@ -318,15 +318,15 @@ export default function MemoryNetworkModal() {
     if (!netContainer || !nodesDatasetRef.current || !edgesDatasetRef.current) {
       return
     }
-    
+
     // Define the prevent touch handler at the top level of the effect
     // so it's available in the cleanup function
     const preventTouch = (e: TouchEvent) => {
       if (e.touches.length > 1) {
-        e.preventDefault();
+        e.preventDefault()
       }
-    };
-    
+    }
+
     const options = {
       nodes: {
         shape: "dot",
@@ -381,23 +381,27 @@ export default function MemoryNetworkModal() {
       options
     )
     networkRef.current = net
-    
+
     // Disable touch gestures on mobile for the container
     if (isMobile && netContainer) {
-      netContainer.style.touchAction = "none";
+      netContainer.style.touchAction = "none"
       // Add event listeners to prevent default touch behavior
-      netContainer.addEventListener('touchstart', preventTouch, { passive: false });
-      netContainer.addEventListener('touchmove', preventTouch, { passive: false });
+      netContainer.addEventListener("touchstart", preventTouch, {
+        passive: false,
+      })
+      netContainer.addEventListener("touchmove", preventTouch, {
+        passive: false,
+      })
     }
-    
+
     // Fit view after stabilization
     net.once("stabilized", () => {
       setIsReady(true)
       // Add a slight delay to ensure DOM is fully updated
       setTimeout(() => {
-        fitAllNodes();
-      }, 100);
-      
+        fitAllNodes()
+      }, 100)
+
       // Store and cache node positions for next initialization
       net.storePositions()
       if (nodesDatasetRef.current) {
@@ -411,14 +415,14 @@ export default function MemoryNetworkModal() {
         })
       }
     })
-    
+
     // Click handler
     net.on("click", (params) => {
       if (!params.nodes || params.nodes.length === 0) return
       const nodeId = params.nodes[0].toString()
       handleNodeClick(nodeId)
     })
-    
+
     // Handle resize
     const onResize = () => {
       if (!netContainer) return
@@ -429,56 +433,63 @@ export default function MemoryNetworkModal() {
         // Refit when resizing, but only if not already fitting
         if (isReady && !isFittingRef.current) {
           if (fitTimeoutRef.current) {
-            clearTimeout(fitTimeoutRef.current);
+            clearTimeout(fitTimeoutRef.current)
           }
-          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
+          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
         }
       }
     }
     window.addEventListener("resize", onResize)
-    
+
     // Create a ResizeObserver to handle container size changes
     const resizeObserver = new ResizeObserver(() => {
       if (isReady && networkRef.current && !isFittingRef.current) {
         // Only refit if the network is already stable and not already fitting
         if (fitTimeoutRef.current) {
-          clearTimeout(fitTimeoutRef.current);
+          clearTimeout(fitTimeoutRef.current)
         }
-        fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
+        fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
       }
-    });
-    
+    })
+
     if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+      resizeObserver.observe(containerRef.current)
     }
-    
+
     // Cleanup
     return () => {
       net.destroy()
       window.removeEventListener("resize", onResize)
       if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
+        resizeObserver.unobserve(containerRef.current)
       }
-      resizeObserver.disconnect();
-      
+      resizeObserver.disconnect()
+
       // Clean up touch event listeners for mobile
       if (isMobile && netContainer) {
-        netContainer.removeEventListener('touchstart', preventTouch);
-        netContainer.removeEventListener('touchmove', preventTouch);
+        netContainer.removeEventListener("touchstart", preventTouch)
+        netContainer.removeEventListener("touchmove", preventTouch)
       }
     }
-  }, [handleNodeDelete, showMemoryNode, handleNodeClick, fitAllNodes, isReady, isMobile])
-  
+  }, [
+    handleNodeDelete,
+    showMemoryNode,
+    handleNodeClick,
+    fitAllNodes,
+    isReady,
+    isMobile,
+  ])
+
   // Attempt to refit when ready changes
   useEffect(() => {
     if (isReady && memories.length > 0 && !isFittingRef.current) {
       // Only refit if not already fitting
       if (fitTimeoutRef.current) {
-        clearTimeout(fitTimeoutRef.current);
+        clearTimeout(fitTimeoutRef.current)
       }
-      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
+      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
     }
-  }, [isReady, memories.length, fitAllNodes]);
+  }, [isReady, memories.length, fitAllNodes])
 
   // Render tabs as before
   return (

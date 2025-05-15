@@ -181,7 +181,9 @@
   padding: 12px;
   border-radius: 12px;
   background-color: rgba(30, 31, 34, 0.5);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -250,7 +252,7 @@
   .memories-dashboard {
     padding: 8px;
   }
-  
+
   .memories-content {
     width: 100% !important;
   }
@@ -260,34 +262,34 @@
     padding: 8px;
     gap: 16px;
   }
-  
+
   .memory-item {
     width: 100%;
     max-width: 100%;
     padding: 8px;
   }
-  
+
   /* Ensure chat messages fit in mobile container */
   .memory-item > div > div {
     max-width: 100%;
   }
-  
+
   .network-visualization-area {
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
   }
-  
+
   .memory-card-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .memory-prompt {
     font-size: 14px;
   }
-  
+
   .memory-timestamp {
     font-size: 11px;
   }
@@ -299,7 +301,7 @@
     width: 100px;
     height: 100px;
   }
-  
+
   .memory-images {
     max-width: 530px; /* Fits 5 images in a row */
   }

@@ -62,7 +62,7 @@ export function useMemoryNodeViewer() {
   const { createOpenHandler, createCloseHandler } = useModal()
   const openModal = createOpenHandler("memoryNodeViewer")
   const closeModal = createCloseHandler("memoryNodeViewer")
-  
+
   // Add a ref to track if a modal is already open to prevent duplicate operations
   const isModalOpenRef = useRef(false)
 
@@ -75,7 +75,7 @@ export function useMemoryNodeViewer() {
       if (isModalOpenRef.current && context.nodeData?.id === node.id) {
         return // Don't reopen the same node
       }
-      
+
       isModalOpenRef.current = true
       context.setNodeData(node)
       if (deleteCallback) {

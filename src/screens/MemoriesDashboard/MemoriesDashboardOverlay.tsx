@@ -40,9 +40,9 @@ function SearchBar({
 }) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      onSearch();
+      onSearch()
     }
-  };
+  }
 
   return (
     <div className="memories-search-bar">
@@ -95,67 +95,67 @@ const MemoriesNetworkGraph = ({
   const [isReady, setIsReady] = useState(false)
   const [isOpeningNode, setIsOpeningNode] = useState(false)
   const { isMobile } = usePlatform()
-  
+
   // Refs to track fit operations
-  const isFittingRef = useRef<boolean>(false);
-  const fitTimeoutRef = useRef<number | null>(null);
+  const isFittingRef = useRef<boolean>(false)
+  const fitTimeoutRef = useRef<number | null>(null)
 
   // Function to reliably fit all nodes
   const fitAllNodes = useCallback(() => {
     // Don't run multiple fit operations simultaneously
-    if (isFittingRef.current) return;
-    
+    if (isFittingRef.current) return
+
     // Clear any pending fit operations
     if (fitTimeoutRef.current) {
-      clearTimeout(fitTimeoutRef.current);
-      fitTimeoutRef.current = null;
+      clearTimeout(fitTimeoutRef.current)
+      fitTimeoutRef.current = null
     }
-    
+
     if (networkRef.current && nodesDatasetRef.current) {
       try {
-        isFittingRef.current = true;
-        
+        isFittingRef.current = true
+
         // Simple fit with animation - different behavior for mobile vs desktop
         const fitOptions: FitOptions = {
           nodes: nodesDatasetRef.current.getIds(),
           animation: {
             duration: 500,
-            easingFunction: "easeOutQuad"
-          }
-        };
-        
-        networkRef.current.fit(fitOptions);
-        
+            easingFunction: "easeOutQuad",
+          },
+        }
+
+        networkRef.current.fit(fitOptions)
+
         // Only apply additional zoom-out on mobile
         // On desktop we keep the default fit behavior
         if (isMobile) {
           fitTimeoutRef.current = setTimeout(() => {
             if (networkRef.current) {
-              const currentScale = networkRef.current.getScale();
+              const currentScale = networkRef.current.getScale()
               networkRef.current.moveTo({
                 scale: Math.max(0.3, currentScale * 0.85),
                 animation: {
                   duration: 300,
-                  easingFunction: "easeOutQuad"
-                }
-              });
+                  easingFunction: "easeOutQuad",
+                },
+              })
             }
-            isFittingRef.current = false;
-            fitTimeoutRef.current = null;
-          }, 600);
+            isFittingRef.current = false
+            fitTimeoutRef.current = null
+          }, 600)
         } else {
           // On desktop, just mark fitting as complete after animation
           fitTimeoutRef.current = setTimeout(() => {
-            isFittingRef.current = false;
-            fitTimeoutRef.current = null;
-          }, 550);
+            isFittingRef.current = false
+            fitTimeoutRef.current = null
+          }, 550)
         }
       } catch (e) {
-        console.error("Error fitting nodes:", e);
-        isFittingRef.current = false;
+        console.error("Error fitting nodes:", e)
+        isFittingRef.current = false
       }
     }
-  }, [isMobile]);
+  }, [isMobile])
 
   // Enhanced memory node click handler to avoid unnecessary re-renders
   const handleNodeClick = useCallback(
@@ -193,21 +193,21 @@ const MemoriesNetworkGraph = ({
   useEffect(() => {
     // Skip rebuilding the network if we're just opening a node
     if (isOpeningNode) {
-      return;
+      return
     }
-    
+
     // Define the prevent touch handler at the top level of the effect
     // so it's available in the cleanup function
     const preventTouch = (e: TouchEvent) => {
       if (e.touches.length > 1) {
-        e.preventDefault();
+        e.preventDefault()
       }
-    };
-    
+    }
+
     const nodes = new DataSet<Node>()
     const edges = new DataSet<Edge>()
     memoryMapRef.current.clear()
-    
+
     if (!isOpeningNode) {
       setIsReady(false)
     }
@@ -302,7 +302,7 @@ const MemoriesNetworkGraph = ({
             damping: 0.5,
             avoidOverlap: 0.9,
           },
-          stabilization: { 
+          stabilization: {
             enabled: true,
             iterations: 200,
             fit: true,
@@ -360,9 +360,9 @@ const MemoriesNetworkGraph = ({
         setIsReady(true)
         // Slight delay to ensure DOM is fully updated
         setTimeout(() => {
-          fitAllNodes();
-        }, 100);
-        
+          fitAllNodes()
+        }, 100)
+
         if (networkRef.current && nodesDatasetRef.current) {
           networkRef.current.storePositions()
           nodesDatasetRef.current
@@ -383,40 +383,44 @@ const MemoriesNetworkGraph = ({
         if (isReady && networkRef.current && !isFittingRef.current) {
           // Only refit if the network is already stable and not already fitting
           if (fitTimeoutRef.current) {
-            clearTimeout(fitTimeoutRef.current);
+            clearTimeout(fitTimeoutRef.current)
           }
-          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
+          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
         }
-      });
+      })
 
       if (containerRef.current) {
-        resizeObserver.observe(containerRef.current);
+        resizeObserver.observe(containerRef.current)
       }
 
       if (networkRef.current && memories.length > 0) {
-        networkRef.current.stabilize(200);
+        networkRef.current.stabilize(200)
       }
 
       // Disable touch gestures on mobile for the container
       if (isMobile && containerRef.current) {
-        containerRef.current.style.touchAction = "none";
+        containerRef.current.style.touchAction = "none"
         // Add event listeners to prevent default touch behavior
-        containerRef.current.addEventListener('touchstart', preventTouch, { passive: false });
-        containerRef.current.addEventListener('touchmove', preventTouch, { passive: false });
-        
+        containerRef.current.addEventListener("touchstart", preventTouch, {
+          passive: false,
+        })
+        containerRef.current.addEventListener("touchmove", preventTouch, {
+          passive: false,
+        })
+
         return () => {
           // Clean up event listeners
           if (containerRef.current) {
-            containerRef.current.removeEventListener('touchstart', preventTouch);
-            containerRef.current.removeEventListener('touchmove', preventTouch);
+            containerRef.current.removeEventListener("touchstart", preventTouch)
+            containerRef.current.removeEventListener("touchmove", preventTouch)
           }
-          
+
           // Cleanup resize observer
           if (containerRef.current) {
-            resizeObserver.unobserve(containerRef.current);
+            resizeObserver.unobserve(containerRef.current)
           }
-          resizeObserver.disconnect();
-          
+          resizeObserver.disconnect()
+
           // Store positions before unmounting
           if (networkRef.current && nodesDatasetRef.current) {
             networkRef.current.storePositions()
@@ -431,22 +435,29 @@ const MemoriesNetworkGraph = ({
                 }
               })
           }
-        };
+        }
       }
-
     }
-  }, [memories, searchQuery, handleNodeClick, isReady, isOpeningNode, fitAllNodes, isMobile]);
+  }, [
+    memories,
+    searchQuery,
+    handleNodeClick,
+    isReady,
+    isOpeningNode,
+    fitAllNodes,
+    isMobile,
+  ])
 
   // Attempt to refit when ready changes
   useEffect(() => {
     if (isReady && memories.length > 0 && !isFittingRef.current) {
       // Only refit if not already fitting
       if (fitTimeoutRef.current) {
-        clearTimeout(fitTimeoutRef.current);
+        clearTimeout(fitTimeoutRef.current)
       }
-      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200);
+      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
     }
-  }, [isReady, memories.length, fitAllNodes]);
+  }, [isReady, memories.length, fitAllNodes])
 
   // Show placeholder or loading only if memories are being fetched or network is building
   if (
@@ -491,8 +502,8 @@ export default function MemoriesDashboardOverlay() {
   const { showMemoryNetwork } = useMemoryNetwork() // Add this hook for showing memory network
 
   // Refs to track fit operations
-  const isFittingRef = useRef<boolean>(false);
-  const fitTimeoutRef = useRef<number | null>(null);
+  const isFittingRef = useRef<boolean>(false)
+  const fitTimeoutRef = useRef<number | null>(null)
 
   // Memoize the showMemoryNode function to prevent unnecessary re-renders
   const showMemoryNode = useCallback(
@@ -584,62 +595,71 @@ export default function MemoriesDashboardOverlay() {
   const listViewMemories = getListViewMemories()
 
   // Callbacks for memory card interactions
-  const handleCopy = useCallback((memory: Memory, type: 'prompt' | 'response') => {
-    const contentToCopy = type === 'prompt' ? memory.prompt : memory.response;
-    if (!contentToCopy) {
-      toast.error("No content to copy");
-      return;
-    }
-    
-    navigator.clipboard.writeText(contentToCopy).then(
-      () => {
-        toast.success("Copied to clipboard");
-      },
-      (err) => {
-        console.error("Could not copy text: ", err);
-        toast.error("Failed to copy text");
+  const handleCopy = useCallback(
+    (memory: Memory, type: "prompt" | "response") => {
+      const contentToCopy = type === "prompt" ? memory.prompt : memory.response
+      if (!contentToCopy) {
+        toast.error("No content to copy")
+        return
       }
-    );
-  }, []);
+
+      navigator.clipboard.writeText(contentToCopy).then(
+        () => {
+          toast.success("Copied to clipboard")
+        },
+        (err) => {
+          console.error("Could not copy text: ", err)
+          toast.error("Failed to copy text")
+        }
+      )
+    },
+    []
+  )
 
   // Update delete function to use confirmMemoryDeletion
-  const handleDelete = useCallback((memory: Memory) => {
-    if (!memory.id) {
-      toast.error("Cannot delete: Missing ID");
-      return;
-    }
-    
-    // Use confirmMemoryDeletion to properly delete the memory
-    confirmMemoryDeletion(memory.id, {
-      isMessage: true, // Treat it like a message for consistent behavior
-      onSuccess: () => {
-        // Remove the deleted memory from the local state
-        setMemories(prevMemories => {
-          // Function to recursively filter out the deleted memory
-          const removeMemory = (mems: Memory[]): Memory[] => {
-            return mems.filter(mem => {
-              if (mem.id === memory.id) return false;
-              if (mem.children && mem.children.length > 0) {
-                mem.children = removeMemory(mem.children);
-              }
-              return true;
-            });
-          };
-          
-          // Create a fresh copy with the deleted memory removed
-          return removeMemory([...prevMemories]);
-        });
-        
-        toast.success("Memory deleted successfully");
+  const handleDelete = useCallback(
+    (memory: Memory) => {
+      if (!memory.id) {
+        toast.error("Cannot delete: Missing ID")
+        return
       }
-    });
-  }, [confirmMemoryDeletion]);
+
+      // Use confirmMemoryDeletion to properly delete the memory
+      confirmMemoryDeletion(memory.id, {
+        isMessage: true, // Treat it like a message for consistent behavior
+        onSuccess: () => {
+          // Remove the deleted memory from the local state
+          setMemories((prevMemories) => {
+            // Function to recursively filter out the deleted memory
+            const removeMemory = (mems: Memory[]): Memory[] => {
+              return mems.filter((mem) => {
+                if (mem.id === memory.id) return false
+                if (mem.children && mem.children.length > 0) {
+                  mem.children = removeMemory(mem.children)
+                }
+                return true
+              })
+            }
+
+            // Create a fresh copy with the deleted memory removed
+            return removeMemory([...prevMemories])
+          })
+
+          toast.success("Memory deleted successfully")
+        },
+      })
+    },
+    [confirmMemoryDeletion]
+  )
 
   // Update showMemories function to use showMemoryNetwork from the hook
-  const handleShowMemories = useCallback((memory: Memory) => {
-    // Use the showMemoryNetwork function from the hook
-    showMemoryNetwork(memory);
-  }, [showMemoryNetwork]);
+  const handleShowMemories = useCallback(
+    (memory: Memory) => {
+      // Use the showMemoryNetwork function from the hook
+      showMemoryNetwork(memory)
+    },
+    [showMemoryNetwork]
+  )
 
   return (
     <Modal id="memories" title="Memory Dashboard">
@@ -694,8 +714,8 @@ export default function MemoriesDashboardOverlay() {
             <div className="no-memories">
               <Info size={24} />
               <p>
-                No memories found for &quot;{lastSearchedTerm}&quot;. Try a different
-                search.
+                No memories found for &quot;{lastSearchedTerm}&quot;. Try a
+                different search.
               </p>
             </div>
           )}
@@ -712,12 +732,15 @@ export default function MemoriesDashboardOverlay() {
                 <div className="memories-list">
                   {listViewMemories.map((memory, idx) => {
                     // Format metadata to include in the message
-                    const matchPercentage = (memory.vector_distance * 100).toFixed(1);
-                    const metadataFooter = `\n\n---\n*${matchPercentage}% Match*`;
-                    const timestamp = memory.timestamp instanceof Date
-                      ? memory.timestamp
-                      : new Date(memory.timestamp);
-                    
+                    const matchPercentage = (
+                      memory.vector_distance * 100
+                    ).toFixed(1)
+                    const metadataFooter = `\n\n---\n*${matchPercentage}% Match*`
+                    const timestamp =
+                      memory.timestamp instanceof Date
+                        ? memory.timestamp
+                        : new Date(memory.timestamp)
+
                     return (
                       <div key={`${memory.id}-${idx}`} className="memory-item">
                         {/* User/prompt message */}
@@ -726,25 +749,25 @@ export default function MemoriesDashboardOverlay() {
                           timestamp={timestamp}
                           isUser={true}
                           menuProps={{
-                            onCopy: () => handleCopy(memory, 'prompt'),
+                            onCopy: () => handleCopy(memory, "prompt"),
                             onDelete: () => handleDelete(memory),
-                            onShowMemories: () => handleShowMemories(memory)
+                            onShowMemories: () => handleShowMemories(memory),
                           }}
                         />
-                        
+
                         {/* Assistant/response message with metadata */}
                         <ChatMessage
                           content={memory.response + metadataFooter}
                           timestamp={timestamp}
                           isUser={false}
                           menuProps={{
-                            onCopy: () => handleCopy(memory, 'response'),
+                            onCopy: () => handleCopy(memory, "response"),
                             onDelete: () => handleDelete(memory),
-                            onShowMemories: () => handleShowMemories(memory)
+                            onShowMemories: () => handleShowMemories(memory),
                           }}
                         />
                       </div>
-                    );
+                    )
                   })}
                 </div>
               ) : (
