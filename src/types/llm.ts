@@ -100,7 +100,6 @@ export type Tool = {
 }
 
 export type ToolPreferences = {
-  htmlScript: boolean
   imageGeneration: boolean
   googleSearch: boolean
 }

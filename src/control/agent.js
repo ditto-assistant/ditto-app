@@ -1,15 +1,5 @@
 import { promptLLMV2, cancelPromptLLMV2 } from "../api/LLM"
 import { mainTemplate, systemTemplate } from "../control/templates/mainTemplate"
-import {
-  openscadTemplate,
-  openscadSystemTemplate,
-} from "../control/templates/openscadTemplate"
-import {
-  htmlTemplate,
-  htmlSystemTemplate,
-} from "../control/templates/htmlTemplate"
-import { downloadOpenscadScript } from "./agentTools"
-import { handleScriptGeneration } from "./agentflows/scriptFlow"
 import { handleImageGeneration } from "./agentflows/imageFlow"
 import { handleGoogleSearch } from "./agentflows/searchFlow"
 import { modelSupportsImageAttachments } from "@/types/llm"
@@ -71,8 +61,8 @@ export const cancelPrompt = async () => {
  * @param {function} streamingCallback - A callback for streaming response chunks.
  * @param {string} optimisticId - The ID of the optimistic message update.
  * @param {function} finalizeMessage - A function to finalize a message.
- * @param {function} openScriptCallback - A function to open a script.
- * @param {import("@/hooks/useScripts").SelectedScriptInfo?} selectedScript - The selected script.
+ * @param {function|null} openScriptCallback - A function to open a script, or null.
+ * @param {object|null} selectedScript - The selected script, or null.
  * @param {number} planTier - The user's plan tier.
  */
 export const sendPrompt = async (
@@ -85,8 +75,8 @@ export const sendPrompt = async (
   streamingCallback = null,
   optimisticId = null,
   finalizeMessage = null,
-  openScriptCallback,
-  selectedScript,
+  openScriptCallback = null,
+  selectedScript = null,
   planTier
 ) => {
   const isPremiumUser = planTier > 0
@@ -159,7 +149,6 @@ export const sendPrompt = async (
       firstName,
       timestamp: new Date().toISOString(),
       usersPrompt: prompt,
-      selectedScript,
       toolPreferences: preferences.tools,
     })
 
@@ -200,8 +189,6 @@ export const sendPrompt = async (
     currentFinalizeCallback = null
 
     const toolTriggers = [
-      "<OPENSCAD>",
-      "<HTML_SCRIPT>",
       "<IMAGE_GENERATION>",
       "<GOOGLE_SEARCH>",
     ]
@@ -224,15 +211,11 @@ export const sendPrompt = async (
           prompt,
           pairID,
           userID,
-          selectedScript?.contents,
-          selectedScript?.script,
-          image,
           memories,
           preferences,
           refetch,
           optimisticId,
-          finalizeMessage,
-          openScriptCallback
+          finalizeMessage
         )
         break
       }
@@ -283,15 +266,11 @@ export const processResponse = async (
   prompt,
   pairID,
   userID,
-  scriptContents,
-  scriptName,
-  image,
   memories,
   preferences,
   refetch,
   optimisticId = null,
-  finalizeMessage = null,
-  openScriptCallback
+  finalizeMessage = null
 ) => {
   console.log("%c" + response, "color: yellow")
 
@@ -375,98 +354,6 @@ export const processResponse = async (
   }
 
   try {
-    // Handle OpenSCAD script generation
-    if (response.includes("<OPENSCAD>")) {
-      await updateMessageWithToolStatus(
-        pairID,
-        "Generating OpenSCAD Script...",
-        "openscad",
-        null,
-        optimisticId,
-        finalizeMessage
-      )
-      const finalResponse = await handleScriptGeneration({
-        response,
-        tag: "<OPENSCAD>",
-        templateFunction: openscadTemplate,
-        systemTemplateFunction: openscadSystemTemplate,
-        downloadFunction: downloadOpenscadScript,
-        scriptType: "openSCAD",
-        scriptContents,
-        scriptName,
-        prompt,
-        userID,
-        image,
-        memories,
-        preferences,
-      })
-      await updateMessageWithToolStatus(
-        pairID,
-        "complete",
-        "openscad",
-        finalResponse,
-        optimisticId,
-        finalizeMessage
-      )
-      return finalResponse
-    }
-
-    // Handle HTML script generation
-    if (response.includes("<HTML_SCRIPT>")) {
-      const downloadFunction = (script, scriptName) => {
-        let fileDownloadName = scriptName
-        if (fileDownloadName === "") {
-          // create a stamp to embed in the filename like "output-2021-09-01-12-00-00.html"
-          const stamp = new Date()
-            .toISOString()
-            .split(".")[0]
-            .replace(/:/g, "-")
-            .replace("T", "-")
-          fileDownloadName = `output-${stamp}.html`
-        } else {
-          fileDownloadName = `${fileDownloadName}.html`
-        }
-        openScriptCallback({
-          script: scriptName,
-          contents: script,
-          scriptType: "webApps",
-        })
-        return fileDownloadName
-      }
-      await updateMessageWithToolStatus(
-        pairID,
-        "Generating HTML Script...",
-        "html",
-        null,
-        optimisticId,
-        finalizeMessage
-      )
-      const finalResponse = await handleScriptGeneration({
-        response,
-        tag: "<HTML_SCRIPT>",
-        templateFunction: htmlTemplate,
-        systemTemplateFunction: htmlSystemTemplate,
-        downloadFunction,
-        scriptType: "webApps",
-        scriptContents,
-        scriptName,
-        prompt,
-        userID,
-        image,
-        memories,
-        preferences,
-      })
-      await updateMessageWithToolStatus(
-        pairID,
-        "complete",
-        "html",
-        finalResponse,
-        optimisticId,
-        finalizeMessage
-      )
-      return finalResponse
-    }
-
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
       await updateMessageWithToolStatus(

@@ -4,22 +4,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import { FlipVertical } from "lucide-react"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
-import FullScreenEditor from "@/screens/Editor/FullScreenEditor"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
 import { useBalance } from "@/hooks/useBalance"
 import { ModalId, useModal } from "@/hooks/useModal"
 import { useTOSCheck } from "@/hooks/useTOSCheck"
-import { ScriptType, useScripts } from "@/hooks/useScripts"
 import useWhatsNew from "@/hooks/useWhatsNew"
 import { getUpdateState } from "@/utils/updateService"
-
-interface ScriptData {
-  name: string
-  content: string
-  scriptType: ScriptType
-  onSaveCallback?: (newContent: string) => Promise<void>
-}
 
 export default function HomeScreen() {
   const balance = useBalance()
@@ -32,8 +23,6 @@ export default function HomeScreen() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   // Use the TOS check hook to determine if we need to show the TOS dialog
   const { showTOS, setShowTOS } = useTOSCheck()
-  const [fullScreenEdit, setFullScreenEdit] = useState<ScriptData | null>(null)
-  const { setSelectedScript, saveScript } = useScripts()
   const { openWhatsNew } = useWhatsNew()
 
   const appBodyRef = useRef<HTMLDivElement>(null)
@@ -145,58 +134,6 @@ export default function HomeScreen() {
     startCamera(!isFrontCamera)
   }
 
-  useEffect(() => {
-    const handleEditScript = (event: CustomEvent<{ script: ScriptData }>) => {
-      const { script } = event.detail
-      setFullScreenEdit({
-        ...script,
-        onSaveCallback: async (newContent: string) => {
-          try {
-            // Use the script manager to save
-            await saveScript(newContent, script.scriptType, script.name)
-
-            // Select the script using script manager with proper field names
-            setSelectedScript({
-              name: script.name,
-              content: newContent,
-              scriptType: script.scriptType,
-            })
-
-            setFullScreenEdit(null)
-            window.dispatchEvent(new Event("scriptsUpdated"))
-          } catch (error) {
-            console.error("Error saving:", error)
-          }
-        },
-      })
-    }
-
-    window.addEventListener("editScript", handleEditScript as EventListener)
-    return () => {
-      window.removeEventListener(
-        "editScript",
-        handleEditScript as EventListener
-      )
-    }
-  }, [saveScript, setSelectedScript])
-
-  useEffect(() => {
-    const handleCloseFullScreenEditor = () => {
-      setFullScreenEdit(null)
-    }
-
-    window.addEventListener(
-      "closeFullScreenEditor",
-      handleCloseFullScreenEditor
-    )
-    return () => {
-      window.removeEventListener(
-        "closeFullScreenEditor",
-        handleCloseFullScreenEditor
-      )
-    }
-  }, [])
-
   return (
     <div className="app h-[100svh] fixed inset-0 touch-pan-y flex flex-col">
       <Suspense fallback={<FullScreenSpinner />}>
@@ -267,14 +204,6 @@ export default function HomeScreen() {
         onOpenChange={setShowTOS}
         isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
       />
-
-      {fullScreenEdit && (
-        <FullScreenEditor
-          script={fullScreenEdit}
-          onClose={() => setFullScreenEdit(null)}
-          onSave={fullScreenEdit.onSaveCallback}
-        />
-      )}
     </div>
   )
 }

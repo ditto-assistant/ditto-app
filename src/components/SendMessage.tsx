@@ -5,15 +5,14 @@ import {
   Camera,
   SendHorizonal,
   Expand,
-  Code,
   CreditCard,
   Crown,
   Bolt,
-  Laptop,
   Settings,
   MessageCircle,
   X,
   Square,
+  Brain,
 } from "lucide-react"
 import { sendPrompt, cancelPrompt } from "../control/agent"
 import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
@@ -23,7 +22,6 @@ import { useBalance } from "@/hooks/useBalance"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
-import { useScripts } from "@/hooks/useScripts"
 import { useModal } from "@/hooks/useModal"
 import { DITTO_LOGO, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { toast } from "sonner"
@@ -101,15 +99,10 @@ export default function SendMessage({
   const openSettingsModal = modal.createOpenHandler("settings")
   const openSubscriptionsTab = modal.createOpenHandler("settings", "general")
   const openFeedbackModal = modal.createOpenHandler("feedback")
-  const openScriptsOverlay = modal.createOpenHandler("scripts")
+  const openMemoriesOverlay = modal.createOpenHandler("memories")
   const openTokenModal = modal.createOpenHandler("tokenCheckout")
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
-  // Script indicator state and refs
-  const scriptIndicatorRef = useRef<HTMLButtonElement>(null)
-  const [showScriptActions, setShowScriptActions] = useState(false)
-  const openDittoCanvas = modal.createOpenHandler("dittoCanvas")
-  const { selectedScript, setSelectedScript } = useScripts()
   const user = useUser()
 
   const [showSalesPitch, setShowSalesPitch] = useState(false)
@@ -193,10 +186,7 @@ export default function SendMessage({
         const streamingCallback = (chunk: string) => {
           updateOptimisticResponse(optimisticMessageId, chunk)
         }
-        const openScriptCallback = (script: any) => {
-          setSelectedScript(script)
-          openDittoCanvas()
-        }
+        
         try {
           await sendPrompt(
             userID,
@@ -208,8 +198,8 @@ export default function SendMessage({
             streamingCallback,
             optimisticMessageId,
             finalizeOptimisticMessage,
-            openScriptCallback,
-            selectedScript,
+            null,
+            null,
             user?.data?.planTier ?? 0
           )
           console.log("✅ [SendMessage] Prompt completed successfully")
@@ -249,11 +239,8 @@ export default function SendMessage({
       setMessage,
       addOptimisticMessage,
       updateOptimisticResponse,
-      setSelectedScript,
-      openDittoCanvas,
       refetch,
       finalizeOptimisticMessage,
-      selectedScript,
       user?.data?.planTier,
       onStop,
     ]
@@ -350,11 +337,6 @@ export default function SendMessage({
   const handleLogoClick = () => {
     // Simple toggle behavior for all platforms
     setIsMenuOpen(!isMenuOpen)
-  }
-
-  // Script indicator handlers
-  const handleScriptNameClick = () => {
-    setShowScriptActions(!showScriptActions)
   }
 
   // Add auto-resize function
@@ -560,12 +542,12 @@ export default function SendMessage({
                     className="w-40 p-2"
                   >
                     <DropdownMenuItem
-                      onClick={openScriptsOverlay}
+                      onClick={openMemoriesOverlay}
                       onPointerDown={triggerLightHaptic}
                       className="flex items-center py-3"
                     >
-                      <Laptop className="mr-3 h-5 w-5" />{" "}
-                      <span className="text-lg">Scripts</span>
+                      <Brain className="mr-3 h-5 w-5" />{" "}
+                      <span className="text-lg">Memories</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={openFeedbackModal}
@@ -588,26 +570,6 @@ export default function SendMessage({
               </div>
 
               <div className="flex items-center gap-1.5">
-                {/* Script indicator button */}
-                {selectedScript && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleScriptNameClick}
-                        onPointerDown={triggerLightHaptic}
-                        ref={scriptIndicatorRef}
-                        title={selectedScript.script}
-                        className="h-10 w-10 rounded-full ring-2 ring-primary/50 shadow-lg shadow-primary/50"
-                      >
-                        <Code className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Active script</TooltipContent>
-                  </Tooltip>
-                )}
-
                 {/* Send/Stop button */}
                 <Tooltip>
                   <TooltipTrigger asChild>

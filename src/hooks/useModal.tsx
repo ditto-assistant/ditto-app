@@ -18,7 +18,6 @@ export type ModalId =
   | "memoryNetwork"
   | "imageViewer"
   | "settings"
-  | "scripts"
   | "dittoCanvas"
   | "confirmationDialog"
   | "memoryNodeViewer"
@@ -26,6 +25,7 @@ export type ModalId =
   | "whatsNew"
   | "tokenCheckout"
   | "composeModal"
+  | "memories"
 type ModalRegistration = {
   component: ReactNode
 }

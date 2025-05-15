@@ -14,7 +14,6 @@ import { BalanceProvider } from "@/hooks/useBalance"
 import { MemoryCountProvider } from "@/hooks/useMemoryCount"
 import { ModelPreferencesProvider } from "@/hooks/useModelPreferences"
 import { ImageViewerProvider } from "@/hooks/useImageViewer"
-import { ScriptsProvider } from "@/hooks/useScripts"
 import { PlatformProvider } from "@/hooks/usePlatform"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
@@ -64,10 +63,7 @@ const ImageViewer = loadE(() => import("@/components/ImageViewer"))
 const HomeScreen = loadE(() => import("@/screens/HomeScreen"))
 const Settings = loadE(() => import("@/screens/Settings"))
 const TokenModal = loadE(() => import("@/components/TokenModal"))
-const ScriptsOverlay = loadE(
-  () => import("@/screens/ScriptsModal/ScriptsOverlay")
-)
-const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
+const MemoriesDashboardOverlay = loadE(() => import("@/screens/MemoriesDashboard/MemoriesDashboardOverlay"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
 const ComposeModal = loadE(() => import("@/components/ComposeModal"))
 // const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
@@ -102,17 +98,14 @@ const modalRegistry: ModalRegistry = {
   feedback: {
     component: <FeedbackModal />,
   },
-  memoryNetwork: {
-    component: <MemoryNetworkModal />,
-  },
   imageViewer: {
     component: <ImageViewer />,
   },
   settings: {
     component: <Settings />,
   },
-  scripts: {
-    component: <ScriptsOverlay />,
+  memories: {
+    component: <MemoriesDashboardOverlay />,
   },
   dittoCanvas: {
     component: <DittoCanvasModal />,
@@ -136,51 +129,49 @@ function App() {
           <MemoryCountProvider>
             <ModelPreferencesProvider>
               <ImageViewerProvider>
-                <ScriptsProvider>
-                  <PlatformProvider>
-                    <MemoryNetworkProvider>
-                      <ConfirmationDialogProvider>
-                        <MemoryNodeViewerProvider>
-                          <ConversationProvider>
-                            <ServicesProvider>
-                              <PromptStorageProvider>
-                                <ComposeProvider>
-                                  <ThemeProvider
-                                    defaultTheme="system"
-                                    storageKey="ditto-ui-theme"
-                                  >
-                                    <FontSizeProvider>
-                                      <ComposeModal />
-                                      <ModalProvider registry={modalRegistry}>
-                                        <AppErrorBoundary>
-                                          <RouterProvider router={router} />
-                                        </AppErrorBoundary>
-                                        <UpdateNotification />
+                <PlatformProvider>
+                  <MemoryNetworkProvider>
+                    <ConfirmationDialogProvider>
+                      <MemoryNodeViewerProvider>
+                        <ConversationProvider>
+                          <ServicesProvider>
+                            <PromptStorageProvider>
+                              <ComposeProvider>
+                                <ThemeProvider
+                                  defaultTheme="system"
+                                  storageKey="ditto-ui-theme"
+                                >
+                                  <FontSizeProvider>
+                                    <ComposeModal />
+                                    <ModalProvider registry={modalRegistry}>
+                                      <AppErrorBoundary>
+                                        <RouterProvider router={router} />
+                                      </AppErrorBoundary>
+                                      <UpdateNotification />
 
-                                        {createPortal(
-                                          <Toaster
-                                            position="top-center"
-                                            closeButton
-                                            richColors
-                                          />,
-                                          document.getElementById("toast-root")!
-                                        )}
-                                        <ReactQueryDevtools
-                                          buttonPosition="top-right"
-                                          initialIsOpen={false}
-                                        />
-                                      </ModalProvider>
-                                    </FontSizeProvider>
-                                  </ThemeProvider>
-                                </ComposeProvider>
-                              </PromptStorageProvider>
-                            </ServicesProvider>
-                          </ConversationProvider>
-                        </MemoryNodeViewerProvider>
-                      </ConfirmationDialogProvider>
-                    </MemoryNetworkProvider>
-                  </PlatformProvider>
-                </ScriptsProvider>
+                                      {createPortal(
+                                        <Toaster
+                                          position="top-center"
+                                          closeButton
+                                          richColors
+                                        />,
+                                        document.getElementById("toast-root")!
+                                      )}
+                                      <ReactQueryDevtools
+                                        buttonPosition="top-right"
+                                        initialIsOpen={false}
+                                      />
+                                    </ModalProvider>
+                                  </FontSizeProvider>
+                                </ThemeProvider>
+                              </ComposeProvider>
+                            </PromptStorageProvider>
+                          </ServicesProvider>
+                        </ConversationProvider>
+                      </MemoryNodeViewerProvider>
+                    </ConfirmationDialogProvider>
+                  </MemoryNetworkProvider>
+                </PlatformProvider>
               </ImageViewerProvider>
             </ModelPreferencesProvider>
           </MemoryCountProvider>
