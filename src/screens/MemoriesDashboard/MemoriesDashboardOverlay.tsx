@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Search, List, Network, Info, X, Image } from "lucide-react"
+import { Search, List, Network, Info, X } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
 import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { usePlatform } from "@/hooks/usePlatform"
+import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
+import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import Modal from "@/components/ui/modals/Modal"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -20,40 +22,28 @@ import {
   useMemoryNodeViewer,
   MemoryWithLevel,
 } from "@/hooks/useMemoryNodeViewer"
+import ChatMessage from "@/components/ChatMessage"
 import "./MemoriesDashboardOverlay.css"
 
 // Global cache of node positions to preserve layout across modal instances
 const persistedNodePositions: Record<string, { x: number; y: number }> = {}
 
-// Helper to extract image URLs from markdown
-function extractImagesFromMarkdown(markdown: string): { text: string, images: string[] } {
-  if (!markdown) return { text: "", images: [] };
-  
-  const imageRegex = /!\[.*?\]\((.*?)\)/g;
-  const images: string[] = [];
-  let match;
-  
-  // Find all image URLs
-  while ((match = imageRegex.exec(markdown)) !== null) {
-    if (match[1]) {
-      images.push(match[1]);
-    }
-  }
-  
-  // Remove image markdown syntax from text
-  const text = markdown.replace(imageRegex, '');
-  
-  return { text, images };
-}
-
 // Simplified SearchBar component
 function SearchBar({
   searchTerm,
   onSearchChange,
+  onSearch,
 }: {
   searchTerm: string
   onSearchChange: (value: string) => void
+  onSearch: () => void
 }) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      onSearch();
+    }
+  };
+
   return (
     <div className="memories-search-bar">
       <div className="search-input-container">
@@ -63,76 +53,9 @@ function SearchBar({
           placeholder="Search your memories..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="search-input"
         />
-      </div>
-    </div>
-  )
-}
-
-// Memory card component for list view
-interface MemoryCardProps {
-  memory: Memory
-  onCardClick: (memory: MemoryWithLevel) => void
-}
-
-const MemoryCard = ({ memory, onCardClick }: MemoryCardProps) => {
-  const date =
-    memory.timestamp instanceof Date
-      ? memory.timestamp
-      : new Date(memory.timestamp)
-
-  // Score is 1 - distance, so higher is better. Max score displayed as 100%.
-  const scorePercentage = ((1 - memory.vector_distance) * 100).toFixed(1)
-  
-  // Extract images from prompt and response
-  const { text: promptText, images: promptImages } = extractImagesFromMarkdown(memory.prompt || "");
-  const { text: responseText, images: responseImages } = extractImagesFromMarkdown(memory.response || "");
-
-  return (
-    <div
-      className="memory-card"
-      onClick={() => onCardClick(memory as MemoryWithLevel)}
-    >
-      <div className="memory-card-header">
-        <div className="memory-prompt">{promptText}</div>
-        <div className="memory-timestamp">
-          {date.toLocaleDateString()} {date.toLocaleTimeString()}
-        </div>
-      </div>
-      
-      {/* Render prompt images if any */}
-      {promptImages.length > 0 && (
-        <div className="memory-images">
-          {promptImages.map((src, index) => (
-            <div key={`prompt-img-${index}`} className="memory-image-container">
-              <img src={src} alt="Prompt" className="memory-image" />
-            </div>
-          ))}
-        </div>
-      )}
-      
-      <div className="memory-response">{responseText}</div>
-      
-      {/* Render response images if any */}
-      {responseImages.length > 0 && (
-        <div className="memory-images">
-          {responseImages.map((src, index) => (
-            <div key={`response-img-${index}`} className="memory-image-container">
-              <img src={src} alt="Response" className="memory-image" />
-            </div>
-          ))}
-        </div>
-      )}
-      
-      <div className="memory-metadata">
-        <span className="memory-score">Similarity: {scorePercentage}%</span>
-        {(promptImages.length > 0 || responseImages.length > 0) && (
-          <span className="memory-has-images">
-            <Image size={14} className="image-icon" />
-            {promptImages.length + responseImages.length} image{promptImages.length + responseImages.length !== 1 ? 's' : ''}
-          </span>
-        )}
       </div>
     </div>
   )
@@ -564,6 +487,12 @@ export default function MemoriesDashboardOverlay() {
   const [lastSearchedTerm, setLastSearchedTerm] = useState("") // To pass to graph
   const [isViewingNode, setIsViewingNode] = useState(false) // Add this to track when a node is being viewed
   const { showMemoryNode: originalShowMemoryNode } = useMemoryNodeViewer() // Get showMemoryNode here
+  const { confirmMemoryDeletion } = useMemoryDeletion() // Add this hook for memory deletion
+  const { showMemoryNetwork } = useMemoryNetwork() // Add this hook for showing memory network
+
+  // Refs to track fit operations
+  const isFittingRef = useRef<boolean>(false);
+  const fitTimeoutRef = useRef<number | null>(null);
 
   // Memoize the showMemoryNode function to prevent unnecessary re-renders
   const showMemoryNode = useCallback(
@@ -648,16 +577,69 @@ export default function MemoriesDashboardOverlay() {
   const getListViewMemories = () => {
     if (!memories || memories.length === 0) return []
     const flatMemories = flattenMemoriesForList(memories)
-    // Sort by vector_distance ascending (lower distance = higher similarity)
-    return flatMemories.sort((a, b) => a.vector_distance - b.vector_distance)
+    // Sort by vector_distance descending (higher distance = higher match percentage now)
+    return flatMemories.sort((a, b) => b.vector_distance - a.vector_distance)
   }
 
   const listViewMemories = getListViewMemories()
 
-  // Callback for MemoryCard click
-  const handleMemoryCardClick = (memory: MemoryWithLevel) => {
-    showMemoryNode(memory)
-  }
+  // Callbacks for memory card interactions
+  const handleCopy = useCallback((memory: Memory, type: 'prompt' | 'response') => {
+    const contentToCopy = type === 'prompt' ? memory.prompt : memory.response;
+    if (!contentToCopy) {
+      toast.error("No content to copy");
+      return;
+    }
+    
+    navigator.clipboard.writeText(contentToCopy).then(
+      () => {
+        toast.success("Copied to clipboard");
+      },
+      (err) => {
+        console.error("Could not copy text: ", err);
+        toast.error("Failed to copy text");
+      }
+    );
+  }, []);
+
+  // Update delete function to use confirmMemoryDeletion
+  const handleDelete = useCallback((memory: Memory) => {
+    if (!memory.id) {
+      toast.error("Cannot delete: Missing ID");
+      return;
+    }
+    
+    // Use confirmMemoryDeletion to properly delete the memory
+    confirmMemoryDeletion(memory.id, {
+      isMessage: true, // Treat it like a message for consistent behavior
+      onSuccess: () => {
+        // Remove the deleted memory from the local state
+        setMemories(prevMemories => {
+          // Function to recursively filter out the deleted memory
+          const removeMemory = (mems: Memory[]): Memory[] => {
+            return mems.filter(mem => {
+              if (mem.id === memory.id) return false;
+              if (mem.children && mem.children.length > 0) {
+                mem.children = removeMemory(mem.children);
+              }
+              return true;
+            });
+          };
+          
+          // Create a fresh copy with the deleted memory removed
+          return removeMemory([...prevMemories]);
+        });
+        
+        toast.success("Memory deleted successfully");
+      }
+    });
+  }, [confirmMemoryDeletion]);
+
+  // Update showMemories function to use showMemoryNetwork from the hook
+  const handleShowMemories = useCallback((memory: Memory) => {
+    // Use the showMemoryNetwork function from the hook
+    showMemoryNetwork(memory);
+  }, [showMemoryNetwork]);
 
   return (
     <Modal id="memories" title="Memory Dashboard">
@@ -667,6 +649,7 @@ export default function MemoriesDashboardOverlay() {
             <SearchBar
               searchTerm={searchTerm}
               onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
             />
             <Button
               onClick={handleSearch}
@@ -695,7 +678,7 @@ export default function MemoriesDashboardOverlay() {
             </Button>
           </div>
         </div>
-        <div className="memories-content" onKeyDown={handleKeyDown}>
+        <div className="memories-content">
           {loading && (
             <div className="loading-indicator">Searching memories...</div>
           )}
@@ -727,13 +710,42 @@ export default function MemoriesDashboardOverlay() {
             <>
               {activeView === "list" ? (
                 <div className="memories-list">
-                  {listViewMemories.map((memory, idx) => (
-                    <MemoryCard
-                      key={`${memory.id}-${idx}`}
-                      memory={memory}
-                      onCardClick={handleMemoryCardClick}
-                    />
-                  ))}
+                  {listViewMemories.map((memory, idx) => {
+                    // Format metadata to include in the message
+                    const matchPercentage = (memory.vector_distance * 100).toFixed(1);
+                    const metadataFooter = `\n\n---\n*${matchPercentage}% Match*`;
+                    const timestamp = memory.timestamp instanceof Date
+                      ? memory.timestamp
+                      : new Date(memory.timestamp);
+                    
+                    return (
+                      <div key={`${memory.id}-${idx}`} className="memory-item">
+                        {/* User/prompt message */}
+                        <ChatMessage
+                          content={memory.prompt}
+                          timestamp={timestamp}
+                          isUser={true}
+                          menuProps={{
+                            onCopy: () => handleCopy(memory, 'prompt'),
+                            onDelete: () => handleDelete(memory),
+                            onShowMemories: () => handleShowMemories(memory)
+                          }}
+                        />
+                        
+                        {/* Assistant/response message with metadata */}
+                        <ChatMessage
+                          content={memory.response + metadataFooter}
+                          timestamp={timestamp}
+                          isUser={false}
+                          menuProps={{
+                            onCopy: () => handleCopy(memory, 'response'),
+                            onDelete: () => handleDelete(memory),
+                            onShowMemories: () => handleShowMemories(memory)
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <MemoriesNetworkGraph

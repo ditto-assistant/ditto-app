@@ -168,58 +168,141 @@
 .memories-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 0 16px;
+  gap: 24px;
+  padding: 16px;
+  overflow-y: auto;
+  max-width: 100%;
 }
 
-.memory-card {
-  background-color: #40444b;
-  border: 1px solid #1e1f22;
-  border-radius: 8px;
-  padding: 16px;
+.memory-item {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: rgba(30, 31, 34, 0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.memory-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Make sure chat messages in memory items are appropriately sized */
+.memory-item > div {
+  max-width: 100%;
+}
+
+.memory-item > div > div {
+  max-width: 95%;
+}
+
+/* Add separator between memory items */
+.memory-item + .memory-item {
+  margin-top: 4px;
+}
+
+/* Memory Images */
+.memory-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.memory-image-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.memory-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.2s;
 }
 
-.memory-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.memory-image:hover {
+  transform: scale(1.05);
 }
 
-.memory-card-header {
+.memory-has-images {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.memory-prompt {
-  font-weight: 600;
-  color: #ffffff;
-  flex: 1;
-}
-
-.memory-timestamp {
+  align-items: center;
+  gap: 4px;
   color: #b5bac1;
   font-size: 12px;
-  white-space: nowrap;
 }
 
-.memory-response {
-  color: #dcddde;
-  font-size: 14px;
-  white-space: pre-wrap;
-  max-height: 100px;
-  overflow-y: auto;
+.image-icon {
+  opacity: 0.7;
 }
 
-.memory-metadata {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #b5bac1;
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .memories-dashboard {
+    padding: 8px;
+  }
+  
+  .memories-content {
+    width: 100% !important;
+  }
+
+  .memories-list {
+    width: 100%;
+    padding: 8px;
+    gap: 16px;
+  }
+  
+  .memory-item {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px;
+  }
+  
+  /* Ensure chat messages fit in mobile container */
+  .memory-item > div > div {
+    max-width: 100%;
+  }
+  
+  .network-visualization-area {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .memory-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .memory-prompt {
+    font-size: 14px;
+  }
+  
+  .memory-timestamp {
+    font-size: 11px;
+  }
+}
+
+/* Ensure image grid layout adapts to screen size */
+@media (min-width: 769px) {
+  .memory-image-container {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .memory-images {
+    max-width: 530px; /* Fits 5 images in a row */
+  }
 }
 
 /* Network visualization styles */
@@ -317,116 +400,23 @@
 
 /* Scrollbar styling */
 .memories-content::-webkit-scrollbar,
-.memory-response::-webkit-scrollbar {
+.memories-list::-webkit-scrollbar {
   width: 8px;
 }
 
 .memories-content::-webkit-scrollbar-track,
-.memory-response::-webkit-scrollbar-track {
+.memories-list::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
 }
 
 .memories-content::-webkit-scrollbar-thumb,
-.memory-response::-webkit-scrollbar-thumb {
+.memories-list::-webkit-scrollbar-thumb {
   background: rgba(114, 137, 218, 0.5);
   border-radius: 4px;
 }
 
 .memories-content::-webkit-scrollbar-thumb:hover,
-.memory-response::-webkit-scrollbar-thumb:hover {
+.memories-list::-webkit-scrollbar-thumb:hover {
   background: rgba(114, 137, 218, 0.8);
-}
-
-/* Memory Images */
-.memory-images {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 8px 0;
-}
-
-.memory-image-container {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.memory-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.2s;
-}
-
-.memory-image:hover {
-  transform: scale(1.05);
-}
-
-.memory-has-images {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #b5bac1;
-  font-size: 12px;
-}
-
-.image-icon {
-  opacity: 0.7;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .memories-dashboard {
-    padding: 8px;
-  }
-  
-  .memories-content {
-    width: 100% !important;
-  }
-
-  .memories-list {
-    width: 100%;
-    padding: 0 8px;
-  }
-  
-  .memory-card {
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .network-visualization-area {
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  
-  .memory-card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .memory-prompt {
-    font-size: 14px;
-  }
-  
-  .memory-timestamp {
-    font-size: 11px;
-  }
-}
-
-/* Ensure image grid layout adapts to screen size */
-@media (min-width: 769px) {
-  .memory-image-container {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .memory-images {
-    max-width: 530px; /* Fits 5 images in a row */
-  }
 }
