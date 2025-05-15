@@ -25,7 +25,7 @@ import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useScripts } from "@/hooks/useScripts"
 import { useModal } from "@/hooks/useModal"
-import { DITTO_AVATAR, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
+import { DITTO_LOGO, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/useUser"
 import { ErrorPaymentRequired } from "@/types/errors"
@@ -537,7 +537,7 @@ export default function SendMessage({
                           onPointerDown={triggerLightHaptic}
                         >
                           <AvatarImage
-                            src={DITTO_AVATAR}
+                            src={DITTO_LOGO}
                             alt="Ditto"
                             className="h-10 w-10 rounded-full"
                             style={{
