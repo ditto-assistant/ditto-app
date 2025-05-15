@@ -10,13 +10,19 @@
 
 ## Version Update Flow
 
-1. Bump version in `package.json`
-2. Run: `bun run generate:whats-new` to create new version file
-3. Edit the newly generated file at `src/components/WhatsNew/versions/Vx_xx_xx.tsx`
-4. Run: `bun run format` to ensure consistent formatting
-5. Run: `bun run depcheck` to check for unused dependencies
-6. Use `git add .` to stage all changes
-7. Create descriptive commit (if no files are staged, prompt the user); Do not mention Claude
+1. Check current version in `package.json`
+2. Check branch changes against main using `git diff main --name-only` to identify what changed
+3. Bump version in `package.json` (e.g., from 0.13.0 to 0.13.1)
+4. Run: `bun run generate:whats-new` to create new version file
+5. Edit the newly generated file at `src/components/WhatsNew/versions/Vx_xx_xx.tsx`:
+   - Focus on user-facing changes and benefits
+   - Create user-friendly descriptions of visual updates or features
+   - Organize into relevant sections (New Features, Improvements, Bug Fixes)
+   - Avoid technical implementation details in release notes
+6. Run: `bun run format` to ensure consistent formatting
+7. Run: `bun run depcheck` to check for unused dependencies
+8. Use `git add .` to stage all changes
+9. Create descriptive commit (if no files are staged, prompt the user); Do not mention Claude
 
 ## Project Structure
 
