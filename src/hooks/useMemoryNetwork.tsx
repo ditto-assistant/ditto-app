@@ -21,8 +21,10 @@ const filterMemoryById = (memories: Memory[], idToRemove: string): Memory[] => {
 }
 
 interface MemoryNetworkContextType {
-  memories: Memory[]
+  memories: Memory[] // These are the children/related memories for the currentRootMemory
   setMemories: (memories: Memory[]) => void
+  currentRootMemory: Memory | null // The memory that is the center of the current network view
+  setCurrentRootMemory: (memory: Memory | null) => void
   loading: boolean
   setLoading: (loading: boolean) => void
   fetchMemories: (memory: Memory) => Promise<void>
@@ -36,6 +38,7 @@ const MemoryNetworkContext = createContext<
 export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
   const [memories, setMemories] = useState<Memory[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentRootMemory, setCurrentRootMemory] = useState<Memory | null>(null)
   const { preferences } = useModelPreferences()
 
   return (
@@ -43,16 +46,24 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
       value={{
         memories,
         setMemories,
+        currentRootMemory,
+        setCurrentRootMemory,
         loading,
         setLoading,
         deleteMemory: (memoryId: string) => {
           setMemories((prevMemories) =>
             filterMemoryById(prevMemories, memoryId)
           )
+          // If the deleted memory was the root, clear it too
+          if (currentRootMemory?.id === memoryId) {
+            setCurrentRootMemory(null);
+            setMemories([]); // Clear children too
+          }
         },
         fetchMemories: async (memory) => {
           try {
             setLoading(true)
+            setCurrentRootMemory(memory) // Set the root memory when fetching
 
             const userID = auth.currentUser?.uid
             if (!userID) {
@@ -78,39 +89,19 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
             }
 
             if (!memoriesResponse.ok || !memoriesResponse.ok.longTerm) {
-              throw new Error("Failed to fetch memories")
+              // It's possible to have a root memory with no children fetched
+              setMemories([]) // Set to empty array if no children
+              // throw new Error("Failed to fetch memories or no children found") - Don't throw error
+            } else {
+                const fetchedMemories = memoriesResponse.ok.longTerm
+                console.log("Fetched child memories:", fetchedMemories)
+                setMemories(Array.isArray(fetchedMemories) ? fetchedMemories : [])
             }
 
-            // Use memories directly without conversion
-            const fetchedMemories = memoriesResponse.ok.longTerm
-
-            // Log memories for debugging
-            console.log("Fetched memories:", fetchedMemories)
-
-            // Create the network data structure
-            const networkData = [
-              {
-                ...memory,
-                children: Array.isArray(fetchedMemories) ? fetchedMemories : [],
-              },
-            ]
-
-            console.log(
-              "Memory Network Data with IDs:",
-              networkData.map((node) => ({
-                id: node.id,
-                childCount: node.children?.length || 0,
-                children: node.children?.map((child) => ({
-                  id: child.id,
-                  childCount: child.children?.length || 0,
-                })),
-              }))
-            )
-
-            setMemories(networkData)
-          } catch (error) {
+          } catch (error: any) {
             console.error("Error fetching memories:", error)
-            toast.error("Failed to load memory network")
+            toast.error(`Failed to load memory network: ${error.message}`)
+            setMemories([]) // Clear memories on error
           } finally {
             setLoading(false)
           }
@@ -132,13 +123,15 @@ export function useMemoryNetwork() {
   const { createOpenHandler, createCloseHandler } = useModal()
   const openModal = createOpenHandler("memoryNetwork")
   const closeModal = createCloseHandler("memoryNetwork")
+  
   const showMemoryNetwork = async (message: Memory) => {
     try {
-      await context.fetchMemories(message)
+      context.setCurrentRootMemory(message); // Set root memory before fetching
+      await context.fetchMemories(message) // fetchMemories will also set currentRootMemory
       openModal()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error showing memory network:", error)
-      toast.error("Failed to show memory network")
+      toast.error(`Failed to show memory network: ${error.message}`)
     }
   }
 

@@ -30,7 +30,7 @@ const flattenMemoriesForList = (memoryList: Memory[]): Memory[] => {
   let flatList: Memory[] = []
   const dive = (mems: Memory[]) => {
     for (const mem of mems) {
-      flatList.push({ ...mem, children: undefined }) // Add memory without children to avoid re-flattening if structure is inconsistent
+      flatList.push({ ...mem, children: undefined })
       if (mem.children && mem.children.length > 0) {
         dive(mem.children)
       }
@@ -47,13 +47,12 @@ export default function MemoriesDashboardOverlay() {
   const { user } = useAuth()
   const { preferences } = useModelPreferences()
   const [error, setError] = useState<string | null>(null)
-  const [lastSearchedTerm, setLastSearchedTerm] = useState("") // To pass to graph
-  const { confirmMemoryDeletion } = useMemoryDeletion() // Add this hook for memory deletion
-  const { showMemoryNetwork } = useMemoryNetwork() // Add this hook for showing memory network
-  const [memoryCount, setMemoryCount] = useState<number>(0) // Add state for memory count
+  const [lastSearchedTerm, setLastSearchedTerm] = useState("")
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { showMemoryNetwork } = useMemoryNetwork()
+  const [memoryCount, setMemoryCount] = useState<number>(0)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch the total memory count on component mount
   useEffect(() => {
     const fetchMemoryCount = async () => {
       if (user?.uid) {
@@ -65,19 +64,10 @@ export default function MemoriesDashboardOverlay() {
         }
       }
     }
-
     fetchMemoryCount()
-
-    // Add event listener for memory updates
-    const handleMemoryUpdate = () => {
-      fetchMemoryCount()
-    }
-
+    const handleMemoryUpdate = () => fetchMemoryCount()
     window.addEventListener("memoryUpdated", handleMemoryUpdate)
-
-    return () => {
-      window.removeEventListener("memoryUpdated", handleMemoryUpdate)
-    }
+    return () => window.removeEventListener("memoryUpdated", handleMemoryUpdate)
   }, [user?.uid])
 
   const handleSearch = async () => {
@@ -86,52 +76,28 @@ export default function MemoriesDashboardOverlay() {
       toast.error("Please enter a search term")
       return
     }
-
     setLoading(true)
     setError(null)
     setMemories([])
-    setLastSearchedTerm(searchTerm) // Store the search term for the graph title
-
+    setLastSearchedTerm(searchTerm)
     try {
       const userID = user?.uid
       if (!userID) throw new Error("User not authenticated")
       if (!preferences) throw new Error("Model preferences not available")
-
-      const embeddingResult = await embed({
-        userID,
-        text: searchTerm,
-        model: "text-embedding-005",
-      })
-
-      if (embeddingResult.err)
-        throw new Error(`Embedding failed: ${embeddingResult.err}`)
+      const embeddingResult = await embed({ userID, text: searchTerm, model: "text-embedding-005" })
+      if (embeddingResult.err) throw new Error(`Embedding failed: ${embeddingResult.err}`)
       if (!embeddingResult.ok) throw new Error("Embedding failed: No result")
-
       const memoriesResponse = await getMemories(
-        {
-          userID,
-          longTerm: {
-            vector: embeddingResult.ok,
-            nodeCounts: preferences.memory.longTermMemoryChain,
-          },
-          stripImages: false,
-        },
-        "application/json"
+        { userID, longTerm: { vector: embeddingResult.ok, nodeCounts: preferences.memory.longTermMemoryChain }, stripImages: false }, "application/json"
       )
-
       if (memoriesResponse.err) throw new Error(memoriesResponse.err)
       if (!memoriesResponse.ok || !memoriesResponse.ok.longTerm) {
         setMemories([])
         throw new Error("No memories found or query failed.")
       }
-
-      // The API returns a tree structure, store it directly for the graph
       const resultsTree = memoriesResponse.ok.longTerm
       setMemories(resultsTree)
-
-      if (resultsTree.length === 0) {
-        setError("No memories found matching your search term.")
-      }
+      if (resultsTree.length === 0) setError("No memories found matching your search term.")
     } catch (err) {
       const e = err as Error
       console.error("Error searching memories:", e)
@@ -143,175 +109,103 @@ export default function MemoriesDashboardOverlay() {
     }
   }
 
-  // Prepare data for list view by flattening and sorting
   const getListViewMemories = () => {
     if (!memories || memories.length === 0) return []
     const flatMemories = flattenMemoriesForList(memories)
-    // Sort by vector_distance descending (higher distance = higher similarity/better match)
     return flatMemories.sort((a, b) => b.vector_distance - a.vector_distance)
   }
-
   const listViewMemories = getListViewMemories()
 
-  // Callbacks for memory card interactions
-  const handleCopy = useCallback(
-    (memory: Memory, type: "prompt" | "response") => {
-      const contentToCopy = type === "prompt" ? memory.prompt : memory.response
-      if (!contentToCopy) {
-        toast.error("No content to copy")
-        return
-      }
+  const handleCopy = useCallback((memory: Memory, type: "prompt" | "response") => {
+    const contentToCopy = type === "prompt" ? memory.prompt : memory.response
+    if (!contentToCopy) { toast.error("No content to copy"); return }
+    navigator.clipboard.writeText(contentToCopy).then(
+      () => toast.success("Copied to clipboard"),
+      (err) => { console.error("Could not copy text: ", err); toast.error("Failed to copy text") }
+    )
+  }, [])
 
-      navigator.clipboard.writeText(contentToCopy).then(
-        () => {
-          toast.success("Copied to clipboard")
-        },
-        (err) => {
-          console.error("Could not copy text: ", err)
-          toast.error("Failed to copy text")
-        }
-      )
-    },
-    []
-  )
-
-  // Update delete function to use confirmMemoryDeletion
-  const handleDelete = useCallback(
-    (memory: Memory) => {
-      if (!memory.id) {
-        toast.error("Cannot delete: Missing ID")
-        return
-      }
-
-      // Use confirmMemoryDeletion to properly delete the memory
-      confirmMemoryDeletion(memory.id, {
-        isMessage: true, // Treat it like a message for consistent behavior
-        onSuccess: () => {
-          // Remove the deleted memory from the local state
-          setMemories((prevMemories) => {
-            // Function to recursively filter out the deleted memory
-            const removeMemory = (mems: Memory[]): Memory[] => {
-              return mems.filter((mem) => {
-                if (mem.id === memory.id) return false
-                if (mem.children && mem.children.length > 0) {
-                  mem.children = removeMemory(mem.children)
-                }
-                return true
-              })
-            }
-
-            // Create a fresh copy with the deleted memory removed
-            return removeMemory([...prevMemories])
+  const handleDeleteMemory = useCallback((memory: Memory) => {
+    if (!memory.id) { toast.error("Cannot delete: Missing ID"); return }
+    confirmMemoryDeletion(memory.id, {
+      isMessage: true,
+      onSuccess: () => {
+        setMemories(prevMemories => {
+          const removeMemory = (mems: Memory[]): Memory[] => mems.filter(mem => {
+            if (mem.id === memory.id) return false
+            if (mem.children && mem.children.length > 0) mem.children = removeMemory(mem.children)
+            return true
           })
+          return removeMemory([...prevMemories])
+        })
+        toast.success("Memory deleted successfully")
+      }
+    })
+  }, [confirmMemoryDeletion])
 
-          toast.success("Memory deleted successfully")
-        },
-      })
-    },
-    [confirmMemoryDeletion]
-  )
-
-  // Update showMemories function to use showMemoryNetwork from the hook
-  const handleShowMemories = useCallback(
-    (memory: Memory) => {
-      // Use the showMemoryNetwork function from the hook
-      showMemoryNetwork(memory)
-    },
-    [showMemoryNetwork]
-  )
+  const handleShowRelatedMemories = useCallback((memory: Memory) => {
+    showMemoryNetwork(memory) // This will open the MemoryNetworkModal
+  }, [showMemoryNetwork])
 
   return (
     <Modal id="memories" title="Memory Dashboard">
       <div className="flex flex-col h-full p-4 bg-background text-foreground">
         <div className="flex flex-col gap-4 pb-4 border-b border-border mb-4">
-          <SearchBar
-            onSearch={handleSearch}
-            inputRef={searchInputRef}
-            loading={loading}
-            currentQuery={lastSearchedTerm}
-          />
-
+          <SearchBar onSearch={handleSearch} inputRef={searchInputRef} loading={loading} currentQuery={lastSearchedTerm} />
           <div className="flex justify-between items-center w-full">
             <div className="flex gap-3">
               <Button
                 variant={activeView === "list" ? "default" : "outline"}
                 onClick={() => setActiveView("list")}
-                className={
-                  activeView === "list"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border"
-                }
+                className={activeView === "list" ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"}
               >
-                <List size={18} />
-                <span>List</span>
+                <List size={18} /><span>List</span>
               </Button>
               <Button
                 variant={activeView === "network" ? "default" : "outline"}
                 onClick={() => setActiveView("network")}
-                className={
-                  activeView === "network"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border"
-                }
+                className={activeView === "network" ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"}
               >
-                <Network size={18} />
-                <span>Network</span>
+                <Network size={18} /><span>Network</span>
               </Button>
             </div>
-
             <div className="flex items-center gap-1 text-sm opacity-95 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 shadow-sm">
-              <span className="font-bold text-primary text-base">
-                {formatCount(memoryCount)}
-              </span>
-              <span className="text-muted-foreground font-medium">
-                memories
-              </span>
+              <span className="font-bold text-primary text-base">{formatCount(memoryCount)}</span>
+              <span className="text-muted-foreground font-medium">memories</span>
             </div>
           </div>
         </div>
         <div className="flex-1 flex flex-col overflow-y-auto py-2 min-h-0">
-          {loading && (
-            <div className="flex items-center justify-center h-24 text-muted-foreground text-lg m-auto">
-              Searching memories...
-            </div>
-          )}
+          {loading && <div className="flex items-center justify-center h-24 text-muted-foreground text-lg m-auto">Searching memories...</div>}
           {!loading && error && (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-destructive text-lg text-center gap-3 bg-destructive/10 rounded-lg p-6 m-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/20">
-                <LucideX size={20} />
-              </div>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/20"><LucideX size={20} /></div>
               <p>{error}</p>
             </div>
           )}
           {!loading && !error && memories.length === 0 && lastSearchedTerm && (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
-              <Info size={24} />
-              <p>
-                No memories found for &quot;{lastSearchedTerm}&quot;. Try a
-                different search.
-              </p>
+              <Info size={24} /><p>No memories found for &quot;{lastSearchedTerm}&quot;. Try a different search.</p>
             </div>
           )}
           {!loading && !error && memories.length === 0 && !lastSearchedTerm && (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
-              <Info size={24} />
-              <p>Enter a search term and click Search to find your memories.</p>
+              <Info size={24} /><p>Enter a search term and click Search to find your memories.</p>
             </div>
           )}
-
           {!loading && !error && memories.length > 0 && (
             <>
               {activeView === "list" ? (
-                <MemoriesListView
-                  memories={listViewMemories}
-                  onCopy={handleCopy}
-                  onDelete={handleDelete}
-                  onShowMemories={handleShowMemories}
-                />
+                <MemoriesListView memories={listViewMemories} onCopy={handleCopy} onDelete={handleDeleteMemory} onShowMemories={handleShowRelatedMemories} />
               ) : (
                 <MemoriesNetworkGraph
-                  memories={memories}
-                  searchQuery={lastSearchedTerm}
+                  memories={memories} // Pass the raw, hierarchical memories
+                  rootNodeConfig={{
+                    id: "search-query-node",
+                    label: lastSearchedTerm,
+                    title: `Your search: ${lastSearchedTerm}`,
+                    isQueryNode: true,
+                  }}
                 />
               )}
             </>
