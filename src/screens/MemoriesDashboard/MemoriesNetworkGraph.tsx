@@ -72,7 +72,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       try {
         isFittingRef.current = true
 
-        // Simple fit with animation - different behavior for mobile vs desktop
         const fitOptions: FitOptions = {
           nodes: nodesDatasetRef.current.getIds(),
           animation: {
@@ -80,39 +79,20 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             easingFunction: "easeOutQuad",
           },
         }
-
         networkRef.current.fit(fitOptions)
 
-        // Only apply additional zoom-out on mobile
-        // On desktop we keep the default fit behavior
-        if (isMobile) {
-          fitTimeoutRef.current = setTimeout(() => {
-            if (networkRef.current) {
-              const currentScale = networkRef.current.getScale()
-              networkRef.current.moveTo({
-                scale: Math.max(0.3, currentScale * 0.85),
-                animation: {
-                  duration: 300,
-                  easingFunction: "easeOutQuad",
-                },
-              })
-            }
-            isFittingRef.current = false
-            fitTimeoutRef.current = null
-          }, 600)
-        } else {
-          // On desktop, just mark fitting as complete after animation
-          fitTimeoutRef.current = setTimeout(() => {
-            isFittingRef.current = false
-            fitTimeoutRef.current = null
-          }, 550)
-        }
+        // Simpler handling after fit, let user control zoom more directly on mobile after initial fit.
+        fitTimeoutRef.current = setTimeout(() => {
+          isFittingRef.current = false
+          fitTimeoutRef.current = null
+        }, 550) // Corresponds to desktop animation time, should be enough for mobile too
+
       } catch (e) {
         console.error("Error fitting nodes:", e)
         isFittingRef.current = false
       }
     }
-  }, [isMobile])
+  }, [])
 
   // Enhanced memory node click handler to avoid unnecessary re-renders
   const handleNodeClick = useCallback(
