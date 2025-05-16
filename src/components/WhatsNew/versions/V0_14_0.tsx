@@ -27,6 +27,12 @@ const sections: Section[] = [
         title: "Memory Network Graph",
         description: "The Memory Network Graph performance has been improved.",
       },
+      {
+        type: "improved",
+        title: "Significantly Faster App Launch",
+        description:
+          "The app now launches much faster thanks to a greatly reduced app size, making your experience smoother from the very start.",
+      },
     ],
   },
 ]
