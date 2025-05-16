@@ -178,11 +178,6 @@ export default defineConfig({
       "firebase/auth",
       "firebase/firestore",
       "firebase/storage",
-      "ace-builds",
-      "react-ace",
-      "ace-builds/src-noconflict/mode-javascript",
-      "ace-builds/src-noconflict/theme-tomorrow_night",
-      "ace-builds/src-noconflict/ext-language_tools",
       "framer-motion",
     ],
     esbuildOptions: {
