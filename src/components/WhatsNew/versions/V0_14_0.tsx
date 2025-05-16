@@ -22,6 +22,11 @@ const sections: Section[] = [
         description:
           "The Scripts screen has been replaced by the Memory Dashboard, making it easier to find and revisit your conversations.",
       },
+      {
+        type: "fixed",
+        title: "Memory Network Graph",
+        description: "The Memory Network Graph performance has been improved.",
+      },
     ],
   },
 ]
