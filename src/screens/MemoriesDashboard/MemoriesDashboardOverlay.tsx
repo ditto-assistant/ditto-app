@@ -719,7 +719,7 @@ export default function MemoriesDashboardOverlay() {
               {loading ? "Searching..." : "Search"}
             </Button>
           </div>
-          
+
           <div className="view-controls">
             <div className="view-toggle">
               <Button
@@ -739,9 +739,11 @@ export default function MemoriesDashboardOverlay() {
                 <span>Network</span>
               </Button>
             </div>
-            
+
             <div className="memory-count">
-              <span className="memory-count-value">{formatCount(memoryCount)}</span>
+              <span className="memory-count-value">
+                {formatCount(memoryCount)}
+              </span>
               <span className="memory-count-label">memories</span>
             </div>
           </div>
@@ -781,10 +783,14 @@ export default function MemoriesDashboardOverlay() {
                   {listViewMemories.map((memory, idx) => {
                     // Format metadata to include in the message
                     // Debug check for vector_distance ranges
-                    console.log(`Memory ${idx} vector_distance: ${memory.vector_distance}`);
-                    
+                    console.log(
+                      `Memory ${idx} vector_distance: ${memory.vector_distance}`
+                    )
+
                     // Direct calculation - vector_distance is already a similarity score (1 = exact match)
-                    const matchPercentage = (memory.vector_distance * 100).toFixed(1)
+                    const matchPercentage = (
+                      memory.vector_distance * 100
+                    ).toFixed(1)
                     const metadataFooter = `\n\n---\n*${matchPercentage}% Match*`
                     const timestamp =
                       memory.timestamp instanceof Date

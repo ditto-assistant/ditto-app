@@ -9,7 +9,7 @@ const sections: Section[] = [
         type: "new",
         title: "Memory Dashboard",
         description:
-          "Access your conversation memories through the new Memory Dashboard, available from the Ditto Menu button. Search through your past conversations and view them in either list or network graph format.",
+          "Access all your past conversations in one place with the new Memory Dashboard. Search your memories using natural language and view them in either a list or interactive network graph.",
       },
     ],
   },
@@ -18,26 +18,9 @@ const sections: Section[] = [
     features: [
       {
         type: "improved",
-        title: "Memory Visualization",
+        title: "Streamlined Navigation",
         description:
-          "The new Memory Dashboard features an interactive network visualization that lets you explore relationships between related memories and see how they connect.",
-      },
-      {
-        type: "improved",
-        title: "Memory Search",
-        description:
-          "Search your memories using natural language and see results sorted by relevance, making it easier to find past conversations.",
-      },
-    ],
-  },
-  {
-    title: "UI Updates",
-    features: [
-      {
-        type: "improved",
-        title: "Menu Reorganization",
-        description:
-          "We've replaced the Scripts screen with the more powerful Memory Dashboard, streamlining access to your conversation history.",
+          "The Scripts screen has been replaced by the Memory Dashboard, making it easier to find and revisit your conversations.",
       },
     ],
   },
