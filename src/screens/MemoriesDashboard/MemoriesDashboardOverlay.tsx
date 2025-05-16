@@ -628,8 +628,8 @@ export default function MemoriesDashboardOverlay() {
   const getListViewMemories = () => {
     if (!memories || memories.length === 0) return []
     const flatMemories = flattenMemoriesForList(memories)
-    // Sort by vector_distance ascending (lower distance = higher similarity)
-    return flatMemories.sort((a, b) => a.vector_distance - b.vector_distance)
+    // Sort by vector_distance descending (higher distance = higher similarity/better match)
+    return flatMemories.sort((a, b) => b.vector_distance - a.vector_distance)
   }
 
   const listViewMemories = getListViewMemories()
@@ -780,7 +780,11 @@ export default function MemoriesDashboardOverlay() {
                 <div className="memories-list">
                   {listViewMemories.map((memory, idx) => {
                     // Format metadata to include in the message
-                    const matchPercentage = ((1 - memory.vector_distance) * 100).toFixed(1)
+                    // Debug check for vector_distance ranges
+                    console.log(`Memory ${idx} vector_distance: ${memory.vector_distance}`);
+                    
+                    // Direct calculation - vector_distance is already a similarity score (1 = exact match)
+                    const matchPercentage = (memory.vector_distance * 100).toFixed(1)
                     const metadataFooter = `\n\n---\n*${matchPercentage}% Match*`
                     const timestamp =
                       memory.timestamp instanceof Date

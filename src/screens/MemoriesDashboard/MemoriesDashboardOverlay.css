@@ -96,28 +96,33 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
-  opacity: 0.8;
+  font-size: 14px;
+  opacity: 0.95;
   padding: 6px 12px;
   border-radius: 20px;
-  background-color: rgba(88, 101, 242, 0.1);
-  border: 1px solid rgba(88, 101, 242, 0.2);
+  background-color: rgba(88, 101, 242, 0.15);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .memory-count:hover {
   opacity: 1;
-  background-color: rgba(88, 101, 242, 0.15);
-  border-color: rgba(88, 101, 242, 0.3);
+  background-color: rgba(88, 101, 242, 0.2);
+  border-color: rgba(88, 101, 242, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .memory-count-value {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
   color: #5865f2;
+  text-shadow: 0 0 1px rgba(88, 101, 242, 0.3);
 }
 
 .memory-count-label {
   color: #b5bac1;
+  font-weight: 500;
 }
 
 .view-button {
