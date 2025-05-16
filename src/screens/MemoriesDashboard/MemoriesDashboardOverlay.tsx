@@ -1,33 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Search, List, Network, Info, X } from "lucide-react"
+import { List, Network, Info, X as LucideX } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
 import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
-import { usePlatform } from "@/hooks/usePlatform"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import { grabConversationHistoryCount } from "@/control/firebase"
 import Modal from "@/components/ui/modals/Modal"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { DataSet } from "vis-data"
-import {
-  Network as VisNetwork,
-  Node,
-  Edge,
-  Options,
-  FitOptions,
-} from "vis-network"
-import {
-  useMemoryNodeViewer,
-  MemoryWithLevel,
-} from "@/hooks/useMemoryNodeViewer"
-import ChatMessage from "@/components/ChatMessage"
-import "./MemoriesDashboardOverlay.css"
-
-// Global cache of node positions to preserve layout across modal instances
-const persistedNodePositions: Record<string, { x: number; y: number }> = {}
+import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
+import MemoriesListView from "@/screens/MemoriesDashboard/MemoriesListView"
+import SearchBar from "@/screens/MemoriesDashboard/SearchBar"
 
 // Utility function to format numbers with abbreviations
 const formatCount = (count: number) => {
@@ -38,39 +23,6 @@ const formatCount = (count: number) => {
   } else {
     return count.toString()
   }
-}
-
-// Simplified SearchBar component
-function SearchBar({
-  searchTerm,
-  onSearchChange,
-  onSearch,
-}: {
-  searchTerm: string
-  onSearchChange: (value: string) => void
-  onSearch: () => void
-}) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      onSearch()
-    }
-  }
-
-  return (
-    <div className="memories-search-bar">
-      <div className="search-input-container">
-        <Search className="search-icon" />
-        <input
-          type="text"
-          placeholder="Search your memories..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="search-input"
-        />
-      </div>
-    </div>
-  )
 }
 
 // Helper function to flatten memories for the list view
@@ -88,419 +40,7 @@ const flattenMemoriesForList = (memoryList: Memory[]): Memory[] => {
   return flatList
 }
 
-// Enhanced Network visualization component using vis-network
-const MemoriesNetworkGraph = ({
-  memories,
-  searchQuery,
-}: {
-  memories: Memory[]
-  searchQuery: string
-}) => {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const networkRef = useRef<VisNetwork | null>(null)
-  const nodesDatasetRef = useRef<DataSet<Node> | null>(null)
-  const edgesDatasetRef = useRef<DataSet<Edge> | null>(null)
-  const memoryMapRef = useRef<
-    Map<string, Memory | { isQueryNode: boolean; query: string }>
-  >(new Map())
-  const { showMemoryNode } = useMemoryNodeViewer()
-  const [isReady, setIsReady] = useState(false)
-  const [isOpeningNode, setIsOpeningNode] = useState(false)
-  const { isMobile } = usePlatform()
-
-  // Refs to track fit operations
-  const isFittingRef = useRef<boolean>(false)
-  const fitTimeoutRef = useRef<number | null>(null)
-
-  // Function to reliably fit all nodes
-  const fitAllNodes = useCallback(() => {
-    // Don't run multiple fit operations simultaneously
-    if (isFittingRef.current) return
-
-    // Clear any pending fit operations
-    if (fitTimeoutRef.current) {
-      clearTimeout(fitTimeoutRef.current)
-      fitTimeoutRef.current = null
-    }
-
-    if (networkRef.current && nodesDatasetRef.current) {
-      try {
-        isFittingRef.current = true
-
-        // Simple fit with animation - different behavior for mobile vs desktop
-        const fitOptions: FitOptions = {
-          nodes: nodesDatasetRef.current.getIds(),
-          animation: {
-            duration: 500,
-            easingFunction: "easeOutQuad",
-          },
-        }
-
-        networkRef.current.fit(fitOptions)
-
-        // Only apply additional zoom-out on mobile
-        // On desktop we keep the default fit behavior
-        if (isMobile) {
-          fitTimeoutRef.current = setTimeout(() => {
-            if (networkRef.current) {
-              const currentScale = networkRef.current.getScale()
-              networkRef.current.moveTo({
-                scale: Math.max(0.3, currentScale * 0.85),
-                animation: {
-                  duration: 300,
-                  easingFunction: "easeOutQuad",
-                },
-              })
-            }
-            isFittingRef.current = false
-            fitTimeoutRef.current = null
-          }, 600)
-        } else {
-          // On desktop, just mark fitting as complete after animation
-          fitTimeoutRef.current = setTimeout(() => {
-            isFittingRef.current = false
-            fitTimeoutRef.current = null
-          }, 550)
-        }
-      } catch (e) {
-        console.error("Error fitting nodes:", e)
-        isFittingRef.current = false
-      }
-    }
-  }, [isMobile])
-
-  // Enhanced memory node click handler to avoid unnecessary re-renders
-  const handleNodeClick = useCallback(
-    (nodeId: string) => {
-      const clickedItem = memoryMapRef.current.get(nodeId)
-      if (
-        clickedItem &&
-        !("isQueryNode" in clickedItem && clickedItem.isQueryNode)
-      ) {
-        const clickedMemory = clickedItem as Memory
-        // Set opening node flag before showing the memory
-        setIsOpeningNode(true)
-        // Persist positions before opening node
-        if (networkRef.current && nodesDatasetRef.current) {
-          networkRef.current.storePositions()
-          nodesDatasetRef.current
-            .get({ fields: ["id", "x", "y"] })
-            .forEach((node) => {
-              if (node.x != null && node.y != null) {
-                persistedNodePositions[node.id as string] = {
-                  x: node.x,
-                  y: node.y,
-                }
-              }
-            })
-        }
-        showMemoryNode(clickedMemory as MemoryWithLevel)
-        // Reset the flag after a short delay
-        setTimeout(() => setIsOpeningNode(false), 500)
-      }
-    },
-    [showMemoryNode]
-  )
-
-  useEffect(() => {
-    // Skip rebuilding the network if we're just opening a node
-    if (isOpeningNode) {
-      return
-    }
-
-    // Define the prevent touch handler at the top level of the effect
-    // so it's available in the cleanup function
-    const preventTouch = (e: TouchEvent) => {
-      if (e.touches.length > 1) {
-        e.preventDefault()
-      }
-    }
-
-    const nodes = new DataSet<Node>()
-    const edges = new DataSet<Edge>()
-    memoryMapRef.current.clear()
-
-    if (!isOpeningNode) {
-      setIsReady(false)
-    }
-
-    const queryNodeId = "search-query-node"
-    nodes.add({
-      id: queryNodeId,
-      label:
-        searchQuery.substring(0, 30) + (searchQuery.length > 30 ? "..." : ""),
-      title: `Your search: ${searchQuery}`,
-      color: "#ED4245", // Distinct color for the query node
-      level: 0, // Central node
-      shape: "dot", // Changed from ellipse to dot
-      size: 30,
-      x: persistedNodePositions[queryNodeId]?.x,
-      y: persistedNodePositions[queryNodeId]?.y,
-    })
-    memoryMapRef.current.set(queryNodeId, {
-      isQueryNode: true,
-      query: searchQuery,
-    })
-
-    const addMemoryRecursive = (
-      memory: Memory,
-      parentNodeId: string | null,
-      depth: number,
-      path: string
-    ) => {
-      const nodeId = `${path}-${memory.id}`
-      if (memoryMapRef.current.has(nodeId)) return
-
-      const colors = ["#3498DB", "#2ECC71", "#9B59B6", "#F1C40F", "#E74C3C"] // Start colors from depth 1
-      const nodeColor = colors[depth % colors.length]
-
-      const label = memory.prompt
-        ? memory.prompt.substring(0, 20) +
-          (memory.prompt.length > 20 ? "..." : "")
-        : "Memory"
-      const scorePercentage = ((1 - memory.vector_distance) * 100).toFixed(1)
-
-      nodes.add({
-        id: nodeId,
-        label: label,
-        title: `Prompt: ${memory.prompt}\nSimilarity: ${scorePercentage}%`,
-        color: nodeColor,
-        level: depth + 1, // Offset level because query node is level 0
-        shape: "dot",
-        size: Math.max(25 - depth * 3, 10),
-        x: persistedNodePositions[nodeId]?.x,
-        y: persistedNodePositions[nodeId]?.y,
-      })
-      memoryMapRef.current.set(nodeId, memory)
-
-      if (parentNodeId) {
-        edges.add({
-          from: parentNodeId,
-          to: nodeId,
-          arrows: { to: { enabled: true, scaleFactor: 0.5 } },
-          length: 70 + depth * 25, // Adjusted length
-        })
-      }
-
-      if (memory.children && memory.children.length > 0) {
-        memory.children.forEach((child) => {
-          // Path ensures unique IDs even if child IDs are not globally unique across different trees
-          addMemoryRecursive(child, nodeId, depth + 1, `${path}-${memory.id}`)
-        })
-      }
-    }
-
-    memories.forEach((rootMemory, index) => {
-      // Each root memory connects to the central query node
-      addMemoryRecursive(rootMemory, queryNodeId, 0, `root${index}`)
-    })
-
-    nodesDatasetRef.current = nodes
-    edgesDatasetRef.current = edges
-
-    if (containerRef.current) {
-      const options: Options = {
-        layout: {
-          hierarchical: false,
-        },
-        physics: {
-          enabled: true,
-          solver: "forceAtlas2Based",
-          forceAtlas2Based: {
-            gravitationalConstant: -60,
-            centralGravity: 0.01,
-            springLength: 120,
-            springConstant: 0.08,
-            damping: 0.5,
-            avoidOverlap: 0.9,
-          },
-          stabilization: {
-            enabled: true,
-            iterations: 200,
-            fit: true,
-            updateInterval: 50,
-            onlyDynamicEdges: false,
-          },
-        },
-        interaction: {
-          dragNodes: true,
-          menuMobile: true,
-          tooltipDelay: 200,
-          hover: true,
-          zoomView: !isMobile,
-          dragView: !isMobile,
-          multiselect: false,
-          selectable: true,
-          selectConnectedEdges: false,
-        },
-        nodes: {
-          borderWidth: 2,
-          font: { color: "#fff", size: 12, face: "Arial" },
-        },
-        edges: {
-          smooth: { enabled: true, type: "dynamic", roundness: 0.5 },
-          color: {
-            color: "#848484",
-            highlight: "#ADD8E6",
-            hover: "#ADD8E6",
-            inherit: "from",
-            opacity: 0.6,
-          },
-        },
-      }
-
-      if (networkRef.current) {
-        networkRef.current.setData({ nodes, edges })
-        networkRef.current.setOptions(options)
-      } else {
-        networkRef.current = new VisNetwork(
-          containerRef.current,
-          { nodes, edges },
-          options
-        )
-
-        networkRef.current.on("click", (params) => {
-          if (params.nodes.length > 0) {
-            const clickedNodeId = params.nodes[0] as string
-            handleNodeClick(clickedNodeId)
-          }
-        })
-      }
-
-      // Fit the network properly when stabilized
-      networkRef.current.once("stabilizationIterationsDone", () => {
-        setIsReady(true)
-        // Slight delay to ensure DOM is fully updated
-        setTimeout(() => {
-          fitAllNodes()
-        }, 100)
-
-        if (networkRef.current && nodesDatasetRef.current) {
-          networkRef.current.storePositions()
-          nodesDatasetRef.current
-            .get({ fields: ["id", "x", "y"] })
-            .forEach((node) => {
-              if (node.x != null && node.y != null) {
-                persistedNodePositions[node.id as string] = {
-                  x: node.x,
-                  y: node.y,
-                }
-              }
-            })
-        }
-      })
-
-      // Handle resizing to ensure proper fit
-      const resizeObserver = new ResizeObserver(() => {
-        if (isReady && networkRef.current && !isFittingRef.current) {
-          // Only refit if the network is already stable and not already fitting
-          if (fitTimeoutRef.current) {
-            clearTimeout(fitTimeoutRef.current)
-          }
-          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
-        }
-      })
-
-      if (containerRef.current) {
-        resizeObserver.observe(containerRef.current)
-      }
-
-      if (networkRef.current && memories.length > 0) {
-        networkRef.current.stabilize(200)
-      }
-
-      // Disable touch gestures on mobile for the container
-      if (isMobile && containerRef.current) {
-        containerRef.current.style.touchAction = "none"
-        // Add event listeners to prevent default touch behavior
-        containerRef.current.addEventListener("touchstart", preventTouch, {
-          passive: false,
-        })
-        containerRef.current.addEventListener("touchmove", preventTouch, {
-          passive: false,
-        })
-
-        return () => {
-          // Clean up event listeners
-          if (containerRef.current) {
-            containerRef.current.removeEventListener("touchstart", preventTouch)
-            containerRef.current.removeEventListener("touchmove", preventTouch)
-          }
-
-          // Cleanup resize observer
-          if (containerRef.current) {
-            resizeObserver.unobserve(containerRef.current)
-          }
-          resizeObserver.disconnect()
-
-          // Store positions before unmounting
-          if (networkRef.current && nodesDatasetRef.current) {
-            networkRef.current.storePositions()
-            nodesDatasetRef.current
-              .get({ fields: ["id", "x", "y"] })
-              .forEach((node) => {
-                if (node.x != null && node.y != null) {
-                  persistedNodePositions[node.id as string] = {
-                    x: node.x,
-                    y: node.y,
-                  }
-                }
-              })
-          }
-        }
-      }
-    }
-  }, [
-    memories,
-    searchQuery,
-    handleNodeClick,
-    isReady,
-    isOpeningNode,
-    fitAllNodes,
-    isMobile,
-  ])
-
-  // Attempt to refit when ready changes
-  useEffect(() => {
-    if (isReady && memories.length > 0 && !isFittingRef.current) {
-      // Only refit if not already fitting
-      if (fitTimeoutRef.current) {
-        clearTimeout(fitTimeoutRef.current)
-      }
-      fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 200)
-    }
-  }, [isReady, memories.length, fitAllNodes])
-
-  // Show placeholder or loading only if memories are being fetched or network is building
-  if (
-    memories.length === 0 &&
-    !isReady &&
-    containerRef.current?.parentElement?.style.display !== "none"
-  ) {
-    return (
-      <div className="no-memories">
-        <Info size={24} />
-        <p>Search to visualize your memory network.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="memory-network-container">
-      <div
-        ref={containerRef}
-        className="network-visualization-area"
-        style={{ visibility: isReady ? "visible" : "hidden" }}
-      />
-      {!isReady && memories.length > 0 && !isOpeningNode && (
-        <div className="loading-indicator">Building network...</div>
-      )}
-    </div>
-  )
-}
-
 export default function MemoriesDashboardOverlay() {
-  const [searchTerm, setSearchTerm] = useState("")
   const [memories, setMemories] = useState<Memory[]>([])
   const [loading, setLoading] = useState(false)
   const [activeView, setActiveView] = useState<"list" | "network">("list")
@@ -508,15 +48,10 @@ export default function MemoriesDashboardOverlay() {
   const { preferences } = useModelPreferences()
   const [error, setError] = useState<string | null>(null)
   const [lastSearchedTerm, setLastSearchedTerm] = useState("") // To pass to graph
-  const [isViewingNode, setIsViewingNode] = useState(false) // Add this to track when a node is being viewed
-  const { showMemoryNode: originalShowMemoryNode } = useMemoryNodeViewer() // Get showMemoryNode here
   const { confirmMemoryDeletion } = useMemoryDeletion() // Add this hook for memory deletion
   const { showMemoryNetwork } = useMemoryNetwork() // Add this hook for showing memory network
   const [memoryCount, setMemoryCount] = useState<number>(0) // Add state for memory count
-
-  // Refs to track fit operations
-  const isFittingRef = useRef<boolean>(false)
-  const fitTimeoutRef = useRef<number | null>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch the total memory count on component mount
   useEffect(() => {
@@ -545,16 +80,8 @@ export default function MemoriesDashboardOverlay() {
     }
   }, [user?.uid])
 
-  // Memoize the showMemoryNode function to prevent unnecessary re-renders
-  const showMemoryNode = useCallback(
-    (memory: MemoryWithLevel) => {
-      setIsViewingNode(true)
-      originalShowMemoryNode(memory)
-    },
-    [originalShowMemoryNode]
-  )
-
   const handleSearch = async () => {
+    const searchTerm = searchInputRef.current?.value ?? ""
     if (!searchTerm.trim()) {
       toast.error("Please enter a search term")
       return
@@ -614,14 +141,6 @@ export default function MemoriesDashboardOverlay() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch()
   }
 
   // Prepare data for list view by flattening and sorting
@@ -703,29 +222,25 @@ export default function MemoriesDashboardOverlay() {
 
   return (
     <Modal id="memories" title="Memory Dashboard">
-      <div className="memories-dashboard">
-        <div className="memories-header">
-          <div className="search-container">
-            <SearchBar
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              onSearch={handleSearch}
-            />
-            <Button
-              onClick={handleSearch}
-              disabled={loading || !searchTerm.trim()}
-              className="search-button"
-            >
-              {loading ? "Searching..." : "Search"}
-            </Button>
-          </div>
+      <div className="flex flex-col h-full p-4 bg-background text-foreground">
+        <div className="flex flex-col gap-4 pb-4 border-b border-border mb-4">
+          <SearchBar
+            onSearch={handleSearch}
+            inputRef={searchInputRef}
+            loading={loading}
+            currentQuery={lastSearchedTerm}
+          />
 
-          <div className="view-controls">
-            <div className="view-toggle">
+          <div className="flex justify-between items-center w-full">
+            <div className="flex gap-3">
               <Button
                 variant={activeView === "list" ? "default" : "outline"}
                 onClick={() => setActiveView("list")}
-                className="view-button"
+                className={
+                  activeView === "list"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border"
+                }
               >
                 <List size={18} />
                 <span>List</span>
@@ -733,35 +248,43 @@ export default function MemoriesDashboardOverlay() {
               <Button
                 variant={activeView === "network" ? "default" : "outline"}
                 onClick={() => setActiveView("network")}
-                className="view-button"
+                className={
+                  activeView === "network"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border"
+                }
               >
                 <Network size={18} />
                 <span>Network</span>
               </Button>
             </div>
 
-            <div className="memory-count">
-              <span className="memory-count-value">
+            <div className="flex items-center gap-1 text-sm opacity-95 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 shadow-sm">
+              <span className="font-bold text-primary text-base">
                 {formatCount(memoryCount)}
               </span>
-              <span className="memory-count-label">memories</span>
+              <span className="text-muted-foreground font-medium">
+                memories
+              </span>
             </div>
           </div>
         </div>
-        <div className="memories-content">
+        <div className="flex-1 flex flex-col overflow-y-auto py-2 min-h-0">
           {loading && (
-            <div className="loading-indicator">Searching memories...</div>
+            <div className="flex items-center justify-center h-24 text-muted-foreground text-lg m-auto">
+              Searching memories...
+            </div>
           )}
           {!loading && error && (
-            <div className="error-message">
-              <div className="error-icon">
-                <X size={20} />
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-destructive text-lg text-center gap-3 bg-destructive/10 rounded-lg p-6 m-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/20">
+                <LucideX size={20} />
               </div>
               <p>{error}</p>
             </div>
           )}
-          {!loading && !error && memories.length === 0 && searchTerm && (
-            <div className="no-memories">
+          {!loading && !error && memories.length === 0 && lastSearchedTerm && (
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
               <Info size={24} />
               <p>
                 No memories found for &quot;{lastSearchedTerm}&quot;. Try a
@@ -769,8 +292,8 @@ export default function MemoriesDashboardOverlay() {
               </p>
             </div>
           )}
-          {!loading && !error && memories.length === 0 && !searchTerm && (
-            <div className="no-memories">
+          {!loading && !error && memories.length === 0 && !lastSearchedTerm && (
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
               <Info size={24} />
               <p>Enter a search term and click Search to find your memories.</p>
             </div>
@@ -779,53 +302,12 @@ export default function MemoriesDashboardOverlay() {
           {!loading && !error && memories.length > 0 && (
             <>
               {activeView === "list" ? (
-                <div className="memories-list">
-                  {listViewMemories.map((memory, idx) => {
-                    // Format metadata to include in the message
-                    // Debug check for vector_distance ranges
-                    console.log(
-                      `Memory ${idx} vector_distance: ${memory.vector_distance}`
-                    )
-
-                    // Direct calculation - vector_distance is already a similarity score (1 = exact match)
-                    const matchPercentage = (
-                      memory.vector_distance * 100
-                    ).toFixed(1)
-                    const metadataFooter = `\n\n---\n*${matchPercentage}% Match*`
-                    const timestamp =
-                      memory.timestamp instanceof Date
-                        ? memory.timestamp
-                        : new Date(memory.timestamp)
-
-                    return (
-                      <div key={`${memory.id}-${idx}`} className="memory-item">
-                        {/* User/prompt message */}
-                        <ChatMessage
-                          content={memory.prompt}
-                          timestamp={timestamp}
-                          isUser={true}
-                          menuProps={{
-                            onCopy: () => handleCopy(memory, "prompt"),
-                            onDelete: () => handleDelete(memory),
-                            onShowMemories: () => handleShowMemories(memory),
-                          }}
-                        />
-
-                        {/* Assistant/response message with metadata */}
-                        <ChatMessage
-                          content={memory.response + metadataFooter}
-                          timestamp={timestamp}
-                          isUser={false}
-                          menuProps={{
-                            onCopy: () => handleCopy(memory, "response"),
-                            onDelete: () => handleDelete(memory),
-                            onShowMemories: () => handleShowMemories(memory),
-                          }}
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
+                <MemoriesListView
+                  memories={listViewMemories}
+                  onCopy={handleCopy}
+                  onDelete={handleDelete}
+                  onShowMemories={handleShowMemories}
+                />
               ) : (
                 <MemoriesNetworkGraph
                   memories={memories}
