@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback } from "react"
 import { PlaneTakeoff } from "lucide-react"
 import { usePlatform } from "@/hooks/usePlatform"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import {
   Dialog,
@@ -11,7 +12,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { useComposeContext } from "@/contexts/ComposeContext"
-import { Textarea } from "./ui/textarea"
 
 // Modal component for fullscreen compose using ShadCN Dialog
 const ComposeModal: React.FC = () => {
@@ -52,13 +52,14 @@ const ComposeModal: React.FC = () => {
         e.preventDefault()
         if (message.trim()) {
           handleSubmit()
+          closeComposeModal()
         }
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [message, handleSubmit, isMobile])
+  }, [message, handleSubmit, isMobile, closeComposeModal])
 
   // Focus the textarea when the modal opens
   useEffect(() => {
@@ -76,7 +77,7 @@ const ComposeModal: React.FC = () => {
         className={cn(
           "bg-background flex flex-col overflow-hidden gap-0",
           isMobile
-            ? "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
+            ? "fixed inset-0 h-[100svh] w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
             : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
         )}
       >
@@ -120,7 +121,7 @@ const ComposeModal: React.FC = () => {
               onChange={handleChange}
               placeholder="Message Ditto"
               spellCheck="true"
-              className="text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
+              className="flex-1 text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
             />
           </form>
         </div>
