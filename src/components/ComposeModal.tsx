@@ -80,6 +80,12 @@ const ComposeModal: React.FC = () => {
             ? "fixed inset-0 h-[100svh] w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
             : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
         )}
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingLeft: "env(safe-area-inset-left)",
+          paddingRight: "env(safe-area-inset-right)",
+        }}
       >
         {/* Accessibility additions */}
         <DialogHeader className="border-b flex items-center justify-between p-3 select-none">
@@ -121,7 +127,7 @@ const ComposeModal: React.FC = () => {
               onChange={handleChange}
               placeholder="Message Ditto"
               spellCheck="true"
-              className="text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
+              className="flex flex-1 text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
             />
           </form>
         </div>
