@@ -4,12 +4,13 @@ import {
   useCallback,
   useContext,
   useState,
+  useRef,
 } from "react"
 import { useModal } from "./useModal"
 import { Memory } from "@/api/getMemories"
 
 // Just add level field for nodes that may not have it
-interface MemoryWithLevel extends Memory {
+export interface MemoryWithLevel extends Memory {
   level?: number
   nodeId?: string
 }
@@ -62,11 +63,20 @@ export function useMemoryNodeViewer() {
   const openModal = createOpenHandler("memoryNodeViewer")
   const closeModal = createCloseHandler("memoryNodeViewer")
 
+  // Add a ref to track if a modal is already open to prevent duplicate operations
+  const isModalOpenRef = useRef(false)
+
   const showMemoryNode = useCallback(
     (
       node: MemoryWithLevel,
       deleteCallback?: (node: MemoryWithLevel) => void
     ) => {
+      // Only update if we're not already showing this node
+      if (isModalOpenRef.current && context.nodeData?.id === node.id) {
+        return // Don't reopen the same node
+      }
+
+      isModalOpenRef.current = true
       context.setNodeData(node)
       if (deleteCallback) {
         context.setOnDelete(() => deleteCallback)
@@ -79,13 +89,14 @@ export function useMemoryNodeViewer() {
   const hideMemoryNode = useCallback(() => {
     // First close the modal
     closeModal()
+    isModalOpenRef.current = false
 
     // We no longer need to clear the data as quickly,
     // which avoids some race conditions when re-rendering the network
     setTimeout(() => {
       context.setNodeData(null)
       context.setOnDelete(undefined)
-    }, 500)
+    }, 800) // Increased timeout to ensure animation completes
   }, [context, closeModal])
 
   return {

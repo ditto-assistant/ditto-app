@@ -14,9 +14,10 @@ export interface Memory {
 }
 
 export interface ParamsLongTermMemoriesV2 {
-  pairID: string
+  pairID?: string
   nodeCounts: number[]
   nodeThresholds?: number[]
+  vector?: number[]
 }
 
 export interface ParamsShortTermMemoriesV2 {
@@ -28,6 +29,7 @@ export interface GetMemoriesV2Request {
   longTerm?: ParamsLongTermMemoriesV2
   shortTerm?: ParamsShortTermMemoriesV2
   stripImages: boolean
+  alreadyFoundPairIDs?: string[]
 }
 
 export interface MemoriesV2Response {

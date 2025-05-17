@@ -1,51 +1,16 @@
 import { TOOLS } from "../../constants"
 import type { Tool, ToolPreferences } from "../../types/llm"
-import type { ScriptType, SelectedScriptInfo } from "../../hooks/useScripts"
+
 const getToolsModule = (params: {
-  scriptType?: ScriptType
   toolPreferences: ToolPreferences
 }): Tool[] => {
-  const { scriptType, toolPreferences } = params
+  const { toolPreferences } = params
 
   // Filter tools based on preferences
   const enabledTools = TOOLS.filter(
     (tool) => toolPreferences[tool.id as keyof ToolPreferences]
   )
 
-  if (!scriptType) return enabledTools
-
-  const scriptTypeLower = scriptType.toLowerCase()
-
-  // Find the tool specific to the script type (currently only webApps)
-  let scriptSpecificToolId: keyof ToolPreferences | null = null
-  if (scriptTypeLower === "webapps") {
-    scriptSpecificToolId = "htmlScript"
-  }
-  // Add other script-specific tool lookups here if needed in the future
-
-  if (scriptSpecificToolId && toolPreferences[scriptSpecificToolId]) {
-    // Find the tool object using the ID
-    const scriptSpecificTool = TOOLS.find(
-      (tool) => tool.id === scriptSpecificToolId
-    )
-
-    if (scriptSpecificTool) {
-      // If the script-specific tool is enabled and found,
-      // move it to the beginning of the array.
-      const index = enabledTools.findIndex((t) => t.id === scriptSpecificToolId)
-      if (index > -1) {
-        const [toolToMove] = enabledTools.splice(index, 1)
-        // Ensure the return type matches Tool[]
-        return [toolToMove, ...enabledTools] as Tool[]
-      } else {
-        // If it wasn't found in enabledTools but should be enabled, add it to the front.
-        // This should ideally not happen if TOOLS and ToolPreferences are consistent.
-        return [scriptSpecificTool, ...enabledTools] as Tool[]
-      }
-    }
-  }
-
-  // Ensure the return type matches Tool[]
   return enabledTools as Tool[]
 }
 
@@ -70,27 +35,12 @@ export const getTimezoneString = () => {
   return timezoneString
 }
 
-export const workingOnScriptModule = (params: {
-  scriptName?: string
-  type?: ScriptType
-}) => {
-  const { scriptName, type } = params
-  if (!scriptName) {
-    return ""
-  }
-  return `## Current Script: ${scriptName}
-- If you are reading this, that means the user is currently working on a ${type} script. Please send any requests from the user to the respective agent/tool for the user's ${type} script.
-- Don't send a user's prompt to the tool if they are obviously asking you something off topic to the current script or chatting with you. 
-`
-}
-
 export const mainTemplate = (params: {
   memories: string
   examples: string
   firstName: string
   timestamp: string
   usersPrompt: string
-  selectedScript?: SelectedScriptInfo
   toolPreferences: ToolPreferences
 }) => {
   const {
@@ -99,12 +49,10 @@ export const mainTemplate = (params: {
     firstName,
     timestamp,
     usersPrompt,
-    selectedScript,
     toolPreferences,
   } = params
   console.log("toolPreferences", params)
   const tools = getToolsModule({
-    scriptType: selectedScript?.scriptType,
     toolPreferences,
   })
 
@@ -160,8 +108,6 @@ ${toolsSection}${examplesSection}
 
 <!memories>
 
-<!working_on_script_module>
-
 User's Name: <!users_name>
 Current Timestamp: <!timestamp>
 Current Time in User's Timezone: <!time>
@@ -174,13 +120,6 @@ Ditto:`
   )
   prompt = prompt.replace("<!memories>", memories)
   prompt = prompt.replace("<!examples>", examples)
-  prompt = prompt.replace(
-    "<!working_on_script_module>",
-    workingOnScriptModule({
-      scriptName: selectedScript?.script,
-      type: selectedScript?.scriptType,
-    })
-  )
   prompt = prompt.replace("<!users_name>", firstName)
   prompt = prompt.replace("<!timestamp>", timestamp)
   prompt = prompt.replace("<!users_prompt>", usersPrompt)
