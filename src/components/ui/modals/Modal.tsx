@@ -282,6 +282,10 @@ export default function Modal({
         left: 0,
         right: 0,
         bottom: 0,
+        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
       }
     : {
         zIndex,

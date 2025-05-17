@@ -127,7 +127,7 @@ const ComposeModal: React.FC = () => {
               onChange={handleChange}
               placeholder="Message Ditto"
               spellCheck="true"
-              className="flex flex-1 text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
+              className="text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
             />
           </form>
         </div>

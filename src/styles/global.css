@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "./variables.css";
-@import "./components.css";
 @import "./buttons.css";
 @import "./platform/ios.css";
 @import "tw-animate-css";
