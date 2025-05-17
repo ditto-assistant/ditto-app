@@ -45,7 +45,10 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const nodesDatasetRef = useRef<DataSet<Node> | null>(null)
   const edgesDatasetRef = useRef<DataSet<Edge> | null>(null)
   const memoryMapRef = useRef<
-    Map<string, Memory | { isQueryNode: boolean; query?: string; originalMemory?: Memory }>
+    Map<
+      string,
+      Memory | { isQueryNode: boolean; query?: string; originalMemory?: Memory }
+    >
   >(new Map())
   const { showMemoryNode } = useMemoryNodeViewer()
   const [isReady, setIsReady] = useState(false)
@@ -68,7 +71,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       fitTimeoutRef.current = null
     }
 
-    if (networkRef.current && nodesDatasetRef.current && nodesDatasetRef.current.length > 0) {
+    if (
+      networkRef.current &&
+      nodesDatasetRef.current &&
+      nodesDatasetRef.current.length > 0
+    ) {
       try {
         isFittingRef.current = true
 
@@ -86,7 +93,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           isFittingRef.current = false
           fitTimeoutRef.current = null
         }, 550) // Corresponds to desktop animation time, should be enough for mobile too
-
       } catch (e) {
         console.error("Error fitting nodes:", e)
         isFittingRef.current = false
@@ -98,7 +104,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const handleNodeClick = useCallback(
     (nodeId: string) => {
       const clickedItem = memoryMapRef.current.get(nodeId)
-      if (clickedItem && !(clickedItem as RootNodeConfig).isQueryNode && !(clickedItem as any).query) {
+      if (
+        clickedItem &&
+        !(clickedItem as RootNodeConfig).isQueryNode &&
+        !(clickedItem as any).query
+      ) {
         const clickedMemory = clickedItem as Memory
         // Set opening node flag before showing the memory
         setIsOpeningNode(true)
@@ -162,9 +172,13 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     // Add the root node using rootNodeConfig
     nodes.add({
       id: rootNodeConfig.id,
-      label: rootNodeConfig.label.substring(0,30) + (rootNodeConfig.label.length > 30 ? "..." : ""),
+      label:
+        rootNodeConfig.label.substring(0, 30) +
+        (rootNodeConfig.label.length > 30 ? "..." : ""),
       title: rootNodeConfig.title || rootNodeConfig.label,
-      color: rootNodeConfig.color || (rootNodeConfig.isQueryNode ? "#ED4245" : "#3498DB"),
+      color:
+        rootNodeConfig.color ||
+        (rootNodeConfig.isQueryNode ? "#ED4245" : "#3498DB"),
       level: 0,
       shape: "dot",
       size: 30,
@@ -173,18 +187,29 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     })
     // Store root node information in memoryMap
     if (rootNodeConfig.isQueryNode) {
-        memoryMapRef.current.set(rootNodeConfig.id, { isQueryNode: true, query: rootNodeConfig.label });
+      memoryMapRef.current.set(rootNodeConfig.id, {
+        isQueryNode: true,
+        query: rootNodeConfig.label,
+      })
     } else if (rootNodeConfig.originalMemory) {
-        memoryMapRef.current.set(rootNodeConfig.id, rootNodeConfig.originalMemory);
+      memoryMapRef.current.set(rootNodeConfig.id, rootNodeConfig.originalMemory)
     }
 
-    const addMemoryRecursive = (memory: Memory, parentNodeId: string, depth: number, path: string) => {
+    const addMemoryRecursive = (
+      memory: Memory,
+      parentNodeId: string,
+      depth: number,
+      path: string
+    ) => {
       const nodeId = `${path}-${memory.id}`
       if (memoryMapRef.current.has(nodeId)) return
 
       const colors = ["#3498DB", "#2ECC71", "#9B59B6", "#F1C40F", "#E74C3C"]
       const nodeColor = colors[depth % colors.length]
-      const label = memory.prompt ? memory.prompt.substring(0, 20) + (memory.prompt.length > 20 ? "..." : "") : "Memory"
+      const label = memory.prompt
+        ? memory.prompt.substring(0, 20) +
+          (memory.prompt.length > 20 ? "..." : "")
+        : "Memory"
       // Assuming vector_distance is similarity where higher is better (0 to 1 scale)
       const scorePercentage = (memory.vector_distance * 100).toFixed(1)
 
@@ -376,28 +401,28 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       //     }
       //   }
       // } else {
-        // For desktop, ensure resize observer is cleaned up (this else branch becomes the main return for cleanup)
-        return () => {
-          if (container) {
-            resizeObserver.unobserve(container)
-          }
-          resizeObserver.disconnect()
-
-          // Store positions before unmounting
-          if (networkRef.current && nodesDatasetRef.current) {
-            networkRef.current.storePositions()
-            nodesDatasetRef.current
-              .get({ fields: ["id", "x", "y"] })
-              .forEach((node) => {
-                if (node.x != null && node.y != null) {
-                  persistedNodePositions[node.id as string] = {
-                    x: node.x,
-                    y: node.y,
-                  }
-                }
-              })
-          }
+      // For desktop, ensure resize observer is cleaned up (this else branch becomes the main return for cleanup)
+      return () => {
+        if (container) {
+          resizeObserver.unobserve(container)
         }
+        resizeObserver.disconnect()
+
+        // Store positions before unmounting
+        if (networkRef.current && nodesDatasetRef.current) {
+          networkRef.current.storePositions()
+          nodesDatasetRef.current
+            .get({ fields: ["id", "x", "y"] })
+            .forEach((node) => {
+              if (node.x != null && node.y != null) {
+                persistedNodePositions[node.id as string] = {
+                  x: node.x,
+                  y: node.y,
+                }
+              }
+            })
+        }
+      }
       // } // End of removed if/else for mobile touch handling
     }
   }, [
@@ -413,7 +438,12 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
   // Attempt to refit when ready changes
   useEffect(() => {
-    if (isReady && (memories.length > 0 || (nodesDatasetRef.current && nodesDatasetRef.current.length > 1)) && !isFittingRef.current) {
+    if (
+      isReady &&
+      (memories.length > 0 ||
+        (nodesDatasetRef.current && nodesDatasetRef.current.length > 1)) &&
+      !isFittingRef.current
+    ) {
       // Only refit if not already fitting
       if (fitTimeoutRef.current) {
         clearTimeout(fitTimeoutRef.current)
@@ -433,7 +463,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     // If it's not a query node (i.e. specific message) and no children, maybe show a specific message or just the node.
     // For now, let it try to render just the root node if memories array is empty.
   }
-  
+
   if (
     memories.length === 0 &&
     rootNodeConfig.isQueryNode &&
@@ -455,11 +485,14 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         className="flex-1 relative w-full rounded-lg bg-muted border border-border overflow-hidden"
         style={{ visibility: isReady ? "visible" : "hidden" }}
       />
-      {!isReady && (nodesDatasetRef.current && nodesDatasetRef.current.length > 0) && !isOpeningNode && (
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-lg bg-background/80 z-10">
-          Building network...
-        </div>
-      )}
+      {!isReady &&
+        nodesDatasetRef.current &&
+        nodesDatasetRef.current.length > 0 &&
+        !isOpeningNode && (
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-lg bg-background/80 z-10">
+            Building network...
+          </div>
+        )}
     </div>
   )
 }

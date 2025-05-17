@@ -4,12 +4,16 @@ import Modal from "./ui/modals/Modal"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import { Memory } from "@/api/getMemories"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
-import { useMemoryNodeViewer, MemoryWithLevel } from "@/hooks/useMemoryNodeViewer"
+import {
+  useMemoryNodeViewer,
+  MemoryWithLevel,
+} from "@/hooks/useMemoryNodeViewer"
 import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
 import "./MemoryNetwork.css"
 
 export default function MemoryNetworkModal() {
-  const { memories, loading, deleteMemory, currentRootMemory } = useMemoryNetwork()
+  const { memories, loading, deleteMemory, currentRootMemory } =
+    useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { showMemoryNode } = useMemoryNodeViewer()
   const [isReady, setIsReady] = useState(false)
@@ -28,15 +32,18 @@ export default function MemoryNetworkModal() {
         },
         onError: (err: Error) => {
           toast.error(`Failed to delete memory: ${err.message}`)
-        }
+        },
       })
     },
     [confirmMemoryDeletion, deleteMemory]
   )
-  
-  const handleGraphNodeClick = useCallback((memory: MemoryWithLevel) => {
-    showMemoryNode(memory, handleNodeDelete)
-  }, [showMemoryNode, handleNodeDelete])
+
+  const handleGraphNodeClick = useCallback(
+    (memory: MemoryWithLevel) => {
+      showMemoryNode(memory, handleNodeDelete)
+    },
+    [showMemoryNode, handleNodeDelete]
+  )
 
   useEffect(() => {
     if (!loading && currentRootMemory && memories !== undefined) {
@@ -55,15 +62,18 @@ export default function MemoryNetworkModal() {
       </Modal>
     )
   }
-  
+
   const rootNodeConfig = {
     id: currentRootMemory.id || "root-memory-node",
-    label: currentRootMemory.prompt ? (currentRootMemory.prompt.substring(0,30) + (currentRootMemory.prompt.length > 30 ? "..." : "")) : "Memory",
+    label: currentRootMemory.prompt
+      ? currentRootMemory.prompt.substring(0, 30) +
+        (currentRootMemory.prompt.length > 30 ? "..." : "")
+      : "Memory",
     title: `Central Memory: ${currentRootMemory.prompt || "N/A"}`,
     isQueryNode: false,
     originalMemory: currentRootMemory,
-    color: "#FF5733"
-  };
+    color: "#FF5733",
+  }
 
   return (
     <Modal id="memoryNetwork" title="Memory Network">
@@ -76,7 +86,9 @@ export default function MemoryNetworkModal() {
         ) : (
           <div className="w-full h-full min-h-[500px] flex items-center justify-center">
             <div className="text-muted-foreground">
-              {loading || !currentRootMemory ? "Loading memory network..." : "Preparing memory network..."}
+              {loading || !currentRootMemory
+                ? "Loading memory network..."
+                : "Preparing memory network..."}
             </div>
           </div>
         )}

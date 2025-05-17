@@ -84,11 +84,24 @@ export default function MemoriesDashboardOverlay() {
       const userID = user?.uid
       if (!userID) throw new Error("User not authenticated")
       if (!preferences) throw new Error("Model preferences not available")
-      const embeddingResult = await embed({ userID, text: searchTerm, model: "text-embedding-005" })
-      if (embeddingResult.err) throw new Error(`Embedding failed: ${embeddingResult.err}`)
+      const embeddingResult = await embed({
+        userID,
+        text: searchTerm,
+        model: "text-embedding-005",
+      })
+      if (embeddingResult.err)
+        throw new Error(`Embedding failed: ${embeddingResult.err}`)
       if (!embeddingResult.ok) throw new Error("Embedding failed: No result")
       const memoriesResponse = await getMemories(
-        { userID, longTerm: { vector: embeddingResult.ok, nodeCounts: preferences.memory.longTermMemoryChain }, stripImages: false }, "application/json"
+        {
+          userID,
+          longTerm: {
+            vector: embeddingResult.ok,
+            nodeCounts: preferences.memory.longTermMemoryChain,
+          },
+          stripImages: false,
+        },
+        "application/json"
       )
       if (memoriesResponse.err) throw new Error(memoriesResponse.err)
       if (!memoriesResponse.ok || !memoriesResponse.ok.longTerm) {
@@ -97,7 +110,8 @@ export default function MemoriesDashboardOverlay() {
       }
       const resultsTree = memoriesResponse.ok.longTerm
       setMemories(resultsTree)
-      if (resultsTree.length === 0) setError("No memories found matching your search term.")
+      if (resultsTree.length === 0)
+        setError("No memories found matching your search term.")
     } catch (err) {
       const e = err as Error
       console.error("Error searching memories:", e)
@@ -116,87 +130,142 @@ export default function MemoriesDashboardOverlay() {
   }
   const listViewMemories = getListViewMemories()
 
-  const handleCopy = useCallback((memory: Memory, type: "prompt" | "response") => {
-    const contentToCopy = type === "prompt" ? memory.prompt : memory.response
-    if (!contentToCopy) { toast.error("No content to copy"); return }
-    navigator.clipboard.writeText(contentToCopy).then(
-      () => toast.success("Copied to clipboard"),
-      (err) => { console.error("Could not copy text: ", err); toast.error("Failed to copy text") }
-    )
-  }, [])
-
-  const handleDeleteMemory = useCallback((memory: Memory) => {
-    if (!memory.id) { toast.error("Cannot delete: Missing ID"); return }
-    confirmMemoryDeletion(memory.id, {
-      isMessage: true,
-      onSuccess: () => {
-        setMemories(prevMemories => {
-          const removeMemory = (mems: Memory[]): Memory[] => mems.filter(mem => {
-            if (mem.id === memory.id) return false
-            if (mem.children && mem.children.length > 0) mem.children = removeMemory(mem.children)
-            return true
-          })
-          return removeMemory([...prevMemories])
-        })
-        toast.success("Memory deleted successfully")
+  const handleCopy = useCallback(
+    (memory: Memory, type: "prompt" | "response") => {
+      const contentToCopy = type === "prompt" ? memory.prompt : memory.response
+      if (!contentToCopy) {
+        toast.error("No content to copy")
+        return
       }
-    })
-  }, [confirmMemoryDeletion])
+      navigator.clipboard.writeText(contentToCopy).then(
+        () => toast.success("Copied to clipboard"),
+        (err) => {
+          console.error("Could not copy text: ", err)
+          toast.error("Failed to copy text")
+        }
+      )
+    },
+    []
+  )
 
-  const handleShowRelatedMemories = useCallback((memory: Memory) => {
-    showMemoryNetwork(memory) // This will open the MemoryNetworkModal
-  }, [showMemoryNetwork])
+  const handleDeleteMemory = useCallback(
+    (memory: Memory) => {
+      if (!memory.id) {
+        toast.error("Cannot delete: Missing ID")
+        return
+      }
+      confirmMemoryDeletion(memory.id, {
+        isMessage: true,
+        onSuccess: () => {
+          setMemories((prevMemories) => {
+            const removeMemory = (mems: Memory[]): Memory[] =>
+              mems.filter((mem) => {
+                if (mem.id === memory.id) return false
+                if (mem.children && mem.children.length > 0)
+                  mem.children = removeMemory(mem.children)
+                return true
+              })
+            return removeMemory([...prevMemories])
+          })
+          toast.success("Memory deleted successfully")
+        },
+      })
+    },
+    [confirmMemoryDeletion]
+  )
+
+  const handleShowRelatedMemories = useCallback(
+    (memory: Memory) => {
+      showMemoryNetwork(memory) // This will open the MemoryNetworkModal
+    },
+    [showMemoryNetwork]
+  )
 
   return (
     <Modal id="memories" title="Memory Dashboard">
       <div className="flex flex-col h-full p-4 bg-background text-foreground">
         <div className="flex flex-col gap-4 pb-4 border-b border-border mb-4">
-          <SearchBar onSearch={handleSearch} inputRef={searchInputRef} loading={loading} currentQuery={lastSearchedTerm} />
+          <SearchBar
+            onSearch={handleSearch}
+            inputRef={searchInputRef}
+            loading={loading}
+            currentQuery={lastSearchedTerm}
+          />
           <div className="flex justify-between items-center w-full">
             <div className="flex gap-3">
               <Button
                 variant={activeView === "list" ? "default" : "outline"}
                 onClick={() => setActiveView("list")}
-                className={activeView === "list" ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"}
+                className={
+                  activeView === "list"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border"
+                }
               >
-                <List size={18} /><span>List</span>
+                <List size={18} />
+                <span>List</span>
               </Button>
               <Button
                 variant={activeView === "network" ? "default" : "outline"}
                 onClick={() => setActiveView("network")}
-                className={activeView === "network" ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"}
+                className={
+                  activeView === "network"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border"
+                }
               >
-                <Network size={18} /><span>Network</span>
+                <Network size={18} />
+                <span>Network</span>
               </Button>
             </div>
             <div className="flex items-center gap-1 text-sm opacity-95 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 shadow-sm">
-              <span className="font-bold text-primary text-base">{formatCount(memoryCount)}</span>
-              <span className="text-muted-foreground font-medium">memories</span>
+              <span className="font-bold text-primary text-base">
+                {formatCount(memoryCount)}
+              </span>
+              <span className="text-muted-foreground font-medium">
+                memories
+              </span>
             </div>
           </div>
         </div>
         <div className="flex-1 flex flex-col overflow-y-auto py-2 min-h-0">
-          {loading && <div className="flex items-center justify-center h-24 text-muted-foreground text-lg m-auto">Searching memories...</div>}
+          {loading && (
+            <div className="flex items-center justify-center h-24 text-muted-foreground text-lg m-auto">
+              Searching memories...
+            </div>
+          )}
           {!loading && error && (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-destructive text-lg text-center gap-3 bg-destructive/10 rounded-lg p-6 m-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/20"><LucideX size={20} /></div>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/20">
+                <LucideX size={20} />
+              </div>
               <p>{error}</p>
             </div>
           )}
           {!loading && !error && memories.length === 0 && lastSearchedTerm && (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
-              <Info size={24} /><p>No memories found for &quot;{lastSearchedTerm}&quot;. Try a different search.</p>
+              <Info size={24} />
+              <p>
+                No memories found for &quot;{lastSearchedTerm}&quot;. Try a
+                different search.
+              </p>
             </div>
           )}
           {!loading && !error && memories.length === 0 && !lastSearchedTerm && (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
-              <Info size={24} /><p>Enter a search term and click Search to find your memories.</p>
+              <Info size={24} />
+              <p>Enter a search term and click Search to find your memories.</p>
             </div>
           )}
           {!loading && !error && memories.length > 0 && (
             <>
               {activeView === "list" ? (
-                <MemoriesListView memories={listViewMemories} onCopy={handleCopy} onDelete={handleDeleteMemory} onShowMemories={handleShowRelatedMemories} />
+                <MemoriesListView
+                  memories={listViewMemories}
+                  onCopy={handleCopy}
+                  onDelete={handleDeleteMemory}
+                  onShowMemories={handleShowRelatedMemories}
+                />
               ) : (
                 <MemoriesNetworkGraph
                   memories={memories} // Pass the raw, hierarchical memories
