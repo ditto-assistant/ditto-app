@@ -74,7 +74,7 @@ const ComposeModal: React.FC = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
         className={cn(
-          "bg-background flex flex-col overflow-hidden",
+          "bg-background flex flex-col overflow-hidden gap-0",
           isMobile
             ? "fixed inset-0 h-screen w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
             : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
@@ -118,9 +118,9 @@ const ComposeModal: React.FC = () => {
               autoFocus
               value={message}
               onChange={handleChange}
-              placeholder="Type your message here..."
+              placeholder="Message Ditto"
               spellCheck="true"
-              className="text-foreground placeholder:text-muted-foreground/70 resize-none h-full border-none focus-visible:ring-0 p-4"
+              className="text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-auto"
             />
           </form>
         </div>
