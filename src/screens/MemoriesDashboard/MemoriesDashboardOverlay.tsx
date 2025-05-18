@@ -26,12 +26,16 @@ const formatCount = (count: number) => {
 }
 
 // Helper function to flatten memories for the list view
-const flattenMemoriesForList = (memoryList: Memory[]): (Memory & { level: number })[] => {
+const flattenMemoriesForList = (
+  memoryList: Memory[]
+): (Memory & { level: number })[] => {
   let flatList: (Memory & { level: number })[] = []
   const dive = (mems: Memory[], level: number) => {
     // First sort the memories at this level by vector_distance (lower is better, so reverse to get best first)
-    const sortedMems = [...mems].sort((a, b) => b.vector_distance - a.vector_distance)
-    
+    const sortedMems = [...mems].sort(
+      (a, b) => b.vector_distance - a.vector_distance
+    )
+
     for (const mem of sortedMems) {
       flatList.push({ ...mem, children: undefined, level })
       if (mem.children && mem.children.length > 0) {

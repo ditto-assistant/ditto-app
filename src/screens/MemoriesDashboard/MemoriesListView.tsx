@@ -25,7 +25,7 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
         // Direct calculation - vector_distance is already a similarity score (1 = exact match)
         const matchPercentage = (memory.vector_distance * 100).toFixed(1)
         const levelInfo = memory.level ? `Level: ${memory.level}` : ""
-        const metadataFooter = `\n\n---\n*${matchPercentage}% Match${levelInfo ? ' • ' + levelInfo : ''}*`
+        const metadataFooter = `\n\n---\n*${matchPercentage}% Match${levelInfo ? " • " + levelInfo : ""}*`
         const timestamp =
           memory.timestamp instanceof Date
             ? memory.timestamp
@@ -36,15 +36,15 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
             key={`${memory.id}-${idx}`}
             className={`flex flex-col gap-1 p-4 rounded-xl bg-muted/50 border border-border 
               transition-transform hover:-translate-y-0.5 hover:shadow-lg ${
-                memory.level && memory.level > 1 
-                  ? `ml-${Math.min((memory.level - 1) * 4, 16)}` 
-                  : ''
+                memory.level && memory.level > 1
+                  ? `ml-${Math.min((memory.level - 1) * 4, 16)}`
+                  : ""
               } ${
-                memory.level === 1 
-                  ? 'border-primary/50 bg-primary/5' 
-                  : memory.level === 2 
-                    ? 'border-secondary/50 bg-secondary/5' 
-                    : 'border-muted'
+                memory.level === 1
+                  ? "border-primary/50 bg-primary/5"
+                  : memory.level === 2
+                    ? "border-secondary/50 bg-secondary/5"
+                    : "border-muted"
               }`}
           >
             {memory.level && memory.level > 1 && (
