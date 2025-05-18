@@ -26,17 +26,20 @@ const formatCount = (count: number) => {
 }
 
 // Helper function to flatten memories for the list view
-const flattenMemoriesForList = (memoryList: Memory[]): Memory[] => {
-  let flatList: Memory[] = []
-  const dive = (mems: Memory[]) => {
-    for (const mem of mems) {
-      flatList.push({ ...mem, children: undefined })
+const flattenMemoriesForList = (memoryList: Memory[]): (Memory & { level: number })[] => {
+  let flatList: (Memory & { level: number })[] = []
+  const dive = (mems: Memory[], level: number) => {
+    // First sort the memories at this level by vector_distance (lower is better, so reverse to get best first)
+    const sortedMems = [...mems].sort((a, b) => b.vector_distance - a.vector_distance)
+    
+    for (const mem of sortedMems) {
+      flatList.push({ ...mem, children: undefined, level })
       if (mem.children && mem.children.length > 0) {
-        dive(mem.children)
+        dive(mem.children, level + 1)
       }
     }
   }
-  dive(memoryList)
+  dive(memoryList, 1)
   return flatList
 }
 
@@ -126,7 +129,14 @@ export default function MemoriesDashboardOverlay() {
   const getListViewMemories = () => {
     if (!memories || memories.length === 0) return []
     const flatMemories = flattenMemoriesForList(memories)
-    return flatMemories.sort((a, b) => b.vector_distance - a.vector_distance)
+    // Sort first by level (maintaining hierarchy), then by vector_distance within each level
+    // Lower vector_distance means better match
+    return flatMemories.sort((a, b) => {
+      if (a.level !== b.level) {
+        return a.level - b.level // Sort by level first (lower levels first)
+      }
+      return b.vector_distance - a.vector_distance // Then by vector_distance (higher value first for better matches)
+    })
   }
   const listViewMemories = getListViewMemories()
 
