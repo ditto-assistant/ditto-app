@@ -112,6 +112,15 @@ export default function SendMessage({
 
   const [autoScroll, setAutoScroll] = useState(false)
 
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent<HTMLTextAreaElement>) => {
+      if (autoScroll) {
+        e.stopPropagation()
+      }
+    },
+    [autoScroll]
+  )
+
   useEffect(() => {
     if (balance.data && preferences.preferences) {
       const balanceRaw = balance.data.balanceRaw || 0
@@ -436,11 +445,13 @@ export default function SendMessage({
                 onKeyDown={handleKeyDown}
                 value={message}
                 onChange={handleInputChange}
+                onTouchMove={handleTouchMove}
                 placeholder="Message Ditto"
                 className={cn(
                   "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
                   "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
                   autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // toggle scroll
+                  "touch-pan-y",
                   "focus-visible:ring-1 focus-visible:ring-primary"
                 )}
               />
