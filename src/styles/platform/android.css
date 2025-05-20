@@ -1,0 +1,40 @@
+/* Android-specific overrides for better scrolling behavior */
+
+/* Enable proper scrolling for textarea in SendMessage component */
+.android textarea.overflow-y-auto {
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: auto !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+}
+
+/* When keyboard is visible, ensure content can scroll properly */
+.android.keyboard-visible .app {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Ensure SendMessage container stays at bottom when keyboard is visible */
+.android.keyboard-visible .send-message-container {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--background);
+}
+
+/* Fix specific issues with Android Chrome */
+@media screen and (max-width: 768px) {
+  /* Ensure scrolling area properly captures touch events on Android */
+  .android textarea.overflow-y-auto {
+    /* Override any no-scroll behaviors */
+    pointer-events: auto !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+
+  /* Fix send message container positioning during keyboard display */
+  .android .send-message-container {
+    position: relative;
+    z-index: 50;
+  }
+}

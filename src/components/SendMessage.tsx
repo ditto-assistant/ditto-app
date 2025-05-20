@@ -20,6 +20,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useBalance } from "@/hooks/useBalance"
 import { usePlatform } from "@/hooks/usePlatform"
+import { useVisualViewport } from "@/hooks/useVisualViewport"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useModal } from "@/hooks/useModal"
@@ -73,7 +74,8 @@ export default function SendMessage({
   const preferences = useModelPreferences()
   const { handleImageClick } = useImageViewerHandler()
   const balance = useBalance()
-  const { isMobile } = usePlatform()
+  const { isMobile, isAndroid } = usePlatform()
+  const viewport = useVisualViewport()
   const {
     refetch,
     addOptimisticMessage,
@@ -123,29 +125,17 @@ export default function SendMessage({
     if (!chatScroll) return
 
     if (isTextareaFocused && autoScroll) {
+      // Only add no-scroll to the chat feed, don't modify body overflow
       chatScroll.classList.add("no-scroll")
-      document.body.style.overflow = "hidden"
     } else {
       chatScroll.classList.remove("no-scroll")
-      document.body.style.overflow = ""
     }
 
     return () => {
       // Cleanup on dependency change or unmount
       chatScroll?.classList.remove("no-scroll")
-      document.body.style.overflow = ""
     }
   }, [isTextareaFocused, autoScroll])
-
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent<HTMLTextAreaElement>) => {
-      if (autoScroll) {
-        e.preventDefault()
-        e.stopPropagation()
-      }
-    },
-    [autoScroll]
-  )
 
   useEffect(() => {
     if (balance.data && preferences.preferences) {
@@ -383,7 +373,14 @@ export default function SendMessage({
     ta.style.height = `${newHeight}px`
     // If scrollHeight > newHeight, we're clipped ⇒ allow scroll.
     setAutoScroll(ta.scrollHeight > newHeight)
-  }, [])
+
+    // Update body class when keyboard is visible on Android
+    if (isAndroid && viewport.keyboardVisible) {
+      document.body.classList.add("keyboard-visible")
+    } else {
+      document.body.classList.remove("keyboard-visible")
+    }
+  }, [isAndroid, viewport.keyboardVisible])
 
   // Auto-resize when message changes
   useEffect(() => {
@@ -471,7 +468,6 @@ export default function SendMessage({
                 onKeyDown={handleKeyDown}
                 value={message}
                 onChange={handleInputChange}
-                onTouchMove={handleTouchMove}
                 onFocus={() => setIsTextareaFocused(true)}
                 onBlur={() => setIsTextareaFocused(false)}
                 placeholder="Message Ditto"
@@ -481,7 +477,7 @@ export default function SendMessage({
                   autoScroll
                     ? "overflow-y-auto overscroll-y-contain" // toggle scroll
                     : "overflow-y-hidden", // toggle scroll
-                  "touch-pan-y",
+                  isAndroid ? "touch-auto" : "touch-pan-y", // Different touch behavior for Android
                   "focus-visible:ring-1 focus-visible:ring-primary"
                 )}
               />
