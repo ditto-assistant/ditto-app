@@ -21,6 +21,7 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useBalance } from "@/hooks/useBalance"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useVisualViewport } from "@/hooks/useVisualViewport"
+import { useAndroidScrollFix } from "@/hooks/useAndroidScrollFix"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useModal } from "@/hooks/useModal"
@@ -117,24 +118,14 @@ export default function SendMessage({
   // Track focus on textarea so we can temporarily disable ChatFeed scrolling
   const [isTextareaFocused, setIsTextareaFocused] = useState(false)
 
-  // Helper to toggle the .no-scroll class on ChatFeed scroll container
+  // Don't disable chat feed scrolling when textarea is focused
+  // This was causing issues with Android scrolling behavior
   useEffect(() => {
-    const chatScroll = document.querySelector(
-      ".messages-scroll-view"
-    ) as HTMLElement | null
-    if (!chatScroll) return
-
-    if (isTextareaFocused && autoScroll) {
-      // Only add no-scroll to the chat feed, don't modify body overflow
-      chatScroll.classList.add("no-scroll")
-    } else {
-      chatScroll.classList.remove("no-scroll")
-    }
-
-    return () => {
-      // Cleanup on dependency change or unmount
-      chatScroll?.classList.remove("no-scroll")
-    }
+    // This effect intentionally left empty - we're allowing both chat feed
+    // and textarea to scroll independently
+    
+    // Note: The previous implementation was adding a no-scroll class
+    // which blocked ChatFeed scrolling when typing in textarea
   }, [isTextareaFocused, autoScroll])
 
   useEffect(() => {
@@ -386,6 +377,9 @@ export default function SendMessage({
   useEffect(() => {
     autoResizeTextarea()
   }, [message, autoResizeTextarea])
+  
+  // Apply our specialized Android scroll fix
+  useAndroidScrollFix(textAreaRef, autoScroll)
 
   return (
     <div className={cn(
@@ -473,38 +467,14 @@ export default function SendMessage({
                 onChange={handleInputChange}
                 onFocus={() => setIsTextareaFocused(true)}
                 onBlur={() => setIsTextareaFocused(false)}
-                onTouchStart={(e) => {
-                  if (autoScroll && isAndroid) {
-                    // Prevent event from reaching ChatFeed
-                    e.stopPropagation();
-                  }
-                }}
-                onTouchMove={(e) => {
-                  // On Android with keyboard open, we need to stop propagation
-                  // to prevent ChatFeed from scrolling when textarea needs to scroll
-                  if (isAndroid && viewport.keyboardVisible && autoScroll) {
-                    // Stop propagation but don't prevent default (to keep scrolling)
-                    e.stopPropagation();
-                    
-                    // Block scrolling on other elements when textarea needs to scroll
-                    if (e.currentTarget.scrollHeight > e.currentTarget.clientHeight) {
-                      const chatScroll = document.querySelector(".messages-scroll-view") as HTMLElement | null;
-                      if (chatScroll) {
-                        chatScroll.classList.add("no-scroll");
-                      }
-                    }
-                  }
-                }}
+                // No special touch handlers - rely on our useAndroidScrollFix hook
                 placeholder="Message Ditto"
                 className={cn(
                   "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
                   "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
-                  autoScroll
-                    ? "overflow-y-auto overscroll-y-contain" // toggle scroll
-                    : "overflow-y-hidden", // toggle scroll
-                  isAndroid ? "touch-auto" : "touch-pan-y", // Different touch behavior for Android
-                  isAndroid && autoScroll ? "pointer-events-auto z-[400]" : "", // Ensure Android captures all events
+                  autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // Simple overflow toggle
                   "focus-visible:ring-1 focus-visible:ring-primary"
+                  // Removed special Android classes - handled by useAndroidScrollFix and android.css
                 )}
               />
             </div>
