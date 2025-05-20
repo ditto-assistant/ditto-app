@@ -18,6 +18,7 @@ export interface ParamsLongTermMemoriesV2 {
   nodeCounts: number[]
   nodeThresholds?: number[]
   vector?: number[]
+  deepSearch?: boolean
 }
 
 export interface ParamsShortTermMemoriesV2 {
