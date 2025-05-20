@@ -72,6 +72,13 @@ body {
   overflow: hidden;
 }
 
+/* App container – robust height across browsers */
+.app {
+  height: 100vh; /* legacy fallback */
+  height: 100svh; /* modern small-viewport unit */
+  height: 100dvh; /* dynamic viewport unit (preferred) */
+}
+
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
