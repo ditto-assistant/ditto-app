@@ -440,7 +440,9 @@ export default function SendMessage({
                 className={cn(
                   "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
                   "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
-                  autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // toggle scroll
+                  autoScroll
+                    ? "overflow-y-auto overscroll-contain"
+                    : "overflow-y-hidden", // toggle scroll
                   "focus-visible:ring-1 focus-visible:ring-primary"
                 )}
               />
