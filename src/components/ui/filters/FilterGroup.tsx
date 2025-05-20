@@ -13,7 +13,9 @@ export const FilterGroup: React.FC<FilterGroupProps> = ({
 }) => {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
       <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   )
