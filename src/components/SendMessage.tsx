@@ -388,7 +388,10 @@ export default function SendMessage({
   }, [message, autoResizeTextarea])
 
   return (
-    <div className="w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
+    <div className={cn(
+      "w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]",
+      isAndroid && viewport.keyboardVisible ? "send-message-container" : ""
+    )}>
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}
@@ -470,6 +473,28 @@ export default function SendMessage({
                 onChange={handleInputChange}
                 onFocus={() => setIsTextareaFocused(true)}
                 onBlur={() => setIsTextareaFocused(false)}
+                onTouchStart={(e) => {
+                  if (autoScroll && isAndroid) {
+                    // Prevent event from reaching ChatFeed
+                    e.stopPropagation();
+                  }
+                }}
+                onTouchMove={(e) => {
+                  // On Android with keyboard open, we need to stop propagation
+                  // to prevent ChatFeed from scrolling when textarea needs to scroll
+                  if (isAndroid && viewport.keyboardVisible && autoScroll) {
+                    // Stop propagation but don't prevent default (to keep scrolling)
+                    e.stopPropagation();
+                    
+                    // Block scrolling on other elements when textarea needs to scroll
+                    if (e.currentTarget.scrollHeight > e.currentTarget.clientHeight) {
+                      const chatScroll = document.querySelector(".messages-scroll-view") as HTMLElement | null;
+                      if (chatScroll) {
+                        chatScroll.classList.add("no-scroll");
+                      }
+                    }
+                  }
+                }}
                 placeholder="Message Ditto"
                 className={cn(
                   "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
@@ -478,6 +503,7 @@ export default function SendMessage({
                     ? "overflow-y-auto overscroll-y-contain" // toggle scroll
                     : "overflow-y-hidden", // toggle scroll
                   isAndroid ? "touch-auto" : "touch-pan-y", // Different touch behavior for Android
+                  isAndroid && autoScroll ? "pointer-events-auto z-[400]" : "", // Ensure Android captures all events
                   "focus-visible:ring-1 focus-visible:ring-primary"
                 )}
               />

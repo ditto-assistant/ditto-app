@@ -6,6 +6,11 @@
   touch-action: auto !important;
   overflow-y: auto !important;
   overscroll-behavior-y: contain !important;
+  /* Critical properties to ensure scroll events are captured */
+  pointer-events: auto !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  isolation: isolate !important;
 }
 
 /* When keyboard is visible, ensure content can scroll properly */
@@ -14,27 +19,68 @@
   min-height: 0 !important;
 }
 
+/* Prevent ChatFeed scrolling when keyboard is visible and textarea has focus */
+.android.keyboard-visible .messages-scroll-view.no-scroll {
+  pointer-events: none !important;
+}
+
+/* Ensure textarea scroll gesture capture */
+.android.keyboard-visible textarea:focus {
+  z-index: 1000 !important;
+  position: relative !important;
+}
+
 /* Ensure SendMessage container stays at bottom when keyboard is visible */
 .android.keyboard-visible .send-message-container {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  background: var(--background);
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 400 !important;
+  background: var(--background) !important;
+  /* Important properties for touch isolation */
+  touch-action: auto !important; 
+  isolation: isolate !important;
 }
 
 /* Fix specific issues with Android Chrome */
 @media screen and (max-width: 768px) {
-  /* Ensure scrolling area properly captures touch events on Android */
-  .android textarea.overflow-y-auto {
-    /* Override any no-scroll behaviors */
-    pointer-events: auto !important;
-    -webkit-user-select: text !important;
-    user-select: text !important;
+  /* Eliminate any remaining scroll conflicts */
+  .android textarea.overflow-y-auto:focus {
+    touch-action: pan-y !important;
+    z-index: 500 !important;
   }
-
-  /* Fix send message container positioning during keyboard display */
-  .android .send-message-container {
-    position: relative;
-    z-index: 50;
+  
+  /* Create a barrier layer for touch events on textarea scroll */
+  .android.keyboard-visible textarea.overflow-y-auto:focus::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+  }
+  
+  /* Disable touch events on chat feed when keyboard is visible and textarea focused */
+  .android.keyboard-visible .chat-feed-container:has(~ .send-message-container textarea:focus) {
+    pointer-events: none !important;
+  }
+  
+  /* When textarea is focused, make sure it gets ALL touch events */
+  .android.keyboard-visible .send-message-container:has(textarea:focus) {
+    isolation: isolate !important;
+    z-index: 9999 !important;
+  }
+  
+  /* When trying to scroll in the textarea, disable chat feed scrolling */
+  .android.keyboard-visible .messages-scroll-view {
+    overscroll-behavior: none;
+  }
+  
+  /* Ensure the app body handles scroll behavior properly when textarea is focused */
+  .android.keyboard-visible {
+    /* Allow the body to scroll properly when keyboard is visible */
+    overflow: auto !important;
+    height: auto !important;
+    position: static !important;
   }
 }
