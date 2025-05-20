@@ -115,6 +115,7 @@ export default function SendMessage({
   const handleTouchMove = useCallback(
     (e: React.TouchEvent<HTMLTextAreaElement>) => {
       if (autoScroll) {
+        e.preventDefault()
         e.stopPropagation()
       }
     },
