@@ -178,3 +178,9 @@
     transform: rotate(360deg);
   }
 }
+
+/* Utility modifier to temporarily disable scroll (applied from SendMessage when textarea is focused) */
+.messages-scroll-view.no-scroll {
+  overflow-y: hidden;
+  touch-action: none; /* Prevent vertical pan so textarea can capture it */
+}

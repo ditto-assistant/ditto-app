@@ -112,6 +112,23 @@ export default function SendMessage({
 
   const [autoScroll, setAutoScroll] = useState(false)
 
+  // Track focus on textarea so we can temporarily disable ChatFeed scrolling
+  const [isTextareaFocused, setIsTextareaFocused] = useState(false)
+
+  // Helper to toggle the .no-scroll class on ChatFeed scroll container
+  useEffect(() => {
+    const chatScroll = document.querySelector(
+      ".messages-scroll-view"
+    ) as HTMLElement | null
+    if (!chatScroll) return
+
+    if (isTextareaFocused && autoScroll) {
+      chatScroll.classList.add("no-scroll")
+    } else {
+      chatScroll.classList.remove("no-scroll")
+    }
+  }, [isTextareaFocused, autoScroll])
+
   const handleTouchMove = useCallback(
     (e: React.TouchEvent<HTMLTextAreaElement>) => {
       if (autoScroll) {
@@ -447,6 +464,8 @@ export default function SendMessage({
                 value={message}
                 onChange={handleInputChange}
                 onTouchMove={handleTouchMove}
+                onFocus={() => setIsTextareaFocused(true)}
+                onBlur={() => setIsTextareaFocused(false)}
                 placeholder="Message Ditto"
                 className={cn(
                   "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
