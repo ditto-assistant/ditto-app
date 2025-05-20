@@ -124,8 +124,16 @@ export default function SendMessage({
 
     if (isTextareaFocused && autoScroll) {
       chatScroll.classList.add("no-scroll")
+      document.body.style.overflow = "hidden"
     } else {
       chatScroll.classList.remove("no-scroll")
+      document.body.style.overflow = ""
+    }
+
+    return () => {
+      // Cleanup on dependency change or unmount
+      chatScroll?.classList.remove("no-scroll")
+      document.body.style.overflow = ""
     }
   }, [isTextareaFocused, autoScroll])
 

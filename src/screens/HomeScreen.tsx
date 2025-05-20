@@ -135,7 +135,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <div className="app h-[100svh] fixed inset-0 touch-pan-y flex flex-col">
+    <div className="app h-[100dvh] fixed inset-0 touch-pan-y flex flex-col">
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="flex-1 flex flex-col overflow-hidden pb-0">
           <ChatFeed ref={appBodyRef} />
