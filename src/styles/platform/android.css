@@ -37,7 +37,7 @@
     /* This is the key fix - make the textarea scroll without stealing all events */
     touch-action: pan-y !important;
   }
-  
+
   /* Allow scrolling in both chat feed and textarea */
   .android.keyboard-visible .chat-feed-container,
   .android.keyboard-visible .messages-scroll-view {
@@ -50,7 +50,7 @@
     overflow: auto !important;
     position: relative !important;
   }
-  
+
   /* Remove any z-index or isolation tricks that would cause touch event isolation */
   .android.keyboard-visible .send-message-container,
   .android.keyboard-visible textarea {

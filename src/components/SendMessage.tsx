@@ -123,7 +123,6 @@ export default function SendMessage({
   useEffect(() => {
     // This effect intentionally left empty - we're allowing both chat feed
     // and textarea to scroll independently
-    
     // Note: The previous implementation was adding a no-scroll class
     // which blocked ChatFeed scrolling when typing in textarea
   }, [isTextareaFocused, autoScroll])
@@ -377,15 +376,17 @@ export default function SendMessage({
   useEffect(() => {
     autoResizeTextarea()
   }, [message, autoResizeTextarea])
-  
+
   // Apply our specialized Android scroll fix
   useAndroidScrollFix(textAreaRef, autoScroll)
 
   return (
-    <div className={cn(
-      "w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]",
-      isAndroid && viewport.keyboardVisible ? "send-message-container" : ""
-    )}>
+    <div
+      className={cn(
+        "w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]",
+        isAndroid && viewport.keyboardVisible ? "send-message-container" : ""
+      )}
+    >
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}
