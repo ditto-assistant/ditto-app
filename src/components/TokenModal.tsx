@@ -7,7 +7,6 @@ import Modal from "@/components/ui/modals/Modal"
 import { useModal } from "@/hooks/useModal"
 import "./TokenModal.css"
 import { CheckCircle, Coins } from "lucide-react"
-import { motion } from "framer-motion"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors"
 import {
@@ -55,154 +54,93 @@ export default function TokenModal() {
     setAmount(newAmount)
   }
 
-  if (showSuccess) {
-    // Token purchase success view
-    if (balance.isLoading || preferencesLoading || !preferences) {
-      return (
-        <Modal id="tokenCheckout" title="Purchase Successful">
+  const renderContent = () => {
+    if (showSuccess) {
+      // Token purchase success view
+      if (balance.isLoading || preferencesLoading || !preferences) {
+        return (
           <div className="token-modal-loading">
             <LoadingSpinner size={45} />
           </div>
-        </Modal>
-      )
-    }
+        )
+      }
 
-    return (
-      <Modal id="tokenCheckout" title="Purchase Successful">
+      return (
         <div className="token-success-content">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 20,
-              delay: 0.2,
-            }}
-            className="token-success-icon-container"
-          >
+          <div className="token-success-icon-container">
             <CheckCircle className="token-success-icon" />
-          </motion.div>
+          </div>
 
-          <motion.h2
-            className="token-success-title"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Purchase Successful!
-          </motion.h2>
+          <h2 className="token-success-title">Purchase Successful!</h2>
 
-          <motion.p
-            className="token-success-subtitle"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <p className="token-success-subtitle">
             Your tokens have been added to your account
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="token-selectors-container"
-          >
+          <div className="token-selectors-container">
             <ModelPreferencesSelectors
               preferences={preferences}
               updatePreferences={updatePreferences}
             />
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="token-success-button-container"
-          >
+          <div className="token-success-button-container">
             <Button onClick={closeModal} className="token-success-button">
               Close
             </Button>
-          </motion.div>
+          </div>
         </div>
-      </Modal>
+      )
+    }
+
+    // Regular token purchase view
+    return (
+      <>
+        <div className="token-modal-header">
+          <Coins className="header-icon" />
+          <h2 className="header-title">Get More Tokens</h2>
+        </div>
+        <div className="token-modal-body">
+          <div className="pricing-grid">
+            {PricingTiers.map((tier) => (
+              <div key={tier.price} className="pricing-tier">
+                <span className="tier-tokens">{tier.tokens}</span>
+                <span className="tier-price">${tier.price}</span>
+                {tier.bonus !== "0%" && (
+                  <span className="tier-bonus">+{tier.bonus} bonus!</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <CheckoutForm
+            usd={amount}
+            successURL={`${window.location.origin}/?tokenSuccess=true`}
+            cancelURL={window.location.origin}
+          />
+        </div>
+        <div className="token-modal-footer">
+          <p className="footer-text">
+            Tokens are used for all models. View model preferences:
+          </p>
+          {preferences && (
+            <ModelPreferencesSelectors
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+            />
+          )}
+        </div>
+      </>
     )
   }
 
-  // Regular token purchase view
   return (
     <Modal
       id="tokenCheckout"
-      title="Buy Ditto Tokens"
-      fullScreen={true}
-      icon={
-        <div className="token-pricing-icon">
-          <Coins />
-        </div>
-      }
+      title="Token Purchase"
+      fullScreen={false}
+      notResizable={true}
     >
-      <div className="token-checkout-content">
-        <div className="token-info-container">
-          {!balance.isLoading ? (
-            <p className="token-balance-item">
-              Current Balance:{" "}
-              <span className="token-highlight-text">
-                {balance.data?.balance}
-              </span>{" "}
-              tokens
-            </p>
-          ) : (
-            <div className="token-spinner-container">
-              <LoadingSpinner size={45} inline={true} />
-            </div>
-          )}
-        </div>
-
-        <div className="token-pricing-info">
-          <div className="token-pricing-table">
-            {PricingTiers.map(({ price, tokens, bonus }, index) => {
-              const isSelected = price === amount
-              return (
-                <motion.div
-                  key={price}
-                  onClick={() => handleAmountChange(price)}
-                  className={`token-tier ${isSelected ? "selected" : ""}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <div className="token-price">${price}</div>
-                  <div
-                    className={`token-tokens ${isSelected ? "selected" : ""}`}
-                  >
-                    {tokens}
-                  </div>
-                  <div
-                    className={`token-bonus ${isSelected ? "selected" : ""}`}
-                  >
-                    +{bonus}
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="token-checkout">
-          <motion.div
-            className="token-checkout-button-container"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <CheckoutForm
-              usd={amount}
-              successURL={`${window.location.origin}/?tokenSuccess=true`}
-              cancelURL={window.location.origin}
-            />
-          </motion.div>
-        </div>
-      </div>
+      {renderContent()}
     </Modal>
   )
 }

@@ -1,17 +1,18 @@
-// import MillionLint from "@million/lint";
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
+import legacy from "@vitejs/plugin-legacy"
 import { VitePWA } from "vite-plugin-pwa"
 import tailwindcss from "@tailwindcss/vite"
 import { resolve } from "path"
 
 export default defineConfig({
   plugins: [
-    // MillionLint.vite({
-    //   enabled: true,
-    // }),
-    tailwindcss(),
     react(),
+    legacy({
+      targets: ["defaults", "Safari >= 11"],
+      modernPolyfills: true,
+    }),
+    tailwindcss(),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
@@ -178,7 +179,6 @@ export default defineConfig({
       "firebase/auth",
       "firebase/firestore",
       "firebase/storage",
-      "framer-motion",
     ],
     esbuildOptions: {
       loader: {

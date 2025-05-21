@@ -1,5 +1,4 @@
 import { useRef, useEffect } from "react"
-import { motion } from "framer-motion"
 import { Crown, ChevronDown } from "lucide-react"
 import { DEFAULT_MODELS } from "../constants"
 import { createPortal } from "react-dom"
@@ -65,12 +64,7 @@ const ModelDropdown = ({
 
   return (
     <div ref={dropdownRef} style={styles.container}>
-      <motion.div
-        style={styles.selectedValue}
-        onClick={handleClick}
-        whileHover={{ backgroundColor: "#292B2F" }}
-        whileTap={{ scale: 0.99 }}
-      >
+      <div style={styles.selectedValue} onClick={handleClick}>
         <div style={styles.selectedContent}>
           <span>{selectedModel?.name}</span>
           {selectedModel?.minimumTier && (
@@ -84,13 +78,10 @@ const ModelDropdown = ({
             <span style={styles.maintenanceBadge}>MAINTENANCE</span>
           )}
         </div>
-        <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
+        <div>
           <ChevronDown style={styles.expandIcon} />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isOpen &&
         createPortal(

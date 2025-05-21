@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "react-router"
-import { motion, AnimatePresence } from "framer-motion"
 import { FlipVertical } from "lucide-react"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
@@ -150,52 +149,43 @@ export default function HomeScreen() {
         </div>
       </Suspense>
 
-      <AnimatePresence>
-        {isCameraOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleCameraClose}
+      {isCameraOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+          onClick={handleCameraClose}
+        >
+          <div
+            className="bg-card rounded-lg overflow-hidden max-w-[90%] max-h-[90%] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              className="bg-card rounded-lg overflow-hidden max-w-[90%] max-h-[90%] flex flex-col"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <video
-                ref={videoRef}
-                autoPlay
-                className="w-full object-contain max-h-[calc(90vh-100px)]"
-              ></video>
-              <div className="flex justify-around items-center w-full p-4 bg-muted">
-                <button
-                  onClick={toggleCamera}
-                  className="p-2 rounded-full bg-background/10 text-foreground hover:bg-background/20 transition"
-                >
-                  <FlipVertical className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={handleSnap}
-                  className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
-                >
-                  Snap
-                </button>
-                <button
-                  onClick={handleCameraClose}
-                  className="px-4 py-2 rounded-full bg-background/20 text-foreground hover:bg-background/30 transition"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <video
+              ref={videoRef}
+              autoPlay
+              className="w-full object-contain max-h-[calc(90vh-100px)]"
+            ></video>
+            <div className="flex justify-around items-center w-full p-4 bg-muted">
+              <button
+                onClick={toggleCamera}
+                className="p-2 rounded-full bg-background/10 text-foreground hover:bg-background/20 transition"
+              >
+                <FlipVertical className="h-5 w-5" />
+              </button>
+              <button
+                onClick={handleSnap}
+                className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
+              >
+                Snap
+              </button>
+              <button
+                onClick={handleCameraClose}
+                className="px-4 py-2 rounded-full bg-background/20 text-foreground hover:bg-background/30 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <canvas ref={canvasRef} className="hidden"></canvas>
 

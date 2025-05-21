@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, Crown } from "lucide-react"
 import { IMAGE_GENERATION_MODELS } from "../constants"
 import { styles as modelDropdownStyles } from "./ModelDropdown"
@@ -65,12 +64,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
 
   return (
     <div ref={dropdownRef} style={styles.container}>
-      <motion.div
-        style={styles.selectedValue}
-        onClick={handleClick}
-        whileHover={{ backgroundColor: "#292B2F" }}
-        whileTap={{ scale: 0.99 }}
-      >
+      <div style={styles.selectedValue} onClick={handleClick}>
         <div style={styles.selectedContent}>
           <span>{selectedModel?.name}</span>
           <span style={styles.sizeIndicator}>{value.size.description}</span>
@@ -81,22 +75,15 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
             </span>
           )}
         </div>
-        <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
+        <div>
           <ChevronDown style={styles.expandIcon} />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isOpen &&
         createPortal(
-          <motion.div
+          <div
             className="model-dropdown"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
             style={{
               ...styles.dropdown,
               position: "fixed",
@@ -108,7 +95,7 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
           >
             {IMAGE_GENERATION_MODELS.map((model) => (
               <div key={model.id} className="dropdown-option">
-                <motion.div
+                <div
                   style={{
                     ...styles.option,
                     opacity: model.isMaintenance ? 0.5 : 1,
@@ -118,7 +105,6 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                       expandedModel === model.id ? null : model.id
                     )
                   }}
-                  whileHover={{ backgroundColor: "rgba(88, 101, 242, 0.1)" }}
                 >
                   <div style={styles.modelHeader}>
                     <span>{model.name}</span>
@@ -133,47 +119,33 @@ const ModelDropdownImage = ({ value, onChange, isOpen, onOpenChange }) => {
                       )}
                     </div>
                   </div>
-                  <motion.div
-                    animate={{ rotate: expandedModel === model.id ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <div>
                     <ChevronDown style={styles.expandIcon} />
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
 
-                <AnimatePresence>
-                  {expandedModel === model.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      style={styles.sizeOptions}
-                    >
-                      {model.sizeOptions?.map((size) => (
-                        <motion.div
-                          key={size.wh}
-                          style={{
-                            ...styles.sizeOption,
-                            backgroundColor:
-                              value === model.id && selectedSize === size
-                                ? "rgba(88, 101, 242, 0.1)"
-                                : "transparent",
-                          }}
-                          whileHover={{
-                            backgroundColor: "rgba(88, 101, 242, 0.1)",
-                          }}
-                          onClick={() => handleSelect(model.id, size)}
-                        >
-                          {size.description}
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {expandedModel === model.id && (
+                  <div style={styles.sizeOptions}>
+                    {model.sizeOptions?.map((size) => (
+                      <div
+                        key={size.wh}
+                        style={{
+                          ...styles.sizeOption,
+                          backgroundColor:
+                            value === model.id && selectedSize === size
+                              ? "rgba(88, 101, 242, 0.1)"
+                              : "transparent",
+                        }}
+                        onClick={() => handleSelect(model.id, size)}
+                      >
+                        {size.description}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
-          </motion.div>,
+          </div>,
           document.body
         )}
     </div>
