@@ -32,7 +32,7 @@ import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FontSizeProvider } from "@/hooks/useFontSize"
-import TestWhatsNew from "./components/WhatsNew/TestWhatsNew"
+// import TestWhatsNew from "./components/WhatsNew/TestWhatsNew"
 
 initUpdateService()
 
@@ -89,9 +89,9 @@ const router = createBrowserRouter(
         }
       >
         <Route index Component={HomeScreen} />
-        <Route path="test">
+        {/* <Route path="test">
           <Route path="whatsnew" Component={TestWhatsNew} />
-        </Route>
+        </Route> */}
       </Route>
     </Route>
   )
