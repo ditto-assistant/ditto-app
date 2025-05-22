@@ -12,6 +12,7 @@ const fileName = `${componentName}.tsx`
 
 // Paths
 const versionsDir = "./src/components/WhatsNew/versions"
+const whatsNewPath = "./src/components/WhatsNew/WhatsNew.tsx"
 const targetPath = join(versionsDir, fileName)
 
 // Check if version file already exists
@@ -71,11 +72,26 @@ export default ${componentName};
 // Write the new version file
 writeFileSync(targetPath, versionTemplate)
 
-console.log(
-  `The WhatsNew component now uses dynamic imports for version components.`
+// Update WhatsNew.tsx
+const whatsNewContent = readFileSync(whatsNewPath, "utf-8")
+
+// Add import statement - note we remove the .tsx extension from the import
+const importStatement = `import ${componentName} from "./versions/${componentName}";\n// Add imports for future versions here`
+const updatedContent = whatsNewContent.replace(
+  /\/\/ Add imports for future versions here/,
+  importStatement
 )
-console.log(`No need to update imports or version map in WhatsNew.tsx.`)
+
+// Add version to components map
+const versionMapEntry = `  "${version}": ${componentName},\n  // Add future versions here`
+const finalContent = updatedContent.replace(
+  /\/\/ Add future versions here/,
+  versionMapEntry
+)
+
+writeFileSync(whatsNewPath, finalContent)
 
 console.log(`✨ Generated What's New template for version ${version}:`)
 console.log(`📝 Created: ${targetPath}`)
+console.log(`🔄 Updated: ${whatsNewPath}`)
 console.log("\n⚠️  Remember to update the template with actual release notes!")

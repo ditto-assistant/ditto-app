@@ -32,6 +32,7 @@ import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FontSizeProvider } from "@/hooks/useFontSize"
+import TestWhatsNew from "./components/WhatsNew/TestWhatsNew"
 
 initUpdateService()
 
@@ -69,7 +70,6 @@ const MemoriesDashboardOverlay = loadE(
 const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
 const ComposeModal = loadE(() => import("@/components/ComposeModal"))
-// const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
 const queryClient = new QueryClient()
 
 const router = createBrowserRouter(
@@ -89,9 +89,9 @@ const router = createBrowserRouter(
         }
       >
         <Route index Component={HomeScreen} />
-        {/* <Route path="test">
+        <Route path="test">
           <Route path="whatsnew" Component={TestWhatsNew} />
-        </Route> */}
+        </Route>
       </Route>
     </Route>
   )

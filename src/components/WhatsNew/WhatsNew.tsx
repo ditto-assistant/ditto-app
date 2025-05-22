@@ -1,9 +1,53 @@
-import { useState, useEffect } from "react"
 import Modal from "@/components/ui/modals/Modal"
 import { version as appVersion } from "../../../package.json"
 import "./WhatsNew.css"
+// Import all version components
+import V0_11_54 from "./versions/V0_11_54"
+import V0_11_55 from "./versions/V0_11_55"
+import V0_11_56 from "./versions/V0_11_56"
+import V0_11_57 from "./versions/V0_11_57"
+import V0_11_58 from "./versions/V0_11_58"
+import V0_11_60 from "./versions/V0_11_60"
+import V0_11_61 from "./versions/V0_11_61"
+import V0_11_62 from "./versions/V0_11_62"
+import V0_11_63 from "./versions/V0_11_63"
+import V0_11_64 from "./versions/V0_11_64"
+import V0_11_65 from "./versions/V0_11_65"
+import V0_11_66 from "./versions/V0_11_66"
+import V0_12_0 from "./versions/V0_12_0"
+import V0_12_1 from "./versions/V0_12_1"
+import V0_13_0 from "./versions/V0_13_0"
+import V0_13_1 from "./versions/V0_13_1"
+import V0_14_0 from "./versions/V0_14_0"
+import V0_14_1 from "./versions/V0_14_1"
+import V0_14_2 from "./versions/V0_14_2"
+// Add imports for future versions here
 
-// Helper to convert version string to component path format
+// Map versions to their components
+const versionComponents: Record<string, React.ComponentType> = {
+  "0.11.54": V0_11_54,
+  "0.11.55": V0_11_55,
+  "0.11.56": V0_11_56,
+  "0.11.57": V0_11_57,
+  "0.11.58": V0_11_58,
+  "0.11.60": V0_11_60,
+  "0.11.61": V0_11_61,
+  "0.11.62": V0_11_62,
+  "0.11.63": V0_11_63,
+  "0.11.64": V0_11_64,
+  "0.11.65": V0_11_65,
+  "0.11.66": V0_11_66,
+  "0.12.0": V0_12_0,
+  "0.12.1": V0_12_1,
+  "0.13.0": V0_13_0,
+  "0.13.1": V0_13_1,
+  "0.14.0": V0_14_0,
+  "0.14.1": V0_14_1,
+  "0.14.2": V0_14_2,
+  // Add future versions here
+}
+
+// Helper to convert version string to component name
 export const getVersionComponentKey = (version: string): string => {
   return version.replace(/\./g, "_")
 }
@@ -18,56 +62,16 @@ interface WhatsNewProps {
 }
 
 const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
-  const [VersionComponent, setVersionComponent] =
-    useState<React.ComponentType | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
+  // Find the component for the current version
+  const VersionComponent = versionComponents[version]
 
-  useEffect(() => {
-    // Reset state when version changes
-    setLoading(true)
-    setError(false)
-    setVersionComponent(null)
-
-    // Format version for dynamic import
-    const formattedVersion = getVersionComponentKey(version)
-
-    // Dynamically import the version component
-    import(`./versions/V${formattedVersion}.tsx`)
-      .then((module) => {
-        setVersionComponent(() => module.default)
-        setLoading(false)
-      })
-      .catch((err) => {
-        console.error(`Failed to load version component for ${version}:`, err)
-        setError(true)
-        setLoading(false)
-      })
-  }, [version])
-
-  // Loading state
-  if (loading) {
-    return (
-      <Modal id="whatsNew" title={`What's New in v${version}`}>
-        <div className="whats-new-content">
-          <div className="whats-new-loading">Loading...</div>
-        </div>
-      </Modal>
-    )
-  }
-
-  // If no component exists for this version or there was an error, show a generic message
+  // If no component exists for this version, show a generic message
   const content = VersionComponent ? (
     <VersionComponent />
   ) : (
     <div className="whats-new-generic">
       <p>Welcome to Ditto version {version}!</p>
       <p>Check back later for detailed release notes.</p>
-      {error && (
-        <p className="text-muted">
-          Note: Could not load detailed release notes for this version.
-        </p>
-      )}
     </div>
   )
 
