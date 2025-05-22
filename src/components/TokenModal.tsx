@@ -5,7 +5,6 @@ import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
 import { CheckoutForm } from "@/components/CheckoutForm"
 import Modal from "@/components/ui/modals/Modal"
 import { useModal } from "@/hooks/useModal"
-import "./TokenModal.css"
 import { CheckCircle, Coins } from "lucide-react"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors"
@@ -60,7 +59,7 @@ export default function TokenModal() {
     if (balance.isLoading || preferencesLoading || !preferences) {
       return (
         <Modal id="tokenCheckout" title="Purchase Successful">
-          <div className="token-modal-loading">
+          <div className="flex justify-center items-center min-h-[300px] w-full">
             <LoadingSpinner size={45} />
           </div>
         </Modal>
@@ -69,28 +68,31 @@ export default function TokenModal() {
 
     return (
       <Modal id="tokenCheckout" title="Purchase Successful">
-        <div className="token-success-content">
-          <div className="token-success-icon-container animate-in zoom-in-50 duration-300">
-            <CheckCircle className="token-success-icon" />
+        <div className="flex flex-col items-center text-center p-10 w-full bg-[radial-gradient(circle_at_center,rgba(114,137,218,0.1),transparent_70%)]">
+          <div className="mb-5 bg-white/10 rounded-full p-4 shadow-lg animate-in zoom-in-50 duration-300">
+            <CheckCircle className="text-[64px] text-green-500" />
           </div>
 
-          <h2 className="token-success-title animate-in slide-in-from-bottom-5 duration-300 delay-100">
+          <h2 className="text-primary text-2xl font-semibold m-0 mb-4 animate-in slide-in-from-bottom-5 duration-300 delay-100">
             Purchase Successful!
           </h2>
 
-          <p className="token-success-subtitle animate-in slide-in-from-bottom-5 duration-300 delay-200">
+          <p className="text-muted-foreground text-lg m-0 mb-8 animate-in slide-in-from-bottom-5 duration-300 delay-200">
             Your tokens have been added to your account
           </p>
 
-          <div className="token-selectors-container animate-in slide-in-from-bottom-5 duration-300 delay-300">
+          <div className="w-full max-w-[360px] mb-8 animate-in slide-in-from-bottom-5 duration-300 delay-300">
             <ModelPreferencesSelectors
               preferences={preferences}
               updatePreferences={updatePreferences}
             />
           </div>
 
-          <div className="token-success-button-container animate-in slide-in-from-bottom-5 duration-300 delay-400">
-            <Button onClick={closeModal} className="token-success-button">
+          <div className="flex flex-col gap-4 animate-in slide-in-from-bottom-5 duration-300 delay-400">
+            <Button 
+              onClick={closeModal} 
+              className="bg-gradient-to-r from-primary to-blue-400 hover:bg-gradient-to-r hover:from-blue-400 hover:to-primary px-7 py-3 text-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 rounded-lg"
+            >
               Close
             </Button>
           </div>
@@ -106,30 +108,30 @@ export default function TokenModal() {
       title="Buy Ditto Tokens"
       fullScreen={true}
       icon={
-        <div className="token-pricing-icon">
+        <div className="text-[1.4rem] text-amber-400 flex items-center justify-center drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]" style={{ animation: "coinSpin 4s infinite ease-in-out" }}>
           <Coins />
         </div>
       }
     >
-      <div className="token-checkout-content">
-        <div className="token-info-container animate-in fade-in duration-300">
+      <div className="flex flex-col p-0 pb-6 overflow-x-hidden text-foreground w-full">
+        <div className="text-center bg-background-darker p-3 w-full animate-in fade-in duration-300">
           {!balance.isLoading ? (
-            <p className="token-balance-item">
+            <p className="m-0 text-lg text-foreground">
               Current Balance:{" "}
-              <span className="token-highlight-text">
+              <span className="text-primary font-semibold px-0.5">
                 {balance.data?.balance}
               </span>{" "}
               tokens
             </p>
           ) : (
-            <div className="token-spinner-container">
+            <div className="flex justify-center">
               <LoadingSpinner size={45} inline={true} />
             </div>
           )}
         </div>
 
-        <div className="token-pricing-info">
-          <div className="token-pricing-table">
+        <div className="p-6 pt-6 text-foreground w-full">
+          <div className="flex flex-col gap-2 max-w-[400px] mx-auto p-0 px-2.5 w-full">
             {PricingTiers.map(({ price, tokens, bonus }, index) => {
               const isSelected = price === amount
               return (
@@ -137,8 +139,8 @@ export default function TokenModal() {
                   key={price}
                   onClick={() => handleAmountChange(price)}
                   className={cn(
-                    "token-tier animate-in slide-in-from-left duration-300",
-                    isSelected && "selected",
+                    "grid grid-cols-[80px_1fr_80px] items-center p-4 rounded-lg cursor-pointer bg-background-darker transition-all duration-200 box-border w-full border border-transparent shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-primary animate-in slide-in-from-left duration-300",
+                    isSelected && "bg-gradient-to-r from-primary/20 to-blue-400/20 scale-[1.02] shadow-md",
                     { "delay-100": index === 0 },
                     { "delay-200": index === 1 },
                     { "delay-300": index === 2 },
@@ -146,11 +148,17 @@ export default function TokenModal() {
                     { "delay-500": index === 4 }
                   )}
                 >
-                  <div className="token-price">${price}</div>
-                  <div className={cn("token-tokens", isSelected && "selected")}>
+                  <div className="text-left text-xl font-bold text-foreground">${price}</div>
+                  <div className={cn(
+                    "text-center text-primary text-lg font-medium",
+                    isSelected && "text-foreground"
+                  )}>
                     {tokens}
                   </div>
-                  <div className={cn("token-bonus", isSelected && "selected")}>
+                  <div className={cn(
+                    "text-right text-sm font-medium text-green-500 bg-green-500/10 py-1 px-2 rounded-full",
+                    isSelected && "text-white bg-green-500/30"
+                  )}>
                     +{bonus}
                   </div>
                 </div>
@@ -159,8 +167,8 @@ export default function TokenModal() {
           </div>
         </div>
 
-        <div className="token-checkout">
-          <div className="token-checkout-button-container animate-in slide-in-from-bottom-10 duration-300 delay-600">
+        <div className="flex flex-col items-center p-6 gap-5 w-full">
+          <div className="mt-2 mb-4 w-full max-w-[400px] flex justify-center animate-in slide-in-from-bottom-10 duration-300 delay-600">
             <CheckoutForm
               usd={amount}
               successURL={`${window.location.origin}/?tokenSuccess=true`}
@@ -172,3 +180,5 @@ export default function TokenModal() {
     </Modal>
   )
 }
+
+/* Animation moved to global CSS for better browser compatibility */
