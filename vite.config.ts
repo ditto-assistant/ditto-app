@@ -7,11 +7,10 @@ import { resolve } from "path"
 
 export default defineConfig({
   plugins: [
+    // MillionLint.vite({
+    //   enabled: true,
+    // }),
     react(),
-    legacy({
-      targets: ["defaults", "Safari >= 11"],
-      modernPolyfills: true,
-    }),
     tailwindcss(),
     VitePWA({
       registerType: "prompt",
