@@ -33,7 +33,7 @@ const WhatsNew = ({ version = appVersion }: WhatsNewProps) => {
     const formattedVersion = getVersionComponentKey(version)
 
     // Dynamically import the version component
-    import(`./versions/V${formattedVersion}`)
+    import(`./versions/V${formattedVersion}.tsx`)
       .then((module) => {
         setVersionComponent(() => module.default)
         setLoading(false)

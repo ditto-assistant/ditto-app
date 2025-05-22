@@ -161,7 +161,7 @@ export default defineConfig({
         entryFileNames: "assets/[name]-[hash].js",
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1100,
   },
   esbuild: {
     loader: "tsx",
