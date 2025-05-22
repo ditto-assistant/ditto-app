@@ -47,13 +47,6 @@ export function usePlatform() {
   }
   const isIOS = platform === "ios" || platform === "ipad"
 
-  // Add platform classes to body element
-  if (typeof document !== "undefined") {
-    if (isAndroid) document.body.classList.add("android")
-    if (isIOS) document.body.classList.add("ios")
-    if (isMobile) document.body.classList.add("mobile")
-  }
-
   return {
     platform,
     isIPhone,
