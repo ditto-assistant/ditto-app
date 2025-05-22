@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import "./SlidingMenu.css"
 import { useUser } from "@/hooks/useUser"
 import { Crown } from "lucide-react"
@@ -102,51 +101,43 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
 
   // Render menu in a portal so it's positioned relative to viewport
   return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className={`sliding-menu ${position === "right" ? "right-aligned" : ""} ${position === "center" ? "center-aligned" : ""} ${menuPosition === "bottom" ? "bottom-aligned" : ""}`}
-          ref={menuRef}
-          {...menuAnimation}
-        >
-          {menuTitle && <div className="menu-title">{menuTitle}</div>}
-          {menuItems.map((item, index) => {
-            const locked = isItemLocked(item.minimumTier)
-            return (
-              <motion.div
-                key={index}
-                className={`menu-item ${locked ? "premium" : ""}`}
-                whileTap={locked ? undefined : { scale: 0.95 }}
-                whileHover={
-                  locked
-                    ? { backgroundColor: "rgba(var(--primary-rgb), 0.1)" }
-                    : { backgroundColor: "var(--hover-overlay)" }
-                }
-                onClick={(e) => handleItemClick(item, e)}
-                aria-label={item.text}
-              >
-                <div className="menu-item-content">
-                  {item.icon}
-                  <span>{item.text}</span>
-                </div>
-                {locked && (
-                  <div className="premium-indicator">
-                    <div className="premium-badge">
-                      <Crown className="crown-icon" />
-                      <span>PRO</span>
-                    </div>
-                    <div className="upgrade-tooltip">
-                      <span>Upgrade to unlock</span>
-                      <Crown className="crown-icon" />
-                    </div>
+    <div className={`sliding-menu-overlay ${isOpen ? "open" : ""}`}>
+      <div ref={menuRef} className={`sliding-menu ${isOpen ? "open" : ""}`}>
+        <div className="sliding-menu-header">
+          <img src="/assets/logo.png" alt="Ditto" />
+        </div>
+        {menuTitle && <div className="menu-title">{menuTitle}</div>}
+        {menuItems.map((item, index) => {
+          const locked = isItemLocked(item.minimumTier)
+          return (
+            <div
+              key={index}
+              className={`menu-item ${locked ? "premium" : ""}`}
+              onClick={(e) => handleItemClick(item, e)}
+              aria-label={item.text}
+            >
+              <div className="menu-item-content">
+                {item.icon}
+                <span>{item.text}</span>
+              </div>
+              {locked && (
+                <div className="premium-indicator">
+                  <div className="premium-badge">
+                    <Crown className="crown-icon" />
+                    <span>PRO</span>
                   </div>
-                )}
-              </motion.div>
-            )
-          })}
-        </motion.div>
-      )}
-    </AnimatePresence>,
+                  <div className="upgrade-tooltip">
+                    <span>Upgrade to unlock</span>
+                    <Crown className="crown-icon" />
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="sliding-menu-backdrop" onClick={onClose} />
+    </div>,
     document.body
   )
 }

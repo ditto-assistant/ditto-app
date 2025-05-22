@@ -12,9 +12,11 @@ export const FilterGroup: React.FC<FilterGroupProps> = ({
   className = "",
 }) => {
   return (
-    <div className={`filter-group ${className}`}>
-      <span className="filter-label">{label}</span>
-      <div className="filter-buttons">{children}</div>
+    <div className={`flex flex-col gap-2 ${className}`}>
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   )
 }

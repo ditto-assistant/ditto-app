@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "./variables.css";
-@import "./components.css";
 @import "./buttons.css";
 @import "./platform/ios.css";
 @import "tw-animate-css";
@@ -37,8 +36,10 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
+  /* Use dynamic viewport height for keyboard adjustments */
+  min-height: 100dvh;
   overflow: hidden;
-  position: fixed;
+  position: relative;
   width: 100%;
   touch-action: manipulation;
   overscroll-behavior: none;
@@ -55,22 +56,28 @@ body {
   background-color: var(--background-primary);
   color: var(--text-normal);
   overflow-x: hidden;
-  position: fixed;
+  position: relative;
   width: 100%;
   touch-action: pan-y;
 }
 
 #root {
-  /* Ensure root takes up full height, using small viewport height for mobile */
-  min-height: 100svh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
   overflow: hidden;
+}
+
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* legacy fallback */
+  height: 100svh; /* modern small-viewport unit */
+  height: 100dvh; /* dynamic viewport unit (preferred) */
 }
 
 code {

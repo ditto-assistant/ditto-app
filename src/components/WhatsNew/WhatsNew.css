@@ -51,6 +51,15 @@
   padding: 20px;
 }
 
+.whats-new-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
 .whats-new-footer {
   padding: 16px 20px;
   display: flex;

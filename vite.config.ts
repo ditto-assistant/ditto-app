@@ -1,4 +1,3 @@
-// import MillionLint from "@million/lint";
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
@@ -162,7 +161,7 @@ export default defineConfig({
         entryFileNames: "assets/[name]-[hash].js",
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1100,
   },
   esbuild: {
     loader: "tsx",
@@ -178,7 +177,6 @@ export default defineConfig({
       "firebase/auth",
       "firebase/firestore",
       "firebase/storage",
-      "framer-motion",
     ],
     esbuildOptions: {
       loader: {

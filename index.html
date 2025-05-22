@@ -56,22 +56,22 @@
         ("standalone" in window.navigator && window.navigator.standalone) ||
         window.matchMedia("(display-mode: standalone)").matches
       ) {
-        document.documentElement.classList.add("pwa-standalone");
+        document.documentElement.classList.add("pwa-standalone")
       }
 
       // Initialize error handler for lazy loading errors
       window.lazyLoadErrorHandler = (error) => {
-        console.error("Lazy loading error detected:", error);
+        console.error("Lazy loading error detected:", error)
 
         // Check if error is related to outdated app version
         const isChunkError =
           (error?.message &&
             (error.message.includes("Loading chunk") ||
               error.message.includes(
-                "Failed to fetch dynamically imported module",
+                "Failed to fetch dynamically imported module"
               ) ||
               error.message.includes("Unexpected token"))) ||
-          error?.name === "ChunkLoadError";
+          error?.name === "ChunkLoadError"
 
         if (isChunkError) {
           const event = new CustomEvent("update-error", {
@@ -80,26 +80,26 @@
               outdated: true,
               message: "App is outdated and needs to be updated",
             },
-          });
-          window.dispatchEvent(event);
+          })
+          window.dispatchEvent(event)
 
           // Show a basic error message if the app hasn't loaded yet
           if (!document.getElementById("root").hasChildNodes()) {
-            const errorDiv = document.createElement("div");
-            errorDiv.style.position = "fixed";
-            errorDiv.style.top = "0";
-            errorDiv.style.left = "0";
-            errorDiv.style.right = "0";
-            errorDiv.style.bottom = "0";
-            errorDiv.style.backgroundColor = "#2a2b30";
-            errorDiv.style.color = "#fff";
-            errorDiv.style.padding = "20px";
-            errorDiv.style.display = "flex";
-            errorDiv.style.flexDirection = "column";
-            errorDiv.style.alignItems = "center";
-            errorDiv.style.justifyContent = "center";
-            errorDiv.style.textAlign = "center";
-            errorDiv.style.zIndex = "9999";
+            const errorDiv = document.createElement("div")
+            errorDiv.style.position = "fixed"
+            errorDiv.style.top = "0"
+            errorDiv.style.left = "0"
+            errorDiv.style.right = "0"
+            errorDiv.style.bottom = "0"
+            errorDiv.style.backgroundColor = "#2a2b30"
+            errorDiv.style.color = "#fff"
+            errorDiv.style.padding = "20px"
+            errorDiv.style.display = "flex"
+            errorDiv.style.flexDirection = "column"
+            errorDiv.style.alignItems = "center"
+            errorDiv.style.justifyContent = "center"
+            errorDiv.style.textAlign = "center"
+            errorDiv.style.zIndex = "9999"
 
             errorDiv.innerHTML = `
               <h2>App Update Required</h2>
@@ -108,25 +108,25 @@
                 border-radius: 6px; cursor: pointer; margin-top: 20px; font-size: 16px;">
                 Update Now
               </button>
-            `;
+            `
 
             errorDiv.querySelector("button").addEventListener("click", () => {
-              window.location.reload(true);
-            });
+              window.location.reload(true)
+            })
 
-            document.body.appendChild(errorDiv);
+            document.body.appendChild(errorDiv)
           }
         }
 
-        return isChunkError;
-      };
+        return isChunkError
+      }
 
       // Make global error handling available before React loads
       window.addEventListener("error", (event) => {
         if (event.error) {
-          window.lazyLoadErrorHandler(event.error);
+          window.lazyLoadErrorHandler(event.error)
         }
-      });
+      })
 
       // Ensure any old service workers are unregistered
       if ("serviceWorker" in navigator) {
@@ -139,14 +139,72 @@
                 registration.scriptURL &&
                 !registration.scriptURL.includes("sw.js")
               ) {
-                registration.unregister();
+                registration.unregister()
               }
             }
           })
           .catch(function (error) {
-            console.error("Service worker unregistration failed:", error);
-          });
+            console.error("Service worker unregistration failed:", error)
+          })
       }
+
+      // Unsupported browser check for iOS < 11
+      ;(function () {
+        var ua = window.navigator.userAgent
+        var iOS = !!ua.match(/iPad|iPhone|iPod/i)
+        var iOSVersion = iOS
+          ? parseInt(
+              ("" + (/CPU.*OS (\d+_\d*)/i.exec(ua) || [0, "0_0"])[1]).replace(
+                "_",
+                "."
+              ),
+              10
+            )
+          : -1
+
+        if (iOS && iOSVersion < 11 && iOSVersion !== -1) {
+          var rootElement = document.getElementById("root")
+          if (rootElement) {
+            rootElement.style.display = "none"
+          }
+
+          var unsupportedMessage = document.createElement("div")
+          unsupportedMessage.style.position = "fixed"
+          unsupportedMessage.style.top = "0"
+          unsupportedMessage.style.left = "0"
+          unsupportedMessage.style.right = "0"
+          unsupportedMessage.style.bottom = "0"
+          unsupportedMessage.style.backgroundColor = "#1c1c1e" // Dark background
+          unsupportedMessage.style.color = "#ffffff" // Light text
+          unsupportedMessage.style.padding = "30px"
+          unsupportedMessage.style.display = "flex"
+          unsupportedMessage.style.flexDirection = "column"
+          unsupportedMessage.style.alignItems = "center"
+          unsupportedMessage.style.justifyContent = "center"
+          unsupportedMessage.style.textAlign = "center"
+          unsupportedMessage.style.fontFamily =
+            "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+          unsupportedMessage.style.fontSize = "18px"
+          unsupportedMessage.style.lineHeight = "1.6"
+          unsupportedMessage.style.zIndex = "10000"
+
+          unsupportedMessage.innerHTML =
+            "<h1>Unsupported Browser</h1>" +
+            "<p>It looks like you're using an older version of Safari on iOS that isn't fully supported by this application.</p>" +
+            "<p>For the best experience, please update your iPhone or iPad to iOS 11 or later, or try a different browser.</p>" +
+            "<p style='margin-top: 20px; font-size: 14px; opacity: 0.7;'>If you believe this is an error, please contact support.</p>"
+
+          // Ensure body exists before appending
+          if (document.body) {
+            document.body.appendChild(unsupportedMessage)
+          } else {
+            // Fallback if body isn't ready, though unlikely with script in head
+            window.addEventListener("DOMContentLoaded", function () {
+              document.body.appendChild(unsupportedMessage)
+            })
+          }
+        }
+      })()
     </script>
   </head>
 
