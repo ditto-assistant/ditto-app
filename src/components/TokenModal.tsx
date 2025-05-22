@@ -89,8 +89,8 @@ export default function TokenModal() {
           </div>
 
           <div className="flex flex-col gap-4 animate-in slide-in-from-bottom-5 duration-300 delay-400">
-            <Button 
-              onClick={closeModal} 
+            <Button
+              onClick={closeModal}
               className="bg-gradient-to-r from-primary to-blue-400 hover:bg-gradient-to-r hover:from-blue-400 hover:to-primary px-7 py-3 text-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 rounded-lg"
             >
               Close
@@ -108,7 +108,10 @@ export default function TokenModal() {
       title="Buy Ditto Tokens"
       fullScreen={true}
       icon={
-        <div className="text-[1.4rem] text-amber-400 flex items-center justify-center drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]" style={{ animation: "coinSpin 4s infinite ease-in-out" }}>
+        <div
+          className="text-[1.4rem] text-amber-400 flex items-center justify-center drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+          style={{ animation: "coinSpin 4s infinite ease-in-out" }}
+        >
           <Coins />
         </div>
       }
@@ -140,7 +143,8 @@ export default function TokenModal() {
                   onClick={() => handleAmountChange(price)}
                   className={cn(
                     "grid grid-cols-[80px_1fr_80px] items-center p-4 rounded-lg cursor-pointer bg-background-darker transition-all duration-200 box-border w-full border border-transparent shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-primary animate-in slide-in-from-left duration-300",
-                    isSelected && "bg-gradient-to-r from-primary/20 to-blue-400/20 scale-[1.02] shadow-md",
+                    isSelected &&
+                      "bg-gradient-to-r from-primary/20 to-blue-400/20 scale-[1.02] shadow-md",
                     { "delay-100": index === 0 },
                     { "delay-200": index === 1 },
                     { "delay-300": index === 2 },
@@ -148,17 +152,23 @@ export default function TokenModal() {
                     { "delay-500": index === 4 }
                   )}
                 >
-                  <div className="text-left text-xl font-bold text-foreground">${price}</div>
-                  <div className={cn(
-                    "text-center text-primary text-lg font-medium",
-                    isSelected && "text-foreground"
-                  )}>
+                  <div className="text-left text-xl font-bold text-foreground">
+                    ${price}
+                  </div>
+                  <div
+                    className={cn(
+                      "text-center text-primary text-lg font-medium",
+                      isSelected && "text-foreground"
+                    )}
+                  >
                     {tokens}
                   </div>
-                  <div className={cn(
-                    "text-right text-sm font-medium text-green-500 bg-green-500/10 py-1 px-2 rounded-full",
-                    isSelected && "text-white bg-green-500/30"
-                  )}>
+                  <div
+                    className={cn(
+                      "text-right text-sm font-medium text-green-500 bg-green-500/10 py-1 px-2 rounded-full",
+                      isSelected && "text-white bg-green-500/30"
+                    )}
+                  >
                     +{bonus}
                   </div>
                 </div>
