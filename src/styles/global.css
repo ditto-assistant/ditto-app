@@ -2,7 +2,6 @@
 @import "./variables.css";
 @import "./buttons.css";
 @import "./platform/ios.css";
-@import "./platform/android.css";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
