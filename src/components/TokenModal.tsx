@@ -9,6 +9,7 @@ import "./TokenModal.css"
 import { CheckCircle, Coins } from "lucide-react"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import ModelPreferencesSelectors from "@/components/ModelPreferencesSelectors"
+import { cn } from "@/lib/utils"
 import {
   HapticPattern,
   VibrationPatterns,
@@ -54,93 +55,120 @@ export default function TokenModal() {
     setAmount(newAmount)
   }
 
-  const renderContent = () => {
-    if (showSuccess) {
-      // Token purchase success view
-      if (balance.isLoading || preferencesLoading || !preferences) {
-        return (
+  if (showSuccess) {
+    // Token purchase success view
+    if (balance.isLoading || preferencesLoading || !preferences) {
+      return (
+        <Modal id="tokenCheckout" title="Purchase Successful">
           <div className="token-modal-loading">
             <LoadingSpinner size={45} />
           </div>
-        )
-      }
+        </Modal>
+      )
+    }
 
-      return (
+    return (
+      <Modal id="tokenCheckout" title="Purchase Successful">
         <div className="token-success-content">
-          <div className="token-success-icon-container">
+          <div className="token-success-icon-container animate-in zoom-in-50 duration-300">
             <CheckCircle className="token-success-icon" />
           </div>
 
-          <h2 className="token-success-title">Purchase Successful!</h2>
+          <h2 className="token-success-title animate-in slide-in-from-bottom-5 duration-300 delay-100">
+            Purchase Successful!
+          </h2>
 
-          <p className="token-success-subtitle">
+          <p className="token-success-subtitle animate-in slide-in-from-bottom-5 duration-300 delay-200">
             Your tokens have been added to your account
           </p>
 
-          <div className="token-selectors-container">
+          <div className="token-selectors-container animate-in slide-in-from-bottom-5 duration-300 delay-300">
             <ModelPreferencesSelectors
               preferences={preferences}
               updatePreferences={updatePreferences}
             />
           </div>
 
-          <div className="token-success-button-container">
+          <div className="token-success-button-container animate-in slide-in-from-bottom-5 duration-300 delay-400">
             <Button onClick={closeModal} className="token-success-button">
               Close
             </Button>
           </div>
         </div>
-      )
-    }
-
-    // Regular token purchase view
-    return (
-      <>
-        <div className="token-modal-header">
-          <Coins className="header-icon" />
-          <h2 className="header-title">Get More Tokens</h2>
-        </div>
-        <div className="token-modal-body">
-          <div className="pricing-grid">
-            {PricingTiers.map((tier) => (
-              <div key={tier.price} className="pricing-tier">
-                <span className="tier-tokens">{tier.tokens}</span>
-                <span className="tier-price">${tier.price}</span>
-                {tier.bonus !== "0%" && (
-                  <span className="tier-bonus">+{tier.bonus} bonus!</span>
-                )}
-              </div>
-            ))}
-          </div>
-          <CheckoutForm
-            usd={amount}
-            successURL={`${window.location.origin}/?tokenSuccess=true`}
-            cancelURL={window.location.origin}
-          />
-        </div>
-        <div className="token-modal-footer">
-          <p className="footer-text">
-            Tokens are used for all models. View model preferences:
-          </p>
-          {preferences && (
-            <ModelPreferencesSelectors
-              preferences={preferences}
-              updatePreferences={updatePreferences}
-            />
-          )}
-        </div>
-      </>
+      </Modal>
     )
   }
 
+  // Regular token purchase view
   return (
     <Modal
       id="tokenCheckout"
-      title="Token Purchase"
-      fullScreen={false}
-      notResizable={true}
+      title="Buy Ditto Tokens"
+      fullScreen={true}
+      icon={
+        <div className="token-pricing-icon">
+          <Coins />
+        </div>
+      }
     >
-      {renderContent()}
+      <div className="token-checkout-content">
+        <div className="token-info-container animate-in fade-in duration-300">
+          {!balance.isLoading ? (
+            <p className="token-balance-item">
+              Current Balance:{" "}
+              <span className="token-highlight-text">
+                {balance.data?.balance}
+              </span>{" "}
+              tokens
+            </p>
+          ) : (
+            <div className="token-spinner-container">
+              <LoadingSpinner size={45} inline={true} />
+            </div>
+          )}
+        </div>
+
+        <div className="token-pricing-info">
+          <div className="token-pricing-table">
+            {PricingTiers.map(({ price, tokens, bonus }, index) => {
+              const isSelected = price === amount
+              return (
+                <div
+                  key={price}
+                  onClick={() => handleAmountChange(price)}
+                  className={cn(
+                    "token-tier animate-in slide-in-from-left duration-300",
+                    isSelected && "selected",
+                    { "delay-100": index === 0 },
+                    { "delay-200": index === 1 },
+                    { "delay-300": index === 2 },
+                    { "delay-400": index === 3 },
+                    { "delay-500": index === 4 }
+                  )}
+                >
+                  <div className="token-price">${price}</div>
+                  <div className={cn("token-tokens", isSelected && "selected")}>
+                    {tokens}
+                  </div>
+                  <div className={cn("token-bonus", isSelected && "selected")}>
+                    +{bonus}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="token-checkout">
+          <div className="token-checkout-button-container animate-in slide-in-from-bottom-10 duration-300 delay-600">
+            <CheckoutForm
+              usd={amount}
+              successURL={`${window.location.origin}/?tokenSuccess=true`}
+              cancelURL={window.location.origin}
+            />
+          </div>
+        </div>
+      </div>
     </Modal>
   )
 }
