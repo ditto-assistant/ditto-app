@@ -190,5 +190,3 @@ export default function TokenModal() {
     </Modal>
   )
 }
-
-/* Animation moved to global CSS for better browser compatibility */
