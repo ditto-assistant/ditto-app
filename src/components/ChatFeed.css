@@ -178,19 +178,3 @@
     transform: rotate(360deg);
   }
 }
-
-/* Utility modifier to temporarily disable scroll (applied from SendMessage when textarea is focused) */
-.messages-scroll-view.no-scroll {
-  overflow-y: hidden;
-  touch-action: none; /* Prevent vertical pan so textarea can capture it */
-}
-
-/* Android specific scroll fixes for message scroll view */
-@supports (-webkit-touch-callout: none) {
-  /* Apply only to webkit browser environments (Android Chrome) */
-  .messages-scroll-view textarea:focus {
-    /* Ensure textarea receives touch events properly */
-    z-index: 500;
-    position: relative;
-  }
-}

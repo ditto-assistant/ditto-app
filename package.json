@@ -88,11 +88,18 @@
     "test:login": "bun scripts/tests/playwright-login.ts",
     "browsertools": "bun scripts/browsertools.ts"
   },
-  "browserslist": [
-    "defaults",
-    "not IE 11",
-    "Safari >= 11"
-  ],
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "module": "src/index.jsx",
   "peerDependencies": {
     "typescript": "^5.7.3"
