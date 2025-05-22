@@ -10,8 +10,8 @@ export default defineConfig({
     // MillionLint.vite({
     //   enabled: true,
     // }),
-    react(),
     tailwindcss(),
+    react(),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
