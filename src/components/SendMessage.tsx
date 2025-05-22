@@ -20,8 +20,6 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useBalance } from "@/hooks/useBalance"
 import { usePlatform } from "@/hooks/usePlatform"
-import { useVisualViewport } from "@/hooks/useVisualViewport"
-import { useAndroidScrollFix } from "@/hooks/useAndroidScrollFix"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useModal } from "@/hooks/useModal"
@@ -75,8 +73,7 @@ export default function SendMessage({
   const preferences = useModelPreferences()
   const { handleImageClick } = useImageViewerHandler()
   const balance = useBalance()
-  const { isMobile, isAndroid } = usePlatform()
-  const viewport = useVisualViewport()
+  const { isMobile } = usePlatform()
   const {
     refetch,
     addOptimisticMessage,
@@ -114,18 +111,6 @@ export default function SendMessage({
   const [isInvalidConfig, setIsInvalidConfig] = useState(false)
 
   const [autoScroll, setAutoScroll] = useState(false)
-
-  // Track focus on textarea so we can temporarily disable ChatFeed scrolling
-  const [isTextareaFocused, setIsTextareaFocused] = useState(false)
-
-  // Don't disable chat feed scrolling when textarea is focused
-  // This was causing issues with Android scrolling behavior
-  useEffect(() => {
-    // This effect intentionally left empty - we're allowing both chat feed
-    // and textarea to scroll independently
-    // Note: The previous implementation was adding a no-scroll class
-    // which blocked ChatFeed scrolling when typing in textarea
-  }, [isTextareaFocused, autoScroll])
 
   useEffect(() => {
     if (balance.data && preferences.preferences) {
@@ -363,30 +348,15 @@ export default function SendMessage({
     ta.style.height = `${newHeight}px`
     // If scrollHeight > newHeight, we're clipped ⇒ allow scroll.
     setAutoScroll(ta.scrollHeight > newHeight)
-
-    // Update body class when keyboard is visible on Android
-    if (isAndroid && viewport.keyboardVisible) {
-      document.body.classList.add("keyboard-visible")
-    } else {
-      document.body.classList.remove("keyboard-visible")
-    }
-  }, [isAndroid, viewport.keyboardVisible])
+  }, [])
 
   // Auto-resize when message changes
   useEffect(() => {
     autoResizeTextarea()
   }, [message, autoResizeTextarea])
 
-  // Apply our specialized Android scroll fix
-  useAndroidScrollFix(textAreaRef, autoScroll)
-
   return (
-    <div
-      className={cn(
-        "w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]",
-        isAndroid && viewport.keyboardVisible ? "send-message-container" : ""
-      )}
-    >
+    <div className="w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}
@@ -466,16 +436,12 @@ export default function SendMessage({
                 onKeyDown={handleKeyDown}
                 value={message}
                 onChange={handleInputChange}
-                onFocus={() => setIsTextareaFocused(true)}
-                onBlur={() => setIsTextareaFocused(false)}
-                // No special touch handlers - rely on our useAndroidScrollFix hook
                 placeholder="Message Ditto"
                 className={cn(
                   "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
                   "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
-                  autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // Simple overflow toggle
+                  autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // toggle scroll
                   "focus-visible:ring-1 focus-visible:ring-primary"
-                  // Removed special Android classes - handled by useAndroidScrollFix and android.css
                 )}
               />
             </div>
