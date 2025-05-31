@@ -6,6 +6,16 @@ import { BASE_URL } from "../firebaseConfig"
 export const UploadImageResponseSchema = z.string()
 export type UploadImageResponse = z.infer<typeof UploadImageResponseSchema>
 
+export const PresignedUploadResponseSchema = z.object({
+  uploadURL: z.string(),
+  fileURL: z.string(),
+  fields: z.record(z.string()).optional(),
+  expiration: z.string().transform((str) => new Date(str)),
+})
+export type PresignedUploadResponse = z.infer<
+  typeof PresignedUploadResponseSchema
+>
+
 export const ConversationCountResponseSchema = z.object({
   count: z.number(),
 })
@@ -19,13 +29,22 @@ export const UploadImageRequestSchema = z.object({
 })
 export type UploadImageRequest = z.infer<typeof UploadImageRequestSchema>
 
+export const CreatePresignedUploadRequestSchema = z.object({
+  contentType: z.string().optional(),
+  fileSize: z.number().optional(),
+})
+export type CreatePresignedUploadRequest = z.infer<
+  typeof CreatePresignedUploadRequestSchema
+>
+
 /**
- * Upload a user image to the backend
+ * Create a presigned upload URL for file upload
  */
-export async function uploadUserImage(
+export async function createPresignedUpload(
   userID: string,
-  base64Image: string
-): Promise<UploadImageResponse | Error> {
+  contentType?: string,
+  fileSize?: number
+): Promise<PresignedUploadResponse | Error> {
   try {
     const tok = await getToken()
     if (tok.err) {
@@ -35,27 +54,31 @@ export async function uploadUserImage(
       return new Error("No token")
     }
 
+    const requestBody: CreatePresignedUploadRequest = {}
+    if (contentType) requestBody.contentType = contentType
+    if (fileSize) requestBody.fileSize = fileSize
+
     const response = await fetch(
-      `${BASE_URL}/api/v2/users/${userID}/upload-image`,
+      `${BASE_URL}/api/v2/users/${userID}/upload/presigned`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${tok.ok.token}`,
         },
-        body: JSON.stringify({ base64Image }),
+        body: JSON.stringify(requestBody),
       }
     )
 
     if (!response.ok) {
       const errorText = await response.text()
       return new Error(
-        `Failed to upload image: HTTP ${response.status} - ${errorText}`
+        `Failed to create presigned upload URL: HTTP ${response.status} - ${errorText}`
       )
     }
 
-    const result = await response.text()
-    const validatedData = UploadImageResponseSchema.safeParse(result)
+    const data = await response.json()
+    const validatedData = PresignedUploadResponseSchema.safeParse(data)
     if (!validatedData.success) {
       console.error("Validation error:", validatedData.error)
       return new Error("Invalid response from server")
@@ -63,7 +86,62 @@ export async function uploadUserImage(
 
     return validatedData.data
   } catch (error) {
-    console.error("Error uploading image:", error)
+    console.error("Error creating presigned upload URL:", error)
+    return error instanceof Error ? error : new Error("Unknown error occurred")
+  }
+}
+
+/**
+ * Upload a user image using presigned URL approach
+ */
+export async function uploadImage(
+  userID: string,
+  imageData: string | File
+): Promise<string | Error> {
+  try {
+    let file: File
+    let contentType: string
+
+    if (typeof imageData === "string") {
+      // Convert base64 to File
+      const response = await fetch(imageData)
+      const blob = await response.blob()
+      contentType = blob.type || "image/jpeg"
+      file = new File([blob], "image.jpg", { type: contentType })
+    } else {
+      // Already a File
+      file = imageData
+      contentType = file.type || "image/jpeg"
+    }
+
+    // Get presigned upload URL
+    const presignedResponse = await createPresignedUpload(
+      userID,
+      contentType,
+      file.size
+    )
+
+    if (presignedResponse instanceof Error) {
+      return presignedResponse
+    }
+
+    // Upload file to S3 using presigned URL
+    const uploadResponse = await fetch(presignedResponse.uploadURL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": contentType,
+      },
+      body: file,
+    })
+
+    if (!uploadResponse.ok) {
+      return new Error(`Failed to upload file: HTTP ${uploadResponse.status}`)
+    }
+
+    // Return the final file URL
+    return presignedResponse.fileURL
+  } catch (error) {
+    console.error("Error uploading image with presigned URL:", error)
     return error instanceof Error ? error : new Error("Unknown error occurred")
   }
 }
