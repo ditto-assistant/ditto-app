@@ -14,9 +14,9 @@ const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
   updatePreferences,
   className,
 }) => {
-  const [openDropdown, setOpenDropdown] = useState<
-    "main" | "programmer" | "image" | null
-  >(null)
+  const [openDropdown, setOpenDropdown] = useState<"main" | "image" | null>(
+    null
+  )
 
   // Handle clicking outside of any dropdown
   useEffect(() => {
@@ -74,18 +74,6 @@ const ModelPreferencesSelectors: React.FC<ModelPreferencesSelectorsProps> = ({
         <label className="model-label" style={styles.label}>
           Programmer Model
         </label>
-        <ModelDropdown
-          value={preferences.programmerModel}
-          onChange={(value) => handleModelChange("programmerModel", value)}
-          isOpen={openDropdown === "programmer"}
-          onOpenChange={(isOpen) => {
-            if (isOpen) {
-              setOpenDropdown("programmer")
-            } else if (openDropdown === "programmer") {
-              setOpenDropdown(null)
-            }
-          }}
-        />
       </div>
       <div className="model-selector" style={styles.selector}>
         <label className="model-label" style={styles.label}>

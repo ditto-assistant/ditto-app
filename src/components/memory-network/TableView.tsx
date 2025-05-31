@@ -53,15 +53,12 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
   }
 
   const handleViewMemory = (memory: Memory) => {
-    const deleteAdapter = (node: any) => {
-      handleDelete(node as Memory)
-    }
     showMemoryNode(
       {
         ...memory,
         level: 0,
       },
-      deleteAdapter
+      handleDelete
     )
   }
 

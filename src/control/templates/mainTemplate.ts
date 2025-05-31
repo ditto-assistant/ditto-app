@@ -18,11 +18,7 @@ export const systemTemplate = () => {
   return "You are a friendly AI named Ditto here to help the user who is your best friend."
 }
 
-/**
- * This function returns the current time in the timezone of the user.
- * @returns {string} timezoneString - The current time in the timezone of the user.
- */
-export const getTimezoneString = () => {
+export const getTimezoneString = (): string => {
   let timezoneString
   let timezone = new Date()
     .toLocaleString("en-US", { timeZoneName: "short" })

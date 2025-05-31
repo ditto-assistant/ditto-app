@@ -7,7 +7,7 @@ import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
 import { useUser } from "@/hooks/useUser"
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
 import SubscriptionCard from "@/components/subscription/SubscriptionCard"
-import { CreditCard, LogOut, User, Moon } from "lucide-react"
+import { CreditCard, LogOut, Moon } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
 import {
@@ -22,12 +22,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
+import { useUserAvatar } from "@/hooks/useUserAvatar"
 
 const SubscriptionTabContent: React.FC = () => {
   const { data: user, isLoading: isUserLoading } = useUser()
   const [isYearly, setIsYearly] = React.useState(false)
   const balance = useBalance()
   const auth = useAuth()
+  const userAvatar = useUserAvatar(auth.user?.photoURL)
   const token = useAuthToken()
   const { data: subscriptionData, isLoading: isLoadingSubscriptions } =
     useSubscriptionTiers()
@@ -105,7 +107,11 @@ const SubscriptionTabContent: React.FC = () => {
       <CardContent className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0 mb-1">
           <div className="flex items-center space-x-2">
-            <User className="h-5 w-5 text-muted-foreground" />
+            <img
+              src={userAvatar || undefined}
+              alt="User Avatar"
+              className="h-5 w-5 rounded-full"
+            />
             {displayName ? (
               <span className="text-sm font-medium">{displayName}</span>
             ) : null}
