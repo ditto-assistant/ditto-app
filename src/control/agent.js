@@ -61,8 +61,6 @@ export const cancelPrompt = async () => {
  * @param {function} streamingCallback - A callback for streaming response chunks.
  * @param {string} optimisticId - The ID of the optimistic message update.
  * @param {function} finalizeMessage - A function to finalize a message.
- * @param {function|null} openScriptCallback - A function to open a script, or null.
- * @param {object|null} selectedScript - The selected script, or null.
  * @param {number} planTier - The user's plan tier.
  */
 export const sendPrompt = async (
@@ -75,8 +73,6 @@ export const sendPrompt = async (
   streamingCallback = null,
   optimisticId = null,
   finalizeMessage = null,
-  openScriptCallback = null,
-  selectedScript = null,
   planTier
 ) => {
   const isPremiumUser = planTier > 0

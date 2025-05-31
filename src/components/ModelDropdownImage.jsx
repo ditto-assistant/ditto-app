@@ -9,7 +9,7 @@ import { createPortal } from "react-dom"
 /**
  * A dropdown component for selecting AI image generation models with size options
  * @param {object} props
- * @param {{model: Model, size: ImageGenerationSize}} props.value - Currently selected model and size
+ * @param {{model: Model, size: Omit<ImageGenerationSize, "description" | "supportedModels">}} props.value - Currently selected model and size
  * @param {(model: Model, size: ImageGenerationSize) => void} props.onChange - Callback when selection changes
  * @param {boolean} [props.inMemoryOverlay=false] - Whether to use absolute positioning for dropdown
  * @param {boolean} [props.isOpen=false] - Whether the dropdown is open

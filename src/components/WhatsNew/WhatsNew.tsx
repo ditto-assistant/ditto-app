@@ -21,6 +21,7 @@ import V0_13_1 from "./versions/V0_13_1"
 import V0_14_0 from "./versions/V0_14_0"
 import V0_14_1 from "./versions/V0_14_1"
 import V0_14_2 from "./versions/V0_14_2"
+import V0_14_3 from "./versions/V0_14_3"
 // Add imports for future versions here
 
 // Map versions to their components
@@ -44,6 +45,7 @@ const versionComponents: Record<string, React.ComponentType> = {
   "0.14.0": V0_14_0,
   "0.14.1": V0_14_1,
   "0.14.2": V0_14_2,
+  "0.14.3": V0_14_3,
   // Add future versions here
 }
 

@@ -198,8 +198,6 @@ export default function SendMessage({
             streamingCallback,
             optimisticMessageId,
             finalizeOptimisticMessage,
-            null,
-            null,
             user?.data?.planTier ?? 0
           )
           console.log("✅ [SendMessage] Prompt completed successfully")

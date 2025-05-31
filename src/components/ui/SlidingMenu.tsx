@@ -16,9 +16,7 @@ interface SlidingMenuProps {
   menuItems: MenuItem[]
   isOpen: boolean
   onClose: () => void
-  position?: "left" | "right" | "center"
   triggerRef?: React.RefObject<HTMLElement>
-  menuPosition?: "top" | "bottom"
   menuTitle?: string
 }
 
@@ -26,9 +24,7 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
   menuItems,
   isOpen,
   onClose,
-  position = "left",
   triggerRef,
-  menuPosition = "top",
   menuTitle,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
@@ -75,29 +71,6 @@ const SlidingMenu: React.FC<SlidingMenuProps> = ({
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [isOpen, onClose, triggerRef])
-
-  const getMenuAnimation = () => {
-    // For bottom-aligned menus, animate vertically
-    if (menuPosition === "bottom") {
-      return {
-        initial: { opacity: 0, y: 20 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: 20 },
-        transition: { duration: 0.15 },
-      }
-    }
-
-    // For standard top menus, animate horizontally
-    const initialX = position === "left" ? -20 : 20
-    return {
-      initial: { opacity: 0, x: initialX },
-      animate: { opacity: 1, x: 0 },
-      exit: { opacity: 0, x: initialX },
-      transition: { duration: 0.15 },
-    }
-  }
-
-  const menuAnimation = getMenuAnimation()
 
   // Render menu in a portal so it's positioned relative to viewport
   return createPortal(

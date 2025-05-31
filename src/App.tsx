@@ -56,7 +56,6 @@ const loadE = <T extends React.ComponentType>(
   })
 }
 
-const DittoCanvasModal = loadE(() => import("@/components/DittoCanvasModal"))
 const Login = loadE(() => import("@/screens/Login"))
 const FeedbackModal = loadE(() => import("@/components/FeedbackModal"))
 const ImageViewer = loadE(() => import("@/components/ImageViewer"))
@@ -112,9 +111,6 @@ const modalRegistry: ModalRegistry = {
   },
   memoryNetwork: {
     component: <MemoryNetworkModal />,
-  },
-  dittoCanvas: {
-    component: <DittoCanvasModal />,
   },
   memoryNodeViewer: {
     component: <MemoryNodeModal />,

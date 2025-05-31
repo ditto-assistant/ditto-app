@@ -1,49 +1,12 @@
-import { useEffect, useRef, useCallback, useState } from "react"
-import { toast } from "sonner"
+import { useEffect, useState } from "react"
 import Modal from "./ui/modals/Modal"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
-import { Memory } from "@/api/getMemories"
-import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
-import {
-  useMemoryNodeViewer,
-  MemoryWithLevel,
-} from "@/hooks/useMemoryNodeViewer"
 import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
 import "./MemoryNetwork.css"
 
 export default function MemoryNetworkModal() {
-  const { memories, loading, deleteMemory, currentRootMemory } =
-    useMemoryNetwork()
-  const { confirmMemoryDeletion } = useMemoryDeletion()
-  const { showMemoryNode } = useMemoryNodeViewer()
+  const { memories, loading, currentRootMemory } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
-
-  const handleNodeDelete = useCallback(
-    async (node: MemoryWithLevel) => {
-      if (!node || !node.id) {
-        toast.error("Cannot delete: Invalid memory node data.")
-        return
-      }
-      confirmMemoryDeletion(node.id, {
-        isMessage: false,
-        onSuccess: () => {
-          deleteMemory(node.id)
-          toast.success("Memory deleted.")
-        },
-        onError: (err: Error) => {
-          toast.error(`Failed to delete memory: ${err.message}`)
-        },
-      })
-    },
-    [confirmMemoryDeletion, deleteMemory]
-  )
-
-  const handleGraphNodeClick = useCallback(
-    (memory: MemoryWithLevel) => {
-      showMemoryNode(memory, handleNodeDelete)
-    },
-    [showMemoryNode, handleNodeDelete]
-  )
 
   useEffect(() => {
     if (!loading && currentRootMemory && memories !== undefined) {

@@ -1,23 +1,7 @@
+// External dependencies
 import { deleteUser, getAuth } from "firebase/auth"
-import {
-  removeUserFromFirestore,
-  deleteAllUserScriptsFromFirestore,
-} from "@/control/firebase"
-import packageJson from "../../../package.json"
-import { useAuth } from "@/hooks/useAuth"
-import { clearStorage } from "@/utils/deviceId"
-import Modal, { ModalTab } from "@/components/ui/modals/Modal"
-import { useModal } from "@/hooks/useModal"
-import { ModalButton } from "@/components/ui/buttons/ModalButton"
-import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
-import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 import { toast } from "sonner"
 import { useMemo } from "react"
-import { useFontSize } from "@/hooks/useFontSize"
-import ModelPreferencesModal from "@/components/model-preferences/ModelPreferencesModal"
-import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
-import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
-import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
 import {
   MemoryStick,
   Settings as SettingsIcon,
@@ -25,6 +9,24 @@ import {
   Crown,
   Skull,
 } from "lucide-react"
+// Internal utilities & hooks
+import { removeUserFromFirestore } from "@/control/firebase"
+import { clearStorage } from "@/utils/deviceId"
+import { useAuth } from "@/hooks/useAuth"
+import { useModal } from "@/hooks/useModal"
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
+import { useFontSize } from "@/hooks/useFontSize"
+// UI Components
+import Modal, { ModalTab } from "@/components/ui/modals/Modal"
+import { ModalButton } from "@/components/ui/buttons/ModalButton"
+import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
+// Settings Components
+import ModelPreferencesModal from "@/components/model-preferences/ModelPreferencesModal"
+import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
+import AgentToolsModal from "@/screens/Settings/AgentToolsModal"
+import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
+// Config
+import packageJson from "../../../package.json"
 
 export default function Settings() {
   const { signOut, user } = useAuth()
@@ -94,7 +96,6 @@ export default function Settings() {
       await deleteUser(currentUser)
       console.log("Account deleted")
       await removeUserFromFirestore(currentUser.uid)
-      await deleteAllUserScriptsFromFirestore(currentUser.uid)
       clearStorage()
       closeModal()
     } catch (error: unknown) {

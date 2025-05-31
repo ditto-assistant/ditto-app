@@ -4,11 +4,6 @@ import { useUser } from "@/hooks/useUser"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
 
-interface Mark {
-  value: number
-  label: string
-}
-
 interface MemorySliderProps {
   label: string
   values: number[]
@@ -18,7 +13,6 @@ interface MemorySliderProps {
   step?: number
   debounceMs?: number
   description?: string
-  marks?: readonly Mark[]
   showChainControls?: boolean
   maxChainLength?: number
   minimumTier?: number
@@ -58,7 +52,6 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   step = 1,
   debounceMs = 500,
   description,
-  marks,
   showChainControls = false,
   maxChainLength = 3,
   minimumTier,
