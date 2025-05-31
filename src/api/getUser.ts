@@ -37,6 +37,8 @@ const UserPreferencesSchema = z.object({
 export const UserSchema = z.object({
   balance: z.number(),
   email: z.string().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   subscriptionStatus: z.enum([
     "free",
     "active",

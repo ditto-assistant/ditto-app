@@ -10,7 +10,7 @@ import {
   Skull,
 } from "lucide-react"
 // Internal utilities & hooks
-import { removeUserFromFirestore } from "@/control/firebase"
+import { deleteUserAccount } from "@/api/userContent"
 import { clearStorage } from "@/utils/deviceId"
 import { useAuth } from "@/hooks/useAuth"
 import { useModal } from "@/hooks/useModal"
@@ -19,7 +19,6 @@ import { useFontSize } from "@/hooks/useFontSize"
 // UI Components
 import Modal, { ModalTab } from "@/components/ui/modals/Modal"
 import { ModalButton } from "@/components/ui/buttons/ModalButton"
-import { DeleteMemoryButton } from "@/components/ui/buttons/DeleteMemoryButton"
 // Settings Components
 import ModelPreferencesModal from "@/components/model-preferences/ModelPreferencesModal"
 import MemoryControlsModal from "@/screens/Settings/MemoryControlsModal"
@@ -95,7 +94,11 @@ export default function Settings() {
 
       await deleteUser(currentUser)
       console.log("Account deleted")
-      await removeUserFromFirestore(currentUser.uid)
+      const result = await deleteUserAccount(currentUser.uid)
+      if (result instanceof Error) {
+        console.error("Error deleting user data:", result)
+        toast.error("Failed to delete user data")
+      }
       clearStorage()
       closeModal()
     } catch (error: unknown) {
@@ -176,7 +179,6 @@ export default function Settings() {
         >
           DELETE ACCOUNT
         </ModalButton>
-        <DeleteMemoryButton onSuccess={closeModal} fixedWidth />
       </div>
     </div>
   )

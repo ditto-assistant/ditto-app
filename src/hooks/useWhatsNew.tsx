@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { getUpdateState } from "@/utils/updateService"
 import { useModal } from "./useModal"
-import { auth } from "@/control/firebase"
+import { auth } from "@/lib/firebase"
 import { doc, getDoc, setDoc, getFirestore } from "firebase/firestore"
 
 interface UseWhatsNewReturn {

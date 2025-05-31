@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { deleteConversation } from "../control/memory"
+import { deleteConversation } from "@/api/userContent"
 import { useConfirmationDialog } from "./useConfirmationDialog"
 import { toast } from "sonner"
 import { useAuth } from "./useAuth"
@@ -14,9 +14,9 @@ export const useMemoryDeletion = (updateConversation) => {
       if (!docId) return
       try {
         const toastId = toast.loading("Deleting memory...")
-        const success = await deleteConversation(user.uid, docId)
+        const result = await deleteConversation(user.uid, docId)
 
-        if (success) {
+        if (!(result instanceof Error)) {
           toast.success("Memory deleted successfully", { id: toastId })
 
           if (updateConversation) {
@@ -56,9 +56,17 @@ export const useMemoryDeletion = (updateConversation) => {
           if (options.onSuccess) {
             options.onSuccess(docId)
           }
+        } else {
+          toast.error(result.message || "Failed to delete memory", {
+            id: toastId,
+          })
+          if (options.onError) {
+            options.onError(result)
+          }
         }
       } catch (error) {
         console.error("Error deleting memory:", error)
+        toast.error("Failed to delete memory")
         if (options.onError) {
           options.onError(error)
         }

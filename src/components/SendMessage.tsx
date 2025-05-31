@@ -15,7 +15,8 @@ import {
   Brain,
 } from "lucide-react"
 import { sendPrompt, cancelPrompt } from "../control/agent"
-import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
+import { auth } from "../lib/firebase"
+import { uploadUserImage } from "@/api/userContent"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useBalance } from "@/hooks/useBalance"
@@ -74,6 +75,7 @@ export default function SendMessage({
   const { handleImageClick } = useImageViewerHandler()
   const balance = useBalance()
   const { isMobile } = usePlatform()
+  const { data: userData } = useUser()
   const {
     refetch,
     addOptimisticMessage,
@@ -163,12 +165,16 @@ export default function SendMessage({
           setIsWaitingForResponse(false)
           return
         }
-        const firstName = localStorage.getItem("firstName") || ""
+        const firstName = userData?.firstName || ""
         let messageToSend = message
         let imageURI = ""
         if (image) {
           try {
-            imageURI = await uploadImageToFirebaseStorageBucket(image, userID)
+            const uploadResult = await uploadUserImage(userID, image)
+            if (uploadResult instanceof Error) {
+              throw uploadResult
+            }
+            imageURI = uploadResult
             messageToSend = `![image](${imageURI})\n\n${messageToSend}`
           } catch (uploadError) {
             console.error("Error uploading image:", uploadError)

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { User } from "firebase/auth"
-import { auth } from "../control/firebase"
+import { auth } from "../lib/firebase"
 import { preloadAvatar } from "./useUserAvatar"
 
 type AuthContextType = ReturnType<typeof useAuthState> & {

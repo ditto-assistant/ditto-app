@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, createContext } from "react"
-import { grabConversationHistoryCount } from "../control/firebase"
+import { getConversationCount } from "@/api/userContent"
 import { useAuth } from "./useAuth"
 
 const MemoryCountContext = createContext()
@@ -43,8 +43,11 @@ function useMemCount() {
     async function fetchCount() {
       try {
         if (user?.uid) {
-          const memoryCount = await grabConversationHistoryCount(user?.uid)
-          setCount(memoryCount)
+          const result = await getConversationCount(user?.uid)
+          if (result instanceof Error) {
+            throw result
+          }
+          setCount(result.count)
         }
       } catch (err) {
         setError(err.message)
