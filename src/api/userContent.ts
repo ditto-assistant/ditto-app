@@ -125,6 +125,8 @@ export async function uploadImage(
       return presignedResponse
     }
 
+    console.log("Uploading to:", presignedResponse.uploadURL)
+
     // Upload file to S3 using presigned URL
     const uploadResponse = await fetch(presignedResponse.uploadURL, {
       method: "PUT",
@@ -137,9 +139,29 @@ export async function uploadImage(
     if (!uploadResponse.ok) {
       return new Error(`Failed to upload file: HTTP ${uploadResponse.status}`)
     }
+    // Extract the file path from the fileURL to use with v2 presign
+    const { presignURLV2 } = await import("@/api/bucket")
+    
+    // Extract the userID and path from the fileURL
+    // URL format: https://content-prefix/userID/attachments/gallery/filename.jpg
+    const url = new URL(presignedResponse.fileURL)
+    const pathParts = url.pathname.split("/")
+    const userIndex = pathParts.findIndex(part => part === userID)
+    
+    if (userIndex === -1 || userIndex + 1 >= pathParts.length) {
+      return new Error("Invalid file URL format")
+    }
+    
+    // Extract the path after userID (e.g., "attachments/gallery/filename.jpg")
+    const filePath = pathParts.slice(userIndex + 1).join("/")
+    
+    const presignResult = await presignURLV2(userID, filePath)
+    if (presignResult instanceof Error) {
+      return new Error(`Failed to presign uploaded image: ${presignResult.message}`)
+    }
 
-    // Return the final file URL
-    return presignedResponse.fileURL
+    // Return the presigned URL
+    return presignResult.presignedURL
   } catch (error) {
     console.error("Error uploading image with presigned URL:", error)
     return error instanceof Error ? error : new Error("Unknown error occurred")

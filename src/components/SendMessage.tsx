@@ -68,6 +68,7 @@ export default function SendMessage({
   onStop,
 }: SendMessageProps) {
   const [image, setImage] = useState<string | File>(capturedImage || "")
+  const [isUploading, setIsUploading] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const preferences = useModelPreferences()
   const { handleImageClick } = useImageViewerHandler()
@@ -166,22 +167,39 @@ export default function SendMessage({
         const firstName = userData?.firstName || ""
         let messageToSend = message
         let imageURI = ""
+        let uploadSuccessful = false
+
+        // Handle image upload if present
         if (image) {
+          setIsUploading(true)
           try {
             const uploadResult = await uploadImage(userID, image)
             if (uploadResult instanceof Error) {
               throw uploadResult
             }
+            console.log(
+              `🚀 [SendMessage] Presigned uploaded image: ${uploadResult}`
+            )
             imageURI = uploadResult
-            messageToSend = `![image](${imageURI})\n\n${messageToSend}`
+            messageToSend = `![image](${uploadResult})\n\n${messageToSend}`
+            uploadSuccessful = true
           } catch (uploadError) {
             console.error("Error uploading image:", uploadError)
-            toast.error("Failed to upload image")
+            toast.error("Failed to upload image. Please try again.")
+            setIsWaitingForResponse(false)
+            setIsUploading(false)
+            return
+          } finally {
+            setIsUploading(false)
           }
         }
+
+        // Only clear state after successful upload (or no image)
         clearPrompt()
         setMessage("")
-        setImage("")
+        if (uploadSuccessful || !image) {
+          setImage("")
+        }
         console.log("🚀 [SendMessage] Creating optimistic message")
         const optimisticMessageId = addOptimisticMessage(
           messageToSend,
@@ -582,8 +600,10 @@ export default function SendMessage({
                         variant="ghost"
                         size="icon"
                         type="submit"
-                        disabled={isInvalidConfig}
-                        aria-label="Send message"
+                        disabled={isInvalidConfig || isUploading}
+                        aria-label={
+                          isUploading ? "Uploading image..." : "Send message"
+                        }
                         className="h-10 w-10 p-0 rounded-full border-none ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all hover:bg-transparent focus:bg-transparent"
                         onPointerDown={triggerLightHaptic}
                       >
@@ -594,9 +614,11 @@ export default function SendMessage({
                   <TooltipContent>
                     {isInvalidConfig
                       ? "You need tokens to use this model"
-                      : isWaitingForResponse
-                        ? "Stop generation"
-                        : "Send message"}
+                      : isUploading
+                        ? "Uploading image..."
+                        : isWaitingForResponse
+                          ? "Stop generation"
+                          : "Send message"}
                   </TooltipContent>
                 </Tooltip>
               </div>
