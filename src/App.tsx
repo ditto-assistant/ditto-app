@@ -160,7 +160,7 @@ function App() {
                                         document.getElementById("toast-root")!
                                       )}
                                       <ReactQueryDevtools
-                                        buttonPosition="top-right"
+                                        buttonPosition="top-left"
                                         initialIsOpen={false}
                                       />
                                     </ModalProvider>

@@ -10,11 +10,9 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
 } from "firebase/auth"
-import {
-  saveUserToFirestore,
-  getUserObjectFromFirestore,
-  auth,
-} from "@/control/firebase"
+import { auth } from "@/lib/firebase"
+import { getUser } from "@/api/getUser"
+import { createUser } from "@/api/createUser"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -94,17 +92,9 @@ const Login = () => {
         return
       }
 
-      // Get user data from Firestore (if it exists)
+      // Get user data from backend API (if it exists)
       const userID = user.uid
-      const userObject = await getUserObjectFromFirestore(userID)
-
-      if (userObject) {
-        const { firstName, lastName } = userObject
-        localStorage.setItem("userID", user.uid)
-        localStorage.setItem("email", email)
-        localStorage.setItem("firstName", firstName)
-        localStorage.setItem("lastName", lastName)
-      }
+      localStorage.setItem("userID", user.uid)
       // The navigation will be handled by the useEffect hook
     } catch (error) {
       console.error("Error signing in:", error)
@@ -139,14 +129,20 @@ const Login = () => {
         "A verification email has been sent to your email address. Please verify your email and then sign in."
       )
 
-      // Call the function to save user data to Firestore
-      saveUserToFirestore(user.uid, email, firstName, lastName)
+      // Call the function to save user data to backend
+      const createUserResult = await createUser({
+        userID: user.uid,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+      })
+      if (createUserResult.err) {
+        console.error("Error saving user to backend:", createUserResult.err)
+        // Continue with the flow even if backend save fails
+      }
 
       // Save to local storage
       localStorage.setItem("userID", user.uid)
-      localStorage.setItem("email", email)
-      localStorage.setItem("firstName", firstName)
-      localStorage.setItem("lastName", lastName)
       localStorage.removeItem("hasSeenTOS")
 
       // Switch back to sign-in mode and clear fields after successful signup
@@ -169,8 +165,8 @@ const Login = () => {
       const user = result.user
 
       // Check if this is the first time signing in with Google
-      const userDoc = await getUserObjectFromFirestore(user.uid)
-      const isNewUser = !userDoc
+      const userResult = await getUser()
+      const isNewUser = userResult.err || !userResult.ok
 
       if (isNewUser) {
         localStorage.removeItem("hasSeenTOS")
@@ -182,18 +178,19 @@ const Login = () => {
 
       // Save user info to local storage
       localStorage.setItem("userID", user.uid)
-      localStorage.setItem("email", email || "")
-      localStorage.setItem("firstName", user.displayName?.split(" ")[0] || "")
-      localStorage.setItem("lastName", user.displayName?.split(" ")[1] || "")
 
-      // Save user to Firestore
+      // Save user to backend
       if (email) {
-        await saveUserToFirestore(
-          userID,
-          email,
-          user.displayName?.split(" ")[0] || "",
-          user.displayName?.split(" ")[1] || ""
-        )
+        const createUserResult = await createUser({
+          userID: userID,
+          email: email,
+          firstName: user.displayName?.split(" ")[0] || "",
+          lastName: user.displayName?.split(" ")[1] || "",
+        })
+        if (createUserResult.err) {
+          console.error("Error saving user to backend:", createUserResult.err)
+          // Continue with the flow even if backend save fails
+        }
       }
 
       // If it's a new user, show TOS before proceeding

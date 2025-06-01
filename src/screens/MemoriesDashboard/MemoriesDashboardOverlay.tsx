@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
-import { grabConversationHistoryCount } from "@/control/firebase"
+import { getConversationCount } from "@/api/userContent"
 import Modal from "@/components/ui/modals/Modal"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -64,8 +64,11 @@ export default function MemoriesDashboardOverlay() {
     const fetchMemoryCount = async () => {
       if (user?.uid) {
         try {
-          const count = await grabConversationHistoryCount(user.uid)
-          setMemoryCount(count)
+          const result = await getConversationCount(user.uid)
+          if (result instanceof Error) {
+            throw result
+          }
+          setMemoryCount(result.count)
         } catch (error) {
           console.error("Error fetching memory count:", error)
         }

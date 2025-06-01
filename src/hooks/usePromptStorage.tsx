@@ -8,10 +8,10 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/useAuth"
 import {
-  savePromptToFirestore,
-  getPromptFromFirestore,
-  clearPromptFromFirestore,
-} from "@/control/firebase"
+  savePromptDraft,
+  getPromptDraft,
+  clearPromptDraft,
+} from "@/api/userDrafts"
 import { debounce, DebouncedFunction } from "@/utils/debounce"
 
 interface PromptData {
@@ -60,8 +60,11 @@ function usePromptStorageData(): PromptStorageContextType {
   const [debounceSave] = useState<
     DebouncedFunction<(userId: string, prompt: string, image?: string) => void>
   >(() =>
-    debounce((userId: string, prompt: string, image: string = "") => {
-      savePromptToFirestore(userId, prompt, image)
+    debounce(async (userId: string, prompt: string, image: string = "") => {
+      const result = await savePromptDraft(userId, prompt, image)
+      if (result instanceof Error) {
+        console.error("Error saving draft:", result)
+      }
     }, 500)
   )
 
@@ -77,8 +80,14 @@ function usePromptStorageData(): PromptStorageContextType {
     queryKey: ["promptStorage", user?.uid],
     queryFn: async () => {
       if (!user?.uid) throw new Error("No user")
-      const data = await getPromptFromFirestore(user.uid)
-      return data || { prompt: "", image: "" }
+      const result = await getPromptDraft(user.uid)
+      if (result instanceof Error) {
+        if (result.message === "No draft found") {
+          return { prompt: "", image: "" }
+        }
+        throw result
+      }
+      return result
     },
     enabled: !!user,
     staleTime: 2000,
@@ -96,7 +105,10 @@ function usePromptStorageData(): PromptStorageContextType {
     }) => {
       if (!user?.uid) throw new Error("No user")
       if (!prompt.trim() && !image) {
-        await clearPromptFromFirestore(user.uid)
+        const result = await clearPromptDraft(user.uid)
+        if (result instanceof Error) {
+          throw result
+        }
         return { prompt: "", image: "" }
       }
       debounceSave(user.uid, prompt, image)
@@ -111,7 +123,10 @@ function usePromptStorageData(): PromptStorageContextType {
   const clearMutation = useMutation({
     mutationFn: async () => {
       if (!user?.uid) throw new Error("No user")
-      await clearPromptFromFirestore(user.uid)
+      const result = await clearPromptDraft(user.uid)
+      if (result instanceof Error) {
+        throw result
+      }
       return { prompt: "", image: "" }
     },
     onSuccess: (data) => {

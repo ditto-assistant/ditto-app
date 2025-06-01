@@ -1,5 +1,6 @@
 import React from "react"
-import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
+import { useFormStatus } from "react-dom"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useBalance } from "@/hooks/useBalance"
 import { useAuth, useAuthToken } from "@/hooks/useAuth"
 import { routes } from "@/firebaseConfig"
@@ -7,7 +8,7 @@ import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
 import { useUser } from "@/hooks/useUser"
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
 import SubscriptionCard from "@/components/subscription/SubscriptionCard"
-import { CreditCard, LogOut, Moon } from "lucide-react"
+import { CreditCard, LogOut, Moon, Edit3, Check, X } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
 import {
@@ -20,13 +21,112 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
 import { useUserAvatar } from "@/hooks/useUserAvatar"
+import { updateUserName } from "@/api/updateUserName"
+import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
+
+// Name edit form component that uses React 19 form actions
+const NameEditForm: React.FC<{
+  user: any
+  onCancel: () => void
+  onSuccess: () => void
+}> = ({ user, onCancel, onSuccess }) => {
+  const queryClient = useQueryClient()
+
+  const updateNameAction = async (formData: FormData) => {
+    const firstName = formData.get("firstName") as string
+    const lastName = formData.get("lastName") as string
+
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error("Both first and last name are required")
+      return
+    }
+
+    if (!user?.uid) {
+      toast.error("User not authenticated")
+      return
+    }
+
+    const result = await updateUserName(user.uid, {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+    })
+
+    if (result.err) {
+      toast.error(`Failed to update name: ${result.err}`)
+      return
+    }
+
+    // Update the cache with the new user data
+    queryClient.setQueryData(["user"], result.ok)
+    toast.success("Name updated successfully!")
+    onSuccess()
+  }
+
+  // Extract current names, fallback to display name if needed
+  const currentFirstName =
+    user?.firstName || user?.displayName?.split(" ")[0] || ""
+  const currentLastName =
+    user?.lastName || user?.displayName?.split(" ")[1] || ""
+
+  return (
+    <form action={updateNameAction} className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          name="firstName"
+          placeholder="First Name"
+          defaultValue={currentFirstName}
+          required
+          className="h-9"
+        />
+        <Input
+          name="lastName"
+          placeholder="Last Name"
+          defaultValue={currentLastName}
+          required
+          className="h-9"
+        />
+      </div>
+      <div className="flex gap-2">
+        <NameFormSubmitButton />
+        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+          <X className="h-4 w-4 mr-1" />
+          Cancel
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+// Separate component for submit button to use useFormStatus
+const NameFormSubmitButton: React.FC = () => {
+  const { pending } = useFormStatus()
+
+  return (
+    <Button type="submit" size="sm" disabled={pending}>
+      {pending ? (
+        <>
+          <Skeleton className="h-3 w-3 rounded-full mr-1" />
+          Saving...
+        </>
+      ) : (
+        <>
+          <Check className="h-4 w-4 mr-1" />
+          Save
+        </>
+      )}
+    </Button>
+  )
+}
 
 const SubscriptionTabContent: React.FC = () => {
   const { data: user, isLoading: isUserLoading } = useUser()
   const [isYearly, setIsYearly] = React.useState(false)
+  const [isEditingName, setIsEditingName] = React.useState(false)
   const balance = useBalance()
   const auth = useAuth()
   const userAvatar = useUserAvatar(auth.user?.photoURL)
@@ -59,8 +159,73 @@ const SubscriptionTabContent: React.FC = () => {
     isUserLoading
   ) {
     return (
-      <div className="flex justify-center items-center h-40">
-        <LoadingSpinner size={45} />
+      <div className="p-4 space-y-6">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Avatar and name section skeleton */}
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-6 w-6" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+
+            {/* Email skeleton */}
+            <Skeleton className="h-3 w-48" />
+
+            {/* Subscription status skeleton */}
+            <Skeleton className="h-5 w-16 rounded" />
+
+            {/* Balance section skeleton */}
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-5 w-20 rounded ml-auto" />
+            </div>
+
+            {/* Theme section skeleton */}
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-6 flex items-center justify-center">
+                <Skeleton className="h-6 w-6 rounded" />
+              </div>
+              <Skeleton className="h-4 w-12" />
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex gap-4">
+            <Skeleton className="h-10 flex-1 rounded" />
+            <Skeleton className="h-10 flex-1 rounded" />
+          </CardFooter>
+        </Card>
+
+        {/* Subscription cards skeleton */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-4 w-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-12 w-full mb-4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-10 w-full rounded" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
@@ -105,21 +270,58 @@ const SubscriptionTabContent: React.FC = () => {
         <CardTitle>Account</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0 mb-1">
-          <div className="flex items-center space-x-2">
-            <img
-              src={userAvatar || undefined}
-              alt="User Avatar"
-              className="h-5 w-5 rounded-full"
+        {/* Avatar and name section */}
+        <div className="space-y-4">
+          {isEditingName ? (
+            <NameEditForm
+              user={{ ...user, uid, displayName }}
+              onCancel={() => setIsEditingName(false)}
+              onSuccess={() => setIsEditingName(false)}
             />
-            {displayName ? (
-              <span className="text-sm font-medium">{displayName}</span>
-            ) : null}
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">{email}</span>
-          </div>
-          {user && user.subscriptionStatus !== "free" && (
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <img
+                  src={userAvatar || undefined}
+                  alt="User Avatar"
+                  className="h-6 w-6 rounded-full"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingName(true)}
+                  className="h-6 w-6 p-0 flex items-center justify-center"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+                <div className="text-sm">
+                  {user?.firstName && user?.lastName ? (
+                    <span>
+                      {user.firstName} {user.lastName}
+                    </span>
+                  ) : displayName ? (
+                    <span className="text-muted-foreground">{displayName}</span>
+                  ) : (
+                    <span className="text-muted-foreground italic">
+                      Name not set
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Email */}
+        <div>
+          <span className="text-xs text-muted-foreground">{email}</span>
+        </div>
+
+        {/* Subscription status */}
+        {user && user.subscriptionStatus !== "free" && (
+          <div>
             <Badge
               className={cn(
                 "rounded",
@@ -143,29 +345,29 @@ const SubscriptionTabContent: React.FC = () => {
                 <SubscriptionBoostIndicator isBoosted={true} className="ml-1" />
               )}
             </Badge>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <CreditCard className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm">
-              Balance: {balance.data?.balance} tokens
-            </span>
           </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          <CreditCard className="h-5 w-5 text-muted-foreground" />
+          <span className="text-sm">
+            Balance: {balance.data?.balance} tokens
+          </span>
           {user?.cancelAtPeriodEnd && user.currentPeriodEnd && (
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-500">
+            <Badge
+              variant="outline"
+              className="bg-amber-500/10 text-amber-500 ml-auto"
+            >
               Ending {user.currentPeriodEnd.toLocaleDateString()}
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Moon className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm">Theme</span>
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-6 flex items-center justify-center">
+            <ModeToggle />
           </div>
-          <ModeToggle />
+          <span className="text-sm">Theme</span>
         </div>
       </CardContent>
 

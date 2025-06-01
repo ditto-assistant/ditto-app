@@ -2,7 +2,7 @@ import { ReactNode, createContext, useContext, useState } from "react"
 import { useModal } from "./useModal"
 import { getMemories, Memory } from "@/api/getMemories"
 import { useModelPreferences } from "./useModelPreferences"
-import { auth } from "@/control/firebase"
+import { auth } from "@/lib/firebase"
 import { toast } from "sonner"
 
 // Recursively filter out a memory by ID from a memories array

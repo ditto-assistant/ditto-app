@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router"
-import { removeUserFromFirestore } from "@/control/firebase"
+import { deleteUserAccount } from "@/api/userContent"
 import { useAuth } from "@/hooks/useAuth"
 import { useTermsOfService } from "@/hooks/useTermsOfService"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
@@ -87,7 +87,10 @@ export default function TermsOfServiceDialog({
         onConfirm: async () => {
           // Delete the user's account
           if (user?.uid) {
-            await removeUserFromFirestore(user?.uid)
+            const result = await deleteUserAccount(user?.uid)
+            if (result instanceof Error) {
+              console.error("Error deleting user account:", result)
+            }
           }
           // Clear local storage
           localStorage.clear()

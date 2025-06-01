@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
+import { toast } from "sonner"
 import {
   Plus,
   Image,
@@ -14,32 +15,25 @@ import {
   Square,
   Brain,
 } from "lucide-react"
-import { sendPrompt, cancelPrompt } from "../control/agent"
-import { auth, uploadImageToFirebaseStorageBucket } from "../control/firebase"
-import { useModelPreferences } from "@/hooks/useModelPreferences"
-import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
-import { useBalance } from "@/hooks/useBalance"
-import { usePlatform } from "@/hooks/usePlatform"
-import { useConversationHistory } from "@/hooks/useConversationHistory"
-import { usePromptStorage } from "@/hooks/usePromptStorage"
-import { useModal } from "@/hooks/useModal"
-import { DITTO_LOGO, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
-import { toast } from "sonner"
-import { useUser } from "@/hooks/useUser"
-import { ErrorPaymentRequired } from "@/types/errors"
-import { useComposeContext } from "@/contexts/ComposeContext"
+import { sendPrompt, cancelPrompt } from "@/control/agent"
+import { uploadImage } from "@/api/userContent"
 import { cn } from "@/lib/utils"
 import { HapticPattern, triggerHaptic } from "@/utils/haptics"
-
-// UI components
+import { DITTO_LOGO, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
+import { ErrorPaymentRequired } from "@/types/errors"
+import { useAuth } from "@/hooks/useAuth"
+import { useBalance } from "@/hooks/useBalance"
+import { useComposeContext } from "@/contexts/ComposeContext"
+import { useConversationHistory } from "@/hooks/useConversationHistory"
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
+import { useModal } from "@/hooks/useModal"
+import { useModelPreferences } from "@/hooks/useModelPreferences"
+import { usePlatform } from "@/hooks/usePlatform"
+import { usePromptStorage } from "@/hooks/usePromptStorage"
+import { useUser } from "@/hooks/useUser"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Card,
   CardContent,
@@ -47,8 +41,13 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Tooltip,
   TooltipContent,
@@ -68,12 +67,14 @@ export default function SendMessage({
   onClearCapturedImage,
   onStop,
 }: SendMessageProps) {
-  const [image, setImage] = useState<string>(capturedImage || "")
+  const [image, setImage] = useState<string | File>(capturedImage || "")
+  const [isUploading, setIsUploading] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const preferences = useModelPreferences()
   const { handleImageClick } = useImageViewerHandler()
   const balance = useBalance()
   const { isMobile } = usePlatform()
+  const { data: userData } = useUser()
   const {
     refetch,
     addOptimisticMessage,
@@ -92,7 +93,6 @@ export default function SendMessage({
   const { clearPrompt } = usePromptStorage()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Ditto logo button state and refs
   const logoButtonRef = useRef<HTMLDivElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const modal = useModal()
@@ -103,6 +103,7 @@ export default function SendMessage({
   const openTokenModal = modal.createOpenHandler("tokenCheckout")
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
+  const { user: authUser } = useAuth()
   const user = useUser()
 
   const [showSalesPitch, setShowSalesPitch] = useState(false)
@@ -152,7 +153,7 @@ export default function SendMessage({
 
       setIsWaitingForResponse(true)
       try {
-        const userID = auth.currentUser?.uid
+        const userID = authUser?.uid
         if (!userID) {
           toast.error("Please log in to send a message")
           setIsWaitingForResponse(false)
@@ -163,21 +164,42 @@ export default function SendMessage({
           setIsWaitingForResponse(false)
           return
         }
-        const firstName = localStorage.getItem("firstName") || ""
+        const firstName = userData?.firstName || ""
         let messageToSend = message
         let imageURI = ""
+        let uploadSuccessful = false
+
+        // Handle image upload if present
         if (image) {
+          setIsUploading(true)
           try {
-            imageURI = await uploadImageToFirebaseStorageBucket(image, userID)
-            messageToSend = `![image](${imageURI})\n\n${messageToSend}`
+            const uploadResult = await uploadImage(userID, image)
+            if (uploadResult instanceof Error) {
+              throw uploadResult
+            }
+            console.log(
+              `🚀 [SendMessage] Presigned uploaded image: ${uploadResult}`
+            )
+            imageURI = uploadResult
+            messageToSend = `![image](${uploadResult})\n\n${messageToSend}`
+            uploadSuccessful = true
           } catch (uploadError) {
             console.error("Error uploading image:", uploadError)
-            toast.error("Failed to upload image")
+            toast.error("Failed to upload image. Please try again.")
+            setIsWaitingForResponse(false)
+            setIsUploading(false)
+            return
+          } finally {
+            setIsUploading(false)
           }
         }
+
+        // Only clear state after successful upload (or no image)
         clearPrompt()
         setMessage("")
-        setImage("")
+        if (uploadSuccessful || !image) {
+          setImage("")
+        }
         console.log("🚀 [SendMessage] Creating optimistic message")
         const optimisticMessageId = addOptimisticMessage(
           messageToSend,
@@ -234,12 +256,14 @@ export default function SendMessage({
       setIsWaitingForResponse,
       preferences.preferences,
       clearPrompt,
+      authUser?.uid,
       setMessage,
       addOptimisticMessage,
       updateOptimisticResponse,
       refetch,
       finalizeOptimisticMessage,
       user?.data?.planTier,
+      userData?.firstName,
       onStop,
     ]
   )
@@ -257,13 +281,7 @@ export default function SendMessage({
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setImage(e.target.result as string)
-        }
-      }
-      reader.readAsDataURL(file)
+      setImage(file)
     }
   }
 
@@ -310,13 +328,7 @@ export default function SendMessage({
       if (items[i].type.indexOf("image") !== -1) {
         const blob = items[i].getAsFile()
         if (blob) {
-          const reader = new FileReader()
-          reader.onload = () => {
-            if (reader.result) {
-              setImage(reader.result as string)
-            }
-          }
-          reader.readAsDataURL(blob)
+          setImage(blob)
           event.preventDefault()
           break
         }
@@ -588,8 +600,10 @@ export default function SendMessage({
                         variant="ghost"
                         size="icon"
                         type="submit"
-                        disabled={isInvalidConfig}
-                        aria-label="Send message"
+                        disabled={isInvalidConfig || isUploading}
+                        aria-label={
+                          isUploading ? "Uploading image..." : "Send message"
+                        }
                         className="h-10 w-10 p-0 rounded-full border-none ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all hover:bg-transparent focus:bg-transparent"
                         onPointerDown={triggerLightHaptic}
                       >
@@ -600,9 +614,11 @@ export default function SendMessage({
                   <TooltipContent>
                     {isInvalidConfig
                       ? "You need tokens to use this model"
-                      : isWaitingForResponse
-                        ? "Stop generation"
-                        : "Send message"}
+                      : isUploading
+                        ? "Uploading image..."
+                        : isWaitingForResponse
+                          ? "Stop generation"
+                          : "Send message"}
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -623,9 +639,19 @@ export default function SendMessage({
           <div
             className="absolute bottom-full left-3 mb-3 bg-background/85 backdrop-blur-md rounded-md 
             flex items-center shadow-md border border-border overflow-hidden cursor-pointer"
-            onClick={() => handleImageClick(image)}
+            onClick={() => {
+              const imageUrl =
+                typeof image === "string" ? image : URL.createObjectURL(image)
+              handleImageClick(imageUrl)
+            }}
           >
-            <img src={image} alt="Preview" className="w-12 h-12 object-cover" />
+            <img
+              src={
+                typeof image === "string" ? image : URL.createObjectURL(image)
+              }
+              alt="Preview"
+              className="w-12 h-12 object-cover"
+            />
             <Button
               variant="ghost"
               size="icon"
