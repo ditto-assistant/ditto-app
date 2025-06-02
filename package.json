@@ -34,7 +34,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "sonner": "^2.0.4",
     "tailwind-merge": "^3.3.0",
-    "tw-animate-css": "^1.3.2",
+    "tw-animate-css": "^1.3.3",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.10",
     "vite-plugin-pwa": "^1.0.0",
