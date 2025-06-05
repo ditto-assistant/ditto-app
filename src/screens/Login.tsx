@@ -198,7 +198,7 @@ const Login = () => {
       // Send email verification with proper action code settings
       const actionCodeSettings = {
         url: `${window.location.origin}/verify-email`,
-        handleCodeInApp: false
+        handleCodeInApp: false,
       }
       await sendEmailVerification(user, actionCodeSettings)
 

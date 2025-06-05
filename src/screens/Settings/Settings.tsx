@@ -99,7 +99,7 @@ export default function Settings() {
         toast.error("Failed to delete user data")
         return
       }
-      
+
       // Then delete the Firebase user account
       await deleteUser(currentUser)
       console.log("Account deleted")
