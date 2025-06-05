@@ -13,7 +13,7 @@ export default function AuthenticatedRoute({
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && (!user || !user.emailVerified)) {
       navigate("/login")
     }
   }, [isLoading, user, navigate])

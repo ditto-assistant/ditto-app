@@ -92,13 +92,17 @@ export default function Settings() {
         return
       }
 
-      await deleteUser(currentUser)
-      console.log("Account deleted")
+      // Delete user data from backend first (while still authenticated)
       const result = await deleteUserAccount(currentUser.uid)
       if (result instanceof Error) {
         console.error("Error deleting user data:", result)
         toast.error("Failed to delete user data")
+        return
       }
+      
+      // Then delete the Firebase user account
+      await deleteUser(currentUser)
+      console.log("Account deleted")
       clearStorage()
       closeModal()
     } catch (error: unknown) {

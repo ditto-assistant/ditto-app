@@ -17,6 +17,7 @@ import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { FirebaseError } from "firebase/app"
 
 type PasswordInputProps = {
   value: string
@@ -73,7 +74,7 @@ const Login = () => {
   const redirectTo = searchParams.get("redirect") || "/"
 
   useEffect(() => {
-    if (user) {
+    if (user && user.emailVerified) {
       navigate(redirectTo)
     }
   }, [user, navigate, redirectTo])
@@ -92,8 +93,7 @@ const Login = () => {
         return
       }
 
-      // Get user data from backend API (if it exists)
-      const userID = user.uid
+      // Store user ID for session
       localStorage.setItem("userID", user.uid)
       // The navigation will be handled by the useEffect hook
     } catch (error) {
@@ -103,47 +103,11 @@ const Login = () => {
   }
 
   const handleSignUp = async () => {
-    if (password !== retypePassword) {
-      console.error("Passwords do not match")
-      toast.error("Passwords do not match. Please try again.")
-      return
-    }
-
-    if (firstName === "" || lastName === "") {
-      console.error("First name and last name are required")
-      toast.error("First name and last name are required. Please try again.")
-      return
-    }
-
+    // This is called after TOS acceptance, so just finish the signup process
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      )
-      const user = userCredential.user
-
-      // Send email verification
-      await sendEmailVerification(user)
       setVerificationMessage(
         "A verification email has been sent to your email address. Please verify your email and then sign in."
       )
-
-      // Call the function to save user data to backend
-      const createUserResult = await createUser({
-        userID: user.uid,
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-      })
-      if (createUserResult.err) {
-        console.error("Error saving user to backend:", createUserResult.err)
-        // Continue with the flow even if backend save fails
-      }
-
-      // Save to local storage
-      localStorage.setItem("userID", user.uid)
-      localStorage.removeItem("hasSeenTOS")
 
       // Switch back to sign-in mode and clear fields after successful signup
       setIsCreatingAccount(false)
@@ -153,8 +117,8 @@ const Login = () => {
       setFirstName("")
       setLastName("")
     } catch (error) {
-      console.error("Error creating account:", error)
-      toast.error("Error creating account. Please try again.")
+      console.error("Error completing signup:", error)
+      toast.error("Error completing signup. Please try again.")
     }
   }
 
@@ -210,8 +174,8 @@ const Login = () => {
     setShowPassword(!showPassword)
   }
 
-  const handleSignUpClick = () => {
-    // Validate form fields before showing TOS
+  const handleSignUpClick = async () => {
+    // Validate form fields before creating account
     if (!email || !password || !retypePassword || !firstName || !lastName) {
       toast.error("Please fill out all fields before signing up.")
       return
@@ -222,10 +186,57 @@ const Login = () => {
       return
     }
 
-    // If all validations pass, show TOS
-    setShowTOS(true)
-    // This is not just viewing TOS, it's part of the signup process
-    setIsViewingTOS(false)
+    try {
+      // Create the user account first
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
+      const user = userCredential.user
+
+      // Send email verification with proper action code settings
+      const actionCodeSettings = {
+        url: `${window.location.origin}/verify-email`,
+        handleCodeInApp: false
+      }
+      await sendEmailVerification(user, actionCodeSettings)
+
+      // Call the function to save user data to backend
+      const createUserResult = await createUser({
+        userID: user.uid,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+      })
+      if (createUserResult.err) {
+        console.error("Error saving user to backend:", createUserResult.err)
+        // Continue with the flow even if backend save fails
+      }
+
+      // Now show TOS - user.uid will be available since account is created
+      setShowTOS(true)
+      setIsViewingTOS(false)
+    } catch (error) {
+      console.error("Error creating account:", error)
+
+      // Handle specific Firebase auth errors
+      if (!(error instanceof FirebaseError)) {
+        toast.error("Error creating account. Please try again.")
+        return
+      }
+
+      const errorMessages: Record<string, string> = {
+        "auth/weak-password": "Password should be at least 6 characters.",
+        "auth/email-already-in-use":
+          "An account with this email already exists.",
+        "auth/invalid-email": "Please enter a valid email address.",
+      }
+
+      toast.error(
+        errorMessages[error.code] || "Error creating account. Please try again."
+      )
+    }
   }
 
   return (

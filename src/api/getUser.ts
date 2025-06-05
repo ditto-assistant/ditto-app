@@ -14,9 +14,9 @@ const PreferredModelsSchema = z.object({
 
 // Define the tools preferences schema
 const ToolPreferencesSchema = z.object({
-  htmlScript: z.boolean(),
   imageGeneration: z.boolean(),
   googleSearch: z.boolean(),
+  readLinks: z.boolean(),
 })
 
 // Define the memory preferences schema
