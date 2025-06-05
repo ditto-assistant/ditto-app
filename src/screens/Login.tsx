@@ -189,7 +189,7 @@ const Login = () => {
       toast.success("Password reset email sent! Check your inbox.")
     } catch (error) {
       console.error("Error sending password reset email:", error)
-      
+
       if (!(error instanceof FirebaseError)) {
         toast.error("Error sending password reset email. Please try again.")
         return
@@ -202,7 +202,8 @@ const Login = () => {
       }
 
       toast.error(
-        errorMessages[error.code] || "Error sending password reset email. Please try again."
+        errorMessages[error.code] ||
+          "Error sending password reset email. Please try again."
       )
     }
   }
@@ -284,7 +285,11 @@ const Login = () => {
 
         <div className="border-b border-border/40 bg-primary/5 px-8 py-7">
           <h1 className="text-center text-3xl font-bold tracking-tight text-foreground">
-            {isPasswordReset ? "Reset Password" : isCreatingAccount ? "Create Account" : "Sign In to Ditto"}
+            {isPasswordReset
+              ? "Reset Password"
+              : isCreatingAccount
+                ? "Create Account"
+                : "Sign In to Ditto"}
           </h1>
         </div>
 
@@ -294,14 +299,27 @@ const Login = () => {
               {resetEmailSent ? (
                 <div className="text-center space-y-4">
                   <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900/20">
-                    <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-8 h-8 text-green-600 dark:text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">Email Sent!</h3>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Email Sent!
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    We&apos;ve sent a password reset link to <strong>{email}</strong>. 
-                    Check your inbox and follow the instructions to reset your password.
+                    We&apos;ve sent a password reset link to{" "}
+                    <strong>{email}</strong>. Check your inbox and follow the
+                    instructions to reset your password.
                   </p>
                   <Button
                     variant="outline"
@@ -318,7 +336,8 @@ const Login = () => {
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground text-center">
-                    Enter your email address and we&apos;ll send you a link to reset your password.
+                    Enter your email address and we&apos;ll send you a link to
+                    reset your password.
                   </p>
                   <Input
                     type="email"
