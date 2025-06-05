@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
 } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { getUser } from "@/api/getUser"
@@ -70,6 +71,8 @@ const Login = () => {
   const [verificationMessage, setVerificationMessage] = useState("")
   const [showTOS, setShowTOS] = useState(false)
   const [isViewingTOS, setIsViewingTOS] = useState(false)
+  const [isPasswordReset, setIsPasswordReset] = useState(false)
+  const [resetEmailSent, setResetEmailSent] = useState(false)
   const [searchParams] = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "/"
 
@@ -174,6 +177,36 @@ const Login = () => {
     setShowPassword(!showPassword)
   }
 
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast.error("Please enter your email address.")
+      return
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setResetEmailSent(true)
+      toast.success("Password reset email sent! Check your inbox.")
+    } catch (error) {
+      console.error("Error sending password reset email:", error)
+      
+      if (!(error instanceof FirebaseError)) {
+        toast.error("Error sending password reset email. Please try again.")
+        return
+      }
+
+      const errorMessages: Record<string, string> = {
+        "auth/user-not-found": "No account found with this email address.",
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/too-many-requests": "Too many attempts. Please try again later.",
+      }
+
+      toast.error(
+        errorMessages[error.code] || "Error sending password reset email. Please try again."
+      )
+    }
+  }
+
   const handleSignUpClick = async () => {
     // Validate form fields before creating account
     if (!email || !password || !retypePassword || !firstName || !lastName) {
@@ -251,66 +284,137 @@ const Login = () => {
 
         <div className="border-b border-border/40 bg-primary/5 px-8 py-7">
           <h1 className="text-center text-3xl font-bold tracking-tight text-foreground">
-            {isCreatingAccount ? "Create Account" : "Sign In to Ditto"}
+            {isPasswordReset ? "Reset Password" : isCreatingAccount ? "Create Account" : "Sign In to Ditto"}
           </h1>
         </div>
 
         <div className="space-y-6 px-8 py-10">
-          {isCreatingAccount && (
-            <div className="grid grid-cols-2 gap-4">
+          {isPasswordReset ? (
+            <>
+              {resetEmailSent ? (
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900/20">
+                    <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">Email Sent!</h3>
+                  <p className="text-sm text-muted-foreground">
+                    We&apos;ve sent a password reset link to <strong>{email}</strong>. 
+                    Check your inbox and follow the instructions to reset your password.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsPasswordReset(false)
+                      setResetEmailSent(false)
+                      setEmail("")
+                    }}
+                    className="w-full"
+                  >
+                    Back to Sign In
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Enter your email address and we&apos;ll send you a link to reset your password.
+                  </p>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                  <div className="pt-2">
+                    <Button
+                      className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
+                      onClick={handlePasswordReset}
+                    >
+                      Send Reset Email
+                    </Button>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setIsPasswordReset(false)}
+                    className="w-full"
+                  >
+                    Back to Sign In
+                  </Button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {isCreatingAccount && (
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              )}
+
               <Input
-                type="text"
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
               />
-              <Input
-                type="text"
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+
+              <PasswordInput
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                showPassword={showPassword}
+                togglePasswordVisibility={togglePasswordVisibility}
               />
-            </div>
+
+              {isCreatingAccount && (
+                <PasswordInput
+                  placeholder="Re-type Password"
+                  value={retypePassword}
+                  onChange={(e) => setRetypePassword(e.target.value)}
+                  showPassword={showPassword}
+                  togglePasswordVisibility={togglePasswordVisibility}
+                />
+              )}
+
+              <div className="pt-2">
+                <Button
+                  className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
+                  onClick={isCreatingAccount ? handleSignUpClick : handleSignIn}
+                >
+                  {isCreatingAccount ? "Sign Up" : "Sign In"}
+                </Button>
+              </div>
+
+              {!isCreatingAccount && (
+                <div className="text-center">
+                  <button
+                    onClick={() => setIsPasswordReset(true)}
+                    className="text-sm font-medium text-primary transition-colors hover:text-primary/90"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
-          />
-
-          <PasswordInput
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            showPassword={showPassword}
-            togglePasswordVisibility={togglePasswordVisibility}
-          />
-
-          {isCreatingAccount && (
-            <PasswordInput
-              placeholder="Re-type Password"
-              value={retypePassword}
-              onChange={(e) => setRetypePassword(e.target.value)}
-              showPassword={showPassword}
-              togglePasswordVisibility={togglePasswordVisibility}
-            />
-          )}
-
-          <div className="pt-2">
-            <Button
-              className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
-              onClick={isCreatingAccount ? handleSignUpClick : handleSignIn}
-            >
-              {isCreatingAccount ? "Sign Up" : "Sign In"}
-            </Button>
-          </div>
-
-          {!isCreatingAccount && (
+          {!isCreatingAccount && !isPasswordReset && (
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border/50"></div>
@@ -323,7 +427,7 @@ const Login = () => {
             </div>
           )}
 
-          {!isCreatingAccount && (
+          {!isCreatingAccount && !isPasswordReset && (
             <Button
               variant="outline"
               className="h-12 w-full rounded-lg text-base font-medium transition-all duration-200 border-border/50 bg-background/50 shadow-sm hover:bg-accent hover:text-accent-foreground hover:shadow-md"
@@ -333,20 +437,22 @@ const Login = () => {
             </Button>
           )}
 
-          <p className="pt-2 text-center text-sm">
-            {isCreatingAccount
-              ? "Already have an account?"
-              : "Don't have an account?"}
-            <button
-              onClick={() => {
-                setIsCreatingAccount(!isCreatingAccount)
-                setVerificationMessage("")
-              }}
-              className="ml-1 font-medium text-primary transition-colors hover:text-primary/90"
-            >
-              {isCreatingAccount ? "Sign in here" : "Create one here"}
-            </button>
-          </p>
+          {!isPasswordReset && (
+            <p className="pt-2 text-center text-sm">
+              {isCreatingAccount
+                ? "Already have an account?"
+                : "Don't have an account?"}
+              <button
+                onClick={() => {
+                  setIsCreatingAccount(!isCreatingAccount)
+                  setVerificationMessage("")
+                }}
+                className="ml-1 font-medium text-primary transition-colors hover:text-primary/90"
+              >
+                {isCreatingAccount ? "Sign in here" : "Create one here"}
+              </button>
+            </p>
+          )}
 
           {verificationMessage && (
             <div className="flex items-center gap-3 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
@@ -355,18 +461,20 @@ const Login = () => {
             </div>
           )}
 
-          <p className="pt-2 text-center text-xs text-muted-foreground">
-            By signing up, you agree to our{" "}
-            <button
-              className="font-medium text-primary transition-colors hover:text-primary/90"
-              onClick={() => {
-                setShowTOS(true)
-                setIsViewingTOS(true)
-              }}
-            >
-              Terms of Service
-            </button>
-          </p>
+          {!isPasswordReset && (
+            <p className="pt-2 text-center text-xs text-muted-foreground">
+              By signing up, you agree to our{" "}
+              <button
+                className="font-medium text-primary transition-colors hover:text-primary/90"
+                onClick={() => {
+                  setShowTOS(true)
+                  setIsViewingTOS(true)
+                }}
+              >
+                Terms of Service
+              </button>
+            </p>
+          )}
         </div>
       </div>
 
