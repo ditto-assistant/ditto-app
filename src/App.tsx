@@ -57,7 +57,6 @@ const loadE = <T extends React.ComponentType>(
 }
 
 const Login = loadE(() => import("@/screens/Login"))
-const EmailVerification = loadE(() => import("@/screens/EmailVerification"))
 const FeedbackModal = loadE(() => import("@/components/FeedbackModal"))
 const ImageViewer = loadE(() => import("@/components/ImageViewer"))
 const HomeScreen = loadE(() => import("@/screens/HomeScreen"))
@@ -77,7 +76,6 @@ const router = createBrowserRouter(
     <Route path="/">
       <Route element={<Layout className="login-layout" />}>
         <Route path="login" Component={Login} />
-        <Route path="verify-email" Component={EmailVerification} />
       </Route>
 
       <Route

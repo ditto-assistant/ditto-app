@@ -195,10 +195,10 @@ const Login = () => {
       )
       const user = userCredential.user
 
-      // Send email verification with proper action code settings
+      // Send email verification with continue URL back to login
       const actionCodeSettings = {
-        url: `${window.location.origin}/verify-email`,
-        handleCodeInApp: true,
+        url: `${window.location.origin}/login`,
+        handleCodeInApp: false,
       }
       await sendEmailVerification(user, actionCodeSettings)
 
