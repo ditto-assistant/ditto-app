@@ -135,6 +135,25 @@
   padding: 0px 10px;
 }
 
+/* Session-specific message styling */
+.message-pair.in-session {
+  background: rgba(99, 102, 241, 0.05);
+  border-left: 2px solid rgba(99, 102, 241, 0.3);
+  margin-left: 8px;
+  padding-left: 16px;
+  border-radius: 0 8px 8px 0;
+}
+
+.message-pair.no-session {
+  /* Legacy messages without sessions keep default styling */
+}
+
+/* Session divider styling */
+.session-divider {
+  margin: 24px 0;
+  position: relative;
+}
+
 .loading-indicator {
   position: sticky;
   top: 0;

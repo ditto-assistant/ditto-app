@@ -14,9 +14,11 @@ import {
   X,
   Square,
   Brain,
+  MessageSquare,
 } from "lucide-react"
-import { sendPrompt, cancelPrompt } from "@/control/agent"
+import { chatV3, type ContentV3, type ChatV3Request } from "@/api/chatV3"
 import { uploadImage } from "@/api/userContent"
+import { useSessionManager } from "@/hooks/useSessionManager"
 import { cn } from "@/lib/utils"
 import { HapticPattern, triggerHaptic } from "@/utils/haptics"
 import { DITTO_LOGO, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
@@ -53,6 +55,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { getDeviceID } from "@/utils/deviceId"
+import SessionDetailsModal from "./SessionDetailsModal"
 
 interface SendMessageProps {
   onCameraOpen: () => void
@@ -67,16 +71,16 @@ export default function SendMessage({
   onClearCapturedImage,
   onStop,
 }: SendMessageProps) {
-  const [image, setImage] = useState<string | File>(capturedImage || "")
+  const [images, setImages] = useState<Array<string | File>>(
+    capturedImage ? [capturedImage] : []
+  )
   const [isUploading, setIsUploading] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const preferences = useModelPreferences()
   const { handleImageClick } = useImageViewerHandler()
   const balance = useBalance()
   const { isMobile } = usePlatform()
-  const { data: userData } = useUser()
   const {
-    refetch,
     addOptimisticMessage,
     updateOptimisticResponse,
     finalizeOptimisticMessage,
@@ -105,13 +109,17 @@ export default function SendMessage({
 
   const { user: authUser } = useAuth()
   const user = useUser()
+  const { currentSessionId, setCurrentSessionId } = useSessionManager()
 
   const [showSalesPitch, setShowSalesPitch] = useState(false)
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null)
 
   // Track if we're in an invalid configuration (zero balance with paid model)
   const [isInvalidConfig, setIsInvalidConfig] = useState(false)
 
   const [autoScroll, setAutoScroll] = useState(false)
+  const [showSessionModal, setShowSessionModal] = useState(false)
 
   useEffect(() => {
     if (balance.data && preferences.preferences) {
@@ -130,28 +138,30 @@ export default function SendMessage({
   }, [balance.data, preferences.preferences])
 
   const handleStopGeneration = useCallback(() => {
-    if (isWaitingForResponse) {
+    if (isWaitingForResponse && abortController) {
       console.log("🛑 [SendMessage] Stopping response generation")
-      const wasCancelled = cancelPrompt()
-      if (wasCancelled) {
-        toast.info("Response generation stopped")
-      }
+      abortController.abort()
+      setAbortController(null)
+      toast.info("Response generation stopped")
       setIsWaitingForResponse(false)
       onStop()
     }
-  }, [isWaitingForResponse, onStop, setIsWaitingForResponse])
+  }, [isWaitingForResponse, abortController, onStop, setIsWaitingForResponse])
 
   const handleSubmit = useCallback(
     async (event?: React.FormEvent) => {
       if (event) event.preventDefault()
       if (isWaitingForResponse) return
-      if (message === "" && !image) return
+      if (message === "" && images.length === 0) return
 
       if (isMenuOpen) {
         setIsMenuOpen(false)
       }
 
       setIsWaitingForResponse(true)
+      const controller = new AbortController()
+      setAbortController(controller)
+
       try {
         const userID = authUser?.uid
         if (!userID) {
@@ -164,77 +174,137 @@ export default function SendMessage({
           setIsWaitingForResponse(false)
           return
         }
-        const firstName = userData?.firstName || ""
-        let messageToSend = message
-        let imageURI = ""
-        let uploadSuccessful = false
 
-        // Handle image upload if present
-        if (image) {
+        // Create the content array for the new API
+        const content: ContentV3[] = []
+
+        // Add text content
+        if (message.trim()) {
+          content.push({
+            type: "text",
+            text: message.trim(),
+          })
+        }
+
+        // Handle image uploads if present
+        if (images.length > 0) {
           setIsUploading(true)
           try {
-            const uploadResult = await uploadImage(userID, image)
-            if (uploadResult instanceof Error) {
-              throw uploadResult
+            for (const image of images) {
+              const uploadResult = await uploadImage(userID, image)
+              if (uploadResult instanceof Error) {
+                throw uploadResult
+              }
+              console.log(
+                `🚀 [SendMessage] Presigned uploaded image: ${uploadResult}`
+              )
+
+              // Add image content to the array
+              content.push({
+                type: "image",
+                imageURL: uploadResult,
+              })
             }
-            console.log(
-              `🚀 [SendMessage] Presigned uploaded image: ${uploadResult}`
-            )
-            imageURI = uploadResult
-            messageToSend = `![image](${uploadResult})\n\n${messageToSend}`
-            uploadSuccessful = true
           } catch (uploadError) {
-            console.error("Error uploading image:", uploadError)
-            toast.error("Failed to upload image. Please try again.")
+            console.error("Error uploading images:", uploadError)
+            toast.error("Failed to upload images. Please try again.")
             setIsWaitingForResponse(false)
             setIsUploading(false)
+            setAbortController(null)
             return
           } finally {
             setIsUploading(false)
           }
         }
 
-        // Only clear state after successful upload (or no image)
+        // Create the request for V3 API
+        const chatRequest: ChatV3Request = {
+          deviceID: getDeviceID(),
+          input: content,
+          deepSearchMemories: true, // TODO: Make this configurable from user preferences
+          userLocalTime: new Date().toISOString(),
+          sessionID: currentSessionId || undefined,
+        }
+
+        // Only clear state after successful setup
         clearPrompt()
         setMessage("")
-        if (uploadSuccessful || !image) {
-          setImage("")
-        }
+        setImages([])
+
         console.log("🚀 [SendMessage] Creating optimistic message")
+        const displayText = content
+          .map((c) =>
+            c.type === "text"
+              ? c.text
+              : c.type === "image"
+                ? `![image](${c.imageURL})`
+                : ""
+          )
+          .join("\n\n")
+        const firstImageURL = content.find((c) => c.type === "image")?.imageURL
+
         const optimisticMessageId = addOptimisticMessage(
-          messageToSend,
-          imageURI
+          displayText,
+          firstImageURL
         )
+
+        let accumulatedResponse = ""
         const streamingCallback = (chunk: string) => {
+          accumulatedResponse += chunk
           updateOptimisticResponse(optimisticMessageId, chunk)
         }
 
+        const progressCallback = (message: string) => {
+          console.log("📊 [SendMessage] Progress:", message)
+        }
+
+        const errorCallback = (error: string) => {
+          console.error("❌ [SendMessage] SSE Error:", error)
+          finalizeOptimisticMessage(optimisticMessageId, `Error: ${error}`)
+        }
+
+        const toolCallsCallback = (toolCalls: unknown[]) => {
+          console.log("🛠️ [SendMessage] Tool calls:", toolCalls)
+          // TODO: Display tool calls in the UI (like "Searching Google...")
+        }
+
+        const toolResultsCallback = (toolResults: unknown[]) => {
+          console.log("✅ [SendMessage] Tool results:", toolResults)
+          // TODO: Display tool results in the UI
+        }
+
+        const sessionCreatedCallback = (sessionID: string) => {
+          console.log("✅ [SendMessage] New session created:", sessionID)
+          setCurrentSessionId(sessionID)
+        }
+
         try {
-          await sendPrompt(
+          await chatV3(
             userID,
-            firstName,
-            messageToSend,
-            imageURI,
-            preferences.preferences,
-            refetch,
+            chatRequest,
             streamingCallback,
-            optimisticMessageId,
-            finalizeOptimisticMessage,
-            user?.data?.planTier ?? 0
+            progressCallback,
+            errorCallback,
+            controller.signal,
+            toolCallsCallback,
+            toolResultsCallback,
+            sessionCreatedCallback
           )
-          console.log("✅ [SendMessage] Prompt completed successfully")
+          console.log("✅ [SendMessage] Chat completed successfully")
+
+          // Finalize the message with the accumulated response
+          if (accumulatedResponse) {
+            finalizeOptimisticMessage(optimisticMessageId, accumulatedResponse)
+          }
         } catch (error) {
-          if (error === ErrorPaymentRequired) {
+          if (error instanceof Error && error.name === "AbortError") {
+            console.log("⏹️ [SendMessage] Chat was cancelled by user")
+          } else if (error === ErrorPaymentRequired) {
             toast.error("Please upgrade to a paid plan to continue")
             setShowSalesPitch(true)
             setIsInvalidConfig(true)
-          } else if (
-            error instanceof Error &&
-            error.message === "Request cancelled"
-          ) {
-            console.log("⏹️ [SendMessage] Prompt was cancelled by user")
           } else {
-            console.error("❌ [SendMessage] Error in sendPrompt:", error)
+            console.error("❌ [SendMessage] Error in chatV3:", error)
             finalizeOptimisticMessage(
               optimisticMessageId,
               "Sorry, an error occurred while processing your request. Please try again."
@@ -245,13 +315,14 @@ export default function SendMessage({
         console.error("Error sending message:", error)
       } finally {
         setIsWaitingForResponse(false)
+        setAbortController(null)
         onStop()
       }
     },
     [
       isWaitingForResponse,
       message,
-      image,
+      images,
       isMenuOpen,
       setIsWaitingForResponse,
       preferences.preferences,
@@ -260,10 +331,9 @@ export default function SendMessage({
       setMessage,
       addOptimisticMessage,
       updateOptimisticResponse,
-      refetch,
       finalizeOptimisticMessage,
-      user?.data?.planTier,
-      userData?.firstName,
+      currentSessionId,
+      setCurrentSessionId,
       onStop,
     ]
   )
@@ -274,20 +344,25 @@ export default function SendMessage({
 
   useEffect(() => {
     if (capturedImage) {
-      setImage(capturedImage)
+      setImages([capturedImage])
     }
   }, [capturedImage])
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setImage(file)
+    const files = event.target.files
+    if (files) {
+      const newImages = Array.from(files)
+      setImages((prev) => [...prev, ...newImages])
     }
   }
 
-  const handleClearImage = () => {
-    setImage("")
-    onClearCapturedImage()
+  const handleClearImage = (index?: number) => {
+    if (index !== undefined) {
+      setImages((prev) => prev.filter((_, i) => i !== index))
+    } else {
+      setImages([])
+      onClearCapturedImage()
+    }
   }
 
   // Memoized handler functions to prevent unnecessary re-renders
@@ -324,15 +399,20 @@ export default function SendMessage({
 
   const handlePaste = (event: React.ClipboardEvent) => {
     const items = event.clipboardData.items
+    const pastedImages: File[] = []
+
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
         const blob = items[i].getAsFile()
         if (blob) {
-          setImage(blob)
-          event.preventDefault()
-          break
+          pastedImages.push(blob)
         }
       }
+    }
+
+    if (pastedImages.length > 0) {
+      setImages((prev) => [...prev, ...pastedImages])
+      event.preventDefault()
     }
   }
 
@@ -516,8 +596,29 @@ export default function SendMessage({
                 </DropdownMenu>
               </div>
 
-              {/* Center Ditto logo dropdown */}
-              <div className="absolute left-1/2 -translate-x-1/2">
+              {/* Center section with Ditto logo and session indicator */}
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+                {/* Session indicator button */}
+                {currentSessionId && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-background ring-1 ring-green-500/70 shadow-sm shadow-green-500/50 hover:scale-110 hover:ring-green-500 hover:shadow-md hover:shadow-green-500/80 transition-all"
+                        onClick={() => setShowSessionModal(true)}
+                        onPointerDown={triggerLightHaptic}
+                      >
+                        <MessageSquare className="h-4 w-4 text-green-600" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      In session: {currentSessionId?.slice(0, 8)}...
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Ditto logo dropdown */}
                 <DropdownMenu>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -628,6 +729,7 @@ export default function SendMessage({
               id="image-upload"
               type="file"
               accept="image/*"
+              multiple
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
@@ -635,40 +737,55 @@ export default function SendMessage({
         )}
 
         {/* Image preview */}
-        {image && (
-          <div
-            className="absolute bottom-full left-3 mb-3 bg-background/85 backdrop-blur-md rounded-md 
-            flex items-center shadow-md border border-border overflow-hidden cursor-pointer"
-            onClick={() => {
-              const imageUrl =
-                typeof image === "string" ? image : URL.createObjectURL(image)
-              handleImageClick(imageUrl)
-            }}
-          >
-            <img
-              src={
-                typeof image === "string" ? image : URL.createObjectURL(image)
-              }
-              alt="Preview"
-              className="w-12 h-12 object-cover"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-6 w-6 rounded-full bg-background/50 
-              hover:bg-background/80 text-foreground/80"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleClearImage()
-              }}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+        {images.length > 0 && (
+          <div className="absolute bottom-full left-3 mb-3 flex flex-wrap gap-2 max-w-sm">
+            {images.map((image, index) => (
+              <div
+                key={index}
+                className="relative bg-background/85 backdrop-blur-md rounded-md 
+                shadow-md border border-border overflow-hidden cursor-pointer"
+                onClick={() => {
+                  const imageUrl =
+                    typeof image === "string"
+                      ? image
+                      : URL.createObjectURL(image)
+                  handleImageClick(imageUrl)
+                }}
+              >
+                <img
+                  src={
+                    typeof image === "string"
+                      ? image
+                      : URL.createObjectURL(image)
+                  }
+                  alt={`Preview ${index + 1}`}
+                  className="w-12 h-12 object-cover"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-6 w-6 rounded-full bg-background/50 
+                  hover:bg-background/80 text-foreground/80"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleClearImage(index)
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
           </div>
         )}
 
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>
+
+      {/* Session Details Modal */}
+      <SessionDetailsModal
+        isOpen={showSessionModal}
+        onClose={() => setShowSessionModal(false)}
+      />
     </div>
   )
 }

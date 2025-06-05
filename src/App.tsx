@@ -22,6 +22,7 @@ import { ConfirmationDialogProvider } from "@/hooks/useConfirmationDialog"
 import { MemoryNetworkProvider } from "@/hooks/useMemoryNetwork"
 import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer"
 import { ConversationProvider } from "./hooks/useConversationHistory"
+import { SessionProvider } from "@/hooks/useSessionManager"
 import { PromptStorageProvider } from "@/hooks/usePromptStorage"
 import { ComposeProvider } from "@/contexts/ComposeContext"
 import { ServicesProvider } from "@/hooks/useServices"
@@ -69,7 +70,17 @@ const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
 const ComposeModal = loadE(() => import("@/components/ComposeModal"))
 // const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // staleTime: 5 * 60 * 1000, // 5 minutes - consider data fresh for 5 minutes
+      // refetchOnWindowFocus: false, // Don't refetch when window gains focus
+      // refetchOnMount: false, // Don't refetch on component mount if data exists
+      // refetchOnReconnect: false, // Don't refetch on network reconnect
+      // retry: 1, // Only retry failed queries once
+    },
+  },
+})
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -136,39 +147,41 @@ function App() {
                     <ConfirmationDialogProvider>
                       <MemoryNodeViewerProvider>
                         <ConversationProvider>
-                          <ServicesProvider>
-                            <PromptStorageProvider>
-                              <ComposeProvider>
-                                <ThemeProvider
-                                  defaultTheme="system"
-                                  storageKey="ditto-ui-theme"
-                                >
-                                  <FontSizeProvider>
-                                    <ComposeModal />
-                                    <ModalProvider registry={modalRegistry}>
-                                      <AppErrorBoundary>
-                                        <RouterProvider router={router} />
-                                      </AppErrorBoundary>
-                                      <UpdateNotification />
+                          <SessionProvider>
+                            <ServicesProvider>
+                              <PromptStorageProvider>
+                                <ComposeProvider>
+                                  <ThemeProvider
+                                    defaultTheme="system"
+                                    storageKey="ditto-ui-theme"
+                                  >
+                                    <FontSizeProvider>
+                                      <ComposeModal />
+                                      <ModalProvider registry={modalRegistry}>
+                                        <AppErrorBoundary>
+                                          <RouterProvider router={router} />
+                                        </AppErrorBoundary>
+                                        <UpdateNotification />
 
-                                      {createPortal(
-                                        <Toaster
-                                          position="top-center"
-                                          closeButton
-                                          richColors
-                                        />,
-                                        document.getElementById("toast-root")!
-                                      )}
-                                      <ReactQueryDevtools
-                                        buttonPosition="top-left"
-                                        initialIsOpen={false}
-                                      />
-                                    </ModalProvider>
-                                  </FontSizeProvider>
-                                </ThemeProvider>
-                              </ComposeProvider>
-                            </PromptStorageProvider>
-                          </ServicesProvider>
+                                        {createPortal(
+                                          <Toaster
+                                            position="top-center"
+                                            closeButton
+                                            richColors
+                                          />,
+                                          document.getElementById("toast-root")!
+                                        )}
+                                        <ReactQueryDevtools
+                                          buttonPosition="top-left"
+                                          initialIsOpen={false}
+                                        />
+                                      </ModalProvider>
+                                    </FontSizeProvider>
+                                  </ThemeProvider>
+                                </ComposeProvider>
+                              </PromptStorageProvider>
+                            </ServicesProvider>
+                          </SessionProvider>
                         </ConversationProvider>
                       </MemoryNodeViewerProvider>
                     </ConfirmationDialogProvider>

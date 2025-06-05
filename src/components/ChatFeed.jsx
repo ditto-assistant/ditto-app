@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, forwardRef } from "react"
 import "./ChatFeed.css"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, MessageSquarePlus, Clock, History, Zap } from "lucide-react"
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
 import { toast } from "sonner"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePlatform } from "@/hooks/usePlatform"
+import { useSessionManager } from "@/hooks/useSessionManager"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import ChatMessage from "./ChatMessage"
 
 const CustomScrollToBottom = ({
@@ -270,12 +273,23 @@ const ChatFeed = forwardRef(({}, ref) => {
     hasNextPage,
     fetchNextPage,
     refetch,
+    enableConversationLoading,
+    isConversationLoadingEnabled,
   } = useConversationHistory()
   const { showMemoryNetwork } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { isMobile } = usePlatform()
+  const {
+    currentSessionId,
+    hasRecentSessions,
+    startNewSession,
+    resumeLatestSession,
+    isLoadingSessions,
+  } = useSessionManager()
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
+  const [showSessionSelection, setShowSessionSelection] = useState(true)
+  const [showNewSessionOptions, setShowNewSessionOptions] = useState(false)
   const initialRenderRef = useRef(true)
   const fetchingRef = useRef(false)
   const detectScrollToTopRef = useRef(null)
@@ -409,6 +423,47 @@ const ChatFeed = forwardRef(({}, ref) => {
     }
   }
 
+  // Show session selection when conversation loading is not enabled
+  useEffect(() => {
+    const shouldShowSelection = 
+      !isConversationLoadingEnabled &&
+      !currentSessionId && 
+      !isLoadingSessions
+
+    setShowSessionSelection(shouldShowSelection)
+  }, [isConversationLoadingEnabled, currentSessionId, isLoadingSessions])
+
+  // Track when user has an active session (they've made a choice)
+  useEffect(() => {
+    if (currentSessionId) {
+      enableConversationLoading()
+    }
+  }, [currentSessionId, enableConversationLoading])
+
+  const handleNewSession = () => {
+    startNewSession()
+    setShowSessionSelection(false)
+    setShowNewSessionOptions(true)
+  }
+
+  const handleResumeLatest = () => {
+    resumeLatestSession()
+    enableConversationLoading()
+    setShowSessionSelection(false)
+    setShowNewSessionOptions(false)
+  }
+
+  const handleLoadRecentMessages = () => {
+    // Stay in new session mode but load conversation history
+    enableConversationLoading()
+    setShowNewSessionOptions(false)
+  }
+
+  const handleStartFresh = () => {
+    // Start completely fresh - no session, no messages
+    setShowNewSessionOptions(false)
+  }
+
   // Use the externally passed ref for scroll position detection
   useEffect(() => {
     if (ref) {
@@ -435,12 +490,86 @@ const ChatFeed = forwardRef(({}, ref) => {
         </div>
       )}
 
-      {isLoading ? (
+      {/* Session Selection UI */}
+      {showSessionSelection && !isLoading && !isLoadingSessions && (
+        <div className="flex items-center justify-center min-h-[60vh] p-4">
+          <Card className="w-full max-w-md mx-auto">
+            <CardContent className="p-6 space-y-4">
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-semibold">Welcome back!</h2>
+                <p className="text-muted-foreground">
+                  How would you like to continue?
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <Button
+                  onClick={handleNewSession}
+                  className="w-full justify-start h-12"
+                  variant="default"
+                >
+                  <MessageSquarePlus className="mr-3 h-5 w-5" />
+                  Start New Session
+                </Button>
+                
+                {hasRecentSessions && (
+                  <Button
+                    onClick={handleResumeLatest}
+                    className="w-full justify-start h-12"
+                    variant="outline"
+                  >
+                    <Clock className="mr-3 h-5 w-5" />
+                    Pick Up Where You Left Off
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* New Session Options UI */}
+      {showNewSessionOptions && !isLoading && !isLoadingSessions && (
+        <div className="flex items-center justify-center min-h-[60vh] p-4">
+          <Card className="w-full max-w-md mx-auto">
+            <CardContent className="p-6 space-y-4">
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-semibold">New Session Started</h2>
+                <p className="text-muted-foreground">
+                  Would you like to see your recent conversations?
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <Button
+                  onClick={handleStartFresh}
+                  className="w-full justify-start h-12"
+                  variant="default"
+                >
+                  <Zap className="mr-3 h-5 w-5" />
+                  Start Fresh
+                </Button>
+                
+                <Button
+                  onClick={handleLoadRecentMessages}
+                  className="w-full justify-start h-12"
+                  variant="outline"
+                >
+                  <History className="mr-3 h-5 w-5" />
+                  Load Recent Messages
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {(isLoading && isConversationLoadingEnabled) || isLoadingSessions ? (
         <div className="empty-chat-message">
           <div className="loading-spinner"></div>
           <p>Loading conversation...</p>
         </div>
-      ) : messages && messages.length > 0 ? (
+      ) : !showSessionSelection && !showNewSessionOptions && messages && messages.length > 0 ? (
         <CustomScrollToBottom
           className="messages-container"
           scrollViewClassName="messages-scroll-view"
@@ -457,56 +586,75 @@ const ChatFeed = forwardRef(({}, ref) => {
               const isUser =
                 message.prompt && !message.prompt.includes("SYSTEM:")
               const isLast = index === messages.length - 1
+              
+              // Check if this message starts a new session (different sessionID from previous message)
+              const prevMessage = index > 0 ? messages[index - 1] : null
+              const isNewSession = prevMessage && message.sessionID && prevMessage.sessionID !== message.sessionID
 
               return (
-                <div key={message.id || index} className="message-pair">
-                  {message.prompt && isUser && (
-                    <ChatMessage
-                      content={message.prompt}
-                      timestamp={
-                        message.timestamp
-                          ? new Date(message.timestamp).getTime()
-                          : Date.now()
-                      }
-                      isUser={true}
-                      isLast={isLast}
-                      isOptimistic={message.isOptimistic}
-                      menuProps={{
-                        onCopy: () => handleCopy(message, "prompt"),
-                        onDelete: () => handleMessageDelete(message),
-                        onShowMemories: () => handleShowMemories(message),
-                      }}
-                    />
+                <div key={message.id || index}>
+                  {/* Session divider for new sessions */}
+                  {isNewSession && (
+                    <div className="session-divider my-6">
+                      <div className="flex items-center justify-center">
+                        <div className="flex-grow h-px bg-border"></div>
+                        <div className="px-4 py-2 text-xs text-muted-foreground bg-background border border-border rounded-full">
+                          Session: {message.sessionID?.slice(0, 8)}...
+                        </div>
+                        <div className="flex-grow h-px bg-border"></div>
+                      </div>
+                    </div>
                   )}
+                  
+                  <div className={`message-pair ${message.sessionID ? 'in-session' : 'no-session'}`}>
+                    {message.prompt && isUser && (
+                      <ChatMessage
+                        content={message.prompt}
+                        timestamp={
+                          message.timestamp
+                            ? new Date(message.timestamp).getTime()
+                            : Date.now()
+                        }
+                        isUser={true}
+                        isLast={isLast}
+                        isOptimistic={message.isOptimistic}
+                        menuProps={{
+                          onCopy: () => handleCopy(message, "prompt"),
+                          onDelete: () => handleMessageDelete(message),
+                          onShowMemories: () => handleShowMemories(message),
+                        }}
+                      />
+                    )}
 
-                  {message.response && (
-                    <ChatMessage
-                      content={message.response}
-                      timestamp={
-                        message.timestamp
-                          ? new Date(message.timestamp).getTime()
-                          : Date.now()
-                      }
-                      isUser={false}
-                      isLast={isLast}
-                      isOptimistic={message.isOptimistic}
-                      menuProps={{
-                        onCopy: () => handleCopy(message, "response"),
-                        onDelete: () => handleMessageDelete(message),
-                        onShowMemories: () => handleShowMemories(message),
-                      }}
-                    />
-                  )}
+                    {message.response && (
+                      <ChatMessage
+                        content={message.response}
+                        timestamp={
+                          message.timestamp
+                            ? new Date(message.timestamp).getTime()
+                            : Date.now()
+                        }
+                        isUser={false}
+                        isLast={isLast}
+                        isOptimistic={message.isOptimistic}
+                        menuProps={{
+                          onCopy: () => handleCopy(message, "response"),
+                          onDelete: () => handleMessageDelete(message),
+                          onShowMemories: () => handleShowMemories(message),
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
               )
             })
             .reverse()}
         </CustomScrollToBottom>
-      ) : (
+      ) : !showSessionSelection && !showNewSessionOptions ? (
         <div className="empty-chat-message">
           <p>No messages yet. Start a conversation!</p>
         </div>
-      )}
+      ) : null}
     </div>
   )
 })

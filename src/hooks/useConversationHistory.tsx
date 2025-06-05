@@ -42,6 +42,8 @@ interface ConversationContextType {
     forceRemove?: boolean
   ) => void
   clearOptimisticMessages: () => void
+  enableConversationLoading: () => void
+  isConversationLoadingEnabled: boolean
 }
 
 const ConversationContext = createContext<ConversationContextType | null>(null)
@@ -52,6 +54,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const [optimisticMessages, setOptimisticMessages] = useState<
     OptimisticMemory[]
   >([])
+  const [isConversationLoadingEnabled, setIsConversationLoadingEnabled] = useState(false)
 
   const {
     data,
@@ -89,8 +92,12 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     initialPageParam: "",
     getNextPageParam: (lastPage: ConversationResponse) =>
       lastPage.nextCursor || undefined,
-    enabled: !!user?.uid && !!tok.data,
+    enabled: !!user?.uid && !!tok.data && isConversationLoadingEnabled,
   })
+
+  const enableConversationLoading = useCallback(() => {
+    setIsConversationLoadingEnabled(true)
+  }, [])
 
   // Memoize server messages to prevent unnecessary re-renders
   const serverMessages = useMemo(
@@ -341,6 +348,8 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     updateOptimisticResponse,
     finalizeOptimisticMessage,
     clearOptimisticMessages,
+    enableConversationLoading,
+    isConversationLoadingEnabled,
   }
 
   return (
