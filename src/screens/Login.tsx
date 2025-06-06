@@ -20,6 +20,14 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { FirebaseError } from "firebase/app"
 
+const VERIFICATION_MESSAGES = {
+  EMAIL_NOT_VERIFIED: "Please verify your email before signing in.",
+  VERIFICATION_SENT:
+    "A verification email has been sent to your email address. Please verify your email and then sign in.",
+  VERIFICATION_RESENT:
+    "A new verification email has been sent. Please check your inbox and verify your email before signing in.",
+} as const
+
 type PasswordInputProps = {
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -73,6 +81,7 @@ const Login = () => {
   const [isViewingTOS, setIsViewingTOS] = useState(false)
   const [isPasswordReset, setIsPasswordReset] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
+  const [resendingVerification, setResendingVerification] = useState(false)
   const [searchParams] = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "/"
 
@@ -92,7 +101,7 @@ const Login = () => {
       const user = userCredential.user
 
       if (!user.emailVerified) {
-        setVerificationMessage("Please verify your email before signing in.")
+        setVerificationMessage(VERIFICATION_MESSAGES.EMAIL_NOT_VERIFIED)
         return
       }
 
@@ -108,9 +117,7 @@ const Login = () => {
   const handleSignUp = async () => {
     // This is called after TOS acceptance, so just finish the signup process
     try {
-      setVerificationMessage(
-        "A verification email has been sent to your email address. Please verify your email and then sign in."
-      )
+      setVerificationMessage(VERIFICATION_MESSAGES.VERIFICATION_SENT)
 
       // Switch back to sign-in mode and clear fields after successful signup
       setIsCreatingAccount(false)
@@ -170,6 +177,44 @@ const Login = () => {
     } catch (error) {
       console.error("Error signing in with Google:", error)
       toast.error("Error signing in with Google. Please try again.")
+    }
+  }
+
+  const handleResendVerification = async () => {
+    if (!auth.currentUser) {
+      toast.error("No user found. Please sign in again.")
+      return
+    }
+
+    setResendingVerification(true)
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login`,
+        handleCodeInApp: false,
+      }
+      await sendEmailVerification(auth.currentUser, actionCodeSettings)
+      toast.success("Verification email sent! Please check your inbox.")
+      setVerificationMessage(VERIFICATION_MESSAGES.VERIFICATION_RESENT)
+    } catch (error) {
+      console.error("Error resending verification email:", error)
+
+      if (!(error instanceof FirebaseError)) {
+        toast.error("Error sending verification email. Please try again.")
+        return
+      }
+
+      const errorMessages: Record<string, string> = {
+        "auth/too-many-requests":
+          "Too many requests. Please wait before trying again.",
+        "auth/user-token-expired": "Session expired. Please sign in again.",
+      }
+
+      toast.error(
+        errorMessages[error.code] ||
+          "Error sending verification email. Please try again."
+      )
+    } finally {
+      setResendingVerification(false)
     }
   }
 
@@ -474,9 +519,25 @@ const Login = () => {
           )}
 
           {verificationMessage && (
-            <div className="flex items-center gap-3 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
-              <AlertCircle className="h-5 w-5 flex-shrink-0" />
-              <span>{verificationMessage}</span>
+            <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+              <div className="flex items-center gap-3 mb-3">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <span>{verificationMessage}</span>
+              </div>
+              {verificationMessage ===
+                VERIFICATION_MESSAGES.EMAIL_NOT_VERIFIED && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResendVerification}
+                  disabled={resendingVerification}
+                  className="w-full bg-background/50 hover:bg-background/80"
+                >
+                  {resendingVerification
+                    ? "Sending..."
+                    : "Resend Verification Email"}
+                </Button>
+              )}
             </div>
           )}
 

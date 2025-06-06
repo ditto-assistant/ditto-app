@@ -1,6 +1,6 @@
 {
   "name": "ditto-pwa",
-  "version": "0.14.4",
+  "version": "0.14.5",
   "private": true,
   "type": "module",
   "dependencies": {
@@ -38,7 +38,7 @@
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.10",
     "vite-plugin-pwa": "^1.0.0",
-    "zod": "^3.25.51"
+    "zod": "^3.25.53"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.8",
