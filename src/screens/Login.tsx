@@ -34,6 +34,7 @@ type PasswordInputProps = {
   placeholder: string
   showPassword: boolean
   togglePasswordVisibility: () => void
+  required?: boolean
 }
 
 const PasswordInput = ({
@@ -42,6 +43,7 @@ const PasswordInput = ({
   placeholder,
   showPassword,
   togglePasswordVisibility,
+  required = false,
 }: PasswordInputProps) => (
   <div className="relative w-full">
     <Input
@@ -50,6 +52,7 @@ const PasswordInput = ({
       value={value}
       onChange={onChange}
       className="h-12 rounded-lg bg-background/50 pl-4 pr-10 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+      required={required}
     />
     <button
       type="button"
@@ -91,7 +94,8 @@ const Login = () => {
     }
   }, [user, navigate, redirectTo])
 
-  const handleSignIn = async () => {
+  const handleSignIn = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -222,7 +226,8 @@ const Login = () => {
     setShowPassword(!showPassword)
   }
 
-  const handlePasswordReset = async () => {
+  const handlePasswordReset = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     if (!email) {
       toast.error("Please enter your email address.")
       return
@@ -253,7 +258,8 @@ const Login = () => {
     }
   }
 
-  const handleSignUpClick = async () => {
+  const handleSignUpClick = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     // Validate form fields before creating account
     if (!email || !password || !retypePassword || !firstName || !lastName) {
       toast.error("Please fill out all fields before signing up.")
@@ -384,21 +390,24 @@ const Login = () => {
                     Enter your email address and we&apos;ll send you a link to
                     reset your password.
                   </p>
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                  <div className="pt-2">
-                    <Button
-                      className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
-                      onClick={handlePasswordReset}
-                    >
-                      Send Reset Email
-                    </Button>
-                  </div>
+                  <form onSubmit={handlePasswordReset}>
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      required
+                    />
+                    <div className="pt-2">
+                      <Button
+                        type="submit"
+                        className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
+                      >
+                        Send Reset Email
+                      </Button>
+                    </div>
+                  </form>
                   <Button
                     variant="ghost"
                     onClick={() => setIsPasswordReset(false)}
@@ -411,63 +420,73 @@ const Login = () => {
             </>
           ) : (
             <>
-              {isCreatingAccount && (
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={isCreatingAccount ? handleSignUpClick : handleSignIn}>
+                {isCreatingAccount && (
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <Input
+                      type="text"
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      required
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-6">
                   <Input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    required
                   />
-                  <Input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
+
+                  <PasswordInput
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    showPassword={showPassword}
+                    togglePasswordVisibility={togglePasswordVisibility}
+                    required
                   />
+
+                  {isCreatingAccount && (
+                    <PasswordInput
+                      placeholder="Re-type Password"
+                      value={retypePassword}
+                      onChange={(e) => setRetypePassword(e.target.value)}
+                      showPassword={showPassword}
+                      togglePasswordVisibility={togglePasswordVisibility}
+                      required
+                    />
+                  )}
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
+                    >
+                      {isCreatingAccount ? "Sign Up" : "Sign In"}
+                    </Button>
+                  </div>
                 </div>
-              )}
-
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12 rounded-lg bg-background/50 px-4 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-
-              <PasswordInput
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                showPassword={showPassword}
-                togglePasswordVisibility={togglePasswordVisibility}
-              />
-
-              {isCreatingAccount && (
-                <PasswordInput
-                  placeholder="Re-type Password"
-                  value={retypePassword}
-                  onChange={(e) => setRetypePassword(e.target.value)}
-                  showPassword={showPassword}
-                  togglePasswordVisibility={togglePasswordVisibility}
-                />
-              )}
-
-              <div className="pt-2">
-                <Button
-                  className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
-                  onClick={isCreatingAccount ? handleSignUpClick : handleSignIn}
-                >
-                  {isCreatingAccount ? "Sign Up" : "Sign In"}
-                </Button>
-              </div>
+              </form>
 
               {!isCreatingAccount && (
                 <div className="text-center">
                   <button
+                    type="button"
                     onClick={() => setIsPasswordReset(true)}
                     className="text-sm font-medium text-primary transition-colors hover:text-primary/90"
                   >
