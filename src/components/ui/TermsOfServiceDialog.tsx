@@ -45,8 +45,14 @@ export default function TermsOfServiceDialog({
   const isLoading = tosLoading || statusLoading
 
   const handleAccept = async () => {
-    if (!user?.uid || !tos?.id) {
-      console.error("Missing user ID or TOS ID")
+    if (!user?.uid) {
+      console.error("Missing user ID")
+      toast.error("Unable to accept terms of service. Please try again.")
+      return
+    }
+
+    if (!tos?.id) {
+      console.error("Missing TOS ID")
       toast.error("Unable to accept terms of service. Please try again.")
       return
     }
