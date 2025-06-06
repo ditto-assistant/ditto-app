@@ -26,7 +26,7 @@ const sections: Section[] = [
         type: "fixed",
         title: "Email Verification Issues",
         description:
-          "Fixed problems with email confirmation not working properly during account creation",
+          "Fixed an issue where new users couldn't complete account creation due to email verification problems. Existing users were not affected.",
       },
       {
         type: "fixed",
