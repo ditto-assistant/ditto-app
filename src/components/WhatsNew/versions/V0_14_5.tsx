@@ -3,14 +3,25 @@ import { VersionSection, Section } from "./VersionTemplate"
 
 const sections: Section[] = [
   {
-    title: "Improvements",
+    title: "New Features",
     features: [
       {
-        type: "improved",
-        title: "Enhanced Email Authentication",
+        type: "new",
+        title: "Email Verification",
         description:
-          "Improved account creation process with better email verification flow and more reliable password reset functionality",
+          "New users now receive email verification during account creation to ensure secure access to their accounts",
       },
+      {
+        type: "new",
+        title: "Password Reset",
+        description:
+          "Forgot your password? New password reset functionality lets you regain access to your account via email",
+      },
+    ],
+  },
+  {
+    title: "Improvements",
+    features: [
       {
         type: "improved",
         title: "Streamlined Login Experience",
