@@ -234,7 +234,11 @@ const Login = () => {
     }
 
     try {
-      await sendPasswordResetEmail(auth, email)
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login`,
+        handleCodeInApp: false,
+      }
+      await sendPasswordResetEmail(auth, email, actionCodeSettings)
       setResetEmailSent(true)
       toast.success("Password reset email sent! Check your inbox.")
     } catch (error) {
@@ -420,7 +424,9 @@ const Login = () => {
             </>
           ) : (
             <>
-              <form onSubmit={isCreatingAccount ? handleSignUpClick : handleSignIn}>
+              <form
+                onSubmit={isCreatingAccount ? handleSignUpClick : handleSignIn}
+              >
                 {isCreatingAccount && (
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <Input
