@@ -378,8 +378,8 @@ export default function MemoriesDashboardOverlay() {
                 <MemoriesListView
                   memories={[...pairs].sort((a, b) => {
                     // Sort by similarity/score in descending order (highest first)
-                    const aScore = a.similarity || a.score || a.vector_distance || 0
-                    const bScore = b.similarity || b.score || b.vector_distance || 0
+                    const aScore = a.similarity ?? a.score ?? 0
+                    const bScore = b.similarity ?? b.score ?? 0
                     return bScore - aScore
                   }) as Memory[]}
                   onCopy={handleCopy}
