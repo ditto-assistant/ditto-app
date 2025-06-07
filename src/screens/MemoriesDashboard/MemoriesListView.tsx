@@ -16,14 +16,27 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
   onShowMemories,
 }) => {
   return (
-    <div className="flex flex-col gap-6 p-4 overflow-y-auto max-w-full">
+    <div className="flex flex-col gap-6 flex-1 overflow-y-auto max-w-full px-4">
       {memories.map((memory, idx) => {
         // Format metadata to include in the message
         // Debug check for vector_distance ranges
-        console.log(`Memory ${idx} vector_distance: ${memory.vector_distance}`)
+        console.log(`Memory ${idx} vector_distance: ${memory.vector_distance}, similarity: ${memory.similarity}, score: ${memory.score}`)
 
-        // Direct calculation - vector_distance is already a similarity score (1 = exact match)
-        const matchPercentage = (memory.vector_distance * 100).toFixed(1)
+        // Calculate match percentage - handle both regular memories and KG pairs
+        let matchPercentage: string
+        if (memory.vector_distance !== undefined) {
+          // For regular memories, vector_distance is already a similarity score (1 = exact match)
+          matchPercentage = (memory.vector_distance * 100).toFixed(1)
+        } else if (memory.similarity !== undefined) {
+          // For KG pairs, similarity is already a 0-1 score
+          matchPercentage = (memory.similarity * 100).toFixed(1)
+        } else if (memory.score !== undefined) {
+          // Alternative similarity field
+          matchPercentage = (memory.score * 100).toFixed(1)
+        } else {
+          matchPercentage = "0.0"
+        }
+        
         const levelInfo = memory.level ? `Level: ${memory.level}` : ""
         const metadataFooter = `\n\n---\n*${matchPercentage}% Match${levelInfo ? " • " + levelInfo : ""}*`
         const timestamp =
