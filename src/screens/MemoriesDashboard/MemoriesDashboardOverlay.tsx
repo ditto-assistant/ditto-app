@@ -13,7 +13,7 @@ import { toast } from "sonner"
 import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
 import MemoriesListView from "@/screens/MemoriesDashboard/MemoriesListView"
 import SearchBar from "@/screens/MemoriesDashboard/SearchBar"
-import { searchSubjects, getSubjectPairs, searchPairs, getTopSubjects } from "@/api/kg"
+import { searchSubjects, getSubjectPairs, searchPairs, getTopSubjects, getSubjectPairsRecent } from "@/api/kg"
 import type { Subject, Pair } from "@/types/common"
 import SubjectSelector from "./SubjectSelector"
 
@@ -72,6 +72,14 @@ export default function MemoriesDashboardOverlay() {
   const [pairsError, setPairsError] = useState<string | null>(null)
   const [lastSubjectSearch, setLastSubjectSearch] = useState("")
   const [subjectsCollapsed, setSubjectsCollapsed] = useState(false)
+  // New state for pagination and mode tracking
+  const [subjectsOffset, setSubjectsOffset] = useState(0)
+  const [hasMoreSubjects, setHasMoreSubjects] = useState(true)
+  const [showMoreLoading, setShowMoreLoading] = useState(false)
+  const [isSubjectSearchMode, setIsSubjectSearchMode] = useState(false)
+  const [pairsOffset, setPairsOffset] = useState(0)
+  const [hasMorePairs, setHasMorePairs] = useState(true)
+  const [isLoadingMorePairs, setIsLoadingMorePairs] = useState(false)
 
   useEffect(() => {
     const fetchMemoryCount = async () => {
@@ -99,13 +107,18 @@ export default function MemoriesDashboardOverlay() {
       if (!user?.uid) return
       setSubjectsLoading(true)
       setSubjectsError(null)
+      setSubjectsOffset(0)
       try {
-        const res = await getTopSubjects({ userID: user.uid, limit: 10 })
+        const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: 0 })
         if (res.err) throw new Error(res.err)
-        setSubjects(res.ok?.results || [])
+        const results = res.ok?.results || []
+        setSubjects(results)
+        setHasMoreSubjects(results.length === 10) // If we got 10, there might be more
+        setIsSubjectSearchMode(false)
       } catch (e: any) {
         setSubjectsError(e.message)
         setSubjects([])
+        setHasMoreSubjects(false)
       } finally {
         setSubjectsLoading(false)
       }
@@ -237,6 +250,8 @@ export default function MemoriesDashboardOverlay() {
     setSubjectsLoading(true)
     setSubjectsError(null)
     setLastSubjectSearch(query)
+    setIsSubjectSearchMode(true)
+    setHasMoreSubjects(false) // No pagination for search results
     try {
       const res = await searchSubjects({ userID: user.uid, query, topK: 10 })
       if (res.err) throw new Error(res.err)
@@ -247,6 +262,100 @@ export default function MemoriesDashboardOverlay() {
     } finally {
       setSubjectsLoading(false)
     }
+  }
+
+  // Show more subjects handler
+  const handleShowMoreSubjects = async () => {
+    if (!user?.uid || showMoreLoading) return
+    setShowMoreLoading(true)
+    try {
+      const newOffset = subjectsOffset + 10
+      const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: newOffset })
+      if (res.err) throw new Error(res.err)
+      const newResults = res.ok?.results || []
+      setSubjects(prev => [...prev, ...newResults])
+      setSubjectsOffset(newOffset)
+      setHasMoreSubjects(newResults.length === 10) // If we got 10, there might be more
+    } catch (e: any) {
+      setSubjectsError(e.message)
+    } finally {
+      setShowMoreLoading(false)
+    }
+  }
+
+  // Reset subject search handler
+  const handleResetSubjectSearch = async () => {
+    if (!user?.uid) return
+    setSubjectsLoading(true)
+    setSubjectsError(null)
+    setLastSubjectSearch("")
+    setIsSubjectSearchMode(false)
+    setSubjectsOffset(0)
+    try {
+      const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: 0 })
+      if (res.err) throw new Error(res.err)
+      const results = res.ok?.results || []
+      setSubjects(results)
+      setHasMoreSubjects(results.length === 10)
+    } catch (e: any) {
+      setSubjectsError(e.message)
+      setSubjects([])
+      setHasMoreSubjects(false)
+    } finally {
+      setSubjectsLoading(false)
+    }
+  }
+
+  // Load recent pairs for selected subject
+  const loadRecentPairs = async (subject: Subject, offset: number = 0, append: boolean = false) => {
+    if (!user?.uid) return
+    if (!append) {
+      setPairsLoading(true)
+      setPairsError(null)
+      setPairsOffset(0)
+    } else {
+      setIsLoadingMorePairs(true)
+    }
+    
+    try {
+      const res = await getSubjectPairsRecent({
+        userID: user.uid,
+        subjectID: subject.id,
+        subjectText: subject.subject_text,
+        limit: 5,
+        offset,
+      })
+      
+      if (res.err) throw new Error(res.err)
+      
+      const newPairs = res.ok?.results || []
+      if (append) {
+        setPairs(prev => [...prev, ...newPairs])
+        setPairsOffset(offset)
+      } else {
+        setPairs(newPairs)
+        setPairsOffset(0)
+      }
+      setHasMorePairs(newPairs.length === 5) // If we got 5, there might be more
+    } catch (e: any) {
+      setPairsError(e.message)
+      if (!append) {
+        setPairs([])
+      }
+    } finally {
+      if (append) {
+        setIsLoadingMorePairs(false)
+      } else {
+        setPairsLoading(false)
+      }
+    }
+  }
+
+  // Load more pairs handler
+  const handleLoadMorePairs = async () => {
+    if (!selectedSubject || isLoadingMorePairs) return
+    const newOffset = pairsOffset + 5
+    await loadRecentPairs(selectedSubject, newOffset, true)
   }
 
   // Pair search within subject
@@ -339,8 +448,17 @@ export default function MemoriesDashboardOverlay() {
                 setSelectedSubject(subject)
                 setPairs([])
                 setPairsError(null)
+                setPairsOffset(0)
+                setHasMorePairs(true)
+                // Automatically load recent pairs for this subject
+                loadRecentPairs(subject)
               }}
               onSearch={handleSubjectSearch}
+              onShowMore={handleShowMoreSubjects}
+              hasMore={hasMoreSubjects}
+              showMoreLoading={showMoreLoading}
+              isSearchMode={isSubjectSearchMode}
+              onResetSearch={handleResetSubjectSearch}
             />
           ) : null}
         </div>
@@ -375,17 +493,38 @@ export default function MemoriesDashboardOverlay() {
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
               {!pairsLoading && pairs.length > 0 && (
-                <MemoriesListView
-                  memories={[...pairs].sort((a, b) => {
-                    // Sort by similarity/score in descending order (highest first)
-                    const aScore = a.similarity ?? a.score ?? 0
-                    const bScore = b.similarity ?? b.score ?? 0
-                    return bScore - aScore
-                  }) as Memory[]}
-                  onCopy={handleCopy}
-                  onDelete={handleDeleteMemory}
-                  onShowMemories={handleShowRelatedMemories}
-                />
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <MemoriesListView
+                    memories={[...pairs].sort((a, b) => {
+                      // For recent pairs, sort by timestamp (newest first)
+                      // For search results, sort by similarity/score
+                      if (a.timestamp && b.timestamp) {
+                        const aTime = new Date(a.timestamp).getTime()
+                        const bTime = new Date(b.timestamp).getTime()
+                        return bTime - aTime
+                      }
+                      const aScore = a.similarity ?? a.score ?? 0
+                      const bScore = b.similarity ?? b.score ?? 0
+                      return bScore - aScore
+                    }) as Memory[]}
+                    onCopy={handleCopy}
+                    onDelete={handleDeleteMemory}
+                    onShowMemories={handleShowRelatedMemories}
+                  />
+                  {/* Load more pairs button */}
+                  {hasMorePairs && (
+                    <div className="flex justify-center p-4 border-t border-border">
+                      <button
+                        type="button"
+                        onClick={handleLoadMorePairs}
+                        disabled={isLoadingMorePairs}
+                        className="px-4 py-2 rounded-md text-sm font-medium text-primary border border-primary/30 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoadingMorePairs ? "Loading..." : "Load More"}
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
               {!pairsLoading && pairs.length === 0 && !pairsError && (
                 <div className="flex items-center justify-center flex-1 text-muted-foreground">
@@ -394,7 +533,7 @@ export default function MemoriesDashboardOverlay() {
               )}
               {pairsLoading && (
                 <div className="flex items-center justify-center flex-1 text-muted-foreground text-lg">
-                  Searching pairs...
+                  Loading recent pairs...
                 </div>
               )}
             </div>

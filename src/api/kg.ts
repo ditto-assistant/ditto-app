@@ -117,11 +117,12 @@ export async function getSubjectPairs({ userID, userEmail, subjectID, subjectTex
   }
 }
 
-export async function getTopSubjects({ userID, userEmail, limit = 10 }: {
+export async function getTopSubjects({ userID, userEmail, limit = 10, offset = 0 }: {
   userID?: string
   userEmail?: string
   limit?: number
-}): Promise<Result<{ results: Subject[]; metadata: { limit: number } }>> {
+  offset?: number
+}): Promise<Result<{ results: Subject[]; metadata: { limit: number; offset: number } }>> {
   const tok = await getToken()
   if (tok.err) return { err: "Unable to get token" }
   if (!tok.ok) return { err: "No token" }
@@ -138,6 +139,7 @@ export async function getTopSubjects({ userID, userEmail, limit = 10 }: {
         user_id: userID,
         user_email: userEmail,
         limit,
+        offset,
       }),
     })
     if (response.ok) {
@@ -148,5 +150,45 @@ export async function getTopSubjects({ userID, userEmail, limit = 10 }: {
     }
   } catch (error) {
     return { err: `Unable to get top subjects. Error: ${error}` }
+  }
+}
+
+export async function getSubjectPairsRecent({ userID, userEmail, subjectID, subjectText, limit = 5, offset = 0 }: {
+  userID?: string
+  userEmail?: string
+  subjectID?: string
+  subjectText?: string
+  limit?: number
+  offset?: number
+}): Promise<Result<PairSearchResult>> {
+  const tok = await getToken()
+  if (tok.err) return { err: "Unable to get token" }
+  if (!tok.ok) return { err: "No token" }
+
+  try {
+    const response = await fetch(routes.kgSubjectPairsRecent, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userID,
+        user_email: userEmail,
+        subject_id: subjectID,
+        subject_text: subjectText,
+        limit,
+        offset,
+      }),
+    })
+    if (response.ok) {
+      const data = (await response.json()) as PairSearchResult
+      return { ok: data }
+    } else {
+      return { err: `Unable to get recent subject pairs. Error: ${response.status}` }
+    }
+  } catch (error) {
+    return { err: `Unable to get recent subject pairs. Error: ${error}` }
   }
 } 

@@ -1,6 +1,6 @@
 // Your web app's Firebase configuration
-const MODE = import.meta.env.MODE
-// const MODE = "staging"
+// const MODE = import.meta.env.MODE
+const MODE = "staging"
 
 function getBaseURL(dittoEnv) {
   switch (dittoEnv) {
@@ -20,7 +20,7 @@ const getPGVectorAPIURL = () => {
     case "development":
       return "http://localhost:8080"
     case "staging":
-      return "https://agentic-pipelines-22790208601.us-central1.run.app"
+      return "http://localhost:8080"
     default:
       return "https://agentic-pipelines-22790208601.us-central1.run.app"
   }
@@ -66,6 +66,7 @@ export const routes = {
   kgSubjectsSearch: getPGVectorAPIURL() + "/kg/subjects/search",
   kgPairsSearch: getPGVectorAPIURL() + "/kg/pairs/search",
   kgSubjectPairs: getPGVectorAPIURL() + "/kg/subjects/pairs",
+  kgSubjectPairsRecent: getPGVectorAPIURL() + "/kg/subjects/pairs/recent",
   kgTopSubjects: getPGVectorAPIURL() + "/kg/subjects/top",
 }
 
