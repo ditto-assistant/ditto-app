@@ -19,8 +19,6 @@ const getPGVectorAPIURL = () => {
   switch (MODE) {
     case "development":
       return "http://localhost:8080"
-    // case "staging":
-    //   return "http://localhost:8080"
     default:
       return "https://agentic-pipelines-22790208601.us-central1.run.app"
   }
