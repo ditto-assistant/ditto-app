@@ -42,3 +42,46 @@ declare global {
     lazyLoadErrorHandler?: (error: Error) => boolean
   }
 }
+
+// Subject and Pair types for KG endpoints
+export interface Subject {
+  id: string
+  subject_text: string
+  description?: string
+  is_key_subject?: boolean
+  similarity?: number
+  pair_count?: number
+}
+
+export interface SubjectSearchResult {
+  results: Subject[]
+  metadata: {
+    query: string
+    top_k: number
+    min_similarity: number
+  }
+}
+
+export interface Pair {
+  id: string
+  title?: string
+  summary?: string
+  prompt?: string
+  response?: string
+  similarity?: number
+  score?: number
+  vector_distance?: number
+  depth?: number
+  timestamp?: string | number | Date
+  timestamp_formatted?: string
+}
+
+export interface PairSearchResult {
+  results: Pair[]
+  metadata: {
+    query: string
+    top_k: number
+    subject_id?: string
+    subject_text?: string
+  }
+}
