@@ -28,6 +28,20 @@ const formatCount = (count: number) => {
   }
 }
 
+// Utility function to deduplicate subjects by ID
+const deduplicateSubjects = (existingSubjects: Subject[], newSubjects: Subject[]): Subject[] => {
+  const existingIds = new Set(existingSubjects.map(s => s.id))
+  const uniqueNewSubjects = newSubjects.filter(s => !existingIds.has(s.id))
+  return [...existingSubjects, ...uniqueNewSubjects]
+}
+
+// Utility function to deduplicate pairs by ID
+const deduplicatePairs = (existingPairs: Pair[], newPairs: Pair[]): Pair[] => {
+  const existingIds = new Set(existingPairs.map(p => p.id))
+  const uniqueNewPairs = newPairs.filter(p => !existingIds.has(p.id))
+  return [...existingPairs, ...uniqueNewPairs]
+}
+
 // Helper function to flatten memories for the list view
 const flattenMemoriesForList = (
   memoryList: Memory[]
@@ -112,7 +126,11 @@ export default function MemoriesDashboardOverlay() {
         const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: 0 })
         if (res.err) throw new Error(res.err)
         const results = res.ok?.results || []
-        setSubjects(results)
+        // Ensure no duplicates in initial results
+        const uniqueResults = results.filter((subject, index, self) => 
+          index === self.findIndex(s => s.id === subject.id)
+        )
+        setSubjects(uniqueResults)
         setHasMoreSubjects(results.length === 10) // If we got 10, there might be more
         setIsSubjectSearchMode(false)
       } catch (e: any) {
@@ -255,7 +273,12 @@ export default function MemoriesDashboardOverlay() {
     try {
       const res = await searchSubjects({ userID: user.uid, query, topK: 10 })
       if (res.err) throw new Error(res.err)
-      setSubjects(res.ok?.results || [])
+      const searchResults = res.ok?.results || []
+      // Ensure no duplicates even in search results
+      const uniqueResults = searchResults.filter((subject, index, self) => 
+        index === self.findIndex(s => s.id === subject.id)
+      )
+      setSubjects(uniqueResults)
     } catch (e: any) {
       setSubjectsError(e.message)
       setSubjects([])
@@ -273,7 +296,10 @@ export default function MemoriesDashboardOverlay() {
       const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: newOffset })
       if (res.err) throw new Error(res.err)
       const newResults = res.ok?.results || []
-      setSubjects(prev => [...prev, ...newResults])
+      
+      // Deduplicate subjects by ID to prevent duplicates
+      setSubjects(prev => deduplicateSubjects(prev, newResults))
+      
       setSubjectsOffset(newOffset)
       setHasMoreSubjects(newResults.length === 10) // If we got 10, there might be more
     } catch (e: any) {
@@ -295,7 +321,11 @@ export default function MemoriesDashboardOverlay() {
       const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: 0 })
       if (res.err) throw new Error(res.err)
       const results = res.ok?.results || []
-      setSubjects(results)
+      // Ensure no duplicates when resetting
+      const uniqueResults = results.filter((subject, index, self) => 
+        index === self.findIndex(s => s.id === subject.id)
+      )
+      setSubjects(uniqueResults)
       setHasMoreSubjects(results.length === 10)
     } catch (e: any) {
       setSubjectsError(e.message)
@@ -330,7 +360,8 @@ export default function MemoriesDashboardOverlay() {
       
       const newPairs = res.ok?.results || []
       if (append) {
-        setPairs(prev => [...prev, ...newPairs])
+        // Deduplicate pairs by ID to prevent duplicates
+        setPairs(prev => deduplicatePairs(prev, newPairs))
         setPairsOffset(offset)
       } else {
         setPairs(newPairs)
