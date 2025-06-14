@@ -89,7 +89,7 @@ export function getDeviceType(): "iphone" | "ipad" | "android" | "other" {
   if (isAndroidDevice()) {
     return "android"
   }
-  
+
   if (!isIOSDevice()) return "other"
 
   const { width, height } = window.screen
