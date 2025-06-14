@@ -120,7 +120,7 @@
   .ios-pwa-bottom-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
   }
-  
+
   .ios-pwa-bottom-minimal {
     padding-bottom: env(safe-area-inset-bottom) !important;
   }

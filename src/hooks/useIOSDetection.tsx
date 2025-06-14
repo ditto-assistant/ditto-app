@@ -14,20 +14,20 @@ export function useIOSDetection(): IOSInfo {
     }
 
     // Listen for PWA mode changes
-    const mediaQuery = window.matchMedia('(display-mode: standalone)')
-    mediaQuery.addEventListener('change', updateIOSInfo)
+    const mediaQuery = window.matchMedia("(display-mode: standalone)")
+    mediaQuery.addEventListener("change", updateIOSInfo)
 
     // Listen for orientation changes that might affect safe areas
-    window.addEventListener('orientationchange', updateIOSInfo)
-    window.addEventListener('resize', updateIOSInfo)
+    window.addEventListener("orientationchange", updateIOSInfo)
+    window.addEventListener("resize", updateIOSInfo)
 
     // Initial update
     updateIOSInfo()
 
     return () => {
-      mediaQuery.removeEventListener('change', updateIOSInfo)
-      window.removeEventListener('orientationchange', updateIOSInfo)
-      window.removeEventListener('resize', updateIOSInfo)
+      mediaQuery.removeEventListener("change", updateIOSInfo)
+      window.removeEventListener("orientationchange", updateIOSInfo)
+      window.removeEventListener("resize", updateIOSInfo)
     }
   }, [])
 

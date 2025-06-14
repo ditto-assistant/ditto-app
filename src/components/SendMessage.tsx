@@ -77,7 +77,7 @@ export default function SendMessage({
   const { isMobile } = usePlatform()
   const { data: userData } = useUser()
   const iosInfo = useIOSDetection()
-  
+
   const {
     refetch,
     addOptimisticMessage,
@@ -369,14 +369,15 @@ export default function SendMessage({
   }, [message, autoResizeTextarea])
 
   return (
-    <div 
+    <div
       className="w-full z-[300] bg-background backdrop-blur-md border-t border-border"
       style={{
-        paddingBottom: iosInfo.isIOS && iosInfo.isPWA 
-          ? `0px`
-          : iosInfo.isIOS 
-          ? `${iosInfo.safeAreaBottom}px`
-          : '8px'
+        paddingBottom:
+          iosInfo.isIOS && iosInfo.isPWA
+            ? `0px`
+            : iosInfo.isIOS
+              ? `${iosInfo.safeAreaBottom}px`
+              : "8px",
       }}
     >
       <form
