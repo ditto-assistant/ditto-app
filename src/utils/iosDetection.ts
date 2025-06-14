@@ -4,11 +4,12 @@
 
 export interface IOSInfo {
   isIOS: boolean
+  isAndroid: boolean
   isPWA: boolean
   hasNotch: boolean
   hasHomeIndicator: boolean
   safeAreaBottom: number
-  deviceType: "iphone" | "ipad" | "other"
+  deviceType: "iphone" | "ipad" | "android" | "other"
 }
 
 /**
@@ -19,6 +20,13 @@ export function isIOSDevice(): boolean {
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
   )
+}
+
+/**
+ * Detects if the current device is Android
+ */
+export function isAndroidDevice(): boolean {
+  return /Android/.test(navigator.userAgent)
 }
 
 /**
@@ -77,7 +85,11 @@ export function getSafeAreaBottom(): number {
 /**
  * Determines the device type based on screen dimensions and user agent
  */
-export function getIOSDeviceType(): "iphone" | "ipad" | "other" {
+export function getDeviceType(): "iphone" | "ipad" | "android" | "other" {
+  if (isAndroidDevice()) {
+    return "android"
+  }
+  
   if (!isIOSDevice()) return "other"
 
   const { width, height } = window.screen
@@ -123,14 +135,16 @@ export function hasNotch(): boolean {
  */
 export function getIOSInfo(): IOSInfo {
   const isIOS = isIOSDevice()
+  const isAndroid = isAndroidDevice()
   const isPWA = isPWAMode()
   const hasHomeIndicatorValue = hasHomeIndicator()
   const hasNotchValue = hasNotch()
   const safeAreaBottom = getSafeAreaBottom()
-  const deviceType = getIOSDeviceType()
+  const deviceType = getDeviceType()
 
   return {
     isIOS,
+    isAndroid,
     isPWA,
     hasNotch: hasNotchValue,
     hasHomeIndicator: hasHomeIndicatorValue,

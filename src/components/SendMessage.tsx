@@ -377,7 +377,7 @@ export default function SendMessage({
             ? `0px`
             : iosInfo.isIOS
               ? `${iosInfo.safeAreaBottom}px`
-              : "[env(safe-area-inset-bottom)]",
+              : "env(safe-area-inset-bottom)",
       }}
     >
       <form
