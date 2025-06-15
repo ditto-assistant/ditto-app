@@ -73,25 +73,27 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
           </button>
         )}
       </form>
-      {error && (
-        <div className="text-destructive text-sm mt-1">{error}</div>
-      )}
+      {error && <div className="text-destructive text-sm mt-1">{error}</div>}
       <div className="max-h-48 overflow-y-auto">
         <div className="flex flex-wrap gap-2 mt-2">
           {subjects.map((subject) => (
             <button
               key={subject.id}
               className={`px-3 py-1 rounded-full border text-sm font-medium transition-colors
-                ${selectedSubjectId === subject.id
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:bg-muted"}
+                ${
+                  selectedSubjectId === subject.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:bg-muted"
+                }
               `}
               onClick={() => onSelect(subject)}
               type="button"
             >
               {subject.subject_text}
               {subject.pair_count !== undefined && (
-                <span className="ml-2 text-xs text-muted-foreground">({subject.pair_count})</span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  ({subject.pair_count})
+                </span>
               )}
             </button>
           ))}
@@ -112,4 +114,4 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
   )
 }
 
-export default SubjectSelector 
+export default SubjectSelector

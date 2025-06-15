@@ -20,7 +20,9 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
       {memories.map((memory, idx) => {
         // Format metadata to include in the message
         // Debug check for vector_distance ranges
-        console.log(`Memory ${idx} vector_distance: ${memory.vector_distance}, similarity: ${memory.similarity}, score: ${memory.score}`)
+        console.log(
+          `Memory ${idx} vector_distance: ${memory.vector_distance}, similarity: ${memory.similarity}, score: ${memory.score}`
+        )
 
         // Calculate match percentage - handle both regular memories and KG pairs
         let matchPercentage: string
@@ -37,7 +39,7 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
         } else {
           matchPercentage = "0.0"
         }
-        
+
         const levelInfo = memory.level ? `Level: ${memory.level}` : ""
         const metadataFooter = `\n\n---\n*${matchPercentage}% Match${levelInfo ? " • " + levelInfo : ""}*`
         const timestamp =

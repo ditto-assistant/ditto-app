@@ -145,29 +145,29 @@ function App() {
                                     defaultTheme="system"
                                     storageKey="ditto-ui-theme"
                                   >
-                                  <FontSizeProvider>
-                                    <ComposeModal />
-                                    <ModalProvider registry={modalRegistry}>
-                                      <AppErrorBoundary>
-                                        <RouterProvider router={router} />
-                                      </AppErrorBoundary>
-                                      <UpdateNotification />
+                                    <FontSizeProvider>
+                                      <ComposeModal />
+                                      <ModalProvider registry={modalRegistry}>
+                                        <AppErrorBoundary>
+                                          <RouterProvider router={router} />
+                                        </AppErrorBoundary>
+                                        <UpdateNotification />
 
-                                      {createPortal(
-                                        <Toaster
-                                          position="top-center"
-                                          closeButton
-                                          richColors
-                                        />,
-                                        document.getElementById("toast-root")!
-                                      )}
-                                      <ReactQueryDevtools
-                                        buttonPosition="top-left"
-                                        initialIsOpen={false}
-                                      />
-                                    </ModalProvider>
-                                  </FontSizeProvider>
-                                </ThemeProvider>
+                                        {createPortal(
+                                          <Toaster
+                                            position="top-center"
+                                            closeButton
+                                            richColors
+                                          />,
+                                          document.getElementById("toast-root")!
+                                        )}
+                                        <ReactQueryDevtools
+                                          buttonPosition="top-left"
+                                          initialIsOpen={false}
+                                        />
+                                      </ModalProvider>
+                                    </FontSizeProvider>
+                                  </ThemeProvider>
                                 </MemorySyncProvider>
                               </ComposeProvider>
                             </PromptStorageProvider>

@@ -1,5 +1,8 @@
 import { useCallback } from "react"
-import { deleteConversation, deleteConversationComplete } from "@/api/userContent"
+import {
+  deleteConversation,
+  deleteConversationComplete,
+} from "@/api/userContent"
 import { useConfirmationDialog } from "./useConfirmationDialog"
 import { toast } from "sonner"
 import { useAuth } from "./useAuth"
@@ -14,7 +17,7 @@ export const useMemoryDeletion = (updateConversation) => {
       if (!docId) return
       try {
         const toastId = toast.loading("Deleting memory...")
-        
+
         // Use the new complete deletion that handles both Firestore and KG
         const result = await deleteConversationComplete(user.uid, docId)
 

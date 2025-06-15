@@ -13,7 +13,13 @@ import { toast } from "sonner"
 import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
 import MemoriesListView from "@/screens/MemoriesDashboard/MemoriesListView"
 import SearchBar from "@/screens/MemoriesDashboard/SearchBar"
-import { searchSubjects, getSubjectPairs, searchPairs, getTopSubjects, getSubjectPairsRecent } from "@/api/kg"
+import {
+  searchSubjects,
+  getSubjectPairs,
+  searchPairs,
+  getTopSubjects,
+  getSubjectPairsRecent,
+} from "@/api/kg"
 import type { Subject, Pair } from "@/types/common"
 import SubjectSelector from "./SubjectSelector"
 
@@ -29,16 +35,19 @@ const formatCount = (count: number) => {
 }
 
 // Utility function to deduplicate subjects by ID
-const deduplicateSubjects = (existingSubjects: Subject[], newSubjects: Subject[]): Subject[] => {
-  const existingIds = new Set(existingSubjects.map(s => s.id))
-  const uniqueNewSubjects = newSubjects.filter(s => !existingIds.has(s.id))
+const deduplicateSubjects = (
+  existingSubjects: Subject[],
+  newSubjects: Subject[]
+): Subject[] => {
+  const existingIds = new Set(existingSubjects.map((s) => s.id))
+  const uniqueNewSubjects = newSubjects.filter((s) => !existingIds.has(s.id))
   return [...existingSubjects, ...uniqueNewSubjects]
 }
 
 // Utility function to deduplicate pairs by ID
 const deduplicatePairs = (existingPairs: Pair[], newPairs: Pair[]): Pair[] => {
-  const existingIds = new Set(existingPairs.map(p => p.id))
-  const uniqueNewPairs = newPairs.filter(p => !existingIds.has(p.id))
+  const existingIds = new Set(existingPairs.map((p) => p.id))
+  const uniqueNewPairs = newPairs.filter((p) => !existingIds.has(p.id))
   return [...existingPairs, ...uniqueNewPairs]
 }
 
@@ -123,12 +132,17 @@ export default function MemoriesDashboardOverlay() {
       setSubjectsError(null)
       setSubjectsOffset(0)
       try {
-        const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: 0 })
+        const res = await getTopSubjects({
+          userID: user.uid,
+          limit: 10,
+          offset: 0,
+        })
         if (res.err) throw new Error(res.err)
         const results = res.ok?.results || []
         // Ensure no duplicates in initial results
-        const uniqueResults = results.filter((subject, index, self) => 
-          index === self.findIndex(s => s.id === subject.id)
+        const uniqueResults = results.filter(
+          (subject, index, self) =>
+            index === self.findIndex((s) => s.id === subject.id)
         )
         setSubjects(uniqueResults)
         setHasMoreSubjects(results.length === 10) // If we got 10, there might be more
@@ -275,8 +289,9 @@ export default function MemoriesDashboardOverlay() {
       if (res.err) throw new Error(res.err)
       const searchResults = res.ok?.results || []
       // Ensure no duplicates even in search results
-      const uniqueResults = searchResults.filter((subject, index, self) => 
-        index === self.findIndex(s => s.id === subject.id)
+      const uniqueResults = searchResults.filter(
+        (subject, index, self) =>
+          index === self.findIndex((s) => s.id === subject.id)
       )
       setSubjects(uniqueResults)
     } catch (e: any) {
@@ -293,13 +308,17 @@ export default function MemoriesDashboardOverlay() {
     setShowMoreLoading(true)
     try {
       const newOffset = subjectsOffset + 10
-      const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: newOffset })
+      const res = await getTopSubjects({
+        userID: user.uid,
+        limit: 10,
+        offset: newOffset,
+      })
       if (res.err) throw new Error(res.err)
       const newResults = res.ok?.results || []
-      
+
       // Deduplicate subjects by ID to prevent duplicates
-      setSubjects(prev => deduplicateSubjects(prev, newResults))
-      
+      setSubjects((prev) => deduplicateSubjects(prev, newResults))
+
       setSubjectsOffset(newOffset)
       setHasMoreSubjects(newResults.length === 10) // If we got 10, there might be more
     } catch (e: any) {
@@ -318,12 +337,17 @@ export default function MemoriesDashboardOverlay() {
     setIsSubjectSearchMode(false)
     setSubjectsOffset(0)
     try {
-      const res = await getTopSubjects({ userID: user.uid, limit: 10, offset: 0 })
+      const res = await getTopSubjects({
+        userID: user.uid,
+        limit: 10,
+        offset: 0,
+      })
       if (res.err) throw new Error(res.err)
       const results = res.ok?.results || []
       // Ensure no duplicates when resetting
-      const uniqueResults = results.filter((subject, index, self) => 
-        index === self.findIndex(s => s.id === subject.id)
+      const uniqueResults = results.filter(
+        (subject, index, self) =>
+          index === self.findIndex((s) => s.id === subject.id)
       )
       setSubjects(uniqueResults)
       setHasMoreSubjects(results.length === 10)
@@ -337,7 +361,11 @@ export default function MemoriesDashboardOverlay() {
   }
 
   // Load recent pairs for selected subject
-  const loadRecentPairs = async (subject: Subject, offset: number = 0, append: boolean = false) => {
+  const loadRecentPairs = async (
+    subject: Subject,
+    offset: number = 0,
+    append: boolean = false
+  ) => {
     if (!user?.uid) return
     if (!append) {
       setPairsLoading(true)
@@ -346,7 +374,7 @@ export default function MemoriesDashboardOverlay() {
     } else {
       setIsLoadingMorePairs(true)
     }
-    
+
     try {
       const res = await getSubjectPairsRecent({
         userID: user.uid,
@@ -355,9 +383,9 @@ export default function MemoriesDashboardOverlay() {
         limit: 5,
         offset,
       })
-      
+
       if (res.err) throw new Error(res.err)
-      
+
       const newPairs = res.ok?.results || []
       if (append) {
         // Deduplicate pairs by ID to prevent duplicates, but maintain chronological order
@@ -395,7 +423,12 @@ export default function MemoriesDashboardOverlay() {
     if (!user?.uid || !selectedSubject) return
     setPairsLoading(true)
     setPairsError(null)
-    console.log("🔍 Searching pairs for subject:", selectedSubject.subject_text, "with query:", query)
+    console.log(
+      "🔍 Searching pairs for subject:",
+      selectedSubject.subject_text,
+      "with query:",
+      query
+    )
     try {
       const res = await getSubjectPairs({
         userID: user.uid,
@@ -405,13 +438,13 @@ export default function MemoriesDashboardOverlay() {
         topK: 10,
       })
       console.log("📡 KG API response:", res)
-      
+
       if (res.err) throw new Error(res.err)
-      
+
       console.log("📋 Raw results from KG:", res.ok?.results)
       console.log("📋 Results type:", typeof res.ok?.results)
       console.log("📋 Is array?", Array.isArray(res.ok?.results))
-      
+
       // Only set pairs if results is an array
       if (Array.isArray(res.ok?.results)) {
         console.log(`✅ Setting ${res.ok.results.length} pairs`)
@@ -419,7 +452,11 @@ export default function MemoriesDashboardOverlay() {
       } else {
         console.warn("⚠️ Results is not an array:", res.ok?.results)
         setPairs([])
-        setPairsError(typeof res.ok?.results === 'string' ? res.ok.results : 'No results found.')
+        setPairsError(
+          typeof res.ok?.results === "string"
+            ? res.ok.results
+            : "No results found."
+        )
       }
     } catch (e: any) {
       console.error("❌ Error in handlePairSearch:", e)
@@ -433,7 +470,10 @@ export default function MemoriesDashboardOverlay() {
   // Collapse subject list when rendering memory search results
   useEffect(() => {
     // Collapse if we are showing memory search results (pairs for a subject or general memory results)
-    if ((selectedSubject && pairs.length > 0) || (!selectedSubject && memories.length > 0)) {
+    if (
+      (selectedSubject && pairs.length > 0) ||
+      (!selectedSubject && memories.length > 0)
+    ) {
       setSubjectsCollapsed(true)
     }
   }, [selectedSubject, pairs.length, memories.length])
@@ -456,10 +496,16 @@ export default function MemoriesDashboardOverlay() {
           {subjectsCollapsed && selectedSubject ? (
             <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/30">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-primary">Selected:</span>
-                <span className="text-sm text-foreground">{selectedSubject.subject_text}</span>
+                <span className="text-sm font-medium text-primary">
+                  Selected:
+                </span>
+                <span className="text-sm text-foreground">
+                  {selectedSubject.subject_text}
+                </span>
                 {selectedSubject.pair_count && (
-                  <span className="text-xs text-muted-foreground">({selectedSubject.pair_count} pairs)</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({selectedSubject.pair_count} pairs)
+                  </span>
                 )}
               </div>
               <button
@@ -500,9 +546,11 @@ export default function MemoriesDashboardOverlay() {
             <div className="flex flex-col gap-4 pb-4 border-b border-border">
               <form
                 className="flex gap-3 w-full"
-                onSubmit={e => {
+                onSubmit={(e) => {
                   e.preventDefault()
-                  const input = (e.currentTarget.elements.namedItem("pairSearch") as HTMLInputElement)
+                  const input = e.currentTarget.elements.namedItem(
+                    "pairSearch"
+                  ) as HTMLInputElement
                   handlePairSearch(input.value)
                 }}
                 autoComplete="off"
@@ -514,23 +562,37 @@ export default function MemoriesDashboardOverlay() {
                   className="flex-1 px-3 py-2 rounded border border-input bg-muted text-foreground text-sm focus:outline-none focus:border-primary"
                   disabled={pairsLoading}
                 />
-                <Button type="submit" disabled={pairsLoading} className="h-10 px-4 rounded-md text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/70 disabled:cursor-not-allowed">
+                <Button
+                  type="submit"
+                  disabled={pairsLoading}
+                  className="h-10 px-4 rounded-md text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/70 disabled:cursor-not-allowed"
+                >
                   {pairsLoading ? "Searching..." : "Search"}
                 </Button>
               </form>
-              {pairsError && <div className="text-destructive text-sm mt-1">{pairsError}</div>}
+              {pairsError && (
+                <div className="text-destructive text-sm mt-1">
+                  {pairsError}
+                </div>
+              )}
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
               {!pairsLoading && pairs.length > 0 && (
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <MemoriesListView
-                    memories={[...pairs].sort((a, b) => {
-                      // Always maintain chronological order (newest first) for pairs in a subject
-                      // Backend already returns them in chronological order, but ensure consistency
-                      const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0
-                      const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0
-                      return bTime - aTime
-                    }) as Memory[]}
+                    memories={
+                      [...pairs].sort((a, b) => {
+                        // Always maintain chronological order (newest first) for pairs in a subject
+                        // Backend already returns them in chronological order, but ensure consistency
+                        const aTime = a.timestamp
+                          ? new Date(a.timestamp).getTime()
+                          : 0
+                        const bTime = b.timestamp
+                          ? new Date(b.timestamp).getTime()
+                          : 0
+                        return bTime - aTime
+                      }) as Memory[]
+                    }
                     onCopy={handleCopy}
                     onDelete={handleDeleteMemory}
                     onShowMemories={handleShowRelatedMemories}
@@ -555,7 +617,7 @@ export default function MemoriesDashboardOverlay() {
                       </button>
                     </div>
                   )}
-                  
+
                   {/* Show when no more pairs available */}
                   {!hasMorePairs && pairs.length > 0 && (
                     <div className="flex justify-center p-4 border-t border-border">
@@ -648,21 +710,30 @@ export default function MemoriesDashboardOverlay() {
                   <p>{error}</p>
                 </div>
               )}
-              {!loading && !error && memories.length === 0 && lastSearchedTerm && (
-                <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
-                  <Info size={24} />
-                  <p>
-                    No memories found for &quot;{lastSearchedTerm}&quot;. Try a
-                    different search.
-                  </p>
-                </div>
-              )}
-              {!loading && !error && memories.length === 0 && !lastSearchedTerm && (
-                <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
-                  <Info size={24} />
-                  <p>Enter a search term and click Search to find your memories.</p>
-                </div>
-              )}
+              {!loading &&
+                !error &&
+                memories.length === 0 &&
+                lastSearchedTerm && (
+                  <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
+                    <Info size={24} />
+                    <p>
+                      No memories found for &quot;{lastSearchedTerm}&quot;. Try
+                      a different search.
+                    </p>
+                  </div>
+                )}
+              {!loading &&
+                !error &&
+                memories.length === 0 &&
+                !lastSearchedTerm && (
+                  <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
+                    <Info size={24} />
+                    <p>
+                      Enter a search term and click Search to find your
+                      memories.
+                    </p>
+                  </div>
+                )}
               {!loading && !error && memories.length > 0 && (
                 <>
                   {activeView === "list" ? (

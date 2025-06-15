@@ -15,15 +15,19 @@ Ditto is designed to be genuinely personable and constructive, adapting its comm
 ## Core Product Pillars
 
 ### 1. **Agentic Memory System** 🧠
+
 Ditto's artificial hippocampus stores and organizes all interactions, creating a rich knowledge graph of your preferences, experiences, and context.
 
 ### 2. **Personality Alignment** 🎯
+
 Advanced personality assessment using Big Five, MBTI, and DISC frameworks to understand and adapt to your unique behavioral patterns.
 
 ### 3. **Multimodal Intelligence** 👁️
+
 Seamless integration of text, voice, and visual inputs for natural, intuitive communication.
 
 ### 4. **Proactive Assistance** ⚡
+
 Anticipates needs and provides relevant insights based on your history and patterns.
 
 ---
@@ -33,6 +37,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **Memory & Knowledge Management**
 
 #### **Hierarchical Memory System**
+
 - **Short-term Memory**: Configurable 0-10 recent conversations
 - **Long-term Memory**: Sophisticated chaining system (up to 5 levels deep)
 - **Memory Network Visualization**: Interactive graph showing relationships between memories
@@ -40,6 +45,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 - **Memory Organization**: Automatic categorization by Subjects, People, Places, Things, and Ideas
 
 #### **Knowledge Graph Integration**
+
 - Vector-based similarity matching for relevant memory retrieval
 - Hierarchical memory relationships with parent-child connections
 - Memory scoring and relevance ranking
@@ -48,14 +54,16 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **AI Model Ecosystem**
 
 #### **Multi-Provider Support**
+
 - **OpenAI**: GPT-4o series, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano
-- **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku series  
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku series
 - **Google**: Gemini 1.5 Flash, Gemini 1.5 Pro
 - **Meta**: Llama 3.3 70B, Llama 4 Scout, Llama 4 Maverick
 - **Mistral**: Mistral Nemo, Mistral Large
 - **Cerebras**: Ultra-fast Llama implementations
 
 #### **Intelligent Model Selection**
+
 - **Main Agent Model**: Primary conversational AI
 - **Programmer Model**: Specialized for code generation and technical tasks
 - **Image Generation Models**: DALL-E 2, DALL-E 3, DALL-E 3 HD
@@ -64,6 +72,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **Advanced Tools & Integrations**
 
 #### **Built-in Tool Suite**
+
 - **Web Search**: Real-time Google search integration with results processing
 - **Image Generation**: Multiple DALL-E models with size customization
 - **Image Analysis**: Multimodal image understanding and processing
@@ -72,11 +81,13 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **Personality Assessment Engine**
 
 #### **Multi-Framework Analysis**
+
 - **Big Five (OCEAN)**: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
 - **MBTI**: Complete 16-type personality identification
 - **DISC**: Behavioral style assessment (Dominance, Influence, Steadiness, Conscientiousness)
 
 #### **AI-Powered Assessment**
+
 - Knowledge graph analysis for automatic question answering
 - Evidence-based scoring with justifications
 - Progressive assessment with saved progress
@@ -85,12 +96,14 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **User Experience & Interface**
 
 #### **Responsive Design**
+
 - **Progressive Web App (PWA)**: Native app experience across all devices
 - **Mobile-First**: Optimized for smartphone usage
 - **Desktop Compatible**: Full feature parity on larger screens
 - **Dark/Light Themes**: System-aware theme switching
 
 #### **Advanced Input Methods**
+
 - **Camera Integration**: Photo capture and analysis
 - **Drag & Drop**: File and image uploads
 - **Paste Support**: Clipboard image and text handling
@@ -98,25 +111,29 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **Conversation Management**
 
 #### **Streaming Responses**
+
 - Real-time text streaming for immediate feedback
 - Server-Sent Events (SSE) for efficient data transfer
 - Cancellable requests with partial response saving
 - Optimistic UI updates for smooth interactions
 
 #### **Context Preservation**
+
 - Persistent conversation history
-- Cross-session memory retention  
+- Cross-session memory retention
 - Conversation threading and organization
 - Export and backup capabilities
 
 ### **Subscription & Monetization**
 
 #### **Tiered Plans**
+
 - **Spark ($5/month)**: Fast models, basic features, secure history
 - **Strong ($10/month)**: Smart models, enhanced tools, higher limits
 - **Hero ($20/month)**: Premium models, HD generation, priority support
 
 #### **Token Economy**
+
 - Balance-based usage tracking
 - Pay-per-use for premium features
 - Automatic tier upgrades based on balance
@@ -127,6 +144,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 ## Technical Architecture
 
 ### **Frontend Technology Stack**
+
 - **React 19** with TypeScript
 - **Vite** for build tooling and development
 - **Tailwind CSS** with shadcn/ui components
@@ -135,6 +153,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 - **Firebase** for authentication and storage
 
 ### **Backend Infrastructure**
+
 - **Go** high-performance backend
 - **Firebase Auth** for user management
 - **Turso/SQLite** for data persistence
@@ -142,6 +161,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 - **Stripe** for payment processing
 
 ### **AI/ML Integrations**
+
 - Multiple LLM provider APIs
 - Custom wake word detection model
 - Vector similarity search
@@ -152,6 +172,7 @@ Anticipates needs and provides relevant insights based on your history and patte
 ## User Journey & Use Cases
 
 ### **New User Onboarding**
+
 1. **Account Creation**: Seamless signup with Terms of Service
 2. **Personality Assessment**: Optional initial assessment for better alignment
 3. **Preference Setup**: Model selection and feature configuration
@@ -160,26 +181,31 @@ Anticipates needs and provides relevant insights based on your history and patte
 ### **Daily Use Scenarios**
 
 #### **Personal Assistant**
+
 - "Remind me about my meeting preferences based on our past conversations"
 - "What's my typical approach to handling conflicts at work?"
 - "Generate a response to this email in my usual tone"
 
 #### **Knowledge Companion**
+
 - "What did we discuss about that investment strategy last month?"
 - "Show me the evolution of my thoughts on this project"
 - "Find similar situations where I made good decisions"
 
 #### **Creative Partner**
+
 - "Create an image for my presentation based on our previous design discussions"
 - "Help me brainstorm ideas that align with my creative style"
 - "Generate content that matches my established voice"
 
 #### **Problem Solver**
+
 - "Based on my personality profile, what's the best approach to this challenge?"
 - "How have I successfully handled similar situations before?"
 - "What would you recommend given my work patterns and preferences?"
 
 ### **Power User Features**
+
 - **Memory Network Exploration**: Visual browsing of knowledge connections
 - **Personality Insights**: Deep analysis reports and trends
 - **Advanced Model Management**: Fine-tuned model selection strategies
@@ -190,18 +216,23 @@ Anticipates needs and provides relevant insights based on your history and patte
 ## Competitive Advantages
 
 ### **Deep Memory vs. Session-Based**
+
 While most AI assistants reset with each conversation, Ditto builds a persistent understanding that grows more valuable over time.
 
 ### **Personality-Driven Responses**
+
 Responses aren't just accurate—they're aligned with your communication style, decision-making patterns, and personal preferences.
 
 ### **Multimodal Native**
+
 Seamless integration of voice, text, and visual inputs creates a more natural interaction paradigm.
 
 ### **Privacy-First Design**
+
 Local data processing where possible, with transparent data handling and user control over memory retention.
 
 ### **Extensible Architecture**
+
 Open design allows for easy integration of new models, tools, and capabilities as the AI landscape evolves.
 
 ---
@@ -209,12 +240,14 @@ Open design allows for easy integration of new models, tools, and capabilities a
 ## Future Roadmap
 
 ### **Short-term (3-6 months)**
+
 - Enhanced personality assessment algorithms
 - Mobile app optimization
 - Advanced memory organization tools
 - Improved model selection intelligence
 
 ### **Medium-term (6-12 months)**
+
 - **Voice & Speech Integration**: Wake word activation ("Hey Ditto!"), speech-to-text, and voice commands
 - **Smart Home Integration**: Home Assistant and Google Assistant SDK support
 - Custom model fine-tuning
@@ -223,6 +256,7 @@ Open design allows for easy integration of new models, tools, and capabilities a
 - Advanced analytics dashboard
 
 ### **Long-term (12+ months)**
+
 - Federated learning capabilities
 - Cross-platform synchronization
 - Enterprise deployment options
@@ -233,16 +267,19 @@ Open design allows for easy integration of new models, tools, and capabilities a
 ## Target Markets
 
 ### **Primary Market: Knowledge Workers**
+
 - Consultants, researchers, writers, and analysts
 - Individuals who value personalized, context-aware assistance
 - Users seeking long-term AI companionship rather than transactional interactions
 
 ### **Secondary Market: Creative Professionals**
+
 - Designers, marketers, and content creators
 - Users who need consistent creative partnership
 - Professionals requiring brand voice alignment
 
 ### **Emerging Market: Personal Productivity**
+
 - Life coaches, therapists, and personal development enthusiasts
 - Individuals interested in self-understanding and growth
 - Users seeking AI-assisted reflection and decision-making
@@ -252,18 +289,21 @@ Open design allows for easy integration of new models, tools, and capabilities a
 ## Success Metrics
 
 ### **Engagement Metrics**
+
 - Daily/Monthly Active Users
 - Session duration and frequency
 - Memory interactions per user
 - Feature adoption rates
 
 ### **Quality Metrics**
+
 - Response relevance scores
 - User satisfaction ratings
 - Personality alignment accuracy
 - Memory retrieval precision
 
 ### **Business Metrics**
+
 - Subscription conversion rates
 - Token consumption patterns
 - Customer lifetime value
@@ -277,4 +317,4 @@ Ditto represents a fundamental shift from disposable AI interactions to persiste
 
 The platform's extensible architecture and privacy-first approach position it for long-term success in an rapidly evolving AI landscape, while its focus on personality alignment and deep memory creates sustainable competitive advantages that become stronger over time.
 
-**Ditto isn't just an AI assistant—it's your intelligent knowledge companion, designed to understand you better than you understand yourself.** 
+**Ditto isn't just an AI assistant—it's your intelligent knowledge companion, designed to understand you better than you understand yourself.**

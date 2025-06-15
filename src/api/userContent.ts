@@ -220,7 +220,17 @@ export async function deleteConversation(
 export async function deleteMemoryPairFromKG(
   userID: string,
   pairID: string
-): Promise<{ success: boolean; cleanup_stats: { pairs_deleted: number; subjects_removed: number; links_removed: number } } | Error> {
+): Promise<
+  | {
+      success: boolean
+      cleanup_stats: {
+        pairs_deleted: number
+        subjects_removed: number
+        links_removed: number
+      }
+    }
+  | Error
+> {
   try {
     const tok = await getToken()
     if (tok.err) {
@@ -250,8 +260,8 @@ export async function deleteMemoryPairFromKG(
         cleanup_stats: {
           pairs_deleted: 0,
           subjects_removed: 0,
-          links_removed: 0
-        }
+          links_removed: 0,
+        },
       }
     }
 
@@ -268,8 +278,8 @@ export async function deleteMemoryPairFromKG(
       cleanup_stats: data.cleanup_stats || {
         pairs_deleted: 0,
         subjects_removed: 0,
-        links_removed: 0
-      }
+        links_removed: 0,
+      },
     }
   } catch (error) {
     console.error("Error deleting memory pair from KG:", error)
@@ -288,28 +298,30 @@ export async function deleteConversationComplete(
     // First delete from Firestore
     const firestoreResult = await deleteConversation(userID, conversationID)
     const firestoreDeleted = !(firestoreResult instanceof Error)
-    
+
     if (firestoreResult instanceof Error) {
-      console.warn(`Failed to delete from Firestore: ${firestoreResult.message}`)
+      console.warn(
+        `Failed to delete from Firestore: ${firestoreResult.message}`
+      )
     }
 
     // Then delete from Knowledge Graph
     const kgResult = await deleteMemoryPairFromKG(userID, conversationID)
     const kgDeleted = !(kgResult instanceof Error)
-    
+
     if (kgResult instanceof Error) {
       console.warn(`Failed to delete from KG: ${kgResult.message}`)
-      // If Firestore deletion succeeded but KG deletion failed, 
+      // If Firestore deletion succeeded but KG deletion failed,
       // we should still consider this a partial success
       return {
         firestore_deleted: firestoreDeleted,
-        kg_cleanup: { error: kgResult.message }
+        kg_cleanup: { error: kgResult.message },
       }
     }
 
     return {
       firestore_deleted: firestoreDeleted,
-      kg_cleanup: kgResult
+      kg_cleanup: kgResult,
     }
   } catch (error) {
     console.error("Error in complete conversation deletion:", error)

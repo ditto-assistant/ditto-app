@@ -10,7 +10,7 @@ export interface Memory {
   timestamp: Date
   vector_distance: number
   depth: number
-  similarity?: number  // For KG pairs data
+  similarity?: number // For KG pairs data
   children?: Memory[]
 }
 

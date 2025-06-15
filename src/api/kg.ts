@@ -1,9 +1,19 @@
 import { routes } from "../firebaseConfig"
 import { getToken } from "./auth"
 import { Result } from "@/types/common"
-import type { Subject, SubjectSearchResult, PairSearchResult } from "@/types/common"
+import type {
+  Subject,
+  SubjectSearchResult,
+  PairSearchResult,
+} from "@/types/common"
 
-export async function searchSubjects({ userID, userEmail, query, topK = 10, minSimilarity = 0.1 }: {
+export async function searchSubjects({
+  userID,
+  userEmail,
+  query,
+  topK = 10,
+  minSimilarity = 0.1,
+}: {
   userID?: string
   userEmail?: string
   query: string
@@ -41,7 +51,12 @@ export async function searchSubjects({ userID, userEmail, query, topK = 10, minS
   }
 }
 
-export async function searchPairs({ userID, userEmail, query, topK = 5 }: {
+export async function searchPairs({
+  userID,
+  userEmail,
+  query,
+  topK = 5,
+}: {
   userID?: string
   userEmail?: string
   query: string
@@ -77,7 +92,14 @@ export async function searchPairs({ userID, userEmail, query, topK = 5 }: {
   }
 }
 
-export async function getSubjectPairs({ userID, userEmail, subjectID, subjectText, query, topK = 5 }: {
+export async function getSubjectPairs({
+  userID,
+  userEmail,
+  subjectID,
+  subjectText,
+  query,
+  topK = 5,
+}: {
   userID?: string
   userEmail?: string
   subjectID?: string
@@ -117,12 +139,19 @@ export async function getSubjectPairs({ userID, userEmail, subjectID, subjectTex
   }
 }
 
-export async function getTopSubjects({ userID, userEmail, limit = 10, offset = 0 }: {
+export async function getTopSubjects({
+  userID,
+  userEmail,
+  limit = 10,
+  offset = 0,
+}: {
   userID?: string
   userEmail?: string
   limit?: number
   offset?: number
-}): Promise<Result<{ results: Subject[]; metadata: { limit: number; offset: number } }>> {
+}): Promise<
+  Result<{ results: Subject[]; metadata: { limit: number; offset: number } }>
+> {
   const tok = await getToken()
   if (tok.err) return { err: "Unable to get token" }
   if (!tok.ok) return { err: "No token" }
@@ -153,7 +182,14 @@ export async function getTopSubjects({ userID, userEmail, limit = 10, offset = 0
   }
 }
 
-export async function getSubjectPairsRecent({ userID, userEmail, subjectID, subjectText, limit = 5, offset = 0 }: {
+export async function getSubjectPairsRecent({
+  userID,
+  userEmail,
+  subjectID,
+  subjectText,
+  limit = 5,
+  offset = 0,
+}: {
   userID?: string
   userEmail?: string
   subjectID?: string
@@ -186,9 +222,11 @@ export async function getSubjectPairsRecent({ userID, userEmail, subjectID, subj
       const data = (await response.json()) as PairSearchResult
       return { ok: data }
     } else {
-      return { err: `Unable to get recent subject pairs. Error: ${response.status}` }
+      return {
+        err: `Unable to get recent subject pairs. Error: ${response.status}`,
+      }
     }
   } catch (error) {
     return { err: `Unable to get recent subject pairs. Error: ${error}` }
   }
-} 
+}
