@@ -25,7 +25,7 @@
 
   /* Input field adjustments */
   .form {
-    margin-bottom: env(safe-area-inset-bottom, 0px);
+    margin-bottom: 0px;
   }
 
   /* Fix for follow button and bottom spacer in chat feed */
@@ -88,16 +88,10 @@
 
     /* PWA-specific app container adjustments */
     .app {
-      /* Remove any extra spacing in PWA mode */
-      padding-bottom: 0;
       /* Ensure content uses the full height */
       height: 100%;
-    }
-
-    /* Bottom area spacing for PWA mode */
-    .form {
-      padding-bottom: 0;
-      margin-bottom: 0;
+      /* Remove bottom padding in PWA mode - let individual components handle it */
+      padding-bottom: 0 !important;
     }
   }
 
@@ -119,4 +113,15 @@
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* Enhanced safe area utilities for PWA mode */
+@media all and (display-mode: standalone) {
+  .ios-pwa-bottom-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
+  }
+
+  .ios-pwa-bottom-minimal {
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
 }

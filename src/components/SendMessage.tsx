@@ -32,6 +32,7 @@ import { usePlatform } from "@/hooks/usePlatform"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useUser } from "@/hooks/useUser"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
+import { useIOSDetection } from "@/hooks/useIOSDetection"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -76,6 +77,8 @@ export default function SendMessage({
   const balance = useBalance()
   const { isMobile } = usePlatform()
   const { data: userData } = useUser()
+  const iosInfo = useIOSDetection()
+
   const {
     refetch,
     addOptimisticMessage,
@@ -370,7 +373,17 @@ export default function SendMessage({
   }, [message, autoResizeTextarea])
 
   return (
-    <div className="w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
+    <div
+      className="w-full z-[300] bg-background backdrop-blur-md border-t border-border"
+      style={{
+        paddingBottom:
+          iosInfo.isIOS && iosInfo.isPWA
+            ? `0px`
+            : iosInfo.isIOS
+              ? `${iosInfo.safeAreaBottom}px`
+              : "env(safe-area-inset-bottom)",
+      }}
+    >
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}
