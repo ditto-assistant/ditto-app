@@ -62,6 +62,7 @@ export const cancelPrompt = async () => {
  * @param {string} optimisticId - The ID of the optimistic message update.
  * @param {function} finalizeMessage - A function to finalize a message.
  * @param {number} planTier - The user's plan tier.
+ * @param {function} onMemorySync - Optional callback to trigger memory sync after successful response.
  */
 export const sendPrompt = async (
   userID,
@@ -73,7 +74,8 @@ export const sendPrompt = async (
   streamingCallback = null,
   optimisticId = null,
   finalizeMessage = null,
-  planTier
+  planTier,
+  onMemorySync = null
 ) => {
   const isPremiumUser = planTier > 0
   try {
@@ -208,7 +210,8 @@ export const sendPrompt = async (
           preferences,
           refetch,
           optimisticId,
-          finalizeMessage
+          finalizeMessage,
+          onMemorySync
         )
         break
       }
@@ -218,6 +221,17 @@ export const sendPrompt = async (
     if (!toolTriggered) {
       // Save the response to the backend
       await saveResponse(pairID, response)
+
+      // Trigger memory sync after successful response completion
+      if (onMemorySync) {
+        console.log("🧠 [Agent] Triggering memory sync after successful response (no tools)")
+        setTimeout(() => {
+          console.log("🧠 [Agent] Executing memory sync callback (no tools)")
+          onMemorySync()
+        }, 500) // Small delay to ensure response is fully saved
+      } else {
+        console.log("🧠 [Agent] No memory sync callback available (no tools)")
+      }
 
       // Finalize the optimistic message if we have one
       // Note: finalizeMessage already includes a refetch, so we don't need to do it again
@@ -263,7 +277,8 @@ export const processResponse = async (
   preferences,
   refetch,
   optimisticId = null,
-  finalizeMessage = null
+  finalizeMessage = null,
+  onMemorySync = null
 ) => {
   console.log("%c" + response, "color: yellow")
 
@@ -293,6 +308,17 @@ export const processResponse = async (
       // For completed responses with a final result
       if (status === "complete" && finalResponse) {
         await saveResponse(pairID, finalResponse)
+
+        // Trigger memory sync after successful tool response completion
+        if (onMemorySync) {
+          console.log("🧠 [Agent] Triggering memory sync after tool completion:", type)
+          setTimeout(() => {
+            console.log("🧠 [Agent] Executing memory sync callback for tool:", type)
+            onMemorySync()
+          }, 500) // Small delay to ensure response is fully saved
+        } else {
+          console.log("🧠 [Agent] No memory sync callback available for tool:", type)
+        }
 
         // Update optimistic message if available
         if (optimisticId && finalizeMessage) {

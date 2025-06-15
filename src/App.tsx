@@ -24,6 +24,7 @@ import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer"
 import { ConversationProvider } from "./hooks/useConversationHistory"
 import { PromptStorageProvider } from "@/hooks/usePromptStorage"
 import { ComposeProvider } from "@/contexts/ComposeContext"
+import { MemorySyncProvider } from "@/contexts/MemorySyncContext"
 import { ServicesProvider } from "@/hooks/useServices"
 import { initUpdateService } from "@/utils/updateService"
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler"
@@ -139,10 +140,11 @@ function App() {
                           <ServicesProvider>
                             <PromptStorageProvider>
                               <ComposeProvider>
-                                <ThemeProvider
-                                  defaultTheme="system"
-                                  storageKey="ditto-ui-theme"
-                                >
+                                <MemorySyncProvider>
+                                  <ThemeProvider
+                                    defaultTheme="system"
+                                    storageKey="ditto-ui-theme"
+                                  >
                                   <FontSizeProvider>
                                     <ComposeModal />
                                     <ModalProvider registry={modalRegistry}>
@@ -166,6 +168,7 @@ function App() {
                                     </ModalProvider>
                                   </FontSizeProvider>
                                 </ThemeProvider>
+                                </MemorySyncProvider>
                               </ComposeProvider>
                             </PromptStorageProvider>
                           </ServicesProvider>

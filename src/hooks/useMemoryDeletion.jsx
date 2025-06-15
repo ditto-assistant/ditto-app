@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { deleteConversation } from "@/api/userContent"
+import { deleteConversation, deleteConversationComplete } from "@/api/userContent"
 import { useConfirmationDialog } from "./useConfirmationDialog"
 import { toast } from "sonner"
 import { useAuth } from "./useAuth"
@@ -14,9 +14,12 @@ export const useMemoryDeletion = (updateConversation) => {
       if (!docId) return
       try {
         const toastId = toast.loading("Deleting memory...")
-        const result = await deleteConversation(user.uid, docId)
+        
+        // Use the new complete deletion that handles both Firestore and KG
+        const result = await deleteConversationComplete(user.uid, docId)
 
         if (!(result instanceof Error)) {
+          // Show simple success message
           toast.success("Memory deleted successfully", { id: toastId })
 
           if (updateConversation) {
@@ -81,8 +84,8 @@ export const useMemoryDeletion = (updateConversation) => {
       const isMessage = !!options.isMessage
       const title = isMessage ? "Delete Message?" : "Delete Memory?"
       const content = isMessage
-        ? "Are you sure you want to delete this message? This action cannot be undone."
-        : "Are you sure you want to delete this memory? This action cannot be undone."
+        ? "Are you sure you want to delete this message? This will permanently remove it from your chat history and knowledge graph. This action cannot be undone."
+        : "Are you sure you want to delete this memory? This will permanently remove it from your memory collection and clean up any orphaned subjects in your knowledge graph. This action cannot be undone."
 
       showConfirmationDialog({
         title,

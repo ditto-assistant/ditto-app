@@ -31,6 +31,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { usePlatform } from "@/hooks/usePlatform"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useUser } from "@/hooks/useUser"
+import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -91,6 +92,7 @@ export default function SendMessage({
     appendToMessage,
   } = useComposeContext()
   const { clearPrompt } = usePromptStorage()
+  const { triggerSync } = useMemorySyncContext()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const logoButtonRef = useRef<HTMLDivElement>(null)
@@ -220,7 +222,8 @@ export default function SendMessage({
             streamingCallback,
             optimisticMessageId,
             finalizeOptimisticMessage,
-            user?.data?.planTier ?? 0
+            user?.data?.planTier ?? 0,
+            triggerSync
           )
           console.log("✅ [SendMessage] Prompt completed successfully")
         } catch (error) {
@@ -265,6 +268,7 @@ export default function SendMessage({
       user?.data?.planTier,
       userData?.firstName,
       onStop,
+      triggerSync,
     ]
   )
 

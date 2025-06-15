@@ -1,6 +1,6 @@
 // Your web app's Firebase configuration
-const MODE = import.meta.env.MODE
-// const MODE = "staging"
+// const MODE = import.meta.env.MODE
+const MODE = "staging"
 
 function getBaseURL(dittoEnv) {
   switch (dittoEnv) {
@@ -18,6 +18,8 @@ function getBaseURL(dittoEnv) {
 const getPGVectorAPIURL = () => {
   switch (MODE) {
     case "development":
+      return "http://localhost:8080"
+    case "staging":
       return "http://localhost:8080"
     default:
       return "https://agentic-pipelines-22790208601.us-central1.run.app"
@@ -66,6 +68,10 @@ export const routes = {
   kgSubjectPairs: getPGVectorAPIURL() + "/kg/subjects/pairs",
   kgSubjectPairsRecent: getPGVectorAPIURL() + "/kg/subjects/pairs/recent",
   kgTopSubjects: getPGVectorAPIURL() + "/kg/subjects/top",
+  // Memory Management Endpoints
+  kgDeleteMemoryPair: (pairId) => getPGVectorAPIURL() + `/memory/pairs/${pairId}/delete`,
+  // Sync Endpoints
+  kgSyncUser: getPGVectorAPIURL() + "/sync-user",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

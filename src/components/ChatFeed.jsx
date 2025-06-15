@@ -6,7 +6,9 @@ import { toast } from "sonner"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePlatform } from "@/hooks/usePlatform"
+import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import ChatMessage from "./ChatMessage"
+import SyncIndicator from "./SyncIndicator"
 
 const CustomScrollToBottom = ({
   children,
@@ -274,6 +276,20 @@ const ChatFeed = forwardRef(({}, ref) => {
   const { showMemoryNetwork } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { isMobile } = usePlatform()
+  const { isSyncing, currentStage, completeSyncIndicator } = useMemorySyncContext()
+  
+  // Debug what ChatFeed is actually receiving
+  console.log("📱 [ChatFeed] RENDER - received isSyncing from context:", isSyncing, "stage:", currentStage)
+
+  // Debug sync state changes
+  useEffect(() => {
+    console.log("📱 [ChatFeed] Sync state changed:", { isSyncing, currentStage })
+    if (isSyncing) {
+      console.log(`📱 [ChatFeed] SyncIndicator should be visible now, showing stage ${currentStage}/4!`)
+    } else {
+      console.log("📱 [ChatFeed] SyncIndicator should be hidden now!")
+    }
+  }, [isSyncing, currentStage])
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
   const initialRenderRef = useRef(true)
@@ -507,6 +523,13 @@ const ChatFeed = forwardRef(({}, ref) => {
           <p>No messages yet. Start a conversation!</p>
         </div>
       )}
+
+      {/* Sync Indicator - positioned at bottom above SendMessage */}
+      <SyncIndicator 
+        isVisible={isSyncing} 
+        currentStage={currentStage}
+        onComplete={completeSyncIndicator}
+      />
     </div>
   )
 })
