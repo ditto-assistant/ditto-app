@@ -360,8 +360,9 @@ export default function MemoriesDashboardOverlay() {
       
       const newPairs = res.ok?.results || []
       if (append) {
-        // Deduplicate pairs by ID to prevent duplicates
-        setPairs(prev => deduplicatePairs(prev, newPairs))
+        // Deduplicate pairs by ID to prevent duplicates, but maintain chronological order
+        const deduplicatedPairs = deduplicatePairs(pairs, newPairs)
+        setPairs(deduplicatedPairs)
         setPairsOffset(offset)
       } else {
         setPairs(newPairs)
@@ -516,9 +517,6 @@ export default function MemoriesDashboardOverlay() {
                 <Button type="submit" disabled={pairsLoading} className="h-10 px-4 rounded-md text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/70 disabled:cursor-not-allowed">
                   {pairsLoading ? "Searching..." : "Search"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setSelectedSubject(null)}>
-                  Clear Subject
-                </Button>
               </form>
               {pairsError && <div className="text-destructive text-sm mt-1">{pairsError}</div>}
             </div>
@@ -527,16 +525,11 @@ export default function MemoriesDashboardOverlay() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <MemoriesListView
                     memories={[...pairs].sort((a, b) => {
-                      // For recent pairs, sort by timestamp (newest first)
-                      // For search results, sort by similarity/score
-                      if (a.timestamp && b.timestamp) {
-                        const aTime = new Date(a.timestamp).getTime()
-                        const bTime = new Date(b.timestamp).getTime()
-                        return bTime - aTime
-                      }
-                      const aScore = a.similarity ?? a.score ?? 0
-                      const bScore = b.similarity ?? b.score ?? 0
-                      return bScore - aScore
+                      // Always maintain chronological order (newest first) for pairs in a subject
+                      // Backend already returns them in chronological order, but ensure consistency
+                      const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0
+                      const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0
+                      return bTime - aTime
                     }) as Memory[]}
                     onCopy={handleCopy}
                     onDelete={handleDeleteMemory}
@@ -549,22 +542,47 @@ export default function MemoriesDashboardOverlay() {
                         type="button"
                         onClick={handleLoadMorePairs}
                         disabled={isLoadingMorePairs}
-                        className="px-4 py-2 rounded-md text-sm font-medium text-primary border border-primary/30 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 rounded-md text-sm font-medium text-primary border border-primary/30 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
-                        {isLoadingMorePairs ? "Loading..." : "Load More"}
+                        {isLoadingMorePairs ? (
+                          <span className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                            Loading older memories...
+                          </span>
+                        ) : (
+                          "Load More"
+                        )}
                       </button>
+                    </div>
+                  )}
+                  
+                  {/* Show when no more pairs available */}
+                  {!hasMorePairs && pairs.length > 0 && (
+                    <div className="flex justify-center p-4 border-t border-border">
+                      <span className="text-xs text-muted-foreground">
+                        No more memories to load
+                      </span>
                     </div>
                   )}
                 </div>
               )}
               {!pairsLoading && pairs.length === 0 && !pairsError && (
-                <div className="flex items-center justify-center flex-1 text-muted-foreground">
-                  No memory pairs found for this subject.
+                <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground gap-3">
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                    <Info size={24} />
+                  </div>
+                  <p className="text-center">
+                    No memory pairs found for this subject.
+                  </p>
                 </div>
               )}
               {pairsLoading && (
-                <div className="flex items-center justify-center flex-1 text-muted-foreground text-lg">
-                  Loading recent pairs...
+                <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground gap-3">
+                  <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  <p className="text-lg">Loading recent memories...</p>
+                  <p className="text-sm text-muted-foreground/70">
+                    Fetching memories chronologically (newest first)
+                  </p>
                 </div>
               )}
             </div>
