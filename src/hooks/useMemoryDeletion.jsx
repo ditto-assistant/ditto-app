@@ -22,6 +22,16 @@ export const useMemoryDeletion = (updateConversation) => {
         const result = await deleteConversationComplete(user.uid, docId)
 
         if (!(result instanceof Error)) {
+          // Log cleanup stats to console
+          if (result.kg_cleanup && result.kg_cleanup.cleanup_stats) {
+            const stats = result.kg_cleanup.cleanup_stats
+            console.log("🧹 [Memory Deletion] Knowledge Graph cleanup stats:", {
+              pairs_deleted: stats.pairs_deleted,
+              subjects_removed: stats.subjects_removed,
+              links_removed: stats.links_removed,
+            })
+          }
+
           // Show simple success message
           toast.success("Memory deleted successfully", { id: toastId })
 

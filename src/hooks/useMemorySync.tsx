@@ -9,27 +9,15 @@ export const useMemorySync = () => {
   const { user } = useAuth()
 
   const triggerSync = useCallback(async () => {
-    if (!user?.uid) {
-      console.log("🔄 [MemorySync] No user ID available, skipping sync")
+    if (!user?.uid || isSyncing) {
       return
     }
 
-    if (isSyncing) {
-      console.log("🔄 [MemorySync] Sync already in progress, skipping")
-      return
-    }
-
-    console.log("🔄 [MemorySync] Starting memory sync for user:", user.uid)
-    console.log("🔄 [MemorySync] Setting isSyncing to TRUE")
     setIsSyncing(true)
     setCurrentStage(1) // Reset to stage 1
-    console.log("🔄 [MemorySync] isSyncing state should now be true")
-
-    const syncStartTime = Date.now()
 
     // Progress callback to update stage based on real sync progress
     const onProgress = (stage: number, status: string) => {
-      console.log(`🎯 [MemorySync] Stage ${stage}/4: ${status}`)
       setCurrentStage(stage)
     }
 
@@ -43,24 +31,13 @@ export const useMemorySync = () => {
           setIsSyncing(false)
         }, 2000)
       } else {
-        const syncDuration = Date.now() - syncStartTime
-        console.log(
-          `✅ [MemorySync] Sync completed successfully in ${syncDuration}ms`
-        )
         setLastSyncTime(new Date())
 
         // Show finalizing stage first
-        console.log("🔄 [MemorySync] Setting stage 4: Finalizing...")
         setCurrentStage(4)
 
         // Add a small delay to show completion stage, then hide indicator
-        console.log(
-          "🔄 [MemorySync] Sync finished, showing finalizing stage then hiding indicator"
-        )
         setTimeout(() => {
-          console.log(
-            "🔄 [MemorySync] Calling setIsSyncing(false) after showing completion"
-          )
           setIsSyncing(false)
         }, 2000) // Show finalizing stage for 2 seconds
       }
@@ -74,17 +51,9 @@ export const useMemorySync = () => {
   }, [user?.uid, isSyncing])
 
   const completeSyncIndicator = useCallback(() => {
-    console.log(
-      "✨ [MemorySync] Sync indicator animation completed, hiding indicator"
-    )
     setIsSyncing(false)
     setCurrentStage(1) // Reset stage for next sync
   }, [])
-
-  // Debug log whenever isSyncing changes
-  React.useEffect(() => {
-    console.log("🔄 [MemorySync] isSyncing state changed to:", isSyncing)
-  }, [isSyncing])
 
   return {
     isSyncing,

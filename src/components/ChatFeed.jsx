@@ -279,28 +279,6 @@ const ChatFeed = forwardRef(({}, ref) => {
   const { isSyncing, currentStage, completeSyncIndicator } =
     useMemorySyncContext()
 
-  // Debug what ChatFeed is actually receiving
-  console.log(
-    "📱 [ChatFeed] RENDER - received isSyncing from context:",
-    isSyncing,
-    "stage:",
-    currentStage
-  )
-
-  // Debug sync state changes
-  useEffect(() => {
-    console.log("📱 [ChatFeed] Sync state changed:", {
-      isSyncing,
-      currentStage,
-    })
-    if (isSyncing) {
-      console.log(
-        `📱 [ChatFeed] SyncIndicator should be visible now, showing stage ${currentStage}/4!`
-      )
-    } else {
-      console.log("📱 [ChatFeed] SyncIndicator should be hidden now!")
-    }
-  }, [isSyncing, currentStage])
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
   const initialRenderRef = useRef(true)

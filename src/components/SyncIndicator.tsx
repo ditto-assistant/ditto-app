@@ -34,34 +34,15 @@ const SyncIndicator: React.FC<SyncIndicatorProps> = ({
 
   useEffect(() => {
     if (!isVisible) {
-      console.log("🎯 [SyncIndicator] Hidden, resetting state")
       setIsAnimating(false)
       return
     }
-
-    console.log(
-      `🎯 [SyncIndicator] Visible, showing stage ${currentStage}/4: ${phases[currentPhase].text}`
-    )
     setIsAnimating(true)
   }, [isVisible, currentStage, phases, currentPhase])
 
-  console.log(
-    "🎯 [SyncIndicator] DEBUG - isVisible:",
-    isVisible,
-    "currentStage:",
-    currentStage,
-    "currentPhase:",
-    currentPhase,
-    "isAnimating:",
-    isAnimating
-  )
-
   if (!isVisible) {
-    console.log("🎯 [SyncIndicator] Not visible, returning null")
     return null
   }
-
-  console.log("🎯 [SyncIndicator] RENDERING indicator, phase:", currentPhase)
   const CurrentIcon = phases[currentPhase].icon
 
   return (

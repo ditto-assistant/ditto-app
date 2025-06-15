@@ -32,13 +32,6 @@ export const MemorySyncProvider: React.FC<MemorySyncProviderProps> = ({
 }) => {
   const syncState = useMemorySync()
 
-  console.log(
-    "🌍 [MemorySyncProvider] Providing sync state:",
-    syncState.isSyncing,
-    "stage:",
-    syncState.currentStage
-  )
-
   return (
     <MemorySyncContext.Provider value={syncState}>
       {children}

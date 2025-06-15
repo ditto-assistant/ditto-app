@@ -40,7 +40,6 @@ export async function syncUserData(
             for (const line of lines) {
               try {
                 const data = JSON.parse(line)
-                console.log("🔄 [Sync] Status:", data.status)
 
                 // Parse stage from status messages
                 if (onProgress && data.status) {
@@ -72,11 +71,19 @@ export async function syncUserData(
                     stage = 4 // Finalizing stage
                   }
 
+                  // Log only the main stage transitions from backend
+                  if (
+                    data.status.includes("Step 1/3") ||
+                    data.status.includes("Step 2/3") ||
+                    data.status.includes("Step 3/3")
+                  ) {
+                    console.log("🔄 [Sync]", data.status)
+                  }
+
                   onProgress(stage, data.status)
                 }
 
                 if (data.status === "complete") {
-                  console.log("✅ [Sync] Completed successfully")
                   return { ok: undefined }
                 } else if (data.status === "error") {
                   console.error("❌ [Sync] Error:", data.message)
@@ -85,7 +92,6 @@ export async function syncUserData(
                 // Continue processing for other status updates
               } catch (parseError) {
                 // Ignore parse errors for partial JSON chunks
-                console.debug("Ignoring partial JSON chunk:", line)
               }
             }
           }

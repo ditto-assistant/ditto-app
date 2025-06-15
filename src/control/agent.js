@@ -224,15 +224,9 @@ export const sendPrompt = async (
 
       // Trigger memory sync after successful response completion
       if (onMemorySync) {
-        console.log(
-          "🧠 [Agent] Triggering memory sync after successful response (no tools)"
-        )
         setTimeout(() => {
-          console.log("🧠 [Agent] Executing memory sync callback (no tools)")
           onMemorySync()
         }, 500) // Small delay to ensure response is fully saved
-      } else {
-        console.log("🧠 [Agent] No memory sync callback available (no tools)")
       }
 
       // Finalize the optimistic message if we have one
@@ -313,22 +307,9 @@ export const processResponse = async (
 
         // Trigger memory sync after successful tool response completion
         if (onMemorySync) {
-          console.log(
-            "🧠 [Agent] Triggering memory sync after tool completion:",
-            type
-          )
           setTimeout(() => {
-            console.log(
-              "🧠 [Agent] Executing memory sync callback for tool:",
-              type
-            )
             onMemorySync()
           }, 500) // Small delay to ensure response is fully saved
-        } else {
-          console.log(
-            "🧠 [Agent] No memory sync callback available for tool:",
-            type
-          )
         }
 
         // Update optimistic message if available
