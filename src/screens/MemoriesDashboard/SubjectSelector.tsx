@@ -36,7 +36,9 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
   onSubjectUpdated,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [editingSubjectId, setEditingSubjectId] = React.useState<string | null>(null)
+  const [editingSubjectId, setEditingSubjectId] = React.useState<string | null>(
+    null
+  )
   const [editingText, setEditingText] = React.useState("")
   const [saving, setSaving] = React.useState(false)
   const [touchTimer, setTouchTimer] = React.useState<number | null>(null)
@@ -85,12 +87,12 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
 
       if (result.ok) {
         toast.success("Subject renamed successfully!")
-        
+
         // Update the subject in the parent component
         if (onSubjectUpdated) {
           onSubjectUpdated(result.ok.subject)
         }
-        
+
         cancelEditing()
       }
     } catch (error) {
@@ -116,9 +118,9 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       saveEdit()
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       cancelEditing()
     }
   }
@@ -154,10 +156,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
       <div className="max-h-48 overflow-y-auto">
         <div className="flex flex-wrap gap-2 mt-2">
           {subjects.map((subject) => (
-            <div
-              key={subject.id}
-              className="relative"
-            >
+            <div key={subject.id} className="relative">
               {editingSubjectId === subject.id ? (
                 // Editing mode
                 <div className="flex items-center gap-1 px-3 py-1 rounded-full border bg-background border-primary">
@@ -210,10 +209,10 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                       ({subject.pair_count})
                     </span>
                   )}
-                  
+
                   {/* Edit icon on hover (desktop) */}
-                  <Edit2 
-                    size={12} 
+                  <Edit2
+                    size={12}
                     className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-full p-1 w-5 h-5 text-muted-foreground hidden md:block"
                     onClick={(e) => {
                       e.stopPropagation()

@@ -485,19 +485,22 @@ export default function MemoriesDashboardOverlay() {
   }, [selectedSubject, pairs.length, memories.length])
 
   // Handle subject updates from SubjectSelector
-  const handleSubjectUpdated = useCallback((updatedSubject: Subject) => {
-    // Update the subjects list
-    setSubjects((prevSubjects) => 
-      prevSubjects.map((subject) => 
-        subject.id === updatedSubject.id ? updatedSubject : subject
+  const handleSubjectUpdated = useCallback(
+    (updatedSubject: Subject) => {
+      // Update the subjects list
+      setSubjects((prevSubjects) =>
+        prevSubjects.map((subject) =>
+          subject.id === updatedSubject.id ? updatedSubject : subject
+        )
       )
-    )
-    
-    // Update the selected subject if it's the one being edited
-    if (selectedSubject && selectedSubject.id === updatedSubject.id) {
-      setSelectedSubject(updatedSubject)
-    }
-  }, [selectedSubject])
+
+      // Update the selected subject if it's the one being edited
+      if (selectedSubject && selectedSubject.id === updatedSubject.id) {
+        setSelectedSubject(updatedSubject)
+      }
+    },
+    [selectedSubject]
+  )
 
   // Start editing selected subject
   const startEditingSelectedSubject = () => {
@@ -532,10 +535,10 @@ export default function MemoriesDashboardOverlay() {
 
       if (result.ok) {
         toast.success("Subject renamed successfully!")
-        
+
         // Update the subject in both the subjects list and selected subject
         handleSubjectUpdated(result.ok.subject)
-        
+
         cancelEditingSelectedSubject()
       }
     } catch (error) {
@@ -547,9 +550,9 @@ export default function MemoriesDashboardOverlay() {
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       saveEditSelectedSubject()
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       cancelEditingSelectedSubject()
     }
   }
