@@ -48,41 +48,60 @@ export const useMemorySync = () => {
   }, [])
 
   useEffect(() => {
+    let isCancelled = false
+
     const pollStatuses = async () => {
-      if (syncsInProgress.size === 0) return
+      if (isCancelled || syncsInProgress.size === 0) {
+        // Schedule the next poll and exit if there's nothing to do right now
+        if (!isCancelled) {
+          setTimeout(pollStatuses, 2000)
+        }
+        return
+      }
 
       const messageIDs = Array.from(syncsInProgress.keys())
       const result = await getSyncStatus(messageIDs)
 
+      if (isCancelled) return
+
       if (result.ok) {
         const statuses = result.ok
         setSyncsInProgress((prev) => {
+          // Create a mutable copy to work with
           const next = new Map(prev)
           let changed = false
 
-          // Update statuses for ongoing jobs
+          // Update statuses for ongoing jobs, only if the stage is newer
           statuses.forEach((status, id) => {
-            if (next.has(id) && next.get(id)?.stage !== status.stage) {
+            const currentStage = next.get(id)?.stage ?? 0
+            if (next.has(id) && status.stage > currentStage) {
               next.set(id, status)
               changed = true
             }
           })
 
-          // Remove completed jobs
+          // Remove jobs that are no longer reported by the backend (i.e., completed and deleted)
           messageIDs.forEach((id) => {
-            if (!statuses.has(id)) {
+            if (!statuses.has(id) && next.has(id)) {
               next.delete(id)
               changed = true
             }
           })
-
+          
           return changed ? next : prev
         })
       }
+      
+      // Schedule the next poll
+      setTimeout(pollStatuses, 2000)
     }
 
-    const interval = setInterval(pollStatuses, 2000)
-    return () => clearInterval(interval)
+    // Start the polling loop
+    pollStatuses()
+
+    return () => {
+      isCancelled = true
+    }
   }, [syncsInProgress])
 
   return {
