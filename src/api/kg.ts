@@ -230,3 +230,45 @@ export async function getSubjectPairsRecent({
     return { err: `Unable to get recent subject pairs. Error: ${error}` }
   }
 }
+
+export async function renameSubject({
+  userID,
+  userEmail,
+  subjectId,
+  newSubjectText,
+}: {
+  userID?: string
+  userEmail?: string
+  subjectId: string
+  newSubjectText: string
+}): Promise<Result<{ success: boolean; subject: Subject; message: string }>> {
+  const tok = await getToken()
+  if (tok.err) return { err: "Unable to get token" }
+  if (!tok.ok) return { err: "No token" }
+
+  try {
+    const response = await fetch(routes.kgRenameSubject(subjectId), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userID,
+        user_email: userEmail,
+        new_subject_text: newSubjectText,
+      }),
+    })
+    if (response.ok) {
+      const data = await response.json()
+      return { ok: data }
+    } else {
+      return {
+        err: `Unable to rename subject. Error: ${response.status}`,
+      }
+    }
+  } catch (error) {
+    return { err: `Unable to rename subject. Error: ${error}` }
+  }
+}

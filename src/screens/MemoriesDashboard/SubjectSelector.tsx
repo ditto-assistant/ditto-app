@@ -1,5 +1,8 @@
 import React from "react"
+import { Edit2, Check, X } from "lucide-react"
 import type { Subject } from "@/types/common"
+import { renameSubject } from "@/api/kg"
+import { toast } from "sonner"
 
 interface SubjectSelectorProps {
   subjects: Subject[]
@@ -13,6 +16,8 @@ interface SubjectSelectorProps {
   showMoreLoading?: boolean
   isSearchMode?: boolean
   onResetSearch?: () => void
+  userID?: string
+  onSubjectUpdated?: (updatedSubject: Subject) => void
 }
 
 const SubjectSelector: React.FC<SubjectSelectorProps> = ({
@@ -27,8 +32,14 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
   showMoreLoading,
   isSearchMode,
   onResetSearch,
+  userID,
+  onSubjectUpdated,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("")
+  const [editingSubjectId, setEditingSubjectId] = React.useState<string | null>(null)
+  const [editingText, setEditingText] = React.useState("")
+  const [saving, setSaving] = React.useState(false)
+  const [touchTimer, setTouchTimer] = React.useState<number | null>(null)
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
@@ -43,6 +54,72 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
     setSearchTerm("")
     if (onResetSearch) {
       onResetSearch()
+    }
+  }
+
+  const startEditing = (subject: Subject) => {
+    setEditingSubjectId(subject.id)
+    setEditingText(subject.subject_text)
+  }
+
+  const cancelEditing = () => {
+    setEditingSubjectId(null)
+    setEditingText("")
+  }
+
+  const saveEdit = async () => {
+    if (!editingSubjectId || !editingText.trim() || !userID) return
+
+    setSaving(true)
+    try {
+      const result = await renameSubject({
+        userID,
+        subjectId: editingSubjectId,
+        newSubjectText: editingText.trim(),
+      })
+
+      if (result.err) {
+        toast.error(`Failed to rename subject: ${result.err}`)
+        return
+      }
+
+      if (result.ok) {
+        toast.success("Subject renamed successfully!")
+        
+        // Update the subject in the parent component
+        if (onSubjectUpdated) {
+          onSubjectUpdated(result.ok.subject)
+        }
+        
+        cancelEditing()
+      }
+    } catch (error) {
+      toast.error("Failed to rename subject")
+      console.error("Error renaming subject:", error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTouchStart = (subject: Subject) => {
+    const timer = setTimeout(() => {
+      startEditing(subject)
+    }, 600) // 600ms long press
+    setTouchTimer(timer)
+  }
+
+  const handleTouchEnd = () => {
+    if (touchTimer) {
+      clearTimeout(touchTimer)
+      setTouchTimer(null)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveEdit()
+    } else if (e.key === 'Escape') {
+      cancelEditing()
     }
   }
 
@@ -77,25 +154,75 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
       <div className="max-h-48 overflow-y-auto">
         <div className="flex flex-wrap gap-2 mt-2">
           {subjects.map((subject) => (
-            <button
+            <div
               key={subject.id}
-              className={`px-3 py-1 rounded-full border text-sm font-medium transition-colors
-                ${
-                  selectedSubjectId === subject.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border hover:bg-muted"
-                }
-              `}
-              onClick={() => onSelect(subject)}
-              type="button"
+              className="relative"
             >
-              {subject.subject_text}
-              {subject.pair_count !== undefined && (
-                <span className="ml-2 text-xs text-muted-foreground">
-                  ({subject.pair_count})
-                </span>
+              {editingSubjectId === subject.id ? (
+                // Editing mode
+                <div className="flex items-center gap-1 px-3 py-1 rounded-full border bg-background border-primary">
+                  <input
+                    type="text"
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="text-sm font-medium bg-transparent border-none outline-none min-w-[100px] max-w-[200px]"
+                    autoFocus
+                    disabled={saving}
+                  />
+                  <button
+                    onClick={saveEdit}
+                    disabled={saving || !editingText.trim()}
+                    className="p-1 rounded text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Save"
+                  >
+                    <Check size={14} />
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    disabled={saving}
+                    className="p-1 rounded text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Cancel"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                // Normal mode
+                <button
+                  className={`px-3 py-1 rounded-full border text-sm font-medium transition-colors relative group
+                    ${
+                      selectedSubjectId === subject.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-muted-foreground border-border hover:bg-muted"
+                    }
+                  `}
+                  onClick={() => onSelect(subject)}
+                  onTouchStart={() => handleTouchStart(subject)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchCancel={handleTouchEnd}
+                  type="button"
+                  title="Click to select • Long press to rename"
+                >
+                  {subject.subject_text}
+                  {subject.pair_count !== undefined && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({subject.pair_count})
+                    </span>
+                  )}
+                  
+                  {/* Edit icon on hover (desktop) */}
+                  <Edit2 
+                    size={12} 
+                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-full p-1 w-5 h-5 text-muted-foreground hidden md:block"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      startEditing(subject)
+                    }}
+                  />
+                </button>
               )}
-            </button>
+            </div>
           ))}
           {/* Show more button as a pill */}
           {!isSearchMode && hasMore && onShowMore && (

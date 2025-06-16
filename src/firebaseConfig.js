@@ -71,6 +71,8 @@ export const routes = {
   // Memory Management Endpoints
   kgDeleteMemoryPair: (pairId) =>
     getPGVectorAPIURL() + `/memory/pairs/${pairId}/delete`,
+  kgRenameSubject: (subjectId) =>
+    getPGVectorAPIURL() + `/kg/subjects/${subjectId}/rename`,
   // Sync Endpoints
   kgSyncUser: getPGVectorAPIURL() + "/sync-user",
 }

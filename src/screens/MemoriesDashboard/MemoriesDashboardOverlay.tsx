@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { List, Network, Info, X as LucideX } from "lucide-react"
+import { List, Network, Info, X as LucideX, Edit2 } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
 import { useAuth } from "@/hooks/useAuth"
@@ -19,6 +19,7 @@ import {
   searchPairs,
   getTopSubjects,
   getSubjectPairsRecent,
+  renameSubject,
 } from "@/api/kg"
 import type { Subject, Pair } from "@/types/common"
 import SubjectSelector from "./SubjectSelector"
@@ -103,6 +104,11 @@ export default function MemoriesDashboardOverlay() {
   const [pairsOffset, setPairsOffset] = useState(0)
   const [hasMorePairs, setHasMorePairs] = useState(true)
   const [isLoadingMorePairs, setIsLoadingMorePairs] = useState(false)
+
+  // New state for subject editing
+  const [editingSelectedSubject, setEditingSelectedSubject] = useState(false)
+  const [editingText, setEditingText] = useState("")
+  const [savingEdit, setSavingEdit] = useState(false)
 
   useEffect(() => {
     const fetchMemoryCount = async () => {
@@ -478,6 +484,76 @@ export default function MemoriesDashboardOverlay() {
     }
   }, [selectedSubject, pairs.length, memories.length])
 
+  // Handle subject updates from SubjectSelector
+  const handleSubjectUpdated = useCallback((updatedSubject: Subject) => {
+    // Update the subjects list
+    setSubjects((prevSubjects) => 
+      prevSubjects.map((subject) => 
+        subject.id === updatedSubject.id ? updatedSubject : subject
+      )
+    )
+    
+    // Update the selected subject if it's the one being edited
+    if (selectedSubject && selectedSubject.id === updatedSubject.id) {
+      setSelectedSubject(updatedSubject)
+    }
+  }, [selectedSubject])
+
+  // Start editing selected subject
+  const startEditingSelectedSubject = () => {
+    if (selectedSubject) {
+      setEditingSelectedSubject(true)
+      setEditingText(selectedSubject.subject_text)
+    }
+  }
+
+  // Cancel editing selected subject
+  const cancelEditingSelectedSubject = () => {
+    setEditingSelectedSubject(false)
+    setEditingText("")
+  }
+
+  // Save edited selected subject
+  const saveEditSelectedSubject = async () => {
+    if (!selectedSubject || !editingText.trim() || !user?.uid) return
+
+    setSavingEdit(true)
+    try {
+      const result = await renameSubject({
+        userID: user.uid,
+        subjectId: selectedSubject.id,
+        newSubjectText: editingText.trim(),
+      })
+
+      if (result.err) {
+        toast.error(`Failed to rename subject: ${result.err}`)
+        return
+      }
+
+      if (result.ok) {
+        toast.success("Subject renamed successfully!")
+        
+        // Update the subject in both the subjects list and selected subject
+        handleSubjectUpdated(result.ok.subject)
+        
+        cancelEditingSelectedSubject()
+      }
+    } catch (error) {
+      toast.error("Failed to rename subject")
+      console.error("Error renaming subject:", error)
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveEditSelectedSubject()
+    } else if (e.key === 'Escape') {
+      cancelEditingSelectedSubject()
+    }
+  }
+
   return (
     <Modal id="memories" title="Memory Dashboard">
       <div className="flex flex-col h-full p-4 bg-background text-foreground">
@@ -495,26 +571,69 @@ export default function MemoriesDashboardOverlay() {
           </div>
           {subjectsCollapsed && selectedSubject ? (
             <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/30">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1">
                 <span className="text-sm font-medium text-primary">
                   Selected:
                 </span>
-                <span className="text-sm text-foreground">
-                  {selectedSubject.subject_text}
-                </span>
-                {selectedSubject.pair_count && (
-                  <span className="text-xs text-muted-foreground">
-                    ({selectedSubject.pair_count} pairs)
-                  </span>
+                {editingSelectedSubject ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="text"
+                      value={editingText}
+                      onChange={(e) => setEditingText(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      className="text-sm bg-background border border-border rounded px-2 py-1 flex-1 max-w-[200px]"
+                      autoFocus
+                      disabled={savingEdit}
+                    />
+                    <button
+                      onClick={saveEditSelectedSubject}
+                      disabled={savingEdit || !editingText.trim()}
+                      className="text-xs px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {savingEdit ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                      onClick={cancelEditingSelectedSubject}
+                      disabled={savingEdit}
+                      className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-sm text-foreground">
+                      {selectedSubject.subject_text}
+                    </span>
+                    {selectedSubject.pair_count && (
+                      <span className="text-xs text-muted-foreground">
+                        ({selectedSubject.pair_count} pairs)
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
-              <button
-                type="button"
-                className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted transition-colors"
-                onClick={() => setSelectedSubject(null)}
-              >
-                Clear
-              </button>
+              {!editingSelectedSubject && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted transition-colors flex items-center gap-1"
+                    onClick={startEditingSelectedSubject}
+                    title="Edit subject name"
+                  >
+                    <Edit2 size={12} />
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted transition-colors"
+                    onClick={() => setSelectedSubject(null)}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
           ) : !subjectsCollapsed ? (
             <SubjectSelector
@@ -522,6 +641,8 @@ export default function MemoriesDashboardOverlay() {
               loading={subjectsLoading}
               error={subjectsError}
               selectedSubjectId={selectedSubject?.id || null}
+              userID={user?.uid}
+              onSubjectUpdated={handleSubjectUpdated}
               onSelect={(subject) => {
                 setSelectedSubject(subject)
                 setPairs([])
