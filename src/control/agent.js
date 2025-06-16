@@ -62,7 +62,7 @@ export const cancelPrompt = async () => {
  * @param {string} optimisticId - The ID of the optimistic message update.
  * @param {function} finalizeMessage - A function to finalize a message.
  * @param {number} planTier - The user's plan tier.
- * @param {function} onMemorySync - Optional callback to trigger memory sync after successful response.
+ * @param {function(messageId: string): void} onMemorySync - Optional callback to trigger memory sync after successful response.
  */
 export const sendPrompt = async (
   userID,
@@ -225,7 +225,8 @@ export const sendPrompt = async (
       // Trigger memory sync after successful response completion
       if (onMemorySync) {
         setTimeout(() => {
-          onMemorySync()
+          // Pass the actual pairID from the backend
+          onMemorySync(pairID)
         }, 500) // Small delay to ensure response is fully saved
       }
 

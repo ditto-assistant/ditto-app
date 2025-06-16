@@ -47,39 +47,38 @@ const SyncIndicator: React.FC<SyncIndicatorProps> = ({
 
   return (
     <div
-      className="mx-4 my-3 animate-in slide-in-from-bottom-2 duration-300"
+      className="animate-in slide-in-from-bottom-2 duration-300"
       style={{
-        // Position at bottom of chat, above SendMessage
         zIndex: 1000,
       }}
     >
-      <div className="flex items-center justify-center p-3 rounded-lg bg-background/95 border border-border shadow-lg backdrop-blur-sm">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-center p-2 rounded-md bg-background/90 border border-border/50 shadow-sm backdrop-blur-sm">
+        <div className="flex items-center gap-2">
           <div className="relative">
             <CurrentIcon
               className={cn(
-                "w-5 h-5 transition-all duration-500 drop-shadow-sm",
+                "w-4 h-4 transition-all duration-500 drop-shadow-sm",
                 phases[currentPhase].color
               )}
             />
             <div className="absolute inset-0 animate-ping">
               <CurrentIcon
-                className={cn("w-5 h-5 opacity-30", phases[currentPhase].color)}
+                className={cn("w-4 h-4 opacity-20", phases[currentPhase].color)}
               />
             </div>
           </div>
-          <span className="text-sm font-medium text-foreground transition-all duration-300">
+          <span className="text-xs font-medium text-foreground/80 transition-all duration-300">
             {phases[currentPhase].text}
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-0.5">
             {[1, 2, 3, 4].map((stage) => (
               <div
                 key={stage}
                 className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                  "w-1 h-1 rounded-full transition-all duration-300",
                   stage <= currentStage
-                    ? "bg-primary shadow-sm"
-                    : "bg-muted-foreground/30"
+                    ? "bg-primary/80 shadow-sm"
+                    : "bg-muted-foreground/20"
                 )}
               />
             ))}

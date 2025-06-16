@@ -1,65 +1,94 @@
-import React, { useState, useCallback } from "react"
-import { syncUserData } from "@/api/sync"
+import React, { useState, useCallback, useEffect } from "react"
+import { startSync, getSyncStatus } from "@/api/sync"
 import { useAuth } from "@/hooks/useAuth"
 
+interface SyncState {
+  stage: number
+}
+
 export const useMemorySync = () => {
-  const [isSyncing, setIsSyncing] = useState(false)
-  const [currentStage, setCurrentStage] = useState(1)
+  const [syncsInProgress, setSyncsInProgress] = useState<Map<string, SyncState>>(
+    new Map()
+  )
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null)
   const { user } = useAuth()
 
-  const triggerSync = useCallback(async () => {
-    if (!user?.uid || isSyncing) {
-      return
-    }
+  const triggerSync = useCallback(
+    async (messageId: string) => {
+      if (!user?.uid) return
 
-    setIsSyncing(true)
-    setCurrentStage(1) // Reset to stage 1
-
-    // Progress callback to update stage based on real sync progress
-    const onProgress = (stage: number, status: string) => {
-      setCurrentStage(stage)
-    }
-
-    try {
-      const result = await syncUserData(user.uid, onProgress)
-
-      if (result.err) {
-        console.error("❌ [MemorySync] Sync failed:", result.err)
-        // Keep showing indicator for at least 2 seconds even on error
-        setTimeout(() => {
-          setIsSyncing(false)
-        }, 2000)
-      } else {
-        setLastSyncTime(new Date())
-
-        // Show finalizing stage first
-        setCurrentStage(4)
-
-        // Add a small delay to show completion stage, then hide indicator
-        setTimeout(() => {
-          setIsSyncing(false)
-        }, 2000) // Show finalizing stage for 2 seconds
+      if (syncsInProgress.has(messageId)) {
+        return
       }
-    } catch (error) {
-      console.error("❌ [MemorySync] Sync error:", error)
-      // Keep showing indicator for at least 2 seconds even on error
-      setTimeout(() => {
-        setIsSyncing(false)
-      }, 2000)
-    }
-  }, [user?.uid, isSyncing])
 
-  const completeSyncIndicator = useCallback(() => {
-    setIsSyncing(false)
-    setCurrentStage(1) // Reset stage for next sync
+      setSyncsInProgress((prev) => new Map(prev).set(messageId, { stage: 1 }))
+      await startSync(user.uid, messageId)
+    },
+    [user?.uid, syncsInProgress]
+  )
+
+  const checkStatuses = useCallback(async (messageIDs: string[]) => {
+    if (messageIDs.length === 0) return
+    const result = await getSyncStatus(messageIDs)
+
+    if (result.ok) {
+      const statuses = result.ok
+      if (statuses.size > 0) {
+        setSyncsInProgress((prev) => {
+          const next = new Map(prev)
+          statuses.forEach((status, id) => {
+            if (!next.has(id)) {
+              next.set(id, status)
+            }
+          })
+          return next
+        })
+      }
+    }
   }, [])
 
+  useEffect(() => {
+    const pollStatuses = async () => {
+      if (syncsInProgress.size === 0) return
+
+      const messageIDs = Array.from(syncsInProgress.keys())
+      const result = await getSyncStatus(messageIDs)
+
+      if (result.ok) {
+        const statuses = result.ok
+        setSyncsInProgress((prev) => {
+          const next = new Map(prev)
+          let changed = false
+
+          // Update statuses for ongoing jobs
+          statuses.forEach((status, id) => {
+            if (next.has(id) && next.get(id)?.stage !== status.stage) {
+              next.set(id, status)
+              changed = true
+            }
+          })
+
+          // Remove completed jobs
+          messageIDs.forEach((id) => {
+            if (!statuses.has(id)) {
+              next.delete(id)
+              changed = true
+            }
+          })
+
+          return changed ? next : prev
+        })
+      }
+    }
+
+    const interval = setInterval(pollStatuses, 2000)
+    return () => clearInterval(interval)
+  }, [syncsInProgress])
+
   return {
-    isSyncing,
-    currentStage,
+    syncsInProgress,
     lastSyncTime,
     triggerSync,
-    completeSyncIndicator,
+    checkStatuses,
   }
 }

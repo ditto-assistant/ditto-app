@@ -1,12 +1,15 @@
 import React, { createContext, useContext, ReactNode } from "react"
 import { useMemorySync } from "@/hooks/useMemorySync"
 
+interface SyncState {
+  stage: number
+}
+
 interface MemorySyncContextType {
-  isSyncing: boolean
-  currentStage: number
+  syncsInProgress: Map<string, SyncState>
   lastSyncTime: Date | null
-  triggerSync: () => Promise<void>
-  completeSyncIndicator: () => void
+  triggerSync: (messageId: string) => Promise<void>
+  checkStatuses: (messageIDs: string[]) => Promise<void>
 }
 
 const MemorySyncContext = createContext<MemorySyncContextType | undefined>(
@@ -31,9 +34,13 @@ export const MemorySyncProvider: React.FC<MemorySyncProviderProps> = ({
   children,
 }) => {
   const syncState = useMemorySync()
+  const value = {
+    ...syncState,
+    isSyncing: syncState.syncsInProgress.size > 0,
+  }
 
   return (
-    <MemorySyncContext.Provider value={syncState}>
+    <MemorySyncContext.Provider value={value}>
       {children}
     </MemorySyncContext.Provider>
   )

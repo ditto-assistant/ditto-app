@@ -75,6 +75,8 @@ export const routes = {
     getPGVectorAPIURL() + `/kg/subjects/${subjectId}/rename`,
   // Sync Endpoints
   kgSyncUser: getPGVectorAPIURL() + "/sync-user",
+  syncStatus: getPGVectorAPIURL() + "/sync-status",
+  pairSubjects: getPGVectorAPIURL() + "/pairs/subjects",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

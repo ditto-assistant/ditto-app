@@ -8,7 +8,6 @@ import { useConversationHistory } from "@/hooks/useConversationHistory"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import ChatMessage from "./ChatMessage"
-import SyncIndicator from "./SyncIndicator"
 
 const CustomScrollToBottom = ({
   children,
@@ -276,14 +275,24 @@ const ChatFeed = forwardRef(({}, ref) => {
   const { showMemoryNetwork } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { isMobile } = usePlatform()
-  const { isSyncing, currentStage, completeSyncIndicator } =
-    useMemorySyncContext()
+  const { syncsInProgress, checkStatuses } = useMemorySyncContext()
 
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
   const initialRenderRef = useRef(true)
   const fetchingRef = useRef(false)
   const detectScrollToTopRef = useRef(null)
+
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      const messageIDs = messages
+        .filter((msg) => !msg.isOptimistic && msg.response)
+        .map((msg) => msg.id)
+      if (messageIDs.length > 0) {
+        checkStatuses(messageIDs)
+      }
+    }
+  }, [isLoading, messages, checkStatuses])
 
   useEffect(() => {
     let isMounted = true
@@ -463,6 +472,10 @@ const ChatFeed = forwardRef(({}, ref) => {
                 message.prompt && !message.prompt.includes("SYSTEM:")
               const isLast = index === messages.length - 1
 
+              const syncState = syncsInProgress.get(message.id)
+              const showSync = !!syncState
+              const syncStage = syncState?.stage || 1
+
               return (
                 <div key={message.id || index} className="message-pair">
                   {message.prompt && isUser && (
@@ -477,6 +490,7 @@ const ChatFeed = forwardRef(({}, ref) => {
                       isLast={isLast}
                       isOptimistic={message.isOptimistic}
                       menuProps={{
+                        id: message.id,
                         onCopy: () => handleCopy(message, "prompt"),
                         onDelete: () => handleMessageDelete(message),
                         onShowMemories: () => handleShowMemories(message),
@@ -496,10 +510,13 @@ const ChatFeed = forwardRef(({}, ref) => {
                       isLast={isLast}
                       isOptimistic={message.isOptimistic}
                       menuProps={{
+                        id: message.id,
                         onCopy: () => handleCopy(message, "response"),
                         onDelete: () => handleMessageDelete(message),
                         onShowMemories: () => handleShowMemories(message),
                       }}
+                      showSyncIndicator={showSync}
+                      syncStage={syncStage}
                     />
                   )}
                 </div>
@@ -512,13 +529,6 @@ const ChatFeed = forwardRef(({}, ref) => {
           <p>No messages yet. Start a conversation!</p>
         </div>
       )}
-
-      {/* Sync Indicator - positioned at bottom above SendMessage */}
-      <SyncIndicator
-        isVisible={isSyncing}
-        currentStage={currentStage}
-        onComplete={completeSyncIndicator}
-      />
     </div>
   )
 })
