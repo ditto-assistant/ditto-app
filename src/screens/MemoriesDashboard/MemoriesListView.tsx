@@ -26,22 +26,33 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
 
         // Calculate match percentage - handle both regular memories and KG pairs
         let matchPercentage: string
+        let showMatchPercentage = true
+        
+        // For KG results, prioritize 'similarity' field
+        // For regular memory search, use 'score' or 'vector_distance' field
         if (memory.similarity !== undefined) {
           // For KG pairs, similarity is the similarity score (higher is better)
           matchPercentage = (memory.similarity * 100).toFixed(1)
-        } else if (memory.score !== undefined) {
-          // Alternative similarity field, also higher is better
+          // Don't show match percentage for recent pairs (similarity = 1.0 exactly indicates no search performed)
+          showMatchPercentage = memory.similarity !== 1.0
+        } else if (memory.score !== undefined && memory.score > 0) {
+          // Regular memory search - score contains actual similarity values, always show
           matchPercentage = (memory.score * 100).toFixed(1)
+          showMatchPercentage = true
         } else if (memory.vector_distance !== undefined) {
-          // For regular memories, vector_distance is a similarity score.
-          // For KG pairs, this would be (1 - similarity), so we prefer similarity/score fields first.
+          // For regular memories, vector_distance contains the actual similarity score
           matchPercentage = (memory.vector_distance * 100).toFixed(1)
         } else {
           matchPercentage = "0.0"
+          showMatchPercentage = false
         }
 
         const levelInfo = memory.level ? `Level: ${memory.level}` : ""
-        const metadataFooter = `\n\n---\n*${matchPercentage}% Match${levelInfo ? " • " + levelInfo : ""}*`
+        const metadataFooter = showMatchPercentage 
+          ? `\n\n---\n*${matchPercentage}% Match${levelInfo ? " • " + levelInfo : ""}*`
+          : levelInfo 
+            ? `\n\n---\n*${levelInfo}*` 
+            : ""
         const timestamp =
           memory.timestamp instanceof Date
             ? memory.timestamp
@@ -75,6 +86,7 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
               timestamp={timestamp}
               isUser={true}
               menuProps={{
+                id: memory.id,
                 onCopy: () => onCopy(memory, "prompt"),
                 onDelete: () => onDelete(memory),
                 onShowMemories: () => onShowMemories(memory),
@@ -87,6 +99,7 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
               timestamp={timestamp}
               isUser={false}
               menuProps={{
+                id: memory.id,
                 onCopy: () => onCopy(memory, "response"),
                 onDelete: () => onDelete(memory),
                 onShowMemories: () => onShowMemories(memory),

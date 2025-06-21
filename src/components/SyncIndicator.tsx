@@ -18,12 +18,12 @@ const SyncIndicator: React.FC<SyncIndicatorProps> = ({
   const phases = [
     {
       icon: Brain,
-      text: "Organizing your thoughts...",
+      text: "Encoding memory patterns...",
       color: "text-blue-500",
     },
-    { icon: Sparkles, text: "Making connections...", color: "text-purple-500" },
-    { icon: Zap, text: "Updating knowledge graph...", color: "text-green-500" },
-    { icon: CheckCircle, text: "Finalizing sync...", color: "text-amber-500" },
+    { icon: Sparkles, text: "Adding to hippocampus...", color: "text-purple-500" },
+    { icon: Zap, text: "Making connections...", color: "text-green-500" },
+    { icon: CheckCircle, text: "Finalizing...", color: "text-amber-500" },
   ]
 
   // Map stage number to phase index (stage 1-4 → phase 0-3)

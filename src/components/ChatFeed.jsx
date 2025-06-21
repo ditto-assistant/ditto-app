@@ -495,6 +495,8 @@ const ChatFeed = forwardRef(({}, ref) => {
                         onDelete: () => handleMessageDelete(message),
                         onShowMemories: () => handleShowMemories(message),
                       }}
+                      showSyncIndicator={showSync}
+                      syncStage={syncStage}
                     />
                   )}
 
