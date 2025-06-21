@@ -44,4 +44,4 @@ export async function getSubjectsForPairs(
   } catch (error) {
     return { err: `Failed to get subjects for pairs. Error: ${error}` }
   }
-} 
+}

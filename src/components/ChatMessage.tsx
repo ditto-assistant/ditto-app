@@ -7,10 +7,7 @@ import { Copy, Brain, Trash, Tags, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useFontSize } from "@/hooks/useFontSize"
 import SyncIndicator from "./SyncIndicator"
-import {
-  getSubjectsForPairs,
-  SubjectWithCount,
-} from "@/api/subjects"
+import { getSubjectsForPairs, SubjectWithCount } from "@/api/subjects"
 import { toast } from "sonner"
 
 // UI component imports
@@ -88,7 +85,7 @@ export default function ChatMessage({
   const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
   const { fontSize } = useFontSize()
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
-  
+
   const [subjects, setSubjects] = useState<SubjectWithCount[]>([])
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false)
   const [errorSubjects, setErrorSubjects] = useState<string | null>(null)
@@ -97,7 +94,7 @@ export default function ChatMessage({
     // No caching for now to ensure it always fetches on open
     setIsLoadingSubjects(true)
     setErrorSubjects(null)
-    
+
     // Assuming the message object has a pairID, which it should if it's not optimistic.
     // The parent component should ensure `id` is the permanent pairID.
     const result = await getSubjectsForPairs([menuProps.id])
@@ -124,7 +121,7 @@ export default function ChatMessage({
       syncStage,
       isUser,
       isLast,
-      isOptimistic
+      isOptimistic,
     })
   }
 
@@ -227,20 +224,19 @@ export default function ChatMessage({
               {/* Sync Indicator */}
               {!isUser && showSyncIndicator && (
                 <div className="text-xs opacity-70">
-                  <SyncIndicator
-                    isVisible={true}
-                    currentStage={syncStage}
-                  />
+                  <SyncIndicator isVisible={true} currentStage={syncStage} />
                 </div>
               )}
 
               {/* Subjects Dropdown - only show if not syncing */}
               {!isOptimistic && !showSyncIndicator && (
-                <DropdownMenu onOpenChange={(open) => {
-                  if (open) {
-                    handleFetchSubjects()
-                  }
-                }}>
+                <DropdownMenu
+                  onOpenChange={(open) => {
+                    if (open) {
+                      handleFetchSubjects()
+                    }
+                  }}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"

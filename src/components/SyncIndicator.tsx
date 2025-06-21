@@ -21,7 +21,11 @@ const SyncIndicator: React.FC<SyncIndicatorProps> = ({
       text: "Encoding memory patterns...",
       color: "text-blue-500",
     },
-    { icon: Sparkles, text: "Adding to hippocampus...", color: "text-purple-500" },
+    {
+      icon: Sparkles,
+      text: "Adding to hippocampus...",
+      color: "text-purple-500",
+    },
     { icon: Zap, text: "Making connections...", color: "text-green-500" },
     { icon: CheckCircle, text: "Finalizing...", color: "text-amber-500" },
   ]

@@ -27,7 +27,7 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
         // Calculate match percentage - handle both regular memories and KG pairs
         let matchPercentage: string
         let showMatchPercentage = true
-        
+
         // For KG results, prioritize 'similarity' field
         // For regular memory search, use 'score' or 'vector_distance' field
         if (memory.similarity !== undefined) {
@@ -48,10 +48,10 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
         }
 
         const levelInfo = memory.level ? `Level: ${memory.level}` : ""
-        const metadataFooter = showMatchPercentage 
+        const metadataFooter = showMatchPercentage
           ? `\n\n---\n*${matchPercentage}% Match${levelInfo ? " • " + levelInfo : ""}*`
-          : levelInfo 
-            ? `\n\n---\n*${levelInfo}*` 
+          : levelInfo
+            ? `\n\n---\n*${levelInfo}*`
             : ""
         const timestamp =
           memory.timestamp instanceof Date

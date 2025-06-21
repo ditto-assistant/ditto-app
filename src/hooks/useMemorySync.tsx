@@ -7,9 +7,9 @@ interface SyncState {
 }
 
 export const useMemorySync = () => {
-  const [syncsInProgress, setSyncsInProgress] = useState<Map<string, SyncState>>(
-    new Map()
-  )
+  const [syncsInProgress, setSyncsInProgress] = useState<
+    Map<string, SyncState>
+  >(new Map())
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null)
   const { user } = useAuth()
 
@@ -87,11 +87,11 @@ export const useMemorySync = () => {
               changed = true
             }
           })
-          
+
           return changed ? next : prev
         })
       }
-      
+
       // Schedule the next poll
       setTimeout(pollStatuses, 2000)
     }
