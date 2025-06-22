@@ -329,8 +329,8 @@ const Login = () => {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background bg-gradient-to-b from-background to-primary/10 p-4">
-      <div className="relative w-full max-w-md overflow-hidden rounded-xl border bg-card/95 backdrop-blur-sm shadow-2xl transition-all duration-300 hover:shadow-lg hover:shadow-primary/15">
+    <div className="flex min-h-screen w-full items-center justify-center p-4">
+      <div className="relative w-full max-w-md overflow-hidden rounded-xl glass-modal shadow-2xl transition-all duration-300 hover:shadow-lg">
         <div
           className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl"
           aria-hidden="true"
@@ -338,8 +338,8 @@ const Login = () => {
           <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-primary to-primary-foreground/30 opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"></div>
         </div>
 
-        <div className="border-b border-border/40 bg-primary/5 px-8 py-7">
-          <h1 className="text-center text-3xl font-bold tracking-tight text-foreground">
+        <div className="border-b border-ditto-glass-border glass-header px-8 py-7">
+          <h1 className="text-center text-3xl font-bold tracking-tight text-ditto-primary">
             {isPasswordReset
               ? "Reset Password"
               : isCreatingAccount
@@ -406,7 +406,7 @@ const Login = () => {
                     <div className="pt-2">
                       <Button
                         type="submit"
-                        className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
+                        className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 gradient-ring text-ditto-primary gradient-shadow"
                       >
                         Send Reset Email
                       </Button>
@@ -481,7 +481,7 @@ const Login = () => {
                   <div className="pt-2">
                     <Button
                       type="submit"
-                      className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:bg-primary/90 hover:shadow-lg"
+                      className="h-12 w-full rounded-lg text-base font-semibold shadow-md transition-all duration-200 gradient-ring text-ditto-primary gradient-shadow"
                     >
                       {isCreatingAccount ? "Sign Up" : "Sign In"}
                     </Button>
@@ -494,7 +494,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setIsPasswordReset(true)}
-                    className="text-sm font-medium text-primary transition-colors hover:text-primary/90"
+                    className="text-sm font-medium text-ditto-accent transition-colors hover:text-ditto-primary"
                   >
                     Forgot your password?
                   </button>
@@ -519,7 +519,7 @@ const Login = () => {
           {!isCreatingAccount && !isPasswordReset && (
             <Button
               variant="outline"
-              className="h-12 w-full rounded-lg text-base font-medium transition-all duration-200 border-border/50 bg-background/50 shadow-sm hover:bg-accent hover:text-accent-foreground hover:shadow-md"
+              className="h-12 w-full rounded-lg text-base font-medium transition-all duration-200 glass-interactive text-ditto-secondary hover:text-ditto-primary border-ditto-glass-border shadow-sm hover:shadow-md"
               onClick={handleGoogleSignIn}
             >
               <SiGoogle className="mr-3 h-5 w-5" /> Continue with Google
@@ -536,7 +536,7 @@ const Login = () => {
                   setIsCreatingAccount(!isCreatingAccount)
                   setVerificationMessage("")
                 }}
-                className="ml-1 font-medium text-primary transition-colors hover:text-primary/90"
+                className="ml-1 font-medium text-ditto-accent transition-colors hover:text-ditto-primary"
               >
                 {isCreatingAccount ? "Sign in here" : "Create one here"}
               </button>
@@ -570,7 +570,7 @@ const Login = () => {
             <p className="pt-2 text-center text-xs text-muted-foreground">
               By signing up, you agree to our{" "}
               <button
-                className="font-medium text-primary transition-colors hover:text-primary/90"
+                className="font-medium text-ditto-accent transition-colors hover:text-ditto-primary"
                 onClick={() => {
                   setShowTOS(true)
                   setIsViewingTOS(true)

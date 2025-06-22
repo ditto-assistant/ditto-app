@@ -96,7 +96,7 @@ export default function SendMessage({
   const { clearPrompt } = usePromptStorage()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const logoButtonRef = useRef<HTMLDivElement>(null)
+  const logoButtonRef = useRef<HTMLButtonElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const modal = useModal()
   const openSettingsModal = modal.createOpenHandler("settings")
@@ -370,7 +370,7 @@ export default function SendMessage({
 
   return (
     <div
-      className="w-full z-[300] bg-background backdrop-blur-md border-t border-border"
+      className="w-full z-[300] glass-footer border-t-0"
       style={{
         paddingBottom:
           iosInfo.isIOS && iosInfo.isPWA
@@ -426,7 +426,7 @@ export default function SendMessage({
                 <Button
                   variant="default"
                   size="sm"
-                  className="w-full justify-start"
+                  className="w-full justify-start gradient-ring text-ditto-primary gradient-shadow"
                   onClick={openSubscriptionsTab}
                 >
                   <Crown className="mr-2 h-4 w-4" /> Subscribe to a Plan
@@ -453,7 +453,7 @@ export default function SendMessage({
         ) : (
           // Regular send message UI
           <>
-            <div className="relative w-full mb-2">
+            <div className="relative w-full mb-4">
               <Textarea
                 ref={textAreaRef}
                 onKeyDown={handleKeyDown}
@@ -484,7 +484,7 @@ export default function SendMessage({
                         openComposeModal()
                       }}
                       aria-label="Expand message"
-                      className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
+                      className="h-10 w-10 rounded-full bg-background gradient-ring gradient-shadow hover:scale-110 transition-all"
                     >
                       <Expand className="h-5 w-5" />
                     </Button>
@@ -501,7 +501,7 @@ export default function SendMessage({
                           variant="ghost"
                           size="icon"
                           aria-label="Add media"
-                          className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
+                          className="h-10 w-10 rounded-full bg-background gradient-ring gradient-shadow hover:scale-110 transition-all"
                           onPointerDown={() => navigator.vibrate?.(10)}
                         >
                           <Plus className="h-5 w-5" />
@@ -535,13 +535,15 @@ export default function SendMessage({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <DropdownMenuTrigger asChild>
-                        <Avatar
-                          ref={logoButtonRef as React.RefObject<HTMLDivElement>}
-                          className="h-10 w-10 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
+                        <Button
+                          ref={logoButtonRef}
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 rounded-full bg-background gradient-ring gradient-shadow hover:scale-110 transition-all relative z-50 p-0"
                           onClick={handleLogoClick}
                           onPointerDown={triggerLightHaptic}
                         >
-                          <AvatarImage
+                          <img
                             src={DITTO_LOGO}
                             alt="Ditto"
                             className="h-10 w-10 rounded-full"
@@ -554,7 +556,7 @@ export default function SendMessage({
                               backgroundBlendMode: "soft-light",
                             }}
                           />
-                        </Avatar>
+                        </Button>
                       </DropdownMenuTrigger>
                     </TooltipTrigger>
                     <TooltipContent>Menu</TooltipContent>
@@ -617,7 +619,7 @@ export default function SendMessage({
                         aria-label={
                           isUploading ? "Uploading image..." : "Send message"
                         }
-                        className="h-10 w-10 p-0 rounded-full border-none ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all hover:bg-transparent focus:bg-transparent"
+                        className="h-10 w-10 p-0 rounded-full border-none gradient-ring gradient-shadow hover:scale-110 transition-all hover:bg-transparent focus:bg-transparent"
                         onPointerDown={triggerLightHaptic}
                       >
                         <SendHorizonal className="h-5 w-5" />

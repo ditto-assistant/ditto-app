@@ -66,25 +66,25 @@ export const AgentToolsModal: React.FC<AgentToolsModalProps> = ({
 
   return (
     <div
-      className={cn("p-6 overflow-y-auto relative", isLocked && "opacity-60")}
+      className={cn("p-6 overflow-y-auto relative text-ditto-primary", isLocked && "opacity-60")}
     >
       <div className="space-y-4">
         {TOOLS.map((tool) => (
           <div
             key={tool.id}
             className={cn(
-              "bg-muted/30 border border-border rounded-xl p-4 transition-all duration-200",
-              "hover:bg-muted/40 hover:-translate-y-0.5 hover:shadow-md",
+              "glass-interactive rounded-xl p-4 transition-all duration-200",
+              "hover:-translate-y-0.5",
               isLocked && "pointer-events-none"
             )}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="font-medium text-foreground">{tool.name}</h3>
-                  <Info className="h-4 w-4 text-muted-foreground opacity-70" />
+                  <h3 className="font-medium text-ditto-primary">{tool.name}</h3>
+                  <Info className="h-4 w-4 text-ditto-secondary opacity-70" />
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ditto-secondary">
                   {tool.description}
                 </p>
               </div>
@@ -122,9 +122,9 @@ export const AgentToolsModal: React.FC<AgentToolsModalProps> = ({
           onClick={redirectToGeneralTab}
           className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/5 backdrop-blur-[1px]"
         >
-          <div className="flex items-center gap-2 bg-background/80 py-2 px-4 rounded-md">
-            <Zap className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm">
+          <div className="flex items-center gap-2 glass-interactive py-2 px-4 rounded-md">
+            <Zap className="h-4 w-4 text-ditto-gradient" />
+            <span className="text-sm text-ditto-primary">
               Upgrade to Spark to enable agent tools
             </span>
           </div>

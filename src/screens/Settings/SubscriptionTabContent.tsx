@@ -159,10 +159,10 @@ const SubscriptionTabContent: React.FC = () => {
     isUserLoading
   ) {
     return (
-      <div className="p-4 space-y-6">
-        <Card className="mb-6">
+      <div className="p-4 space-y-6 text-ditto-primary">
+        <Card className="mb-6 glass-card-light">
           <CardHeader>
-            <CardTitle>Account</CardTitle>
+            <CardTitle className="text-ditto-primary">Account</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Avatar and name section skeleton */}
@@ -232,7 +232,7 @@ const SubscriptionTabContent: React.FC = () => {
 
   if (!auth.user) {
     return (
-      <div data-subscription-section>
+      <div data-subscription-section className="p-4 text-ditto-primary">
         Please log in to manage your subscription.
       </div>
     )
@@ -265,9 +265,9 @@ const SubscriptionTabContent: React.FC = () => {
 
   // Account card that shows for all users
   const accountCard = (
-    <Card className="mb-6">
+    <Card className="mb-6 glass-card">
       <CardHeader>
-        <CardTitle>Account</CardTitle>
+        <CardTitle className="text-ditto-primary">Account</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Avatar and name section */}
@@ -296,15 +296,15 @@ const SubscriptionTabContent: React.FC = () => {
                 >
                   <Edit3 className="h-4 w-4" />
                 </Button>
-                <div className="text-sm">
+                <div className="text-sm text-ditto-primary">
                   {user?.firstName && user?.lastName ? (
                     <span>
                       {user.firstName} {user.lastName}
                     </span>
                   ) : displayName ? (
-                    <span className="text-muted-foreground">{displayName}</span>
+                    <span className="text-ditto-secondary">{displayName}</span>
                   ) : (
-                    <span className="text-muted-foreground italic">
+                    <span className="text-ditto-secondary italic">
                       Name not set
                     </span>
                   )}
@@ -316,7 +316,7 @@ const SubscriptionTabContent: React.FC = () => {
 
         {/* Email */}
         <div>
-          <span className="text-xs text-muted-foreground">{email}</span>
+          <span className="text-xs text-ditto-muted">{email}</span>
         </div>
 
         {/* Subscription status */}
@@ -349,8 +349,8 @@ const SubscriptionTabContent: React.FC = () => {
         )}
 
         <div className="flex items-center gap-3">
-          <CreditCard className="h-5 w-5 text-muted-foreground" />
-          <span className="text-sm">
+          <CreditCard className="h-5 w-5 text-ditto-secondary" />
+          <span className="text-sm text-ditto-primary">
             Balance: {balance.data?.balance} tokens
           </span>
           {user?.cancelAtPeriodEnd && user.currentPeriodEnd && (
@@ -367,14 +367,14 @@ const SubscriptionTabContent: React.FC = () => {
           <div className="h-6 w-6 flex items-center justify-center">
             <ModeToggle />
           </div>
-          <span className="text-sm">Theme</span>
+          <span className="text-sm text-ditto-primary">Theme</span>
         </div>
       </CardContent>
 
       <CardFooter className="flex gap-4">
         <Button
-          variant="default"
-          className="flex-1"
+          variant="outline"
+          className="flex-1 gradient-ring text-ditto-primary gradient-shadow"
           onClick={() => {
             closeSettingsModal()
             openTokenModal()
@@ -384,7 +384,7 @@ const SubscriptionTabContent: React.FC = () => {
           BUY TOKENS
         </Button>
 
-        <Button variant="outline" className="flex-1" onClick={handleLogout}>
+        <Button variant="outline" className="flex-1 glass-interactive-light text-ditto-secondary hover:text-ditto-primary" onClick={handleLogout}>
           <LogOut className="h-4 w-4 mr-2" />
           LOG OUT
         </Button>
@@ -395,13 +395,13 @@ const SubscriptionTabContent: React.FC = () => {
   // If user is already subscribed, show only account + manage subscription
   if (user && user.subscriptionStatus !== "free") {
     return (
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 text-ditto-primary">
         {accountCard}
 
-        <Card>
+        <Card className="glass-card-light">
           <CardHeader>
-            <CardTitle>Subscription Management</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-ditto-primary">Subscription Management</CardTitle>
+            <CardDescription className="text-ditto-secondary">
               Manage your current subscription plan and billing
             </CardDescription>
           </CardHeader>
@@ -440,7 +440,7 @@ const SubscriptionTabContent: React.FC = () => {
 
   // Otherwise, show account + subscription options for free users
   return (
-    <div data-subscription-section className="p-4 space-y-6">
+    <div data-subscription-section className="p-4 space-y-6 text-ditto-primary">
       {accountCard}
 
       <div className="mb-6">

@@ -176,12 +176,25 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         rootNodeConfig.label.substring(0, 30) +
         (rootNodeConfig.label.length > 30 ? "..." : ""),
       title: rootNodeConfig.title || rootNodeConfig.label,
-      color:
-        rootNodeConfig.color ||
-        (rootNodeConfig.isQueryNode ? "#ED4245" : "#3498DB"),
+      color: {
+        background: rootNodeConfig.isQueryNode ? "#FF6B6B" : "#9966ff",
+        border: "#ffffff",
+        highlight: {
+          background: "#ffffff",
+          border: "#ffffff"
+        }
+      },
       level: 0,
       shape: "dot",
-      size: 30,
+      size: 35,
+      borderWidth: 3,
+      shadow: {
+        enabled: true,
+        color: rootNodeConfig.isQueryNode ? "rgba(255, 107, 107, 0.8)" : "rgba(153, 102, 255, 0.8)",
+        size: 15,
+        x: 0,
+        y: 0
+      },
       x: persistedNodePositions[rootNodeConfig.id]?.x,
       y: persistedNodePositions[rootNodeConfig.id]?.y,
     })
@@ -204,8 +217,18 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       const nodeId = `${path}-${memory.id}`
       if (memoryMapRef.current.has(nodeId)) return
 
-      const colors = ["#3498DB", "#2ECC71", "#9B59B6", "#F1C40F", "#E74C3C"]
-      const nodeColor = colors[depth % colors.length]
+      // Neural network color scheme with category-based colors
+      const categoryColors = [
+        { bg: "#4ECDC4", glow: "rgba(78, 205, 196, 0.8)", name: "technical" }, // Technical Skills - Teal
+        { bg: "#96CEB4", glow: "rgba(150, 206, 180, 0.8)", name: "learning" }, // Learning Context - Green
+        { bg: "#45B7D1", glow: "rgba(69, 183, 209, 0.8)", name: "creative" }, // Creative Ideas - Blue
+        { bg: "#FFEAA7", glow: "rgba(255, 234, 167, 0.8)", name: "conversations" }, // Conversations - Yellow
+        { bg: "#FF6B6B", glow: "rgba(255, 107, 107, 0.8)", name: "personal" }, // Personal Knowledge - Red
+      ]
+      
+      const colorIndex = depth % categoryColors.length
+      const nodeColor = categoryColors[colorIndex]
+      
       const label = memory.prompt
         ? memory.prompt.substring(0, 20) +
           (memory.prompt.length > 20 ? "..." : "")
@@ -217,10 +240,30 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         id: nodeId,
         label: label,
         title: `Prompt: ${memory.prompt}\nMatch: ${scorePercentage}%`,
-        color: nodeColor,
+        color: {
+          background: nodeColor.bg,
+          border: "#ffffff",
+          highlight: {
+            background: "#ffffff",
+            border: "#ffffff"
+          }
+        },
         level: depth + 1,
         shape: "dot",
-        size: Math.max(25 - depth * 3, 10),
+        size: Math.max(30 - depth * 2, 20),
+        borderWidth: 2,
+        shadow: {
+          enabled: true,
+          color: nodeColor.glow,
+          size: 12,
+          x: 0,
+          y: 0
+        },
+        font: {
+          color: "#CCD6F6",
+          size: 12,
+          face: "Arial"
+        },
         x: persistedNodePositions[nodeId]?.x,
         y: persistedNodePositions[nodeId]?.y,
       })
@@ -232,6 +275,14 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           to: nodeId,
           arrows: { to: { enabled: true, scaleFactor: 0.5 } },
           length: 70 + depth * 25,
+          color: {
+            color: nodeColor.bg,
+            opacity: 0.6,
+            highlight: nodeColor.bg,
+            hover: nodeColor.bg
+          },
+          width: 2,
+          smooth: { enabled: true, type: "dynamic", roundness: 0.5 }
         })
       }
 
@@ -250,11 +301,24 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     nodesDatasetRef.current = nodes
     edgesDatasetRef.current = edges
 
-    if (container) {
-      const options: Options = {
-        layout: {
-          hierarchical: false,
-        },
+          if (container) {
+        // Ensure container has the gradient background
+        container.style.background = `
+          radial-gradient(circle at 20% 30%, rgba(153, 102, 255, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(255, 110, 178, 0.06) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(255, 173, 102, 0.04) 0%, transparent 50%),
+          radial-gradient(ellipse at center, rgba(153, 102, 255, 0.05) 0%, rgba(255, 110, 178, 0.03) 30%, rgba(10, 25, 47, 1) 70%),
+          linear-gradient(135deg, #0A192F 0%, #112240 50%, #1E293B 100%)
+        `
+        
+        const options: Options = {
+          configure: {
+            enabled: false
+          },
+          autoResize: true,
+          layout: {
+            hierarchical: false,
+          },
         physics: {
           enabled: true,
           solver: "forceAtlas2Based",
@@ -286,30 +350,69 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           selectConnectedEdges: false,
         },
         nodes: {
-          borderWidth: 2,
-          font: { color: nodeFontColor, size: 12, face: "Arial" },
+          borderWidth: 3,
+          font: { color: "#CCD6F6", size: 12, face: "Arial" },
+          shadow: {
+            enabled: true,
+            color: "rgba(0, 0, 0, 0.5)",
+            size: 10,
+            x: 2,
+            y: 2
+          }
         },
         edges: {
           smooth: { enabled: true, type: "dynamic", roundness: 0.5 },
           color: {
-            color: "#a0a0a0",
-            highlight: "#66afe9",
-            hover: "#66afe9",
-            inherit: "from",
-            opacity: 0.7,
+            color: "#9966ff",
+            highlight: "#ffffff",
+            hover: "#ffffff",
+            inherit: false,
+            opacity: 0.5,
           },
+          width: 1.5,
+          dashes: [3, 3],
+          shadow: {
+            enabled: true,
+            color: "rgba(153, 102, 255, 0.3)",
+            size: 5,
+            x: 0,
+            y: 0
+          }
         },
       }
 
-      if (networkRef.current) {
-        networkRef.current.setData({ nodes, edges })
-        networkRef.current.setOptions(options)
-      } else {
-        networkRef.current = new VisNetwork(
-          container,
-          { nodes, edges },
-          options
-        )
+              if (networkRef.current) {
+          networkRef.current.setData({ nodes, edges })
+          networkRef.current.setOptions(options)
+        } else {
+          networkRef.current = new VisNetwork(
+            container,
+            { nodes, edges },
+            options
+          )
+          
+          // Ensure canvas background is transparent
+          const forceTransparentBackground = () => {
+            const canvas = container.querySelector('canvas')
+            if (canvas) {
+              canvas.style.background = 'transparent'
+              canvas.style.backgroundColor = 'transparent'
+              canvas.style.backgroundImage = 'none'
+            }
+            
+            // Also target any other background elements
+            const visContainer = container.querySelector('.vis-network')
+            if (visContainer) {
+              (visContainer as HTMLElement).style.background = 'transparent'
+              ;(visContainer as HTMLElement).style.backgroundColor = 'transparent'
+            }
+          }
+          
+          forceTransparentBackground()
+          
+          // Ensure transparency is maintained after stabilization
+          setTimeout(forceTransparentBackground, 100)
+          setTimeout(forceTransparentBackground, 500)
 
         networkRef.current.on("click", (params) => {
           if (params.nodes.length > 0) {
@@ -452,6 +555,32 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
   }, [isReady, memories.length, fitAllNodes, nodesDatasetRef.current?.length])
 
+  // Create floating particles effect
+  useEffect(() => {
+    const particlesContainer = document.getElementById('particles')
+    if (!particlesContainer) return
+
+    // Clear existing particles
+    particlesContainer.innerHTML = ''
+
+    // Create 20 floating particles
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div')
+      particle.className = 'particle'
+      particle.style.left = Math.random() * 100 + '%'
+      particle.style.top = Math.random() * 100 + '%'
+      particle.style.animationDelay = Math.random() * 6 + 's'
+      particle.style.animationDuration = (6 + Math.random() * 4) + 's'
+      particlesContainer.appendChild(particle)
+    }
+
+    return () => {
+      if (particlesContainer) {
+        particlesContainer.innerHTML = ''
+      }
+    }
+  }, [isReady])
+
   // Show placeholder or loading only if memories are being fetched or network is building
   if (
     memories.length === 0 &&
@@ -471,7 +600,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     containerRef.current?.parentElement?.style.display !== "none"
   ) {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
+      <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-ditto-secondary text-lg text-center gap-3">
         <Info size={24} />
         <p>Search to visualize your memory network.</p>
       </div>
@@ -479,20 +608,56 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-[300px] relative">
-      <div
-        ref={containerRef}
-        className="flex-1 relative w-full rounded-lg bg-muted border border-border overflow-hidden"
-        style={{ visibility: isReady ? "visible" : "hidden" }}
-      />
-      {!isReady &&
-        nodesDatasetRef.current &&
-        nodesDatasetRef.current.length > 0 &&
-        !isOpeningNode && (
-          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-lg bg-background/80 z-10">
-            Building network...
-          </div>
-        )}
+    <div className="flex-1 flex flex-col min-h-[300px] relative p-6">
+      {/* Network Container with Border */}
+      <div 
+        className="flex-1 relative network-visualizer-wrapper"
+        style={{
+          border: '2px solid rgba(153, 102, 255, 0.3)',
+          borderRadius: '20px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(153, 102, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          overflow: 'hidden',
+          background: `
+            radial-gradient(circle at 20% 30%, rgba(153, 102, 255, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(255, 110, 178, 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(255, 173, 102, 0.04) 0%, transparent 50%),
+            radial-gradient(ellipse at center, rgba(153, 102, 255, 0.05) 0%, rgba(255, 110, 178, 0.03) 30%, rgba(10, 25, 47, 1) 70%),
+            linear-gradient(135deg, #0A192F 0%, #112240 50%, #1E293B 100%)
+          `
+        }}
+      >
+        {/* Neural Network Background Layer */}
+        <div className="neural-network-background">
+          <div className="particles" id="particles"></div>
+          <div className="bg-element" style={{top: '20%', left: '10%', width: '80px', height: '80px'}}></div>
+          <div className="bg-element" style={{top: '60%', right: '15%', width: '40px', height: '40px'}}></div>
+          <div className="bg-element" style={{top: '80%', left: '5%', width: '60px', height: '60px'}}></div>
+        </div>
+        
+        {/* Vis-Network Container */}
+        <div
+          ref={containerRef}
+          id="memory-network-container"
+          className="absolute inset-0 w-full h-full"
+          style={{ visibility: isReady ? "visible" : "hidden", background: 'transparent' }}
+        />
+        
+        {/* Network Overlay */}
+        <div className="network-overlay"></div>
+        
+        {!isReady &&
+          nodesDatasetRef.current &&
+          nodesDatasetRef.current.length > 0 &&
+          !isOpeningNode && (
+            <div className="absolute inset-0 flex items-center justify-center text-ditto-secondary text-lg z-10">
+              <div className="glass-interactive px-6 py-3 rounded-lg">
+                Building network...
+              </div>
+            </div>
+          )}
+      </div>
     </div>
   )
 }

@@ -121,10 +121,11 @@ export default function ChatMessage({
         <Card
           className={cn(
             "py-0",
+            isUser ? "glass-card-user" : "glass-card",
             isUser
-              ? "bg-primary text-primary-foreground rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
-              : "bg-card text-card-foreground rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
-            isOptimistic && "border border-dashed border-opacity-20"
+              ? "text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
+              : "text-white rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
+            isOptimistic && "border border-dashed border-opacity-20 glow-pulse"
           )}
         >
           <CardContent className="p-3 sm:p-4 relative">
@@ -149,16 +150,16 @@ export default function ChatMessage({
                 <div className="flex space-x-1">
                   {" "}
                   {/* Horizontal layout with spacing */}
-                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:0ms]"></div>
-                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:150ms]"></div>
-                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:300ms]"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0ms]"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:150ms]"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:300ms]"></div>
                 </div>
               </div>
             ) : (
               // Message content with markdown rendering
               <div
                 className={cn(
-                  "prose dark:prose-invert max-w-none",
+                  "prose dark:prose-invert max-w-none text-white",
                   fontSize === "small" && "text-sm",
                   fontSize === "medium" && "text-base",
                   fontSize === "large" && "text-lg"
@@ -168,7 +169,7 @@ export default function ChatMessage({
               </div>
             )}
             {/* Timestamp display */}
-            <div className="text-xs opacity-70 text-right mt-1">
+            <div className="text-xs text-white text-right mt-1">
               {isOptimistic
                 ? content === ""
                   ? "Thinking..."
@@ -185,7 +186,7 @@ export default function ChatMessage({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar
-              className="h-7 w-7 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
+              className="h-7 w-7 cursor-pointer hover:scale-110 transition-all gradient-ring gradient-shadow"
               onPointerDown={triggerLightHaptic}
             >
               <AvatarImage
@@ -200,7 +201,7 @@ export default function ChatMessage({
           {menuProps && (
             <DropdownMenuContent
               align={isUser ? "end" : "start"}
-              className="w-auto"
+              className="w-auto glass-modal"
             >
               <DropdownMenuItem
                 onPointerDown={triggerLightHaptic}

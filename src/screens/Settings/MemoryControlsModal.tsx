@@ -56,7 +56,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
   if (!preferences) return null
 
   return (
-    <div className="memory-controls-content space-y-4">
+    <div className="memory-controls-content space-y-4 text-ditto-primary">
       <MemorySlider
         label="Short Term Memory"
         values={[preferences.memory.shortTermMemoryCount]}

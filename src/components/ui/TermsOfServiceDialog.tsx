@@ -181,6 +181,7 @@ export default function TermsOfServiceDialog({
                 variant="default"
                 onClick={handleAccept}
                 disabled={isLoading || !tos}
+                className="gradient-ring text-ditto-primary gradient-shadow"
               >
                 Accept
               </Button>
@@ -190,6 +191,7 @@ export default function TermsOfServiceDialog({
               variant="default"
               onClick={handleDecline}
               disabled={isLoading}
+              className="gradient-ring text-ditto-primary gradient-shadow"
             >
               Close
             </Button>
