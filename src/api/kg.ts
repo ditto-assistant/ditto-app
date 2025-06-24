@@ -1,11 +1,36 @@
+import { z } from "zod"
 import { routes } from "../firebaseConfig"
 import { getToken } from "./auth"
-import { Result } from "@/types/common"
+import {
+  PairSearchResultSchema,
+  Result,
+  SubjectSearchResultSchema,
+  SubjectSchema,
+} from "@/types/common"
 import type {
   Subject,
   SubjectSearchResult,
   PairSearchResult,
 } from "@/types/common"
+
+// Response schemas (these would ideally be defined in @/types/common but we'll reference them)
+export const RenameSubjectResponseSchema = z.object({
+  success: z.boolean(),
+  subject: z.any(), // Should be Subject type from common
+  message: z.string(),
+})
+export type RenameSubjectResponse = z.infer<typeof RenameSubjectResponseSchema>
+
+export const GetTopSubjectsResponseSchema = z.object({
+  results: z.array(SubjectSchema),
+  metadata: z.object({
+    limit: z.number(),
+    offset: z.number(),
+  }),
+})
+export type GetTopSubjectsResponse = z.infer<
+  typeof GetTopSubjectsResponseSchema
+>
 
 export async function searchSubjects({
   userID,
@@ -41,8 +66,14 @@ export async function searchSubjects({
       }),
     })
     if (response.ok) {
-      const data = (await response.json()) as SubjectSearchResult
-      return { ok: data }
+      const rawData: unknown = await response.json()
+      const validatedData = SubjectSearchResultSchema.safeParse(rawData)
+      if (!validatedData.success) {
+        return {
+          err: `searchSubjects: Invalid response data: ${validatedData.error.flatten()}`,
+        }
+      }
+      return { ok: validatedData.data }
     } else {
       return { err: `Unable to search subjects. Error: ${response.status}` }
     }
@@ -82,8 +113,14 @@ export async function searchPairs({
       }),
     })
     if (response.ok) {
-      const data = (await response.json()) as PairSearchResult
-      return { ok: data }
+      const rawData: unknown = await response.json()
+      const validatedData = PairSearchResultSchema.safeParse(rawData)
+      if (!validatedData.success) {
+        return {
+          err: `searchPairs: Invalid response data: ${validatedData.error.flatten()}`,
+        }
+      }
+      return { ok: validatedData.data }
     } else {
       return { err: `Unable to search pairs. Error: ${response.status}` }
     }
@@ -129,8 +166,14 @@ export async function getSubjectPairs({
       }),
     })
     if (response.ok) {
-      const data = (await response.json()) as PairSearchResult
-      return { ok: data }
+      const rawData: unknown = await response.json()
+      const validatedData = PairSearchResultSchema.safeParse(rawData)
+      if (!validatedData.success) {
+        return {
+          err: `getSubjectPairs: Invalid response data: ${validatedData.error.flatten()}`,
+        }
+      }
+      return { ok: validatedData.data }
     } else {
       return { err: `Unable to get subject pairs. Error: ${response.status}` }
     }
@@ -172,8 +215,14 @@ export async function getTopSubjects({
       }),
     })
     if (response.ok) {
-      const data = await response.json()
-      return { ok: data }
+      const rawData: unknown = await response.json()
+      const validatedResponse = GetTopSubjectsResponseSchema.safeParse(rawData)
+      if (!validatedResponse.success) {
+        return {
+          err: `getTopSubjects: Invalid response data: ${validatedResponse.error.flatten()}`,
+        }
+      }
+      return { ok: validatedResponse.data }
     } else {
       return { err: `Unable to get top subjects. Error: ${response.status}` }
     }
@@ -219,8 +268,14 @@ export async function getSubjectPairsRecent({
       }),
     })
     if (response.ok) {
-      const data = (await response.json()) as PairSearchResult
-      return { ok: data }
+      const rawData: unknown = await response.json()
+      const validatedData = PairSearchResultSchema.safeParse(rawData)
+      if (!validatedData.success) {
+        return {
+          err: `getSubjectPairsRecent: Invalid response data: ${validatedData.error.flatten()}`,
+        }
+      }
+      return { ok: validatedData.data }
     } else {
       return {
         err: `Unable to get recent subject pairs. Error: ${response.status}`,
@@ -241,7 +296,7 @@ export async function renameSubject({
   userEmail?: string
   subjectId: string
   newSubjectText: string
-}): Promise<Result<{ success: boolean; subject: Subject; message: string }>> {
+}): Promise<Result<RenameSubjectResponse>> {
   const tok = await getToken()
   if (tok.err) return { err: "Unable to get token" }
   if (!tok.ok) return { err: "No token" }
@@ -261,8 +316,14 @@ export async function renameSubject({
       }),
     })
     if (response.ok) {
-      const data = await response.json()
-      return { ok: data }
+      const rawData: unknown = await response.json()
+      const validatedResponse = RenameSubjectResponseSchema.safeParse(rawData)
+      if (!validatedResponse.success) {
+        return {
+          err: `renameSubject: Invalid response data: ${validatedResponse.error.flatten()}`,
+        }
+      }
+      return { ok: validatedResponse.data }
     } else {
       return {
         err: `Unable to rename subject. Error: ${response.status}`,

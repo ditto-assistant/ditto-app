@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 export type Result<T> = {
   ok?: T
   err?: string
@@ -43,45 +45,52 @@ declare global {
   }
 }
 
-// Subject and Pair types for KG endpoints
-export interface Subject {
-  id: string
-  subject_text: string
-  description?: string
-  is_key_subject?: boolean
-  similarity?: number
-  pair_count?: number
-}
+export const SubjectSchema = z.object({
+  id: z.string(),
+  subject_text: z.string(),
+  description: z.string().optional(),
+  is_key_subject: z.boolean().optional(),
+  similarity: z.number().optional(),
+  pair_count: z.number().optional(),
+})
 
-export interface SubjectSearchResult {
-  results: Subject[]
-  metadata: {
-    query: string
-    top_k: number
-    min_similarity: number
-  }
-}
+export type Subject = z.infer<typeof SubjectSchema>
 
-export interface Pair {
-  id: string
-  title?: string
-  summary?: string
-  prompt?: string
-  response?: string
-  similarity?: number
-  score?: number
-  vector_distance?: number
-  depth?: number
-  timestamp?: string | number | Date
-  timestamp_formatted?: string
-}
+export const SubjectSearchResultSchema = z.object({
+  results: z.array(SubjectSchema),
+  metadata: z.object({
+    query: z.string(),
+    top_k: z.number(),
+    min_similarity: z.number(),
+  }),
+})
 
-export interface PairSearchResult {
-  results: Pair[]
-  metadata: {
-    query: string
-    top_k: number
-    subject_id?: string
-    subject_text?: string
-  }
-}
+export type SubjectSearchResult = z.infer<typeof SubjectSearchResultSchema>
+
+export const PairSchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  summary: z.string().optional(),
+  prompt: z.string().optional(),
+  response: z.string().optional(),
+  similarity: z.number().optional(),
+  score: z.number().optional(),
+  vector_distance: z.number().optional(),
+  depth: z.number().optional(),
+  timestamp: z.coerce.date().optional(),
+  timestamp_formatted: z.string().optional(),
+})
+
+export type Pair = z.infer<typeof PairSchema>
+
+export const PairSearchResultSchema = z.object({
+  results: z.array(PairSchema),
+  metadata: z.object({
+    query: z.string(),
+    top_k: z.number(),
+    subject_id: z.string().optional(),
+    subject_text: z.string().optional(),
+  }),
+})
+
+export type PairSearchResult = z.infer<typeof PairSearchResultSchema>

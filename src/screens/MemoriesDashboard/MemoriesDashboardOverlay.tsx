@@ -16,7 +16,6 @@ import SearchBar from "@/screens/MemoriesDashboard/SearchBar"
 import {
   searchSubjects,
   getSubjectPairs,
-  searchPairs,
   getTopSubjects,
   getSubjectPairsRecent,
   renameSubject,
@@ -704,19 +703,17 @@ export default function MemoriesDashboardOverlay() {
               {!pairsLoading && pairs.length > 0 && (
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <MemoriesListView
-                    memories={
-                      [...pairs].sort((a, b) => {
-                        // Always maintain chronological order (newest first) for pairs in a subject
-                        // Backend already returns them in chronological order, but ensure consistency
-                        const aTime = a.timestamp
-                          ? new Date(a.timestamp).getTime()
-                          : 0
-                        const bTime = b.timestamp
-                          ? new Date(b.timestamp).getTime()
-                          : 0
-                        return bTime - aTime
-                      }) as Memory[]
-                    }
+                    memories={pairs.sort((a, b) => {
+                      // Always maintain chronological order (newest first) for pairs in a subject
+                      // Backend already returns them in chronological order, but ensure consistency
+                      const aTime = a.timestamp
+                        ? new Date(a.timestamp).getTime()
+                        : 0
+                      const bTime = b.timestamp
+                        ? new Date(b.timestamp).getTime()
+                        : 0
+                      return bTime - aTime
+                    })}
                     onCopy={handleCopy}
                     onDelete={handleDeleteMemory}
                     onShowMemories={handleShowRelatedMemories}

@@ -1,12 +1,26 @@
 import React from "react"
-import { Memory } from "@/api/getMemories"
 import ChatMessage from "@/components/ChatMessage"
+import { Pair } from "@/types/common"
+import { Memory } from "@/api/getMemories"
 
 interface MemoriesListViewProps {
-  memories: (Memory & { level?: number })[] // Updated to include the level property
+  memories: (Pair & { level?: number })[] // Updated to include the level property
   onCopy: (memory: Memory, type: "prompt" | "response") => void
   onDelete: (memory: Memory) => void
   onShowMemories: (memory: Memory) => void
+}
+
+function pairToMemory(pair: Pair): Memory {
+  return {
+    ...pair,
+    prompt: pair.prompt ?? "",
+    response: pair.response ?? "",
+    score: pair.score ?? 0,
+    vector_distance: pair.vector_distance ?? 0,
+    similarity: pair.similarity ?? 0,
+    depth: pair.depth ?? 0,
+    timestamp: pair.timestamp ?? new Date(),
+  }
 }
 
 const MemoriesListView: React.FC<MemoriesListViewProps> = ({
@@ -53,10 +67,7 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
           : levelInfo
             ? `\n\n---\n*${levelInfo}*`
             : ""
-        const timestamp =
-          memory.timestamp instanceof Date
-            ? memory.timestamp
-            : new Date(memory.timestamp)
+        const timestamp = memory.timestamp ?? new Date()
 
         return (
           <div
@@ -82,14 +93,14 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
             )}
             {/* User/prompt message */}
             <ChatMessage
-              content={memory.prompt}
+              content={memory.prompt ?? ""}
               timestamp={timestamp}
               isUser={true}
               menuProps={{
                 id: memory.id,
-                onCopy: () => onCopy(memory, "prompt"),
-                onDelete: () => onDelete(memory),
-                onShowMemories: () => onShowMemories(memory),
+                onCopy: () => onCopy(pairToMemory(memory), "prompt"),
+                onDelete: () => onDelete(pairToMemory(memory)),
+                onShowMemories: () => onShowMemories(pairToMemory(memory)),
               }}
             />
 
@@ -100,9 +111,9 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
               isUser={false}
               menuProps={{
                 id: memory.id,
-                onCopy: () => onCopy(memory, "response"),
-                onDelete: () => onDelete(memory),
-                onShowMemories: () => onShowMemories(memory),
+                onCopy: () => onCopy(pairToMemory(memory), "response"),
+                onDelete: () => onDelete(pairToMemory(memory)),
+                onShowMemories: () => onShowMemories(pairToMemory(memory)),
               }}
             />
           </div>

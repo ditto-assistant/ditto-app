@@ -1,6 +1,17 @@
+import { z } from "zod"
 import { routes } from "../firebaseConfig"
 import { getToken } from "./auth"
 import { Result } from "@/types/common"
+
+// Response schemas
+export const SyncStatusSchema = z.object({
+  stage: z.number(),
+  status: z.string(),
+})
+export type SyncStatus = z.infer<typeof SyncStatusSchema>
+
+export const SyncStatusResponseSchema = z.record(z.string(), SyncStatusSchema)
+export type SyncStatusResponse = z.infer<typeof SyncStatusResponseSchema>
 
 export async function startSync(
   userID: string,
@@ -33,11 +44,6 @@ export async function startSync(
   }
 }
 
-interface SyncStatus {
-  stage: number
-  status: string
-}
-
 export async function getSyncStatus(
   messageIDs: string[]
 ): Promise<Result<Map<string, SyncStatus>>> {
@@ -62,8 +68,15 @@ export async function getSyncStatus(
     })
 
     if (response.ok) {
-      const statuses = (await response.json()) as Record<string, SyncStatus>
-      return { ok: new Map(Object.entries(statuses)) }
+      const rawData: unknown = await response.json()
+      const validatedResponse = SyncStatusResponseSchema.safeParse(rawData)
+      if (!validatedResponse.success) {
+        return {
+          err: `Failed to get sync status: Invalid response data: ${validatedResponse.error.flatten()}`,
+        }
+      }
+
+      return { ok: new Map(Object.entries(validatedResponse.data)) }
     } else {
       return { err: `Failed to get sync status. Error: ${response.status}` }
     }

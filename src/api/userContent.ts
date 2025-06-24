@@ -23,6 +23,18 @@ export type ConversationCountResponse = z.infer<
   typeof ConversationCountResponseSchema
 >
 
+export const DeleteMemoryPairResponseSchema = z.object({
+  success: z.boolean(),
+  cleanup_stats: z.object({
+    pairs_deleted: z.number(),
+    subjects_removed: z.number(),
+    links_removed: z.number(),
+  }),
+})
+export type DeleteMemoryPairResponse = z.infer<
+  typeof DeleteMemoryPairResponseSchema
+>
+
 // Request schemas
 export const UploadImageRequestSchema = z.object({
   base64Image: z.string(),
@@ -220,17 +232,7 @@ export async function deleteConversation(
 export async function deleteMemoryPairFromKG(
   userID: string,
   pairID: string
-): Promise<
-  | {
-      success: boolean
-      cleanup_stats: {
-        pairs_deleted: number
-        subjects_removed: number
-        links_removed: number
-      }
-    }
-  | Error
-> {
+): Promise<DeleteMemoryPairResponse | Error> {
   try {
     const tok = await getToken()
     if (tok.err) {
@@ -255,7 +257,7 @@ export async function deleteMemoryPairFromKG(
       // Memory pair not found in KG - this is not necessarily an error
       // as the pair might only exist in Firestore
       console.log(`Memory pair ${pairID} not found in knowledge graph`)
-      return {
+      const defaultResponse: DeleteMemoryPairResponse = {
         success: true,
         cleanup_stats: {
           pairs_deleted: 0,
@@ -263,6 +265,7 @@ export async function deleteMemoryPairFromKG(
           links_removed: 0,
         },
       }
+      return defaultResponse
     }
 
     if (!response.ok) {
@@ -272,15 +275,15 @@ export async function deleteMemoryPairFromKG(
       )
     }
 
-    const data = await response.json()
-    return {
-      success: data.success || true,
-      cleanup_stats: data.cleanup_stats || {
-        pairs_deleted: 0,
-        subjects_removed: 0,
-        links_removed: 0,
-      },
+    const rawData: unknown = await response.json()
+    const validatedResponse = DeleteMemoryPairResponseSchema.safeParse(rawData)
+    if (!validatedResponse.success) {
+      return new Error(
+        `Failed to delete memory pair from KG: Invalid response data: ${validatedResponse.error.flatten()}`
+      )
     }
+
+    return validatedResponse.data
   } catch (error) {
     console.error("Error deleting memory pair from KG:", error)
     return error instanceof Error ? error : new Error("Unknown error occurred")
@@ -307,7 +310,6 @@ export async function deleteConversationComplete(
 
     // Then delete from Knowledge Graph
     const kgResult = await deleteMemoryPairFromKG(userID, conversationID)
-    const kgDeleted = !(kgResult instanceof Error)
 
     if (kgResult instanceof Error) {
       console.warn(`Failed to delete from KG: ${kgResult.message}`)
