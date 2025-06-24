@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./variables.css";
 @import "./buttons.css";
+@import "./glassmorphism.css";
 @import "./platform/ios.css";
 @import "tw-animate-css";
 
@@ -53,8 +54,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-primary);
-  color: var(--text-normal);
+  background: var(--ditto-bg-gradient);
+  background-attachment: fixed;
+  color: var(--ditto-text-primary);
   overflow-x: hidden;
   position: relative;
   width: 100%;
@@ -90,7 +92,10 @@ code {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    /* Keep the ditto gradient background */
+    background: var(--ditto-bg-gradient) !important;
+    background-attachment: fixed !important;
   }
 
   /* Global gradient title classes */

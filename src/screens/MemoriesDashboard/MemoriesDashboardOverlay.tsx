@@ -200,8 +200,8 @@ export default function MemoriesDashboardOverlay() {
 
   return (
     <Modal id="memories" title="Memory Dashboard">
-      <div className="flex flex-col h-full p-4 bg-background text-foreground">
-        <div className="flex flex-col gap-4 pb-4 border-b border-border mb-4">
+      <div className="flex flex-col h-full p-4 text-ditto-primary">
+                  <div className="flex flex-col gap-4 pb-4 border-b border-ditto-glass-border mb-4">
           <SearchBar
             onSearch={handleSearch}
             inputRef={searchInputRef}
@@ -211,35 +211,35 @@ export default function MemoriesDashboardOverlay() {
           <div className="flex justify-between items-center w-full">
             <div className="flex gap-3">
               <Button
-                variant={activeView === "list" ? "default" : "outline"}
+                variant="outline"
                 onClick={() => setActiveView("list")}
-                className={
+                className={`${
                   activeView === "list"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border"
-                }
+                    ? "gradient-ring text-ditto-primary gradient-shadow"
+                    : "glass-interactive-light text-ditto-secondary hover:text-ditto-primary"
+                } !bg-transparent border-0`}
               >
                 <List size={18} />
                 <span>List</span>
               </Button>
               <Button
-                variant={activeView === "network" ? "default" : "outline"}
+                variant="outline"
                 onClick={() => setActiveView("network")}
-                className={
+                className={`${
                   activeView === "network"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border"
-                }
+                    ? "gradient-ring text-ditto-primary gradient-shadow"
+                    : "glass-interactive-light text-ditto-secondary hover:text-ditto-primary"
+                } !bg-transparent border-0`}
               >
                 <Network size={18} />
                 <span>Network</span>
               </Button>
             </div>
-            <div className="flex items-center gap-1 text-sm opacity-95 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 shadow-sm">
-              <span className="font-bold text-primary text-base">
+                          <div className="flex items-center gap-1 text-sm opacity-95 px-3 py-1.5 rounded-full glass-interactive-light">
+              <span className="font-bold text-ditto-gradient text-base">
                 {formatCount(memoryCount)}
               </span>
-              <span className="text-muted-foreground font-medium">
+              <span className="text-ditto-body font-medium">
                 memories
               </span>
             </div>
@@ -247,7 +247,7 @@ export default function MemoriesDashboardOverlay() {
         </div>
         <div className="flex-1 flex flex-col overflow-y-auto py-2 min-h-0">
           {loading && (
-            <div className="flex items-center justify-center h-24 text-muted-foreground text-lg m-auto">
+            <div className="flex items-center justify-center h-24 text-ditto-secondary text-lg m-auto">
               Searching memories...
             </div>
           )}
@@ -260,7 +260,7 @@ export default function MemoriesDashboardOverlay() {
             </div>
           )}
           {!loading && !error && memories.length === 0 && lastSearchedTerm && (
-            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-ditto-secondary text-lg text-center gap-3">
               <Info size={24} />
               <p>
                 No memories found for &quot;{lastSearchedTerm}&quot;. Try a
@@ -269,7 +269,7 @@ export default function MemoriesDashboardOverlay() {
             </div>
           )}
           {!loading && !error && memories.length === 0 && !lastSearchedTerm && (
-            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-muted-foreground text-lg text-center gap-3">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[150px] text-ditto-secondary text-lg text-center gap-3">
               <Info size={24} />
               <p>Enter a search term and click Search to find your memories.</p>
             </div>

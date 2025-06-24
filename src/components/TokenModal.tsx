@@ -142,9 +142,9 @@ export default function TokenModal() {
                   key={price}
                   onClick={() => handleAmountChange(price)}
                   className={cn(
-                    "grid grid-cols-[80px_1fr_80px] items-center p-4 rounded-lg cursor-pointer bg-background-darker transition-all duration-200 box-border w-full border border-transparent shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-primary animate-in slide-in-from-left duration-300",
+                    "grid grid-cols-[80px_1fr_80px] items-center p-4 cursor-pointer glass-interactive animate-in slide-in-from-left duration-300",
                     isSelected &&
-                      "bg-gradient-to-r from-primary/20 to-blue-400/20 scale-[1.02] shadow-md",
+                      "bg-gradient-to-r from-primary/20 to-blue-400/20 scale-[1.02] text-ditto-gradient",
                     { "delay-100": index === 0 },
                     { "delay-200": index === 1 },
                     { "delay-300": index === 2 },

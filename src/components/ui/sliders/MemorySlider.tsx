@@ -128,17 +128,17 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   return (
     <div
       className={cn(
-        "p-4 mb-4 rounded-lg bg-muted/50 relative",
+        "p-4 mb-4 rounded-lg glass-interactive-light relative",
         isLocked && "opacity-50"
       )}
     >
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-3">
-          <span className="font-semibold text-foreground">{label}</span>
+          <span className="font-semibold text-ditto-primary">{label}</span>
           {!showChainControls && (
             <span
               className={cn(
-                "font-mono px-2 py-1 bg-muted rounded text-sm transition-opacity",
+                "font-mono px-2 py-1 glass-interactive-light rounded text-sm transition-opacity text-ditto-primary",
                 isSaving && "opacity-50"
               )}
             >
@@ -149,30 +149,30 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
       </div>
 
       {description && (
-        <div className="text-sm text-muted-foreground mb-4">{description}</div>
+        <div className="text-sm text-ditto-secondary mb-4">{description}</div>
       )}
 
       {showChainControls && (
-        <div className="bg-muted p-3 rounded-md mb-4 flex justify-between items-center">
-          <div className="flex items-center font-mono text-base text-foreground">
+        <div className="glass-interactive-light p-3 rounded-md mb-4 flex justify-between items-center">
+          <div className="flex items-center font-mono text-base text-ditto-primary">
             <span className={cn(isSaving && "opacity-50")}>
               {localValues.map((v, i) => (
-                <React.Fragment key={i}>
-                  {i > 0 && (
-                    <span className="mx-2 text-muted-foreground">→</span>
-                  )}
-                  <span className="bg-background px-2 py-1 rounded min-w-[2ch] text-center">
-                    {v}
-                  </span>
-                </React.Fragment>
+                                  <React.Fragment key={i}>
+                    {i > 0 && (
+                      <span className="mx-2 text-ditto-secondary">→</span>
+                    )}
+                    <span className="glass-interactive-light px-2 py-1 rounded min-w-[2ch] text-center text-ditto-primary">
+                      {v}
+                    </span>
+                  </React.Fragment>
               ))}
             </span>
           </div>
           <div className="flex gap-2">
             <button
               className={cn(
-                "flex items-center justify-center w-7 h-7 rounded bg-background text-foreground transition-colors",
-                "hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                "flex items-center justify-center w-7 h-7 rounded glass-interactive-light text-ditto-secondary transition-colors",
+                "hover:text-ditto-primary disabled:opacity-50 disabled:cursor-not-allowed"
               )}
               onClick={handleRemoveChain}
               disabled={localValues.length <= 1 || isLocked}
@@ -182,8 +182,8 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
             </button>
             <button
               className={cn(
-                "flex items-center justify-center w-7 h-7 rounded bg-background text-foreground transition-colors",
-                "hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                "flex items-center justify-center w-7 h-7 rounded glass-interactive-light text-ditto-secondary transition-colors",
+                "hover:text-ditto-primary disabled:opacity-50 disabled:cursor-not-allowed"
               )}
               onClick={handleAddChain}
               disabled={localValues.length >= maxChainLength || isLocked}
@@ -199,7 +199,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
         {localValues.map((value, index) => (
           <div key={index} className="flex items-center gap-4">
             {showChainControls && (
-              <div className="text-sm text-muted-foreground min-w-[60px]">
+              <div className="text-sm text-ditto-secondary min-w-[60px]">
                 Level {index + 1}
               </div>
             )}
@@ -220,9 +220,9 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
 
       {isLocked && (
         <div className="absolute inset-0 flex items-center justify-center rounded-lg cursor-pointer bg-black/5 backdrop-blur-[1px]">
-          <div className="flex items-center gap-2 bg-background/80 py-2 px-4 rounded-md">
-            <Zap className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm">Upgrade required</span>
+          <div className="flex items-center gap-2 glass-interactive-light py-2 px-4 rounded-md">
+            <Zap className="h-4 w-4 text-ditto-gradient" />
+            <span className="text-sm text-ditto-primary">Upgrade required</span>
           </div>
         </div>
       )}

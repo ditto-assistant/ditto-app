@@ -68,7 +68,7 @@ export default function FeedbackModal() {
 
   if (auth.error || token.error) {
     return (
-      <div className="bg-destructive/10 text-destructive p-3 rounded-md border border-destructive/20 text-sm">
+      <div className="glass-interactive text-ditto-primary p-3 rounded-md border border-red-500/30 text-sm">
         Authentication required
       </div>
     )
@@ -76,7 +76,7 @@ export default function FeedbackModal() {
 
   return (
     <Modal id="feedback" title="Send Feedback">
-      <form onSubmit={handleSubmit} className="px-4 py-2 flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="px-4 py-2 flex flex-col gap-6 text-ditto-primary">
         <div className="space-y-3">
           <label className="text-sm font-medium">Feedback Type</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -87,8 +87,8 @@ export default function FeedbackModal() {
               className={cn(
                 "h-12 relative overflow-hidden transition-all duration-200 active:scale-95 cursor-pointer",
                 selectedType === "bug"
-                  ? "bg-gradient-to-r from-red-950/70 to-red-900/50 border border-red-500/30 text-white"
-                  : "border border-border/50 hover:bg-background/80 hover:border-border/70"
+                  ? "glass-interactive-light border-ditto-glass-border-strong text-ditto-primary gradient-ring"
+                  : "glass-interactive-light text-ditto-secondary hover:text-ditto-primary"
               )}
             >
               <div className="flex items-center justify-center gap-2">
@@ -96,15 +96,13 @@ export default function FeedbackModal() {
                   className={cn(
                     "h-5 w-5 transition-colors duration-200",
                     selectedType === "bug"
-                      ? "text-red-400"
-                      : "text-muted-foreground group-hover:text-red-400/70"
+                      ? "text-ditto-gradient"
+                      : "text-ditto-secondary"
                   )}
                 />
                 <span>Report Bug</span>
               </div>
-              {selectedType === "bug" && (
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-red-400/5 pointer-events-none" />
-              )}
+
             </Button>
 
             <Button
@@ -114,8 +112,8 @@ export default function FeedbackModal() {
               className={cn(
                 "h-12 relative overflow-hidden transition-all duration-200 active:scale-95 cursor-pointer",
                 selectedType === "feature-request"
-                  ? "bg-gradient-to-r from-amber-950/70 to-amber-900/50 border border-amber-500/30 text-white"
-                  : "border border-border/50 hover:bg-background/80 hover:border-border/70"
+                  ? "glass-interactive-light border-ditto-glass-border-strong text-ditto-primary gradient-ring"
+                  : "glass-interactive-light text-ditto-secondary hover:text-ditto-primary"
               )}
             >
               <div className="flex items-center justify-center gap-2">
@@ -123,15 +121,13 @@ export default function FeedbackModal() {
                   className={cn(
                     "h-5 w-5 transition-colors duration-200",
                     selectedType === "feature-request"
-                      ? "text-amber-300"
-                      : "text-muted-foreground group-hover:text-amber-300/70"
+                      ? "text-ditto-gradient"
+                      : "text-ditto-secondary"
                   )}
                 />
                 <span>Suggest Idea</span>
               </div>
-              {selectedType === "feature-request" && (
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600/10 to-amber-400/5 pointer-events-none" />
-              )}
+
             </Button>
           </div>
         </div>
@@ -146,28 +142,29 @@ export default function FeedbackModal() {
             onChange={(e) => setFeedback(e.target.value)}
             placeholder="Please share your thoughts, suggestions, or report any issues..."
             required
-            className="min-h-[150px] bg-background/50 border-border/60 focus-visible:border-primary/50"
+            className="min-h-[150px] glass-interactive-light text-ditto-primary placeholder:text-ditto-secondary focus-visible:border-ditto-glass-border-strong"
           />
         </div>
 
         <Button
           type="submit"
+          variant="outline"
           disabled={isSubmitting || !feedback.trim()}
-          className="w-full bg-primary/90 hover:bg-primary text-primary-foreground h-11 transition-all duration-200 hover:shadow-[0_0_15px_rgba(29,78,216,0.2)] active:scale-[0.98] cursor-pointer"
+          className="w-full gradient-ring text-ditto-primary h-11 transition-all duration-200 gradient-shadow active:scale-[0.98] cursor-pointer"
         >
           {isSubmitting ? "Submitting..." : "Submit Feedback"}
         </Button>
 
-        <Separator className="bg-border/40" />
+        <Separator className="bg-ditto-glass-border" />
 
         <div className="flex flex-col items-center text-center space-y-3">
-          <p className="text-sm text-foreground/80">
+          <p className="text-sm text-ditto-secondary">
             Want to help us improve Ditto even more?
           </p>
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 bg-secondary/40 hover:bg-secondary/60 border-secondary/50 text-secondary-foreground transition-all duration-200 hover:shadow-[0_0_15px_rgba(148,163,184,0.2)] active:scale-95 cursor-pointer"
+            className="gap-2 glass-interactive-light text-ditto-secondary hover:text-ditto-primary transition-all duration-200 active:scale-95 cursor-pointer"
             asChild
           >
             <a
@@ -182,7 +179,7 @@ export default function FeedbackModal() {
         </div>
 
         <div className="mt-4">
-          <h3 className="text-sm font-medium mb-2 text-foreground/90">
+          <h3 className="text-sm font-medium mb-2 text-ditto-primary">
             Connect with us
           </h3>
           <SocialLinks />

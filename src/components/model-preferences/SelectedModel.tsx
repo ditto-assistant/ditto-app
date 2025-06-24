@@ -56,11 +56,11 @@ export function SelectedModel({ modelType }: SelectedModelProps) {
 
   if (!selectedModel) {
     return (
-      <div className="border-b p-4 bg-muted/5">
-        <h3 className="text-sm text-muted-foreground font-medium mb-1">
+      <div className="border-b border-ditto-glass-border p-4 glass-interactive">
+        <h3 className="text-sm text-ditto-secondary font-medium mb-1">
           Selected Model
         </h3>
-        <div className="text-lg font-semibold text-muted-foreground">
+        <div className="text-lg font-semibold text-ditto-secondary">
           No model selected
         </div>
       </div>
@@ -69,25 +69,25 @@ export function SelectedModel({ modelType }: SelectedModelProps) {
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="font-medium">{selectedModel.displayName}</div>
+      <div className="font-medium text-ditto-primary">{selectedModel.displayName}</div>
 
       <div className="flex items-center gap-1 mt-1">
         {/* Show specific badges based on model type */}
         {isImageModel && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs glass-interactive text-ditto-secondary border-ditto-glass-border">
             {(selectedModel as ImageModel).imageSize}
           </Badge>
         )}
 
         {!isImageModel && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs glass-interactive text-ditto-secondary border-ditto-glass-border">
             {selectedModel.modelFlavor}
           </Badge>
         )}
 
         {/* Always show provider badge */}
         {selectedModel.provider && (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs glass-interactive text-ditto-primary">
             {selectedModel.provider}
           </Badge>
         )}

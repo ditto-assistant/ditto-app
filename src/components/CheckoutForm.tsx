@@ -51,7 +51,7 @@ export function CheckoutForm({
         name="authorization"
         value={`Bearer ${token.data}`}
       />
-      <Button type="submit" variant="default" className="purchase-button">
+      <Button type="submit" variant="default" className="purchase-button gradient-ring text-ditto-primary gradient-shadow">
         Purchase Tokens
       </Button>
     </form>

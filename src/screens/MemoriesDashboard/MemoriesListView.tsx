@@ -34,22 +34,22 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
         return (
           <div
             key={`${memory.id}-${idx}`}
-            className={`flex flex-col gap-1 p-4 rounded-xl bg-muted/50 border border-border 
-              transition-transform hover:-translate-y-0.5 hover:shadow-lg ${
+            className={`flex flex-col gap-1 p-4 rounded-xl glass-card-light 
+              transition-transform hover:-translate-y-0.5 ${
                 memory.level && memory.level > 1
                   ? `ml-${Math.min((memory.level - 1) * 4, 16)}`
                   : ""
               } ${
                 memory.level === 1
-                  ? "border-primary/50 bg-primary/5"
+                  ? "border-ditto-glass-border-strong"
                   : memory.level === 2
-                    ? "border-secondary/50 bg-secondary/5"
-                    : "border-muted"
+                    ? "border-ditto-glass-border"
+                    : "border-ditto-glass-border"
               }`}
           >
             {memory.level && memory.level > 1 && (
-              <div className="flex items-center gap-1 mb-1 text-xs text-muted-foreground">
-                <span className="inline-block w-3 h-3 rounded-full bg-muted"></span>
+              <div className="flex items-center gap-1 mb-1 text-xs text-ditto-secondary">
+                <span className="inline-block w-3 h-3 rounded-full bg-ditto-glass-highlight"></span>
                 <span>Level {memory.level} connection</span>
               </div>
             )}

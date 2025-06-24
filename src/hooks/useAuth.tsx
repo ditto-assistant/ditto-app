@@ -86,6 +86,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     queryClient.removeQueries({ queryKey: ["authToken"] })
   }
 
+  // Don't render children until we have determined the auth state
+  if (query.isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="text-ditto-secondary">Loading...</div>
+    </div>
+  }
+
   return (
     <AuthContext.Provider
       value={{

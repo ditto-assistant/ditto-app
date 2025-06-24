@@ -1,0 +1,293 @@
+/* Ditto Brand Glassmorphism Effects */
+
+/* Base glassmorphism container */
+.glass-container {
+  background: var(--ditto-glass-primary);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+  transition: all 0.3s ease;
+}
+
+.glass-container:hover {
+  border-color: var(--ditto-glass-border-strong);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+  transform: translateY(-1px);
+}
+
+/* Header glassmorphism */
+.glass-header {
+  background: var(--ditto-glass-header);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+}
+
+/* Footer glassmorphism */
+.glass-footer {
+  background: var(--ditto-glass-footer);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+}
+
+/* Interactive glassmorphism elements */
+.glass-interactive {
+  background: var(--ditto-glass-primary);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.glass-interactive:hover {
+  background: var(--ditto-glass-highlight);
+  border-color: var(--ditto-glass-border-strong);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+  transform: translateY(-2px);
+}
+
+.glass-interactive:active {
+  transform: translateY(0);
+  box-shadow: var(--ditto-shadow-soft);
+}
+
+/* Lighter interactive glassmorphism for better contrast */
+.glass-interactive-light {
+  background: rgba(43, 32, 64, 0.8);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.glass-interactive-light:hover {
+  background: rgba(48, 37, 71, 0.85);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+  transform: translateY(-2px);
+}
+
+.glass-interactive-light:active {
+  transform: translateY(0);
+  box-shadow: var(--ditto-shadow-soft);
+}
+
+/* Card glassmorphism */
+.glass-card {
+  background: var(--ditto-glass-primary);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+  padding: 1.5rem;
+  margin: 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--ditto-glass-border-strong);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+}
+
+/* Lighter card glassmorphism for better contrast */
+.glass-card-light {
+  background: rgba(43, 32, 64, 0.85);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft);
+  padding: 1.5rem;
+  margin: 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+.glass-card-light:hover {
+  background: rgba(48, 37, 71, 0.9);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+}
+
+/* User message glassmorphism - neon magenta */
+.glass-card-user {
+  background: rgba(153, 102, 255, 0.4);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid rgba(153, 102, 255, 0.6);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft), 0 0 20px rgba(153, 102, 255, 0.4);
+  padding: 1.5rem;
+  margin: 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+.glass-card-user:hover {
+  border-color: rgba(153, 102, 255, 0.8);
+  box-shadow: var(--ditto-shadow-soft), 0 0 30px rgba(153, 102, 255, 0.6);
+}
+
+/* Force all text in message bubbles to be white */
+.glass-card *,
+.glass-card-user * {
+  color: #ffffff !important;
+}
+
+.glass-card p,
+.glass-card-user p,
+.glass-card span,
+.glass-card-user span,
+.glass-card div,
+.glass-card-user div,
+.glass-card h1,
+.glass-card-user h1,
+.glass-card h2,
+.glass-card-user h2,
+.glass-card h3,
+.glass-card-user h3,
+.glass-card h4,
+.glass-card-user h4,
+.glass-card h5,
+.glass-card-user h5,
+.glass-card h6,
+.glass-card-user h6,
+.glass-card li,
+.glass-card-user li,
+.glass-card code,
+.glass-card-user code,
+.glass-card pre,
+.glass-card-user pre {
+  color: #ffffff !important;
+}
+
+/* Modal glassmorphism */
+.glass-modal {
+  background: var(--ditto-glass-primary);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border-strong);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+  /* Ensure modals are always visible and on top */
+  position: relative;
+  z-index: 1000;
+  /* Add opacity for debugging - make sure modal is visible */
+  opacity: 1;
+}
+
+/* Enhanced modal visibility with proper glassmorphism */
+.glass-modal.feedback,
+.glass-modal.settings,
+.glass-modal.memories {
+  background: var(--ditto-glass-primary) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--ditto-glass-border-strong) !important;
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow) !important;
+}
+
+/* Text color utilities */
+.text-ditto-primary {
+  color: var(--ditto-text-primary);
+}
+
+.text-ditto-secondary {
+  color: var(--ditto-text-secondary);
+}
+
+.text-ditto-body {
+  color: var(--ditto-text-body);
+}
+
+.text-ditto-muted {
+  color: var(--ditto-text-muted);
+}
+
+.text-ditto-accent {
+  color: var(--ditto-text-accent);
+}
+
+/* Brand gradient text */
+.text-ditto-gradient {
+  background: var(--ditto-brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+/* Floating elements */
+.glass-floating {
+  background: var(--ditto-glass-primary);
+  backdrop-filter: var(--ditto-blur);
+  -webkit-backdrop-filter: var(--ditto-blur);
+  border: 1px solid var(--ditto-glass-border);
+  border-radius: var(--ditto-border-radius);
+  box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-floating::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ditto-glass-highlight),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.glass-floating:hover::before {
+  left: 100%;
+}
+
+/* Subtle animations */
+.ethereal-float {
+  animation: etherealFloat 6s ease-in-out infinite;
+}
+
+@keyframes etherealFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-5px) rotate(0.5deg);
+  }
+  66% {
+    transform: translateY(3px) rotate(-0.5deg);
+  }
+}
+
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: var(--ditto-shadow-soft);
+  }
+  50% {
+    box-shadow: var(--ditto-shadow-soft), var(--ditto-shadow-glow);
+  }
+} 

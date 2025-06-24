@@ -301,7 +301,7 @@ export default function Modal({
     <div
       ref={modalRef}
       className={cn(
-        "bg-background border shadow-lg flex flex-col rounded-lg overflow-hidden",
+        "glass-modal border shadow-lg flex flex-col rounded-lg overflow-hidden",
         isFullscreen ? "fullscreen" : "",
         id
       )}
@@ -330,7 +330,7 @@ export default function Modal({
     >
       {/* Modal Header */}
       <div
-        className="border-b flex items-center justify-between py-4 px-4 select-none"
+        className="border-b border-ditto-glass-border glass-header flex items-center justify-between py-4 px-4 select-none"
         onMouseDown={handleStartDrag}
         onTouchStart={handleStartDrag}
       >
@@ -339,8 +339,8 @@ export default function Modal({
           {icon && <span className="flex-shrink-0">{icon}</span>}
           <h2
             className={cn(
-              "text-lg font-medium truncate",
-              useGradientTitle && "gradient-title font-semibold"
+              "text-lg font-medium truncate text-ditto-primary",
+              useGradientTitle && "text-ditto-gradient font-semibold"
             )}
           >
             {title}
@@ -355,7 +355,7 @@ export default function Modal({
                 triggerHaptic(HapticPattern.Light)
                 setIsFullscreen((prev) => !prev)
               }}
-              className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted transition-colors"
+              className="text-ditto-secondary hover:text-ditto-primary p-2 rounded-md glass-interactive transition-colors"
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >
               {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -363,7 +363,7 @@ export default function Modal({
           )}
           <button
             onClick={closeModal}
-            className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted transition-colors"
+            className="text-ditto-secondary hover:text-ditto-primary p-2 rounded-md glass-interactive transition-colors"
             aria-label="Close"
           >
             <X size={18} />
@@ -380,7 +380,7 @@ export default function Modal({
         >
           <div className="overflow-x-auto scrollbar-thin">
             <TabsList
-              className="h-12 w-max min-w-full bg-transparent justify-start px-2 rounded-none border-b border-border flex-nowrap"
+              className="h-12 w-max min-w-full bg-transparent justify-start px-2 rounded-none border-b border-ditto-glass-border flex-nowrap"
               ref={tabsContainerRef}
             >
               {tabs.map((tab) => {
@@ -452,7 +452,7 @@ export default function Modal({
                         )}
                         <Button
                           variant="default"
-                          className="mt-4"
+                          className="mt-4 gradient-ring text-ditto-primary gradient-shadow"
                           onClick={() => createOpenHandler(id, "general")()}
                         >
                           Upgrade to {tierName}

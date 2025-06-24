@@ -133,13 +133,13 @@ export default function Settings() {
 
   // Create the combined general and subscription tab content
   const generalTabContent = (
-    <div className="p-4 flex flex-col gap-6 h-full">
+    <div className="p-4 flex flex-col gap-6 h-full text-ditto-primary">
       {/* Subscription Section */}
       <div className="flex-1">{subscriptionContent}</div>
 
       {/* Font Size Setting */}
-      <div className="border-t pt-4">
-        <h3 className="font-medium mb-2">Font Size</h3>
+      <div className="border-t border-ditto-glass-border pt-4">
+        <h3 className="font-medium mb-2 text-ditto-primary">Font Size</h3>
         <div className="flex gap-2">
           {["small", "medium", "large"].map((size) => (
             <button
@@ -147,8 +147,8 @@ export default function Settings() {
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
               className={`px-3 py-1.5 rounded-md text-sm ${
                 fontSize === size
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary hover:bg-secondary/80"
+                  ? "gradient-ring text-ditto-primary"
+                  : "glass-interactive text-ditto-secondary hover:text-ditto-primary"
               }`}
             >
               {size.charAt(0).toUpperCase() + size.slice(1)}
@@ -157,10 +157,10 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="border-t my-2"></div>
+      <div className="border-t border-ditto-glass-border my-2"></div>
 
       <footer className="mt-auto pt-4">
-        <div className="text-muted-foreground text-sm text-center">
+        <div className="text-ditto-muted text-sm text-center">
           Version: {packageJson.version}
         </div>
       </footer>
@@ -169,7 +169,7 @@ export default function Settings() {
 
   // Create the tab content for the danger zone
   const dangerTabContent = (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 text-ditto-primary">
       <div className="bg-destructive/10 p-4 rounded-md text-sm text-destructive">
         <p>
           Warning: Actions in this section can result in irreversible data loss.
