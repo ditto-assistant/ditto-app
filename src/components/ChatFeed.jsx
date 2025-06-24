@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, forwardRef } from "react"
 import "./ChatFeed.css"
-import { ChevronDown, MessageSquarePlus, Clock, History, Zap } from "lucide-react"
+import { ChevronDown, MessageSquarePlus, Clock } from "lucide-react"
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
 import { toast } from "sonner"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
@@ -267,14 +267,12 @@ const CustomScrollToBottom = ({
 
 const ChatFeed = forwardRef(({}, ref) => {
   const {
-    messages,
+    messages, // Now expects flat array of conversations with sessionID property
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
     refetch,
-    enableConversationLoading,
-    isConversationLoadingEnabled,
   } = useConversationHistory()
   const { showMemoryNetwork } = useMemoryNetwork()
   const { confirmMemoryDeletion } = useMemoryDeletion()
@@ -289,7 +287,6 @@ const ChatFeed = forwardRef(({}, ref) => {
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
   const [showSessionSelection, setShowSessionSelection] = useState(true)
-  const [showNewSessionOptions, setShowNewSessionOptions] = useState(false)
   const initialRenderRef = useRef(true)
   const fetchingRef = useRef(false)
   const detectScrollToTopRef = useRef(null)
@@ -379,7 +376,40 @@ const ChatFeed = forwardRef(({}, ref) => {
   }, [shouldFetchNext, fetchNextPage])
 
   const handleCopy = (message, type = "prompt") => {
-    const textToCopy = type === "prompt" ? message.prompt : message.response
+    let textToCopy
+
+    if (type === "prompt" || type === "input") {
+      // Handle v3 input content arrays
+      if (message.input && Array.isArray(message.input)) {
+        textToCopy = message.input
+          .filter((content) => content.type === "text")
+          .map((content) => content.text)
+          .join(" ")
+      } else {
+        // Fallback to legacy prompt field
+        textToCopy = message.prompt
+      }
+    } else if (type === "response" || type === "output") {
+      // Handle v3 output content arrays
+      if (message.output && Array.isArray(message.output)) {
+        textToCopy = message.output
+          .filter((content) => content.type === "text")
+          .map((content) => content.text)
+          .join(" ")
+      } else if (
+        message.streamingOutput &&
+        Array.isArray(message.streamingOutput)
+      ) {
+        textToCopy = message.streamingOutput
+          .filter((content) => content.type === "text")
+          .map((content) => content.text)
+          .join(" ")
+      } else {
+        // Fallback to legacy response field
+        textToCopy = message.response
+      }
+    }
+
     if (!textToCopy) {
       toast.error("No content to copy")
       return
@@ -423,45 +453,76 @@ const ChatFeed = forwardRef(({}, ref) => {
     }
   }
 
-  // Show session selection when conversation loading is not enabled
-  useEffect(() => {
-    const shouldShowSelection = 
-      !isConversationLoadingEnabled &&
-      !currentSessionId && 
-      !isLoadingSessions
+  // Function to get session background color based on session ID
+  const getSessionBackgroundColor = (sessionID) => {
+    if (!sessionID || sessionID === "default") return null
 
-    setShowSessionSelection(shouldShowSelection)
-  }, [isConversationLoadingEnabled, currentSessionId, isLoadingSessions])
-
-  // Track when user has an active session (they've made a choice)
-  useEffect(() => {
-    if (currentSessionId) {
-      enableConversationLoading()
+    // Hash the session ID to get a consistent color index
+    let hash = 0
+    for (let i = 0; i < sessionID.length; i++) {
+      const char = sessionID.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
     }
-  }, [currentSessionId, enableConversationLoading])
+
+    // Use modulo to get a color index between 1-8
+    const colorIndex = (Math.abs(hash) % 8) + 1
+    return `var(--session-bg-${colorIndex})`
+  }
+
+  // Helper function to convert content array to string for display
+  const contentArrayToText = (contentArray) => {
+    if (!contentArray || !Array.isArray(contentArray)) return ""
+
+    return contentArray
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return ""
+        }
+
+        if (item.type === "text") {
+          return typeof item.text === "string" ? item.text : ""
+        } else if (item.type === "image") {
+          return item.imageURL ? `![Image](${item.imageURL})` : "[Image]"
+        } else if (item.type === "tool_call") {
+          return `🛠️ **${item.toolName || "Tool"}**: ${item.toolCallID || "Running..."}`
+        } else if (item.type === "tool_result") {
+          const output = item.toolOutput || {}
+          const resultText =
+            typeof output === "object"
+              ? JSON.stringify(output, null, 2)
+              : String(output)
+          return `✅ **Tool Result**: ${resultText}`
+        }
+        return ""
+      })
+      .filter(Boolean)
+      .join("\n\n")
+      .trim()
+  }
+
+  // Helper function to extract images from content array
+  const extractImagesFromContent = (contentArray) => {
+    if (!contentArray || !Array.isArray(contentArray)) return []
+    return contentArray
+      .filter((content) => content.type === "image" && content.imageURL)
+      .map((content) => content.imageURL)
+  }
+
+  // Show session selection when there's no active session
+  useEffect(() => {
+    const shouldShowSelection = !currentSessionId && !isLoadingSessions
+    setShowSessionSelection(shouldShowSelection)
+  }, [currentSessionId, isLoadingSessions])
 
   const handleNewSession = () => {
     startNewSession()
     setShowSessionSelection(false)
-    setShowNewSessionOptions(true)
   }
 
   const handleResumeLatest = () => {
     resumeLatestSession()
-    enableConversationLoading()
     setShowSessionSelection(false)
-    setShowNewSessionOptions(false)
-  }
-
-  const handleLoadRecentMessages = () => {
-    // Stay in new session mode but load conversation history
-    enableConversationLoading()
-    setShowNewSessionOptions(false)
-  }
-
-  const handleStartFresh = () => {
-    // Start completely fresh - no session, no messages
-    setShowNewSessionOptions(false)
   }
 
   // Use the externally passed ref for scroll position detection
@@ -501,7 +562,7 @@ const ChatFeed = forwardRef(({}, ref) => {
                   How would you like to continue?
                 </p>
               </div>
-              
+
               <div className="space-y-3">
                 <Button
                   onClick={handleNewSession}
@@ -511,7 +572,7 @@ const ChatFeed = forwardRef(({}, ref) => {
                   <MessageSquarePlus className="mr-3 h-5 w-5" />
                   Start New Session
                 </Button>
-                
+
                 {hasRecentSessions && (
                   <Button
                     onClick={handleResumeLatest}
@@ -528,48 +589,12 @@ const ChatFeed = forwardRef(({}, ref) => {
         </div>
       )}
 
-      {/* New Session Options UI */}
-      {showNewSessionOptions && !isLoading && !isLoadingSessions && (
-        <div className="flex items-center justify-center min-h-[60vh] p-4">
-          <Card className="w-full max-w-md mx-auto">
-            <CardContent className="p-6 space-y-4">
-              <div className="text-center space-y-2">
-                <h2 className="text-xl font-semibold">New Session Started</h2>
-                <p className="text-muted-foreground">
-                  Would you like to see your recent conversations?
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                <Button
-                  onClick={handleStartFresh}
-                  className="w-full justify-start h-12"
-                  variant="default"
-                >
-                  <Zap className="mr-3 h-5 w-5" />
-                  Start Fresh
-                </Button>
-                
-                <Button
-                  onClick={handleLoadRecentMessages}
-                  className="w-full justify-start h-12"
-                  variant="outline"
-                >
-                  <History className="mr-3 h-5 w-5" />
-                  Load Recent Messages
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {(isLoading && isConversationLoadingEnabled) || isLoadingSessions ? (
+      {!showSessionSelection && (isLoading || isLoadingSessions) ? (
         <div className="empty-chat-message">
           <div className="loading-spinner"></div>
           <p>Loading conversation...</p>
         </div>
-      ) : !showSessionSelection && !showNewSessionOptions && messages && messages.length > 0 ? (
+      ) : !showSessionSelection && messages && messages.length > 0 ? (
         <CustomScrollToBottom
           className="messages-container"
           scrollViewClassName="messages-scroll-view"
@@ -583,33 +608,91 @@ const ChatFeed = forwardRef(({}, ref) => {
         >
           {messages
             .map((message, index) => {
-              const isUser =
-                message.prompt && !message.prompt.includes("SYSTEM:")
+              // Determine if message is from user
+              let isUser = false
+              let userContent = ""
+              let assistantContent = ""
+              let userImages = []
+              let assistantImages = []
+
+              // Handle v3 format with input/output arrays
+              if (message.input && Array.isArray(message.input)) {
+                userContent = contentArrayToText(message.input)
+                userImages = extractImagesFromContent(message.input)
+                isUser =
+                  userContent.length > 0 && !userContent.includes("SYSTEM:")
+              } else if (message.prompt) {
+                // Fallback to legacy format
+                userContent = message.prompt
+                isUser = userContent && !userContent.includes("SYSTEM:")
+                if (message.imageURL) {
+                  userImages = [message.imageURL]
+                }
+              }
+
+              // Handle assistant content
+              if (message.output && Array.isArray(message.output)) {
+                assistantContent = contentArrayToText(message.output)
+                assistantImages = extractImagesFromContent(message.output)
+              } else if (
+                message.streamingOutput &&
+                Array.isArray(message.streamingOutput)
+              ) {
+                assistantContent = contentArrayToText(message.streamingOutput)
+                assistantImages = extractImagesFromContent(
+                  message.streamingOutput
+                )
+              } else if (message.response) {
+                // Fallback to legacy format
+                assistantContent = message.response
+              }
+
+              // Handle legacy streaming response format
+              if (message.streamingResponse && !assistantContent) {
+                assistantContent = message.streamingResponse
+              }
+
               const isLast = index === messages.length - 1
-              
+
               // Check if this message starts a new session (different sessionID from previous message)
               const prevMessage = index > 0 ? messages[index - 1] : null
-              const isNewSession = prevMessage && message.sessionID && prevMessage.sessionID !== message.sessionID
+              const isNewSession =
+                prevMessage &&
+                message.sessionID &&
+                message.sessionID !== "default" &&
+                prevMessage.sessionID !== message.sessionID
+              const sessionBgColor = getSessionBackgroundColor(
+                message.sessionID
+              )
 
               return (
                 <div key={message.id || index}>
                   {/* Session divider for new sessions */}
                   {isNewSession && (
                     <div className="session-divider my-6">
-                      <div className="flex items-center justify-center">
-                        <div className="flex-grow h-px bg-border"></div>
-                        <div className="px-4 py-2 text-xs text-muted-foreground bg-background border border-border rounded-full">
-                          Session: {message.sessionID?.slice(0, 8)}...
+                      <div className="flex items-center justify-center relative">
+                        <div className="relative bg-background/80 backdrop-blur-sm px-4 py-2 text-xs font-medium text-muted-foreground rounded-full">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/60"></div>
+                            New Session
+                          </div>
                         </div>
-                        <div className="flex-grow h-px bg-border"></div>
                       </div>
                     </div>
                   )}
-                  
-                  <div className={`message-pair ${message.sessionID ? 'in-session' : 'no-session'}`}>
-                    {message.prompt && isUser && (
+
+                  <div
+                    className={`message-pair ${message.sessionID && message.sessionID !== "default" ? "in-session" : "no-session"}`}
+                    style={
+                      sessionBgColor ? { backgroundColor: sessionBgColor } : {}
+                    }
+                  >
+                    {userContent && isUser && (
                       <ChatMessage
-                        content={message.prompt}
+                        key={`${message.id}-user-${userContent.length}`}
+                        content={userContent}
+                        contentArray={message.input}
+                        images={userImages}
                         timestamp={
                           message.timestamp
                             ? new Date(message.timestamp).getTime()
@@ -619,16 +702,20 @@ const ChatFeed = forwardRef(({}, ref) => {
                         isLast={isLast}
                         isOptimistic={message.isOptimistic}
                         menuProps={{
-                          onCopy: () => handleCopy(message, "prompt"),
+                          onCopy: () => handleCopy(message, "input"),
                           onDelete: () => handleMessageDelete(message),
                           onShowMemories: () => handleShowMemories(message),
                         }}
                       />
                     )}
 
-                    {message.response && (
+                    {assistantContent && (
                       <ChatMessage
-                        content={message.response}
+                        key={`${message.id}-assistant-${assistantContent.length}`}
+                        content={assistantContent}
+                        contentArray={message.output || message.streamingOutput}
+                        images={assistantImages}
+                        subAgents={message.subAgents}
                         timestamp={
                           message.timestamp
                             ? new Date(message.timestamp).getTime()
@@ -638,7 +725,7 @@ const ChatFeed = forwardRef(({}, ref) => {
                         isLast={isLast}
                         isOptimistic={message.isOptimistic}
                         menuProps={{
-                          onCopy: () => handleCopy(message, "response"),
+                          onCopy: () => handleCopy(message, "output"),
                           onDelete: () => handleMessageDelete(message),
                           onShowMemories: () => handleShowMemories(message),
                         }}
@@ -650,7 +737,7 @@ const ChatFeed = forwardRef(({}, ref) => {
             })
             .reverse()}
         </CustomScrollToBottom>
-      ) : !showSessionSelection && !showNewSessionOptions ? (
+      ) : !showSessionSelection ? (
         <div className="empty-chat-message">
           <p>No messages yet. Start a conversation!</p>
         </div>

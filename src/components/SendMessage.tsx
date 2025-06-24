@@ -84,6 +84,11 @@ export default function SendMessage({
     addOptimisticMessage,
     updateOptimisticResponse,
     finalizeOptimisticMessage,
+    handleToolCallSSE,
+    handleToolResultSSE,
+    handleSubAgentStartSSE,
+    handleSubAgentToolCallSSE,
+    handleSubAgentCompleteSSE,
   } = useConversationHistory()
   const {
     message,
@@ -223,7 +228,7 @@ export default function SendMessage({
           input: content,
           deepSearchMemories: true, // TODO: Make this configurable from user preferences
           userLocalTime: new Date().toISOString(),
-          sessionID: currentSessionId || undefined,
+          sessionID: currentSessionId && currentSessionId !== 'new' ? currentSessionId : undefined,
         }
 
         // Only clear state after successful setup
@@ -265,17 +270,43 @@ export default function SendMessage({
 
         const toolCallsCallback = (toolCalls: unknown[]) => {
           console.log("🛠️ [SendMessage] Tool calls:", toolCalls)
-          // TODO: Display tool calls in the UI (like "Searching Google...")
+          // Handle tool calls in real-time via SSE
+          if (Array.isArray(toolCalls)) {
+            toolCalls.forEach((toolCall: unknown) => {
+              handleToolCallSSE(optimisticMessageId, toolCall)
+            })
+          }
         }
 
         const toolResultsCallback = (toolResults: unknown[]) => {
           console.log("✅ [SendMessage] Tool results:", toolResults)
-          // TODO: Display tool results in the UI
+          // Handle tool results in real-time via SSE
+          if (Array.isArray(toolResults)) {
+            toolResults.forEach((toolResult: unknown) => {
+              handleToolResultSSE(optimisticMessageId, toolResult)
+            })
+          }
         }
 
         const sessionCreatedCallback = (sessionID: string) => {
           console.log("✅ [SendMessage] New session created:", sessionID)
           setCurrentSessionId(sessionID)
+        }
+
+        // Sub-agent SSE callbacks
+        const subAgentStartCallback = (subAgentInfo: unknown) => {
+          console.log("🚀 [SendMessage] Sub-agent start:", subAgentInfo)
+          handleSubAgentStartSSE(optimisticMessageId, subAgentInfo)
+        }
+
+        const subAgentToolCallCallback = (toolCallInfo: unknown) => {
+          console.log("🛠️ [SendMessage] Sub-agent tool call:", toolCallInfo)
+          handleSubAgentToolCallSSE(optimisticMessageId, toolCallInfo)
+        }
+
+        const subAgentCompleteCallback = (completeInfo: unknown) => {
+          console.log("✅ [SendMessage] Sub-agent complete:", completeInfo)
+          handleSubAgentCompleteSSE(optimisticMessageId, completeInfo)
         }
 
         try {
@@ -288,7 +319,10 @@ export default function SendMessage({
             controller.signal,
             toolCallsCallback,
             toolResultsCallback,
-            sessionCreatedCallback
+            sessionCreatedCallback,
+            subAgentStartCallback,
+            subAgentToolCallCallback,
+            subAgentCompleteCallback
           )
           console.log("✅ [SendMessage] Chat completed successfully")
 
@@ -332,6 +366,11 @@ export default function SendMessage({
       addOptimisticMessage,
       updateOptimisticResponse,
       finalizeOptimisticMessage,
+      handleToolCallSSE,
+      handleToolResultSSE,
+      handleSubAgentStartSSE,
+      handleSubAgentToolCallSSE,
+      handleSubAgentCompleteSSE,
       currentSessionId,
       setCurrentSessionId,
       onStop,
@@ -447,6 +486,19 @@ export default function SendMessage({
 
   return (
     <div className="w-full z-[300] bg-background backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
+      {/* New Session Indicator */}
+      {(!currentSessionId || currentSessionId === 'new') && (
+        <div className="px-3 py-2 border-b border-border/50">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+            <span className="font-medium">New Session Mode</span>
+            <div className="text-xs bg-muted px-2 py-1 rounded-full">
+              Messages will start a new conversation
+            </div>
+          </div>
+        </div>
+      )}
+
       <form
         className="px-3 py-2 relative w-full"
         onSubmit={handleSubmit}
@@ -599,7 +651,7 @@ export default function SendMessage({
               {/* Center section with Ditto logo and session indicator */}
               <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                 {/* Session indicator button */}
-                {currentSessionId && (
+                {currentSessionId && currentSessionId !== 'new' && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button

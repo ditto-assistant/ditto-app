@@ -20,6 +20,7 @@ interface SessionContextType {
   resumeLatestSession: () => void
   setCurrentSessionId: (sessionId: string) => void
   hasRecentSessions: boolean
+  hasUserMadeChoice: boolean
 }
 
 const SessionContext = createContext<SessionContextType | null>(null)
@@ -54,11 +55,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     enabled: !!user?.uid && !!currentSessionId,
   })
 
-  const recentSessions = useMemo(() => latestSession ? [latestSession] : [], [latestSession])
+  const recentSessions = useMemo(
+    () => (latestSession ? [latestSession] : []),
+    [latestSession]
+  )
   const hasRecentSessions = !!latestSession && !latestSessionError
 
   const startNewSession = useCallback(() => {
-    setCurrentSessionId(null)
+    setCurrentSessionId('new')
   }, [])
 
   const resumeSession = useCallback((sessionId: string) => {

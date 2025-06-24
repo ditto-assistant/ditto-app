@@ -4,9 +4,17 @@ import { BASE_URL } from "@/firebaseConfig"
 
 // Zod schemas for type validation
 export const ContentV3Schema = z.object({
-  type: z.enum(["text", "image"]),
+  type: z.enum(["text", "image", "tool_call", "tool_result"]),
   text: z.string().optional(),
   imageURL: z.string().optional(),
+  // Tool call fields
+  toolCallID: z.string().optional(),
+  toolName: z.string().optional(),
+  toolArgs: z.record(z.any()).optional(),
+  // Tool result fields
+  toolResultID: z.string().optional(),
+  toolOutput: z.record(z.any()).optional(),
+  isError: z.boolean().optional(),
 })
 
 export const ChatV3RequestSchema = z.object({
@@ -43,6 +51,24 @@ export const UpdateSessionV3RequestSchema = z.object({
   metadata: z.record(z.any()).optional(),
 })
 
+export const MemoryV3Schema = z.object({
+  id: z.string(),
+  timestamp: z.coerce.date(),
+  sessionID: z.string().optional(),
+  input: z.array(ContentV3Schema).optional(),
+  output: z.array(ContentV3Schema).optional(),
+})
+
+export const ConversationSessionV3Schema = z.object({
+  sessionID: z.string(),
+  messages: z.array(MemoryV3Schema),
+})
+
+export const ConversationsV3ResponseSchema = z.object({
+  conversations: z.array(MemoryV3Schema),
+  nextCursor: z.string().optional(),
+})
+
 export const SSEEventSchema = z.object({
   type: z.string(),
   content: z.object({
@@ -63,6 +89,11 @@ export type ListSessionsV3Response = z.infer<
 export type UpdateSessionV3Request = z.infer<
   typeof UpdateSessionV3RequestSchema
 >
+export type MemoryV3 = z.infer<typeof MemoryV3Schema>
+export type ConversationSessionV3 = z.infer<typeof ConversationSessionV3Schema>
+export type ConversationsV3Response = z.infer<
+  typeof ConversationsV3ResponseSchema
+>
 export type SSEEvent = z.infer<typeof SSEEventSchema>
 
 export type SSEEventHandler = (event: SSEEvent) => void
@@ -71,6 +102,9 @@ export type SSEErrorHandler = (error: string) => void
 export type SSEToolCallHandler = (toolCalls: unknown[]) => void
 export type SSEToolResultHandler = (toolResults: unknown[]) => void
 export type SSESessionCreatedHandler = (sessionID: string) => void
+export type SSESubAgentStartHandler = (subAgentInfo: unknown) => void
+export type SSESubAgentToolCallHandler = (toolCallInfo: unknown) => void
+export type SSESubAgentCompleteHandler = (completeInfo: unknown) => void
 
 /**
  * Start a chat conversation using the V3 API with SSE streaming
@@ -84,7 +118,10 @@ export async function chatV3(
   signal?: AbortSignal,
   onToolCalls?: SSEToolCallHandler,
   onToolResults?: SSEToolResultHandler,
-  onSessionCreated?: SSESessionCreatedHandler
+  onSessionCreated?: SSESessionCreatedHandler,
+  onSubAgentStart?: SSESubAgentStartHandler,
+  onSubAgentToolCall?: SSESubAgentToolCallHandler,
+  onSubAgentComplete?: SSESubAgentCompleteHandler
 ): Promise<void> {
   // Validate request with Zod
   const validatedRequest = ChatV3RequestSchema.parse(request)
@@ -172,6 +209,21 @@ export async function chatV3(
                 case "tool.results":
                   if (onToolResults && Array.isArray(event.content.data)) {
                     onToolResults(event.content.data)
+                  }
+                  break
+                case "sub_agent.start":
+                  if (onSubAgentStart && event.content.data) {
+                    onSubAgentStart(event.content.data)
+                  }
+                  break
+                case "sub_agent.tool_call":
+                  if (onSubAgentToolCall && event.content.data) {
+                    onSubAgentToolCall(event.content.data)
+                  }
+                  break
+                case "sub_agent.complete":
+                  if (onSubAgentComplete && event.content.data) {
+                    onSubAgentComplete(event.content.data)
                   }
                   break
                 default:
@@ -325,4 +377,42 @@ export async function deleteSessionV3(
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
+}
+
+/**
+ * Get conversations grouped by sessionID
+ */
+export async function getConversationsV3(
+  userID: string,
+  options: {
+    limit?: number
+    cursor?: string
+  } = {}
+): Promise<ConversationsV3Response> {
+  const user = auth.currentUser
+  if (!user) {
+    throw new Error("User not authenticated")
+  }
+
+  const token = await user.getIdToken()
+
+  const params = new URLSearchParams()
+  if (options.limit) params.append("limit", options.limit.toString())
+  if (options.cursor) params.append("cursor", options.cursor)
+
+  const response = await fetch(
+    `${BASE_URL}/api/v3/users/${userID}/conversations?${params}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+
+  const data = await response.json()
+  return ConversationsV3ResponseSchema.parse(data)
 }

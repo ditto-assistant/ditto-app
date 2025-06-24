@@ -10,16 +10,18 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite-plugin-pwa/client"]
+    "types": ["vite-env", "vite-plugin-pwa/client"]
   },
   "include": [
     "src/**/*.ts",

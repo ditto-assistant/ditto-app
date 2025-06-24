@@ -25,7 +25,10 @@ const MarkdownRenderer = ({
   const { theme } = useTheme()
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
-  if (!content) return null
+  // Ensure content is always a string to prevent react-markdown errors
+  const safeContent =
+    typeof content === "string" ? content : String(content || "")
+  if (!safeContent) return null
 
   const handleCopy = (text: string) => {
     triggerLightHaptic()
@@ -169,7 +172,7 @@ const MarkdownRenderer = ({
           },
         }}
       >
-        {content}
+        {safeContent}
       </ReactMarkdown>
     </div>
   )

@@ -163,6 +163,16 @@
   --chart-4: #f72585;
   --chart-5: #4cc9f0;
 
+  /* Session background colors - light mode */
+  --session-bg-1: rgba(204, 228, 255, 0.08); /* Very subtle blue */
+  --session-bg-2: rgba(255, 245, 204, 0.08); /* Very subtle yellow */
+  --session-bg-3: rgba(204, 255, 204, 0.08); /* Very subtle green */
+  --session-bg-4: rgba(255, 225, 245, 0.08); /* Very subtle pink */
+  --session-bg-5: rgba(229, 204, 255, 0.08); /* Very subtle purple */
+  --session-bg-6: rgba(255, 229, 204, 0.08); /* Very subtle orange */
+  --session-bg-7: rgba(204, 255, 255, 0.08); /* Very subtle cyan */
+  --session-bg-8: rgba(245, 245, 245, 0.08); /* Very subtle gray */
+
   /* Token UI colors - light mode */
   --token-gold: #ffc107;
   --token-gold-glow: rgba(255, 193, 7, 0.3);
@@ -298,6 +308,16 @@
   --chart-3: #f472b6;
   --chart-4: #fb7185;
   --chart-5: #60a5fa;
+
+  /* Session background colors - dark mode */
+  --session-bg-1: rgba(54, 132, 201, 0.06); /* Extremely subtle blue */
+  --session-bg-2: rgba(251, 191, 36, 0.06); /* Extremely subtle yellow */
+  --session-bg-3: rgba(74, 222, 128, 0.06); /* Extremely subtle green */
+  --session-bg-4: rgba(244, 114, 182, 0.06); /* Extremely subtle pink */
+  --session-bg-5: rgba(167, 139, 250, 0.06); /* Extremely subtle purple */
+  --session-bg-6: rgba(251, 146, 60, 0.06); /* Extremely subtle orange */
+  --session-bg-7: rgba(96, 165, 250, 0.06); /* Extremely subtle cyan */
+  --session-bg-8: rgba(156, 163, 175, 0.06); /* Extremely subtle gray */
 
   /* Token UI colors - dark mode */
   --token-gold: #ffc107;

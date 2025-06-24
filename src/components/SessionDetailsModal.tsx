@@ -89,9 +89,7 @@ export default function SessionDetailsModal({
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   <Hash className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">
-                    {currentSession.title}
-                  </span>
+                  <span className="font-medium">{currentSession.title}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />

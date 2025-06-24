@@ -1,11 +1,24 @@
-import React from "react"
+import React, { useState } from "react"
 import MarkdownRenderer from "./MarkdownRenderer"
 import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserAvatar } from "@/hooks/useUserAvatar"
-import { Copy, Brain, Trash } from "lucide-react"
+import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
+import {
+  Copy,
+  Brain,
+  Trash,
+  ChevronDown,
+  ChevronRight,
+  Search,
+  Globe,
+  Link,
+  Palette,
+  Loader2,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useFontSize } from "@/hooks/useFontSize"
+import { SubAgentDisplay } from "@/hooks/useConversationHistory"
 
 // UI component imports
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -52,6 +65,9 @@ interface ChatMessageProps {
   isUser: boolean
   isLast?: boolean
   isOptimistic?: boolean
+  contentArray?: Array<{ type: string; text?: string; imageURL?: string }> // New v3 content array
+  images?: string[] // Array of image URLs
+  subAgents?: SubAgentDisplay[] // Sub-agent sections for real-time streaming
   menuProps: {
     onCopy: () => void
     onDelete: () => void
@@ -65,13 +81,22 @@ export default function ChatMessage({
   isUser,
   isLast = false,
   isOptimistic = false,
+  contentArray,
+  images = [],
+  subAgents = [],
   menuProps,
 }: ChatMessageProps) {
   const { user } = useAuth()
   const userAvatar = useUserAvatar(user?.photoURL)
   const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
   const { fontSize } = useFontSize()
+  const { handleImageClick } = useImageViewerHandler()
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
+
+  // State for sub-agent collapse management
+  const [collapsedSubAgents, setCollapsedSubAgents] = useState<Set<string>>(
+    new Set()
+  )
 
   const formatTimestamp = (timestamp: number | Date) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
@@ -97,6 +122,65 @@ export default function ChatMessage({
         date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       )
     }
+  }
+
+  // Helper functions for sub-agent UI
+  const getSubAgentIcon = (agentType: "research" | "art") => {
+    switch (agentType) {
+      case "research":
+        return <Search className="h-4 w-4" />
+      case "art":
+        return <Palette className="h-4 w-4" />
+      default:
+        return <Search className="h-4 w-4" />
+    }
+  }
+
+  const getSubAgentColor = (agentType: "research" | "art") => {
+    switch (agentType) {
+      case "research":
+        return "#9C27B0" // Purple for research
+      case "art":
+        return "#4CAF50" // Green for art
+      default:
+        return "#9C27B0"
+    }
+  }
+
+  const getToolIcon = (toolName: string) => {
+    switch (toolName) {
+      case "search_web":
+        return <Globe className="h-3 w-3" />
+      case "search_memories":
+        return <Brain className="h-3 w-3" />
+      case "read_link":
+        return <Link className="h-3 w-3" />
+      case "generate_image":
+        return <Palette className="h-3 w-3" />
+      case "generate_openscad":
+        return <Search className="h-3 w-3" />
+      case "generate_html":
+        return <Search className="h-3 w-3" />
+      default:
+        return <Search className="h-3 w-3" />
+    }
+  }
+
+  const toggleSubAgentCollapse = (subAgentId: string) => {
+    setCollapsedSubAgents((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(subAgentId)) {
+        newSet.delete(subAgentId)
+      } else {
+        newSet.add(subAgentId)
+      }
+      return newSet
+    })
+  }
+
+  const isSubAgentCollapsed = (subAgent: SubAgentDisplay) => {
+    // Use local state if available, otherwise use the subAgent's isCollapsed property
+    return collapsedSubAgents.has(subAgent.id) || subAgent.isCollapsed
   }
 
   const toolType = isUser ? null : detectToolType(content)
@@ -155,16 +239,263 @@ export default function ChatMessage({
                 </div>
               </div>
             ) : (
-              // Message content with markdown rendering
-              <div
-                className={cn(
-                  "prose dark:prose-invert max-w-none",
-                  fontSize === "small" && "text-sm",
-                  fontSize === "medium" && "text-base",
-                  fontSize === "large" && "text-lg"
+              <div>
+                {/* Images from content array or legacy images prop */}
+                {(images.length > 0 ||
+                  (contentArray &&
+                    contentArray.some((c) => c.type === "image"))) && (
+                  <div className="mb-3 space-y-2">
+                    {/* Render images from contentArray */}
+                    {contentArray
+                      ?.filter((c) => c.type === "image" && c.imageURL)
+                      .map((imageContent, idx) => (
+                        <img
+                          key={`content-${idx}`}
+                          src={imageContent.imageURL}
+                          alt="Attached image"
+                          className="max-w-full h-auto rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                          loading="lazy"
+                          onClick={() =>
+                            handleImageClick(imageContent.imageURL!)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault()
+                              handleImageClick(imageContent.imageURL!)
+                            }
+                          }}
+                          tabIndex={0}
+                          role="button"
+                          aria-label="Click to view image in full screen"
+                        />
+                      ))}
+                    {/* Render images from legacy images prop */}
+                    {images.map((imageUrl, idx) => (
+                      <img
+                        key={`legacy-${idx}`}
+                        src={imageUrl}
+                        alt="Attached image"
+                        className="max-w-full h-auto rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                        loading="lazy"
+                        onClick={() => handleImageClick(imageUrl)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            handleImageClick(imageUrl)
+                          }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-label="Click to view image in full screen"
+                      />
+                    ))}
+                  </div>
                 )}
-              >
-                <MarkdownRenderer content={content} />
+
+                {/* Legacy and modern tool calls from content array */}
+                {!isUser && contentArray && (
+                  <div className="mb-3 space-y-2">
+                    {contentArray
+                      .filter((c) => c.type === "tool_call")
+                      .map((toolCallContent, idx) => {
+                        // Find corresponding tool result
+                        const toolResult = contentArray.find(
+                          (c) =>
+                            c.type === "tool_result" &&
+                            c.toolResultID === toolCallContent.toolCallID + "_result"
+                        )
+
+                        return (
+                          <Card
+                            key={`tool-${idx}`}
+                            className="border border-blue-200 bg-blue-50/50"
+                          >
+                            <CardContent className="p-3">
+                              {/* Tool call header */}
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="p-1 rounded bg-blue-500 text-white">
+                                  {getToolIcon(toolCallContent.toolName || "")}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-sm">
+                                    {toolCallContent.toolName}
+                                  </span>
+                                  {toolCallContent.toolArgs?.task && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {toolCallContent.toolArgs.task}
+                                    </span>
+                                  )}
+                                  {toolCallContent.toolArgs?.legacy_type && (
+                                    <span className="text-xs bg-orange-100 text-orange-700 px-1 rounded">
+                                      Legacy: {toolCallContent.toolArgs.legacy_type}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Tool result */}
+                              {toolResult && (
+                                <div className="mt-2 p-2 bg-muted/30 rounded text-xs">
+                                  <div className="font-medium mb-1">Result:</div>
+                                  <div className="text-muted-foreground">
+                                    {toolResult.toolOutput?.type === "image" &&
+                                    toolResult.toolOutput?.image_url ? (
+                                      <img
+                                        src={toolResult.toolOutput.image_url}
+                                        alt="Generated content"
+                                        className="max-w-full h-auto rounded border"
+                                        onClick={() =>
+                                          handleImageClick(
+                                            toolResult.toolOutput.image_url
+                                          )
+                                        }
+                                      />
+                                    ) : (
+                                      <span>
+                                        {toolResult.toolOutput?.content ||
+                                          "Tool executed successfully"}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                  </div>
+                )}
+
+                {/* Sub-agent sections for real-time updates */}
+                {!isUser && subAgents && subAgents.length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {subAgents.map((subAgent) => {
+                      const collapsed = isSubAgentCollapsed(subAgent)
+                      const agentColor = getSubAgentColor(subAgent.agentType)
+
+                      return (
+                        <Card
+                          key={subAgent.id}
+                          className="border border-opacity-50"
+                          style={{ borderColor: agentColor }}
+                        >
+                          <CardContent className="p-2">
+                            {/* Sub-agent header */}
+                            <div
+                              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 rounded p-1 transition-colors"
+                              onClick={() =>
+                                toggleSubAgentCollapse(subAgent.id)
+                              }
+                            >
+                              <div className="flex items-center space-x-2">
+                                <div
+                                  className="p-1 rounded text-white"
+                                  style={{ backgroundColor: agentColor }}
+                                >
+                                  {getSubAgentIcon(subAgent.agentType)}
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-medium text-sm capitalize">
+                                      {subAgent.agentType} Agent
+                                    </span>
+                                    {subAgent.status === "running" && (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                    {subAgent.query}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                {subAgent.toolCalls.length > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {subAgent.toolCalls.length} tools
+                                  </span>
+                                )}
+                                {collapsed ? (
+                                  <ChevronRight className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Sub-agent content (collapsible) */}
+                            {!collapsed && (
+                              <div className="mt-2 pl-7 space-y-1">
+                                {/* Tool calls list */}
+                                {subAgent.toolCalls.map((toolCall, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center space-x-2 text-xs text-muted-foreground"
+                                  >
+                                    {getToolIcon(toolCall.tool)}
+                                    <span className="font-medium">
+                                      {toolCall.tool}
+                                    </span>
+                                    {toolCall.query && (
+                                      <span className="truncate max-w-[150px]">
+                                        &quot;{toolCall.query}&quot;
+                                      </span>
+                                    )}
+                                    {toolCall.url && (
+                                      <span className="truncate max-w-[150px]">
+                                        {toolCall.url}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+
+                                {/* Summary (if completed) */}
+                                {subAgent.status === "completed" &&
+                                  subAgent.summary && (
+                                    <div className="mt-2 p-2 bg-muted/30 rounded text-xs">
+                                      <div className="font-medium mb-1">
+                                        Summary:
+                                      </div>
+                                      <div className="text-muted-foreground">
+                                        {subAgent.summary}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                {/* Status indicator */}
+                                {subAgent.status === "running" && (
+                                  <div className="text-xs text-muted-foreground italic">
+                                    Working...
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Message content with markdown rendering */}
+                {content && (
+                  <div
+                    className={cn(
+                      "prose dark:prose-invert max-w-none",
+                      fontSize === "small" && "text-sm",
+                      fontSize === "medium" && "text-base",
+                      fontSize === "large" && "text-lg"
+                    )}
+                  >
+                    <MarkdownRenderer
+                      key={`markdown-${content?.length || 0}`}
+                      content={
+                        typeof content === "string"
+                          ? content
+                          : String(content || "")
+                      }
+                    />
+                  </div>
+                )}
               </div>
             )}
             {/* Timestamp display */}

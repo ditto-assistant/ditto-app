@@ -6,6 +6,7 @@ import CameraModal from "@/components/CameraModal"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
 import { useBalance } from "@/hooks/useBalance"
+import { useSessionManager } from "@/hooks/useSessionManager"
 import { ModalId, useModal } from "@/hooks/useModal"
 import { useTOSCheck } from "@/hooks/useTOSCheck"
 import useWhatsNew from "@/hooks/useWhatsNew"
@@ -14,6 +15,7 @@ import { getUpdateState } from "@/utils/updateService"
 export default function HomeScreen() {
   const balance = useBalance()
   const { createOpenHandler } = useModal()
+  const { currentSessionId } = useSessionManager()
   const [searchParams] = useSearchParams()
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
@@ -91,14 +93,17 @@ export default function HomeScreen() {
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="flex-1 flex flex-col overflow-hidden pb-0">
           <ChatFeed ref={appBodyRef} />
-          <SendMessage
-            onCameraOpen={handleCameraOpen}
-            capturedImage={capturedImage}
-            onClearCapturedImage={() => setCapturedImage(null)}
-            onStop={() => {
-              balance.refetch()
-            }}
-          />
+          {/* Only show SendMessage after user has chosen session mode */}
+          {currentSessionId && (
+            <SendMessage
+              onCameraOpen={handleCameraOpen}
+              capturedImage={capturedImage}
+              onClearCapturedImage={() => setCapturedImage(null)}
+              onStop={() => {
+                balance.refetch()
+              }}
+            />
+          )}
         </div>
       </Suspense>
 

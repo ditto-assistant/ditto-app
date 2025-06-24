@@ -137,11 +137,12 @@
 
 /* Session-specific message styling */
 .message-pair.in-session {
-  background: rgba(99, 102, 241, 0.05);
-  border-left: 2px solid rgba(99, 102, 241, 0.3);
-  margin-left: 8px;
-  padding-left: 16px;
-  border-radius: 0 8px 8px 0;
+  /* Use CSS variable for session background color */
+  /* background-color is set inline via style prop */
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  position: relative;
 }
 
 .message-pair.no-session {
@@ -150,7 +151,7 @@
 
 /* Session divider styling */
 .session-divider {
-  margin: 24px 0;
+  margin: 16px 0;
   position: relative;
 }
 
