@@ -27,6 +27,7 @@ const getPGVectorAPIURL = () => {
 }
 
 export const BASE_URL = getBaseURL(MODE)
+const PG_VECTOR_API_URL = getPGVectorAPIURL()
 
 export const routes = {
   // v1 API
@@ -57,22 +58,22 @@ export const routes = {
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
   promptV2: BASE_URL + "/api/v2/prompt",
-  pgVectorAPIURL: getPGVectorAPIURL(),
+  pgVectorAPIURL: PG_VECTOR_API_URL,
   // Knowledge Graph Endpoints
-  kgSubjectsSearch: getPGVectorAPIURL() + "/kg/subjects/search",
-  kgPairsSearch: getPGVectorAPIURL() + "/kg/pairs/search",
-  kgSubjectPairs: getPGVectorAPIURL() + "/kg/subjects/pairs",
-  kgSubjectPairsRecent: getPGVectorAPIURL() + "/kg/subjects/pairs/recent",
-  kgTopSubjects: getPGVectorAPIURL() + "/kg/subjects/top",
+  kgSubjectsSearch: PG_VECTOR_API_URL + "/kg/subjects/search",
+  kgPairsSearch: PG_VECTOR_API_URL + "/kg/pairs/search",
+  kgSubjectPairs: PG_VECTOR_API_URL + "/kg/subjects/pairs",
+  kgSubjectPairsRecent: PG_VECTOR_API_URL + "/kg/subjects/pairs/recent",
+  kgTopSubjects: PG_VECTOR_API_URL + "/kg/subjects/top",
   // Memory Management Endpoints
   kgDeleteMemoryPair: (pairId: string) =>
-    getPGVectorAPIURL() + `/memory/pairs/${pairId}/delete`,
+    PG_VECTOR_API_URL + `/memory/pairs/${pairId}/delete`,
   kgRenameSubject: (subjectId: string) =>
-    getPGVectorAPIURL() + `/kg/subjects/${subjectId}/rename`,
+    PG_VECTOR_API_URL + `/kg/subjects/${subjectId}/rename`,
   // Sync Endpoints
-  kgSyncUser: getPGVectorAPIURL() + "/sync-user",
-  syncStatus: getPGVectorAPIURL() + "/sync-status",
-  pairSubjects: getPGVectorAPIURL() + "/pairs/subjects",
+  kgSyncUser: PG_VECTOR_API_URL + "/sync-user",
+  syncStatus: PG_VECTOR_API_URL + "/sync-status",
+  pairSubjects: PG_VECTOR_API_URL + "/pairs/subjects",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
