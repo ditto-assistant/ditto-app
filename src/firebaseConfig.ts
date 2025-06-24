@@ -2,7 +2,7 @@
 const MODE = import.meta.env.MODE
 // const MODE = "staging"
 
-function getBaseURL(dittoEnv) {
+function getBaseURL(dittoEnv: string) {
   switch (dittoEnv) {
     case "development":
       return "http://localhost:3400"
@@ -37,16 +37,12 @@ export const routes = {
   searchExamples: BASE_URL + "/v1/search-examples",
   createPrompt: BASE_URL + "/v1/create-prompt",
   saveResponse: BASE_URL + "/v1/save-response",
-  /**
-   * Generates the URL for retrieving the user's balance.
-   *
-   * @param {string} userID - The unique identifier of the user.
-   * @param {string | null} email - The email of the user.
-   * @param {string} version - The version of the app.
-   * @param {string} deviceId - The device ID.
-   * @returns {string} The complete URL for the balance endpoint.
-   */
-  balance: (userID, email, version, deviceID) => {
+  balance: (
+    userID: string,
+    email: string,
+    version: string,
+    deviceID: string
+  ) => {
     const url = new URL(`${BASE_URL}/v1/balance`)
     url.searchParams.append("userID", userID)
     url.searchParams.append("email", email ?? "")
@@ -69,9 +65,9 @@ export const routes = {
   kgSubjectPairsRecent: getPGVectorAPIURL() + "/kg/subjects/pairs/recent",
   kgTopSubjects: getPGVectorAPIURL() + "/kg/subjects/top",
   // Memory Management Endpoints
-  kgDeleteMemoryPair: (pairId) =>
+  kgDeleteMemoryPair: (pairId: string) =>
     getPGVectorAPIURL() + `/memory/pairs/${pairId}/delete`,
-  kgRenameSubject: (subjectId) =>
+  kgRenameSubject: (subjectId: string) =>
     getPGVectorAPIURL() + `/kg/subjects/${subjectId}/rename`,
   // Sync Endpoints
   kgSyncUser: getPGVectorAPIURL() + "/sync-user",

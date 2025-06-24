@@ -68,7 +68,8 @@
     "shadcn": "^2.6.0",
     "tailwindcss": "^4.1.8",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-env": "^1.0.0"
   },
   "scripts": {
     "start": "vite",
