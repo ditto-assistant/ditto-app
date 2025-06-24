@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { routes } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { routes } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 import { Result } from "@/types/common"
 
 // Response schemas

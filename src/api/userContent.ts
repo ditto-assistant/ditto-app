@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { getToken } from "./auth"
-import { BASE_URL, routes } from "../firebaseConfig"
+import { getToken } from "@/api/auth"
+import { BASE_URL, routes } from "@/firebaseConfig"
 
 // Response schemas
 export const UploadImageResponseSchema = z.string()

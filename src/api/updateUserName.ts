@@ -1,8 +1,8 @@
 import { z } from "zod"
 import { Result } from "@/types/common"
-import { BASE_URL } from "../firebaseConfig"
-import { getToken } from "./auth"
-import { User, UserSchema } from "./getUser"
+import { BASE_URL } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
+import { User, UserSchema } from "@/api/getUser"
 
 // Define the request schema for updating user name
 export const UpdateUserNameRequestSchema = z.object({

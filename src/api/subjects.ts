@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { Result } from "@/types/common"
-import { routes } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { routes } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 
 // Response schemas
 export const SubjectWithCountSchema = z.object({

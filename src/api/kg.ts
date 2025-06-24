@@ -1,22 +1,19 @@
 import { z } from "zod"
-import { routes } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { routes } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 import {
   PairSearchResultSchema,
   Result,
   SubjectSearchResultSchema,
   SubjectSchema,
-} from "@/types/common"
-import type {
   Subject,
   SubjectSearchResult,
   PairSearchResult,
 } from "@/types/common"
 
-// Response schemas (these would ideally be defined in @/types/common but we'll reference them)
 export const RenameSubjectResponseSchema = z.object({
   success: z.boolean(),
-  subject: z.any(), // Should be Subject type from common
+  subject: SubjectSchema,
   message: z.string(),
 })
 export type RenameSubjectResponse = z.infer<typeof RenameSubjectResponseSchema>

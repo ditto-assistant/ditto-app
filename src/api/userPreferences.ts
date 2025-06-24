@@ -1,5 +1,5 @@
-import { BASE_URL } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { BASE_URL } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 import { PreferredModels, UserSchema, User } from "./getUser"
 import { ToolPreferences, MemoryPreferences } from "@/types/llm"
 

@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { Result } from "@/types/common"
-import { BASE_URL } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { BASE_URL } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 
 // Define the request schema for creating a user
 export const CreateUserRequestSchema = z.object({

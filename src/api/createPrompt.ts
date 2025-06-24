@@ -1,6 +1,6 @@
 import { Result } from "@/types/common"
-import { routes } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { routes } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 import { getDeviceID } from "@/utils/deviceId"
 
 export interface CreatePromptRequest {
