@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef, useCallback, useReducer } from "react"
 import { List, Network, Info, X as LucideX, Edit2 } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
@@ -73,41 +73,229 @@ const flattenMemoriesForList = (
   return flatList
 }
 
+// Reducer state interface
+interface DashboardState {
+  // Memory state
+  memories: Memory[]
+  loading: boolean
+  error: string | null
+  lastSearchedTerm: string
+  
+  // UI state
+  activeView: "list" | "network"
+  subjectsCollapsed: boolean
+  
+  // Subject state
+  subjects: Subject[]
+  subjectsLoading: boolean
+  subjectsError: string | null
+  selectedSubject: Subject | null
+  subjectsOffset: number
+  hasMoreSubjects: boolean
+  showMoreLoading: boolean
+  isSubjectSearchMode: boolean
+  lastSubjectSearch: string
+  
+  // Pairs state
+  pairs: Pair[]
+  pairsLoading: boolean
+  pairsError: string | null
+  pairsOffset: number
+  hasMorePairs: boolean
+  isLoadingMorePairs: boolean
+  
+  // Subject editing state
+  editingSelectedSubject: boolean
+  editingText: string
+  savingEdit: boolean
+}
+
+// Reducer action types
+type DashboardAction =
+  | { type: "SET_MEMORIES"; payload: Memory[] }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_LAST_SEARCHED_TERM"; payload: string }
+  | { type: "SET_ACTIVE_VIEW"; payload: "list" | "network" }
+  | { type: "SET_SUBJECTS_COLLAPSED"; payload: boolean }
+  | { type: "SET_SUBJECTS"; payload: Subject[] }
+  | { type: "SET_SUBJECTS_LOADING"; payload: boolean }
+  | { type: "SET_SUBJECTS_ERROR"; payload: string | null }
+  | { type: "SET_SELECTED_SUBJECT"; payload: Subject | null }
+  | { type: "SET_SUBJECTS_OFFSET"; payload: number }
+  | { type: "SET_HAS_MORE_SUBJECTS"; payload: boolean }
+  | { type: "SET_SHOW_MORE_LOADING"; payload: boolean }
+  | { type: "SET_IS_SUBJECT_SEARCH_MODE"; payload: boolean }
+  | { type: "SET_LAST_SUBJECT_SEARCH"; payload: string }
+  | { type: "SET_PAIRS"; payload: Pair[] }
+  | { type: "SET_PAIRS_LOADING"; payload: boolean }
+  | { type: "SET_PAIRS_ERROR"; payload: string | null }
+  | { type: "SET_PAIRS_OFFSET"; payload: number }
+  | { type: "SET_HAS_MORE_PAIRS"; payload: boolean }
+  | { type: "SET_IS_LOADING_MORE_PAIRS"; payload: boolean }
+  | { type: "SET_EDITING_SELECTED_SUBJECT"; payload: boolean }
+  | { type: "SET_EDITING_TEXT"; payload: string }
+  | { type: "SET_SAVING_EDIT"; payload: boolean }
+  | { type: "UPDATE_SUBJECT"; payload: Subject }
+  | { type: "APPEND_SUBJECTS"; payload: Subject[] }
+  | { type: "APPEND_PAIRS"; payload: Pair[] }
+  | { type: "RESET_PAIRS" }
+  | { type: "RESET_SUBJECTS_TO_TOP" }
+
+// Initial state
+const initialState: DashboardState = {
+  memories: [],
+  loading: false,
+  error: null,
+  lastSearchedTerm: "",
+  activeView: "list",
+  subjectsCollapsed: false,
+  subjects: [],
+  subjectsLoading: false,
+  subjectsError: null,
+  selectedSubject: null,
+  subjectsOffset: 0,
+  hasMoreSubjects: true,
+  showMoreLoading: false,
+  isSubjectSearchMode: false,
+  lastSubjectSearch: "",
+  pairs: [],
+  pairsLoading: false,
+  pairsError: null,
+  pairsOffset: 0,
+  hasMorePairs: true,
+  isLoadingMorePairs: false,
+  editingSelectedSubject: false,
+  editingText: "",
+  savingEdit: false,
+}
+
+// Reducer function
+const dashboardReducer = (state: DashboardState, action: DashboardAction): DashboardState => {
+  switch (action.type) {
+    case "SET_MEMORIES":
+      return { ...state, memories: action.payload }
+    case "SET_LOADING":
+      return { ...state, loading: action.payload }
+    case "SET_ERROR":
+      return { ...state, error: action.payload }
+    case "SET_LAST_SEARCHED_TERM":
+      return { ...state, lastSearchedTerm: action.payload }
+    case "SET_ACTIVE_VIEW":
+      return { ...state, activeView: action.payload }
+    case "SET_SUBJECTS_COLLAPSED":
+      return { ...state, subjectsCollapsed: action.payload }
+    case "SET_SUBJECTS":
+      return { ...state, subjects: action.payload }
+    case "SET_SUBJECTS_LOADING":
+      return { ...state, subjectsLoading: action.payload }
+    case "SET_SUBJECTS_ERROR":
+      return { ...state, subjectsError: action.payload }
+    case "SET_SELECTED_SUBJECT":
+      return { ...state, selectedSubject: action.payload }
+    case "SET_SUBJECTS_OFFSET":
+      return { ...state, subjectsOffset: action.payload }
+    case "SET_HAS_MORE_SUBJECTS":
+      return { ...state, hasMoreSubjects: action.payload }
+    case "SET_SHOW_MORE_LOADING":
+      return { ...state, showMoreLoading: action.payload }
+    case "SET_IS_SUBJECT_SEARCH_MODE":
+      return { ...state, isSubjectSearchMode: action.payload }
+    case "SET_LAST_SUBJECT_SEARCH":
+      return { ...state, lastSubjectSearch: action.payload }
+    case "SET_PAIRS":
+      return { ...state, pairs: action.payload }
+    case "SET_PAIRS_LOADING":
+      return { ...state, pairsLoading: action.payload }
+    case "SET_PAIRS_ERROR":
+      return { ...state, pairsError: action.payload }
+    case "SET_PAIRS_OFFSET":
+      return { ...state, pairsOffset: action.payload }
+    case "SET_HAS_MORE_PAIRS":
+      return { ...state, hasMorePairs: action.payload }
+    case "SET_IS_LOADING_MORE_PAIRS":
+      return { ...state, isLoadingMorePairs: action.payload }
+    case "SET_EDITING_SELECTED_SUBJECT":
+      return { ...state, editingSelectedSubject: action.payload }
+    case "SET_EDITING_TEXT":
+      return { ...state, editingText: action.payload }
+    case "SET_SAVING_EDIT":
+      return { ...state, savingEdit: action.payload }
+    case "UPDATE_SUBJECT":
+      return {
+        ...state,
+        subjects: state.subjects.map(subject =>
+          subject.id === action.payload.id ? action.payload : subject
+        ),
+        selectedSubject: state.selectedSubject?.id === action.payload.id ? action.payload : state.selectedSubject
+      }
+    case "APPEND_SUBJECTS":
+      return {
+        ...state,
+        subjects: deduplicateSubjects(state.subjects, action.payload)
+      }
+    case "APPEND_PAIRS":
+      return {
+        ...state,
+        pairs: deduplicatePairs(state.pairs, action.payload)
+      }
+    case "RESET_PAIRS":
+      return {
+        ...state,
+        pairs: [],
+        pairsError: null,
+        pairsOffset: 0,
+        hasMorePairs: true
+      }
+    case "RESET_SUBJECTS_TO_TOP":
+      return {
+        ...state,
+        subjectsOffset: 0,
+        hasMoreSubjects: true,
+        isSubjectSearchMode: false,
+        lastSubjectSearch: ""
+      }
+    default:
+      return state
+  }
+}
+
 export default function MemoriesDashboardOverlay() {
-  const [memories, setMemories] = useState<Memory[]>([])
-  const [loading, setLoading] = useState(false)
-  const [activeView, setActiveView] = useState<"list" | "network">("list")
+  const [state, dispatch] = useReducer(dashboardReducer, initialState)
   const { user } = useAuth()
   const { preferences } = useModelPreferences()
-  const [error, setError] = useState<string | null>(null)
-  const [lastSearchedTerm, setLastSearchedTerm] = useState("")
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { showMemoryNetwork } = useMemoryNetwork()
   const [memoryCount, setMemoryCount] = useState<number>(0)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  // Subject search and selection state
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [subjectsLoading, setSubjectsLoading] = useState(false)
-  const [subjectsError, setSubjectsError] = useState<string | null>(null)
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
-  const [pairs, setPairs] = useState<Pair[]>([])
-  const [pairsLoading, setPairsLoading] = useState(false)
-  const [pairsError, setPairsError] = useState<string | null>(null)
-  const [lastSubjectSearch, setLastSubjectSearch] = useState("")
-  const [subjectsCollapsed, setSubjectsCollapsed] = useState(false)
-  // New state for pagination and mode tracking
-  const [subjectsOffset, setSubjectsOffset] = useState(0)
-  const [hasMoreSubjects, setHasMoreSubjects] = useState(true)
-  const [showMoreLoading, setShowMoreLoading] = useState(false)
-  const [isSubjectSearchMode, setIsSubjectSearchMode] = useState(false)
-  const [pairsOffset, setPairsOffset] = useState(0)
-  const [hasMorePairs, setHasMorePairs] = useState(true)
-  const [isLoadingMorePairs, setIsLoadingMorePairs] = useState(false)
 
-  // New state for subject editing
-  const [editingSelectedSubject, setEditingSelectedSubject] = useState(false)
-  const [editingText, setEditingText] = useState("")
-  const [savingEdit, setSavingEdit] = useState(false)
+  // Destructure state for easier access
+  const {
+    memories,
+    loading,
+    error,
+    lastSearchedTerm,
+    activeView,
+    subjectsCollapsed,
+    subjects,
+    subjectsLoading,
+    subjectsError,
+    selectedSubject,
+    subjectsOffset,
+    hasMoreSubjects,
+    showMoreLoading,
+    isSubjectSearchMode,
+    lastSubjectSearch,
+    pairs,
+    pairsLoading,
+    pairsError,
+    pairsOffset,
+    hasMorePairs,
+    isLoadingMorePairs,
+    editingSelectedSubject,
+    editingText,
+    savingEdit,
+  } = state
 
   useEffect(() => {
     const fetchMemoryCount = async () => {
@@ -133,9 +321,9 @@ export default function MemoriesDashboardOverlay() {
   useEffect(() => {
     const fetchTopSubjects = async () => {
       if (!user?.uid) return
-      setSubjectsLoading(true)
-      setSubjectsError(null)
-      setSubjectsOffset(0)
+      dispatch({ type: "SET_SUBJECTS_LOADING", payload: true })
+      dispatch({ type: "SET_SUBJECTS_ERROR", payload: null })
+      dispatch({ type: "SET_SUBJECTS_OFFSET", payload: 0 })
       try {
         const res = await getTopSubjects({
           userID: user.uid,
@@ -149,15 +337,15 @@ export default function MemoriesDashboardOverlay() {
           (subject, index, self) =>
             index === self.findIndex((s) => s.id === subject.id)
         )
-        setSubjects(uniqueResults)
-        setHasMoreSubjects(results.length === 10) // If we got 10, there might be more
-        setIsSubjectSearchMode(false)
+        dispatch({ type: "SET_SUBJECTS", payload: uniqueResults })
+        dispatch({ type: "SET_HAS_MORE_SUBJECTS", payload: results.length === 10 })
+        dispatch({ type: "SET_IS_SUBJECT_SEARCH_MODE", payload: false })
       } catch (e: any) {
-        setSubjectsError(e.message)
-        setSubjects([])
-        setHasMoreSubjects(false)
+        dispatch({ type: "SET_SUBJECTS_ERROR", payload: e.message })
+        dispatch({ type: "SET_SUBJECTS", payload: [] })
+        dispatch({ type: "SET_HAS_MORE_SUBJECTS", payload: false })
       } finally {
-        setSubjectsLoading(false)
+        dispatch({ type: "SET_SUBJECTS_LOADING", payload: false })
       }
     }
     fetchTopSubjects()
@@ -169,10 +357,10 @@ export default function MemoriesDashboardOverlay() {
       toast.error("Please enter a search term")
       return
     }
-    setLoading(true)
-    setError(null)
-    setMemories([])
-    setLastSearchedTerm(searchTerm)
+    dispatch({ type: "SET_LOADING", payload: true })
+    dispatch({ type: "SET_ERROR", payload: null })
+    dispatch({ type: "SET_MEMORIES", payload: [] })
+    dispatch({ type: "SET_LAST_SEARCHED_TERM", payload: searchTerm })
     try {
       const userID = user?.uid
       if (!userID) throw new Error("User not authenticated")
@@ -198,21 +386,21 @@ export default function MemoriesDashboardOverlay() {
       )
       if (memoriesResponse.err) throw new Error(memoriesResponse.err)
       if (!memoriesResponse.ok || !memoriesResponse.ok.longTerm) {
-        setMemories([])
+        dispatch({ type: "SET_MEMORIES", payload: [] })
         throw new Error("No memories found or query failed.")
       }
       const resultsTree = memoriesResponse.ok.longTerm
-      setMemories(resultsTree)
+      dispatch({ type: "SET_MEMORIES", payload: resultsTree })
       if (resultsTree.length === 0)
-        setError("No memories found matching your search term.")
+        dispatch({ type: "SET_ERROR", payload: "No memories found matching your search term." })
     } catch (err) {
       const e = err as Error
       console.error("Error searching memories:", e)
-      setError(e.message)
+      dispatch({ type: "SET_ERROR", payload: e.message })
       toast.error(`Search failed: ${e.message}`)
-      setMemories([])
+      dispatch({ type: "SET_MEMORIES", payload: [] })
     } finally {
-      setLoading(false)
+      dispatch({ type: "SET_LOADING", payload: false })
     }
   }
 
@@ -257,21 +445,19 @@ export default function MemoriesDashboardOverlay() {
       confirmMemoryDeletion(memory.id, {
         isMessage: true,
         onSuccess: () => {
-          setMemories((prevMemories) => {
-            const removeMemory = (mems: Memory[]): Memory[] =>
-              mems.filter((mem) => {
-                if (mem.id === memory.id) return false
-                if (mem.children && mem.children.length > 0)
-                  mem.children = removeMemory(mem.children)
-                return true
-              })
-            return removeMemory([...prevMemories])
-          })
+          const removeMemory = (mems: Memory[]): Memory[] =>
+            mems.filter((mem) => {
+              if (mem.id === memory.id) return false
+              if (mem.children && mem.children.length > 0)
+                mem.children = removeMemory(mem.children)
+              return true
+            })
+          dispatch({ type: "SET_MEMORIES", payload: removeMemory([...memories]) })
           toast.success("Memory deleted successfully")
         },
       })
     },
-    [confirmMemoryDeletion]
+    [confirmMemoryDeletion, memories]
   )
 
   const handleShowRelatedMemories = useCallback(
@@ -428,12 +614,7 @@ export default function MemoriesDashboardOverlay() {
     if (!user?.uid || !selectedSubject) return
     setPairsLoading(true)
     setPairsError(null)
-    console.log(
-      "🔍 Searching pairs for subject:",
-      selectedSubject.subject_text,
-      "with query:",
-      query
-    )
+    
     try {
       const res = await getSubjectPairs({
         userID: user.uid,
@@ -442,20 +623,13 @@ export default function MemoriesDashboardOverlay() {
         query,
         topK: 10,
       })
-      console.log("📡 KG API response:", res)
 
       if (res.err) throw new Error(res.err)
 
-      console.log("📋 Raw results from KG:", res.ok?.results)
-      console.log("📋 Results type:", typeof res.ok?.results)
-      console.log("📋 Is array?", Array.isArray(res.ok?.results))
-
       // Only set pairs if results is an array
       if (Array.isArray(res.ok?.results)) {
-        console.log(`✅ Setting ${res.ok.results.length} pairs`)
         setPairs(res.ok.results)
       } else {
-        console.warn("⚠️ Results is not an array:", res.ok?.results)
         setPairs([])
         setPairsError(
           typeof res.ok?.results === "string"
@@ -464,7 +638,6 @@ export default function MemoriesDashboardOverlay() {
         )
       }
     } catch (e: any) {
-      console.error("❌ Error in handlePairSearch:", e)
       setPairsError(e.message)
       setPairs([])
     } finally {

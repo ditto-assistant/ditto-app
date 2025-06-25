@@ -49,13 +49,15 @@ export const useMemorySync = () => {
 
   useEffect(() => {
     let isCancelled = false
+    let timeoutId: NodeJS.Timeout | null = null
 
     const pollStatuses = async () => {
-      if (isCancelled || syncsInProgress.size === 0) {
-        // Schedule the next poll and exit if there's nothing to do right now
-        if (!isCancelled) {
-          setTimeout(pollStatuses, 2000)
-        }
+      if (isCancelled) return
+
+      // Only poll if there are syncs in progress
+      if (syncsInProgress.size === 0) {
+        // No active syncs, wait longer before checking again (10 seconds instead of 2)
+        timeoutId = setTimeout(pollStatuses, 10000)
         return
       }
 
@@ -92,8 +94,8 @@ export const useMemorySync = () => {
         })
       }
 
-      // Schedule the next poll
-      setTimeout(pollStatuses, 2000)
+      // Schedule the next poll with more frequent checking when syncs are active
+      timeoutId = setTimeout(pollStatuses, 2000)
     }
 
     // Start the polling loop
@@ -101,6 +103,9 @@ export const useMemorySync = () => {
 
     return () => {
       isCancelled = true
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
     }
   }, [syncsInProgress])
 
