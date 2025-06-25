@@ -204,7 +204,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                   onTouchCancel={handleTouchEnd}
                   type="button"
                   title="Click to select • Long press to rename"
-                  aria-label={`Select subject: ${subject.subject_text}${subject.pair_count !== undefined ? `, ${subject.pair_count} pairs` : ''}`}
+                  aria-label={`Select subject: ${subject.subject_text}${subject.pair_count !== undefined ? `, ${subject.pair_count} pairs` : ""}`}
                 >
                   {subject.subject_text}
                   {subject.pair_count !== undefined && (
@@ -225,7 +225,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
+                      if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault()
                         e.stopPropagation()
                         startEditing(subject)
