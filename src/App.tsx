@@ -34,6 +34,7 @@ import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FontSizeProvider } from "@/hooks/useFontSize"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { RouterErrorBoundary } from "@/components/RouterErrorBoundary"
 
 initUpdateService()
 
@@ -75,7 +76,7 @@ const queryClient = new QueryClient()
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/">
+    <Route path="/" errorElement={<RouterErrorBoundary />}>
       <Route element={<Layout className="login-layout" />}>
         <Route path="login" Component={Login} />
       </Route>
