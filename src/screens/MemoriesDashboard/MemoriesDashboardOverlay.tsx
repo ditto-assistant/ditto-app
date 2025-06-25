@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, useReducer } from "react"
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useReducer,
+} from "react"
 import { List, Network, Info, X as LucideX, Edit2 } from "lucide-react"
 import { getMemories, Memory } from "@/api/getMemories"
 import { embed } from "@/api/embed"
@@ -80,11 +86,11 @@ interface DashboardState {
   loading: boolean
   error: string | null
   lastSearchedTerm: string
-  
+
   // UI state
   activeView: "list" | "network"
   subjectsCollapsed: boolean
-  
+
   // Subject state
   subjects: Subject[]
   subjectsLoading: boolean
@@ -95,7 +101,7 @@ interface DashboardState {
   showMoreLoading: boolean
   isSubjectSearchMode: boolean
   lastSubjectSearch: string
-  
+
   // Pairs state
   pairs: Pair[]
   pairsLoading: boolean
@@ -103,7 +109,7 @@ interface DashboardState {
   pairsOffset: number
   hasMorePairs: boolean
   isLoadingMorePairs: boolean
-  
+
   // Subject editing state
   editingSelectedSubject: boolean
   editingText: string
@@ -144,17 +150,34 @@ type DashboardAction =
   // Consolidated action types for efficient state updates
   | { type: "INIT_MEMORY_SEARCH"; payload: { searchTerm: string } }
   | { type: "INIT_SUBJECTS_FETCH" }
-  | { type: "COMPLETE_SUBJECTS_FETCH"; payload: { subjects: Subject[]; hasMore: boolean; isSearchMode?: boolean } }
+  | {
+      type: "COMPLETE_SUBJECTS_FETCH"
+      payload: { subjects: Subject[]; hasMore: boolean; isSearchMode?: boolean }
+    }
   | { type: "FAIL_SUBJECTS_FETCH"; payload: { error: string } }
   | { type: "INIT_SUBJECT_SEARCH"; payload: { query: string } }
   | { type: "COMPLETE_SUBJECT_SEARCH"; payload: { subjects: Subject[] } }
   | { type: "INIT_PAIRS_FETCH"; payload: { isLoadMore?: boolean } }
-  | { type: "COMPLETE_PAIRS_FETCH"; payload: { pairs: Pair[]; hasMore: boolean; offset: number; append?: boolean } }
-  | { type: "FAIL_PAIRS_FETCH"; payload: { error: string; isLoadMore?: boolean } }
+  | {
+      type: "COMPLETE_PAIRS_FETCH"
+      payload: {
+        pairs: Pair[]
+        hasMore: boolean
+        offset: number
+        append?: boolean
+      }
+    }
+  | {
+      type: "FAIL_PAIRS_FETCH"
+      payload: { error: string; isLoadMore?: boolean }
+    }
   | { type: "SELECT_SUBJECT_AND_RESET_PAIRS"; payload: { subject: Subject } }
   | { type: "START_EDITING_SUBJECT" }
   | { type: "FINISH_EDITING_SUBJECT" }
-  | { type: "LOAD_MORE_SUBJECTS_COMPLETE"; payload: { newResults: Subject[]; newOffset: number } }
+  | {
+      type: "LOAD_MORE_SUBJECTS_COMPLETE"
+      payload: { newResults: Subject[]; newOffset: number }
+    }
 
 // Initial state
 const initialState: DashboardState = {
@@ -185,7 +208,10 @@ const initialState: DashboardState = {
 }
 
 // Reducer function
-const dashboardReducer = (state: DashboardState, action: DashboardAction): DashboardState => {
+const dashboardReducer = (
+  state: DashboardState,
+  action: DashboardAction
+): DashboardState => {
   switch (action.type) {
     case "SET_MEMORIES":
       return { ...state, memories: action.payload }
@@ -238,20 +264,23 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
     case "UPDATE_SUBJECT":
       return {
         ...state,
-        subjects: state.subjects.map(subject =>
+        subjects: state.subjects.map((subject) =>
           subject.id === action.payload.id ? action.payload : subject
         ),
-        selectedSubject: state.selectedSubject?.id === action.payload.id ? action.payload : state.selectedSubject
+        selectedSubject:
+          state.selectedSubject?.id === action.payload.id
+            ? action.payload
+            : state.selectedSubject,
       }
     case "APPEND_SUBJECTS":
       return {
         ...state,
-        subjects: deduplicateSubjects(state.subjects, action.payload)
+        subjects: deduplicateSubjects(state.subjects, action.payload),
       }
     case "APPEND_PAIRS":
       return {
         ...state,
-        pairs: deduplicatePairs(state.pairs, action.payload)
+        pairs: deduplicatePairs(state.pairs, action.payload),
       }
     case "RESET_PAIRS":
       return {
@@ -259,7 +288,7 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         pairs: [],
         pairsError: null,
         pairsOffset: 0,
-        hasMorePairs: true
+        hasMorePairs: true,
       }
     case "RESET_SUBJECTS_TO_TOP":
       return {
@@ -267,7 +296,7 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         subjectsOffset: 0,
         hasMoreSubjects: true,
         isSubjectSearchMode: false,
-        lastSubjectSearch: ""
+        lastSubjectSearch: "",
       }
     // Consolidated action handlers for efficient state updates
     case "INIT_MEMORY_SEARCH":
@@ -276,14 +305,14 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         loading: true,
         error: null,
         memories: [],
-        lastSearchedTerm: action.payload.searchTerm
+        lastSearchedTerm: action.payload.searchTerm,
       }
     case "INIT_SUBJECTS_FETCH":
       return {
         ...state,
         subjectsLoading: true,
         subjectsError: null,
-        subjectsOffset: 0
+        subjectsOffset: 0,
       }
     case "COMPLETE_SUBJECTS_FETCH":
       return {
@@ -291,7 +320,7 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         subjectsLoading: false,
         subjects: action.payload.subjects,
         hasMoreSubjects: action.payload.hasMore,
-        isSubjectSearchMode: action.payload.isSearchMode ?? false
+        isSubjectSearchMode: action.payload.isSearchMode ?? false,
       }
     case "FAIL_SUBJECTS_FETCH":
       return {
@@ -299,7 +328,7 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         subjectsLoading: false,
         subjectsError: action.payload.error,
         subjects: [],
-        hasMoreSubjects: false
+        hasMoreSubjects: false,
       }
     case "INIT_SUBJECT_SEARCH":
       return {
@@ -308,13 +337,13 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         subjectsError: null,
         lastSubjectSearch: action.payload.query,
         isSubjectSearchMode: true,
-        hasMoreSubjects: false
+        hasMoreSubjects: false,
       }
     case "COMPLETE_SUBJECT_SEARCH":
       return {
         ...state,
         subjectsLoading: false,
-        subjects: action.payload.subjects
+        subjects: action.payload.subjects,
       }
     case "INIT_PAIRS_FETCH":
       return {
@@ -322,16 +351,18 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         pairsLoading: !action.payload.isLoadMore,
         isLoadingMorePairs: action.payload.isLoadMore ?? false,
         pairsError: null,
-        ...(action.payload.isLoadMore ? {} : { pairsOffset: 0 })
+        ...(action.payload.isLoadMore ? {} : { pairsOffset: 0 }),
       }
     case "COMPLETE_PAIRS_FETCH":
       return {
         ...state,
         pairsLoading: false,
         isLoadingMorePairs: false,
-        pairs: action.payload.append ? deduplicatePairs(state.pairs, action.payload.pairs) : action.payload.pairs,
+        pairs: action.payload.append
+          ? deduplicatePairs(state.pairs, action.payload.pairs)
+          : action.payload.pairs,
         hasMorePairs: action.payload.hasMore,
-        pairsOffset: action.payload.offset
+        pairsOffset: action.payload.offset,
       }
     case "FAIL_PAIRS_FETCH":
       return {
@@ -339,7 +370,7 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         pairsLoading: !action.payload.isLoadMore,
         isLoadingMorePairs: false,
         pairsError: action.payload.error,
-        ...(action.payload.isLoadMore ? {} : { pairs: [] })
+        ...(action.payload.isLoadMore ? {} : { pairs: [] }),
       }
     case "SELECT_SUBJECT_AND_RESET_PAIRS":
       return {
@@ -348,27 +379,30 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         pairs: [],
         pairsError: null,
         pairsOffset: 0,
-        hasMorePairs: true
+        hasMorePairs: true,
       }
     case "START_EDITING_SUBJECT":
       return {
         ...state,
         editingSelectedSubject: true,
-        editingText: state.selectedSubject?.subject_text ?? ""
+        editingText: state.selectedSubject?.subject_text ?? "",
       }
     case "FINISH_EDITING_SUBJECT":
       return {
         ...state,
         editingSelectedSubject: false,
         editingText: "",
-        savingEdit: false
+        savingEdit: false,
       }
     case "LOAD_MORE_SUBJECTS_COMPLETE":
       return {
         ...state,
-        subjects: deduplicateSubjects(state.subjects, action.payload.newResults),
+        subjects: deduplicateSubjects(
+          state.subjects,
+          action.payload.newResults
+        ),
         subjectsOffset: action.payload.newOffset,
-        hasMoreSubjects: action.payload.newResults.length === 10
+        hasMoreSubjects: action.payload.newResults.length === 10,
       }
     default:
       return state
@@ -450,13 +484,13 @@ export default function MemoriesDashboardOverlay() {
           (subject, index, self) =>
             index === self.findIndex((s) => s.id === subject.id)
         )
-        dispatch({ 
-          type: "COMPLETE_SUBJECTS_FETCH", 
-          payload: { 
-            subjects: uniqueResults, 
+        dispatch({
+          type: "COMPLETE_SUBJECTS_FETCH",
+          payload: {
+            subjects: uniqueResults,
             hasMore: results.length === 10,
-            isSearchMode: false
-          }
+            isSearchMode: false,
+          },
         })
       } catch (e: any) {
         dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
@@ -503,7 +537,10 @@ export default function MemoriesDashboardOverlay() {
       const resultsTree = memoriesResponse.ok.longTerm
       dispatch({ type: "SET_MEMORIES", payload: resultsTree })
       if (resultsTree.length === 0)
-        dispatch({ type: "SET_ERROR", payload: "No memories found matching your search term." })
+        dispatch({
+          type: "SET_ERROR",
+          payload: "No memories found matching your search term.",
+        })
     } catch (err) {
       const e = err as Error
       console.error("Error searching memories:", e)
@@ -563,7 +600,10 @@ export default function MemoriesDashboardOverlay() {
                 mem.children = removeMemory(mem.children)
               return true
             })
-          dispatch({ type: "SET_MEMORIES", payload: removeMemory([...memories]) })
+          dispatch({
+            type: "SET_MEMORIES",
+            payload: removeMemory([...memories]),
+          })
           toast.success("Memory deleted successfully")
         },
       })
@@ -591,7 +631,10 @@ export default function MemoriesDashboardOverlay() {
         (subject, index, self) =>
           index === self.findIndex((s) => s.id === subject.id)
       )
-      dispatch({ type: "COMPLETE_SUBJECT_SEARCH", payload: { subjects: uniqueResults } })
+      dispatch({
+        type: "COMPLETE_SUBJECT_SEARCH",
+        payload: { subjects: uniqueResults },
+      })
     } catch (e: any) {
       dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
     }
@@ -612,9 +655,9 @@ export default function MemoriesDashboardOverlay() {
       const newResults = res.ok?.results || []
 
       // Deduplicate subjects by ID to prevent duplicates and update state in one action
-      dispatch({ 
-        type: "LOAD_MORE_SUBJECTS_COMPLETE", 
-        payload: { newResults, newOffset }
+      dispatch({
+        type: "LOAD_MORE_SUBJECTS_COMPLETE",
+        payload: { newResults, newOffset },
       })
     } catch (e: any) {
       dispatch({ type: "SET_SUBJECTS_ERROR", payload: e.message })
@@ -641,13 +684,13 @@ export default function MemoriesDashboardOverlay() {
         (subject, index, self) =>
           index === self.findIndex((s) => s.id === subject.id)
       )
-      dispatch({ 
-        type: "COMPLETE_SUBJECTS_FETCH", 
-        payload: { 
-          subjects: uniqueResults, 
+      dispatch({
+        type: "COMPLETE_SUBJECTS_FETCH",
+        payload: {
+          subjects: uniqueResults,
           hasMore: results.length === 10,
-          isSearchMode: false
-        }
+          isSearchMode: false,
+        },
       })
     } catch (e: any) {
       dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
@@ -675,17 +718,20 @@ export default function MemoriesDashboardOverlay() {
       if (res.err) throw new Error(res.err)
 
       const newPairs = res.ok?.results || []
-      dispatch({ 
-        type: "COMPLETE_PAIRS_FETCH", 
-        payload: { 
-          pairs: newPairs, 
+      dispatch({
+        type: "COMPLETE_PAIRS_FETCH",
+        payload: {
+          pairs: newPairs,
           hasMore: newPairs.length === 5,
           offset: append ? offset : 0,
-          append
-        }
+          append,
+        },
       })
     } catch (e: any) {
-      dispatch({ type: "FAIL_PAIRS_FETCH", payload: { error: e.message, isLoadMore: append } })
+      dispatch({
+        type: "FAIL_PAIRS_FETCH",
+        payload: { error: e.message, isLoadMore: append },
+      })
     }
   }
 
@@ -700,7 +746,7 @@ export default function MemoriesDashboardOverlay() {
   const handlePairSearch = async (query: string) => {
     if (!user?.uid || !selectedSubject) return
     dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: false } })
-    
+
     try {
       const res = await getSubjectPairs({
         userID: user.uid,
@@ -714,26 +760,32 @@ export default function MemoriesDashboardOverlay() {
 
       // Only set pairs if results is an array
       if (Array.isArray(res.ok?.results)) {
-        dispatch({ 
-          type: "COMPLETE_PAIRS_FETCH", 
-          payload: { 
-            pairs: res.ok.results, 
+        dispatch({
+          type: "COMPLETE_PAIRS_FETCH",
+          payload: {
+            pairs: res.ok.results,
             hasMore: false,
             offset: 0,
-            append: false
-          }
+            append: false,
+          },
         })
       } else {
-        dispatch({ 
-          type: "FAIL_PAIRS_FETCH", 
-          payload: { 
-            error: typeof res.ok?.results === "string" ? res.ok.results : "No results found.",
-            isLoadMore: false
-          }
+        dispatch({
+          type: "FAIL_PAIRS_FETCH",
+          payload: {
+            error:
+              typeof res.ok?.results === "string"
+                ? res.ok.results
+                : "No results found.",
+            isLoadMore: false,
+          },
         })
       }
     } catch (e: any) {
-      dispatch({ type: "FAIL_PAIRS_FETCH", payload: { error: e.message, isLoadMore: false } })
+      dispatch({
+        type: "FAIL_PAIRS_FETCH",
+        payload: { error: e.message, isLoadMore: false },
+      })
     }
   }
 
@@ -749,12 +801,9 @@ export default function MemoriesDashboardOverlay() {
   }, [selectedSubject, pairs.length, memories.length])
 
   // Handle subject updates from SubjectSelector
-  const handleSubjectUpdated = useCallback(
-    (updatedSubject: Subject) => {
-      dispatch({ type: "UPDATE_SUBJECT", payload: updatedSubject })
-    },
-    []
-  )
+  const handleSubjectUpdated = useCallback((updatedSubject: Subject) => {
+    dispatch({ type: "UPDATE_SUBJECT", payload: updatedSubject })
+  }, [])
 
   // Start editing selected subject
   const startEditingSelectedSubject = () => {
@@ -819,7 +868,12 @@ export default function MemoriesDashboardOverlay() {
             <button
               type="button"
               className="text-xs px-2 py-1 rounded bg-muted border border-border hover:bg-primary/10 transition-colors"
-              onClick={() => dispatch({ type: "SET_SUBJECTS_COLLAPSED", payload: !subjectsCollapsed })}
+              onClick={() =>
+                dispatch({
+                  type: "SET_SUBJECTS_COLLAPSED",
+                  payload: !subjectsCollapsed,
+                })
+              }
             >
               {subjectsCollapsed ? "Expand" : "Collapse"}
             </button>
@@ -835,7 +889,12 @@ export default function MemoriesDashboardOverlay() {
                     <input
                       type="text"
                       value={editingText}
-                      onChange={(e) => dispatch({ type: "SET_EDITING_TEXT", payload: e.target.value })}
+                      onChange={(e) =>
+                        dispatch({
+                          type: "SET_EDITING_TEXT",
+                          payload: e.target.value,
+                        })
+                      }
                       onKeyDown={handleKeyPress}
                       className="text-sm bg-background border border-border rounded px-2 py-1 flex-1 max-w-[200px]"
                       autoFocus
@@ -883,7 +942,9 @@ export default function MemoriesDashboardOverlay() {
                   <button
                     type="button"
                     className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted transition-colors"
-                    onClick={() => dispatch({ type: "SET_SELECTED_SUBJECT", payload: null })}
+                    onClick={() =>
+                      dispatch({ type: "SET_SELECTED_SUBJECT", payload: null })
+                    }
                   >
                     Clear
                   </button>
@@ -899,7 +960,10 @@ export default function MemoriesDashboardOverlay() {
               userID={user?.uid}
               onSubjectUpdated={handleSubjectUpdated}
               onSelect={(subject) => {
-                dispatch({ type: "SELECT_SUBJECT_AND_RESET_PAIRS", payload: { subject } })
+                dispatch({
+                  type: "SELECT_SUBJECT_AND_RESET_PAIRS",
+                  payload: { subject },
+                })
                 // Automatically load recent pairs for this subject
                 loadRecentPairs(subject)
               }}
@@ -1033,7 +1097,9 @@ export default function MemoriesDashboardOverlay() {
                 <div className="flex gap-3">
                   <Button
                     variant={activeView === "list" ? "default" : "outline"}
-                    onClick={() => dispatch({ type: "SET_ACTIVE_VIEW", payload: "list" })}
+                    onClick={() =>
+                      dispatch({ type: "SET_ACTIVE_VIEW", payload: "list" })
+                    }
                     className={
                       activeView === "list"
                         ? "bg-primary text-primary-foreground border-primary"
@@ -1045,7 +1111,9 @@ export default function MemoriesDashboardOverlay() {
                   </Button>
                   <Button
                     variant={activeView === "network" ? "default" : "outline"}
-                    onClick={() => dispatch({ type: "SET_ACTIVE_VIEW", payload: "network" })}
+                    onClick={() =>
+                      dispatch({ type: "SET_ACTIVE_VIEW", payload: "network" })
+                    }
                     className={
                       activeView === "network"
                         ? "bg-primary text-primary-foreground border-primary"
