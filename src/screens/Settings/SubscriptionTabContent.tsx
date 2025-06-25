@@ -8,7 +8,7 @@ import { useSubscriptionTiers } from "@/hooks/useSubscriptionTiers"
 import { useUser } from "@/hooks/useUser"
 import SubscriptionToggle from "@/components/subscription/SubscriptionToggle"
 import SubscriptionCard from "@/components/subscription/SubscriptionCard"
-import { CreditCard, LogOut, Moon, Edit3, Check, X } from "lucide-react"
+import { CreditCard, LogOut, Edit3, Check, X } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import SubscriptionBoostIndicator from "@/components/subscription/SubscriptionBoostIndicator"
 import {
@@ -28,10 +28,14 @@ import { useUserAvatar } from "@/hooks/useUserAvatar"
 import { updateUserName } from "@/api/updateUserName"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
+import { User } from "@/api/getUser"
 
 // Name edit form component that uses React 19 form actions
 const NameEditForm: React.FC<{
-  user: any
+  user: User & {
+    uid: string
+    displayName: string | null
+  }
   onCancel: () => void
   onSuccess: () => void
 }> = ({ user, onCancel, onSuccess }) => {
@@ -272,7 +276,7 @@ const SubscriptionTabContent: React.FC = () => {
       <CardContent className="space-y-4">
         {/* Avatar and name section */}
         <div className="space-y-4">
-          {isEditingName ? (
+          {isEditingName && user ? (
             <NameEditForm
               user={{ ...user, uid, displayName }}
               onCancel={() => setIsEditingName(false)}

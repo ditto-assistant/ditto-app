@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { deleteConversation } from "@/api/userContent"
+import { deleteConversationComplete } from "@/api/userContent"
 import { useConfirmationDialog } from "./useConfirmationDialog"
 import { toast } from "sonner"
 import { useAuth } from "./useAuth"
@@ -14,10 +14,29 @@ export const useMemoryDeletion = (updateConversation) => {
       if (!docId) return
       try {
         const toastId = toast.loading("Deleting memory...")
-        const result = await deleteConversation(user.uid, docId)
+
+        // Use the new complete deletion that handles both Firestore and KG
+        const result = await deleteConversationComplete(user.uid, docId)
 
         if (!(result instanceof Error)) {
-          toast.success("Memory deleted successfully", { id: toastId })
+          // Show success message with cleanup stats if available
+          let successMessage = "Memory deleted successfully"
+          if (result.kg_cleanup && result.kg_cleanup.cleanup_stats) {
+            const stats = result.kg_cleanup.cleanup_stats
+            const cleanupDetails = []
+            if (stats.pairs_deleted > 0)
+              cleanupDetails.push(`${stats.pairs_deleted} pairs`)
+            if (stats.subjects_removed > 0)
+              cleanupDetails.push(`${stats.subjects_removed} subjects`)
+            if (stats.links_removed > 0)
+              cleanupDetails.push(`${stats.links_removed} links`)
+
+            if (cleanupDetails.length > 0) {
+              successMessage += ` (cleaned: ${cleanupDetails.join(", ")})`
+            }
+          }
+
+          toast.success(successMessage, { id: toastId })
 
           if (updateConversation) {
             updateConversation((prevState) => ({
@@ -26,29 +45,6 @@ export const useMemoryDeletion = (updateConversation) => {
                 (msg) => msg.pairID !== docId
               ),
             }))
-
-            const prompts = JSON.parse(localStorage.getItem("prompts") || "[]")
-            const responses = JSON.parse(
-              localStorage.getItem("responses") || "[]"
-            )
-            const timestamps = JSON.parse(
-              localStorage.getItem("timestamps") || "[]"
-            )
-            const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]")
-
-            const pairIndex = pairIDs.indexOf(docId)
-            if (pairIndex !== -1) {
-              prompts.splice(pairIndex, 1)
-              responses.splice(pairIndex, 1)
-              timestamps.splice(pairIndex, 1)
-              pairIDs.splice(pairIndex, 1)
-
-              localStorage.setItem("prompts", JSON.stringify(prompts))
-              localStorage.setItem("responses", JSON.stringify(responses))
-              localStorage.setItem("timestamps", JSON.stringify(timestamps))
-              localStorage.setItem("pairIDs", JSON.stringify(pairIDs))
-              localStorage.setItem("histCount", pairIDs.length)
-            }
           }
 
           window.dispatchEvent(new Event("memoryUpdated"))
@@ -81,8 +77,8 @@ export const useMemoryDeletion = (updateConversation) => {
       const isMessage = !!options.isMessage
       const title = isMessage ? "Delete Message?" : "Delete Memory?"
       const content = isMessage
-        ? "Are you sure you want to delete this message? This action cannot be undone."
-        : "Are you sure you want to delete this memory? This action cannot be undone."
+        ? "Are you sure you want to delete this message? This will permanently remove it from your chat history and knowledge graph. This action cannot be undone."
+        : "Are you sure you want to delete this memory? This will permanently remove it from your memory collection and clean up any orphaned subjects in your knowledge graph. This action cannot be undone."
 
       showConfirmationDialog({
         title,

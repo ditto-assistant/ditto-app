@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { BASE_URL } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { BASE_URL } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 
 // Define the Terms of Service schema
 export const TermsOfServiceSchema = z.object({

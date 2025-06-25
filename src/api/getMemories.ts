@@ -1,6 +1,6 @@
 import { Result } from "@/types/common"
-import { routes } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { routes } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 
 export interface Memory {
   id: string
@@ -10,6 +10,7 @@ export interface Memory {
   timestamp: Date
   vector_distance: number
   depth: number
+  similarity?: number // For KG pairs data
   children?: Memory[]
 }
 

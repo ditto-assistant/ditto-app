@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { getToken } from "./auth"
-import { BASE_URL } from "../firebaseConfig"
+import { getToken } from "@/api/auth"
+import { BASE_URL, routes } from "@/firebaseConfig"
 
 // Response schemas
 export const UploadImageResponseSchema = z.string()
@@ -21,6 +21,18 @@ export const ConversationCountResponseSchema = z.object({
 })
 export type ConversationCountResponse = z.infer<
   typeof ConversationCountResponseSchema
+>
+
+export const DeleteMemoryPairResponseSchema = z.object({
+  success: z.boolean(),
+  cleanup_stats: z.object({
+    pairs_deleted: z.number(),
+    subjects_removed: z.number(),
+    links_removed: z.number(),
+  }),
+})
+export type DeleteMemoryPairResponse = z.infer<
+  typeof DeleteMemoryPairResponseSchema
 >
 
 // Request schemas
@@ -210,6 +222,117 @@ export async function deleteConversation(
     return
   } catch (error) {
     console.error("Error deleting conversation:", error)
+    return error instanceof Error ? error : new Error("Unknown error occurred")
+  }
+}
+
+/**
+ * Delete a memory pair from the knowledge graph
+ */
+export async function deleteMemoryPairFromKG(
+  userID: string,
+  pairID: string
+): Promise<DeleteMemoryPairResponse | Error> {
+  try {
+    const tok = await getToken()
+    if (tok.err) {
+      return new Error(tok.err?.message ?? "No token")
+    }
+    if (!tok.ok) {
+      return new Error("No token")
+    }
+
+    const response = await fetch(routes.kgDeleteMemoryPair(pairID), {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
+      body: JSON.stringify({
+        user_id: userID,
+      }),
+    })
+
+    if (response.status === 404) {
+      // Memory pair not found in KG - this is not necessarily an error
+      // as the pair might only exist in Firestore
+      console.log(`Memory pair ${pairID} not found in knowledge graph`)
+      const defaultResponse: DeleteMemoryPairResponse = {
+        success: true,
+        cleanup_stats: {
+          pairs_deleted: 0,
+          subjects_removed: 0,
+          links_removed: 0,
+        },
+      }
+      return defaultResponse
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return new Error(
+        `Failed to delete memory pair from KG: HTTP ${response.status} - ${errorText}`
+      )
+    }
+
+    const rawData: unknown = await response.json()
+    const validatedResponse = DeleteMemoryPairResponseSchema.safeParse(rawData)
+    if (!validatedResponse.success) {
+      return new Error(
+        `Failed to delete memory pair from KG: Invalid response data: ${validatedResponse.error.flatten()}`
+      )
+    }
+
+    return validatedResponse.data
+  } catch (error) {
+    console.error("Error deleting memory pair from KG:", error)
+    return error instanceof Error ? error : new Error("Unknown error occurred")
+  }
+}
+
+/**
+ * Delete a conversation completely - from both Firestore and Knowledge Graph
+ */
+export async function deleteConversationComplete(
+  userID: string,
+  conversationID: string
+): Promise<
+  | {
+      firestore_deleted: boolean
+      kg_cleanup: DeleteMemoryPairResponse | { error: string }
+    }
+  | Error
+> {
+  try {
+    // First delete from Firestore
+    const firestoreResult = await deleteConversation(userID, conversationID)
+    const firestoreDeleted = !(firestoreResult instanceof Error)
+
+    if (firestoreResult instanceof Error) {
+      console.warn(
+        `Failed to delete from Firestore: ${firestoreResult.message}`
+      )
+    }
+
+    // Then delete from Knowledge Graph
+    const kgResult = await deleteMemoryPairFromKG(userID, conversationID)
+
+    if (kgResult instanceof Error) {
+      console.warn(`Failed to delete from KG: ${kgResult.message}`)
+      // If Firestore deletion succeeded but KG deletion failed,
+      // we should still consider this a partial success
+      return {
+        firestore_deleted: firestoreDeleted,
+        kg_cleanup: { error: kgResult.message },
+      }
+    }
+
+    return {
+      firestore_deleted: firestoreDeleted,
+      kg_cleanup: kgResult,
+    }
+  } catch (error) {
+    console.error("Error in complete conversation deletion:", error)
     return error instanceof Error ? error : new Error("Unknown error occurred")
   }
 }

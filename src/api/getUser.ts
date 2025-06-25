@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { Result } from "@/types/common"
-import { BASE_URL } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { BASE_URL } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 import { Model } from "@/types/llm"
 
 // Define the preferred models schema

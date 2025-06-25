@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { getToken } from "./auth"
-import { routes, BASE_URL } from "../firebaseConfig"
+import { getToken } from "@/api/auth"
+import { routes, BASE_URL } from "@/firebaseConfig"
 import { Result } from "@/types/common"
 
 /**

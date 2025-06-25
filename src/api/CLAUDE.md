@@ -22,7 +22,6 @@
 When adding a new backend API endpoint, follow these steps to create a corresponding frontend client function:
 
 1. **Create a New File in `src/api/`**:
-
    - Name it according to function (e.g., `updateUserPreferences.ts`)
    - Use existing files as templates (e.g., `getUser.ts`, `refreshSubscription.ts`)
 

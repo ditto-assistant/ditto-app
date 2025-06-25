@@ -37,7 +37,7 @@ export async function getBalance(): Promise<Result<Balance>> {
   const deviceID = getDeviceID()
   try {
     const response = await fetch(
-      routes.balance(tok.ok.userID, tok.ok.email, APP_VERSION, deviceID),
+      routes.balance(tok.ok.userID, tok.ok.email ?? "", APP_VERSION, deviceID),
       {
         method: "GET",
         headers: {

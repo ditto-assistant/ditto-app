@@ -107,7 +107,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       if (
         clickedItem &&
         !(clickedItem as RootNodeConfig).isQueryNode &&
-        !(clickedItem as any).query
+        !("query" in clickedItem)
       ) {
         const clickedMemory = clickedItem as Memory
         // Set opening node flag before showing the memory
