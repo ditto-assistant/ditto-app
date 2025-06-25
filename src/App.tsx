@@ -33,6 +33,7 @@ import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FontSizeProvider } from "@/hooks/useFontSize"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 initUpdateService()
 
@@ -126,63 +127,67 @@ const modalRegistry: ModalRegistry = {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BalanceProvider>
-          <MemoryCountProvider>
-            <ModelPreferencesProvider>
-              <ImageViewerProvider>
-                <PlatformProvider>
-                  <MemoryNetworkProvider>
-                    <ConfirmationDialogProvider>
-                      <MemoryNodeViewerProvider>
-                        <ConversationProvider>
-                          <ServicesProvider>
-                            <PromptStorageProvider>
-                              <ComposeProvider>
-                                <MemorySyncProvider>
-                                  <ThemeProvider
-                                    defaultTheme="system"
-                                    storageKey="ditto-ui-theme"
-                                  >
-                                    <FontSizeProvider>
-                                      <ComposeModal />
-                                      <ModalProvider registry={modalRegistry}>
-                                        <AppErrorBoundary>
-                                          <RouterProvider router={router} />
-                                        </AppErrorBoundary>
-                                        <UpdateNotification />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BalanceProvider>
+            <MemoryCountProvider>
+              <ModelPreferencesProvider>
+                <ImageViewerProvider>
+                  <PlatformProvider>
+                    <MemoryNetworkProvider>
+                      <ConfirmationDialogProvider>
+                        <MemoryNodeViewerProvider>
+                          <ConversationProvider>
+                            <ServicesProvider>
+                              <PromptStorageProvider>
+                                <ComposeProvider>
+                                  <MemorySyncProvider>
+                                    <ThemeProvider
+                                      defaultTheme="system"
+                                      storageKey="ditto-ui-theme"
+                                    >
+                                      <FontSizeProvider>
+                                        <ComposeModal />
+                                        <ModalProvider registry={modalRegistry}>
+                                          <AppErrorBoundary>
+                                            <RouterProvider router={router} />
+                                          </AppErrorBoundary>
+                                          <UpdateNotification />
 
-                                        {createPortal(
-                                          <Toaster
-                                            position="top-center"
-                                            closeButton
-                                            richColors
-                                          />,
-                                          document.getElementById("toast-root")!
-                                        )}
-                                        <ReactQueryDevtools
-                                          buttonPosition="top-left"
-                                          initialIsOpen={false}
-                                        />
-                                      </ModalProvider>
-                                    </FontSizeProvider>
-                                  </ThemeProvider>
-                                </MemorySyncProvider>
-                              </ComposeProvider>
-                            </PromptStorageProvider>
-                          </ServicesProvider>
-                        </ConversationProvider>
-                      </MemoryNodeViewerProvider>
-                    </ConfirmationDialogProvider>
-                  </MemoryNetworkProvider>
-                </PlatformProvider>
-              </ImageViewerProvider>
-            </ModelPreferencesProvider>
-          </MemoryCountProvider>
-        </BalanceProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+                                          {createPortal(
+                                            <Toaster
+                                              position="top-center"
+                                              closeButton
+                                              richColors
+                                            />,
+                                            document.getElementById(
+                                              "toast-root"
+                                            )!
+                                          )}
+                                          <ReactQueryDevtools
+                                            buttonPosition="top-left"
+                                            initialIsOpen={false}
+                                          />
+                                        </ModalProvider>
+                                      </FontSizeProvider>
+                                    </ThemeProvider>
+                                  </MemorySyncProvider>
+                                </ComposeProvider>
+                              </PromptStorageProvider>
+                            </ServicesProvider>
+                          </ConversationProvider>
+                        </MemoryNodeViewerProvider>
+                      </ConfirmationDialogProvider>
+                    </MemoryNetworkProvider>
+                  </PlatformProvider>
+                </ImageViewerProvider>
+              </ModelPreferencesProvider>
+            </MemoryCountProvider>
+          </BalanceProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 
