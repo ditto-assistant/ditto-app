@@ -7,7 +7,6 @@ interface SyncState {
 
 interface MemorySyncContextType {
   syncsInProgress: Map<string, SyncState>
-  lastSyncTime: Date | null
   triggerSync: (messageId: string) => Promise<void>
   checkStatuses: (messageIDs: string[]) => Promise<void>
 }

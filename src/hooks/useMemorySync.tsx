@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { startSync, getSyncStatus } from "@/api/sync"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -10,7 +10,6 @@ export const useMemorySync = () => {
   const [syncsInProgress, setSyncsInProgress] = useState<
     Map<string, SyncState>
   >(new Map())
-  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null)
   const { user } = useAuth()
 
   const triggerSync = useCallback(
@@ -49,7 +48,7 @@ export const useMemorySync = () => {
 
   useEffect(() => {
     let isCancelled = false
-    let timeoutId: NodeJS.Timeout | null = null
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
 
     const pollStatuses = async () => {
       if (isCancelled) return
@@ -111,7 +110,6 @@ export const useMemorySync = () => {
 
   return {
     syncsInProgress,
-    lastSyncTime,
     triggerSync,
     checkStatuses,
   }

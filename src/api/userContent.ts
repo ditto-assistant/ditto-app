@@ -296,7 +296,13 @@ export async function deleteMemoryPairFromKG(
 export async function deleteConversationComplete(
   userID: string,
   conversationID: string
-): Promise<{ firestore_deleted: boolean; kg_cleanup: any } | Error> {
+): Promise<
+  | {
+      firestore_deleted: boolean
+      kg_cleanup: DeleteMemoryPairResponse | { error: string }
+    }
+  | Error
+> {
   try {
     // First delete from Firestore
     const firestoreResult = await deleteConversation(userID, conversationID)

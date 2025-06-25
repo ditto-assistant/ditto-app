@@ -1,8 +1,5 @@
 import { useCallback } from "react"
-import {
-  deleteConversation,
-  deleteConversationComplete,
-} from "@/api/userContent"
+import { deleteConversationComplete } from "@/api/userContent"
 import { useConfirmationDialog } from "./useConfirmationDialog"
 import { toast } from "sonner"
 import { useAuth } from "./useAuth"

@@ -9,7 +9,7 @@ import {
   getSubjectPairsRecent,
   renameSubject,
 } from "@/api/kg"
-import type { Subject, Pair } from "@/types/common"
+import type { Subject } from "@/types/common"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"

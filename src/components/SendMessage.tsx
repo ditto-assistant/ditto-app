@@ -96,7 +96,6 @@ export default function SendMessage({
   } = useComposeContext()
   const { clearPrompt } = usePromptStorage()
   const { triggerSync } = useMemorySyncContext()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const logoButtonRef = useRef<HTMLDivElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -683,8 +682,6 @@ export default function SendMessage({
             </Button>
           </div>
         )}
-
-        <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>
     </div>
   )

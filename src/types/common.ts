@@ -86,10 +86,11 @@ export type Pair = z.infer<typeof PairSchema>
 export const PairSearchResultSchema = z.object({
   results: z.array(PairSchema),
   metadata: z.object({
-    query: z.string(),
-    top_k: z.number(),
+    limit: z.number(),
+    offset: z.number(),
     subject_id: z.string().optional(),
     subject_text: z.string().optional(),
+    total_found: z.number(),
   }),
 })
 

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 export function RouterErrorBoundary() {
   const error = useRouteError()
 
-  const getErrorMessage = () => {
+  const getErrorMessage = (): string => {
     if (isRouteErrorResponse(error)) {
       return `${error.status} ${error.statusText}`
     }
@@ -53,7 +53,6 @@ export function RouterErrorBoundary() {
   }
 
   const handleReportIssue = () => {
-    const errorDetails = getErrorDetails()
     const issueTitle = encodeURIComponent(`Routing Error: ${getErrorMessage()}`)
 
     let errorInfo = ""

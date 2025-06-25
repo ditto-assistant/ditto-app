@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React from "react"
 import { Brain, Sparkles, Zap, CheckCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -11,10 +11,7 @@ interface SyncIndicatorProps {
 const SyncIndicator: React.FC<SyncIndicatorProps> = ({
   isVisible,
   currentStage,
-  onComplete,
 }) => {
-  const [isAnimating, setIsAnimating] = useState(false)
-
   const phases = [
     {
       icon: Brain,
@@ -35,14 +32,6 @@ const SyncIndicator: React.FC<SyncIndicatorProps> = ({
     0,
     Math.min(currentStage - 1, phases.length - 1)
   )
-
-  useEffect(() => {
-    if (!isVisible) {
-      setIsAnimating(false)
-      return
-    }
-    setIsAnimating(true)
-  }, [isVisible, currentStage, phases, currentPhase])
 
   if (!isVisible) {
     return null
