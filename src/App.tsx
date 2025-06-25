@@ -33,7 +33,6 @@ import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FontSizeProvider } from "@/hooks/useFontSize"
-import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { RouterErrorBoundary } from "@/components/RouterErrorBoundary"
 
 initUpdateService()
@@ -128,8 +127,7 @@ const modalRegistry: ModalRegistry = {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BalanceProvider>
             <MemoryCountProvider>
@@ -188,7 +186,6 @@ function App() {
           </BalanceProvider>
         </AuthProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
   )
 }
 
