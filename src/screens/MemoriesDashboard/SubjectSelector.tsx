@@ -106,7 +106,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
   const handleTouchStart = (subject: Subject) => {
     const timer = setTimeout(() => {
       startEditing(subject)
-    }, 600) // 600ms long press
+    }, 1000) // 1000ms long press for better accessibility
     setTouchTimer(timer)
   }
 
@@ -174,6 +174,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                     disabled={saving || !editingText.trim()}
                     className="p-1 rounded text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Save"
+                    aria-label="Save subject name changes"
                   >
                     <Check size={14} />
                   </button>
@@ -182,6 +183,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                     disabled={saving}
                     className="p-1 rounded text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Cancel"
+                    aria-label="Cancel editing subject name"
                   >
                     <X size={14} />
                   </button>
@@ -202,6 +204,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                   onTouchCancel={handleTouchEnd}
                   type="button"
                   title="Click to select • Long press to rename"
+                  aria-label={`Select subject: ${subject.subject_text}${subject.pair_count !== undefined ? `, ${subject.pair_count} pairs` : ''}`}
                 >
                   {subject.subject_text}
                   {subject.pair_count !== undefined && (
@@ -213,10 +216,20 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
                   {/* Edit icon on hover (desktop) */}
                   <Edit2
                     size={12}
-                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-full p-1 w-5 h-5 text-muted-foreground hidden md:block"
+                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-full p-1 w-5 h-5 text-muted-foreground hidden md:block cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation()
                       startEditing(subject)
+                    }}
+                    aria-label={`Edit subject: ${subject.subject_text}`}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        startEditing(subject)
+                      }
                     }}
                   />
                 </button>
