@@ -54,10 +54,8 @@ export function RouterErrorBoundary() {
 
   const handleReportIssue = () => {
     const errorDetails = getErrorDetails()
-    const issueTitle = encodeURIComponent(
-      `Routing Error: ${getErrorMessage()}`
-    )
-    
+    const issueTitle = encodeURIComponent(`Routing Error: ${getErrorMessage()}`)
+
     let errorInfo = ""
     if (isRouteErrorResponse(error)) {
       errorInfo = `**Route Error Response:**
@@ -147,7 +145,7 @@ The routing failed with the error shown above.`
                       {key}:
                     </span>
                     <p className="text-muted-foreground break-all">
-                      {typeof value === "object" 
+                      {typeof value === "object"
                         ? JSON.stringify(value, null, 2)
                         : String(value)}
                     </p>
