@@ -154,6 +154,7 @@ type DashboardAction =
   | { type: "SELECT_SUBJECT_AND_RESET_PAIRS"; payload: { subject: Subject } }
   | { type: "START_EDITING_SUBJECT" }
   | { type: "FINISH_EDITING_SUBJECT" }
+  | { type: "LOAD_MORE_SUBJECTS_COMPLETE"; payload: { newResults: Subject[]; newOffset: number } }
 
 // Initial state
 const initialState: DashboardState = {
@@ -361,6 +362,13 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         editingSelectedSubject: false,
         editingText: "",
         savingEdit: false
+      }
+    case "LOAD_MORE_SUBJECTS_COMPLETE":
+      return {
+        ...state,
+        subjects: deduplicateSubjects(state.subjects, action.payload.newResults),
+        subjectsOffset: action.payload.newOffset,
+        hasMoreSubjects: action.payload.newResults.length === 10
       }
     default:
       return state
@@ -603,10 +611,11 @@ export default function MemoriesDashboardOverlay() {
       if (res.err) throw new Error(res.err)
       const newResults = res.ok?.results || []
 
-      // Deduplicate subjects by ID to prevent duplicates
-      dispatch({ type: "APPEND_SUBJECTS", payload: newResults })
-      dispatch({ type: "SET_SUBJECTS_OFFSET", payload: newOffset })
-      dispatch({ type: "SET_HAS_MORE_SUBJECTS", payload: newResults.length === 10 })
+      // Deduplicate subjects by ID to prevent duplicates and update state in one action
+      dispatch({ 
+        type: "LOAD_MORE_SUBJECTS_COMPLETE", 
+        payload: { newResults, newOffset }
+      })
     } catch (e: any) {
       dispatch({ type: "SET_SUBJECTS_ERROR", payload: e.message })
     } finally {
