@@ -72,12 +72,8 @@ export default function PairSearchSection({
               memories={pairs.sort((a, b) => {
                 // Always maintain chronological order (newest first) for pairs in a subject
                 // Backend already returns them in chronological order, but ensure consistency
-                const aTime = a.timestamp
-                  ? new Date(a.timestamp).getTime()
-                  : 0
-                const bTime = b.timestamp
-                  ? new Date(b.timestamp).getTime()
-                  : 0
+                const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0
+                const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0
                 return bTime - aTime
               })}
               onCopy={onCopy}

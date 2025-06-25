@@ -92,7 +92,7 @@ export const useMemorySearch = (
   dispatch: React.Dispatch<DashboardAction>,
   user: any,
   preferences: any,
-  searchInputRef: React.RefObject<HTMLInputElement>
+  searchInputRef: React.RefObject<HTMLInputElement | null>
 ) => {
   const handleSearch = useCallback(async () => {
     const searchTerm = searchInputRef.current?.value ?? ""
@@ -156,26 +156,29 @@ export const useSubjectManagement = (
   state: any
 ) => {
   // Subject search handler
-  const handleSubjectSearch = useCallback(async (query: string) => {
-    if (!user?.uid) return
-    dispatch({ type: "INIT_SUBJECT_SEARCH", payload: { query } })
-    try {
-      const res = await searchSubjects({ userID: user.uid, query, topK: 10 })
-      if (res.err) throw new Error(res.err)
-      const searchResults = res.ok?.results || []
-      // Ensure no duplicates even in search results
-      const uniqueResults = searchResults.filter(
-        (subject, index, self) =>
-          index === self.findIndex((s) => s.id === subject.id)
-      )
-      dispatch({
-        type: "COMPLETE_SUBJECT_SEARCH",
-        payload: { subjects: uniqueResults },
-      })
-    } catch (e: any) {
-      dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
-    }
-  }, [dispatch, user])
+  const handleSubjectSearch = useCallback(
+    async (query: string) => {
+      if (!user?.uid) return
+      dispatch({ type: "INIT_SUBJECT_SEARCH", payload: { query } })
+      try {
+        const res = await searchSubjects({ userID: user.uid, query, topK: 10 })
+        if (res.err) throw new Error(res.err)
+        const searchResults = res.ok?.results || []
+        // Ensure no duplicates even in search results
+        const uniqueResults = searchResults.filter(
+          (subject, index, self) =>
+            index === self.findIndex((s) => s.id === subject.id)
+        )
+        dispatch({
+          type: "COMPLETE_SUBJECT_SEARCH",
+          payload: { subjects: uniqueResults },
+        })
+      } catch (e: any) {
+        dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
+      }
+    },
+    [dispatch, user]
+  )
 
   // Show more subjects handler
   const handleShowMoreSubjects = useCallback(async () => {
@@ -235,9 +238,12 @@ export const useSubjectManagement = (
   }, [dispatch, user])
 
   // Handle subject updates
-  const handleSubjectUpdated = useCallback((updatedSubject: Subject) => {
-    dispatch({ type: "UPDATE_SUBJECT", payload: updatedSubject })
-  }, [dispatch])
+  const handleSubjectUpdated = useCallback(
+    (updatedSubject: Subject) => {
+      dispatch({ type: "UPDATE_SUBJECT", payload: updatedSubject })
+    },
+    [dispatch]
+  )
 
   return {
     handleSubjectSearch,
@@ -253,96 +259,103 @@ export const usePairManagement = (
   state: any
 ) => {
   // Load recent pairs for selected subject
-  const loadRecentPairs = useCallback(async (
-    subject: Subject,
-    offset: number = 0,
-    append: boolean = false
-  ) => {
-    if (!user?.uid) return
-    dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: append } })
+  const loadRecentPairs = useCallback(
+    async (subject: Subject, offset: number = 0, append: boolean = false) => {
+      if (!user?.uid) return
+      dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: append } })
 
-    try {
-      const res = await getSubjectPairsRecent({
-        userID: user.uid,
-        subjectID: subject.id,
-        subjectText: subject.subject_text,
-        limit: 5,
-        offset,
-      })
+      try {
+        const res = await getSubjectPairsRecent({
+          userID: user.uid,
+          subjectID: subject.id,
+          subjectText: subject.subject_text,
+          limit: 5,
+          offset,
+        })
 
-      if (res.err) throw new Error(res.err)
+        if (res.err) throw new Error(res.err)
 
-      const newPairs = res.ok?.results || []
-      dispatch({
-        type: "COMPLETE_PAIRS_FETCH",
-        payload: {
-          pairs: newPairs,
-          hasMore: newPairs.length === 5,
-          offset: append ? offset : 0,
-          append,
-        },
-      })
-    } catch (e: any) {
-      dispatch({
-        type: "FAIL_PAIRS_FETCH",
-        payload: { error: e.message, isLoadMore: append },
-      })
-    }
-  }, [dispatch, user])
+        const newPairs = res.ok?.results || []
+        dispatch({
+          type: "COMPLETE_PAIRS_FETCH",
+          payload: {
+            pairs: newPairs,
+            hasMore: newPairs.length === 5,
+            offset: append ? offset : 0,
+            append,
+          },
+        })
+      } catch (e: any) {
+        dispatch({
+          type: "FAIL_PAIRS_FETCH",
+          payload: { error: e.message, isLoadMore: append },
+        })
+      }
+    },
+    [dispatch, user]
+  )
 
   // Load more pairs handler
   const handleLoadMorePairs = useCallback(async () => {
     if (!state.selectedSubject || state.isLoadingMorePairs) return
     const newOffset = state.pairsOffset + 5
     await loadRecentPairs(state.selectedSubject, newOffset, true)
-  }, [loadRecentPairs, state.selectedSubject, state.isLoadingMorePairs, state.pairsOffset])
+  }, [
+    loadRecentPairs,
+    state.selectedSubject,
+    state.isLoadingMorePairs,
+    state.pairsOffset,
+  ])
 
   // Pair search within subject
-  const handlePairSearch = useCallback(async (query: string) => {
-    if (!user?.uid || !state.selectedSubject) return
-    dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: false } })
+  const handlePairSearch = useCallback(
+    async (query: string) => {
+      if (!user?.uid || !state.selectedSubject) return
+      dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: false } })
 
-    try {
-      const res = await getSubjectPairs({
-        userID: user.uid,
-        subjectID: state.selectedSubject.id,
-        subjectText: state.selectedSubject.subject_text,
-        query,
-        topK: 10,
-      })
-
-      if (res.err) throw new Error(res.err)
-
-      // Only set pairs if results is an array
-      if (Array.isArray(res.ok?.results)) {
-        dispatch({
-          type: "COMPLETE_PAIRS_FETCH",
-          payload: {
-            pairs: res.ok.results,
-            hasMore: false,
-            offset: 0,
-            append: false,
-          },
+      try {
+        const res = await getSubjectPairs({
+          userID: user.uid,
+          subjectID: state.selectedSubject.id,
+          subjectText: state.selectedSubject.subject_text,
+          query,
+          topK: 10,
         })
-      } else {
+
+        if (res.err) throw new Error(res.err)
+
+        // Only set pairs if results is an array
+        if (Array.isArray(res.ok?.results)) {
+          dispatch({
+            type: "COMPLETE_PAIRS_FETCH",
+            payload: {
+              pairs: res.ok.results,
+              hasMore: false,
+              offset: 0,
+              append: false,
+            },
+          })
+        } else {
+          dispatch({
+            type: "FAIL_PAIRS_FETCH",
+            payload: {
+              error:
+                typeof res.ok?.results === "string"
+                  ? res.ok.results
+                  : "No results found.",
+              isLoadMore: false,
+            },
+          })
+        }
+      } catch (e: any) {
         dispatch({
           type: "FAIL_PAIRS_FETCH",
-          payload: {
-            error:
-              typeof res.ok?.results === "string"
-                ? res.ok.results
-                : "No results found.",
-            isLoadMore: false,
-          },
+          payload: { error: e.message, isLoadMore: false },
         })
       }
-    } catch (e: any) {
-      dispatch({
-        type: "FAIL_PAIRS_FETCH",
-        payload: { error: e.message, isLoadMore: false },
-      })
-    }
-  }, [dispatch, user, state.selectedSubject])
+    },
+    [dispatch, user, state.selectedSubject]
+  )
 
   return {
     loadRecentPairs,
@@ -371,7 +384,8 @@ export const useSubjectEditing = (
 
   // Save edited selected subject
   const saveEditSelectedSubject = useCallback(async () => {
-    if (!state.selectedSubject || !state.editingText.trim() || !user?.uid) return
+    if (!state.selectedSubject || !state.editingText.trim() || !user?.uid)
+      return
 
     dispatch({ type: "SET_SAVING_EDIT", payload: true })
     try {
@@ -400,15 +414,24 @@ export const useSubjectEditing = (
     } finally {
       dispatch({ type: "SET_SAVING_EDIT", payload: false })
     }
-  }, [dispatch, user, state.selectedSubject, state.editingText, handleSubjectUpdated])
+  }, [
+    dispatch,
+    user,
+    state.selectedSubject,
+    state.editingText,
+    handleSubjectUpdated,
+  ])
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      saveEditSelectedSubject()
-    } else if (e.key === "Escape") {
-      cancelEditingSelectedSubject()
-    }
-  }, [saveEditSelectedSubject, cancelEditingSelectedSubject])
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        saveEditSelectedSubject()
+      } else if (e.key === "Escape") {
+        cancelEditingSelectedSubject()
+      }
+    },
+    [saveEditSelectedSubject, cancelEditingSelectedSubject]
+  )
 
   return {
     startEditingSelectedSubject,

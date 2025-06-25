@@ -26,32 +26,35 @@ import {
 export default function MemoriesDashboardOverlay() {
   const { confirmMemoryDeletion } = useMemoryDeletion()
   const { showMemoryNetwork } = useMemoryNetwork()
-  
+
   // Use custom hooks for state management and business logic
-  const { state, dispatch, user, preferences, memoryCount, searchInputRef } = useDashboardState()
-  
-  const { handleSearch } = useMemorySearch(dispatch, user, preferences, searchInputRef)
-  
+  const { state, dispatch, user, preferences, memoryCount, searchInputRef } =
+    useDashboardState()
+
+  const { handleSearch } = useMemorySearch(
+    dispatch,
+    user,
+    preferences,
+    searchInputRef
+  )
+
   const {
     handleSubjectSearch,
     handleShowMoreSubjects,
     handleResetSubjectSearch,
     handleSubjectUpdated,
   } = useSubjectManagement(dispatch, user, state)
-  
-  const { loadRecentPairs, handleLoadMorePairs, handlePairSearch } = usePairManagement(
-    dispatch,
-    user,
-    state
-  )
-  
+
+  const { loadRecentPairs, handleLoadMorePairs, handlePairSearch } =
+    usePairManagement(dispatch, user, state)
+
   const {
     startEditingSelectedSubject,
     cancelEditingSelectedSubject,
     saveEditSelectedSubject,
     handleKeyPress,
   } = useSubjectEditing(dispatch, user, state, handleSubjectUpdated)
-  
+
   const { getListViewMemories } = useMemoryUtils(state.memories)
 
   // Destructure state for easier access
@@ -78,7 +81,7 @@ export default function MemoriesDashboardOverlay() {
     editingText,
     savingEdit,
   } = state
-  
+
   const listViewMemories = getListViewMemories()
 
   const handleCopy = useCallback(

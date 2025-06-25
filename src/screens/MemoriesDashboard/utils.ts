@@ -23,7 +23,10 @@ export const deduplicateSubjects = (
 }
 
 // Utility function to deduplicate pairs by ID
-export const deduplicatePairs = (existingPairs: Pair[], newPairs: Pair[]): Pair[] => {
+export const deduplicatePairs = (
+  existingPairs: Pair[],
+  newPairs: Pair[]
+): Pair[] => {
   const existingIds = new Set(existingPairs.map((p) => p.id))
   const uniqueNewPairs = newPairs.filter((p) => !existingIds.has(p.id))
   return [...existingPairs, ...uniqueNewPairs]
