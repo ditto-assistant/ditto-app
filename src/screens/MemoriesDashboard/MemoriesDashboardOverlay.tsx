@@ -141,6 +141,19 @@ type DashboardAction =
   | { type: "APPEND_PAIRS"; payload: Pair[] }
   | { type: "RESET_PAIRS" }
   | { type: "RESET_SUBJECTS_TO_TOP" }
+  // Consolidated action types for efficient state updates
+  | { type: "INIT_MEMORY_SEARCH"; payload: { searchTerm: string } }
+  | { type: "INIT_SUBJECTS_FETCH" }
+  | { type: "COMPLETE_SUBJECTS_FETCH"; payload: { subjects: Subject[]; hasMore: boolean; isSearchMode?: boolean } }
+  | { type: "FAIL_SUBJECTS_FETCH"; payload: { error: string } }
+  | { type: "INIT_SUBJECT_SEARCH"; payload: { query: string } }
+  | { type: "COMPLETE_SUBJECT_SEARCH"; payload: { subjects: Subject[] } }
+  | { type: "INIT_PAIRS_FETCH"; payload: { isLoadMore?: boolean } }
+  | { type: "COMPLETE_PAIRS_FETCH"; payload: { pairs: Pair[]; hasMore: boolean; offset: number; append?: boolean } }
+  | { type: "FAIL_PAIRS_FETCH"; payload: { error: string; isLoadMore?: boolean } }
+  | { type: "SELECT_SUBJECT_AND_RESET_PAIRS"; payload: { subject: Subject } }
+  | { type: "START_EDITING_SUBJECT" }
+  | { type: "FINISH_EDITING_SUBJECT" }
 
 // Initial state
 const initialState: DashboardState = {
@@ -255,6 +268,100 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         isSubjectSearchMode: false,
         lastSubjectSearch: ""
       }
+    // Consolidated action handlers for efficient state updates
+    case "INIT_MEMORY_SEARCH":
+      return {
+        ...state,
+        loading: true,
+        error: null,
+        memories: [],
+        lastSearchedTerm: action.payload.searchTerm
+      }
+    case "INIT_SUBJECTS_FETCH":
+      return {
+        ...state,
+        subjectsLoading: true,
+        subjectsError: null,
+        subjectsOffset: 0
+      }
+    case "COMPLETE_SUBJECTS_FETCH":
+      return {
+        ...state,
+        subjectsLoading: false,
+        subjects: action.payload.subjects,
+        hasMoreSubjects: action.payload.hasMore,
+        isSubjectSearchMode: action.payload.isSearchMode ?? false
+      }
+    case "FAIL_SUBJECTS_FETCH":
+      return {
+        ...state,
+        subjectsLoading: false,
+        subjectsError: action.payload.error,
+        subjects: [],
+        hasMoreSubjects: false
+      }
+    case "INIT_SUBJECT_SEARCH":
+      return {
+        ...state,
+        subjectsLoading: true,
+        subjectsError: null,
+        lastSubjectSearch: action.payload.query,
+        isSubjectSearchMode: true,
+        hasMoreSubjects: false
+      }
+    case "COMPLETE_SUBJECT_SEARCH":
+      return {
+        ...state,
+        subjectsLoading: false,
+        subjects: action.payload.subjects
+      }
+    case "INIT_PAIRS_FETCH":
+      return {
+        ...state,
+        pairsLoading: !action.payload.isLoadMore,
+        isLoadingMorePairs: action.payload.isLoadMore ?? false,
+        pairsError: null,
+        ...(action.payload.isLoadMore ? {} : { pairsOffset: 0 })
+      }
+    case "COMPLETE_PAIRS_FETCH":
+      return {
+        ...state,
+        pairsLoading: false,
+        isLoadingMorePairs: false,
+        pairs: action.payload.append ? deduplicatePairs(state.pairs, action.payload.pairs) : action.payload.pairs,
+        hasMorePairs: action.payload.hasMore,
+        pairsOffset: action.payload.offset
+      }
+    case "FAIL_PAIRS_FETCH":
+      return {
+        ...state,
+        pairsLoading: !action.payload.isLoadMore,
+        isLoadingMorePairs: false,
+        pairsError: action.payload.error,
+        ...(action.payload.isLoadMore ? {} : { pairs: [] })
+      }
+    case "SELECT_SUBJECT_AND_RESET_PAIRS":
+      return {
+        ...state,
+        selectedSubject: action.payload.subject,
+        pairs: [],
+        pairsError: null,
+        pairsOffset: 0,
+        hasMorePairs: true
+      }
+    case "START_EDITING_SUBJECT":
+      return {
+        ...state,
+        editingSelectedSubject: true,
+        editingText: state.selectedSubject?.subject_text ?? ""
+      }
+    case "FINISH_EDITING_SUBJECT":
+      return {
+        ...state,
+        editingSelectedSubject: false,
+        editingText: "",
+        savingEdit: false
+      }
     default:
       return state
   }
@@ -321,9 +428,7 @@ export default function MemoriesDashboardOverlay() {
   useEffect(() => {
     const fetchTopSubjects = async () => {
       if (!user?.uid) return
-      dispatch({ type: "SET_SUBJECTS_LOADING", payload: true })
-      dispatch({ type: "SET_SUBJECTS_ERROR", payload: null })
-      dispatch({ type: "SET_SUBJECTS_OFFSET", payload: 0 })
+      dispatch({ type: "INIT_SUBJECTS_FETCH" })
       try {
         const res = await getTopSubjects({
           userID: user.uid,
@@ -337,15 +442,16 @@ export default function MemoriesDashboardOverlay() {
           (subject, index, self) =>
             index === self.findIndex((s) => s.id === subject.id)
         )
-        dispatch({ type: "SET_SUBJECTS", payload: uniqueResults })
-        dispatch({ type: "SET_HAS_MORE_SUBJECTS", payload: results.length === 10 })
-        dispatch({ type: "SET_IS_SUBJECT_SEARCH_MODE", payload: false })
+        dispatch({ 
+          type: "COMPLETE_SUBJECTS_FETCH", 
+          payload: { 
+            subjects: uniqueResults, 
+            hasMore: results.length === 10,
+            isSearchMode: false
+          }
+        })
       } catch (e: any) {
-        dispatch({ type: "SET_SUBJECTS_ERROR", payload: e.message })
-        dispatch({ type: "SET_SUBJECTS", payload: [] })
-        dispatch({ type: "SET_HAS_MORE_SUBJECTS", payload: false })
-      } finally {
-        dispatch({ type: "SET_SUBJECTS_LOADING", payload: false })
+        dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
       }
     }
     fetchTopSubjects()
@@ -357,10 +463,7 @@ export default function MemoriesDashboardOverlay() {
       toast.error("Please enter a search term")
       return
     }
-    dispatch({ type: "SET_LOADING", payload: true })
-    dispatch({ type: "SET_ERROR", payload: null })
-    dispatch({ type: "SET_MEMORIES", payload: [] })
-    dispatch({ type: "SET_LAST_SEARCHED_TERM", payload: searchTerm })
+    dispatch({ type: "INIT_MEMORY_SEARCH", payload: { searchTerm } })
     try {
       const userID = user?.uid
       if (!userID) throw new Error("User not authenticated")
@@ -470,11 +573,7 @@ export default function MemoriesDashboardOverlay() {
   // Subject search handler
   const handleSubjectSearch = async (query: string) => {
     if (!user?.uid) return
-    setSubjectsLoading(true)
-    setSubjectsError(null)
-    setLastSubjectSearch(query)
-    setIsSubjectSearchMode(true)
-    setHasMoreSubjects(false) // No pagination for search results
+    dispatch({ type: "INIT_SUBJECT_SEARCH", payload: { query } })
     try {
       const res = await searchSubjects({ userID: user.uid, query, topK: 10 })
       if (res.err) throw new Error(res.err)
@@ -484,19 +583,16 @@ export default function MemoriesDashboardOverlay() {
         (subject, index, self) =>
           index === self.findIndex((s) => s.id === subject.id)
       )
-      setSubjects(uniqueResults)
+      dispatch({ type: "COMPLETE_SUBJECT_SEARCH", payload: { subjects: uniqueResults } })
     } catch (e: any) {
-      setSubjectsError(e.message)
-      setSubjects([])
-    } finally {
-      setSubjectsLoading(false)
+      dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
     }
   }
 
   // Show more subjects handler
   const handleShowMoreSubjects = async () => {
     if (!user?.uid || showMoreLoading) return
-    setShowMoreLoading(true)
+    dispatch({ type: "SET_SHOW_MORE_LOADING", payload: true })
     try {
       const newOffset = subjectsOffset + 10
       const res = await getTopSubjects({
@@ -508,25 +604,21 @@ export default function MemoriesDashboardOverlay() {
       const newResults = res.ok?.results || []
 
       // Deduplicate subjects by ID to prevent duplicates
-      setSubjects((prev) => deduplicateSubjects(prev, newResults))
-
-      setSubjectsOffset(newOffset)
-      setHasMoreSubjects(newResults.length === 10) // If we got 10, there might be more
+      dispatch({ type: "APPEND_SUBJECTS", payload: newResults })
+      dispatch({ type: "SET_SUBJECTS_OFFSET", payload: newOffset })
+      dispatch({ type: "SET_HAS_MORE_SUBJECTS", payload: newResults.length === 10 })
     } catch (e: any) {
-      setSubjectsError(e.message)
+      dispatch({ type: "SET_SUBJECTS_ERROR", payload: e.message })
     } finally {
-      setShowMoreLoading(false)
+      dispatch({ type: "SET_SHOW_MORE_LOADING", payload: false })
     }
   }
 
   // Reset subject search handler
   const handleResetSubjectSearch = async () => {
     if (!user?.uid) return
-    setSubjectsLoading(true)
-    setSubjectsError(null)
-    setLastSubjectSearch("")
-    setIsSubjectSearchMode(false)
-    setSubjectsOffset(0)
+    dispatch({ type: "INIT_SUBJECTS_FETCH" })
+    dispatch({ type: "RESET_SUBJECTS_TO_TOP" })
     try {
       const res = await getTopSubjects({
         userID: user.uid,
@@ -540,14 +632,16 @@ export default function MemoriesDashboardOverlay() {
         (subject, index, self) =>
           index === self.findIndex((s) => s.id === subject.id)
       )
-      setSubjects(uniqueResults)
-      setHasMoreSubjects(results.length === 10)
+      dispatch({ 
+        type: "COMPLETE_SUBJECTS_FETCH", 
+        payload: { 
+          subjects: uniqueResults, 
+          hasMore: results.length === 10,
+          isSearchMode: false
+        }
+      })
     } catch (e: any) {
-      setSubjectsError(e.message)
-      setSubjects([])
-      setHasMoreSubjects(false)
-    } finally {
-      setSubjectsLoading(false)
+      dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
     }
   }
 
@@ -558,13 +652,7 @@ export default function MemoriesDashboardOverlay() {
     append: boolean = false
   ) => {
     if (!user?.uid) return
-    if (!append) {
-      setPairsLoading(true)
-      setPairsError(null)
-      setPairsOffset(0)
-    } else {
-      setIsLoadingMorePairs(true)
-    }
+    dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: append } })
 
     try {
       const res = await getSubjectPairsRecent({
@@ -578,27 +666,17 @@ export default function MemoriesDashboardOverlay() {
       if (res.err) throw new Error(res.err)
 
       const newPairs = res.ok?.results || []
-      if (append) {
-        // Deduplicate pairs by ID to prevent duplicates, but maintain chronological order
-        const deduplicatedPairs = deduplicatePairs(pairs, newPairs)
-        setPairs(deduplicatedPairs)
-        setPairsOffset(offset)
-      } else {
-        setPairs(newPairs)
-        setPairsOffset(0)
-      }
-      setHasMorePairs(newPairs.length === 5) // If we got 5, there might be more
+      dispatch({ 
+        type: "COMPLETE_PAIRS_FETCH", 
+        payload: { 
+          pairs: newPairs, 
+          hasMore: newPairs.length === 5,
+          offset: append ? offset : 0,
+          append
+        }
+      })
     } catch (e: any) {
-      setPairsError(e.message)
-      if (!append) {
-        setPairs([])
-      }
-    } finally {
-      if (append) {
-        setIsLoadingMorePairs(false)
-      } else {
-        setPairsLoading(false)
-      }
+      dispatch({ type: "FAIL_PAIRS_FETCH", payload: { error: e.message, isLoadMore: append } })
     }
   }
 
@@ -612,8 +690,7 @@ export default function MemoriesDashboardOverlay() {
   // Pair search within subject
   const handlePairSearch = async (query: string) => {
     if (!user?.uid || !selectedSubject) return
-    setPairsLoading(true)
-    setPairsError(null)
+    dispatch({ type: "INIT_PAIRS_FETCH", payload: { isLoadMore: false } })
     
     try {
       const res = await getSubjectPairs({
@@ -628,20 +705,26 @@ export default function MemoriesDashboardOverlay() {
 
       // Only set pairs if results is an array
       if (Array.isArray(res.ok?.results)) {
-        setPairs(res.ok.results)
+        dispatch({ 
+          type: "COMPLETE_PAIRS_FETCH", 
+          payload: { 
+            pairs: res.ok.results, 
+            hasMore: false,
+            offset: 0,
+            append: false
+          }
+        })
       } else {
-        setPairs([])
-        setPairsError(
-          typeof res.ok?.results === "string"
-            ? res.ok.results
-            : "No results found."
-        )
+        dispatch({ 
+          type: "FAIL_PAIRS_FETCH", 
+          payload: { 
+            error: typeof res.ok?.results === "string" ? res.ok.results : "No results found.",
+            isLoadMore: false
+          }
+        })
       }
     } catch (e: any) {
-      setPairsError(e.message)
-      setPairs([])
-    } finally {
-      setPairsLoading(false)
+      dispatch({ type: "FAIL_PAIRS_FETCH", payload: { error: e.message, isLoadMore: false } })
     }
   }
 
@@ -652,47 +735,35 @@ export default function MemoriesDashboardOverlay() {
       (selectedSubject && pairs.length > 0) ||
       (!selectedSubject && memories.length > 0)
     ) {
-      setSubjectsCollapsed(true)
+      dispatch({ type: "SET_SUBJECTS_COLLAPSED", payload: true })
     }
   }, [selectedSubject, pairs.length, memories.length])
 
   // Handle subject updates from SubjectSelector
   const handleSubjectUpdated = useCallback(
     (updatedSubject: Subject) => {
-      // Update the subjects list
-      setSubjects((prevSubjects) =>
-        prevSubjects.map((subject) =>
-          subject.id === updatedSubject.id ? updatedSubject : subject
-        )
-      )
-
-      // Update the selected subject if it's the one being edited
-      if (selectedSubject && selectedSubject.id === updatedSubject.id) {
-        setSelectedSubject(updatedSubject)
-      }
+      dispatch({ type: "UPDATE_SUBJECT", payload: updatedSubject })
     },
-    [selectedSubject]
+    []
   )
 
   // Start editing selected subject
   const startEditingSelectedSubject = () => {
     if (selectedSubject) {
-      setEditingSelectedSubject(true)
-      setEditingText(selectedSubject.subject_text)
+      dispatch({ type: "START_EDITING_SUBJECT" })
     }
   }
 
   // Cancel editing selected subject
   const cancelEditingSelectedSubject = () => {
-    setEditingSelectedSubject(false)
-    setEditingText("")
+    dispatch({ type: "FINISH_EDITING_SUBJECT" })
   }
 
   // Save edited selected subject
   const saveEditSelectedSubject = async () => {
     if (!selectedSubject || !editingText.trim() || !user?.uid) return
 
-    setSavingEdit(true)
+    dispatch({ type: "SET_SAVING_EDIT", payload: true })
     try {
       const result = await renameSubject({
         userID: user.uid,
@@ -711,13 +782,13 @@ export default function MemoriesDashboardOverlay() {
         // Update the subject in both the subjects list and selected subject
         handleSubjectUpdated(result.ok.subject)
 
-        cancelEditingSelectedSubject()
+        dispatch({ type: "FINISH_EDITING_SUBJECT" })
       }
     } catch (error) {
       toast.error("Failed to rename subject")
       console.error("Error renaming subject:", error)
     } finally {
-      setSavingEdit(false)
+      dispatch({ type: "SET_SAVING_EDIT", payload: false })
     }
   }
 
@@ -739,7 +810,7 @@ export default function MemoriesDashboardOverlay() {
             <button
               type="button"
               className="text-xs px-2 py-1 rounded bg-muted border border-border hover:bg-primary/10 transition-colors"
-              onClick={() => setSubjectsCollapsed((c) => !c)}
+              onClick={() => dispatch({ type: "SET_SUBJECTS_COLLAPSED", payload: !subjectsCollapsed })}
             >
               {subjectsCollapsed ? "Expand" : "Collapse"}
             </button>
@@ -755,7 +826,7 @@ export default function MemoriesDashboardOverlay() {
                     <input
                       type="text"
                       value={editingText}
-                      onChange={(e) => setEditingText(e.target.value)}
+                      onChange={(e) => dispatch({ type: "SET_EDITING_TEXT", payload: e.target.value })}
                       onKeyDown={handleKeyPress}
                       className="text-sm bg-background border border-border rounded px-2 py-1 flex-1 max-w-[200px]"
                       autoFocus
@@ -803,7 +874,7 @@ export default function MemoriesDashboardOverlay() {
                   <button
                     type="button"
                     className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted transition-colors"
-                    onClick={() => setSelectedSubject(null)}
+                    onClick={() => dispatch({ type: "SET_SELECTED_SUBJECT", payload: null })}
                   >
                     Clear
                   </button>
@@ -819,11 +890,7 @@ export default function MemoriesDashboardOverlay() {
               userID={user?.uid}
               onSubjectUpdated={handleSubjectUpdated}
               onSelect={(subject) => {
-                setSelectedSubject(subject)
-                setPairs([])
-                setPairsError(null)
-                setPairsOffset(0)
-                setHasMorePairs(true)
+                dispatch({ type: "SELECT_SUBJECT_AND_RESET_PAIRS", payload: { subject } })
                 // Automatically load recent pairs for this subject
                 loadRecentPairs(subject)
               }}
@@ -957,7 +1024,7 @@ export default function MemoriesDashboardOverlay() {
                 <div className="flex gap-3">
                   <Button
                     variant={activeView === "list" ? "default" : "outline"}
-                    onClick={() => setActiveView("list")}
+                    onClick={() => dispatch({ type: "SET_ACTIVE_VIEW", payload: "list" })}
                     className={
                       activeView === "list"
                         ? "bg-primary text-primary-foreground border-primary"
@@ -969,7 +1036,7 @@ export default function MemoriesDashboardOverlay() {
                   </Button>
                   <Button
                     variant={activeView === "network" ? "default" : "outline"}
-                    onClick={() => setActiveView("network")}
+                    onClick={() => dispatch({ type: "SET_ACTIVE_VIEW", payload: "network" })}
                     className={
                       activeView === "network"
                         ? "bg-primary text-primary-foreground border-primary"
