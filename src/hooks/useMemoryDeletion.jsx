@@ -19,18 +19,24 @@ export const useMemoryDeletion = (updateConversation) => {
         const result = await deleteConversationComplete(user.uid, docId)
 
         if (!(result instanceof Error)) {
-          // Log cleanup stats to console
+          // Show success message with cleanup stats if available
+          let successMessage = "Memory deleted successfully"
           if (result.kg_cleanup && result.kg_cleanup.cleanup_stats) {
             const stats = result.kg_cleanup.cleanup_stats
-            console.log("🧹 [Memory Deletion] Knowledge Graph cleanup stats:", {
-              pairs_deleted: stats.pairs_deleted,
-              subjects_removed: stats.subjects_removed,
-              links_removed: stats.links_removed,
-            })
+            const cleanupDetails = []
+            if (stats.pairs_deleted > 0)
+              cleanupDetails.push(`${stats.pairs_deleted} pairs`)
+            if (stats.subjects_removed > 0)
+              cleanupDetails.push(`${stats.subjects_removed} subjects`)
+            if (stats.links_removed > 0)
+              cleanupDetails.push(`${stats.links_removed} links`)
+
+            if (cleanupDetails.length > 0) {
+              successMessage += ` (cleaned: ${cleanupDetails.join(", ")})`
+            }
           }
 
-          // Show simple success message
-          toast.success("Memory deleted successfully", { id: toastId })
+          toast.success(successMessage, { id: toastId })
 
           if (updateConversation) {
             updateConversation((prevState) => ({
@@ -39,29 +45,6 @@ export const useMemoryDeletion = (updateConversation) => {
                 (msg) => msg.pairID !== docId
               ),
             }))
-
-            const prompts = JSON.parse(localStorage.getItem("prompts") || "[]")
-            const responses = JSON.parse(
-              localStorage.getItem("responses") || "[]"
-            )
-            const timestamps = JSON.parse(
-              localStorage.getItem("timestamps") || "[]"
-            )
-            const pairIDs = JSON.parse(localStorage.getItem("pairIDs") || "[]")
-
-            const pairIndex = pairIDs.indexOf(docId)
-            if (pairIndex !== -1) {
-              prompts.splice(pairIndex, 1)
-              responses.splice(pairIndex, 1)
-              timestamps.splice(pairIndex, 1)
-              pairIDs.splice(pairIndex, 1)
-
-              localStorage.setItem("prompts", JSON.stringify(prompts))
-              localStorage.setItem("responses", JSON.stringify(responses))
-              localStorage.setItem("timestamps", JSON.stringify(timestamps))
-              localStorage.setItem("pairIDs", JSON.stringify(pairIDs))
-              localStorage.setItem("histCount", pairIDs.length)
-            }
           }
 
           window.dispatchEvent(new Event("memoryUpdated"))
