@@ -128,64 +128,62 @@ const modalRegistry: ModalRegistry = {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BalanceProvider>
-            <MemoryCountProvider>
-              <ModelPreferencesProvider>
-                <ImageViewerProvider>
-                  <PlatformProvider>
-                    <MemoryNetworkProvider>
-                      <ConfirmationDialogProvider>
-                        <MemoryNodeViewerProvider>
-                          <ConversationProvider>
-                            <ServicesProvider>
-                              <PromptStorageProvider>
-                                <ComposeProvider>
-                                  <MemorySyncProvider>
-                                    <ThemeProvider
-                                      defaultTheme="system"
-                                      storageKey="ditto-ui-theme"
-                                    >
-                                      <FontSizeProvider>
-                                        <ComposeModal />
-                                        <ModalProvider registry={modalRegistry}>
-                                          <AppErrorBoundary>
-                                            <RouterProvider router={router} />
-                                          </AppErrorBoundary>
-                                          <UpdateNotification />
+      <AuthProvider>
+        <BalanceProvider>
+          <MemoryCountProvider>
+            <ModelPreferencesProvider>
+              <ImageViewerProvider>
+                <PlatformProvider>
+                  <MemoryNetworkProvider>
+                    <ConfirmationDialogProvider>
+                      <MemoryNodeViewerProvider>
+                        <ConversationProvider>
+                          <ServicesProvider>
+                            <PromptStorageProvider>
+                              <ComposeProvider>
+                                <MemorySyncProvider>
+                                  <ThemeProvider
+                                    defaultTheme="system"
+                                    storageKey="ditto-ui-theme"
+                                  >
+                                    <FontSizeProvider>
+                                      <ComposeModal />
+                                      <ModalProvider registry={modalRegistry}>
+                                        <AppErrorBoundary>
+                                          <RouterProvider router={router} />
+                                        </AppErrorBoundary>
+                                        <UpdateNotification />
 
-                                          {createPortal(
-                                            <Toaster
-                                              position="top-center"
-                                              closeButton
-                                              richColors
-                                            />,
-                                            document.getElementById(
-                                              "toast-root"
-                                            )!
-                                          )}
-                                          <ReactQueryDevtools
-                                            buttonPosition="top-left"
-                                            initialIsOpen={false}
-                                          />
-                                        </ModalProvider>
-                                      </FontSizeProvider>
-                                    </ThemeProvider>
-                                  </MemorySyncProvider>
-                                </ComposeProvider>
-                              </PromptStorageProvider>
-                            </ServicesProvider>
-                          </ConversationProvider>
-                        </MemoryNodeViewerProvider>
-                      </ConfirmationDialogProvider>
-                    </MemoryNetworkProvider>
-                  </PlatformProvider>
-                </ImageViewerProvider>
-              </ModelPreferencesProvider>
-            </MemoryCountProvider>
-          </BalanceProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+                                        {createPortal(
+                                          <Toaster
+                                            position="top-center"
+                                            closeButton
+                                            richColors
+                                          />,
+                                          document.getElementById("toast-root")!
+                                        )}
+                                        <ReactQueryDevtools
+                                          buttonPosition="top-left"
+                                          initialIsOpen={false}
+                                        />
+                                      </ModalProvider>
+                                    </FontSizeProvider>
+                                  </ThemeProvider>
+                                </MemorySyncProvider>
+                              </ComposeProvider>
+                            </PromptStorageProvider>
+                          </ServicesProvider>
+                        </ConversationProvider>
+                      </MemoryNodeViewerProvider>
+                    </ConfirmationDialogProvider>
+                  </MemoryNetworkProvider>
+                </PlatformProvider>
+              </ImageViewerProvider>
+            </ModelPreferencesProvider>
+          </MemoryCountProvider>
+        </BalanceProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
 
