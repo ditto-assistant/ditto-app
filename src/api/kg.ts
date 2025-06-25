@@ -11,6 +11,28 @@ import {
   PairSearchResult,
 } from "@/types/common"
 
+/**
+ * Sanitizes subject text input to prevent injection attacks
+ * @param text - The subject text to sanitize
+ * @returns Sanitized subject text
+ */
+function sanitizeSubjectText(text: string): string {
+  return text
+    .trim() // Remove leading/trailing whitespace
+    .slice(0, 200) // Limit to 200 characters
+    .replace(/[<>]/g, "") // Remove potential HTML/XML tags
+    .replace(/[\x00-\x1F\x7F]/g, "") // Remove control characters
+}
+
+/**
+ * Validates that sanitized subject text is not empty
+ * @param text - The sanitized subject text
+ * @returns true if valid, false otherwise
+ */
+function isValidSubjectText(text: string): boolean {
+  return text.length > 0 && text.length <= 200
+}
+
 export const RenameSubjectResponseSchema = z.object({
   success: z.boolean(),
   subject: SubjectSchema,
@@ -298,6 +320,16 @@ export async function renameSubject({
   if (tok.err) return { err: "Unable to get token" }
   if (!tok.ok) return { err: "No token" }
 
+  // Sanitize the input text
+  const sanitizedText = sanitizeSubjectText(newSubjectText)
+
+  // Validate the sanitized text
+  if (!isValidSubjectText(sanitizedText)) {
+    return {
+      err: "Invalid subject text: must be between 1 and 200 characters after sanitization",
+    }
+  }
+
   try {
     const response = await fetch(routes.kgRenameSubject(subjectId), {
       method: "PUT",
@@ -309,7 +341,7 @@ export async function renameSubject({
       body: JSON.stringify({
         user_id: userID,
         user_email: userEmail,
-        new_subject_text: newSubjectText,
+        new_subject_text: sanitizedText,
       }),
     })
     if (response.ok) {
