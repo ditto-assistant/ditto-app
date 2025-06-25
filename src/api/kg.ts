@@ -40,7 +40,10 @@ function isValidSubjectText(text: string): boolean {
  * @param errorData - The flattened Zod error data
  * @returns A readable error message
  */
-function formatValidationError(errorData: any): string {
+function formatValidationError(errorData: {
+  formErrors?: string[]
+  fieldErrors?: Record<string, string[] | undefined>
+}): string {
   const { formErrors, fieldErrors } = errorData
 
   const messages: string[] = []

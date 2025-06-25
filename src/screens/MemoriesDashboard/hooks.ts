@@ -15,7 +15,9 @@ import { useAuth } from "@/hooks/useAuth"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { flattenMemoriesForList } from "./utils"
 import { dashboardReducer } from "./reducer"
-import { initialState, DashboardAction } from "./types"
+import { initialState, DashboardAction, DashboardState } from "./types"
+import { User } from "firebase/auth"
+import { ModelPreferences } from "@/types/llm"
 
 export const useDashboardState = () => {
   const [state, dispatch] = useReducer(dashboardReducer, initialState)
@@ -71,8 +73,11 @@ export const useDashboardState = () => {
             isSearchMode: false,
           },
         })
-      } catch (e: any) {
-        dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
+      } catch (e: unknown) {
+        dispatch({
+          type: "FAIL_SUBJECTS_FETCH",
+          payload: { error: e instanceof Error ? e.message : "Unknown error" },
+        })
       }
     }
     fetchTopSubjects()
@@ -90,8 +95,8 @@ export const useDashboardState = () => {
 
 export const useMemorySearch = (
   dispatch: React.Dispatch<DashboardAction>,
-  user: any,
-  preferences: any,
+  user: User | null,
+  preferences: ModelPreferences | undefined,
   searchInputRef: React.RefObject<HTMLInputElement | null>
 ) => {
   const handleSearch = useCallback(async () => {
@@ -152,8 +157,8 @@ export const useMemorySearch = (
 
 export const useSubjectManagement = (
   dispatch: React.Dispatch<DashboardAction>,
-  user: any,
-  state: any
+  user: User | null,
+  state: DashboardState
 ) => {
   // Subject search handler
   const handleSubjectSearch = useCallback(
@@ -173,8 +178,11 @@ export const useSubjectManagement = (
           type: "COMPLETE_SUBJECT_SEARCH",
           payload: { subjects: uniqueResults },
         })
-      } catch (e: any) {
-        dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
+      } catch (e: unknown) {
+        dispatch({
+          type: "FAIL_SUBJECTS_FETCH",
+          payload: { error: e instanceof Error ? e.message : "Unknown error" },
+        })
       }
     },
     [dispatch, user]
@@ -199,8 +207,11 @@ export const useSubjectManagement = (
         type: "LOAD_MORE_SUBJECTS_COMPLETE",
         payload: { newResults, newOffset },
       })
-    } catch (e: any) {
-      dispatch({ type: "SET_SUBJECTS_ERROR", payload: e.message })
+    } catch (e: unknown) {
+      dispatch({
+        type: "SET_SUBJECTS_ERROR",
+        payload: e instanceof Error ? e.message : "Unknown error",
+      })
     } finally {
       dispatch({ type: "SET_SHOW_MORE_LOADING", payload: false })
     }
@@ -232,8 +243,11 @@ export const useSubjectManagement = (
           isSearchMode: false,
         },
       })
-    } catch (e: any) {
-      dispatch({ type: "FAIL_SUBJECTS_FETCH", payload: { error: e.message } })
+    } catch (e: unknown) {
+      dispatch({
+        type: "FAIL_SUBJECTS_FETCH",
+        payload: { error: e instanceof Error ? e.message : "Unknown error" },
+      })
     }
   }, [dispatch, user])
 
@@ -255,8 +269,8 @@ export const useSubjectManagement = (
 
 export const usePairManagement = (
   dispatch: React.Dispatch<DashboardAction>,
-  user: any,
-  state: any
+  user: User | null,
+  state: DashboardState
 ) => {
   // Load recent pairs for selected subject
   const loadRecentPairs = useCallback(
@@ -285,10 +299,13 @@ export const usePairManagement = (
             append,
           },
         })
-      } catch (e: any) {
+      } catch (e: unknown) {
         dispatch({
           type: "FAIL_PAIRS_FETCH",
-          payload: { error: e.message, isLoadMore: append },
+          payload: {
+            error: e instanceof Error ? e.message : "Unknown error",
+            isLoadMore: append,
+          },
         })
       }
     },
@@ -347,10 +364,13 @@ export const usePairManagement = (
             },
           })
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         dispatch({
           type: "FAIL_PAIRS_FETCH",
-          payload: { error: e.message, isLoadMore: false },
+          payload: {
+            error: e instanceof Error ? e.message : "Unknown error",
+            isLoadMore: false,
+          },
         })
       }
     },
@@ -366,8 +386,8 @@ export const usePairManagement = (
 
 export const useSubjectEditing = (
   dispatch: React.Dispatch<DashboardAction>,
-  user: any,
-  state: any,
+  user: User | null,
+  state: DashboardState,
   handleSubjectUpdated: (subject: Subject) => void
 ) => {
   // Start editing selected subject
