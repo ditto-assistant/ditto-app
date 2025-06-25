@@ -3,12 +3,14 @@ import { routes } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
 import {
   PairSearchResultSchema,
+  PairRecentResultSchema,
   Result,
   SubjectSearchResultSchema,
   SubjectSchema,
   Subject,
   SubjectSearchResult,
   PairSearchResult,
+  PairRecentResult,
 } from "@/types/common"
 
 /**
@@ -31,6 +33,33 @@ function sanitizeSubjectText(text: string): string {
  */
 function isValidSubjectText(text: string): boolean {
   return text.length > 0 && text.length <= 200
+}
+
+/**
+ * Converts Zod validation errors to user-friendly messages
+ * @param errorData - The flattened Zod error data
+ * @returns A readable error message
+ */
+function formatValidationError(errorData: any): string {
+  const { formErrors, fieldErrors } = errorData
+
+  const messages: string[] = []
+
+  if (formErrors && formErrors.length > 0) {
+    messages.push(...formErrors)
+  }
+
+  if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+    for (const [field, errors] of Object.entries(fieldErrors)) {
+      if (Array.isArray(errors) && errors.length > 0) {
+        messages.push(`${field}: ${errors.join(", ")}`)
+      }
+    }
+  }
+
+  return messages.length > 0
+    ? messages.join("; ")
+    : "Invalid data format received from server"
 }
 
 export const RenameSubjectResponseSchema = z.object({
@@ -188,8 +217,11 @@ export async function getSubjectPairs({
       const rawData: unknown = await response.json()
       const validatedData = PairSearchResultSchema.safeParse(rawData)
       if (!validatedData.success) {
+        const errorMessage = formatValidationError(
+          validatedData.error.flatten()
+        )
         return {
-          err: `getSubjectPairs: Invalid response data: ${validatedData.error.flatten()}`,
+          err: `Unable to load subject pairs. Server response error: ${errorMessage}`,
         }
       }
       return { ok: validatedData.data }
@@ -264,7 +296,7 @@ export async function getSubjectPairsRecent({
   subjectText?: string
   limit?: number
   offset?: number
-}): Promise<Result<PairSearchResult>> {
+}): Promise<Result<PairRecentResult>> {
   const tok = await getToken()
   if (tok.err) return { err: "Unable to get token" }
   if (!tok.ok) return { err: "No token" }
@@ -288,10 +320,10 @@ export async function getSubjectPairsRecent({
     })
     if (response.ok) {
       const rawData: unknown = await response.json()
-      const validatedData = PairSearchResultSchema.safeParse(rawData)
+      const validatedData = PairRecentResultSchema.safeParse(rawData)
       if (!validatedData.success) {
         return {
-          err: `getSubjectPairsRecent: Invalid response data: ${validatedData.error.flatten()}`,
+          err: `getSubjectPairsRecent: Invalid response data: ${JSON.stringify(validatedData.error.flatten())}`,
         }
       }
       return { ok: validatedData.data }
