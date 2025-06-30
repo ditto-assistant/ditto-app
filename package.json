@@ -55,7 +55,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
-    "@vitejs/plugin-react": "^4.5.1",
+    "@vitejs/plugin-react": "^4.6.0",
     "autoprefixer": "^10.4.21",
     "depcheck": "^1.4.7",
     "eslint": "^9.28.0",
