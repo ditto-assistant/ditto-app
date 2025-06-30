@@ -1,6 +1,6 @@
 // Your web app's Firebase configuration
-const MODE = import.meta.env.MODE
-// const MODE = "staging"
+// const MODE = import.meta.env.MODE
+const MODE = "production"
 
 function getBaseURL(dittoEnv: string) {
   switch (dittoEnv) {
@@ -15,16 +15,20 @@ function getBaseURL(dittoEnv: string) {
   }
 }
 
+type Mode = "development" | "production" | "staging";
+const MODE_TYPED = MODE as Mode;
+
 const getPGVectorAPIURL = () => {
-  switch (MODE) {
+  switch (MODE_TYPED) {
     case "development":
-      return "http://localhost:8080"
-    // case "staging":
-    //   return "http://localhost:8080"
+      return "http://localhost:8080";
+    case "staging":
+      return "https://agentic-pipelines-22790208601.us-central1.run.app";
+    case "production":
     default:
-      return "https://agentic-pipelines-22790208601.us-central1.run.app"
+      return "https://agentic-pipelines-prod-22790208601.us-central1.run.app";
   }
-}
+};
 
 export const BASE_URL = getBaseURL(MODE)
 const PG_VECTOR_API_URL = getPGVectorAPIURL()
