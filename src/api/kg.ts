@@ -121,7 +121,7 @@ export async function searchSubjects({
       const validatedData = SubjectSearchResultSchema.safeParse(rawData)
       if (!validatedData.success) {
         return {
-          err: `searchSubjects: Invalid response data: ${validatedData.error.flatten()}`,
+          err: `searchSubjects: Invalid response data: ${validatedData.error}`,
         }
       }
       return { ok: validatedData.data }

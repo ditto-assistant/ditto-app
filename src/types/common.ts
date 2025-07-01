@@ -48,7 +48,7 @@ declare global {
 export const SubjectSchema = z.object({
   id: z.string(),
   subject_text: z.string(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   is_key_subject: z.boolean().optional(),
   similarity: z.number().optional(),
   pair_count: z.number().optional(),
