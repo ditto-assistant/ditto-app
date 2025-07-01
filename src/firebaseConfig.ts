@@ -1,4 +1,3 @@
-// Your web app's Firebase configuration
 const MODE = import.meta.env.MODE
 // const MODE = "staging"
 
@@ -15,11 +14,8 @@ function getBaseURL(dittoEnv: string) {
   }
 }
 
-type Mode = "development" | "production" | "staging"
-const MODE_TYPED = MODE as Mode
-
-const getPGVectorAPIURL = () => {
-  switch (MODE_TYPED) {
+const getPGVectorAPIURL = (dittoEnv: string) => {
+  switch (dittoEnv) {
     case "development":
       return "http://localhost:8080"
     case "staging":
@@ -31,7 +27,7 @@ const getPGVectorAPIURL = () => {
 }
 
 export const BASE_URL = getBaseURL(MODE)
-const PG_VECTOR_API_URL = getPGVectorAPIURL()
+const PG_VECTOR_API_URL = getPGVectorAPIURL(MODE)
 
 export const routes = {
   // v1 API
