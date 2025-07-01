@@ -14,12 +14,14 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Phase 1: Core UI Components (Critical)
 
 1. **SendMessage Component**
+
    - Replace custom CSS with Tailwind classes
    - Integrate with shadcn Button and Input components
    - Ensure mobile behavior is preserved
    - Convert from JSX to TSX
 
 2. **TokenModal**
+
    - Remove MUI dependencies
    - Use existing custom Modal component and shadcn Button components
    - Preserve subscription tier functionality
@@ -32,11 +34,13 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Phase 2: User Experience Components (High)
 
 1. **CheckoutForm**
+
    - Remove MUI Button dependencies
    - Ensure proper form validation
    - Use shadcn Form components
 
 2. **ImageViewer**
+
    - Convert to shadcn primitives
    - Maintain zoom and pan functionality
 
@@ -47,6 +51,7 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Phase 3: Complex UI Components (High)
 
 1. **DittoCanvasModal**
+
    - Remove MUI dependencies
    - Convert to shadcn primitives
    - Ensure draggable/resizable behavior works
@@ -60,12 +65,14 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Phase 4: Screen-Level Components (Medium)
 
 1. **HomeScreen**
+
    - Convert layout to Tailwind
    - Remove any remaining MUI components
    - Ensure responsive design
    - Convert from JSX to TSX
 
 2. **FullScreenEditor**
+
    - Replace MUI components
    - Ensure editor functionality is maintained
 
@@ -77,6 +84,7 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Phase 5: Visualization Components (Medium)
 
 1. **MemoryNetwork**
+
    - Preserve visualization functionality
    - Convert surrounding UI to shadcn
 
@@ -87,6 +95,7 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Phase 6: MUI Removal (Critical)
 
 1. **Find and replace all remaining MUI components**
+
    - Button → shadcn Button
    - TextField → shadcn Input
    - Menu → shadcn DropdownMenu
@@ -101,6 +110,7 @@ This migration plan outlines the process of replacing competing UI libraries and
 ## Implementation Guidelines
 
 1. **For each component:**
+
    - First, analyze the current component's functionality
    - Create a new version using shadcn primitives
    - Test thoroughly on both desktop and mobile
@@ -108,6 +118,7 @@ This migration plan outlines the process of replacing competing UI libraries and
    - Update imports in dependent components
 
 2. **CSS Migration:**
+
    - Replace component CSS files with Tailwind classes
    - Use `cn()` utility for conditional classes
    - Maintain animations where needed
@@ -152,6 +163,7 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
 ### Phase 1: Initial Setup (Critical)
 
 1. **SendMessage.jsx → SendMessage.tsx**
+
    - Replace CSS classes with Tailwind
    - Use shadcn/ui components:
      - `Button` for send and media buttons
@@ -167,6 +179,7 @@ Based on the codebase and screenshots, Ditto features a chat interface with:
    - Keep the existing context integrations
 
 2. **ChatMessage.tsx**
+
    - Already TypeScript, needs UI conversion
    - Replace custom CSS with Tailwind
    - Use shadcn/ui components:
@@ -414,12 +427,14 @@ Several legacy CSS files still apply broad or component-specific styles that can
 Based on our scroll-behavior-best-practices documentation, we should approach scrolling components with care:
 
 1. **Intentionally Preserve**: Retain custom scroll implementations (like in `ChatFeed.jsx`) that handle:
+
    - Infinite scrolling with position maintenance
    - Dynamic content loading at the top
    - Keyboard appearance adjustments on mobile
    - Image loading scroll position handling
 
 2. **Selective Migration**: For these components, use a hybrid approach:
+
    - Keep core scroll functionality with its CSS
    - Apply Tailwind for non-scroll-related styling
    - Convert to TypeScript for type safety
