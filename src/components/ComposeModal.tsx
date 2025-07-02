@@ -75,10 +75,10 @@ const ComposeModal: React.FC = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
         className={cn(
-          "bg-background flex flex-col overflow-hidden gap-0",
+          "glass-modal flex flex-col overflow-hidden gap-0",
           isMobile
             ? "fixed inset-0 h-[100dvh] w-screen max-w-none rounded-none border-none p-0 translate-x-0 translate-y-0"
-            : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border rounded-lg shadow-lg mx-auto"
+            : "h-[80vh] max-h-[80vh] w-[90vw] max-w-4xl border-ditto-glass-border rounded-lg shadow-lg mx-auto"
         )}
         style={{
           paddingBottom: "env(safe-area-inset-bottom)",
@@ -88,7 +88,7 @@ const ComposeModal: React.FC = () => {
       >
         {/* Accessibility additions */}
         <DialogHeader
-          className="border-b flex items-center justify-between p-3 select-none sticky top-0 z-10 bg-background"
+          className="border-b border-ditto-glass-border flex items-center justify-between p-3 select-none sticky top-0 z-10 glass-header"
           style={{ paddingTop: "env(safe-area-inset-top)" }}
         >
           <div>
@@ -98,7 +98,7 @@ const ComposeModal: React.FC = () => {
               variant="default"
               size="sm"
               className={cn(
-                "bg-gradient-to-r from-primary to-blue-400",
+                "gradient-ring text-ditto-primary gradient-shadow",
                 "flex items-center gap-2",
                 "mr-2 h-8"
               )}
@@ -129,7 +129,7 @@ const ComposeModal: React.FC = () => {
               onChange={handleChange}
               placeholder="Message Ditto"
               spellCheck="true"
-              className="text-foreground placeholder:text-muted-foreground/70 resize-none border-none focus-visible:ring-0 p-4 overflow-y-auto overscroll-contain flex-1 min-h-0 w-full"
+              className="text-ditto-primary placeholder:text-ditto-secondary/70 resize-none border-none focus-visible:ring-0 p-4 overflow-y-auto overscroll-contain flex-1 min-h-0 w-full bg-transparent"
             />
           </form>
         </div>

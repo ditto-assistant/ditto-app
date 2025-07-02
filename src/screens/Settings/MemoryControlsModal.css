@@ -1,6 +1,7 @@
 .memory-controls-content {
   padding: 24px;
   overflow-y: auto;
+  color: var(--ditto-text-primary);
 }
 
 /* Apply locked styles */

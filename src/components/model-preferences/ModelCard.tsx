@@ -161,10 +161,10 @@ export const ModelCard = ({
   return (
     <Card
       className={cn(
-        "py-4 gap-2 overflow-hidden transition-all cursor-pointer h-full",
+        "py-4 gap-2 overflow-hidden transition-all cursor-pointer h-full glass-card",
         isSelected
-          ? "border-2 border-primary ring-2 ring-primary/20"
-          : "border hover:border-primary/50",
+          ? "border-2 border-ditto-glass-border-strong gradient-ring"
+          : "border hover:border-ditto-glass-border-strong",
         !isAccessible && "opacity-75"
       )}
       onClick={(e) => {
@@ -180,7 +180,7 @@ export const ModelCard = ({
     >
       <CardHeader className="p-4 pb-1 flex flex-row items-center justify-between space-y-0">
         <div className="flex-1 mr-2 overflow-hidden">
-          <CardTitle className="text-base font-semibold truncate">
+          <CardTitle className="text-base font-semibold truncate text-ditto-primary">
             {title ?? model.modelFlavor}
           </CardTitle>
         </div>
@@ -189,7 +189,7 @@ export const ModelCard = ({
           <Button
             variant="ghost"
             size="sm"
-            className="p-0 h-8 w-8"
+            className="p-0 h-8 w-8 glass-interactive text-ditto-secondary hover:text-ditto-primary"
             onClick={(e) => {
               e.stopPropagation()
               triggerHaptic(HapticPattern.Light)
@@ -202,13 +202,7 @@ export const ModelCard = ({
           {model.provider && (
             <Badge
               variant="outline"
-              className="rounded-full"
-              style={{
-                backgroundColor:
-                  VENDOR_COLORS[model.provider.toLowerCase() as Vendor] ||
-                  "#999",
-                color: "white",
-              }}
+              className="rounded-full glass-interactive text-ditto-primary border-ditto-glass-border"
             >
               {getVendorIcon(model.provider.toLowerCase() as Vendor)}
             </Badge>
@@ -218,14 +212,12 @@ export const ModelCard = ({
 
       <CardContent className="p-4 pt-1 pb-2">
         <div className="flex flex-wrap gap-1.5 mb-2">
-          <Badge variant="secondary" className="flex items-center">
+          <Badge variant="secondary" className="flex items-center glass-interactive text-ditto-secondary">
             {getSpeedIcon(model.speedLevel)}
           </Badge>
 
-          <Badge variant="secondary" className="flex items-center"></Badge>
-
           {isLLMModel && (model as LLMModel).attachableImageCount > 0 && (
-            <Badge variant="success" className="flex items-center">
+            <Badge variant="secondary" className="flex items-center glass-interactive text-ditto-accent">
               <ImageIcon className="h-3 w-3" />
             </Badge>
           )}
@@ -235,9 +227,9 @@ export const ModelCard = ({
       <CardFooter className="p-4 pt-1 pb-2 flex justify-center items-center">
         {!isAccessible && (
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
-            className="w-full text-sm font-medium"
+            className="w-full text-sm font-medium gradient-ring text-ditto-primary gradient-shadow"
             onClick={(e) => {
               e.stopPropagation()
               triggerHaptic(HapticPattern.Warning)
@@ -256,8 +248,8 @@ export const ModelCard = ({
 
       {/* Size options for image models */}
       {type === "image" && isAccessible && variants && (
-        <div className="border-t p-4">
-          <h4 className="text-sm font-medium mb-2">Size Options</h4>
+        <div className="border-t border-ditto-glass-border p-4">
+          <h4 className="text-sm font-medium mb-2 text-ditto-primary">Size Options</h4>
           <div className="flex flex-wrap gap-2">
             {supportedSizeVariants.map((size) => (
               <Button
@@ -269,6 +261,12 @@ export const ModelCard = ({
                     : "outline"
                 }
                 size="sm"
+                className={
+                  model.name === preferences?.imageGeneration?.model &&
+                  preferences?.imageGeneration?.size?.wh === size.wh
+                    ? "gradient-ring text-ditto-primary"
+                    : "glass-interactive text-ditto-secondary hover:text-ditto-primary"
+                }
                 onClick={(e) => {
                   e.stopPropagation()
                   triggerHaptic(HapticPattern.Medium)

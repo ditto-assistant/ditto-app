@@ -42,29 +42,29 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden h-full",
-        isSelected && "border-primary ring-1 ring-primary",
-        tier.mostPopular && "border-primary",
+        "relative overflow-hidden h-full glass-card-light",
+        isSelected && "border-ditto-glass-border-strong gradient-ring",
+        tier.mostPopular && "border-ditto-glass-border-strong",
         className
       )}
     >
       {tier.mostPopular && (
-        <div className="absolute top-0 right-0 left-0 bg-primary/10 text-primary text-xs font-semibold text-center py-1">
+        <div className="absolute top-0 right-0 left-0 bg-gradient-to-r from-ditto-brand-gradient text-ditto-primary text-xs font-semibold text-center py-1">
           Most Popular
         </div>
       )}
 
       <CardHeader className={cn(tier.mostPopular && "pt-8")}>
-        <CardTitle className="text-xl font-bold">{tier.name}</CardTitle>
-        <CardDescription>{tier.description}</CardDescription>
+        <CardTitle className="text-xl font-bold text-ditto-primary">{tier.name}</CardTitle>
+        <CardDescription className="text-ditto-secondary">{tier.description}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold">
+          <span className="text-3xl font-bold text-ditto-gradient">
             {formatPrice(price.amount)}
           </span>
-          <span className="text-muted-foreground text-sm">
+          <span className="text-ditto-secondary text-sm">
             {formatInterval(price.interval)}
           </span>
         </div>
@@ -72,8 +72,8 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
         <ul className="space-y-2">
           {tier.features.map((feature, index) => (
             <li key={index} className="flex items-start">
-              <Check className="h-4 w-4 text-primary mr-2 mt-1 flex-shrink-0" />
-              <span className="text-sm">{feature}</span>
+              <Check className="h-4 w-4 text-ditto-accent mr-2 mt-1 flex-shrink-0" />
+              <span className="text-sm text-ditto-primary">{feature}</span>
             </li>
           ))}
         </ul>
@@ -92,7 +92,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
             name="authorization"
             value={`Bearer ${authToken}`}
           />
-          <Button type="submit" className="w-full" size="lg">
+          <Button type="submit" variant="outline" className="w-full gradient-ring text-ditto-primary gradient-shadow" size="lg">
             SUBSCRIBE NOW
           </Button>
         </form>

@@ -17,20 +17,20 @@ interface SocialLinkProps {
 const SocialLink = ({ href, icon, children, variant }: SocialLinkProps) => {
   const variantStyles = {
     github:
-      "hover:bg-neutral-800 hover:border-neutral-700 hover:shadow-[0_0_15px_rgba(110,118,129,0.4)]",
+      "hover:border-ditto-glass-border-strong",
     instagram:
-      "hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-pink-600/20 hover:border-pink-500/30 hover:shadow-[0_0_15px_rgba(193,53,132,0.4)]",
+      "hover:border-ditto-glass-border-strong",
     twitter:
-      "hover:bg-blue-900/20 hover:border-blue-500/30 hover:shadow-[0_0_15px_rgba(29,161,242,0.4)]",
+      "hover:border-ditto-glass-border-strong",
     youtube:
-      "hover:bg-red-900/20 hover:border-red-500/30 hover:shadow-[0_0_15px_rgba(255,0,0,0.4)]",
+      "hover:border-ditto-glass-border-strong",
   }
 
   const iconColors = {
-    github: "text-neutral-400 group-hover:text-neutral-200",
-    instagram: "text-pink-400/80 group-hover:text-pink-300",
-    twitter: "text-blue-400/80 group-hover:text-blue-300",
-    youtube: "text-red-400/80 group-hover:text-red-300",
+    github: "text-ditto-secondary group-hover:text-ditto-primary",
+    instagram: "text-ditto-secondary group-hover:text-ditto-gradient",
+    twitter: "text-ditto-secondary group-hover:text-ditto-primary",
+    youtube: "text-ditto-secondary group-hover:text-ditto-gradient",
   }
 
   return (
@@ -38,8 +38,8 @@ const SocialLink = ({ href, icon, children, variant }: SocialLinkProps) => {
       variant="ghost"
       size="sm"
       className={cn(
-        "w-full justify-start gap-2 h-10 border border-border/30 bg-background/40 text-sm font-normal",
-        "transition-all duration-200 hover:translate-y-[-2px] hover:text-white group active:scale-95 cursor-pointer",
+        "w-full justify-start gap-2 h-10 glass-interactive text-sm font-normal text-ditto-secondary",
+        "transition-all duration-200 hover:translate-y-[-2px] hover:text-ditto-primary group active:scale-95 cursor-pointer",
         variant && variantStyles[variant]
       )}
       asChild

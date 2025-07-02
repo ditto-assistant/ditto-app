@@ -1,8 +1,15 @@
+/* Apply Ditto Brand deep purple gradient background */
 .login-layout {
   justify-content: center;
   align-items: center;
+  background: var(--ditto-bg-gradient);
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .main-layout {
   flex-direction: column;
+  background: var(--ditto-bg-gradient);
+  min-height: 100vh;
+  min-height: 100dvh;
 }

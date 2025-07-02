@@ -40,7 +40,7 @@ export default function MemoryNetworkModal() {
 
   return (
     <Modal id="memoryNetwork" title="Memory Network">
-      <div className="flex flex-col h-full w-full p-0 m-0">
+      <div className="flex flex-col h-full w-full p-0 m-0 memory-network-container">
         {isReady ? (
           <MemoriesNetworkGraph
             memories={memories || []}
@@ -48,7 +48,7 @@ export default function MemoryNetworkModal() {
           />
         ) : (
           <div className="w-full h-full min-h-[500px] flex items-center justify-center">
-            <div className="text-muted-foreground">
+            <div className="text-ditto-secondary">
               {loading || !currentRootMemory
                 ? "Loading memory network..."
                 : "Preparing memory network..."}

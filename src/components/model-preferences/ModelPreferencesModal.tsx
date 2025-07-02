@@ -40,7 +40,7 @@ export const ModelPreferencesModal: React.FC = () => {
   } = useAllServices()
 
   return (
-    <div className="bg-background text-foreground w-full h-full flex flex-col overflow-hidden">
+    <div className="text-ditto-primary w-full h-full flex flex-col overflow-hidden">
       <Tabs
         defaultValue="main"
         value={activeTab}
@@ -51,7 +51,7 @@ export const ModelPreferencesModal: React.FC = () => {
         }}
         className="w-full h-full flex flex-col"
       >
-        <TabsList className="w-full flex justify-center mb-2 p-1 bg-muted/10">
+        <TabsList className="w-full flex justify-center mb-2 p-1 glass-interactive">
           <TabsTrigger
             value="main"
             className="flex-1 flex items-center justify-center gap-2 py-2"
@@ -75,7 +75,7 @@ export const ModelPreferencesModal: React.FC = () => {
           <div className="flex flex-col h-full">
             <div className="flex flex-col h-full min-h-0">
               {/* Selected model header */}
-              <div className="border-b p-4 bg-muted/5">
+              <div className="border-b border-ditto-glass-border p-4 glass-header">
                 <SelectedModel modelType="mainModel" />
               </div>
 
@@ -83,7 +83,7 @@ export const ModelPreferencesModal: React.FC = () => {
               <div className="flex-1 min-h-0">
                 <ScrollArea className="h-full">
                   {/* Filters section */}
-                  <div className="border-b py-4">
+                  <div className="border-b border-ditto-glass-border py-4">
                     <ModelFilters
                       activeFilters={promptFilters}
                       setActiveFilters={setPromptFilters}
@@ -120,7 +120,7 @@ export const ModelPreferencesModal: React.FC = () => {
           <div className="flex flex-col h-full overflow-hidden">
             <div className="flex flex-col h-full min-h-0">
               {/* Selected model header */}
-              <div className="border-b p-4 bg-muted/5">
+              <div className="border-b border-ditto-glass-border p-4 glass-header">
                 <SelectedModel modelType="imageGeneration" />
               </div>
 
@@ -128,7 +128,7 @@ export const ModelPreferencesModal: React.FC = () => {
               <div className="flex-1 min-h-0">
                 <ScrollArea className="h-full">
                   {/* Filters section */}
-                  <div className="border-b py-4">
+                  <div className="border-b border-ditto-glass-border py-4">
                     <ModelFilters
                       activeFilters={imageFilters}
                       setActiveFilters={setImageFilters}
