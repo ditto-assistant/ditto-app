@@ -309,7 +309,8 @@ export const processResponse = async (
         // Trigger memory sync after successful tool response completion
         if (onMemorySync) {
           setTimeout(() => {
-            onMemorySync()
+            // Pass the actual pairID from the backend
+            onMemorySync(pairID)
           }, 500) // Small delay to ensure response is fully saved
         }
 

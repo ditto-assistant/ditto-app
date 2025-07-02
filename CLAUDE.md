@@ -86,6 +86,7 @@
   - Use a hybrid approach: keep core scroll functionality CSS while applying Tailwind for non-scroll-related styling
   - Document preserved CSS files with explanatory comments
 - **CSS Transition Strategy**:
+
   - Replace component-specific CSS files with Tailwind utility classes when possible
   - Use `cn()` utility from `lib/utils.ts` for conditional class names
   - Consolidate global animation keyframes into Tailwind or custom plugins
