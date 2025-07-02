@@ -99,9 +99,11 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
               console.log("Fetched child memories:", fetchedMemories)
               setMemories(Array.isArray(fetchedMemories) ? fetchedMemories : [])
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             console.error("Error fetching memories:", error)
-            toast.error(`Failed to load memory network: ${error.message}`)
+            toast.error(
+              `Failed to load memory network: ${error instanceof Error ? error.message : "Unknown error"}`
+            )
             setMemories([]) // Clear memories on error
           } finally {
             setLoading(false)
@@ -130,9 +132,11 @@ export function useMemoryNetwork() {
       context.setCurrentRootMemory(message) // Set root memory before fetching
       await context.fetchMemories(message) // fetchMemories will also set currentRootMemory
       openModal()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error showing memory network:", error)
-      toast.error(`Failed to show memory network: ${error.message}`)
+      toast.error(
+        `Failed to show memory network: ${error instanceof Error ? error.message : "Unknown error"}`
+      )
     }
   }
 

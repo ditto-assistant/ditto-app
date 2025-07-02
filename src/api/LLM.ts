@@ -1,7 +1,7 @@
 import { ErrorPaymentRequired } from "@/types/errors"
-import { DEFAULT_PREFERENCES } from "../constants"
-import { routes } from "../firebaseConfig"
-import { getToken } from "./auth"
+import { DEFAULT_PREFERENCES } from "@/constants"
+import { routes } from "@/firebaseConfig"
+import { getToken } from "@/api/auth"
 
 type Model = string // This should match the type from "../constants"
 type TextCallback = (text: string) => void

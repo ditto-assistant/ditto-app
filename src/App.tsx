@@ -24,6 +24,7 @@ import { MemoryNodeViewerProvider } from "@/hooks/useMemoryNodeViewer"
 import { ConversationProvider } from "./hooks/useConversationHistory"
 import { PromptStorageProvider } from "@/hooks/usePromptStorage"
 import { ComposeProvider } from "@/contexts/ComposeContext"
+import { MemorySyncProvider } from "@/contexts/MemorySyncContext"
 import { ServicesProvider } from "@/hooks/useServices"
 import { initUpdateService } from "@/utils/updateService"
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler"
@@ -32,6 +33,7 @@ import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FontSizeProvider } from "@/hooks/useFontSize"
+import { RouterErrorBoundary } from "@/components/RouterErrorBoundary"
 
 initUpdateService()
 
@@ -73,7 +75,7 @@ const queryClient = new QueryClient()
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/">
+    <Route path="/" errorElement={<RouterErrorBoundary />}>
       <Route element={<Layout className="login-layout" />}>
         <Route path="login" Component={Login} />
       </Route>
@@ -139,33 +141,35 @@ function App() {
                           <ServicesProvider>
                             <PromptStorageProvider>
                               <ComposeProvider>
-                                <ThemeProvider
-                                  defaultTheme="system"
-                                  storageKey="ditto-ui-theme"
-                                >
-                                  <FontSizeProvider>
-                                    <ComposeModal />
-                                    <ModalProvider registry={modalRegistry}>
-                                      <AppErrorBoundary>
-                                        <RouterProvider router={router} />
-                                      </AppErrorBoundary>
-                                      <UpdateNotification />
+                                <MemorySyncProvider>
+                                  <ThemeProvider
+                                    defaultTheme="system"
+                                    storageKey="ditto-ui-theme"
+                                  >
+                                    <FontSizeProvider>
+                                      <ComposeModal />
+                                      <ModalProvider registry={modalRegistry}>
+                                        <AppErrorBoundary>
+                                          <RouterProvider router={router} />
+                                        </AppErrorBoundary>
+                                        <UpdateNotification />
 
-                                      {createPortal(
-                                        <Toaster
-                                          position="top-center"
-                                          closeButton
-                                          richColors
-                                        />,
-                                        document.getElementById("toast-root")!
-                                      )}
-                                      <ReactQueryDevtools
-                                        buttonPosition="top-left"
-                                        initialIsOpen={false}
-                                      />
-                                    </ModalProvider>
-                                  </FontSizeProvider>
-                                </ThemeProvider>
+                                        {createPortal(
+                                          <Toaster
+                                            position="top-center"
+                                            closeButton
+                                            richColors
+                                          />,
+                                          document.getElementById("toast-root")!
+                                        )}
+                                        <ReactQueryDevtools
+                                          buttonPosition="top-left"
+                                          initialIsOpen={false}
+                                        />
+                                      </ModalProvider>
+                                    </FontSizeProvider>
+                                  </ThemeProvider>
+                                </MemorySyncProvider>
                               </ComposeProvider>
                             </PromptStorageProvider>
                           </ServicesProvider>
