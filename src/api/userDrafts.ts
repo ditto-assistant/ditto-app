@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { getToken } from "./auth"
-import { BASE_URL } from "../firebaseConfig"
+import { getToken } from "@/api/auth"
+import { BASE_URL } from "@/firebaseConfig"
 
 // Response schemas
 export const UserDraftResponseSchema = z.object({

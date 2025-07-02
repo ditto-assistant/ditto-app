@@ -34,10 +34,11 @@ export function isAndroidDevice(): boolean {
  */
 export function isPWAMode(): boolean {
   return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.matchMedia("(display-mode: fullscreen)").matches ||
-    ("standalone" in window.navigator &&
-      (window.navigator as { standalone?: boolean }).standalone)
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      ("standalone" in window.navigator &&
+        (window.navigator as { standalone?: boolean }).standalone)) ??
+    false
   )
 }
 

@@ -31,6 +31,7 @@ import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { usePlatform } from "@/hooks/usePlatform"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useUser } from "@/hooks/useUser"
+import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import { useIOSDetection } from "@/hooks/useIOSDetection"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -94,7 +95,7 @@ export default function SendMessage({
     appendToMessage,
   } = useComposeContext()
   const { clearPrompt } = usePromptStorage()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { triggerSync } = useMemorySyncContext()
 
   const logoButtonRef = useRef<HTMLButtonElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -223,7 +224,8 @@ export default function SendMessage({
             streamingCallback,
             optimisticMessageId,
             finalizeOptimisticMessage,
-            user?.data?.planTier ?? 0
+            user?.data?.planTier ?? 0,
+            triggerSync
           )
           console.log("✅ [SendMessage] Prompt completed successfully")
         } catch (error) {
@@ -268,6 +270,7 @@ export default function SendMessage({
       user?.data?.planTier,
       userData?.firstName,
       onStop,
+      triggerSync,
     ]
   )
 
@@ -681,8 +684,6 @@ export default function SendMessage({
             </Button>
           </div>
         )}
-
-        <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </form>
     </div>
   )

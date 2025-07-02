@@ -8,6 +8,7 @@
     "postcss",
     "bun",
     "@tailwindcss/postcss",
-    "caniuse-lite"
+    "caniuse-lite",
+    "vite-env"
   ]
 } 
