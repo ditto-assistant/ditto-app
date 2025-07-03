@@ -54,6 +54,7 @@ export default {
           DEFAULT: "var(--card)",
           foreground: "var(--card-foreground)",
         },
+        link: "var(--text-link)",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -494,7 +494,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setIsPasswordReset(true)}
-                    className="text-sm font-medium text-primary transition-colors hover:text-primary/90"
+                    className="text-sm font-medium text-link transition-colors hover:text-link/90"
                   >
                     Forgot your password?
                   </button>
@@ -536,7 +536,7 @@ const Login = () => {
                   setIsCreatingAccount(!isCreatingAccount)
                   setVerificationMessage("")
                 }}
-                className="ml-1 font-medium text-primary transition-colors hover:text-primary/90"
+                className="ml-1 font-medium text-link transition-colors hover:text-link/90"
               >
                 {isCreatingAccount ? "Sign in here" : "Create one here"}
               </button>
@@ -570,7 +570,7 @@ const Login = () => {
             <p className="pt-2 text-center text-xs text-muted-foreground">
               By signing up, you agree to our{" "}
               <button
-                className="font-medium text-primary transition-colors hover:text-primary/90"
+                className="font-medium text-link transition-colors hover:text-link/90"
                 onClick={() => {
                   setShowTOS(true)
                   setIsViewingTOS(true)
