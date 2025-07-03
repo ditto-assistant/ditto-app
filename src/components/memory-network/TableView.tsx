@@ -150,6 +150,7 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
               }
               isUser={true}
               menuProps={{
+                id: memory.id,
                 onCopy: () => navigator.clipboard.writeText(memory.prompt),
                 onDelete: () => handleDelete(memory),
                 onShowMemories: () => handleViewMemory(memory),
@@ -164,6 +165,7 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
               }
               isUser={false}
               menuProps={{
+                id: memory.id,
                 onCopy: () => navigator.clipboard.writeText(memory.response),
                 onDelete: () => handleDelete(memory),
                 onShowMemories: () => handleViewMemory(memory),

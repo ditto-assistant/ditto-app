@@ -51,6 +51,7 @@ export default function MemoryNodeModal() {
                   }
                   isUser={true}
                   menuProps={{
+                    id: nodeData.id,
                     onCopy: () => handleCopy(nodeData.prompt || ""),
                     onDelete: handleDelete,
                     onShowMemories: () => showMemoryNetwork(nodeData),
@@ -67,6 +68,7 @@ export default function MemoryNodeModal() {
                   }
                   isUser={false}
                   menuProps={{
+                    id: nodeData.id,
                     onCopy: () => handleCopy(nodeData.response || ""),
                     onDelete: handleDelete,
                     onShowMemories: () => showMemoryNetwork(nodeData),

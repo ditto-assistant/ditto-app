@@ -47,7 +47,29 @@ jobs:
           # assignee_trigger: "claude-bot"
 
           # Optional: Allow Claude to run specific commands
-          allowed_tools: "Bash(bun install),Bash(bun run build),Bash(bun run test:*),Bash(bun run lint:*),Bash(bun run format),Bash(bun add*),Bash(bun remove*),WebFetchTool(*)"
+          allowed_tools: |
+            Bash(bun install)
+            Bash(bun add*)
+            Bash(bun remove*)
+            Bash(bun update*)
+            Bash(bun run start)
+            Bash(bun start)
+            Bash(bun run build)
+            Bash(bun run build:staging)
+            Bash(bun run build:dev)
+            Bash(bun run serve)
+            Bash(bun serve)
+            Bash(bun run depcheck)
+            Bash(bun depcheck)
+            Bash(bun run format)
+            Bash(bun format)
+            Bash(bun run lint)
+            Bash(bun lint)
+            Bash(bun run generate:whats-new)
+            Bash(bun generate:whats-new)
+            Bash(bun run generate:icons)
+            Bash(bun generate:icons)
+            WebFetchTool(*)
 
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           # custom_instructions: |
