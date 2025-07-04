@@ -76,10 +76,10 @@
   --card-foreground: #121212;
   --popover: #f8f4e9;
   --popover-foreground: #121212;
-  --primary: #cce4ff; /* Slightly deeper light blue for user messages */
-  --primary-foreground: #0d3b66; /* Dark blue text for good contrast on light blue */
-  --secondary: #e9e2d0; /* Sepia-compatible secondary */
-  --secondary-foreground: #2b2d31;
+  --primary: #2563eb; /* Strong blue for text and accent usage */
+  --primary-foreground: #ffffff; /* White text on primary background */
+  --secondary: #cce4ff; /* Light blue for user message backgrounds */
+  --secondary-foreground: #0d3b66; /* Dark blue text on light blue background */
   --muted: #f0ebe0; /* Sepia-compatible muted */
   --more-muted: #f0f0f0; /* Light grey for code block background */
   --muted-foreground: #3d3629; /* Warmer dark tone for muted text */
@@ -222,8 +222,8 @@
   --popover: #1e1e1e;
   --popover-foreground: #f1f3f5;
   --primary: #3684c9; /* Adjusted blue from the logo with better contrast on dark */
-  --primary-foreground: #ffffff; /* Changed to white for better readability in dark mode */
-  --secondary: #2d2d2d;
+  --primary-foreground: #ffffff; /* White text on primary background */
+  --secondary: #3684c9; /* Blue for user message backgrounds in dark mode */
   --secondary-foreground: #f1f3f5;
   --muted: #2d2d2d;
   --more-muted: #252525; /* Slightly darker for code blocks */
