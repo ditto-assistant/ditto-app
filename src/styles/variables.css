@@ -126,7 +126,7 @@
   /* Text colors - light mode */
   --text-normal: var(--foreground);
   --text-muted: var(--muted-foreground);
-  --text-link: #2563eb; /* Enhanced blue link color for better contrast */
+  --text-link: #1e40af; /* Bright blue link color for better distinction from text */
   --text-positive: var(--status-positive);
   --text-warning: var(--status-warning);
   --text-danger: var(--destructive);
