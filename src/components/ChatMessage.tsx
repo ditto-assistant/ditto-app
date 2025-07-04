@@ -174,7 +174,7 @@ export default function ChatMessage({
           className={cn(
             "py-0",
             isUser
-              ? "bg-primary text-primary-foreground rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
+              ? "bg-secondary text-secondary-foreground rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm"
               : "bg-card text-card-foreground rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm",
             isOptimistic && "border border-dashed border-opacity-20"
           )}
