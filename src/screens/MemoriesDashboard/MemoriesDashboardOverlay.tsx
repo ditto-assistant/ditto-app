@@ -268,7 +268,7 @@ export default function MemoriesDashboardOverlay() {
                   <span className="font-bold text-primary text-base">
                     {formatCount(memoryCount)}
                   </span>
-                  <span className="text-muted-foreground font-medium">
+                  <span className="text-foreground/80 font-medium">
                     memories
                   </span>
                 </div>
