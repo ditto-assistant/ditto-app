@@ -344,7 +344,7 @@ const Login = () => {
               ? "Reset Password"
               : isCreatingAccount
                 ? "Create Account"
-                : "Sign In to Ditto"}
+                : "Sign in to Ditto"}
           </h1>
         </div>
 
