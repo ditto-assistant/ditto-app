@@ -11,9 +11,7 @@ import {
 } from "@/components/ui/tooltip"
 import { DITTO_LOGO } from "@/constants"
 
-interface TopBarProps {}
-
-const TopBar: React.FC<TopBarProps> = () => {
+const TopBar: React.FC = () => {
   const modal = useModal()
   const openMemoriesOverlay = modal.createOpenHandler("memories")
   const openSettingsModal = modal.createOpenHandler("settings")
