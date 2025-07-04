@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
 import CameraModal from "@/components/CameraModal"
+import TopBar from "@/components/TopBar"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
 import { useBalance } from "@/hooks/useBalance"
@@ -90,6 +91,7 @@ export default function HomeScreen() {
     <div className="app fixed inset-0 touch-pan-y flex flex-col">
       <Suspense fallback={<FullScreenSpinner />}>
         <div className="flex-1 flex flex-col overflow-hidden pb-0">
+          <TopBar />
           <ChatFeed ref={appBodyRef} />
           <SendMessage
             onCameraOpen={handleCameraOpen}
