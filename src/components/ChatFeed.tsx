@@ -6,6 +6,8 @@ import {
   RefObject,
   ReactNode,
   CSSProperties,
+  useCallback,
+  useMemo,
 } from "react"
 import "./ChatFeed.css"
 import { ChevronDown } from "lucide-react"
@@ -17,6 +19,21 @@ import { usePlatform } from "@/hooks/usePlatform"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import ChatMessage from "./ChatMessage"
 import { Memory } from "@/api/getMemories"
+
+// Performance and accessibility constants
+const SCROLL_CONSTANTS = {
+  SCROLL_BOTTOM_THRESHOLD: 30,
+  SCROLL_TOP_THRESHOLD: 50,
+  SCROLL_DELAY: 50,
+  SCROLL_TIMEOUT: 100,
+  SCROLL_DEBOUNCE: 200,
+  KEYBOARD_DEBOUNCE: 150,
+  KEYBOARD_MIN_HEIGHT: 200,
+  VIEWPORT_SCROLL_RATIO: 0.7,
+  MESSAGES_FADE_DELAY: 200,
+  FETCH_DELAY: 150,
+  ANIMATION_FRAME_DELAY: 16, // ~60fps
+} as const
 
 interface OptimisticMemory extends Memory {
   isOptimistic?: boolean
@@ -38,8 +55,9 @@ interface CustomScrollToBottomProps {
   isStreaming?: boolean
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ChatFeedProps {}
+interface ChatFeedProps {
+  // Future props can be added here
+}
 
 const CustomScrollToBottom = ({
   children,
@@ -55,6 +73,7 @@ const CustomScrollToBottom = ({
   isStreaming = false,
 }: CustomScrollToBottomProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const followButtonRef = useRef<HTMLButtonElement>(null)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
   const isInitialScrollRef = useRef(true)
@@ -63,22 +82,30 @@ const CustomScrollToBottom = ({
   const prevMessagesLengthRef = useRef(0)
   const userScrollingImageRef = useRef(false)
   const userScrollingKeyboardRef = useRef(false)
+  const animationFrameRef = useRef<number | null>(null)
+  const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set())
+  const imageObserverRef = useRef<MutationObserver | null>(null)
 
-  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     if (!scrollContainerRef.current) return
 
     const scrollContainer = scrollContainerRef.current
 
-    setTimeout(() => {
+    // Use requestAnimationFrame for better performance
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+    
+    animationFrameRef.current = requestAnimationFrame(() => {
       scrollContainer.scrollTo({
         top: scrollContainer.scrollHeight,
         behavior: behavior,
       })
-    }, 50)
-  }
+    })
+  }, [])
 
   // ChatGPT-style scroll: Jump to show user message with space below
-  const scrollToUserMessage = () => {
+  const scrollToUserMessage = useCallback(() => {
     if (!scrollContainerRef.current) return
 
     const scrollContainer = scrollContainerRef.current
@@ -86,13 +113,23 @@ const CustomScrollToBottom = ({
 
     // Position scroll to show roughly 1/3 of the container height from bottom
     // This creates space for the incoming response
-    const targetScrollTop = scrollContainer.scrollHeight - containerHeight * 0.7
+    const targetScrollTop = scrollContainer.scrollHeight - containerHeight * SCROLL_CONSTANTS.VIEWPORT_SCROLL_RATIO
 
     scrollContainer.scrollTo({
       top: Math.max(0, targetScrollTop),
       behavior: "smooth",
     })
-  }
+  }, [])
+
+  // Consolidated timeout management
+  const addTimeout = useCallback((timeout: ReturnType<typeof setTimeout>) => {
+    timeoutRefs.current.add(timeout)
+  }, [])
+
+  const clearAllTimeouts = useCallback(() => {
+    timeoutRefs.current.forEach(timeout => clearTimeout(timeout))
+    timeoutRefs.current.clear()
+  }, [])
 
   useEffect(() => {
     if (onScrollToTopRef) {
@@ -112,7 +149,7 @@ const CustomScrollToBottom = ({
         if (scrollTimer) clearTimeout(scrollTimer)
         scrollTimer = setTimeout(() => {
           userScrollingImageRef.current = false
-        }, 200)
+        }, SCROLL_CONSTANTS.SCROLL_DEBOUNCE)
       }
 
       const currentScrollContainer = scrollContainerRef.current
@@ -123,16 +160,50 @@ const CustomScrollToBottom = ({
 
       const handleImageLoad = () => {
         if (isScrolledToBottom && !userScrollingImageRef.current) {
-          setTimeout(() => scrollToBottom("auto"), 50)
+          const timeout = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.SCROLL_DELAY)
+          addTimeout(timeout)
         }
       }
 
+      // Use MutationObserver for better image management
+      const setupImageObserver = () => {
+        if (imageObserverRef.current) {
+          imageObserverRef.current.disconnect()
+        }
+
+        imageObserverRef.current = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+              mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                  const element = node as Element
+                  const images = element.querySelectorAll ? element.querySelectorAll('img') : []
+                  images.forEach((img) => {
+                    if (!img.complete) {
+                      img.addEventListener('load', handleImageLoad, { once: true })
+                    }
+                  })
+                }
+              })
+            }
+          })
+        })
+
+        imageObserverRef.current.observe(currentScrollContainer, {
+          childList: true,
+          subtree: true
+        })
+      }
+
+      // Initial image setup
       const images = currentScrollContainer.querySelectorAll("img")
       images.forEach((img) => {
         if (!img.complete) {
-          img.addEventListener("load", handleImageLoad)
+          img.addEventListener("load", handleImageLoad, { once: true })
         }
       })
+
+      setupImageObserver()
 
       return () => {
         if (currentScrollContainer) {
@@ -140,13 +211,15 @@ const CustomScrollToBottom = ({
             "scroll",
             trackUserScrolling
           )
-
-          const images = currentScrollContainer.querySelectorAll("img")
-          images.forEach((img) => {
-            img.removeEventListener("load", handleImageLoad)
-          })
         }
         if (scrollTimer) clearTimeout(scrollTimer)
+        if (imageObserverRef.current) {
+          imageObserverRef.current.disconnect()
+        }
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current)
+        }
+        clearAllTimeouts()
       }
     }
   }, [
@@ -154,13 +227,15 @@ const CustomScrollToBottom = ({
     initialScrollBehavior,
     isScrolledToBottom,
     onScrollToTopRef,
+    scrollToBottom,
+    addTimeout,
+    clearAllTimeouts,
   ])
 
   useEffect(() => {
     const initialHeight = window.innerHeight
     let isKeyboardVisible = false
     let previousDiff = 0
-    const MIN_KEYBOARD_HEIGHT = 200
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null
 
     const setScrolling = () => {
@@ -168,7 +243,7 @@ const CustomScrollToBottom = ({
       if (scrollTimeout) clearTimeout(scrollTimeout)
       scrollTimeout = setTimeout(() => {
         userScrollingKeyboardRef.current = false
-      }, 150)
+      }, SCROLL_CONSTANTS.KEYBOARD_DEBOUNCE)
     }
 
     const currentScrollContainer = scrollContainerRef.current
@@ -183,28 +258,31 @@ const CustomScrollToBottom = ({
       const currentHeight = window.innerHeight
       const heightDiff = initialHeight - currentHeight
 
-      if (Math.abs(heightDiff - previousDiff) < 50) return
+      if (Math.abs(heightDiff - previousDiff) < SCROLL_CONSTANTS.SCROLL_BOTTOM_THRESHOLD) return
       previousDiff = heightDiff
 
-      if (heightDiff > MIN_KEYBOARD_HEIGHT) {
+      if (heightDiff > SCROLL_CONSTANTS.KEYBOARD_MIN_HEIGHT) {
         if (!isKeyboardVisible) {
           isKeyboardVisible = true
 
-          const button = document.querySelector(".follow-button") as HTMLElement
+          // Use ref instead of document.querySelector for better performance
+          const button = followButtonRef.current
           if (button) {
             button.style.bottom = `${heightDiff + 20}px`
             button.style.transition = "bottom 0.2s ease-out"
           }
 
           if (isScrolledToBottom) {
-            setTimeout(() => scrollToBottom("auto"), 100)
+            const timeout = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.SCROLL_TIMEOUT)
+            addTimeout(timeout)
           }
         }
       } else {
         if (isKeyboardVisible) {
           isKeyboardVisible = false
 
-          const button = document.querySelector(".follow-button") as HTMLElement
+          // Use ref instead of document.querySelector for better performance
+          const button = followButtonRef.current
           if (button) {
             button.style.bottom = ""
             button.style.transition = "bottom 0.3s ease-out"
@@ -221,9 +299,9 @@ const CustomScrollToBottom = ({
       }
       if (scrollTimeout) clearTimeout(scrollTimeout)
     }
-  }, [isScrolledToBottom])
+  }, [isScrolledToBottom, scrollToBottom, addTimeout])
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (!scrollContainerRef.current) return
 
     const scrollContainer = scrollContainerRef.current
@@ -231,11 +309,11 @@ const CustomScrollToBottom = ({
     const scrollHeight = scrollContainer.scrollHeight
     const clientHeight = scrollContainer.clientHeight
 
-    const isBottom = scrollHeight - scrollTop - clientHeight < 30
+    const isBottom = scrollHeight - scrollTop - clientHeight < SCROLL_CONSTANTS.SCROLL_BOTTOM_THRESHOLD
     setIsScrolledToBottom(isBottom)
     setShowScrollToBottom(!isBottom)
 
-    const isNearTop = scrollTop < 50
+    const isNearTop = scrollTop < SCROLL_CONSTANTS.SCROLL_TOP_THRESHOLD
 
     if (
       isNearTop &&
@@ -251,7 +329,7 @@ const CustomScrollToBottom = ({
     if (onScroll) {
       onScroll(e)
     }
-  }
+  }, [detectScrollToTop, onScroll])
 
   // ChatGPT-style autoscroll behavior
   useEffect(() => {
@@ -272,7 +350,8 @@ const CustomScrollToBottom = ({
 
       if (hasNewUserMessage && !isStreaming) {
         // ChatGPT-style: Jump scroll to show user message with space below
-        setTimeout(() => scrollToUserMessage(), 100)
+        const timeout = setTimeout(() => scrollToUserMessage(), SCROLL_CONSTANTS.SCROLL_TIMEOUT)
+        addTimeout(timeout)
       }
     }
 
@@ -281,7 +360,7 @@ const CustomScrollToBottom = ({
     if (onScrollComplete) {
       onScrollComplete()
     }
-  }, [messages, isStreaming, onScrollComplete])
+  }, [messages, isStreaming, onScrollComplete, scrollToUserMessage, addTimeout])
 
   return (
     <div className={containerClassName} style={containerStyle}>
@@ -289,6 +368,10 @@ const CustomScrollToBottom = ({
         ref={scrollContainerRef}
         className={scrollViewClassName || "custom-scroll-view"}
         onScroll={handleScroll}
+        role="log"
+        aria-live="polite"
+        aria-label="Chat conversation"
+        tabIndex={0}
         style={{
           overflowY: "auto",
           height: "100%",
@@ -300,13 +383,15 @@ const CustomScrollToBottom = ({
 
       {showScrollToBottom && (
         <button
+          ref={followButtonRef}
           className="follow-button"
           onClick={(e) => {
             e.stopPropagation()
             e.preventDefault()
             scrollToBottom()
           }}
-          aria-label="Scroll to bottom"
+          aria-label="Scroll to bottom of conversation"
+          type="button"
           style={{
             visibility: "visible",
             display: "flex",
@@ -319,7 +404,7 @@ const CustomScrollToBottom = ({
             e.stopPropagation()
           }}
         >
-          <ChevronDown size={18} />
+          <ChevronDown size={18} aria-hidden="true" />
         </button>
       )}
     </div>
@@ -375,7 +460,7 @@ const ChatFeed = forwardRef<(() => void) | null, ChatFeedProps>(({}, ref) => {
               setMessagesVisible(true)
               initialRenderRef.current = false
             }
-          }, 200)
+          }, SCROLL_CONSTANTS.MESSAGES_FADE_DELAY)
         } else {
           setMessagesVisible(true)
           initialRenderRef.current = false
@@ -405,6 +490,7 @@ const ChatFeed = forwardRef<(() => void) | null, ChatFeedProps>(({}, ref) => {
       if (!shouldFetchNext) return
 
       try {
+        // Use ref instead of document.querySelector for better performance
         const scrollContainer = document.querySelector(
           ".messages-scroll-view"
         ) as HTMLElement
@@ -428,7 +514,7 @@ const ChatFeed = forwardRef<(() => void) | null, ChatFeedProps>(({}, ref) => {
 
           fetchingRef.current = false
           setShouldFetchNext(false)
-        }, 150)
+        }, SCROLL_CONSTANTS.FETCH_DELAY)
       } catch (error) {
         console.error("Error loading more messages:", error)
         fetchingRef.current = false
