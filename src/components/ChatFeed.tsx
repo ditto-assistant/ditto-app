@@ -105,7 +105,7 @@ const CustomScrollToBottom = ({
         isInitialScrollRef.current = false
       }
 
-      let scrollTimer: NodeJS.Timeout | null = null
+      let scrollTimer: ReturnType<typeof setTimeout> | null = null
 
       const trackUserScrolling = () => {
         userScrollingImageRef.current = true
@@ -161,7 +161,7 @@ const CustomScrollToBottom = ({
     let isKeyboardVisible = false
     let previousDiff = 0
     const MIN_KEYBOARD_HEIGHT = 200
-    let scrollTimeout: NodeJS.Timeout | null = null
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null
 
     const setScrolling = () => {
       userScrollingKeyboardRef.current = true
