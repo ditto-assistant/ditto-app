@@ -39,9 +39,9 @@ const TopBar: React.FC<TopBarProps> = () => {
       {/* Center - Logo and Hey Ditto Text */}
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
         <Avatar className="h-8 w-8">
-          <AvatarImage 
-            src={DITTO_LOGO} 
-            alt="Ditto" 
+          <AvatarImage
+            src={DITTO_LOGO}
+            alt="Ditto"
             className="h-8 w-8 rounded-full"
           />
         </Avatar>
@@ -69,4 +69,4 @@ const TopBar: React.FC<TopBarProps> = () => {
   )
 }
 
-export default TopBar 
+export default TopBar
