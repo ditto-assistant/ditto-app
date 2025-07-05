@@ -1,5 +1,5 @@
 import React from "react"
-import { Brain, Settings } from "lucide-react"
+import { MessageCircle, Settings } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
@@ -8,12 +8,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { DITTO_LOGO, BRAND_TEXT } from "@/constants"
+import { DITTO_LOGO } from "@/constants"
 import { cn } from "@/lib/utils"
 
 const TopBar: React.FC = () => {
   const modal = useModal()
-  const openMemoriesOverlay = modal.createOpenHandler("memories")
+  const openFeedbackModal = modal.createOpenHandler("feedback")
   const openSettingsModal = modal.createOpenHandler("settings")
 
   const topBarClasses = cn(
@@ -28,34 +28,31 @@ const TopBar: React.FC = () => {
 
   return (
     <header role="banner" className={topBarClasses}>
-      {/* Left - Memories Brain Icon */}
+      {/* Left - Feedback MessageCircle Icon */}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            onClick={openMemoriesOverlay}
-            aria-label="Open memories"
+            onClick={openFeedbackModal}
+            aria-label="Send feedback"
             className={iconButtonClasses}
           >
-            <Brain className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            <MessageCircle className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">Memories</TooltipContent>
+        <TooltipContent side="bottom">Feedback</TooltipContent>
       </Tooltip>
 
-      {/* Center - Logo and Hey Ditto Text */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-        <Avatar className="h-8 w-8">
+      {/* Center - Static Color-Changing Logo */}
+      <div className="absolute left-1/2 -translate-x-1/2">
+        <Avatar className="h-8 w-8 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
           <AvatarImage
             src={DITTO_LOGO}
             alt="Ditto"
-            className="h-8 w-8 rounded-full"
+            className="h-8 w-8 rounded-full rainbow-gradient"
           />
         </Avatar>
-        <h1 className="text-lg font-medium text-foreground/90 tracking-wide">
-          {BRAND_TEXT}
-        </h1>
       </div>
 
       {/* Right - Settings Cog Icon */}
