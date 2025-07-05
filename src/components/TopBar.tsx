@@ -1,5 +1,5 @@
 import React from "react"
-import { Brain, Settings } from "lucide-react"
+import { MessageSquareWarning, Settings, Brain } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
@@ -8,13 +8,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { DITTO_LOGO, BRAND_TEXT } from "@/constants"
+import { DITTO_LOGO } from "@/constants"
 import { cn } from "@/lib/utils"
+
+const BRAND_TEXT = "Hey Ditto"
 
 const TopBar: React.FC = () => {
   const modal = useModal()
-  const openMemoriesOverlay = modal.createOpenHandler("memories")
+  const openFeedbackModal = modal.createOpenHandler("feedback")
   const openSettingsModal = modal.createOpenHandler("settings")
+  const openMemoriesModal = modal.createOpenHandler("memories")
 
   const topBarClasses = cn(
     "top-bar w-full bg-background/80 backdrop-blur-md border-b border-border/50",
@@ -28,37 +31,54 @@ const TopBar: React.FC = () => {
 
   return (
     <header role="banner" className={topBarClasses}>
-      {/* Left - Memories Brain Icon */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={openMemoriesOverlay}
-            aria-label="Open memories"
-            className={iconButtonClasses}
-          >
-            <Brain className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Memories</TooltipContent>
-      </Tooltip>
+      {/* Left side - Feedback and Memories buttons */}
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openFeedbackModal}
+              aria-label="Send feedback"
+              className={iconButtonClasses}
+            >
+              <MessageSquareWarning className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Feedback</TooltipContent>
+        </Tooltip>
 
-      {/* Center - Logo and Hey Ditto Text */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openMemoriesModal}
+              aria-label="Open memories dashboard"
+              className={iconButtonClasses}
+            >
+              <Brain className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Memories</TooltipContent>
+        </Tooltip>
+      </div>
+
+      {/* Center - Logo and Brand Text */}
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-8 w-8 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
           <AvatarImage
             src={DITTO_LOGO}
             alt="Ditto"
-            className="h-8 w-8 rounded-full"
+            className="h-8 w-8 rounded-full rainbow-gradient"
           />
         </Avatar>
-        <h1 className="text-lg font-medium text-foreground/90 tracking-wide">
+        <span className="text-lg font-medium text-foreground select-none">
           {BRAND_TEXT}
-        </h1>
+        </span>
       </div>
 
-      {/* Right - Settings Cog Icon */}
+      {/* Right - Settings button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

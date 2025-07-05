@@ -9,8 +9,6 @@ import {
   CreditCard,
   Crown,
   Bolt,
-  Settings,
-  MessageCircle,
   X,
   Square,
   Brain,
@@ -33,7 +31,6 @@ import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useUser } from "@/hooks/useUser"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import { useIOSDetection } from "@/hooks/useIOSDetection"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -97,14 +94,9 @@ export default function SendMessage({
   const { clearPrompt } = usePromptStorage()
   const { triggerSync } = useMemorySyncContext()
 
-  const logoButtonRef = useRef<HTMLDivElement>(null)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const modal = useModal()
-  const openSettingsModal = modal.createOpenHandler("settings")
-  const openSubscriptionsTab = modal.createOpenHandler("settings", "general")
-  const openFeedbackModal = modal.createOpenHandler("feedback")
-  const openMemoriesOverlay = modal.createOpenHandler("memories")
   const openTokenModal = modal.createOpenHandler("tokenCheckout")
+  const openSubscriptionsTab = modal.createOpenHandler("settings", "general")
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
   const { user: authUser } = useAuth()
@@ -144,10 +136,6 @@ export default function SendMessage({
       if (event) event.preventDefault()
       if (isWaitingForResponse) return
       if (message === "" && !image) return
-
-      if (isMenuOpen) {
-        setIsMenuOpen(false)
-      }
 
       setIsWaitingForResponse(true)
       try {
@@ -250,7 +238,6 @@ export default function SendMessage({
       isWaitingForResponse,
       message,
       image,
-      isMenuOpen,
       setIsWaitingForResponse,
       preferences.preferences,
       clearPrompt,
@@ -341,11 +328,6 @@ export default function SendMessage({
 
   const handleCameraClick = () => {
     onCameraOpen()
-  }
-
-  const handleLogoClick = () => {
-    // Simple toggle behavior for all platforms
-    setIsMenuOpen(!isMenuOpen)
   }
 
   // Add auto-resize function
@@ -519,61 +501,6 @@ export default function SendMessage({
                     >
                       <Camera className="mr-2 h-4 w-4" />
                       <span>Camera</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Center Ditto logo dropdown */}
-              <div className="absolute left-1/2 -translate-x-1/2">
-                <DropdownMenu>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <Avatar
-                          ref={logoButtonRef as React.RefObject<HTMLDivElement>}
-                          className="h-10 w-10 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
-                          onClick={handleLogoClick}
-                          onPointerDown={triggerLightHaptic}
-                        >
-                          <AvatarImage
-                            src={DITTO_LOGO}
-                            alt="Ditto"
-                            className="h-10 w-10 rounded-full rainbow-gradient"
-                          />
-                        </Avatar>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Menu</TooltipContent>
-                  </Tooltip>
-                  <DropdownMenuContent
-                    side="top"
-                    align="center"
-                    className="w-40 p-2"
-                  >
-                    <DropdownMenuItem
-                      onClick={openMemoriesOverlay}
-                      onPointerDown={triggerLightHaptic}
-                      className="flex items-center py-3"
-                    >
-                      <Brain className="mr-3 h-5 w-5" />{" "}
-                      <span className="text-lg">Memories</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={openFeedbackModal}
-                      onPointerDown={triggerLightHaptic}
-                      className="flex items-center py-3"
-                    >
-                      <MessageCircle className="mr-3 h-5 w-5" />{" "}
-                      <span className="text-lg">Feedback</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={openSettingsModal}
-                      onPointerDown={triggerLightHaptic}
-                      className="flex items-center py-3"
-                    >
-                      <Settings className="mr-3 h-5 w-5" />{" "}
-                      <span className="text-lg">Settings</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
