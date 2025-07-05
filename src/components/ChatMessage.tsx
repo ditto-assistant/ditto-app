@@ -229,7 +229,12 @@ export default function ChatMessage({
       </div>
 
       {/* Gutter area with Avatar, Action Buttons, and Timestamp */}
-      <div className="mt-1.5 mb-1.5 flex items-center gap-2 w-full">
+      <div
+        className={cn(
+          "mt-1.5 mb-1.5 flex items-center gap-2 w-full",
+          isUser ? "flex-row-reverse" : "flex-row"
+        )}
+      >
         {/* Avatar */}
         <div className="flex-shrink-0">
           <Avatar className="h-7 w-7 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
@@ -245,7 +250,21 @@ export default function ChatMessage({
 
         {/* Action buttons and timestamp - only show if not syncing */}
         {!isOptimistic && !showSyncIndicator && (
-          <div className="flex items-center gap-1.5 flex-1">
+          <div
+            className={cn(
+              "flex items-center gap-1.5 flex-1",
+              isUser ? "flex-row-reverse" : "flex-row"
+            )}
+          >
+            {/* Timestamp */}
+            <div className="text-xs opacity-70 flex-shrink-0">
+              {isOptimistic
+                ? content === ""
+                  ? "Thinking..."
+                  : "Streaming..."
+                : formatTimestamp(timestamp)}
+            </div>
+
             {/* Subjects Dropdown */}
             <DropdownMenu
               onOpenChange={(open) => {
@@ -340,21 +359,12 @@ export default function ChatMessage({
             >
               <Trash className="h-5 w-5" />
             </Button>
-
-            {/* Timestamp */}
-            <div className="ml-auto text-xs opacity-70 flex-shrink-0">
-              {isOptimistic
-                ? content === ""
-                  ? "Thinking..."
-                  : "Streaming..."
-                : formatTimestamp(timestamp)}
-            </div>
           </div>
         )}
 
         {/* Timestamp only (when syncing or optimistic) */}
         {(isOptimistic || showSyncIndicator) && (
-          <div className="ml-auto text-xs opacity-70 flex-shrink-0">
+          <div className="text-xs opacity-70 flex-shrink-0">
             {isOptimistic
               ? content === ""
                 ? "Thinking..."
