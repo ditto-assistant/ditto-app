@@ -128,18 +128,13 @@ const modalRegistry: ModalRegistry = {
 // Component to handle dynamic toast offset based on PWA vs web
 const ToasterWrapper = () => {
   const { isPWA } = usePlatformContext()
-  
+
   // PWA needs more offset to account for different top bar behavior
   // Web uses 80px, PWA needs more space (120px for Android PWA)
   const offset = isPWA ? 120 : 80
-  
+
   return createPortal(
-    <Toaster
-      position="top-center"
-      closeButton
-      richColors
-      offset={offset}
-    />,
+    <Toaster position="top-center" closeButton richColors offset={offset} />,
     document.getElementById("toast-root")!
   )
 }
