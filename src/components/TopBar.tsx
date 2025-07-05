@@ -1,5 +1,5 @@
 import React from "react"
-import { MessageCircle, Settings, Brain } from "lucide-react"
+import { MessageSquareWarning, Settings, Brain } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
@@ -42,7 +42,7 @@ const TopBar: React.FC = () => {
               aria-label="Send feedback"
               className={iconButtonClasses}
             >
-              <MessageCircle className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <MessageSquareWarning className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">Feedback</TooltipContent>
