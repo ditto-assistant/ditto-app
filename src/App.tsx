@@ -14,7 +14,7 @@ import { BalanceProvider } from "@/hooks/useBalance"
 import { MemoryCountProvider } from "@/hooks/useMemoryCount"
 import { ModelPreferencesProvider } from "@/hooks/useModelPreferences"
 import { ImageViewerProvider } from "@/hooks/useImageViewer"
-import { PlatformProvider } from "@/hooks/usePlatform"
+import { PlatformProvider, usePlatformContext } from "@/hooks/usePlatform"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ModalProvider, ModalRegistry } from "@/hooks/useModal"
@@ -125,6 +125,25 @@ const modalRegistry: ModalRegistry = {
   },
 } as const
 
+// Component to handle dynamic toast offset based on PWA vs web
+const ToasterWrapper = () => {
+  const { isPWA } = usePlatformContext()
+  
+  // PWA needs more offset to account for different top bar behavior
+  // Web uses 80px, PWA needs more space (120px for Android PWA)
+  const offset = isPWA ? 120 : 80
+  
+  return createPortal(
+    <Toaster
+      position="top-center"
+      closeButton
+      richColors
+      offset={offset}
+    />,
+    document.getElementById("toast-root")!
+  )
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -154,15 +173,7 @@ function App() {
                                         </AppErrorBoundary>
                                         <UpdateNotification />
 
-                                        {createPortal(
-                                          <Toaster
-                                            position="top-center"
-                                            closeButton
-                                            richColors
-                                            offset={80}
-                                          />,
-                                          document.getElementById("toast-root")!
-                                        )}
+                                        <ToasterWrapper />
                                         <ReactQueryDevtools
                                           buttonPosition="top-left"
                                           initialIsOpen={false}

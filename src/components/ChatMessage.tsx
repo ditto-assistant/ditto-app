@@ -51,8 +51,6 @@ const toolLabels: Record<string, { color: string; text: string }> = {
   home: { color: "#F44336", text: "Home" },
 }
 
-// Note: We've migrated from the custom AvatarActionMenu to shadcn's DropdownMenu
-
 interface ChatMessageProps {
   content: string
   timestamp: number | Date
@@ -219,7 +217,7 @@ export default function ChatMessage({
                 <MarkdownRenderer content={content} />
               </div>
             )}
-            {/* Timestamp and Sync Row */}
+            {/* Timestamp and Action Buttons Row */}
             <div className="flex items-center mt-2">
               {/* Sync Indicator */}
               {!isUser && showSyncIndicator && (
@@ -228,60 +226,102 @@ export default function ChatMessage({
                 </div>
               )}
 
-              {/* Subjects Dropdown - only show if not syncing */}
+              {/* Action buttons - only show if not syncing */}
               {!isOptimistic && !showSyncIndicator && (
-                <DropdownMenu
-                  onOpenChange={(open) => {
-                    if (open) {
-                      handleFetchSubjects()
-                    }
-                  }}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-foreground/70 hover:bg-background/20"
-                    >
-                      {isLoadingSubjects ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Tags className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-60">
-                    <DropdownMenuLabel>Linked Subjects</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <div className="p-2 space-y-2">
-                      {errorSubjects && (
-                        <p className="text-xs text-destructive">
-                          {errorSubjects}
-                        </p>
-                      )}
-                      {subjects.length > 0
-                        ? subjects.map((s, i) => (
-                            <div
-                              key={i}
-                              className="flex justify-between items-center"
-                            >
-                              <span className="text-sm font-medium">
-                                {s.subject_text}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {s.pair_count} pairs
-                              </span>
-                            </div>
-                          ))
-                        : !errorSubjects &&
-                          !isLoadingSubjects && (
-                            <p className="text-xs text-muted-foreground">
-                              No subjects found.
-                            </p>
-                          )}
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-1">
+                  {/* Subjects Dropdown */}
+                  <DropdownMenu
+                    onOpenChange={(open) => {
+                      if (open) {
+                        handleFetchSubjects()
+                      }
+                    }}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-foreground/70 hover:bg-background/20"
+                      >
+                        {isLoadingSubjects ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Tags className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-60">
+                      <DropdownMenuLabel>Linked Subjects</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <div className="p-2 space-y-2">
+                        {errorSubjects && (
+                          <p className="text-xs text-destructive">
+                            {errorSubjects}
+                          </p>
+                        )}
+                        {subjects.length > 0
+                          ? subjects.map((s, i) => (
+                              <div
+                                key={i}
+                                className="flex justify-between items-center"
+                              >
+                                <span className="text-sm font-medium">
+                                  {s.subject_text}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {s.pair_count} pairs
+                                </span>
+                              </div>
+                            ))
+                          : !errorSubjects &&
+                            !isLoadingSubjects && (
+                              <p className="text-xs text-muted-foreground">
+                                No subjects found.
+                              </p>
+                            )}
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Copy Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-foreground/70 hover:bg-background/20"
+                    onClick={() => {
+                      triggerLightHaptic()
+                      menuProps.onCopy()
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+
+                  {/* Memories Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-foreground/70 hover:bg-background/20"
+                    onClick={() => {
+                      triggerLightHaptic()
+                      menuProps.onShowMemories()
+                    }}
+                  >
+                    <Brain className="h-4 w-4" />
+                  </Button>
+
+                  {/* Delete Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-foreground/70 hover:bg-background/20 hover:text-destructive"
+                    onClick={() => {
+                      triggerLightHaptic()
+                      menuProps.onDelete()
+                    }}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
 
               {/* Timestamp */}
@@ -297,55 +337,17 @@ export default function ChatMessage({
         </Card>
       </div>
 
-      {/* Avatar below bubble */}
+      {/* Static Avatar below bubble (no dropdown functionality) */}
       <div className="mt-1.5 mb-1.5">
-        {" "}
-        {/* important margin for avatar spacing */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar
-              className="h-7 w-7 cursor-pointer hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50"
-              onPointerDown={triggerLightHaptic}
-            >
-              <AvatarImage
-                src={avatar}
-                alt={isUser ? "User Avatar" : "Ditto Avatar"}
-                className="object-cover"
-                draggable={false}
-              />
-              <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          {menuProps && (
-            <DropdownMenuContent
-              align={isUser ? "end" : "start"}
-              className="w-auto"
-            >
-              <DropdownMenuItem
-                onPointerDown={triggerLightHaptic}
-                onClick={menuProps.onCopy}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                <span>Copy</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onPointerDown={triggerLightHaptic}
-                onClick={menuProps.onShowMemories}
-              >
-                <Brain className="mr-2 h-4 w-4" />
-                <span>Memories</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onPointerDown={triggerLightHaptic}
-                onClick={menuProps.onDelete}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          )}
-        </DropdownMenu>
+        <Avatar className="h-7 w-7 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
+          <AvatarImage
+            src={avatar}
+            alt={isUser ? "User Avatar" : "Ditto Avatar"}
+            className="object-cover"
+            draggable={false}
+          />
+          <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
+        </Avatar>
       </div>
     </div>
   )
