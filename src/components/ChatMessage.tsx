@@ -3,7 +3,7 @@ import MarkdownRenderer from "./MarkdownRenderer"
 import { DEFAULT_USER_AVATAR, DITTO_AVATAR } from "@/constants"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserAvatar } from "@/hooks/useUserAvatar"
-import { Copy, Brain, Trash, Tags, Loader2 } from "lucide-react"
+import { Copy, Brain, Trash, Tags, Loader2, Network } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useFontSize } from "@/hooks/useFontSize"
 import SyncIndicator from "./SyncIndicator"
@@ -332,7 +332,7 @@ export default function ChatMessage({
               <Copy className="h-5 w-5" />
             </Button>
 
-            {/* Memories Button */}
+            {/* Memory Graph Viewer Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -341,9 +341,9 @@ export default function ChatMessage({
                 triggerLightHaptic()
                 menuProps.onShowMemories()
               }}
-              aria-label="Show memories"
+              aria-label="Show memory graph"
             >
-              <Brain className="h-5 w-5" />
+              <Network className="h-5 w-5" />
             </Button>
 
             {/* Delete Button */}

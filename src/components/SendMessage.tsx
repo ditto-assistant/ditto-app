@@ -97,7 +97,6 @@ export default function SendMessage({
   const modal = useModal()
   const openTokenModal = modal.createOpenHandler("tokenCheckout")
   const openSubscriptionsTab = modal.createOpenHandler("settings", "general")
-  const openMemoriesOverlay = modal.createOpenHandler("memories")
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
   const { user: authUser } = useAuth()
@@ -507,26 +506,6 @@ export default function SendMessage({
                 </DropdownMenu>
               </div>
 
-              {/* Center - Memories button */}
-              <div className="absolute left-1/2 -translate-x-1/2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        triggerLightHaptic()
-                        openMemoriesOverlay()
-                      }}
-                      aria-label="Open memories"
-                      className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
-                    >
-                      <Brain className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Memories</TooltipContent>
-                </Tooltip>
-              </div>
 
               <div className="flex items-center gap-1.5">
                 {/* Send/Stop button */}
