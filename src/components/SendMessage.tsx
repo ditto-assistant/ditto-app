@@ -506,7 +506,6 @@ export default function SendMessage({
                 </DropdownMenu>
               </div>
 
-
               <div className="flex items-center gap-1.5">
                 {/* Send/Stop button */}
                 <Tooltip>
