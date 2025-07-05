@@ -8,10 +8,12 @@ import {
 
 export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png"
 export const DITTO_LOGO = "/icons/round/android-chrome-192x192.png"
+export const BRAND_TEXT = "Hey Ditto"
 export const DITTO_AVATAR = "/icons/round/ditto-avatar-192x192.png"
 export const DEFAULT_USER_AVATAR = "/icons/round/user-avatar-192x192.png"
 export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png"
-export const FREE_MODEL_ID: Model = "meta/llama-3.3-70b-instruct-maas"
+export const FREE_MODEL_ID: Model =
+  "meta/llama-4-maverick-17b-128e-instruct-maas"
 
 // TODO: The backend should return the list of available models
 export const DEFAULT_MODELS: ModelOption[] = [
@@ -24,8 +26,19 @@ export const DEFAULT_MODELS: ModelOption[] = [
       tools: true,
     },
     speedLevel: "medium",
+    isFree: true,
   },
-
+  {
+    id: "meta/llama-4-maverick-17b-128e-instruct-maas",
+    name: "Llama 4 Maverick",
+    vendor: "meta",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+    speedLevel: "medium",
+    isFree: true,
+  },
   {
     id: "gpt-4o-mini",
     name: "GPT-4o Mini",
@@ -70,6 +83,42 @@ export const DEFAULT_MODELS: ModelOption[] = [
       tools: true,
     },
     isTaggedModel: true,
+    speedLevel: "medium",
+  },
+  {
+    id: "gpt-4.1-nano",
+    name: "GPT-4.1 Nano",
+    minimumTier: 0,
+    vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+    isTaggedModel: false,
+    speedLevel: "medium",
+  },
+  {
+    id: "gpt-4.1-mini",
+    name: "GPT-4.1 Mini",
+    minimumTier: 0,
+    vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+    isTaggedModel: false,
+    speedLevel: "medium",
+  },
+  {
+    id: "gpt-4.1",
+    name: "GPT-4.1",
+    minimumTier: 2,
+    vendor: "openai",
+    supports: {
+      imageAttachments: "single",
+      tools: true,
+    },
+    isTaggedModel: false,
     speedLevel: "medium",
   },
   // {

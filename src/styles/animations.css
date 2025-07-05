@@ -167,6 +167,25 @@
   }
 }
 
+/* Rainbow gradient background for avatars */
+.rainbow-gradient {
+  background: radial-gradient(
+    circle at center,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #8b00ff 20%,
+    transparent 25%
+  );
+  animation: rainbow 10s linear infinite;
+  background-size: 20% 20%;
+  background-position: center;
+  background-blend-mode: soft-light;
+}
+
 /* Token coin spinning animation */
 @keyframes coinSpin {
   0% {

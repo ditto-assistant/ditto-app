@@ -112,9 +112,6 @@ export default function SendMessage({
 
   const [showSalesPitch, setShowSalesPitch] = useState(false)
 
-  // Track if we're in an invalid configuration (zero balance with paid model)
-  const [isInvalidConfig, setIsInvalidConfig] = useState(false)
-
   const [autoScroll, setAutoScroll] = useState(false)
 
   useEffect(() => {
@@ -125,11 +122,8 @@ export default function SendMessage({
       const selectedModel = DEFAULT_MODELS.find(
         (model) => model.id === currentModelID
       )
-      const selectedModelHasTier = (selectedModel?.minimumTier ?? 0) > 0
-
-      const isInvalid = hasZeroBalance && selectedModelHasTier
+      const isInvalid = hasZeroBalance && !selectedModel?.isFree
       setShowSalesPitch(isInvalid)
-      setIsInvalidConfig(isInvalid)
     }
   }, [balance.data, preferences.preferences])
 
@@ -232,7 +226,6 @@ export default function SendMessage({
           if (error === ErrorPaymentRequired) {
             toast.error("Please upgrade to a paid plan to continue")
             setShowSalesPitch(true)
-            setIsInvalidConfig(true)
           } else if (
             error instanceof Error &&
             error.message === "Request cancelled"
@@ -418,7 +411,6 @@ export default function SendMessage({
                 onClick={() => {
                   preferences.updatePreferences({ mainModel: FREE_MODEL_ID })
                   setShowSalesPitch(false)
-                  setIsInvalidConfig(false)
                   toast.success("Switched to a free model")
                 }}
               >
@@ -547,15 +539,7 @@ export default function SendMessage({
                           <AvatarImage
                             src={DITTO_LOGO}
                             alt="Ditto"
-                            className="h-10 w-10 rounded-full"
-                            style={{
-                              background:
-                                "radial-gradient(circle at center, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF 20%, transparent 25%)",
-                              animation: "rainbow 10s linear infinite",
-                              backgroundSize: "20% 20%",
-                              backgroundPosition: "center",
-                              backgroundBlendMode: "soft-light",
-                            }}
+                            className="h-10 w-10 rounded-full rainbow-gradient"
                           />
                         </Avatar>
                       </DropdownMenuTrigger>
@@ -616,7 +600,7 @@ export default function SendMessage({
                         variant="ghost"
                         size="icon"
                         type="submit"
-                        disabled={isInvalidConfig || isUploading}
+                        disabled={showSalesPitch || isUploading}
                         aria-label={
                           isUploading ? "Uploading image..." : "Send message"
                         }
@@ -628,7 +612,7 @@ export default function SendMessage({
                     )}
                   </TooltipTrigger>
                   <TooltipContent>
-                    {isInvalidConfig
+                    {showSalesPitch
                       ? "You need tokens to use this model"
                       : isUploading
                         ? "Uploading image..."

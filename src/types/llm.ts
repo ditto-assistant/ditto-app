@@ -61,6 +61,9 @@ export type Model =
   | "llama-3.3-70b"
   | "meta/llama-4-scout-17b-16e-instruct-maas"
   | "meta/llama-4-maverick-17b-128e-instruct-maas"
+  | "gpt-4.1-nano"
+  | "gpt-4.1-mini"
+  | "gpt-4.1"
 
 export type Vendor =
   | "openai"
@@ -90,6 +93,7 @@ export type ModelOption = {
     tools?: boolean
   }
   speedLevel?: "slow" | "medium" | "fast" | "insane"
+  isFree?: boolean
 }
 
 export type Tool = {

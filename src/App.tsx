@@ -159,6 +159,7 @@ function App() {
                                             position="top-center"
                                             closeButton
                                             richColors
+                                            offset={80}
                                           />,
                                           document.getElementById("toast-root")!
                                         )}
