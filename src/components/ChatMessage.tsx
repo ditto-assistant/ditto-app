@@ -17,7 +17,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -217,137 +216,152 @@ export default function ChatMessage({
                 <MarkdownRenderer content={content} />
               </div>
             )}
-            {/* Timestamp and Action Buttons Row */}
-            <div className="flex items-center mt-2">
-              {/* Sync Indicator */}
-              {!isUser && showSyncIndicator && (
+            {/* Sync Indicator - keep inside bubble when syncing */}
+            {!isUser && showSyncIndicator && (
+              <div className="flex items-center mt-2">
                 <div className="text-xs opacity-70">
                   <SyncIndicator isVisible={true} currentStage={syncStage} />
                 </div>
-              )}
-
-              {/* Action buttons - only show if not syncing */}
-              {!isOptimistic && !showSyncIndicator && (
-                <div className="flex items-center gap-1">
-                  {/* Subjects Dropdown */}
-                  <DropdownMenu
-                    onOpenChange={(open) => {
-                      if (open) {
-                        handleFetchSubjects()
-                      }
-                    }}
-                  >
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-foreground/70 hover:bg-background/20"
-                      >
-                        {isLoadingSubjects ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Tags className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-60">
-                      <DropdownMenuLabel>Linked Subjects</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <div className="p-2 space-y-2">
-                        {errorSubjects && (
-                          <p className="text-xs text-destructive">
-                            {errorSubjects}
-                          </p>
-                        )}
-                        {subjects.length > 0
-                          ? subjects.map((s, i) => (
-                              <div
-                                key={i}
-                                className="flex justify-between items-center"
-                              >
-                                <span className="text-sm font-medium">
-                                  {s.subject_text}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {s.pair_count} pairs
-                                </span>
-                              </div>
-                            ))
-                          : !errorSubjects &&
-                            !isLoadingSubjects && (
-                              <p className="text-xs text-muted-foreground">
-                                No subjects found.
-                              </p>
-                            )}
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {/* Copy Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-foreground/70 hover:bg-background/20"
-                    onClick={() => {
-                      triggerLightHaptic()
-                      menuProps.onCopy()
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-
-                  {/* Memories Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-foreground/70 hover:bg-background/20"
-                    onClick={() => {
-                      triggerLightHaptic()
-                      menuProps.onShowMemories()
-                    }}
-                  >
-                    <Brain className="h-4 w-4" />
-                  </Button>
-
-                  {/* Delete Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-foreground/70 hover:bg-background/20 hover:text-destructive"
-                    onClick={() => {
-                      triggerLightHaptic()
-                      menuProps.onDelete()
-                    }}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Timestamp */}
-              <div className="ml-auto text-xs opacity-70">
-                {isOptimistic
-                  ? content === ""
-                    ? "Thinking..."
-                    : "Streaming..."
-                  : formatTimestamp(timestamp)}
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Static Avatar below bubble (no dropdown functionality) */}
-      <div className="mt-1.5 mb-1.5">
-        <Avatar className="h-7 w-7 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
-          <AvatarImage
-            src={avatar}
-            alt={isUser ? "User Avatar" : "Ditto Avatar"}
-            className="object-cover"
-            draggable={false}
-          />
-          <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
-        </Avatar>
+      {/* Gutter area with Avatar, Action Buttons, and Timestamp */}
+      <div className="mt-1.5 mb-1.5 flex items-center gap-2 w-full">
+        {/* Avatar */}
+        <div className="flex-shrink-0">
+          <Avatar className="h-7 w-7 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
+            <AvatarImage
+              src={avatar}
+              alt={isUser ? "User Avatar" : "Ditto Avatar"}
+              className="object-cover"
+              draggable={false}
+            />
+            <AvatarFallback>{isUser ? "U" : "D"}</AvatarFallback>
+          </Avatar>
+        </div>
+
+        {/* Action buttons and timestamp - only show if not syncing */}
+        {!isOptimistic && !showSyncIndicator && (
+          <div className="flex items-center gap-1.5 flex-1">
+            {/* Subjects Dropdown */}
+            <DropdownMenu
+              onOpenChange={(open) => {
+                if (open) {
+                  handleFetchSubjects()
+                }
+              }}
+            >
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-foreground/70 hover:bg-background/20"
+                  aria-label="View linked subjects"
+                >
+                  {isLoadingSubjects ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Tags className="h-5 w-5" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-60">
+                <DropdownMenuLabel>Linked Subjects</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="p-2 space-y-2">
+                  {errorSubjects && (
+                    <p className="text-xs text-destructive">{errorSubjects}</p>
+                  )}
+                  {subjects.length > 0
+                    ? subjects.map((s, i) => (
+                        <div
+                          key={i}
+                          className="flex justify-between items-center"
+                        >
+                          <span className="text-sm font-medium">
+                            {s.subject_text}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {s.pair_count} pairs
+                          </span>
+                        </div>
+                      ))
+                    : !errorSubjects &&
+                      !isLoadingSubjects && (
+                        <p className="text-xs text-muted-foreground">
+                          No subjects found.
+                        </p>
+                      )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Copy Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-foreground/70 hover:bg-background/20"
+              onClick={() => {
+                triggerLightHaptic()
+                menuProps.onCopy()
+              }}
+              aria-label="Copy message"
+            >
+              <Copy className="h-5 w-5" />
+            </Button>
+
+            {/* Memories Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-foreground/70 hover:bg-background/20"
+              onClick={() => {
+                triggerLightHaptic()
+                menuProps.onShowMemories()
+              }}
+              aria-label="Show memories"
+            >
+              <Brain className="h-5 w-5" />
+            </Button>
+
+            {/* Delete Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-foreground/70 hover:bg-background/20 hover:text-destructive"
+              onClick={() => {
+                triggerLightHaptic()
+                menuProps.onDelete()
+              }}
+              aria-label="Delete message"
+            >
+              <Trash className="h-5 w-5" />
+            </Button>
+
+            {/* Timestamp */}
+            <div className="ml-auto text-xs opacity-70 flex-shrink-0">
+              {isOptimistic
+                ? content === ""
+                  ? "Thinking..."
+                  : "Streaming..."
+                : formatTimestamp(timestamp)}
+            </div>
+          </div>
+        )}
+
+        {/* Timestamp only (when syncing or optimistic) */}
+        {(isOptimistic || showSyncIndicator) && (
+          <div className="ml-auto text-xs opacity-70 flex-shrink-0">
+            {isOptimistic
+              ? content === ""
+                ? "Thinking..."
+                : "Streaming..."
+              : formatTimestamp(timestamp)}
+          </div>
+        )}
       </div>
     </div>
   )
