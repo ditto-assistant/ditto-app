@@ -398,10 +398,22 @@ export default function SendMessage({
               </Button>
             </CardHeader>
             <CardContent className="p-3 pt-1 pb-2 text-sm">
-              Subscribe or buy tokens to keep using{" "}
-              <Badge variant="outline" className="font-medium ml-1">
-                {preferences.preferences?.mainModel || ""}
-              </Badge>
+              {user?.data?.planTier ? (
+                <>
+                  You've run out of tokens. Upgrade your plan or buy extra
+                  tokens to keep using{" "}
+                  <Badge variant="outline" className="font-medium ml-1">
+                    {preferences.preferences?.mainModel || ""}
+                  </Badge>
+                </>
+              ) : (
+                <>
+                  Subscribe or buy tokens to keep using{" "}
+                  <Badge variant="outline" className="font-medium ml-1">
+                    {preferences.preferences?.mainModel || ""}
+                  </Badge>
+                </>
+              )}
             </CardContent>
             <CardFooter className="flex flex-col gap-2 p-3 pt-0">
               <Button
@@ -428,20 +440,31 @@ export default function SendMessage({
                 </Button>
               )}
 
+              {user?.data?.planTier && user?.data?.planTier < 3 && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={openSubscriptionsTab}
+                >
+                  <Crown className="mr-2 h-4 w-4" /> Manage Subscription
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full justify-start"
                 onClick={() => {
                   if (user?.data?.planTier) {
-                    openSubscriptionsTab()
+                    openTokenModal()
                   } else {
                     openTokenModal()
                   }
                 }}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {user?.data?.planTier ? "Upgrade Plan" : "Buy Tokens"}
+                {user?.data?.planTier ? "Purchase Tokens" : "Buy Tokens"}
               </Button>
             </CardFooter>
           </Card>
