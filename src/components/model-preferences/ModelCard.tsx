@@ -72,40 +72,6 @@ const getVendorIcon = (vendor: Vendor) => {
   }
 }
 
-// Function to check if model is accessible
-const isModelAccessible = (
-  model: LLMModel | ImageModel,
-  userTier: number = 0
-) => {
-  // Special case for LLaMA 4 models - always accessible
-  if (
-    "costPerMillionInputTokens" in model &&
-    model.name.toLowerCase().includes("llama-4")
-  ) {
-    return true
-  }
-
-  // Free models (no cost) are always accessible
-  if (
-    "costPerMillionInputTokens" in model &&
-    (!model.costPerMillionInputTokens || model.costPerMillionInputTokens === 0)
-  ) {
-    return true
-  }
-
-  // Image models
-  if (!("costPerMillionInputTokens" in model)) {
-    return model.minimumTier ? userTier >= model.minimumTier : true
-  }
-
-  // Use plan tier to determine accessibility
-  if (model.costPerMillionInputTokens > 30 && userTier < 3) return false
-  if (model.costPerMillionInputTokens > 10 && userTier < 2) return false
-  if (model.costPerMillionInputTokens > 0 && userTier < 1) return false
-
-  return true
-}
-
 interface ModelCardProps {
   /** Optional override for the card title (defaults to model.modelFlavor) */
   title?: string
@@ -135,7 +101,8 @@ export const ModelCard = ({
 }: ModelCardProps) => {
   const { preferences, updatePreferences } = useModelPreferences()
 
-  const isAccessible = isModelAccessible(model, userTier)
+  // const isAccessible = isModelAccessible(model, userTier)
+  const isAccessible = model.minimumTier <= userTier
   const isLLMModel = "costPerMillionInputTokens" in model
 
   // Compute supported sizes from passed variants, covering all orientations
