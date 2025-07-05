@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { DITTO_LOGO } from "@/constants"
+import { DITTO_LOGO, BRAND_TEXT } from "@/constants"
 import { cn } from "@/lib/utils"
 
 const TopBar: React.FC = () => {
@@ -27,7 +27,7 @@ const TopBar: React.FC = () => {
   )
 
   return (
-    <div className={topBarClasses}>
+    <header className={topBarClasses}>
       {/* Left - Memories Brain Icon */}
       <Tooltip>
         <TooltipTrigger asChild>
@@ -54,7 +54,7 @@ const TopBar: React.FC = () => {
           />
         </Avatar>
         <h1 className="text-lg font-medium text-foreground/90 tracking-wide">
-          Hey Ditto
+          {BRAND_TEXT}
         </h1>
       </div>
 
@@ -73,7 +73,7 @@ const TopBar: React.FC = () => {
         </TooltipTrigger>
         <TooltipContent side="bottom">Settings</TooltipContent>
       </Tooltip>
-    </div>
+    </header>
   )
 }
 

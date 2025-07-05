@@ -8,6 +8,7 @@ import {
 
 export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png"
 export const DITTO_LOGO = "/icons/round/android-chrome-192x192.png"
+export const BRAND_TEXT = "Hey Ditto"
 export const DITTO_AVATAR = "/icons/round/ditto-avatar-192x192.png"
 export const DEFAULT_USER_AVATAR = "/icons/round/user-avatar-192x192.png"
 export const NOT_FOUND_IMAGE = "/placeholders/not-found-192.png"

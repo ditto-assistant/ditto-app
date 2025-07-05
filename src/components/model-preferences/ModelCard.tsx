@@ -189,8 +189,6 @@ export const ModelCard = ({
             {getSpeedIcon(model.speedLevel)}
           </Badge>
 
-          <Badge variant="secondary" className="flex items-center"></Badge>
-
           {isLLMModel && (model as LLMModel).attachableImageCount > 0 && (
             <Badge variant="success" className="flex items-center">
               <ImageIcon className="h-3 w-3" />

@@ -193,7 +193,13 @@ export function ModalProvider({ children, registry }: ModalProviderProps) {
   // Factory functions that return stable handler references
   const createOpenHandler = useCallback(
     (id: ModalId, initialTabId?: string) => {
-      return () => getOrCreateHandlers(id).open(initialTabId)
+      const handlers = getOrCreateHandlers(id)
+      // Return the stable handler directly when no initialTabId is provided
+      if (initialTabId === undefined) {
+        return handlers.open
+      }
+      // For cases with initialTabId, we need to create a wrapper
+      return () => handlers.open(initialTabId)
     },
     [getOrCreateHandlers]
   )
