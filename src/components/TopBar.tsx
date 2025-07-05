@@ -27,7 +27,7 @@ const TopBar: React.FC = () => {
   )
 
   return (
-    <header className={topBarClasses}>
+    <header role="banner" className={topBarClasses}>
       {/* Left - Memories Brain Icon */}
       <Tooltip>
         <TooltipTrigger asChild>
