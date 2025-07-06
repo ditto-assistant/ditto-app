@@ -53,6 +53,18 @@ alias l := lint
 lint-fix:
 	bun lint-fix
 
+test:
+	bun test --preload ./src/test-setup.ts
+alias t := test
+
+test-watch:
+	bun test --watch --preload ./src/test-setup.ts
+alias tw := test-watch
+
+test-coverage:
+	bun test --coverage --preload ./src/test-setup.ts
+alias tc := test-coverage
+
 merge-dependabot:
 	./scripts/github/merge_dependabot.sh
 
