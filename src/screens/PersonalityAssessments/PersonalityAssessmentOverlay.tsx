@@ -63,79 +63,89 @@ export default function PersonalityAssessmentOverlay() {
     useState<PersonalityAssessment | null>(null)
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncStatus, setSyncStatus] = useState<string | null>(null)
-  const [lastSyncStatus, setLastSyncStatus] = useState<LastSyncStatus | null>(null)
+  const [lastSyncStatus, setLastSyncStatus] = useState<LastSyncStatus | null>(
+    null
+  )
   const [loadingLastSync, setLoadingLastSync] = useState(false)
 
   // Use memory count from the dedicated hook
   const hasEnoughMessages = messageCount >= 30
 
-  const pollForCompletion = useCallback(async (initialLastSyncTime: string | null) => {
-    if (!user?.uid) return
+  const pollForCompletion = useCallback(
+    async (initialLastSyncTime: string | null) => {
+      if (!user?.uid) return
 
-    let pollCount = 0
-    const maxPolls = 60 // 5 minutes max
-    
-    const poll = async () => {
-      try {
-        const token = await user.getIdToken()
-        const response = await fetch(routes.personalityLastSync, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({}),
-        })
+      let pollCount = 0
+      const maxPolls = 60 // 5 minutes max
 
-        if (response.ok) {
-          const data = await response.json()
-          
-          // Check if last_sync_time has changed (indicating completion)
-          if (data.last_sync_time && data.last_sync_time !== initialLastSyncTime) {
-            // Sync completed!
-            setSyncStatus("Personality sync completed successfully!")
-            setLastSyncStatus(data)
-            refetch() // Refresh assessments list
-            
+      const poll = async () => {
+        try {
+          const token = await user.getIdToken()
+          const response = await fetch(routes.personalityLastSync, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({}),
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+
+            // Check if last_sync_time has changed (indicating completion)
+            if (
+              data.last_sync_time &&
+              data.last_sync_time !== initialLastSyncTime
+            ) {
+              // Sync completed!
+              setSyncStatus("Personality sync completed successfully!")
+              setLastSyncStatus(data)
+              refetch() // Refresh assessments list
+
+              setTimeout(() => {
+                setIsSyncing(false)
+                setSyncStatus(null)
+              }, 2000)
+              return
+            }
+
+            // Update status message based on current state
+            if (data.can_sync) {
+              setSyncStatus("Processing your personality data...")
+            } else {
+              setSyncStatus("Analyzing your conversations with AI...")
+            }
+          }
+
+          pollCount++
+          if (pollCount < maxPolls) {
+            setTimeout(poll, 5000) // Poll every 5 seconds
+          } else {
+            setSyncStatus(
+              "Sync is taking longer than expected. Please check back later."
+            )
             setTimeout(() => {
               setIsSyncing(false)
               setSyncStatus(null)
-            }, 2000)
-            return
+              fetchLastSyncStatus() // Refresh status
+            }, 3000)
           }
-          
-          // Update status message based on current state
-          if (data.can_sync) {
-            setSyncStatus("Processing your personality data...")
-          } else {
-            setSyncStatus("Analyzing your conversations with AI...")
-          }
-        }
-
-        pollCount++
-        if (pollCount < maxPolls) {
-          setTimeout(poll, 5000) // Poll every 5 seconds
-        } else {
-          setSyncStatus("Sync is taking longer than expected. Please check back later.")
+        } catch (error) {
+          console.error("Error polling for completion:", error)
+          setSyncStatus("Error checking sync status")
           setTimeout(() => {
             setIsSyncing(false)
             setSyncStatus(null)
-            fetchLastSyncStatus() // Refresh status
-          }, 3000)
+          }, 2000)
         }
-      } catch (error) {
-        console.error("Error polling for completion:", error)
-        setSyncStatus("Error checking sync status")
-        setTimeout(() => {
-          setIsSyncing(false)
-          setSyncStatus(null)
-        }, 2000)
       }
-    }
 
-    // Start polling after a short delay
-    setTimeout(poll, 3000)
-  }, [user, refetch])
+      // Start polling after a short delay
+      setTimeout(poll, 3000)
+    },
+    [user, refetch]
+  )
 
   const fetchLastSyncStatus = useCallback(async () => {
     if (!user?.uid) return
@@ -155,7 +165,7 @@ export default function PersonalityAssessmentOverlay() {
       if (response.ok) {
         const data = await response.json()
         setLastSyncStatus(data)
-        
+
         // If a job is currently processing, set the syncing state and start polling
         if (data.is_processing) {
           setIsSyncing(true)
@@ -200,7 +210,9 @@ export default function PersonalityAssessmentOverlay() {
 
     // Check rate limiting
     if (lastSyncStatus && !lastSyncStatus.can_sync) {
-      toast.error(`You can sync again in ${lastSyncStatus.hours_until_next_sync.toFixed(1)} hours`)
+      toast.error(
+        `You can sync again in ${lastSyncStatus.hours_until_next_sync.toFixed(1)} hours`
+      )
       return
     }
 
@@ -234,11 +246,12 @@ export default function PersonalityAssessmentOverlay() {
         throw new Error(errorData.error || "Failed to start sync")
       }
 
-      setSyncStatus("Sync started successfully! Analyzing your conversations with AI...")
-      
+      setSyncStatus(
+        "Sync started successfully! Analyzing your conversations with AI..."
+      )
+
       // Start polling for completion
       pollForCompletion(lastSyncStatus?.last_sync_time || null)
-
     } catch (error) {
       console.error("Error starting personality assessment:", error)
       toast.error(
@@ -247,7 +260,14 @@ export default function PersonalityAssessmentOverlay() {
       setIsSyncing(false)
       setSyncStatus(null)
     }
-  }, [user, hasEnoughMessages, messageCount, isSyncing, lastSyncStatus, pollForCompletion])
+  }, [
+    user,
+    hasEnoughMessages,
+    messageCount,
+    isSyncing,
+    lastSyncStatus,
+    pollForCompletion,
+  ])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Unknown"
@@ -388,7 +408,12 @@ export default function PersonalityAssessmentOverlay() {
             disabled={loading || loadingLastSync || isSyncing}
             className="border-border hover:bg-accent"
           >
-            <RefreshCw className={cn("h-4 w-4", (loading || loadingLastSync || isSyncing) && "animate-spin")} />
+            <RefreshCw
+              className={cn(
+                "h-4 w-4",
+                (loading || loadingLastSync || isSyncing) && "animate-spin"
+              )}
+            />
             <span className="ml-2">Refresh</span>
           </Button>
         </div>
@@ -402,7 +427,9 @@ export default function PersonalityAssessmentOverlay() {
                   <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
                   <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary" />
                 </div>
-                <p className="text-muted-foreground font-medium">Loading personality assessments...</p>
+                <p className="text-muted-foreground font-medium">
+                  Loading personality assessments...
+                </p>
               </div>
             </div>
           )}
@@ -418,7 +445,10 @@ export default function PersonalityAssessmentOverlay() {
                   Failed to load assessments
                 </h3>
                 <p className="text-muted-foreground mb-4">{error}</p>
-                <Button onClick={handleRefresh} className="bg-primary hover:bg-primary/90">
+                <Button
+                  onClick={handleRefresh}
+                  className="bg-primary hover:bg-primary/90"
+                >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
                 </Button>
@@ -444,7 +474,8 @@ export default function PersonalityAssessmentOverlay() {
                         {syncStatus || "Analyzing your conversations..."}
                       </p>
                       <p className="text-sm text-muted-foreground mt-2">
-                        This may take a few minutes. The sync will complete automatically.
+                        This may take a few minutes. The sync will complete
+                        automatically.
                       </p>
                     </div>
                   </div>
@@ -469,7 +500,8 @@ export default function PersonalityAssessmentOverlay() {
                     Sync Your AI Personality
                   </h3>
                   <p className="text-muted-foreground mb-8">
-                    Get AI-powered personality insights based on your conversations with Ditto
+                    Get AI-powered personality insights based on your
+                    conversations with Ditto
                   </p>
                 </div>
 
@@ -480,7 +512,9 @@ export default function PersonalityAssessmentOverlay() {
                       <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
                         <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <h4 className="font-semibold text-foreground">Sync Requirements</h4>
+                      <h4 className="font-semibold text-foreground">
+                        Sync Requirements
+                      </h4>
                     </div>
 
                     <div className="space-y-3">
@@ -488,12 +522,20 @@ export default function PersonalityAssessmentOverlay() {
                         <span className="text-foreground">Memories needed</span>
                         <div className="flex items-center gap-2">
                           <Badge
-                            variant={hasEnoughMessages ? "default" : "secondary"}
-                            className={hasEnoughMessages ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300" : ""}
+                            variant={
+                              hasEnoughMessages ? "default" : "secondary"
+                            }
+                            className={
+                              hasEnoughMessages
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300"
+                                : ""
+                            }
                           >
                             {messageCount} / 30
                           </Badge>
-                          {hasEnoughMessages && <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />}
+                          {hasEnoughMessages && (
+                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          )}
                         </div>
                       </div>
 
@@ -524,7 +566,8 @@ export default function PersonalityAssessmentOverlay() {
                           </span>
                         </div>
                         <p className="text-sm text-amber-700 dark:text-amber-300">
-                          Keep chatting with Ditto to unlock personality insights!
+                          Keep chatting with Ditto to unlock personality
+                          insights!
                         </p>
                       </div>
                     )}
@@ -534,11 +577,14 @@ export default function PersonalityAssessmentOverlay() {
                         <div className="flex items-center gap-2 mb-2">
                           <Timer className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                           <span className="font-medium text-orange-800 dark:text-orange-200">
-                            Next sync available in {lastSyncStatus.hours_until_next_sync.toFixed(1)} hours
+                            Next sync available in{" "}
+                            {lastSyncStatus.hours_until_next_sync.toFixed(1)}{" "}
+                            hours
                           </span>
                         </div>
                         <p className="text-sm text-orange-700 dark:text-orange-300">
-                          You can sync your personality once per day. Come back later!
+                          You can sync your personality once per day. Come back
+                          later!
                         </p>
                       </div>
                     )}
@@ -552,8 +598,8 @@ export default function PersonalityAssessmentOverlay() {
                   size="lg"
                   className={cn(
                     "w-full h-14 text-lg font-semibold shadow-lg transition-all duration-200",
-                    canSync 
-                      ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/25" 
+                    canSync
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/25"
                       : "bg-muted text-muted-foreground cursor-not-allowed"
                   )}
                 >
@@ -584,10 +630,15 @@ export default function PersonalityAssessmentOverlay() {
                               Sync AI Personality
                             </h3>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>Update your insights with fresh analysis</span>
+                              <span>
+                                Update your insights with fresh analysis
+                              </span>
                               {lastSyncStatus?.last_sync_time && (
                                 <span className="text-xs">
-                                  Last sync: {formatLastSyncTime(lastSyncStatus.last_sync_time)}
+                                  Last sync:{" "}
+                                  {formatLastSyncTime(
+                                    lastSyncStatus.last_sync_time
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -595,9 +646,13 @@ export default function PersonalityAssessmentOverlay() {
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           {lastSyncStatus && !lastSyncStatus.can_sync && (
-                            <Badge variant="outline" className="text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700">
+                            <Badge
+                              variant="outline"
+                              className="text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700"
+                            >
                               <Timer className="h-3 w-3 mr-1" />
-                              {lastSyncStatus.hours_until_next_sync.toFixed(1)}h remaining
+                              {lastSyncStatus.hours_until_next_sync.toFixed(1)}h
+                              remaining
                             </Badge>
                           )}
                           <Button
@@ -636,17 +691,21 @@ export default function PersonalityAssessmentOverlay() {
                       className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
                       onClick={() => setSelectedAssessment(assessment)}
                     >
-                      <div className={cn(
-                        "h-2 rounded-t-lg bg-gradient-to-r",
-                        getAssessmentGradient(assessment.assessment_id)
-                      )} />
+                      <div
+                        className={cn(
+                          "h-2 rounded-t-lg bg-gradient-to-r",
+                          getAssessmentGradient(assessment.assessment_id)
+                        )}
+                      />
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className={cn(
-                              "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
-                              getAssessmentGradient(assessment.assessment_id)
-                            )}>
+                            <div
+                              className={cn(
+                                "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
+                                getAssessmentGradient(assessment.assessment_id)
+                              )}
+                            >
                               {getAssessmentIcon(assessment.assessment_id)}
                             </div>
                             <div>
@@ -661,7 +720,12 @@ export default function PersonalityAssessmentOverlay() {
                           <div className="flex items-center gap-2">
                             <Badge
                               variant="outline"
-                              className={cn("font-medium", getAssessmentBadgeColor(assessment.assessment_id))}
+                              className={cn(
+                                "font-medium",
+                                getAssessmentBadgeColor(
+                                  assessment.assessment_id
+                                )
+                              )}
                             >
                               {assessment.assessment_id.toUpperCase()}
                             </Badge>
@@ -680,13 +744,11 @@ export default function PersonalityAssessmentOverlay() {
                             </div>
                             <div className="flex items-center gap-1">
                               <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>
-                                {formatDate(assessment.completed_at)}
-                              </span>
+                              <span>{formatDate(assessment.completed_at)}</span>
                             </div>
                           </div>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                           >
