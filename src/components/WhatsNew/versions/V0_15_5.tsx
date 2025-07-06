@@ -7,9 +7,9 @@ const sections: Section[] = [
     features: [
       {
         type: "improved",
-        title: "Unified Search Experience",
+        title: "Simplified & Seamless Memory Dashboard Search",
         description:
-          "Consolidated the memories dashboard search into a single, intuitive search bar. Now when you search, you'll see both matching memories and related subjects together, making it easier to discover connections and find what you're looking for.",
+          "Completely redesigned the memory dashboard search experience to be more intuitive and seamless. The new consolidated search lets you find memories and explore related subjects in one unified interface. Search results now persist while you browse subjects, and clearing your search brings everything back to the default view - making memory exploration effortless and natural.",
       },
     ],
   },
