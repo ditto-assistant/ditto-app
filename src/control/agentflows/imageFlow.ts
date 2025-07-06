@@ -1,18 +1,11 @@
 import { openaiImageGeneration } from "../../api/LLM"
-import { ModelPreferences } from "@/types/llm"
 
 /**
  * Handles image generation flow
  */
-export const handleImageGeneration = async (
-  response: string,
-  preferences: ModelPreferences
-) => {
+export const handleImageGeneration = async (response: string) => {
   const query = response.split("<IMAGE_GENERATION>")[1]
-  const imageURL = await openaiImageGeneration(
-    query,
-    preferences.imageGeneration
-  )
+  const imageURL = await openaiImageGeneration(query)
   if (imageURL instanceof Error) {
     return imageURL
   }
