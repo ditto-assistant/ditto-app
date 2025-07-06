@@ -105,19 +105,34 @@ export const useMemorySearch = (
       toast.error("Please enter a search term")
       return
     }
+    
+    // Start both memory and subject searches
     dispatch({ type: "INIT_MEMORY_SEARCH", payload: { searchTerm } })
+    dispatch({ type: "INIT_SUBJECT_SEARCH", payload: { query: searchTerm } })
+    
     try {
       const userID = user?.uid
       if (!userID) throw new Error("User not authenticated")
       if (!preferences) throw new Error("Model preferences not available")
-      const embeddingResult = await embed({
-        userID,
-        text: searchTerm,
-        model: "text-embedding-005",
-      })
-      if (embeddingResult.err)
+      
+      // Start both searches in parallel
+      const [embeddingResult, subjectsResult] = await Promise.all([
+        embed({
+          userID,
+          text: searchTerm,
+          model: "text-embedding-005",
+        }),
+        searchSubjects({ userID, query: searchTerm, topK: 10 })
+      ])
+      
+      // Handle embedding/memory search result
+      if (embeddingResult.err) {
         throw new Error(`Embedding failed: ${embeddingResult.err}`)
-      if (!embeddingResult.ok) throw new Error("Embedding failed: No result")
+      }
+      if (!embeddingResult.ok) {
+        throw new Error("Embedding failed: No result")
+      }
+      
       const memoriesResponse = await getMemories(
         {
           userID,
@@ -129,24 +144,51 @@ export const useMemorySearch = (
         },
         "application/json"
       )
-      if (memoriesResponse.err) throw new Error(memoriesResponse.err)
-      if (!memoriesResponse.ok || !memoriesResponse.ok.longTerm) {
-        dispatch({ type: "SET_MEMORIES", payload: [] })
-        throw new Error("No memories found or query failed.")
+      
+      if (memoriesResponse.err) {
+        throw new Error(memoriesResponse.err)
       }
-      const resultsTree = memoriesResponse.ok.longTerm
+      
+      const resultsTree = memoriesResponse.ok?.longTerm || []
       dispatch({ type: "SET_MEMORIES", payload: resultsTree })
-      if (resultsTree.length === 0)
+      
+      // Handle subjects search result
+      if (subjectsResult.err) {
+        console.warn("Subject search failed:", subjectsResult.err)
+        // Don't throw error for subjects, just log it
+        dispatch({
+          type: "COMPLETE_SUBJECT_SEARCH",
+          payload: { subjects: [] }
+        })
+      } else {
+        const searchResults = subjectsResult.ok?.results || []
+        const uniqueResults = searchResults.filter(
+          (subject, index, self) =>
+            index === self.findIndex((s) => s.id === subject.id)
+        )
+        dispatch({
+          type: "COMPLETE_SUBJECT_SEARCH",
+          payload: { subjects: uniqueResults }
+        })
+      }
+      
+      // Set error only if no memories found
+      if (resultsTree.length === 0) {
         dispatch({
           type: "SET_ERROR",
           payload: "No memories found matching your search term.",
         })
+      }
     } catch (err) {
       const e = err as Error
       console.error("Error searching memories:", e)
       dispatch({ type: "SET_ERROR", payload: e.message })
       toast.error(`Search failed: ${e.message}`)
       dispatch({ type: "SET_MEMORIES", payload: [] })
+      dispatch({
+        type: "COMPLETE_SUBJECT_SEARCH",
+        payload: { subjects: [] }
+      })
     } finally {
       dispatch({ type: "SET_LOADING", payload: false })
     }
@@ -160,34 +202,6 @@ export const useSubjectManagement = (
   user: User | null,
   state: DashboardState
 ) => {
-  // Subject search handler
-  const handleSubjectSearch = useCallback(
-    async (query: string) => {
-      if (!user?.uid) return
-      dispatch({ type: "INIT_SUBJECT_SEARCH", payload: { query } })
-      try {
-        const res = await searchSubjects({ userID: user.uid, query, topK: 10 })
-        if (res.err) throw new Error(res.err)
-        const searchResults = res.ok?.results || []
-        // Ensure no duplicates even in search results
-        const uniqueResults = searchResults.filter(
-          (subject, index, self) =>
-            index === self.findIndex((s) => s.id === subject.id)
-        )
-        dispatch({
-          type: "COMPLETE_SUBJECT_SEARCH",
-          payload: { subjects: uniqueResults },
-        })
-      } catch (e: unknown) {
-        dispatch({
-          type: "FAIL_SUBJECTS_FETCH",
-          payload: { error: e instanceof Error ? e.message : "Unknown error" },
-        })
-      }
-    },
-    [dispatch, user]
-  )
-
   // Show more subjects handler
   const handleShowMoreSubjects = useCallback(async () => {
     if (!user?.uid || state.showMoreLoading) return
@@ -260,7 +274,6 @@ export const useSubjectManagement = (
   )
 
   return {
-    handleSubjectSearch,
     handleShowMoreSubjects,
     handleResetSubjectSearch,
     handleSubjectUpdated,

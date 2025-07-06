@@ -8,6 +8,7 @@ interface SearchBarProps {
   inputRef: React.RefObject<HTMLInputElement | null>
   loading: boolean
   currentQuery: string
+  onClear?: () => void
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -15,6 +16,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   inputRef,
   loading,
   currentQuery,
+  onClear,
 }) => {
   const [inputValue, setInputValue] = React.useState(currentQuery)
 
@@ -40,6 +42,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setInputValue("")
       inputRef.current.focus()
     }
+    // Call the onClear callback to reset subjects and clear search state
+    if (onClear) {
+      onClear()
+    }
   }
 
   return (
@@ -54,7 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <Input
             ref={inputRef}
             type="text"
-            placeholder="Search your memories..."
+            placeholder="Search memories and subjects..."
             onInput={handleInput}
             className="pl-10 pr-10 py-2 rounded-md bg-muted border border-input text-foreground text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
           />
