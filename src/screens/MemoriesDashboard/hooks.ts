@@ -105,16 +105,16 @@ export const useMemorySearch = (
       toast.error("Please enter a search term")
       return
     }
-    
+
     // Start both memory and subject searches
     dispatch({ type: "INIT_MEMORY_SEARCH", payload: { searchTerm } })
     dispatch({ type: "INIT_SUBJECT_SEARCH", payload: { query: searchTerm } })
-    
+
     try {
       const userID = user?.uid
       if (!userID) throw new Error("User not authenticated")
       if (!preferences) throw new Error("Model preferences not available")
-      
+
       // Start both searches in parallel
       const [embeddingResult, subjectsResult] = await Promise.all([
         embed({
@@ -122,9 +122,9 @@ export const useMemorySearch = (
           text: searchTerm,
           model: "text-embedding-005",
         }),
-        searchSubjects({ userID, query: searchTerm, topK: 10 })
+        searchSubjects({ userID, query: searchTerm, topK: 10 }),
       ])
-      
+
       // Handle embedding/memory search result
       if (embeddingResult.err) {
         throw new Error(`Embedding failed: ${embeddingResult.err}`)
@@ -132,7 +132,7 @@ export const useMemorySearch = (
       if (!embeddingResult.ok) {
         throw new Error("Embedding failed: No result")
       }
-      
+
       const memoriesResponse = await getMemories(
         {
           userID,
@@ -144,21 +144,21 @@ export const useMemorySearch = (
         },
         "application/json"
       )
-      
+
       if (memoriesResponse.err) {
         throw new Error(memoriesResponse.err)
       }
-      
+
       const resultsTree = memoriesResponse.ok?.longTerm || []
       dispatch({ type: "SET_MEMORIES", payload: resultsTree })
-      
+
       // Handle subjects search result
       if (subjectsResult.err) {
         console.warn("Subject search failed:", subjectsResult.err)
         // Don't throw error for subjects, just log it
         dispatch({
           type: "COMPLETE_SUBJECT_SEARCH",
-          payload: { subjects: [] }
+          payload: { subjects: [] },
         })
       } else {
         const searchResults = subjectsResult.ok?.results || []
@@ -168,10 +168,10 @@ export const useMemorySearch = (
         )
         dispatch({
           type: "COMPLETE_SUBJECT_SEARCH",
-          payload: { subjects: uniqueResults }
+          payload: { subjects: uniqueResults },
         })
       }
-      
+
       // Set error only if no memories found
       if (resultsTree.length === 0) {
         dispatch({
@@ -187,7 +187,7 @@ export const useMemorySearch = (
       dispatch({ type: "SET_MEMORIES", payload: [] })
       dispatch({
         type: "COMPLETE_SUBJECT_SEARCH",
-        payload: { subjects: [] }
+        payload: { subjects: [] },
       })
     } finally {
       dispatch({ type: "SET_LOADING", payload: false })

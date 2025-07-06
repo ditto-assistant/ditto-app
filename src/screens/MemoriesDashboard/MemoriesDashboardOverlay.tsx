@@ -48,7 +48,7 @@ export default function MemoriesDashboardOverlay() {
     dispatch({ type: "SET_MEMORIES", payload: [] })
     dispatch({ type: "SET_ERROR", payload: null })
     dispatch({ type: "SET_LAST_SEARCHED_TERM", payload: "" })
-    
+
     // Reset subjects to all subjects
     handleResetSubjectSearch()
   }, [dispatch, handleResetSubjectSearch])

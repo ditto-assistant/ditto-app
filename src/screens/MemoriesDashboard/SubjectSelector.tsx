@@ -17,7 +17,7 @@ interface SubjectSelectorProps {
   onResetSearch?: () => void
   userID?: string
   onSubjectUpdated?: (updatedSubject: Subject) => void
-  searchQuery?: string  // Add this to show what the subjects are related to
+  searchQuery?: string // Add this to show what the subjects are related to
 }
 
 const SubjectSelector: React.FC<SubjectSelectorProps> = ({
@@ -116,29 +116,27 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
           Subjects related to "{searchQuery}"
         </div>
       )}
-      
 
-      
       {error && <div className="text-destructive text-sm">{error}</div>}
-      
+
       {loading && (
         <div className="flex items-center justify-center py-4 text-muted-foreground">
           Loading subjects...
         </div>
       )}
-      
+
       {!loading && subjects.length === 0 && searchQuery && (
         <div className="text-sm text-muted-foreground text-center py-4">
           No subjects found related to "{searchQuery}"
         </div>
       )}
-      
+
       {!loading && subjects.length === 0 && !searchQuery && (
         <div className="text-sm text-muted-foreground text-center py-4">
           No subjects found
         </div>
       )}
-      
+
       {!loading && subjects.length > 0 && (
         <div className="max-h-48 overflow-y-auto">
           <div className="flex flex-wrap gap-2">
