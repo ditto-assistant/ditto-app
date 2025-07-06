@@ -1,8 +1,8 @@
 import { useContext, createContext } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { getBalance } from "@/api/getBalance"
+import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { getBalance, Balance } from "@/api/getBalance"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "sonner"
+import { useRewardNotification } from "@/hooks/useRewardNotification"
 
 export function useBalance() {
   const context = useContext(BalanceContext)
@@ -12,20 +12,15 @@ export function useBalance() {
   return context
 }
 
-const BalanceContext = createContext<ReturnType<typeof useBal> | undefined>(
-  undefined
-)
+const BalanceContext = createContext<
+  UseQueryResult<Balance, Error> | undefined
+>(undefined)
 
 export function BalanceProvider({ children }: { children: React.ReactNode }) {
-  const value = useBal()
-  return (
-    <BalanceContext.Provider value={value}>{children}</BalanceContext.Provider>
-  )
-}
-
-function useBal() {
   const { user } = useAuth()
-  return useQuery({
+  const { showReward, RewardNotificationComponent } = useRewardNotification()
+
+  const balanceQuery = useQuery({
     queryKey: ["balance", user?.uid],
     queryFn: async () => {
       const result = await getBalance()
@@ -39,24 +34,30 @@ function useBal() {
       if (!res.dropAmount || !res.lastAirdropAt) {
         return res
       }
-      // Only show toast for recent airdrops (within last 5 seconds)
+      // Only show notification for recent airdrops (within last 5 seconds)
       const now = new Date()
       const timeSinceAirdrop = now.getTime() - res.lastAirdropAt.getTime()
       if (timeSinceAirdrop > 5000) {
-        console.log("Skipping airdrop toast - too old:", timeSinceAirdrop, "ms")
+        console.log(
+          "Skipping airdrop notification - too old:",
+          timeSinceAirdrop,
+          "ms"
+        )
         return res
       }
 
       const dropAmount = res.dropAmount
-      toast.success(`${res.planTierName} reward +${dropAmount}`, {
-        id: "balance-drop-toast",
-        icon: "💰",
-        duration: 2000,
-        className: "animate-bounce",
-      })
+      showReward(`${res.planTierName} reward +${dropAmount}`)
 
       return res
     },
     enabled: !!user,
   })
+
+  return (
+    <BalanceContext.Provider value={balanceQuery}>
+      {children}
+      <RewardNotificationComponent />
+    </BalanceContext.Provider>
+  )
 }
