@@ -1,17 +1,9 @@
 import { ErrorPaymentRequired } from "@/types/errors"
-import { DEFAULT_PREFERENCES } from "@/constants"
 import { routes } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
 
 type Model = string // This should match the type from "../constants"
 type TextCallback = (text: string) => void
-
-interface ImageGenerationPreferences {
-  model: string
-  size: {
-    wh: string
-  }
-}
 
 interface PromptRequestBody {
   userID: string
@@ -126,8 +118,7 @@ export async function promptLLM(
 }
 
 export async function openaiImageGeneration(
-  prompt: string,
-  preferences: ImageGenerationPreferences = DEFAULT_PREFERENCES.imageGeneration
+  prompt: string
 ): Promise<string | Error> {
   const tok = await getToken()
   if (tok.err) {
@@ -145,8 +136,6 @@ export async function openaiImageGeneration(
     body: JSON.stringify({
       userID: tok.ok.userID,
       prompt,
-      model: preferences.model,
-      size: preferences.size.wh,
     }),
   })
   if (response.status === 402) {

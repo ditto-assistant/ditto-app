@@ -8,6 +8,7 @@ import { saveResponse } from "@/api/saveResponse"
 import { createPrompt } from "@/api/createPrompt"
 import { searchExamples } from "@/api/searchExamples"
 import { DEFAULT_PREFERENCES } from "@/constants"
+import { imageGenerationMessageService } from "@/utils/imageGenerationMessages"
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
@@ -369,32 +370,46 @@ export const processResponse = async (
   try {
     // Handle image generation
     if (response.includes("<IMAGE_GENERATION>")) {
-      await updateMessageWithToolStatus(
-        pairID,
-        "Generating Image",
-        "image",
-        null,
-        optimisticId,
-        finalizeMessage
-      )
-      const finalResponse = await handleImageGeneration(response, preferences)
-      let toolStatus = "complete"
-      let finalResponseText
-      if (finalResponse instanceof Error) {
-        // toolStatus = "failed"; // "failed" is not supported by updateMessageWithToolStatus
-        finalResponseText = finalResponse.message
-      } else {
-        finalResponseText = finalResponse
+      // Start the rotating message system
+      imageGenerationMessageService.startRotation((message) => {
+        updateMessageWithToolStatus(
+          pairID,
+          message,
+          "image",
+          null,
+          optimisticId,
+          finalizeMessage
+        )
+      })
+
+      try {
+        const finalResponse = await handleImageGeneration(response)
+        let toolStatus = "complete"
+        let finalResponseText
+        if (finalResponse instanceof Error) {
+          // toolStatus = "failed"; // "failed" is not supported by updateMessageWithToolStatus
+          finalResponseText = finalResponse.message
+        } else {
+          finalResponseText = finalResponse
+        }
+
+        // Stop the rotating messages and show completion
+        imageGenerationMessageService.stopRotation()
+
+        await updateMessageWithToolStatus(
+          pairID,
+          toolStatus,
+          "image",
+          finalResponseText,
+          optimisticId,
+          finalizeMessage
+        )
+        return finalResponseText
+      } catch (error) {
+        // Make sure to stop rotation on error
+        imageGenerationMessageService.stopRotation()
+        throw error
       }
-      await updateMessageWithToolStatus(
-        pairID,
-        toolStatus,
-        "image",
-        finalResponseText,
-        optimisticId,
-        finalizeMessage
-      )
-      return finalResponseText
     }
 
     if (response.includes("<GOOGLE_SEARCH>")) {
