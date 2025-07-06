@@ -77,8 +77,7 @@ export const routes = {
   // Personality Assessment Endpoints
   personalityAssessments: PG_VECTOR_API_URL + "/personality/assessments",
   personalityAssessmentStart: PG_VECTOR_API_URL + "/personality-assessment",
-  personalityAssessmentStatus:
-    PG_VECTOR_API_URL + "/personality-assessment-status",
+  personalityLastSync: PG_VECTOR_API_URL + "/personality/last-sync",
   pairSubjects: PG_VECTOR_API_URL + "/pairs/subjects",
 }
 

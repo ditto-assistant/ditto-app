@@ -8,7 +8,14 @@ import {
   RefreshCw,
   MessageSquare,
   Clock,
-  Play,
+  Sparkles,
+  Zap,
+  ChevronRight,
+  Star,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  Timer,
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { usePersonalityAssessments } from "./hooks/usePersonalityAssessments"
@@ -18,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 import BigFiveResults from "./components/BigFiveResults"
 import MBTIResults from "./components/MBTIResults"
 import DISCResults from "./components/DISCResults"
@@ -36,6 +44,15 @@ interface PersonalityAssessment {
   completed: boolean
 }
 
+interface LastSyncStatus {
+  can_sync: boolean
+  last_sync_time: string | null
+  hours_until_next_sync: number
+  reason: string
+  is_processing?: boolean
+  status?: string
+}
+
 export default function PersonalityAssessmentOverlay() {
   const { user } = useAuth()
   const { count: messageCount, loading: memoryCountLoading } = useMemoryCount()
@@ -44,16 +61,129 @@ export default function PersonalityAssessmentOverlay() {
   )
   const [selectedAssessment, setSelectedAssessment] =
     useState<PersonalityAssessment | null>(null)
-  const [isStartingAssessment, setIsStartingAssessment] = useState(false)
-  const [assessmentStatus, setAssessmentStatus] = useState<string | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<string | null>(null)
+  const [lastSyncStatus, setLastSyncStatus] = useState<LastSyncStatus | null>(null)
+  const [loadingLastSync, setLoadingLastSync] = useState(false)
 
   // Use memory count from the dedicated hook
   const hasEnoughMessages = messageCount >= 30
 
+  const pollForCompletion = useCallback(async (initialLastSyncTime: string | null) => {
+    if (!user?.uid) return
+
+    let pollCount = 0
+    const maxPolls = 60 // 5 minutes max
+    
+    const poll = async () => {
+      try {
+        const token = await user.getIdToken()
+        const response = await fetch(routes.personalityLastSync, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          
+          // Check if last_sync_time has changed (indicating completion)
+          if (data.last_sync_time && data.last_sync_time !== initialLastSyncTime) {
+            // Sync completed!
+            setSyncStatus("Personality sync completed successfully!")
+            setLastSyncStatus(data)
+            refetch() // Refresh assessments list
+            
+            setTimeout(() => {
+              setIsSyncing(false)
+              setSyncStatus(null)
+            }, 2000)
+            return
+          }
+          
+          // Update status message based on current state
+          if (data.can_sync) {
+            setSyncStatus("Processing your personality data...")
+          } else {
+            setSyncStatus("Analyzing your conversations with AI...")
+          }
+        }
+
+        pollCount++
+        if (pollCount < maxPolls) {
+          setTimeout(poll, 5000) // Poll every 5 seconds
+        } else {
+          setSyncStatus("Sync is taking longer than expected. Please check back later.")
+          setTimeout(() => {
+            setIsSyncing(false)
+            setSyncStatus(null)
+            fetchLastSyncStatus() // Refresh status
+          }, 3000)
+        }
+      } catch (error) {
+        console.error("Error polling for completion:", error)
+        setSyncStatus("Error checking sync status")
+        setTimeout(() => {
+          setIsSyncing(false)
+          setSyncStatus(null)
+        }, 2000)
+      }
+    }
+
+    // Start polling after a short delay
+    setTimeout(poll, 3000)
+  }, [user, refetch])
+
+  const fetchLastSyncStatus = useCallback(async () => {
+    if (!user?.uid) return
+
+    setLoadingLastSync(true)
+    try {
+      const token = await user.getIdToken()
+      const response = await fetch(routes.personalityLastSync, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setLastSyncStatus(data)
+        
+        // If a job is currently processing, set the syncing state and start polling
+        if (data.is_processing) {
+          setIsSyncing(true)
+          setSyncStatus("AI personality sync in progress...")
+          pollForCompletion(data.last_sync_time)
+        }
+      } else {
+        console.error("Failed to fetch last sync status")
+      }
+    } catch (error) {
+      console.error("Error fetching last sync status:", error)
+    } finally {
+      setLoadingLastSync(false)
+    }
+  }, [user, pollForCompletion])
+
+  // Fetch last sync status when user changes
+  useEffect(() => {
+    if (user?.uid) {
+      fetchLastSyncStatus()
+    }
+  }, [user?.uid, fetchLastSyncStatus])
+
   const handleRefresh = useCallback(() => {
     refetch()
+    fetchLastSyncStatus()
     toast.success("Refreshed personality assessments")
-  }, [refetch])
+  }, [refetch, fetchLastSyncStatus])
 
   const handleStartAssessment = useCallback(async () => {
     if (!user?.uid) {
@@ -68,16 +198,26 @@ export default function PersonalityAssessmentOverlay() {
       return
     }
 
-    setIsStartingAssessment(true)
-    setAssessmentStatus("Starting personality assessment...")
+    // Check rate limiting
+    if (lastSyncStatus && !lastSyncStatus.can_sync) {
+      toast.error(`You can sync again in ${lastSyncStatus.hours_until_next_sync.toFixed(1)} hours`)
+      return
+    }
+
+    // Prevent starting if already in progress
+    if (isSyncing) {
+      toast.info("Sync is already in progress")
+      return
+    }
+
+    setIsSyncing(true)
+    setSyncStatus("Initiating AI personality sync...")
 
     try {
-      const messageId = `assessment_${user.uid}_${Date.now()}`
-
       // Get Firebase token
       const token = await user.getIdToken()
 
-      // Start personality assessment
+      // Start personality assessment (no message_id needed)
       const response = await fetch(routes.personalityAssessmentStart, {
         method: "POST",
         headers: {
@@ -86,87 +226,28 @@ export default function PersonalityAssessmentOverlay() {
         },
         body: JSON.stringify({
           user_id: user.uid,
-          message_id: messageId,
         }),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to start assessment")
+        throw new Error(errorData.error || "Failed to start sync")
       }
 
-      const data = await response.json()
-      setAssessmentStatus(
-        "Assessment started successfully! Processing your personality..."
-      )
+      setSyncStatus("Sync started successfully! Analyzing your conversations with AI...")
+      
+      // Start polling for completion
+      pollForCompletion(lastSyncStatus?.last_sync_time || null)
 
-      // Poll for status updates
-      let pollCount = 0
-      const maxPolls = 60 // 5 minutes max
-
-      const pollStatus = async () => {
-        try {
-          const statusResponse = await fetch(
-            routes.personalityAssessmentStatus,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                message_ids: [messageId],
-              }),
-            }
-          )
-
-          if (statusResponse.ok) {
-            const statusData = await statusResponse.json()
-            const status = statusData[messageId]
-
-            if (status) {
-              setAssessmentStatus(status.status)
-
-              if (status.stage === 5) {
-                // Completed
-                setAssessmentStatus("Assessment completed successfully!")
-                refetch()
-                setTimeout(() => {
-                  setIsStartingAssessment(false)
-                  setAssessmentStatus(null)
-                }, 2000)
-                return
-              } else if (status.stage === -1) {
-                // Failed
-                throw new Error(status.status)
-              }
-            }
-          }
-
-          pollCount++
-          if (pollCount < maxPolls) {
-            setTimeout(pollStatus, 5000) // Poll every 5 seconds
-          } else {
-            throw new Error("Assessment timed out. Please try again.")
-          }
-        } catch (error) {
-          console.error("Error polling assessment status:", error)
-          setAssessmentStatus("Error checking assessment status")
-          setIsStartingAssessment(false)
-        }
-      }
-
-      // Start polling after a short delay
-      setTimeout(pollStatus, 2000)
     } catch (error) {
       console.error("Error starting personality assessment:", error)
       toast.error(
-        error instanceof Error ? error.message : "Failed to start assessment"
+        error instanceof Error ? error.message : "Failed to start sync"
       )
-      setIsStartingAssessment(false)
-      setAssessmentStatus(null)
+      setIsSyncing(false)
+      setSyncStatus(null)
     }
-  }, [user, hasEnoughMessages, messageCount, refetch])
+  }, [user, hasEnoughMessages, messageCount, isSyncing, lastSyncStatus, pollForCompletion])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Unknown"
@@ -179,31 +260,57 @@ export default function PersonalityAssessmentOverlay() {
     })
   }
 
+  const formatLastSyncTime = (dateString: string | null) => {
+    if (!dateString) return "Never"
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
   const getAssessmentIcon = (assessmentId: string) => {
     switch (assessmentId) {
       case "big-five":
-        return <TrendingUp className="h-5 w-5" />
+        return <TrendingUp className="h-6 w-6" />
       case "mbti":
-        return <User className="h-5 w-5" />
+        return <User className="h-6 w-6" />
       case "disc":
-        return <Award className="h-5 w-5" />
+        return <Award className="h-6 w-6" />
       default:
-        return <Brain className="h-5 w-5" />
+        return <Brain className="h-6 w-6" />
     }
   }
 
-  const getAssessmentColor = (assessmentId: string) => {
+  const getAssessmentGradient = (assessmentId: string) => {
     switch (assessmentId) {
       case "big-five":
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "from-blue-500 to-blue-600"
       case "mbti":
-        return "bg-purple-100 text-purple-800 border-purple-200"
+        return "from-purple-500 to-purple-600"
       case "disc":
-        return "bg-green-100 text-green-800 border-green-200"
+        return "from-green-500 to-green-600"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "from-gray-500 to-gray-600"
     }
   }
+
+  const getAssessmentBadgeColor = (assessmentId: string) => {
+    switch (assessmentId) {
+      case "big-five":
+        return "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+      case "mbti":
+        return "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700"
+      case "disc":
+        return "bg-green-100 text-green-700 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
+      default:
+        return "bg-muted text-muted-foreground border-border"
+    }
+  }
+
+  // Determine if sync is available
+  const canSync = hasEnoughMessages && lastSyncStatus?.can_sync && !isSyncing
 
   const renderAssessmentResults = (assessment: PersonalityAssessment) => {
     switch (assessment.assessment_id) {
@@ -258,243 +365,333 @@ export default function PersonalityAssessmentOverlay() {
 
   return (
     <Modal id="personalityAssessments" title="Personality Assessments">
-      <div className="flex flex-col h-full p-4 bg-background text-foreground">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-purple-600" />
-            <span className="font-semibold text-lg">
-              Your AI Personality Insights
-            </span>
+      <div className="flex flex-col h-full bg-background text-foreground">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+              <Brain className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Your AI Personality Insights
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Discover your unique psychological profile
+              </p>
+            </div>
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            disabled={loading}
-            className="flex items-center gap-2"
+            disabled={loading || loadingLastSync || isSyncing}
+            className="border-border hover:bg-accent"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            <RefreshCw className={cn("h-4 w-4", (loading || loadingLastSync || isSyncing) && "animate-spin")} />
+            <span className="ml-2">Refresh</span>
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {(loading || memoryCountLoading) && (
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              <div className="flex flex-col items-center gap-3">
-                <RefreshCw className="h-8 w-8 animate-spin" />
-                <p>Loading personality assessments...</p>
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Loading State */}
+          {(loading || memoryCountLoading || loadingLastSync) && (
+            <div className="flex items-center justify-center h-64">
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
+                  <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary" />
+                </div>
+                <p className="text-muted-foreground font-medium">Loading personality assessments...</p>
               </div>
             </div>
           )}
 
-          {!loading && !memoryCountLoading && error && (
-            <div className="flex flex-col items-center justify-center h-64 text-destructive text-center gap-3 bg-destructive/10 rounded-lg p-6 m-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/20">
-                <LucideX size={20} />
+          {/* Error State */}
+          {!loading && !memoryCountLoading && !loadingLastSync && error && (
+            <div className="flex flex-col items-center justify-center h-64">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-8 w-8 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  Failed to load assessments
+                </h3>
+                <p className="text-muted-foreground mb-4">{error}</p>
+                <Button onClick={handleRefresh} className="bg-primary hover:bg-primary/90">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
               </div>
-              <p className="font-medium">Failed to load assessments</p>
-              <p className="text-sm text-muted-foreground">{error}</p>
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                className="mt-2"
-              >
-                Try Again
-              </Button>
             </div>
           )}
 
+          {/* Assessment in Progress */}
+          {isSyncing && (
+            <div className="mb-6">
+              <Card className="border-border bg-gradient-to-r from-purple-500/10 to-pink-500/10 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
+                      <Brain className="absolute inset-0 m-auto h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg text-foreground mb-1">
+                        Syncing Your AI Personality
+                      </h3>
+                      <p className="text-purple-600 dark:text-purple-400 font-medium">
+                        {syncStatus || "Analyzing your conversations..."}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        This may take a few minutes. The sync will complete automatically.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* No Assessments - First Time */}
           {!loading &&
             !memoryCountLoading &&
+            !loadingLastSync &&
             !error &&
             assessments.length === 0 &&
-            !isStartingAssessment && (
-              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground text-center gap-4">
-                <Brain className="h-12 w-12 opacity-50" />
-                <div>
-                  <p className="font-medium text-lg">
-                    No personality assessments found
-                  </p>
-                  <p className="text-sm">
-                    Generate your AI personality insights based on your
-                    conversations with Ditto.
+            !isSyncing && (
+              <div className="text-center max-w-lg mx-auto">
+                <div className="mb-8">
+                  <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Brain className="h-12 w-12 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    Sync Your AI Personality
+                  </h3>
+                  <p className="text-muted-foreground mb-8">
+                    Get AI-powered personality insights based on your conversations with Ditto
                   </p>
                 </div>
 
-                {/* Message count requirement card */}
-                <Card className="w-full max-w-md">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <MessageSquare className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium">Requirements</span>
+                {/* Requirements Card */}
+                <Card className="border-border shadow-lg mb-6">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                        <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <h4 className="font-semibold text-foreground">Sync Requirements</h4>
                     </div>
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span>Memories needed:</span>
-                        <Badge
-                          variant={hasEnoughMessages ? "default" : "secondary"}
-                        >
-                          {messageCount} / 30
-                        </Badge>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <span className="text-foreground">Memories needed</span>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={hasEnoughMessages ? "default" : "secondary"}
+                            className={hasEnoughMessages ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300" : ""}
+                          >
+                            {messageCount} / 30
+                          </Badge>
+                          {hasEnoughMessages && <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />}
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <span>Rate limit:</span>
-                        <Badge variant="outline">
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <span className="text-foreground">Rate limit</span>
+                        <Badge variant="outline" className="border-border">
                           <Clock className="h-3 w-3 mr-1" />
                           Once per day
                         </Badge>
                       </div>
+
+                      {lastSyncStatus?.last_sync_time && (
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="text-foreground">Last sync</span>
+                          <span className="text-sm text-muted-foreground">
+                            {formatLastSyncTime(lastSyncStatus.last_sync_time)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {!hasEnoughMessages && (
-                      <div className="mt-3 p-3 bg-amber-50 text-amber-700 rounded-lg text-sm">
-                        <strong>
-                          You need {30 - messageCount} more memories
-                        </strong>{" "}
-                        before you can generate personality insights. Keep
-                        chatting with Ditto!
+                      <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                          <span className="font-medium text-amber-800 dark:text-amber-200">
+                            Need {30 - messageCount} more memories
+                          </span>
+                        </div>
+                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                          Keep chatting with Ditto to unlock personality insights!
+                        </p>
                       </div>
                     )}
 
-                    <Button
-                      onClick={handleStartAssessment}
-                      disabled={!hasEnoughMessages}
-                      className="w-full mt-4"
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Generate Personality Assessment
-                    </Button>
+                    {lastSyncStatus && !lastSyncStatus.can_sync && (
+                      <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Timer className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                          <span className="font-medium text-orange-800 dark:text-orange-200">
+                            Next sync available in {lastSyncStatus.hours_until_next_sync.toFixed(1)} hours
+                          </span>
+                        </div>
+                        <p className="text-sm text-orange-700 dark:text-orange-300">
+                          You can sync your personality once per day. Come back later!
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
+
+                {/* Sync Button */}
+                <Button
+                  onClick={handleStartAssessment}
+                  disabled={!canSync}
+                  size="lg"
+                  className={cn(
+                    "w-full h-14 text-lg font-semibold shadow-lg transition-all duration-200",
+                    canSync 
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/25" 
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  )}
+                >
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Sync AI Personality
+                </Button>
               </div>
             )}
 
-          {/* Assessment in progress */}
-          {isStartingAssessment && (
-            <div className="flex flex-col items-center justify-center h-64 text-center gap-4">
-              <div className="flex items-center gap-3">
-                <RefreshCw className="h-8 w-8 animate-spin text-purple-600" />
-                <Brain className="h-8 w-8 text-purple-600" />
-              </div>
-              <div>
-                <p className="font-medium text-lg">
-                  Generating Personality Assessment
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {assessmentStatus || "Analyzing your conversations..."}
-                </p>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                This may take a few minutes as we analyze your conversations
-                with AI.
-              </div>
-            </div>
-          )}
-
+          {/* Existing Assessments */}
           {!loading &&
             !memoryCountLoading &&
+            !loadingLastSync &&
             !error &&
             assessments.length > 0 && (
-              <div className="space-y-4">
-                {/* Generate new assessment button for existing users */}
-                {hasEnoughMessages && !isStartingAssessment && (
-                  <Card className="border-dashed border-2 border-purple-300 bg-purple-50/50">
-                    <CardContent className="p-4">
+              <div className="space-y-6">
+                {/* Sync Button for existing users */}
+                {hasEnoughMessages && (
+                  <Card className="border-2 border-dashed border-border bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-purple-100">
-                            <Brain className="h-5 w-5 text-purple-600" />
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+                            <Sparkles className="h-6 w-6 text-white" />
                           </div>
                           <div>
-                            <p className="font-medium">
-                              Generate New Assessment
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Update your personality insights (once per day)
-                            </p>
+                            <h3 className="font-semibold text-lg text-foreground">
+                              Sync AI Personality
+                            </h3>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span>Update your insights with fresh analysis</span>
+                              {lastSyncStatus?.last_sync_time && (
+                                <span className="text-xs">
+                                  Last sync: {formatLastSyncTime(lastSyncStatus.last_sync_time)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <Button
-                          onClick={handleStartAssessment}
-                          variant="outline"
-                          className="border-purple-300 text-purple-700 hover:bg-purple-100"
-                        >
-                          <Play className="h-4 w-4 mr-2" />
-                          Generate
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Processing status */}
-                {isStartingAssessment && (
-                  <Card className="border-purple-300 bg-purple-50/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <RefreshCw className="h-5 w-5 animate-spin text-purple-600" />
-                        <div>
-                          <p className="font-medium">
-                            Generating Assessment...
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {assessmentStatus ||
-                              "Analyzing your conversations..."}
-                          </p>
+                        <div className="flex flex-col items-end gap-2">
+                          {lastSyncStatus && !lastSyncStatus.can_sync && (
+                            <Badge variant="outline" className="text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700">
+                              <Timer className="h-3 w-3 mr-1" />
+                              {lastSyncStatus.hours_until_next_sync.toFixed(1)}h remaining
+                            </Badge>
+                          )}
+                          <Button
+                            onClick={handleStartAssessment}
+                            disabled={!canSync}
+                            className={cn(
+                              "shadow-lg transition-all duration-200",
+                              canSync
+                                ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                                : "bg-muted text-muted-foreground cursor-not-allowed"
+                            )}
+                          >
+                            {isSyncing ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Syncing...
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="h-4 w-4 mr-2" />
+                                Sync Now
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 )}
 
-                <div className="grid gap-4">
+                {/* Assessment Cards */}
+                <div className="grid gap-6">
                   {assessments.map((assessment: PersonalityAssessment) => (
                     <Card
                       key={`${assessment.assessment_id}-${assessment.session_id}`}
-                      className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-purple-500"
+                      className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
                       onClick={() => setSelectedAssessment(assessment)}
                     >
-                      <CardHeader className="pb-3">
+                      <div className={cn(
+                        "h-2 rounded-t-lg bg-gradient-to-r",
+                        getAssessmentGradient(assessment.assessment_id)
+                      )} />
+                      <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-purple-100">
+                          <div className="flex items-center gap-4">
+                            <div className={cn(
+                              "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
+                              getAssessmentGradient(assessment.assessment_id)
+                            )}>
                               {getAssessmentIcon(assessment.assessment_id)}
                             </div>
                             <div>
-                              <CardTitle className="text-lg">
+                              <CardTitle className="text-xl font-bold text-foreground">
                                 {assessment.name}
                               </CardTitle>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-muted-foreground mt-1">
                                 {assessment.description}
                               </p>
                             </div>
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={getAssessmentColor(
-                              assessment.assessment_id
-                            )}
-                          >
-                            {assessment.assessment_id.toUpperCase()}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className={cn("font-medium", getAssessmentBadgeColor(assessment.assessment_id))}
+                            >
+                              {assessment.assessment_id.toUpperCase()}
+                            </Badge>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
-                          <div className="flex items-center gap-4">
-                            <span>
-                              📊 {assessment.questions_answered} questions
-                              answered
-                            </span>
-                            <span>
-                              ✅ Completed {formatDate(assessment.completed_at)}
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 text-yellow-500" />
+                              <span className="font-medium">
+                                {assessment.questions_answered} questions
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>
+                                {formatDate(assessment.completed_at)}
+                              </span>
+                            </div>
                           </div>
-                          <Button variant="ghost" size="sm">
-                            View Results →
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                          >
+                            View Results
+                            <ChevronRight className="h-4 w-4 ml-1" />
                           </Button>
                         </div>
                       </CardContent>
