@@ -38,11 +38,20 @@ export default function MemoriesDashboardOverlay() {
   )
 
   const {
-    handleSubjectSearch,
     handleShowMoreSubjects,
     handleResetSubjectSearch,
     handleSubjectUpdated,
   } = useSubjectManagement(dispatch, user, state)
+
+  const handleClearSearch = useCallback(() => {
+    // Clear search state
+    dispatch({ type: "SET_MEMORIES", payload: [] })
+    dispatch({ type: "SET_ERROR", payload: null })
+    dispatch({ type: "SET_LAST_SEARCHED_TERM", payload: "" })
+
+    // Reset subjects to all subjects
+    handleResetSubjectSearch()
+  }, [dispatch, handleResetSubjectSearch])
 
   const { loadRecentPairs, handleLoadMorePairs, handlePairSearch } =
     usePairManagement(dispatch, user, state)
@@ -137,14 +146,11 @@ export default function MemoriesDashboardOverlay() {
 
   // Collapse subject list when rendering memory search results
   useEffect(() => {
-    // Collapse if we are showing memory search results (pairs for a subject or general memory results)
-    if (
-      (selectedSubject && pairs.length > 0) ||
-      (!selectedSubject && memories.length > 0)
-    ) {
+    // Only collapse if we are showing pairs for a selected subject, not for general memory search
+    if (selectedSubject && pairs.length > 0) {
       dispatch({ type: "SET_SUBJECTS_COLLAPSED", payload: true })
     }
-  }, [selectedSubject, pairs.length, memories.length, dispatch])
+  }, [selectedSubject, pairs.length, dispatch])
 
   return (
     <Modal id="memories" title="Memory Dashboard">
@@ -199,12 +205,12 @@ export default function MemoriesDashboardOverlay() {
                 // Automatically load recent pairs for this subject
                 loadRecentPairs(subject)
               }}
-              onSearch={handleSubjectSearch}
               onShowMore={handleShowMoreSubjects}
               hasMore={hasMoreSubjects}
               showMoreLoading={showMoreLoading}
               isSearchMode={isSubjectSearchMode}
-              onResetSearch={handleResetSubjectSearch}
+              _onResetSearch={handleResetSubjectSearch}
+              searchQuery={lastSearchedTerm}
             />
           ) : null}
         </div>
@@ -232,6 +238,7 @@ export default function MemoriesDashboardOverlay() {
                 inputRef={searchInputRef}
                 loading={loading}
                 currentQuery={lastSearchedTerm}
+                onClear={handleClearSearch}
               />
               <div className="flex justify-between items-center w-full">
                 <div className="flex gap-3">
