@@ -357,7 +357,8 @@ export const TOOLS = [
   {
     id: "imageGeneration",
     name: "Image Generation",
-    description: "Generate images based on text descriptions",
+    description:
+      "Generate images based on text descriptions (supports up to 32,000 characters for detailed prompts)",
     trigger: "<IMAGE_GENERATION>",
   },
   {

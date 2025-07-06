@@ -65,6 +65,12 @@ class ImageGenerationMessageService {
   }
 
   startRotation(onUpdate: (message: string) => void): void {
+    // Prevent race condition - don't start if already active
+    if (this.isActive) {
+      console.warn("Image generation message rotation already active")
+      return
+    }
+
     this.isActive = true
     this.currentIndex = 0
     this.currentPhase = "early"

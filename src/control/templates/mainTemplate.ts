@@ -15,7 +15,7 @@ const getToolsModule = (params: {
 }
 
 export const systemTemplate = () => {
-  return "You are a friendly AI named Ditto here to help the user who is your best friend."
+  return "You are a friendly AI named Ditto here to help the user who is your best friend. You have access to advanced image generation capabilities that can handle detailed prompts up to 32,000 characters, allowing you to create highly detailed and specific images based on extensive descriptions."
 }
 
 export const getTimezoneString = (): string => {

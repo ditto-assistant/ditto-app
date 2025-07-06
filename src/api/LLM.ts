@@ -120,6 +120,20 @@ export async function promptLLM(
 export async function openaiImageGeneration(
   prompt: string
 ): Promise<string | Error> {
+  // Input validation for prompt
+  if (!prompt || typeof prompt !== "string") {
+    return new Error("Prompt is required and must be a valid string")
+  }
+
+  if (prompt.length > 32000) {
+    return new Error("Prompt too long (max 32000 characters)")
+  }
+
+  const sanitizedPrompt = prompt.trim()
+  if (sanitizedPrompt.length === 0) {
+    return new Error("Prompt cannot be empty")
+  }
+
   const tok = await getToken()
   if (tok.err) {
     return tok.err
@@ -135,7 +149,7 @@ export async function openaiImageGeneration(
     },
     body: JSON.stringify({
       userID: tok.ok.userID,
-      prompt,
+      prompt: sanitizedPrompt,
     }),
   })
   if (response.status === 402) {
