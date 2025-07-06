@@ -381,7 +381,7 @@ export default function SendMessage({
             <CardContent className="p-3 pt-1 pb-2 text-sm">
               {user?.data?.planTier ? (
                 <>
-                  You've run out of tokens. Upgrade your plan or buy extra
+                  You&apos;ve run out of tokens. Upgrade your plan or buy extra
                   tokens to keep using{" "}
                   <Badge variant="outline" className="font-medium ml-1">
                     {preferences.preferences?.mainModel || ""}
@@ -437,15 +437,11 @@ export default function SendMessage({
                 size="sm"
                 className="w-full justify-start"
                 onClick={() => {
-                  if (user?.data?.planTier) {
-                    openTokenModal()
-                  } else {
-                    openTokenModal()
-                  }
+                  openTokenModal()
                 }}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {user?.data?.planTier ? "Purchase Tokens" : "Buy Tokens"}
+                Buy Tokens
               </Button>
             </CardFooter>
           </Card>
