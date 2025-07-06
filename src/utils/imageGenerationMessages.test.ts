@@ -1,9 +1,10 @@
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test"
 import { imageGenerationMessageService } from "./imageGenerationMessages"
 
 // Mock console.warn to avoid noise in tests
 const originalWarn = console.warn
 beforeEach(() => {
-  console.warn = jest.fn()
+  console.warn = mock(() => {})
   imageGenerationMessageService.reset()
 })
 
@@ -24,17 +25,19 @@ describe("ImageGenerationMessageService", () => {
 
   describe("startRotation", () => {
     it("should call onUpdate immediately with first message", () => {
-      const mockOnUpdate = jest.fn()
+      const mockOnUpdate = mock(() => {})
 
       imageGenerationMessageService.startRotation(mockOnUpdate)
 
       expect(mockOnUpdate).toHaveBeenCalledTimes(1)
-      expect(typeof mockOnUpdate.mock.calls[0][0]).toBe("string")
+      expect(
+        typeof (mockOnUpdate.mock.calls as unknown as [string])[0][0]
+      ).toBe("string")
     })
 
     it("should prevent race condition by not starting if already active", () => {
-      const mockOnUpdate1 = jest.fn()
-      const mockOnUpdate2 = jest.fn()
+      const mockOnUpdate1 = mock(() => {})
+      const mockOnUpdate2 = mock(() => {})
 
       // Start first rotation
       imageGenerationMessageService.startRotation(mockOnUpdate1)
@@ -51,13 +54,13 @@ describe("ImageGenerationMessageService", () => {
 
   describe("stopRotation", () => {
     it("should stop rotation and clear intervals", () => {
-      const mockOnUpdate = jest.fn()
+      const mockOnUpdate = mock(() => {})
 
       imageGenerationMessageService.startRotation(mockOnUpdate)
       imageGenerationMessageService.stopRotation()
 
       // After stopping, should be able to start again without race condition warning
-      console.warn = jest.fn() // Reset mock
+      console.warn = mock(() => {}) // Reset mock
       imageGenerationMessageService.startRotation(mockOnUpdate)
       expect(console.warn).not.toHaveBeenCalled()
     })
@@ -65,7 +68,7 @@ describe("ImageGenerationMessageService", () => {
 
   describe("reset", () => {
     it("should reset service to initial state", () => {
-      const mockOnUpdate = jest.fn()
+      const mockOnUpdate = mock(() => {})
 
       // Start rotation and let it run
       imageGenerationMessageService.startRotation(mockOnUpdate)
@@ -74,7 +77,7 @@ describe("ImageGenerationMessageService", () => {
       imageGenerationMessageService.reset()
 
       // Should be able to start again without warnings
-      console.warn = jest.fn()
+      console.warn = mock(() => {})
       imageGenerationMessageService.startRotation(mockOnUpdate)
       expect(console.warn).not.toHaveBeenCalled()
     })
