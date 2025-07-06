@@ -357,7 +357,8 @@ export const TOOLS = [
   {
     id: "imageGeneration",
     name: "Image Generation",
-    description: "Generate images based on text descriptions",
+    description:
+      "Generate high-quality images based on text descriptions using advanced AI image generation. Supports extremely detailed prompts up to 32,000 characters, allowing for comprehensive descriptions including style, composition, lighting, colors, mood, artistic techniques, and specific visual elements. Can create photorealistic images, artistic renderings, concept art, illustrations, and any visual style imaginable. The more detailed and specific your prompt, the better the resulting image will be.",
     trigger: "<IMAGE_GENERATION>",
   },
   {
