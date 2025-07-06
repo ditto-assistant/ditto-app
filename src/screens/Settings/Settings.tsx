@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useModal } from "@/hooks/useModal"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
 import { useFontSize } from "@/hooks/useFontSize"
+import useWhatsNew from "@/hooks/useWhatsNew"
 // UI Components
 import Modal, { ModalTab } from "@/components/ui/modals/Modal"
 import { ModalButton } from "@/components/ui/buttons/ModalButton"
@@ -34,6 +35,7 @@ export default function Settings() {
   const { showConfirmationDialog } = useConfirmationDialog()
   const closeModal = createCloseHandler("settings")
   const { fontSize, setFontSize } = useFontSize()
+  const { openWhatsNew } = useWhatsNew()
 
   // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, [])
@@ -160,8 +162,14 @@ export default function Settings() {
       <div className="border-t my-2"></div>
 
       <footer className="mt-auto pt-4">
-        <div className="text-muted-foreground text-sm text-center">
-          Version: {packageJson.version}
+        <div className="text-center">
+          <button
+            onClick={() => openWhatsNew(packageJson.version, true)}
+            className="text-muted-foreground text-sm hover:text-foreground transition-colors duration-200 cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded px-2 py-1"
+            title="Click to see what's new in this version"
+          >
+            Version: {packageJson.version}
+          </button>
         </div>
       </footer>
     </div>

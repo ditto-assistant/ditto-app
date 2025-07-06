@@ -30,6 +30,8 @@ import BigFiveResults from "./components/BigFiveResults"
 import MBTIResults from "./components/MBTIResults"
 import DISCResults from "./components/DISCResults"
 import { routes } from "@/firebaseConfig"
+import { db } from "@/lib/firebase"
+import { doc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore"
 
 interface PersonalityAssessment {
   assessment_id: string
@@ -93,11 +95,8 @@ export default function PersonalityAssessmentOverlay() {
           if (response.ok) {
             const data = await response.json()
 
-            // Check if last_sync_time has changed (indicating completion)
-            if (
-              data.last_sync_time &&
-              data.last_sync_time !== initialLastSyncTime
-            ) {
+            // Check if sync is no longer processing (completion detection)
+            if (!data.is_processing) {
               // Sync completed!
               setSyncStatus("Personality sync completed successfully!")
               setLastSyncStatus(data)
@@ -112,9 +111,13 @@ export default function PersonalityAssessmentOverlay() {
 
             // Update status message based on current state
             if (data.can_sync) {
-              setSyncStatus("Processing your personality data...")
+              setSyncStatus(
+                "Processing your personality data. You can close the app and check back in a few minutes!"
+              )
             } else {
-              setSyncStatus("Analyzing your conversations with AI...")
+              setSyncStatus(
+                "AI is analyzing your conversations. Feel free to close the app - we'll notify you when it's ready!"
+              )
             }
           }
 
@@ -122,13 +125,13 @@ export default function PersonalityAssessmentOverlay() {
           if (pollCount < maxPolls) {
             setTimeout(poll, 5000) // Poll every 5 seconds
           } else {
+            console.warn("Personality sync polling timeout reached")
             setSyncStatus(
               "Sync is taking longer than expected. Please check back later."
             )
             setTimeout(() => {
               setIsSyncing(false)
               setSyncStatus(null)
-              fetchLastSyncStatus() // Refresh status
             }, 3000)
           }
         } catch (error) {
@@ -166,11 +169,18 @@ export default function PersonalityAssessmentOverlay() {
         const data = await response.json()
         setLastSyncStatus(data)
 
-        // If a job is currently processing, set the syncing state and start polling
+        // IMMEDIATELY set syncing state based on backend response
         if (data.is_processing) {
           setIsSyncing(true)
-          setSyncStatus("AI personality sync in progress...")
+          setSyncStatus(
+            "AI personality sync in progress. You can close the app and check back later!"
+          )
+          // Always start polling when we detect an active sync
           pollForCompletion(data.last_sync_time)
+        } else {
+          // If backend says no sync in progress, clear syncing state
+          setIsSyncing(false)
+          setSyncStatus(null)
         }
       } else {
         console.error("Failed to fetch last sync status")
@@ -182,12 +192,71 @@ export default function PersonalityAssessmentOverlay() {
     }
   }, [user, pollForCompletion])
 
-  // Fetch last sync status when user changes
+  // Real-time Firestore listener for instant sync status updates
   useEffect(() => {
-    if (user?.uid) {
-      fetchLastSyncStatus()
+    if (!user?.uid) return
+
+    const personalitySyncRef = doc(db, "personality_sync_jobs", user.uid)
+    const unsubscribe = onSnapshot(personalitySyncRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data()
+
+        // Update UI state immediately based on Firestore data
+        if (data.status === "processing") {
+          setIsSyncing(true)
+          setSyncStatus(
+            data.message ||
+              "AI personality sync in progress. You can close the app and check back later!"
+          )
+
+          // Update lastSyncStatus
+          setLastSyncStatus({
+            can_sync: false,
+            last_sync_time:
+              data.started_at?.toDate?.()?.toISOString() ||
+              new Date().toISOString(),
+            hours_until_next_sync: 24,
+            reason: "Sync in progress",
+            is_processing: true,
+            status: "processing",
+          })
+
+          // Start polling if not already started
+          if (!isSyncing) {
+            pollForCompletion(
+              data.started_at?.toDate?.()?.toISOString() || null
+            )
+          }
+        } else if (data.status === "completed") {
+          setIsSyncing(false)
+          setSyncStatus("Personality sync completed successfully!")
+
+          // Refresh assessments
+          refetch()
+
+          // Clear status after delay
+          setTimeout(() => {
+            setSyncStatus(null)
+          }, 2000)
+        } else if (data.status === "error") {
+          console.error("Personality sync error:", data.message)
+          setIsSyncing(false)
+          setSyncStatus(null)
+          toast.error(data.message || "Personality sync failed")
+        }
+      } else {
+        setIsSyncing(false)
+        setSyncStatus(null)
+      }
+    })
+
+    // Also fetch initial status from backend
+    fetchLastSyncStatus()
+
+    return () => {
+      unsubscribe()
     }
-  }, [user?.uid, fetchLastSyncStatus])
+  }, [user?.uid, fetchLastSyncStatus, pollForCompletion, refetch])
 
   const handleRefresh = useCallback(() => {
     refetch()
@@ -222,14 +291,41 @@ export default function PersonalityAssessmentOverlay() {
       return
     }
 
-    setIsSyncing(true)
-    setSyncStatus("Initiating AI personality sync...")
-
     try {
-      // Get Firebase token
+      // STEP 1: Write to Firestore IMMEDIATELY (frontend-driven)
+      const personalitySyncRef = doc(db, "personality_sync_jobs", user.uid)
+      await setDoc(personalitySyncRef, {
+        status: "processing",
+        started_at: serverTimestamp(),
+        last_updated: serverTimestamp(),
+        message:
+          "Analyzing your conversations with AI - this will take a few minutes. Feel free to close the app and check back later!",
+        user_id: user.uid,
+        frontend_initiated: true,
+      })
+
+      // STEP 2: Update UI state immediately (since we know document exists)
+      setIsSyncing(true)
+      setSyncStatus(
+        "AI is analyzing your personality. This takes a few minutes - feel free to close the app and check back later!"
+      )
+
+      // Update lastSyncStatus immediately
+      setLastSyncStatus({
+        can_sync: false,
+        last_sync_time: new Date().toISOString(),
+        hours_until_next_sync: 24,
+        reason: "Sync in progress",
+        is_processing: true,
+        status: "processing",
+      })
+
+      // STEP 3: Start polling immediately (no delay needed)
+      pollForCompletion(new Date().toISOString())
+
+      // STEP 4: Now call the backend API (backend will find existing document)
       const token = await user.getIdToken()
 
-      // Start personality assessment (no message_id needed)
       const response = await fetch(routes.personalityAssessmentStart, {
         method: "POST",
         headers: {
@@ -243,22 +339,42 @@ export default function PersonalityAssessmentOverlay() {
 
       if (!response.ok) {
         const errorData = await response.json()
+        console.error("Failed to start personality sync:", errorData)
+
+        // Clean up Firestore document on API failure
+        await setDoc(personalitySyncRef, {
+          status: "error",
+          message: `Backend error: ${errorData.error || "Failed to start sync"}`,
+          last_updated: serverTimestamp(),
+          error: errorData.error || "Failed to start sync",
+        })
+
         throw new Error(errorData.error || "Failed to start sync")
       }
-
-      setSyncStatus(
-        "Sync started successfully! Analyzing your conversations with AI..."
-      )
-
-      // Start polling for completion
-      pollForCompletion(lastSyncStatus?.last_sync_time || null)
     } catch (error) {
-      console.error("Error starting personality assessment:", error)
+      console.error("Failed to start personality assessment:", error)
+
+      // Clean up on error
+      setIsSyncing(false)
+      setSyncStatus(null)
+
+      // Try to update Firestore document with error
+      try {
+        const personalitySyncRef = doc(db, "personality_sync_jobs", user.uid)
+        await setDoc(personalitySyncRef, {
+          status: "error",
+          message: `Error: ${error instanceof Error ? error.message : "Failed to start sync"}`,
+          last_updated: serverTimestamp(),
+          error:
+            error instanceof Error ? error.message : "Failed to start sync",
+        })
+      } catch (cleanupError) {
+        console.error("Failed to cleanup Firestore document:", cleanupError)
+      }
+
       toast.error(
         error instanceof Error ? error.message : "Failed to start sync"
       )
-      setIsSyncing(false)
-      setSyncStatus(null)
     }
   }, [
     user,
@@ -474,8 +590,9 @@ export default function PersonalityAssessmentOverlay() {
                         {syncStatus || "Analyzing your conversations..."}
                       </p>
                       <p className="text-sm text-muted-foreground mt-2">
-                        This may take a few minutes. The sync will complete
-                        automatically.
+                        This typically takes 3-5 minutes. Feel free to close the
+                        app and check back later - the sync runs in the
+                        background!
                       </p>
                     </div>
                   </div>
