@@ -20,17 +20,21 @@ interface MBTIResultsProps {
   onBack: () => void
 }
 
-const MBTIResults: React.FC<MBTIResultsProps> = ({ results, answers, onBack }) => {
+const MBTIResults: React.FC<MBTIResultsProps> = ({
+  results,
+  answers,
+  onBack,
+}) => {
   const getDimensionName = (dimId: string) => {
     switch (dimId) {
-      case 'ei':
-        return 'Extraversion (E) vs. Introversion (I)'
-      case 'sn':
-        return 'Sensing (S) vs. Intuition (N)'
-      case 'tf':
-        return 'Thinking (T) vs. Feeling (F)'
-      case 'jp':
-        return 'Judging (J) vs. Perceiving (P)'
+      case "ei":
+        return "Extraversion (E) vs. Introversion (I)"
+      case "sn":
+        return "Sensing (S) vs. Intuition (N)"
+      case "tf":
+        return "Thinking (T) vs. Feeling (F)"
+      case "jp":
+        return "Judging (J) vs. Perceiving (P)"
       default:
         return dimId.toUpperCase()
     }
@@ -38,36 +42,40 @@ const MBTIResults: React.FC<MBTIResultsProps> = ({ results, answers, onBack }) =
 
   const getPreferenceColor = (preference: string) => {
     switch (preference.toLowerCase()) {
-      case 'e':
-      case 's':
-      case 't':
-      case 'j':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'i':
-      case 'n':
-      case 'f':
-      case 'p':
-        return 'bg-purple-100 text-purple-800 border-purple-200'
+      case "e":
+      case "s":
+      case "t":
+      case "j":
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      case "i":
+      case "n":
+      case "f":
+      case "p":
+        return "bg-purple-100 text-purple-800 border-purple-200"
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
   const getTypeColor = (type: string) => {
     // Color based on temperament groups
-    const analysts = ['NT']
-    const diplomats = ['NF'] 
-    const sentinels = ['SJ']
-    const explorers = ['SP']
-    
+    const analysts = ["NT"]
+    const diplomats = ["NF"]
+    const sentinels = ["SJ"]
+    const explorers = ["SP"]
+
     const typePattern = type.substring(1, 3)
-    
-    if (analysts.includes(typePattern)) return 'bg-green-100 text-green-800 border-green-200'
-    if (diplomats.includes(typePattern)) return 'bg-purple-100 text-purple-800 border-purple-200'
-    if (sentinels.includes(typePattern)) return 'bg-blue-100 text-blue-800 border-blue-200'
-    if (explorers.includes(typePattern)) return 'bg-orange-100 text-orange-800 border-orange-200'
-    
-    return 'bg-gray-100 text-gray-800 border-gray-200'
+
+    if (analysts.includes(typePattern))
+      return "bg-green-100 text-green-800 border-green-200"
+    if (diplomats.includes(typePattern))
+      return "bg-purple-100 text-purple-800 border-purple-200"
+    if (sentinels.includes(typePattern))
+      return "bg-blue-100 text-blue-800 border-blue-200"
+    if (explorers.includes(typePattern))
+      return "bg-orange-100 text-orange-800 border-orange-200"
+
+    return "bg-gray-100 text-gray-800 border-gray-200"
   }
 
   return (
@@ -95,8 +103,8 @@ const MBTIResults: React.FC<MBTIResultsProps> = ({ results, answers, onBack }) =
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <div className="flex justify-center">
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={`text-3xl font-bold py-3 px-6 ${getTypeColor(results.personality_type)}`}
               >
                 {results.personality_type}
@@ -114,30 +122,32 @@ const MBTIResults: React.FC<MBTIResultsProps> = ({ results, answers, onBack }) =
             <CardTitle className="text-lg">Personality Dimensions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {Object.entries(results.dimension_details).map(([dimId, details]) => (
-              <div key={dimId} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{getDimensionName(dimId)}</h3>
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant="outline" 
-                      className={getPreferenceColor(details.preference)}
-                    >
-                      {details.preference}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {details.strength}%
-                    </span>
+            {Object.entries(results.dimension_details).map(
+              ([dimId, details]) => (
+                <div key={dimId} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium">{getDimensionName(dimId)}</h3>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={getPreferenceColor(details.preference)}
+                      >
+                        {details.preference}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {details.strength}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-purple-500 rounded-full transition-all"
+                      style={{ width: `${details.strength}%` }}
+                    />
                   </div>
                 </div>
-                <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-purple-500 rounded-full transition-all"
-                    style={{ width: `${details.strength}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </CardContent>
         </Card>
 
@@ -152,13 +162,17 @@ const MBTIResults: React.FC<MBTIResultsProps> = ({ results, answers, onBack }) =
                 <div className="text-2xl font-bold text-purple-600">
                   {Object.keys(answers || {}).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Questions Answered</div>
+                <div className="text-sm text-muted-foreground">
+                  Questions Answered
+                </div>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
                   {Object.keys(results.dimension_details).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Dimensions Analyzed</div>
+                <div className="text-sm text-muted-foreground">
+                  Dimensions Analyzed
+                </div>
               </div>
             </div>
           </CardContent>
@@ -168,4 +182,4 @@ const MBTIResults: React.FC<MBTIResultsProps> = ({ results, answers, onBack }) =
   )
 }
 
-export default MBTIResults 
+export default MBTIResults

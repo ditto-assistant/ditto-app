@@ -31,25 +31,32 @@ interface DISCResultsProps {
   onBack: () => void
 }
 
-const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) => {
+const DISCResults: React.FC<DISCResultsProps> = ({
+  results,
+  answers,
+  onBack,
+}) => {
   const getDimensionColor = (id: string, percentage: number) => {
     const colors = {
-      d: 'bg-red-500',
-      i: 'bg-yellow-500',
-      s: 'bg-green-500',
-      c: 'bg-blue-500'
+      d: "bg-red-500",
+      i: "bg-yellow-500",
+      s: "bg-green-500",
+      c: "bg-blue-500",
     }
-    return colors[id as keyof typeof colors] || 'bg-gray-500'
+    return colors[id as keyof typeof colors] || "bg-gray-500"
   }
 
   const getStyleColor = (id: string) => {
     const colors = {
-      d: 'bg-red-100 text-red-800 border-red-200',
-      i: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      s: 'bg-green-100 text-green-800 border-green-200',
-      c: 'bg-blue-100 text-blue-800 border-blue-200'
+      d: "bg-red-100 text-red-800 border-red-200",
+      i: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      s: "bg-green-100 text-green-800 border-green-200",
+      c: "bg-blue-100 text-blue-800 border-blue-200",
     }
-    return colors[id as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200'
+    return (
+      colors[id as keyof typeof colors] ||
+      "bg-gray-100 text-gray-800 border-gray-200"
+    )
   }
 
   return (
@@ -76,7 +83,9 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
             <CardTitle className="text-lg">Your DISC Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <h3 className="text-xl font-semibold text-center">{results.profile_summary}</h3>
+            <h3 className="text-xl font-semibold text-center">
+              {results.profile_summary}
+            </h3>
             <p className="text-muted-foreground leading-relaxed text-center">
               {results.profile_description}
             </p>
@@ -88,8 +97,8 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={getStyleColor(results.primary_style.id)}
                 >
                   {results.primary_style.id.toUpperCase()}
@@ -99,15 +108,17 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
             </CardHeader>
             <CardContent>
               <h4 className="font-medium mb-2">{results.primary_style.name}</h4>
-              <p className="text-sm text-muted-foreground">{results.primary_style.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {results.primary_style.description}
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={getStyleColor(results.secondary_style.id)}
                 >
                   {results.secondary_style.id.toUpperCase()}
@@ -116,8 +127,12 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
               </div>
             </CardHeader>
             <CardContent>
-              <h4 className="font-medium mb-2">{results.secondary_style.name}</h4>
-              <p className="text-sm text-muted-foreground">{results.secondary_style.description}</p>
+              <h4 className="font-medium mb-2">
+                {results.secondary_style.name}
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {results.secondary_style.description}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -128,35 +143,34 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
             <CardTitle className="text-lg">Dimension Breakdown</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {Object.entries(results.dimension_scores).map(([dimId, dimension]) => (
-              <div key={dimId} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Badge 
-                      variant="outline" 
-                      className={getStyleColor(dimId)}
-                    >
-                      {dimId.toUpperCase()}
-                    </Badge>
-                    <h3 className="font-medium">{dimension.name}</h3>
+            {Object.entries(results.dimension_scores).map(
+              ([dimId, dimension]) => (
+                <div key={dimId} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className={getStyleColor(dimId)}>
+                        {dimId.toUpperCase()}
+                      </Badge>
+                      <h3 className="font-medium">{dimension.name}</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        Score: {dimension.score}
+                      </span>
+                      <span className="font-semibold">
+                        {dimension.percentage}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      Score: {dimension.score}
-                    </span>
-                    <span className="font-semibold">
-                      {dimension.percentage}%
-                    </span>
+                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${getDimensionColor(dimId, dimension.percentage)}`}
+                      style={{ width: `${dimension.percentage}%` }}
+                    />
                   </div>
                 </div>
-                <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all ${getDimensionColor(dimId, dimension.percentage)}`}
-                    style={{ width: `${dimension.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </CardContent>
         </Card>
 
@@ -171,13 +185,17 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
                 <div className="text-2xl font-bold text-green-600">
                   {Object.keys(answers || {}).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Questions Answered</div>
+                <div className="text-sm text-muted-foreground">
+                  Questions Answered
+                </div>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
                   {Object.keys(results.dimension_scores).length}
                 </div>
-                <div className="text-sm text-muted-foreground">DISC Dimensions</div>
+                <div className="text-sm text-muted-foreground">
+                  DISC Dimensions
+                </div>
               </div>
             </div>
           </CardContent>
@@ -187,4 +205,4 @@ const DISCResults: React.FC<DISCResultsProps> = ({ results, answers, onBack }) =
   )
 }
 
-export default DISCResults 
+export default DISCResults

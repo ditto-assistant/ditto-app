@@ -21,30 +21,34 @@ interface BigFiveResultsProps {
   onBack: () => void
 }
 
-const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBack }) => {
+const BigFiveResults: React.FC<BigFiveResultsProps> = ({
+  results,
+  answers,
+  onBack,
+}) => {
   const getDimensionColor = (level: string) => {
     switch (level.toLowerCase()) {
-      case 'low':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'moderate':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'high':
-        return 'bg-green-100 text-green-800 border-green-200'
+      case "low":
+        return "bg-red-100 text-red-800 border-red-200"
+      case "moderate":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "high":
+        return "bg-green-100 text-green-800 border-green-200"
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
   const getProgressColor = (level: string) => {
     switch (level.toLowerCase()) {
-      case 'low':
-        return 'bg-red-500'
-      case 'moderate':
-        return 'bg-yellow-500'
-      case 'high':
-        return 'bg-green-500'
+      case "low":
+        return "bg-red-500"
+      case "moderate":
+        return "bg-yellow-500"
+      case "high":
+        return "bg-green-500"
       default:
-        return 'bg-gray-500'
+        return "bg-gray-500"
     }
   }
 
@@ -61,7 +65,9 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBac
         </Button>
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-blue-600" />
-          <h2 className="text-xl font-semibold">Big Five Personality Results</h2>
+          <h2 className="text-xl font-semibold">
+            Big Five Personality Results
+          </h2>
         </div>
       </div>
 
@@ -72,7 +78,9 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBac
             <CardTitle className="text-lg">Personality Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground leading-relaxed">{results.summary}</p>
+            <p className="text-muted-foreground leading-relaxed">
+              {results.summary}
+            </p>
           </CardContent>
         </Card>
 
@@ -82,30 +90,32 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBac
             <CardTitle className="text-lg">Dimension Scores</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {Object.entries(results.dimension_scores).map(([dimensionId, dimension]) => (
-              <div key={dimensionId} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-medium">{dimension.name}</h3>
-                    <Badge 
-                      variant="outline" 
-                      className={getDimensionColor(dimension.level)}
-                    >
-                      {dimension.level}
-                    </Badge>
+            {Object.entries(results.dimension_scores).map(
+              ([dimensionId, dimension]) => (
+                <div key={dimensionId} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-medium">{dimension.name}</h3>
+                      <Badge
+                        variant="outline"
+                        className={getDimensionColor(dimension.level)}
+                      >
+                        {dimension.level}
+                      </Badge>
+                    </div>
+                    <span className="font-semibold text-lg">
+                      {dimension.score}/5.0
+                    </span>
                   </div>
-                  <span className="font-semibold text-lg">
-                    {dimension.score}/5.0
-                  </span>
+                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${getProgressColor(dimension.level)}`}
+                      style={{ width: `${(dimension.score / 5) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all ${getProgressColor(dimension.level)}`}
-                    style={{ width: `${(dimension.score / 5) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </CardContent>
         </Card>
 
@@ -117,7 +127,7 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBac
           <CardContent>
             <div className="space-y-3">
               {results.descriptions.map((description, index) => (
-                <div 
+                <div
                   key={index}
                   className="p-3 bg-muted/50 rounded-lg border-l-4 border-l-blue-500"
                 >
@@ -139,13 +149,17 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBac
                 <div className="text-2xl font-bold text-blue-600">
                   {Object.keys(answers || {}).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Questions Answered</div>
+                <div className="text-sm text-muted-foreground">
+                  Questions Answered
+                </div>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">
                   {Object.keys(results.dimension_scores).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Personality Dimensions</div>
+                <div className="text-sm text-muted-foreground">
+                  Personality Dimensions
+                </div>
               </div>
             </div>
           </CardContent>
@@ -155,4 +169,4 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({ results, answers, onBac
   )
 }
 
-export default BigFiveResults 
+export default BigFiveResults

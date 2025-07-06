@@ -45,28 +45,32 @@ export function usePersonalityAssessments(userId: string | undefined) {
       }
 
       const token = await user.getIdToken()
-      
+
       const response = await fetch(routes.personalityAssessments, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: userId
-        })
+          user_id: userId,
+        }),
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        )
       }
 
       const data: PersonalityAssessmentsResponse = await response.json()
       setAssessments(data.assessments || [])
     } catch (err) {
-      console.error('Error fetching personality assessments:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch assessments')
+      console.error("Error fetching personality assessments:", err)
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch assessments"
+      )
       setAssessments([])
     } finally {
       setLoading(false)
@@ -81,6 +85,6 @@ export function usePersonalityAssessments(userId: string | undefined) {
     assessments,
     loading,
     error,
-    refetch: fetchAssessments
+    refetch: fetchAssessments,
   }
-} 
+}
