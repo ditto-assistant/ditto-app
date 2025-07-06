@@ -11,6 +11,7 @@ import {
   Bolt,
   X,
   Square,
+  UserCheck,
 } from "lucide-react"
 import { sendPrompt, cancelPrompt } from "@/control/agent"
 import { uploadImage } from "@/api/userContent"
@@ -503,6 +504,29 @@ export default function SendMessage({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              </div>
+
+              {/* Center - Personality Assessments button */}
+              <div className="absolute left-1/2 transform -translate-x-1/2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        triggerLightHaptic()
+                        modal.createOpenHandler("personalityAssessments")()
+                      }}
+                      aria-label="View personality assessments"
+                      className="h-10 w-10 rounded-full bg-background ring-2 ring-purple-500/70 shadow-lg shadow-purple-500/50 hover:scale-110 hover:ring-purple-500 hover:shadow-xl hover:shadow-purple-500/80 transition-all"
+                    >
+                      <UserCheck className="h-5 w-5 text-purple-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>My Personality</TooltipContent>
+                </Tooltip>
               </div>
 
               <div className="flex items-center gap-1.5">

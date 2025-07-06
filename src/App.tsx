@@ -69,6 +69,9 @@ const MemoriesDashboardOverlay = loadE(
 )
 const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
 const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
+const PersonalityAssessmentOverlay = loadE(
+  () => import("@/screens/PersonalityAssessments/PersonalityAssessmentOverlay")
+)
 const ComposeModal = loadE(() => import("@/components/ComposeModal"))
 // const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
 const queryClient = new QueryClient()
@@ -116,6 +119,9 @@ const modalRegistry: ModalRegistry = {
   },
   memoryNodeViewer: {
     component: <MemoryNodeModal />,
+  },
+  personalityAssessments: {
+    component: <PersonalityAssessmentOverlay />,
   },
   whatsNew: {
     component: <WhatsNew />,
