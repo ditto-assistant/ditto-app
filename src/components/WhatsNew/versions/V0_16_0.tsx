@@ -6,21 +6,21 @@ const sections: Section[] = [
     features: [
       {
         type: "new",
-        title: "AI Personality Insights",
+        title: "Discover Your Personality With Ditto",
         description:
-          "Discover your unique psychological profile! Ditto now analyzes your conversation patterns to generate personalized Big Five, MBTI, and DISC personality assessments. Get deep insights into your communication style, decision-making patterns, and interpersonal tendencies - all powered by your actual conversations with AI.",
+          "Ever wondered what your conversations reveal about who you are? Ditto now creates a personalized personality profile based on how you chat! Learn about your communication style, what motivates you, and how you make decisions - all from your natural conversations. It's like having a personal insight coach that gets to know the real you.",
       },
       {
         type: "new",
-        title: "State-of-the-Art Image Generation",
+        title: "State-of-the-Art Image Creation",
         description:
-          "Now powered by OpenAI's brand new GPT-image-1 model! Image generation is fully automated - simply describe what you want, and the AI will automatically choose the best orientation (widescreen, square, or vertical) based on your prompt. You can also specify orientation by including words like 'landscape', 'portrait', or 'square' in your description.",
+          "Creating images just got so much easier! Simply describe what you want and Ditto automatically picks the perfect size and style for your idea. Want a sunset? It knows to make it wide. A portrait? It'll make it tall. Just tell it what you're imagining and watch the magic happen.",
       },
       {
         type: "new",
-        title: "Superior Text in Images",
+        title: "Crystal Clear Text in Images",
         description:
-          "The new GPT-image-1 model is significantly better at generating text within images. If you've been struggling to get clear, readable text in your generated images, this upgrade should solve those issues!",
+          "Need words in your images? They'll actually be readable now! Whether you want a logo, sign, or any text in your pictures, Ditto creates crisp, clear lettering that looks professional. No more blurry or jumbled text - just beautiful, readable results.",
       },
     ],
   },
@@ -29,21 +29,21 @@ const sections: Section[] = [
     features: [
       {
         type: "improved",
-        title: "Enhanced Personality Sync",
+        title: "More Reliable Personality Updates",
         description:
-          "Personality assessments now run more reliably with improved rate limiting and conflict prevention. No more duplicate jobs or sync interruptions when switching between screens.",
+          "Your personality insights now update smoothly in the background without any interruptions. No more waiting or getting stuck - everything just works seamlessly as you chat.",
       },
       {
         type: "improved",
-        title: "Simplified Settings",
+        title: "Less Clutter, More Magic",
         description:
-          "Removed manual image generation settings since everything is now handled automatically for the best results.",
+          "We've cleaned up the settings by removing options you don't need anymore. Image creation is now fully automatic, so you can focus on being creative instead of tweaking settings.",
       },
       {
         type: "improved",
-        title: "Smarter Memory Analysis",
+        title: "Personality Insights Get Better Over Time",
         description:
-          "Your personality insights become more accurate as you have more conversations. The system requires at least 30 meaningful exchanges to generate reliable assessments.",
+          "The more you chat with Ditto, the more accurate your personality profile becomes! After about 30 conversations, you'll start seeing really insightful and personalized results that truly reflect who you are.",
       },
     ],
   },
