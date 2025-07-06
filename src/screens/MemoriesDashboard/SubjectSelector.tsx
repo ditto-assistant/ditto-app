@@ -14,7 +14,7 @@ interface SubjectSelectorProps {
   hasMore?: boolean
   showMoreLoading?: boolean
   isSearchMode?: boolean
-  onResetSearch?: () => void
+  _onResetSearch?: () => void
   userID?: string
   onSubjectUpdated?: (updatedSubject: Subject) => void
   searchQuery?: string // Add this to show what the subjects are related to
@@ -30,7 +30,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
   hasMore,
   showMoreLoading,
   isSearchMode,
-  onResetSearch,
+  _onResetSearch,
   userID,
   onSubjectUpdated,
   searchQuery,
@@ -113,7 +113,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
       {/* Show context about what subjects are displayed */}
       {searchQuery && (
         <div className="text-sm text-muted-foreground">
-          Subjects related to "{searchQuery}"
+          Subjects related to &quot;{searchQuery}&quot;
         </div>
       )}
 
@@ -127,7 +127,7 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({
 
       {!loading && subjects.length === 0 && searchQuery && (
         <div className="text-sm text-muted-foreground text-center py-4">
-          No subjects found related to "{searchQuery}"
+          No subjects found related to &quot;{searchQuery}&quot;
         </div>
       )}
 

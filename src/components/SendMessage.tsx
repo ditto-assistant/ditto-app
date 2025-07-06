@@ -11,13 +11,12 @@ import {
   Bolt,
   X,
   Square,
-  Brain,
 } from "lucide-react"
 import { sendPrompt, cancelPrompt } from "@/control/agent"
 import { uploadImage } from "@/api/userContent"
 import { cn } from "@/lib/utils"
 import { HapticPattern, triggerHaptic } from "@/utils/haptics"
-import { DITTO_LOGO, DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
+import { DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { ErrorPaymentRequired } from "@/types/errors"
 import { useAuth } from "@/hooks/useAuth"
 import { useBalance } from "@/hooks/useBalance"
