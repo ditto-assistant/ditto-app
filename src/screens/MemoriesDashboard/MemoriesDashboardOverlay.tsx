@@ -209,7 +209,7 @@ export default function MemoriesDashboardOverlay() {
               hasMore={hasMoreSubjects}
               showMoreLoading={showMoreLoading}
               isSearchMode={isSubjectSearchMode}
-              onResetSearch={handleResetSubjectSearch}
+              _onResetSearch={handleResetSubjectSearch}
               searchQuery={lastSearchedTerm}
             />
           ) : null}
