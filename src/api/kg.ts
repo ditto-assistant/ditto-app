@@ -87,7 +87,7 @@ export async function searchSubjects({
   userID,
   userEmail,
   query,
-  topK = 10,
+  topK = 5,
   minSimilarity = 0.1,
 }: {
   userID?: string
@@ -239,7 +239,7 @@ export async function getSubjectPairs({
 export async function getTopSubjects({
   userID,
   userEmail,
-  limit = 10,
+  limit = 5,
   offset = 0,
 }: {
   userID?: string

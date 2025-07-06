@@ -196,7 +196,7 @@ export const dashboardReducer = (
           action.payload.newResults
         ),
         subjectsOffset: action.payload.newOffset,
-        hasMoreSubjects: action.payload.newResults.length === 10,
+        hasMoreSubjects: action.payload.newResults.length === 5,
       }
     default:
       return state

@@ -55,7 +55,7 @@ export const useDashboardState = () => {
       try {
         const res = await getTopSubjects({
           userID: user.uid,
-          limit: 10,
+          limit: 5,
           offset: 0,
         })
         if (res.err) throw new Error(res.err)
@@ -69,7 +69,7 @@ export const useDashboardState = () => {
           type: "COMPLETE_SUBJECTS_FETCH",
           payload: {
             subjects: uniqueResults,
-            hasMore: results.length === 10,
+            hasMore: results.length === 5,
             isSearchMode: false,
           },
         })
@@ -122,7 +122,7 @@ export const useMemorySearch = (
           text: searchTerm,
           model: "text-embedding-005",
         }),
-        searchSubjects({ userID, query: searchTerm, topK: 10 }),
+        searchSubjects({ userID, query: searchTerm, topK: 5 }),
       ])
 
       // Handle embedding/memory search result
@@ -207,10 +207,10 @@ export const useSubjectManagement = (
     if (!user?.uid || state.showMoreLoading) return
     dispatch({ type: "SET_SHOW_MORE_LOADING", payload: true })
     try {
-      const newOffset = state.subjectsOffset + 10
+      const newOffset = state.subjectsOffset + 5
       const res = await getTopSubjects({
         userID: user.uid,
-        limit: 10,
+        limit: 5,
         offset: newOffset,
       })
       if (res.err) throw new Error(res.err)
@@ -239,7 +239,7 @@ export const useSubjectManagement = (
     try {
       const res = await getTopSubjects({
         userID: user.uid,
-        limit: 10,
+        limit: 5,
         offset: 0,
       })
       if (res.err) throw new Error(res.err)
@@ -253,7 +253,7 @@ export const useSubjectManagement = (
         type: "COMPLETE_SUBJECTS_FETCH",
         payload: {
           subjects: uniqueResults,
-          hasMore: results.length === 10,
+          hasMore: results.length === 5,
           isSearchMode: false,
         },
       })
