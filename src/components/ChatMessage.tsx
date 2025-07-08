@@ -111,17 +111,6 @@ export default function ChatMessage({
     setIsLoadingSubjects(false)
   }
 
-  // Debug logging for sync indicator
-  if (showSyncIndicator) {
-    console.log("🔍 [ChatMessage Debug] Sync indicator should show:", {
-      showSyncIndicator,
-      syncStage,
-      isUser,
-      isLast,
-      isOptimistic,
-    })
-  }
-
   const formatTimestamp = (timestamp: number | Date) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
     const now = new Date()

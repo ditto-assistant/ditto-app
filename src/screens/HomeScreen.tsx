@@ -11,6 +11,8 @@ import { ModalId, useModal } from "@/hooks/useModal"
 import { useTOSCheck } from "@/hooks/useTOSCheck"
 import useWhatsNew from "@/hooks/useWhatsNew"
 import { getUpdateState } from "@/utils/updateService"
+import { usePersonalityPreload } from "@/hooks/usePersonalityPreload"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function HomeScreen() {
   const balance = useBalance()
@@ -21,6 +23,10 @@ export default function HomeScreen() {
   // Use the TOS check hook to determine if we need to show the TOS dialog
   const { showTOS, setShowTOS } = useTOSCheck()
   const { openWhatsNew } = useWhatsNew()
+  const { user } = useAuth()
+
+  // Preload personality assessments on app startup
+  usePersonalityPreload(user?.uid)
 
   const appBodyRef = useRef<HTMLDivElement>(null)
 

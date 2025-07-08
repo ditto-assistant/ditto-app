@@ -58,9 +58,8 @@ interface LastSyncStatus {
 export default function PersonalityAssessmentOverlay() {
   const { user } = useAuth()
   const { count: messageCount, loading: memoryCountLoading } = useMemoryCount()
-  const { assessments, loading, error, refetch } = usePersonalityAssessments(
-    user?.uid
-  )
+  const { assessments, loading, error, refetch, updateAssessments } =
+    usePersonalityAssessments(user?.uid)
   const [selectedAssessment, setSelectedAssessment] =
     useState<PersonalityAssessment | null>(null)
   const [isSyncing, setIsSyncing] = useState(false)
@@ -100,7 +99,9 @@ export default function PersonalityAssessmentOverlay() {
               // Sync completed!
               setSyncStatus("Personality sync completed successfully!")
               setLastSyncStatus(data)
-              refetch() // Refresh assessments list
+
+              // Force refresh assessments from API and update localStorage
+              refetch()
 
               setTimeout(() => {
                 setIsSyncing(false)
@@ -231,7 +232,7 @@ export default function PersonalityAssessmentOverlay() {
           setIsSyncing(false)
           setSyncStatus("Personality sync completed successfully!")
 
-          // Refresh assessments
+          // Force refresh assessments from API and update localStorage
           refetch()
 
           // Clear status after delay
