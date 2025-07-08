@@ -149,8 +149,12 @@ export const sendPrompt = async (
       timestamp: new Date().toISOString(),
       usersPrompt: prompt,
       toolPreferences: preferences.tools,
+      userID,
     })
 
+    const systemPrompt = systemTemplate(userID)
+
+    console.log("%c" + systemPrompt, "color: orange")
     console.log("%c" + constructedPrompt, "color: green")
 
     let mainAgentModel = preferences.mainModel
@@ -175,7 +179,7 @@ export const sendPrompt = async (
     // Get the response from the LLM using the V2 endpoint with SSE streaming
     let response = await promptLLMV2(
       constructedPrompt,
-      systemTemplate(),
+      systemPrompt,
       mainAgentModel,
       image,
       textCallback

@@ -1,5 +1,6 @@
 import { TOOLS } from "../../constants"
 import type { Tool, ToolPreferences } from "../../types/llm"
+import { PersonalityStorage } from "../../utils/personalityStorage"
 
 const getToolsModule = (params: {
   toolPreferences: ToolPreferences
@@ -14,8 +15,20 @@ const getToolsModule = (params: {
   return enabledTools as Tool[]
 }
 
-export const systemTemplate = () => {
-  return "You are a friendly AI named Ditto here to help the user who is your best friend."
+export const systemTemplate = (userID?: string) => {
+  let baseSystem =
+    "You are a friendly AI named Ditto here to help the user who is your best friend."
+
+  if (userID) {
+    // Get personality information from localStorage
+    const personalitySummary = PersonalityStorage.getPersonalitySummary(userID)
+    if (personalitySummary) {
+      console.log("🧠 SystemTemplate: Found personality summary for user.")
+      baseSystem += `\n\n## User's Personality Profile:\n${personalitySummary}\n\nUse this personality information to better understand and respond to the user's communication style and preferences.`
+    }
+  }
+
+  return baseSystem
 }
 
 export const getTimezoneString = (): string => {
@@ -38,6 +51,7 @@ export const mainTemplate = (params: {
   timestamp: string
   usersPrompt: string
   toolPreferences: ToolPreferences
+  userID: string
 }) => {
   const {
     memories,
@@ -46,6 +60,7 @@ export const mainTemplate = (params: {
     timestamp,
     usersPrompt,
     toolPreferences,
+    userID,
   } = params
   console.log("toolPreferences", params)
   const tools = getToolsModule({
