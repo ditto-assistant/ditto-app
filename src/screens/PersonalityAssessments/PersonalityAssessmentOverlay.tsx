@@ -558,7 +558,7 @@ export default function PersonalityAssessmentOverlay() {
       case "big-five":
         return (
           <BigFiveResults
-            results={assessment.results}
+            results={assessment.results as BigFiveResultsType}
             answers={assessment.answers}
             onBack={() => setSelectedAssessment(null)}
           />
@@ -566,7 +566,7 @@ export default function PersonalityAssessmentOverlay() {
       case "mbti":
         return (
           <MBTIResults
-            results={assessment.results}
+            results={assessment.results as MBTIResultsType}
             answers={assessment.answers}
             onBack={() => setSelectedAssessment(null)}
           />
@@ -574,7 +574,7 @@ export default function PersonalityAssessmentOverlay() {
       case "disc":
         return (
           <DISCResults
-            results={assessment.results}
+            results={assessment.results as DISCResultsType}
             answers={assessment.answers}
             onBack={() => setSelectedAssessment(null)}
           />
