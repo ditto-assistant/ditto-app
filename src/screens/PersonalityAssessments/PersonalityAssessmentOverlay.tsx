@@ -131,7 +131,9 @@ export default function PersonalityAssessmentOverlay() {
           }
         } catch (error) {
           console.error("Error polling for completion:", error)
-          setSyncStatus("AI personality sync in progress. You can close the app and check back later!")
+          setSyncStatus(
+            "AI personality sync in progress. You can close the app and check back later!"
+          )
           setTimeout(() => {
             setIsSyncing(false)
             setSyncStatus(null)
