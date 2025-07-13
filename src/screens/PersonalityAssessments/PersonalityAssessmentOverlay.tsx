@@ -467,13 +467,15 @@ export default function PersonalityAssessmentOverlay() {
     const radius = 35
 
     const getPolygonPoints = (scores: number[]) => {
-      return scores.map((score, index) => {
-        const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
-        const value = (score / 5) * radius
-        const x = center + value * Math.cos(angle)
-        const y = center + value * Math.sin(angle)
-        return `${x},${y}`
-      }).join(' ')
+      return scores
+        .map((score, index) => {
+          const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
+          const value = (score / 5) * radius
+          const x = center + value * Math.cos(angle)
+          const y = center + value * Math.sin(angle)
+          return `${x},${y}`
+        })
+        .join(" ")
     }
 
     const getOutlinePoints = () => {
@@ -484,22 +486,22 @@ export default function PersonalityAssessmentOverlay() {
         const y = center + radius * Math.sin(angle)
         points.push(`${x},${y}`)
       }
-      return points.join(' ')
+      return points.join(" ")
     }
 
     const getDimensionLabel = (key: string) => {
       const labels: { [key: string]: string } = {
         openness: "O",
-        conscientiousness: "C", 
+        conscientiousness: "C",
         extraversion: "E",
         agreeableness: "A",
-        neuroticism: "N"
+        neuroticism: "N",
       }
       return labels[key] || key.charAt(0).toUpperCase()
     }
 
     const scores = dimensions.map(([_, dim]: [string, any]) => dim.score)
-    
+
     return (
       <div className="flex flex-col items-center gap-2">
         <svg width={size} height={size} className="drop-shadow-sm">
@@ -511,7 +513,7 @@ export default function PersonalityAssessmentOverlay() {
             strokeWidth="1"
             className="opacity-30"
           />
-          
+
           {/* Data polygon */}
           <polygon
             points={getPolygonPoints(scores)}
@@ -520,14 +522,14 @@ export default function PersonalityAssessmentOverlay() {
             stroke="rgb(59 130 246)"
             strokeWidth="2"
           />
-          
+
           {/* Dimension labels */}
           {dimensions.map(([key, dim]: [string, any], index) => {
             const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
             const labelRadius = radius + 15
             const x = center + labelRadius * Math.cos(angle)
             const y = center + labelRadius * Math.sin(angle)
-            
+
             return (
               <text
                 key={key}
@@ -541,16 +543,16 @@ export default function PersonalityAssessmentOverlay() {
               </text>
             )
           })}
-          
+
           {/* Center dot */}
           <circle cx={center} cy={center} r="2" fill="rgb(59 130 246)" />
         </svg>
-        
+
         <div className="flex flex-wrap gap-1 justify-center text-xs">
           {dimensions.map(([key, dim]: [string, any]) => (
-            <Badge 
-              key={key} 
-              variant="outline" 
+            <Badge
+              key={key}
+              variant="outline"
               className="text-xs px-1.5 py-0.5"
             >
               {getDimensionLabel(key)}: {dim.score.toFixed(1)}
@@ -571,10 +573,16 @@ export default function PersonalityAssessmentOverlay() {
               <h4 className="font-medium text-sm mb-2">Top Traits</h4>
               <div className="space-y-1">
                 {Object.entries(assessment.results?.dimension_scores || {})
-                  .sort(([,a]: [string, any], [,b]: [string, any]) => b.score - a.score)
+                  .sort(
+                    ([, a]: [string, any], [, b]: [string, any]) =>
+                      b.score - a.score
+                  )
                   .slice(0, 3)
                   .map(([key, dim]: [string, any]) => (
-                    <div key={key} className="flex items-center justify-between text-sm">
+                    <div
+                      key={key}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <span className="capitalize">{key}</span>
                       <Badge variant="outline" className="text-xs">
                         {dim.score.toFixed(1)}/5
@@ -585,61 +593,67 @@ export default function PersonalityAssessmentOverlay() {
             </div>
           </div>
         )
-      
+
       case "mbti":
         return (
           <div className="text-center">
             <div className="mb-3">
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="text-2xl font-bold py-2 px-4 bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700"
               >
                 {assessment.results?.personality_type || "N/A"}
               </Badge>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              {Object.entries(assessment.results?.dimension_details || {}).map(([key, details]: [string, any]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <span className="uppercase">{key}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {details.preference} ({details.strength}%)
-                  </Badge>
-                </div>
-              ))}
+              {Object.entries(assessment.results?.dimension_details || {}).map(
+                ([key, details]: [string, any]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="uppercase">{key}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {details.preference} ({details.strength}%)
+                    </Badge>
+                  </div>
+                )
+              )}
             </div>
           </div>
         )
-      
+
       case "disc":
         return (
           <div className="space-y-3">
             <div className="flex items-center justify-center gap-2">
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
               >
-                Primary: {assessment.results?.primary_style?.id.toUpperCase() || "N/A"}
+                Primary:{" "}
+                {assessment.results?.primary_style?.id.toUpperCase() || "N/A"}
               </Badge>
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
               >
-                Secondary: {assessment.results?.secondary_style?.id.toUpperCase() || "N/A"}
+                Secondary:{" "}
+                {assessment.results?.secondary_style?.id.toUpperCase() || "N/A"}
               </Badge>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              {Object.entries(assessment.results?.dimension_scores || {}).map(([key, dim]: [string, any]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <span className="uppercase">{key}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {dim.percentage}%
-                  </Badge>
-                </div>
-              ))}
+              {Object.entries(assessment.results?.dimension_scores || {}).map(
+                ([key, dim]: [string, any]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="uppercase">{key}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {dim.percentage}%
+                    </Badge>
+                  </div>
+                )
+              )}
             </div>
           </div>
         )
-      
+
       default:
         return (
           <div className="text-center text-sm text-muted-foreground">
@@ -1027,7 +1041,7 @@ export default function PersonalityAssessmentOverlay() {
                         <div className="bg-muted/30 rounded-lg p-4">
                           {renderInlineResults(assessment)}
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-6 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
