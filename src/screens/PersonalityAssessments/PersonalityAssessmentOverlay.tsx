@@ -446,6 +446,209 @@ export default function PersonalityAssessmentOverlay() {
     }
   }
 
+  const getShortDescription = (assessmentId: string) => {
+    switch (assessmentId) {
+      case "big-five":
+        return "Five key personality dimensions"
+      case "mbti":
+        return "16 personality types based on preferences"
+      case "disc":
+        return "Four behavioral styles for work & life"
+      default:
+        return "Personality assessment"
+    }
+  }
+
+  // Pentagon radar chart component for Big Five
+  const BigFivePentagon = ({ results }: { results: any }) => {
+    const dimensions = Object.entries(results.dimension_scores || {})
+    const size = 120
+    const center = size / 2
+    const radius = 35
+
+    const getPolygonPoints = (scores: number[]) => {
+      return scores.map((score, index) => {
+        const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
+        const value = (score / 5) * radius
+        const x = center + value * Math.cos(angle)
+        const y = center + value * Math.sin(angle)
+        return `${x},${y}`
+      }).join(' ')
+    }
+
+    const getOutlinePoints = () => {
+      const points = []
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2
+        const x = center + radius * Math.cos(angle)
+        const y = center + radius * Math.sin(angle)
+        points.push(`${x},${y}`)
+      }
+      return points.join(' ')
+    }
+
+    const getDimensionLabel = (key: string) => {
+      const labels: { [key: string]: string } = {
+        openness: "O",
+        conscientiousness: "C", 
+        extraversion: "E",
+        agreeableness: "A",
+        neuroticism: "N"
+      }
+      return labels[key] || key.charAt(0).toUpperCase()
+    }
+
+    const scores = dimensions.map(([_, dim]: [string, any]) => dim.score)
+    
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <svg width={size} height={size} className="drop-shadow-sm">
+          {/* Grid lines */}
+          <polygon
+            points={getOutlinePoints()}
+            fill="none"
+            stroke="rgb(203 213 225)"
+            strokeWidth="1"
+            className="opacity-30"
+          />
+          
+          {/* Data polygon */}
+          <polygon
+            points={getPolygonPoints(scores)}
+            fill="rgb(59 130 246)"
+            fillOpacity="0.3"
+            stroke="rgb(59 130 246)"
+            strokeWidth="2"
+          />
+          
+          {/* Dimension labels */}
+          {dimensions.map(([key, dim]: [string, any], index) => {
+            const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
+            const labelRadius = radius + 15
+            const x = center + labelRadius * Math.cos(angle)
+            const y = center + labelRadius * Math.sin(angle)
+            
+            return (
+              <text
+                key={key}
+                x={x}
+                y={y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-xs font-medium fill-current"
+              >
+                {getDimensionLabel(key)}
+              </text>
+            )
+          })}
+          
+          {/* Center dot */}
+          <circle cx={center} cy={center} r="2" fill="rgb(59 130 246)" />
+        </svg>
+        
+        <div className="flex flex-wrap gap-1 justify-center text-xs">
+          {dimensions.map(([key, dim]: [string, any]) => (
+            <Badge 
+              key={key} 
+              variant="outline" 
+              className="text-xs px-1.5 py-0.5"
+            >
+              {getDimensionLabel(key)}: {dim.score.toFixed(1)}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderInlineResults = (assessment: PersonalityAssessment) => {
+    switch (assessment.assessment_id) {
+      case "big-five":
+        return (
+          <div className="flex items-center justify-between">
+            <BigFivePentagon results={assessment.results} />
+            <div className="flex-1 ml-4">
+              <h4 className="font-medium text-sm mb-2">Top Traits</h4>
+              <div className="space-y-1">
+                {Object.entries(assessment.results?.dimension_scores || {})
+                  .sort(([,a]: [string, any], [,b]: [string, any]) => b.score - a.score)
+                  .slice(0, 3)
+                  .map(([key, dim]: [string, any]) => (
+                    <div key={key} className="flex items-center justify-between text-sm">
+                      <span className="capitalize">{key}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {dim.score.toFixed(1)}/5
+                      </Badge>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )
+      
+      case "mbti":
+        return (
+          <div className="text-center">
+            <div className="mb-3">
+              <Badge 
+                variant="outline" 
+                className="text-2xl font-bold py-2 px-4 bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700"
+              >
+                {assessment.results?.personality_type || "N/A"}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {Object.entries(assessment.results?.dimension_details || {}).map(([key, details]: [string, any]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="uppercase">{key}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {details.preference} ({details.strength}%)
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      
+      case "disc":
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center justify-center gap-2">
+              <Badge 
+                variant="outline" 
+                className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
+              >
+                Primary: {assessment.results?.primary_style?.id.toUpperCase() || "N/A"}
+              </Badge>
+              <Badge 
+                variant="outline" 
+                className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+              >
+                Secondary: {assessment.results?.secondary_style?.id.toUpperCase() || "N/A"}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {Object.entries(assessment.results?.dimension_scores || {}).map(([key, dim]: [string, any]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="uppercase">{key}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {dim.percentage}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      
+      default:
+        return (
+          <div className="text-center text-sm text-muted-foreground">
+            Assessment results available
+          </div>
+        )
+    }
+  }
+
   // Determine if sync is available
   const canSync = hasEnoughMessages && lastSyncStatus?.can_sync && !isSyncing
 
@@ -503,38 +706,6 @@ export default function PersonalityAssessmentOverlay() {
   return (
     <Modal id="personalityAssessments" title="Personality Assessments">
       <div className="flex flex-col h-full bg-background text-foreground">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
-              <Brain className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Your AI Personality Insights
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Discover your unique psychological profile
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={loading || loadingLastSync || isSyncing}
-            className="border-border hover:bg-accent"
-          >
-            <RefreshCw
-              className={cn(
-                "h-4 w-4",
-                (loading || loadingLastSync || isSyncing) && "animate-spin"
-              )}
-            />
-            <span className="ml-2">Refresh</span>
-          </Button>
-        </div>
-
         <div className="flex-1 overflow-y-auto p-6">
           {/* Loading State */}
           {(loading || memoryCountLoading || loadingLastSync) && (
@@ -830,8 +1001,8 @@ export default function PersonalityAssessmentOverlay() {
                               <CardTitle className="text-xl font-bold text-foreground">
                                 {assessment.name}
                               </CardTitle>
-                              <p className="text-muted-foreground mt-1">
-                                {assessment.description}
+                              <p className="text-muted-foreground mt-1 text-sm">
+                                {getShortDescription(assessment.assessment_id)}
                               </p>
                             </div>
                           </div>
@@ -851,7 +1022,12 @@ export default function PersonalityAssessmentOverlay() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="pt-0">
+                      <CardContent className="pt-0 space-y-4">
+                        {/* Key Results Preview */}
+                        <div className="bg-muted/30 rounded-lg p-4">
+                          {renderInlineResults(assessment)}
+                        </div>
+                        
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-6 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
@@ -870,7 +1046,7 @@ export default function PersonalityAssessmentOverlay() {
                             size="sm"
                             className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                           >
-                            View Results
+                            View Full Results
                             <ChevronRight className="h-4 w-4 ml-1" />
                           </Button>
                         </div>
