@@ -49,15 +49,15 @@ export const BigFivePentagon = ({ results }: BigFivePentagonProps) => {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <svg 
-        width={size} 
-        height={size} 
+      <svg
+        width={size}
+        height={size}
         className="drop-shadow-sm"
         role="img"
-        aria-label={`Big Five personality pentagon showing scores: ${dimensions.map(([key, dim]) => `${key}: ${dim.score.toFixed(1)}`).join(', ')}`}
+        aria-label={`Big Five personality pentagon showing scores: ${dimensions.map(([key, dim]) => `${key}: ${dim.score.toFixed(1)}`).join(", ")}`}
       >
         <title>Big Five Personality Pentagon Chart</title>
-        
+
         {/* Grid lines */}
         <polygon
           points={getOutlinePoints()}
@@ -103,11 +103,7 @@ export const BigFivePentagon = ({ results }: BigFivePentagonProps) => {
 
       <div className="flex flex-wrap gap-1 justify-center text-xs">
         {dimensions.map(([key, dim]) => (
-          <Badge
-            key={key}
-            variant="outline"
-            className="text-xs px-1.5 py-0.5"
-          >
+          <Badge key={key} variant="outline" className="text-xs px-1.5 py-0.5">
             {getDimensionLabel(key)}: {dim.score.toFixed(1)}
           </Badge>
         ))}

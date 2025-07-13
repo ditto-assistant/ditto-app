@@ -33,7 +33,12 @@ import { BigFivePentagon } from "./components/BigFivePentagon"
 import { routes } from "@/firebaseConfig"
 import { db } from "@/lib/firebase"
 import { doc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore"
-import { PersonalityAssessment, BigFiveResults as BigFiveResultsType, MBTIResults as MBTIResultsType, DISCResults as DISCResultsType } from "./types/assessmentTypes"
+import {
+  PersonalityAssessment,
+  BigFiveResults as BigFiveResultsType,
+  MBTIResults as MBTIResultsType,
+  DISCResults as DISCResultsType,
+} from "./types/assessmentTypes"
 
 interface LastSyncStatus {
   can_sync: boolean
@@ -443,7 +448,6 @@ export default function PersonalityAssessmentOverlay() {
     }
   }
 
-
   const renderInlineResults = (assessment: PersonalityAssessment) => {
     switch (assessment.assessment_id) {
       case "big-five": {
@@ -511,8 +515,7 @@ export default function PersonalityAssessmentOverlay() {
                 variant="outline"
                 className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
               >
-                Primary:{" "}
-                {discResults.primary_style?.id.toUpperCase() || "N/A"}
+                Primary: {discResults.primary_style?.id.toUpperCase() || "N/A"}
               </Badge>
               <Badge
                 variant="outline"
