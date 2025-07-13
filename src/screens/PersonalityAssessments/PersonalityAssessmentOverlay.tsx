@@ -988,85 +988,99 @@ export default function PersonalityAssessmentOverlay() {
 
                 {/* Assessment Cards */}
                 <div className="grid gap-6">
-                  {assessments.map((assessment: PersonalityAssessment) => (
-                    <Card
-                      key={`${assessment.assessment_id}-${assessment.session_id}`}
-                      className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
-                      onClick={() => setSelectedAssessment(assessment)}
-                    >
-                      <div
-                        className={cn(
-                          "h-2 rounded-t-lg bg-gradient-to-r",
-                          getAssessmentGradient(assessment.assessment_id)
-                        )}
-                      />
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div
-                              className={cn(
-                                "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
-                                getAssessmentGradient(assessment.assessment_id)
-                              )}
-                            >
-                              {getAssessmentIcon(assessment.assessment_id)}
+                  {assessments
+                    .sort((a, b) => {
+                      const order = ["big-five", "mbti", "disc"]
+                      return (
+                        order.indexOf(a.assessment_id) -
+                        order.indexOf(b.assessment_id)
+                      )
+                    })
+                    .map((assessment: PersonalityAssessment) => (
+                      <Card
+                        key={`${assessment.assessment_id}-${assessment.session_id}`}
+                        className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
+                        onClick={() => setSelectedAssessment(assessment)}
+                      >
+                        <div
+                          className={cn(
+                            "h-2 rounded-t-lg bg-gradient-to-r",
+                            getAssessmentGradient(assessment.assessment_id)
+                          )}
+                        />
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={cn(
+                                  "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
+                                  getAssessmentGradient(
+                                    assessment.assessment_id
+                                  )
+                                )}
+                              >
+                                {getAssessmentIcon(assessment.assessment_id)}
+                              </div>
+                              <div>
+                                <CardTitle className="text-xl font-bold text-foreground">
+                                  {assessment.name}
+                                </CardTitle>
+                                <p className="text-muted-foreground mt-1 text-sm">
+                                  {getShortDescription(
+                                    assessment.assessment_id
+                                  )}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <CardTitle className="text-xl font-bold text-foreground">
-                                {assessment.name}
-                              </CardTitle>
-                              <p className="text-muted-foreground mt-1 text-sm">
-                                {getShortDescription(assessment.assessment_id)}
-                              </p>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "font-medium",
+                                  getAssessmentBadgeColor(
+                                    assessment.assessment_id
+                                  )
+                                )}
+                              >
+                                {assessment.assessment_id.toUpperCase()}
+                              </Badge>
+                              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "font-medium",
-                                getAssessmentBadgeColor(
-                                  assessment.assessment_id
-                                )
-                              )}
-                            >
-                              {assessment.assessment_id.toUpperCase()}
-                            </Badge>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        </CardHeader>
+                        <CardContent className="pt-0 space-y-4">
+                          {/* Key Results Preview */}
+                          <div className="bg-muted/30 rounded-lg p-4">
+                            {renderInlineResults(assessment)}
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0 space-y-4">
-                        {/* Key Results Preview */}
-                        <div className="bg-muted/30 rounded-lg p-4">
-                          {renderInlineResults(assessment)}
-                        </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 text-yellow-500" />
-                              <span className="font-medium">
-                                {assessment.questions_answered} questions
-                              </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 text-yellow-500" />
+                                <span className="font-medium">
+                                  {assessment.questions_answered} questions
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>
+                                  {formatDate(assessment.completed_at)}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>{formatDate(assessment.completed_at)}</span>
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                            >
+                              View Full Results
+                              <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                          >
-                            View Full Results
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
                 </div>
               </div>
             )}
