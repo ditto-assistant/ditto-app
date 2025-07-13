@@ -2,19 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { auth } from "@/lib/firebase"
 import { routes } from "@/firebaseConfig"
 import { PersonalityStorage } from "@/utils/personalityStorage"
-
-interface PersonalityAssessment {
-  assessment_id: string
-  session_id: string
-  name: string
-  description: string
-  completed_at: string | null
-  results: any
-  answers: any
-  questions_answered: number
-  started_at: number
-  completed: boolean
-}
+import { PersonalityAssessment } from "../types/assessmentTypes"
 
 interface PersonalityAssessmentsResponse {
   assessments: PersonalityAssessment[]
