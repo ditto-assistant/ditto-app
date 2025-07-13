@@ -67,6 +67,11 @@ const ComposeModal: React.FC = () => {
       // Small delay to ensure modal is fully rendered
       setTimeout(() => {
         textAreaRef.current?.focus()
+        // Place cursor at the end of the text
+        if (textAreaRef.current) {
+          const textLength = textAreaRef.current.value.length
+          textAreaRef.current.setSelectionRange(textLength, textLength)
+        }
       }, 50)
     }
   }, [isOpen])
