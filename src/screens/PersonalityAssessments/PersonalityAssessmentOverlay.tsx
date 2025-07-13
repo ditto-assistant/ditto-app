@@ -886,7 +886,7 @@ export default function PersonalityAssessmentOverlay() {
                     .map((assessment: PersonalityAssessment) => (
                       <Card
                         key={`${assessment.assessment_id}-${assessment.session_id}`}
-                        className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
+                        className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card pt-0 pb-6"
                         onClick={() => setSelectedAssessment(assessment)}
                       >
                         <div
