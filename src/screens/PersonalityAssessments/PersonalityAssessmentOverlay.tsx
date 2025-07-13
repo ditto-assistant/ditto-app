@@ -111,15 +111,9 @@ export default function PersonalityAssessmentOverlay() {
             }
 
             // Update status message based on current state
-            if (data.can_sync) {
-              setSyncStatus(
-                "Processing your personality data. You can close the app and check back in a few minutes!"
-              )
-            } else {
-              setSyncStatus(
-                "AI is analyzing your conversations. Feel free to close the app - we'll notify you when it's ready!"
-              )
-            }
+            setSyncStatus(
+              "AI personality sync in progress. You can close the app and check back later!"
+            )
           }
 
           pollCount++
@@ -128,7 +122,7 @@ export default function PersonalityAssessmentOverlay() {
           } else {
             console.warn("Personality sync polling timeout reached")
             setSyncStatus(
-              "Sync is taking longer than expected. Please check back later."
+              "AI personality sync in progress. You can close the app and check back later!"
             )
             setTimeout(() => {
               setIsSyncing(false)
@@ -137,7 +131,7 @@ export default function PersonalityAssessmentOverlay() {
           }
         } catch (error) {
           console.error("Error polling for completion:", error)
-          setSyncStatus("Error checking sync status")
+          setSyncStatus("AI personality sync in progress. You can close the app and check back later!")
           setTimeout(() => {
             setIsSyncing(false)
             setSyncStatus(null)
@@ -206,8 +200,7 @@ export default function PersonalityAssessmentOverlay() {
         if (data.status === "processing") {
           setIsSyncing(true)
           setSyncStatus(
-            data.message ||
-              "AI personality sync in progress. You can close the app and check back later!"
+            "AI personality sync in progress. You can close the app and check back later!"
           )
 
           // Update lastSyncStatus
@@ -300,7 +293,7 @@ export default function PersonalityAssessmentOverlay() {
         started_at: serverTimestamp(),
         last_updated: serverTimestamp(),
         message:
-          "Analyzing your conversations with AI - this will take a few minutes. Feel free to close the app and check back later!",
+          "AI personality sync in progress. You can close the app and check back later!",
         user_id: user.uid,
         frontend_initiated: true,
       })
@@ -308,7 +301,7 @@ export default function PersonalityAssessmentOverlay() {
       // STEP 2: Update UI state immediately (since we know document exists)
       setIsSyncing(true)
       setSyncStatus(
-        "AI is analyzing your personality. This takes a few minutes - feel free to close the app and check back later!"
+        "AI personality sync in progress. You can close the app and check back later!"
       )
 
       // Update lastSyncStatus immediately
