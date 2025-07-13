@@ -29,22 +29,16 @@ import { cn } from "@/lib/utils"
 import BigFiveResults from "./components/BigFiveResults"
 import MBTIResults from "./components/MBTIResults"
 import DISCResults from "./components/DISCResults"
+import { BigFivePentagon } from "./components/BigFivePentagon"
 import { routes } from "@/firebaseConfig"
 import { db } from "@/lib/firebase"
 import { doc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore"
-
-interface PersonalityAssessment {
-  assessment_id: string
-  session_id: string
-  name: string
-  description: string
-  completed_at: string | null
-  results: any
-  answers: any
-  questions_answered: number
-  started_at: number
-  completed: boolean
-}
+import {
+  PersonalityAssessment,
+  BigFiveResults as BigFiveResultsType,
+  MBTIResults as MBTIResultsType,
+  DISCResults as DISCResultsType,
+} from "./types/assessmentTypes"
 
 interface LastSyncStatus {
   can_sync: boolean
@@ -111,15 +105,9 @@ export default function PersonalityAssessmentOverlay() {
             }
 
             // Update status message based on current state
-            if (data.can_sync) {
-              setSyncStatus(
-                "Processing your personality data. You can close the app and check back in a few minutes!"
-              )
-            } else {
-              setSyncStatus(
-                "AI is analyzing your conversations. Feel free to close the app - we'll notify you when it's ready!"
-              )
-            }
+            setSyncStatus(
+              "AI personality sync in progress. You can close the app and check back later!"
+            )
           }
 
           pollCount++
@@ -128,7 +116,7 @@ export default function PersonalityAssessmentOverlay() {
           } else {
             console.warn("Personality sync polling timeout reached")
             setSyncStatus(
-              "Sync is taking longer than expected. Please check back later."
+              "AI personality sync in progress. You can close the app and check back later!"
             )
             setTimeout(() => {
               setIsSyncing(false)
@@ -137,7 +125,9 @@ export default function PersonalityAssessmentOverlay() {
           }
         } catch (error) {
           console.error("Error polling for completion:", error)
-          setSyncStatus("Error checking sync status")
+          setSyncStatus(
+            "AI personality sync in progress. You can close the app and check back later!"
+          )
           setTimeout(() => {
             setIsSyncing(false)
             setSyncStatus(null)
@@ -206,8 +196,7 @@ export default function PersonalityAssessmentOverlay() {
         if (data.status === "processing") {
           setIsSyncing(true)
           setSyncStatus(
-            data.message ||
-              "AI personality sync in progress. You can close the app and check back later!"
+            "AI personality sync in progress. You can close the app and check back later!"
           )
 
           // Update lastSyncStatus
@@ -300,7 +289,7 @@ export default function PersonalityAssessmentOverlay() {
         started_at: serverTimestamp(),
         last_updated: serverTimestamp(),
         message:
-          "Analyzing your conversations with AI - this will take a few minutes. Feel free to close the app and check back later!",
+          "AI personality sync in progress. You can close the app and check back later!",
         user_id: user.uid,
         frontend_initiated: true,
       })
@@ -308,7 +297,7 @@ export default function PersonalityAssessmentOverlay() {
       // STEP 2: Update UI state immediately (since we know document exists)
       setIsSyncing(true)
       setSyncStatus(
-        "AI is analyzing your personality. This takes a few minutes - feel free to close the app and check back later!"
+        "AI personality sync in progress. You can close the app and check back later!"
       )
 
       // Update lastSyncStatus immediately
@@ -446,6 +435,121 @@ export default function PersonalityAssessmentOverlay() {
     }
   }
 
+  const getShortDescription = (assessmentId: string) => {
+    switch (assessmentId) {
+      case "big-five":
+        return "Five key personality dimensions"
+      case "mbti":
+        return "16 personality types based on preferences"
+      case "disc":
+        return "Four behavioral styles for work & life"
+      default:
+        return "Personality assessment"
+    }
+  }
+
+  const renderInlineResults = (assessment: PersonalityAssessment) => {
+    switch (assessment.assessment_id) {
+      case "big-five": {
+        const bigFiveResults = assessment.results as BigFiveResultsType
+        return (
+          <div className="flex items-center justify-between">
+            <BigFivePentagon results={bigFiveResults} />
+            <div className="flex-1 ml-4">
+              <h4 className="font-medium text-sm mb-2">Top Traits</h4>
+              <div className="space-y-1">
+                {Object.entries(bigFiveResults.dimension_scores || {})
+                  .sort(([, a], [, b]) => b.score - a.score)
+                  .slice(0, 3)
+                  .map(([key, dim]) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="capitalize">{key}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {dim.score.toFixed(1)}/5
+                      </Badge>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      case "mbti": {
+        const mbtiResults = assessment.results as MBTIResultsType
+        return (
+          <div className="text-center">
+            <div className="mb-3">
+              <Badge
+                variant="outline"
+                className="text-2xl font-bold py-2 px-4 bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700"
+              >
+                {mbtiResults.personality_type || "N/A"}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {Object.entries(mbtiResults.dimension_details || {}).map(
+                ([key, details]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="uppercase">{key}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {details.preference} ({details.strength}%)
+                    </Badge>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )
+      }
+
+      case "disc": {
+        const discResults = assessment.results as DISCResultsType
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center justify-center gap-2">
+              <Badge
+                variant="outline"
+                className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
+              >
+                Primary: {discResults.primary_style?.id.toUpperCase() || "N/A"}
+              </Badge>
+              <Badge
+                variant="outline"
+                className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+              >
+                Secondary:{" "}
+                {discResults.secondary_style?.id.toUpperCase() || "N/A"}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {Object.entries(discResults.dimension_scores || {}).map(
+                ([key, dim]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="uppercase">{key}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {dim.percentage}%
+                    </Badge>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )
+      }
+
+      default:
+        return (
+          <div className="text-center text-sm text-muted-foreground">
+            Assessment results available
+          </div>
+        )
+    }
+  }
+
   // Determine if sync is available
   const canSync = hasEnoughMessages && lastSyncStatus?.can_sync && !isSyncing
 
@@ -503,38 +607,6 @@ export default function PersonalityAssessmentOverlay() {
   return (
     <Modal id="personalityAssessments" title="Personality Assessments">
       <div className="flex flex-col h-full bg-background text-foreground">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
-              <Brain className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Your AI Personality Insights
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Discover your unique psychological profile
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={loading || loadingLastSync || isSyncing}
-            className="border-border hover:bg-accent"
-          >
-            <RefreshCw
-              className={cn(
-                "h-4 w-4",
-                (loading || loadingLastSync || isSyncing) && "animate-spin"
-              )}
-            />
-            <span className="ml-2">Refresh</span>
-          </Button>
-        </div>
-
         <div className="flex-1 overflow-y-auto p-6">
           {/* Loading State */}
           {(loading || memoryCountLoading || loadingLastSync) && (
@@ -803,80 +875,99 @@ export default function PersonalityAssessmentOverlay() {
 
                 {/* Assessment Cards */}
                 <div className="grid gap-6">
-                  {assessments.map((assessment: PersonalityAssessment) => (
-                    <Card
-                      key={`${assessment.assessment_id}-${assessment.session_id}`}
-                      className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
-                      onClick={() => setSelectedAssessment(assessment)}
-                    >
-                      <div
-                        className={cn(
-                          "h-2 rounded-t-lg bg-gradient-to-r",
-                          getAssessmentGradient(assessment.assessment_id)
-                        )}
-                      />
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div
-                              className={cn(
-                                "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
-                                getAssessmentGradient(assessment.assessment_id)
-                              )}
+                  {assessments
+                    .sort((a, b) => {
+                      const order = ["big-five", "mbti", "disc"]
+                      return (
+                        order.indexOf(a.assessment_id) -
+                        order.indexOf(b.assessment_id)
+                      )
+                    })
+                    .map((assessment: PersonalityAssessment) => (
+                      <Card
+                        key={`${assessment.assessment_id}-${assessment.session_id}`}
+                        className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card"
+                        onClick={() => setSelectedAssessment(assessment)}
+                      >
+                        <div
+                          className={cn(
+                            "h-2 rounded-t-lg bg-gradient-to-r",
+                            getAssessmentGradient(assessment.assessment_id)
+                          )}
+                        />
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={cn(
+                                  "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
+                                  getAssessmentGradient(
+                                    assessment.assessment_id
+                                  )
+                                )}
+                              >
+                                {getAssessmentIcon(assessment.assessment_id)}
+                              </div>
+                              <div>
+                                <CardTitle className="text-xl font-bold text-foreground">
+                                  {assessment.name}
+                                </CardTitle>
+                                <p className="text-muted-foreground mt-1 text-sm">
+                                  {getShortDescription(
+                                    assessment.assessment_id
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "font-medium",
+                                  getAssessmentBadgeColor(
+                                    assessment.assessment_id
+                                  )
+                                )}
+                              >
+                                {assessment.assessment_id.toUpperCase()}
+                              </Badge>
+                              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-0 space-y-4">
+                          {/* Key Results Preview */}
+                          <div className="bg-muted/30 rounded-lg p-4">
+                            {renderInlineResults(assessment)}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 text-yellow-500" />
+                                <span className="font-medium">
+                                  {assessment.questions_answered} questions
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>
+                                  {formatDate(assessment.completed_at)}
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                             >
-                              {getAssessmentIcon(assessment.assessment_id)}
-                            </div>
-                            <div>
-                              <CardTitle className="text-xl font-bold text-foreground">
-                                {assessment.name}
-                              </CardTitle>
-                              <p className="text-muted-foreground mt-1">
-                                {assessment.description}
-                              </p>
-                            </div>
+                              View Full Results
+                              <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "font-medium",
-                                getAssessmentBadgeColor(
-                                  assessment.assessment_id
-                                )
-                              )}
-                            >
-                              {assessment.assessment_id.toUpperCase()}
-                            </Badge>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 text-yellow-500" />
-                              <span className="font-medium">
-                                {assessment.questions_answered} questions
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>{formatDate(assessment.completed_at)}</span>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                          >
-                            View Results
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
                 </div>
               </div>
             )}
