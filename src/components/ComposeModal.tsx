@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useCallback } from "react"
+import React, { useRef, useEffect, useLayoutEffect, useCallback } from "react"
+import { flushSync } from "react-dom"
 import { PlaneTakeoff } from "lucide-react"
 import { usePlatform } from "@/hooks/usePlatform"
 import { Button } from "@/components/ui/button"
@@ -62,17 +63,18 @@ const ComposeModal: React.FC = () => {
   }, [message, handleSubmit, isMobile, closeComposeModal])
 
   // Focus the textarea when the modal opens
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen && textAreaRef.current) {
-      // Small delay to ensure modal is fully rendered
-      setTimeout(() => {
-        textAreaRef.current?.focus()
-        // Place cursor at the end of the text
-        if (textAreaRef.current) {
-          const textLength = textAreaRef.current.value.length
-          textAreaRef.current.setSelectionRange(textLength, textLength)
-        }
-      }, 50)
+      // Use flushSync to ensure DOM updates are completed before focusing
+      flushSync(() => {
+        // Force a layout calculation to ensure the modal is fully rendered
+        textAreaRef.current?.getBoundingClientRect()
+      })
+
+      // Focus and position cursor at the end of the text
+      textAreaRef.current.focus()
+      const textLength = textAreaRef.current.value.length
+      textAreaRef.current.setSelectionRange(textLength, textLength)
     }
   }, [isOpen])
 
