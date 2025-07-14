@@ -62,7 +62,7 @@ const ComposeModal: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [message, handleSubmit, isMobile, closeComposeModal])
 
-  // Focus the textarea when the modal opens and position cursor at end
+  // Focus the textarea when the modal opens and position cursor at end using "paste" approach
   useLayoutEffect(() => {
     if (isOpen && textAreaRef.current) {
       // Use flushSync to ensure DOM updates are completed before focusing
@@ -71,19 +71,29 @@ const ComposeModal: React.FC = () => {
         textAreaRef.current?.getBoundingClientRect()
       })
 
-      // Use requestAnimationFrame to ensure the textarea value is fully updated
+      // Use requestAnimationFrame to ensure the DOM is ready
       requestAnimationFrame(() => {
         if (textAreaRef.current) {
-          // Focus the textarea
+          // Store the current message
+          const currentMessage = textAreaRef.current.value
+          
+          // Clear the textarea and focus it (cursor will be at position 0)
+          textAreaRef.current.value = ""
           textAreaRef.current.focus()
           
-          // Position cursor at the end of the text
-          const textLength = textAreaRef.current.value.length
-          textAreaRef.current.setSelectionRange(textLength, textLength)
+          // Insert the text using execCommand if available, otherwise use insertText
+          if (currentMessage) {
+            if (document.execCommand) {
+              document.execCommand('insertText', false, currentMessage)
+            } else {
+              // Fallback for browsers that don't support execCommand
+              textAreaRef.current.setRangeText(currentMessage, 0, 0, 'end')
+            }
+          }
         }
       })
     }
-  }, [isOpen, message])
+  }, [isOpen])
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
