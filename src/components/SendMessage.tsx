@@ -365,22 +365,13 @@ export default function SendMessage({
       >
         {showSalesPitch ? (
           <Card className="w-full border-none shadow-none bg-transparent">
-            <CardHeader className="flex flex-row items-center justify-between p-3 pb-1">
+            <CardHeader className="p-3 pb-1">
               <CardTitle className="text-base font-semibold">
                 Out of Ditto Tokens
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSalesPitch(false)}
-                aria-label="Close sales pitch"
-                className="h-7 w-7"
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </CardHeader>
             <CardContent className="p-3 pt-1 pb-2 text-sm">
-              {user?.data?.planTier ? (
+              {user?.data?.planTier > 0 ? (
                 <>
                   You&apos;ve run out of tokens. Upgrade your plan or buy extra
                   tokens to keep using{" "}
@@ -422,7 +413,7 @@ export default function SendMessage({
                 </Button>
               )}
 
-              {user?.data?.planTier && user?.data?.planTier < 3 && (
+              {user?.data?.planTier > 0 && user?.data?.planTier < 3 && (
                 <Button
                   variant="default"
                   size="sm"
