@@ -20,7 +20,7 @@ const TopBar: React.FC = () => {
   const openMemoriesModal = modal.createOpenHandler("memories")
 
   const topBarClasses = cn(
-    "top-bar w-full bg-background/80 backdrop-blur-md border-b border-border/50",
+    "top-bar w-full backdrop-blur-md border-b border-border/50",
     "px-4 py-3 flex items-center justify-between relative z-10"
   )
 
@@ -30,7 +30,11 @@ const TopBar: React.FC = () => {
   )
 
   return (
-    <header role="banner" className={topBarClasses}>
+    <header 
+      role="banner" 
+      className={topBarClasses}
+      style={{ backgroundColor: "var(--header-background)" }}
+    >
       {/* Left side - Feedback and Memories buttons */}
       <div className="flex items-center gap-2">
         <Tooltip>

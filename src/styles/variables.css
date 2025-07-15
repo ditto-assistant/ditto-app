@@ -138,11 +138,17 @@
   --border-color: var(--border);
   --border-strong: rgba(61, 54, 41, 0.2); /* Warmer strong border */
   --header-background: rgba(
-    248,
-    244,
-    233,
-    0.92
-  ); /* Sepia header with slight transparency */
+    240,
+    235,
+    220,
+    0.95
+  ); /* Warm beige header background that complements the main background */
+  --footer-background: rgba(
+    240,
+    235,
+    220,
+    0.95
+  ); /* Warm beige footer background that complements the main background */
   --hover-overlay: rgba(61, 54, 41, 0.05); /* Warmer hover overlay */
   --hover-element: rgba(61, 54, 41, 0.05); /* Warmer hover element */
 
@@ -155,6 +161,11 @@
     41,
     0.3
   ); /* Warmer scrollbar thumb hover */
+
+  /* Font size selector colors - light mode */
+  --font-size-selector-selected: #5BA3FF; /* Brighter blue for selected font size button */
+  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
+  --font-size-selector-selected-border: #ffffff; /* White border for light mode */
 
   /* Chart colors - light mode */
   --chart-1: #1167b1;
@@ -284,6 +295,7 @@
   --border-strong: rgba(255, 255, 255, 0.2);
   --border-dark: #000000;
   --header-background: rgba(18, 18, 18, 0.9);
+  --footer-background: rgba(18, 18, 18, 0.9); /* Dark gray footer background for dark mode */
   --hover-overlay: rgba(255, 255, 255, 0.1);
   --hover-element: rgba(255, 255, 255, 0.05);
 
@@ -298,6 +310,11 @@
   --chart-3: #f472b6;
   --chart-4: #fb7185;
   --chart-5: #60a5fa;
+
+  /* Font size selector colors - dark mode */
+  --font-size-selector-selected: #5BA3FF; /* Brighter blue for selected font size button - stays on theme */
+  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
+  --font-size-selector-selected-border: #ffffff; /* White border for dark mode */
 
   /* Token UI colors - dark mode */
   --token-gold: #ffc107;

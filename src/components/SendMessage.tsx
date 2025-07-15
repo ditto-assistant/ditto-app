@@ -348,8 +348,9 @@ export default function SendMessage({
 
   return (
     <div
-      className="w-full z-[300] bg-background backdrop-blur-md border-t border-border"
+      className="w-full z-[300] backdrop-blur-md border-t border-border"
       style={{
+        backgroundColor: "var(--footer-background)",
         paddingBottom:
           iosInfo.isIOS && iosInfo.isPWA
             ? `0px`

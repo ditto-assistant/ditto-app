@@ -41,9 +41,7 @@
     "zod": "^3.25.74"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.1.11",
     "@tanstack/eslint-plugin-query": "^5.81.2",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@testing-library/jest-dom": "^6.6.3",
@@ -65,9 +63,9 @@
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "shadcn": "^2.9.0",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^7.0.2",
+    "vite": "^5.4.0",
     "vite-env": "^1.0.0"
   },
   "scripts": {

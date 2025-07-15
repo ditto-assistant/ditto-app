@@ -1,0 +1,4 @@
+root: C:\Users\Alan\Desktop\fontfix\ditto-app 
+path: C:\Program Files\nodejs 
+arch: 64 
+proxy: none

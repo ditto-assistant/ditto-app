@@ -149,9 +149,18 @@ export default function Settings() {
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
               className={`px-3 py-1.5 rounded-md text-sm ${
                 fontSize === size
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-secondary hover:bg-secondary/80"
                   : "bg-secondary hover:bg-secondary/80"
               }`}
+              style={
+                fontSize === size
+                  ? {
+                      backgroundColor: "var(--font-size-selector-selected)",
+                      color: "var(--font-size-selector-selected-text)",
+                      border: "2px solid var(--font-size-selector-selected-border)",
+                    }
+                  : undefined
+              }
             >
               {size.charAt(0).toUpperCase() + size.slice(1)}
             </button>

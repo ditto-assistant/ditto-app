@@ -1,7 +1,6 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
-import tailwindcss from "@tailwindcss/vite"
 import { resolve } from "path"
 
 export default defineConfig({
@@ -9,7 +8,6 @@ export default defineConfig({
     // MillionLint.vite({
     //   enabled: true,
     // }),
-    tailwindcss(),
     react(),
     VitePWA({
       registerType: "prompt",
