@@ -30,8 +30,8 @@ const TopBar: React.FC = () => {
   )
 
   return (
-    <header 
-      role="banner" 
+    <header
+      role="banner"
       className={topBarClasses}
       style={{ backgroundColor: "var(--header-background)" }}
     >

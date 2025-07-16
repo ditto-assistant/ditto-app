@@ -157,7 +157,8 @@ export default function Settings() {
                   ? {
                       backgroundColor: "var(--font-size-selector-selected)",
                       color: "var(--font-size-selector-selected-text)",
-                      border: "2px solid var(--font-size-selector-selected-border)",
+                      border:
+                        "2px solid var(--font-size-selector-selected-border)",
                     }
                   : undefined
               }

@@ -163,7 +163,7 @@
   ); /* Warmer scrollbar thumb hover */
 
   /* Font size selector colors - light mode */
-  --font-size-selector-selected: #5BA3FF; /* Brighter blue for selected font size button */
+  --font-size-selector-selected: #5ba3ff; /* Brighter blue for selected font size button */
   --font-size-selector-selected-text: #ffffff; /* White text on blue background */
   --font-size-selector-selected-border: #ffffff; /* White border for light mode */
 
@@ -295,7 +295,12 @@
   --border-strong: rgba(255, 255, 255, 0.2);
   --border-dark: #000000;
   --header-background: rgba(18, 18, 18, 0.9);
-  --footer-background: rgba(18, 18, 18, 0.9); /* Dark gray footer background for dark mode */
+  --footer-background: rgba(
+    18,
+    18,
+    18,
+    0.9
+  ); /* Dark gray footer background for dark mode */
   --hover-overlay: rgba(255, 255, 255, 0.1);
   --hover-element: rgba(255, 255, 255, 0.05);
 
@@ -312,7 +317,7 @@
   --chart-5: #60a5fa;
 
   /* Font size selector colors - dark mode */
-  --font-size-selector-selected: #5BA3FF; /* Brighter blue for selected font size button - stays on theme */
+  --font-size-selector-selected: #5ba3ff; /* Brighter blue for selected font size button - stays on theme */
   --font-size-selector-selected-text: #ffffff; /* White text on blue background */
   --font-size-selector-selected-border: #ffffff; /* White border for dark mode */
 
