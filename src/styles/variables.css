@@ -56,6 +56,11 @@
   --z-index-modal: 2000;
   --z-index-overlay: 3000;
 
+  /* Font size selector colors - theme-independent */
+  --font-size-selector-selected: #5ba3ff; /* Brighter blue for selected font size button */
+  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
+  --font-size-selector-selected-border: #ffffff; /* White border */
+
   /* Layout variables */
   --header-height: 60px;
   --footer-height: 70px;
@@ -161,11 +166,6 @@
     41,
     0.3
   ); /* Warmer scrollbar thumb hover */
-
-  /* Font size selector colors - light mode */
-  --font-size-selector-selected: #5ba3ff; /* Brighter blue for selected font size button */
-  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
-  --font-size-selector-selected-border: #ffffff; /* White border for light mode */
 
   /* Chart colors - light mode */
   --chart-1: #1167b1;
@@ -315,11 +315,6 @@
   --chart-3: #f472b6;
   --chart-4: #fb7185;
   --chart-5: #60a5fa;
-
-  /* Font size selector colors - dark mode */
-  --font-size-selector-selected: #5ba3ff; /* Brighter blue for selected font size button - stays on theme */
-  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
-  --font-size-selector-selected-border: #ffffff; /* White border for dark mode */
 
   /* Token UI colors - dark mode */
   --token-gold: #ffc107;

@@ -28,6 +28,8 @@ import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
 // Config
 import packageJson from "../../../package.json"
 
+const FONT_SIZE_OPTIONS = ["small", "medium", "large"] as const
+
 export default function Settings() {
   const { signOut, user } = useAuth()
   const auth = getAuth()
@@ -143,25 +145,16 @@ export default function Settings() {
       <div className="border-t pt-4">
         <h3 className="font-medium mb-2">Font Size</h3>
         <div className="flex gap-2">
-          {["small", "medium", "large"].map((size) => (
+          {FONT_SIZE_OPTIONS.map((size) => (
             <button
               key={size}
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
+              aria-pressed={fontSize === size}
               className={`px-3 py-1.5 rounded-md text-sm ${
                 fontSize === size
-                  ? "bg-secondary hover:bg-secondary/80"
+                  ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] border-2 border-[var(--font-size-selector-selected-border)] hover:bg-[var(--font-size-selector-selected)]/80"
                   : "bg-secondary hover:bg-secondary/80"
               }`}
-              style={
-                fontSize === size
-                  ? {
-                      backgroundColor: "var(--font-size-selector-selected)",
-                      color: "var(--font-size-selector-selected-text)",
-                      border:
-                        "2px solid var(--font-size-selector-selected-border)",
-                    }
-                  : undefined
-              }
             >
               {size.charAt(0).toUpperCase() + size.slice(1)}
             </button>

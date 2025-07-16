@@ -21,7 +21,8 @@ const TopBar: React.FC = () => {
 
   const topBarClasses = cn(
     "top-bar w-full backdrop-blur-md border-b border-border/50",
-    "px-4 py-3 flex items-center justify-between relative z-10"
+    "px-4 py-3 flex items-center justify-between relative z-10",
+    "bg-[var(--header-background)]"
   )
 
   const iconButtonClasses = cn(
@@ -30,11 +31,7 @@ const TopBar: React.FC = () => {
   )
 
   return (
-    <header
-      role="banner"
-      className={topBarClasses}
-      style={{ backgroundColor: "var(--header-background)" }}
-    >
+    <header role="banner" className={topBarClasses}>
       {/* Left side - Feedback and Memories buttons */}
       <div className="flex items-center gap-2">
         <Tooltip>
