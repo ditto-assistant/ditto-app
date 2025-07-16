@@ -150,7 +150,7 @@ export default function Settings() {
               key={size}
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
               aria-pressed={fontSize === size}
-              className={`px-3 py-1.5 rounded-md text-sm ${
+              className={`px-3 py-1.5 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${
                 fontSize === size
                   ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] border-2 border-[var(--font-size-selector-selected-border)] hover:bg-[var(--font-size-selector-selected)]/80"
                   : "bg-secondary hover:bg-secondary/80"

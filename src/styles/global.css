@@ -1,12 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 @import "./variables.css";
 @import "./buttons.css";
 @import "./platform/ios.css";
 @import "tw-animate-css";
 
-/* @custom-variant dark (&:is(.dark *)); - Tailwind v4 syntax, disabled for v3 compatibility */
+@custom-variant dark (&:is(.dark *));
 
 * {
   box-sizing: border-box;
@@ -89,7 +87,7 @@ code {
 
 @layer base {
   * {
-    @apply border-border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
