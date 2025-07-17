@@ -56,10 +56,12 @@
   --z-index-modal: 2000;
   --z-index-overlay: 3000;
 
-  /* Font size selector colors - theme-independent */
-  --font-size-selector-selected: #5ba3ff; /* Brighter blue for selected font size button */
+  /* Font size selector colors - light mode */
+  --font-size-selector-selected: #2563eb; /* Blue for selected font size button */
   --font-size-selector-selected-text: #ffffff; /* White text on blue background */
-  --font-size-selector-selected-border: #ffffff; /* White border */
+  --font-size-selector-unselected: #e5e7eb; /* Light gray for unselected buttons */
+  --font-size-selector-unselected-text: #374151; /* Dark gray text */
+  --font-size-selector-unselected-hover: #d1d5db; /* Slightly darker gray on hover */
 
   /* Layout variables */
   --header-height: 60px;
@@ -267,6 +269,13 @@
   --interactive-hover: #e5e7eb;
   --interactive-active: #f1f3f5;
   --interactive-muted: #6b7280;
+
+  /* Font size selector colors - dark mode */
+  --font-size-selector-selected: #3b82f6; /* Brighter blue for selected font size button */
+  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
+  --font-size-selector-unselected: #374151; /* Dark gray for unselected buttons */
+  --font-size-selector-unselected-text: #d1d5db; /* Light gray text */
+  --font-size-selector-unselected-hover: #4b5563; /* Lighter gray on hover */
 
   /* Legacy compatibility colors - dark mode */
   --background-primary: var(--background);

@@ -150,10 +150,10 @@ export default function Settings() {
               key={size}
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
               aria-pressed={fontSize === size}
-              className={`px-3 py-1.5 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                 fontSize === size
-                  ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] border-2 border-[var(--font-size-selector-selected-border)] hover:bg-[var(--font-size-selector-selected)]/80"
-                  : "bg-secondary hover:bg-secondary/80"
+                  ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] hover:bg-[var(--font-size-selector-selected)]/90"
+                  : "bg-[var(--font-size-selector-unselected)] text-[var(--font-size-selector-unselected-text)] hover:bg-[var(--font-size-selector-unselected-hover)]"
               }`}
             >
               {size.charAt(0).toUpperCase() + size.slice(1)}
