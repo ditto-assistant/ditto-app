@@ -152,7 +152,7 @@ export default function Settings() {
               aria-pressed={fontSize === size}
               className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                 fontSize === size
-                  ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] hover:bg-[var(--font-size-selector-selected)]/90"
+                  ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] hover:opacity-90"
                   : "bg-[var(--font-size-selector-unselected)] text-[var(--font-size-selector-unselected-text)] hover:bg-[var(--font-size-selector-unselected-hover)]"
               }`}
             >
