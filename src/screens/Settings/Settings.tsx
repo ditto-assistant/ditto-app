@@ -28,6 +28,8 @@ import SubscriptionTabContent from "@/screens/Settings/SubscriptionTabContent"
 // Config
 import packageJson from "../../../package.json"
 
+const FONT_SIZE_OPTIONS = ["small", "medium", "large"] as const
+
 export default function Settings() {
   const { signOut, user } = useAuth()
   const auth = getAuth()
@@ -143,14 +145,15 @@ export default function Settings() {
       <div className="border-t pt-4">
         <h3 className="font-medium mb-2">Font Size</h3>
         <div className="flex gap-2">
-          {["small", "medium", "large"].map((size) => (
+          {FONT_SIZE_OPTIONS.map((size) => (
             <button
               key={size}
               onClick={() => setFontSize(size as "small" | "medium" | "large")}
-              className={`px-3 py-1.5 rounded-md text-sm ${
+              aria-pressed={fontSize === size}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                 fontSize === size
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary hover:bg-secondary/80"
+                  ? "bg-[var(--font-size-selector-selected)] text-[var(--font-size-selector-selected-text)] hover:opacity-90"
+                  : "bg-[var(--font-size-selector-unselected)] text-[var(--font-size-selector-unselected-text)] hover:bg-[var(--font-size-selector-unselected-hover)]"
               }`}
             >
               {size.charAt(0).toUpperCase() + size.slice(1)}

@@ -56,6 +56,13 @@
   --z-index-modal: 2000;
   --z-index-overlay: 3000;
 
+  /* Font size selector colors - light mode */
+  --font-size-selector-selected: #2563eb; /* Blue for selected font size button */
+  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
+  --font-size-selector-unselected: #e5e7eb; /* Light gray for unselected buttons */
+  --font-size-selector-unselected-text: #374151; /* Dark gray text */
+  --font-size-selector-unselected-hover: #d1d5db; /* Slightly darker gray on hover */
+
   /* Layout variables */
   --header-height: 60px;
   --footer-height: 70px;
@@ -138,11 +145,17 @@
   --border-color: var(--border);
   --border-strong: rgba(61, 54, 41, 0.2); /* Warmer strong border */
   --header-background: rgba(
-    248,
-    244,
-    233,
-    0.92
-  ); /* Sepia header with slight transparency */
+    240,
+    235,
+    220,
+    0.95
+  ); /* Warm beige header background that complements the main background */
+  --footer-background: rgba(
+    240,
+    235,
+    220,
+    0.95
+  ); /* Warm beige footer background that complements the main background */
   --hover-overlay: rgba(61, 54, 41, 0.05); /* Warmer hover overlay */
   --hover-element: rgba(61, 54, 41, 0.05); /* Warmer hover element */
 
@@ -257,6 +270,13 @@
   --interactive-active: #f1f3f5;
   --interactive-muted: #6b7280;
 
+  /* Font size selector colors - dark mode */
+  --font-size-selector-selected: #3b82f6; /* Brighter blue for selected font size button */
+  --font-size-selector-selected-text: #ffffff; /* White text on blue background */
+  --font-size-selector-unselected: #374151; /* Dark gray for unselected buttons */
+  --font-size-selector-unselected-text: #d1d5db; /* Light gray text */
+  --font-size-selector-unselected-hover: #4b5563; /* Lighter gray on hover */
+
   /* Legacy compatibility colors - dark mode */
   --background-primary: var(--background);
   --background-secondary: var(--card);
@@ -284,6 +304,12 @@
   --border-strong: rgba(255, 255, 255, 0.2);
   --border-dark: #000000;
   --header-background: rgba(18, 18, 18, 0.9);
+  --footer-background: rgba(
+    18,
+    18,
+    18,
+    0.9
+  ); /* Dark gray footer background for dark mode */
   --hover-overlay: rgba(255, 255, 255, 0.1);
   --hover-element: rgba(255, 255, 255, 0.05);
 

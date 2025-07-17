@@ -20,8 +20,9 @@ const TopBar: React.FC = () => {
   const openMemoriesModal = modal.createOpenHandler("memories")
 
   const topBarClasses = cn(
-    "top-bar w-full bg-background/80 backdrop-blur-md border-b border-border/50",
-    "px-4 py-3 flex items-center justify-between relative z-10"
+    "top-bar w-full backdrop-blur-md border-b border-border/50",
+    "px-4 py-3 flex items-center justify-between relative z-10",
+    "bg-[var(--header-background)]"
   )
 
   const iconButtonClasses = cn(
