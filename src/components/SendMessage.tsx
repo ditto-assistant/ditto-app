@@ -413,16 +413,17 @@ export default function SendMessage({
                 </Button>
               )}
 
-              {(user?.data?.planTier ?? 0) > 0 && (user?.data?.planTier ?? 0) < 3 && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={openSubscriptionsTab}
-                >
-                  <Crown className="mr-2 h-4 w-4" /> Manage Subscription
-                </Button>
-              )}
+              {(user?.data?.planTier ?? 0) > 0 &&
+                (user?.data?.planTier ?? 0) < 3 && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={openSubscriptionsTab}
+                  >
+                    <Crown className="mr-2 h-4 w-4" /> Manage Subscription
+                  </Button>
+                )}
 
               <Button
                 variant="outline"

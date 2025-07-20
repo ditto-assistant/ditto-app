@@ -55,7 +55,7 @@ const CustomScrollToBottom = ({
     userScrollingManualRef.current = false
     userScrollingImageRef.current = false
     userScrollingKeyboardRef.current = false
-    
+
     // Force scroll to bottom immediately
     if (scrollContainerRef.current) {
       setTimeout(() => scrollToBottom("auto"), 50)
@@ -220,10 +220,10 @@ const CustomScrollToBottom = ({
     const clientHeight = scrollContainer.clientHeight
 
     const isBottom = scrollHeight - scrollTop - clientHeight < 50 // Increased threshold for more reliable detection
-    
-          // Minimal logging for debugging
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-    
+
+    // Minimal logging for debugging
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+
     // Only mark as manual scrolling if:
     // 1. User scrolled away from bottom AND
     // 2. The scroll position actually decreased significantly (user scrolled up) AND
@@ -231,58 +231,59 @@ const CustomScrollToBottom = ({
     if (!isBottom && isScrolledToBottom) {
       const contentUnchanged = scrollHeight === scrollHeightRef.current
       const isStreamingMode = streamingTimeoutRef.current !== null
-      
+
       // During streaming mode, be EXTREMELY restrictive about manual scroll detection
       if (isStreamingMode) {
         // During streaming, only consider it manual if:
-        // 1. User scrolled up by more than 100px 
+        // 1. User scrolled up by more than 100px
         // 2. AND content didn't change at all
         // 3. AND they're currently far from bottom (more than 200px)
-        const verySignificantScrollUp = scrollTop < (prevScrollTopRef.current - 100)
-        const veryFarFromBottom = (scrollHeight - scrollTop - clientHeight) > 200
-        
+        const verySignificantScrollUp =
+          scrollTop < prevScrollTopRef.current - 100
+        const veryFarFromBottom = scrollHeight - scrollTop - clientHeight > 200
+
         if (verySignificantScrollUp && contentUnchanged && veryFarFromBottom) {
-          console.log('🔴 Manual scroll detected (streaming mode):', { 
-            scrollTop, 
-            prevScrollTop: prevScrollTopRef.current, 
-            isStreamingMode, 
+          console.log("🔴 Manual scroll detected (streaming mode):", {
+            scrollTop,
+            prevScrollTop: prevScrollTopRef.current,
+            isStreamingMode,
             contentUnchanged,
             distanceFromBottom: scrollHeight - scrollTop - clientHeight,
             verySignificantScrollUp,
-            veryFarFromBottom
+            veryFarFromBottom,
           })
           userScrollingManualRef.current = true
           setTimeout(() => {
             userScrollingManualRef.current = false
-            console.log('✅ Manual scroll flag cleared')
+            console.log("✅ Manual scroll flag cleared")
           }, 300) // Very short timeout during streaming
         }
       } else {
         // Normal mode - less restrictive
-        const scrolledUp = scrollTop < (prevScrollTopRef.current - 20)
+        const scrolledUp = scrollTop < prevScrollTopRef.current - 20
         if (scrolledUp && contentUnchanged) {
-          console.log('🔴 Manual scroll detected (normal mode):', { 
-            scrollTop, 
-            prevScrollTop: prevScrollTopRef.current, 
-            isStreamingMode, 
-            contentUnchanged
+          console.log("🔴 Manual scroll detected (normal mode):", {
+            scrollTop,
+            prevScrollTop: prevScrollTopRef.current,
+            isStreamingMode,
+            contentUnchanged,
           })
           userScrollingManualRef.current = true
           setTimeout(() => {
             userScrollingManualRef.current = false
-            console.log('✅ Manual scroll flag cleared')
+            console.log("✅ Manual scroll flag cleared")
           }, 1000)
         }
       }
     }
-    
+
     // If user scrolled back to bottom, clear all manual scrolling flags more aggressively
     if (isBottom) {
       userScrollingManualRef.current = false
       userScrollingImageRef.current = false
       userScrollingKeyboardRef.current = false
     }
-    
+
     setIsScrolledToBottom(isBottom)
     setShowScrollToBottom(!isBottom)
 
@@ -304,14 +305,12 @@ const CustomScrollToBottom = ({
     }
   }
 
-
-
   useEffect(() => {
     // Detect if we're in streaming mode (content changing rapidly)
     if (streamingTimeoutRef.current) {
       clearTimeout(streamingTimeoutRef.current)
     }
-    
+
     // Set streaming mode timeout - we're considered "streaming" for 2 seconds after content changes
     streamingTimeoutRef.current = setTimeout(() => {
       streamingTimeoutRef.current = null
@@ -322,70 +321,88 @@ const CustomScrollToBottom = ({
     // 2. User is not manually scrolling (no active scroll gestures)
     // 3. User hasn't recently scrolled away from bottom during streaming
     const scrollContainer = scrollContainerRef.current
-    
-    // Check current real-time scroll position instead of relying on state
-    const currentDistanceFromBottom = scrollContainer ? 
-      (scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight) : 
-      999
 
-    const isAtBottom = currentDistanceFromBottom < 30   // More precise for "at bottom"
-    const isNearBottom = currentDistanceFromBottom < 100  // Reduced tolerance
+    // Check current real-time scroll position instead of relying on state
+    const currentDistanceFromBottom = scrollContainer
+      ? scrollContainer.scrollHeight -
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight
+      : 999
+
+    const isAtBottom = currentDistanceFromBottom < 30 // More precise for "at bottom"
+    const isNearBottom = currentDistanceFromBottom < 100 // Reduced tolerance
 
     // During streaming mode, be much more aggressive about auto-scrolling
     const isStreamingMode = streamingTimeoutRef.current !== null
-    
+
     // During streaming mode, ignore manual scroll flag completely and be very aggressive
-    const shouldAutoScroll = scrollContainer && (
-      isStreamingMode ? 
-        (isAtBottom || isNearBottom) && !userScrollingImageRef.current && !userScrollingKeyboardRef.current :
-        (isAtBottom || isNearBottom) && !userScrollingImageRef.current && !userScrollingKeyboardRef.current && !userScrollingManualRef.current
-    )
+    const shouldAutoScroll =
+      scrollContainer &&
+      (isStreamingMode
+        ? (isAtBottom || isNearBottom) &&
+          !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current
+        : (isAtBottom || isNearBottom) &&
+          !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current &&
+          !userScrollingManualRef.current)
 
     if (shouldAutoScroll) {
-      console.log('📜 Auto-scrolling:', { 
-        isStreamingMode, 
-        isScrolledToBottom, 
+      console.log("📜 Auto-scrolling:", {
+        isStreamingMode,
+        isScrolledToBottom,
         isAtBottom,
         isNearBottom,
         currentDistanceFromBottom,
         manualFlag: userScrollingManualRef.current,
         imageFlag: userScrollingImageRef.current,
-        keyboardFlag: userScrollingKeyboardRef.current
+        keyboardFlag: userScrollingKeyboardRef.current,
       })
       scrollToBottom("auto") // Use "auto" for smoother streaming
 
       // Much more aggressive follow-up during streaming
       setTimeout(() => {
         // During streaming, ignore manual flag entirely in follow-ups
-        const stillShouldAutoScroll = isStreamingMode ? 
-          !userScrollingImageRef.current && !userScrollingKeyboardRef.current :
-          !userScrollingImageRef.current && !userScrollingKeyboardRef.current && !userScrollingManualRef.current
-          
+        const stillShouldAutoScroll = isStreamingMode
+          ? !userScrollingImageRef.current && !userScrollingKeyboardRef.current
+          : !userScrollingImageRef.current &&
+            !userScrollingKeyboardRef.current &&
+            !userScrollingManualRef.current
+
         if (stillShouldAutoScroll) {
           scrollToBottom("auto")
-          
+
           // Extra persistence for streaming - multiple checks
           setTimeout(() => {
-            const extraCheck = isStreamingMode ? 
-              !userScrollingImageRef.current && !userScrollingKeyboardRef.current :
-              !userScrollingImageRef.current && !userScrollingKeyboardRef.current && !userScrollingManualRef.current
-              
+            const extraCheck = isStreamingMode
+              ? !userScrollingImageRef.current &&
+                !userScrollingKeyboardRef.current
+              : !userScrollingImageRef.current &&
+                !userScrollingKeyboardRef.current &&
+                !userScrollingManualRef.current
+
             if (extraCheck) {
               scrollToBottom("auto")
             }
           }, 50)
-          
+
           // Even more persistence during streaming - completely ignore manual flag
           if (isStreamingMode) {
             setTimeout(() => {
-              if (!userScrollingImageRef.current && !userScrollingKeyboardRef.current) {
+              if (
+                !userScrollingImageRef.current &&
+                !userScrollingKeyboardRef.current
+              ) {
                 scrollToBottom("auto")
               }
             }, 150)
-            
+
             // Super aggressive final check for streaming
             setTimeout(() => {
-              if (!userScrollingImageRef.current && !userScrollingKeyboardRef.current) {
+              if (
+                !userScrollingImageRef.current &&
+                !userScrollingKeyboardRef.current
+              ) {
                 scrollToBottom("auto")
               }
             }, 300)
