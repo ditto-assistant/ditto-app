@@ -59,6 +59,9 @@ const CustomScrollToBottom = ({
     // Force scroll to bottom immediately
     if (scrollContainerRef.current) {
       setTimeout(() => scrollToBottom("auto"), 50)
+      // Additional checks
+      setTimeout(() => scrollToBottom("auto"), 150)
+      setTimeout(() => scrollToBottom("auto"), 300)
     }
   }
 
@@ -219,7 +222,7 @@ const CustomScrollToBottom = ({
     const scrollHeight = scrollContainer.scrollHeight
     const clientHeight = scrollContainer.clientHeight
 
-    const isBottom = scrollHeight - scrollTop - clientHeight < 50 // Increased threshold for more reliable detection
+    const isBottom = scrollHeight - scrollTop - clientHeight < 100; // Increased from 50 to 100 for better tolerance
 
     // Minimal logging for debugging
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight
@@ -313,8 +316,8 @@ const CustomScrollToBottom = ({
 
     // Set streaming mode timeout - we're considered "streaming" for 2 seconds after content changes
     streamingTimeoutRef.current = setTimeout(() => {
-      streamingTimeoutRef.current = null
-    }, 2000)
+      streamingTimeoutRef.current = null;
+    }, 5000); // Increased from 2000 to 5000 for longer streaming coverage
 
     // Auto-scroll if:
     // 1. We're at the bottom position OR very close to bottom (within 120px for streaming tolerance)
@@ -329,8 +332,8 @@ const CustomScrollToBottom = ({
         scrollContainer.clientHeight
       : 999
 
-    const isAtBottom = currentDistanceFromBottom < 30 // More precise for "at bottom"
-    const isNearBottom = currentDistanceFromBottom < 100 // Reduced tolerance
+    const isAtBottom = currentDistanceFromBottom < 30;
+    const isNearBottom = currentDistanceFromBottom < 150; // Increased from 100 to 150
 
     // During streaming mode, be much more aggressive about auto-scrolling
     const isStreamingMode = streamingTimeoutRef.current !== null
@@ -406,6 +409,19 @@ const CustomScrollToBottom = ({
                 scrollToBottom("auto")
               }
             }, 300)
+
+            // Additional longer delay for DOM settling
+            setTimeout(() => {
+              if (!userScrollingImageRef.current && !userScrollingKeyboardRef.current) {
+                scrollToBottom("auto");
+              }
+            }, 500);
+
+            setTimeout(() => {
+              if (!userScrollingImageRef.current && !userScrollingKeyboardRef.current) {
+                scrollToBottom("auto");
+              }
+            }, 800);
           }
         }
       }, 60) // Even faster response during streaming
@@ -484,6 +500,7 @@ const ChatFeed = forwardRef(({}, ref) => {
   const detectScrollToTopRef = useRef(null)
   const forceScrollToBottomRef = useRef(null)
   const previousMessageCountRef = useRef(0)
+  const previousSyncCountRef = useRef(0)
 
   // Force scroll to bottom when new optimistic messages are added (user sending new message)
   useEffect(() => {
@@ -499,12 +516,47 @@ const ChatFeed = forwardRef(({}, ref) => {
       if (isNewOptimisticMessage && forceScrollToBottomRef.current) {
         // Force scroll to bottom for new messages
         forceScrollToBottomRef.current()
+        // Extra persistence for new messages
+        setTimeout(() => {
+          if (forceScrollToBottomRef.current) {
+            forceScrollToBottomRef.current();
+          }
+        }, 200);
       }
     }
 
     // Update the previous message count
     previousMessageCountRef.current = currentMessageCount
   }, [messages])
+
+  // Force scroll to bottom when sync indicators appear (if user is at bottom)
+  useEffect(() => {
+    const currentSyncCount = syncsInProgress.size
+    const previousSyncCount = previousSyncCountRef.current
+
+    // Check if a new sync started (sync count increased)
+    if (currentSyncCount > previousSyncCount && forceScrollToBottomRef.current) {
+      // Check if user is currently at or near bottom
+      const scrollContainer = document.querySelector(".messages-scroll-view")
+      if (scrollContainer) {
+        const currentDistanceFromBottom = 
+          scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight
+        
+        // If user is at bottom (within 100px), auto-scroll to accommodate sync indicator
+        if (currentDistanceFromBottom < 100) {
+          console.log('🔄 Sync indicator appeared, auto-scrolling to accommodate')
+          setTimeout(() => {
+            if (forceScrollToBottomRef.current) {
+              forceScrollToBottomRef.current()
+            }
+          }, 100) // Small delay to ensure indicator is rendered
+        }
+      }
+    }
+
+    // Update the previous sync count
+    previousSyncCountRef.current = currentSyncCount
+  }, [syncsInProgress])
 
   useEffect(() => {
     if (!isLoading && messages.length > 0) {
