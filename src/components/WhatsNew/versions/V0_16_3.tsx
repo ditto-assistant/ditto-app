@@ -9,7 +9,7 @@ const sections: Section[] = [
         type: "improved",
         title: "Enhanced Auto Scroll Behavior",
         description:
-          "Chat now automatically scrolls to the bottom when messages become visible after sync completion, ensuring you never miss new content.",
+          "Chat feed now smartly snaps to the bottom and stops when you attempt to scroll, fixing the annoying bug where you can't scroll while Ditto is generating a response.",
       },
       {
         type: "improved",
