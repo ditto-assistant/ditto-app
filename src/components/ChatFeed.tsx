@@ -623,6 +623,12 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
 
   const { addTimeout, clearAllTimeouts } = useTimeoutCleanup()
 
+  useEffect(() => {
+    if (messagesVisible && forceScrollToBottomRef.current) {
+      forceScrollToBottomRef.current()
+    }
+  }, [messagesVisible])
+
   // Force scroll to bottom when new optimistic messages are added (user sending new message)
   useEffect(() => {
     const currentMessageCount = messages.length
