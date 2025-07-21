@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, forwardRef, useCallback } from "react"
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useCallback,
+} from "react"
 import "./ChatFeed.css"
 import { ChevronDown } from "lucide-react"
 import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
@@ -11,13 +17,17 @@ import { useReducedMotion } from "@/hooks/useReducedMotion"
 import ChatMessage from "./ChatMessage"
 
 // Import constants and types
-import { SCROLL_CONSTANTS, UI_CONSTANTS, A11Y_CONSTANTS } from "./ChatFeed/constants"
-import type { 
-  CustomScrollToBottomProps, 
-  ChatFeedProps, 
+import {
+  SCROLL_CONSTANTS,
+  UI_CONSTANTS,
+  A11Y_CONSTANTS,
+} from "./ChatFeed/constants"
+import type {
+  CustomScrollToBottomProps,
+  ChatFeedProps,
   ScrollBehavior,
   ForceScrollFunction,
-  ScrollDetectionFunction
+  ScrollDetectionFunction,
 } from "./ChatFeed/types"
 
 // Custom hook for timeout cleanup management
@@ -29,7 +39,7 @@ function useTimeoutCleanup() {
   }, [])
 
   const clearAllTimeouts = useCallback(() => {
-    timeoutsRef.current.forEach(timeout => clearTimeout(timeout))
+    timeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
     timeoutsRef.current.clear()
   }, [])
 
@@ -46,13 +56,13 @@ function useTimeoutCleanup() {
 function useScrollState() {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
-  
+
   // Consolidated scroll flags
   const userScrollingImageRef = useRef(false)
   const userScrollingKeyboardRef = useRef(false)
   const userScrollingManualRef = useRef(false)
   const streamingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  
+
   // Scroll position tracking
   const isInitialScrollRef = useRef(true)
   const prevScrollTopRef = useRef(0)
@@ -76,7 +86,7 @@ function useScrollState() {
     isInitialScrollRef,
     prevScrollTopRef,
     scrollHeightRef,
-    clearAllScrollFlags
+    clearAllScrollFlags,
   }
 }
 
@@ -96,7 +106,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   const scrollButtonRef = useRef<HTMLButtonElement>(null)
   const prefersReducedMotion = useReducedMotion()
   const { addTimeout, clearAllTimeouts } = useTimeoutCleanup()
-  
+
   const {
     showScrollToBottom,
     setShowScrollToBottom,
@@ -109,31 +119,35 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     isInitialScrollRef,
     prevScrollTopRef,
     scrollHeightRef,
-    clearAllScrollFlags
+    clearAllScrollFlags,
   } = useScrollState()
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-    if (!scrollContainerRef.current) return
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      if (!scrollContainerRef.current) return
 
-    const scrollContainer = scrollContainerRef.current
-    
-    // Respect reduced motion preference
-    const effectiveBehavior = prefersReducedMotion ? "auto" : behavior
-    
-    // For immediate scrolling during streaming, reduce timeout
-    const delay = effectiveBehavior === "auto" 
-      ? SCROLL_CONSTANTS.IMMEDIATE_SCROLL_DELAY 
-      : SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+      const scrollContainer = scrollContainerRef.current
 
-    const timeout = setTimeout(() => {
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: effectiveBehavior,
-      })
-    }, delay)
-    
-    addTimeout(timeout)
-  }, [prefersReducedMotion, addTimeout])
+      // Respect reduced motion preference
+      const effectiveBehavior = prefersReducedMotion ? "auto" : behavior
+
+      // For immediate scrolling during streaming, reduce timeout
+      const delay =
+        effectiveBehavior === "auto"
+          ? SCROLL_CONSTANTS.IMMEDIATE_SCROLL_DELAY
+          : SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+
+      const timeout = setTimeout(() => {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: effectiveBehavior,
+        })
+      }, delay)
+
+      addTimeout(timeout)
+    },
+    [prefersReducedMotion, addTimeout]
+  )
 
   // Expose force scroll function to parent
   const forceScrollToBottom: ForceScrollFunction = useCallback(() => {
@@ -142,12 +156,21 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
     // Force scroll to bottom immediately
     if (scrollContainerRef.current) {
-      const timeout1 = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY)
-      const timeout2 = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY + 50)
-      const timeout3 = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY * 3)
-      
+      const timeout1 = setTimeout(
+        () => scrollToBottom("auto"),
+        SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+      )
+      const timeout2 = setTimeout(
+        () => scrollToBottom("auto"),
+        SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY + 50
+      )
+      const timeout3 = setTimeout(
+        () => scrollToBottom("auto"),
+        SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY * 3
+      )
+
       addTimeout(timeout1)
-      addTimeout(timeout2) 
+      addTimeout(timeout2)
       addTimeout(timeout3)
     }
   }, [scrollToBottom, clearAllScrollFlags, addTimeout])
@@ -166,7 +189,10 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
         // Force immediate scroll to bottom on initial load
         scrollToBottom("auto")
         // Double-check to ensure we're fully at bottom
-        const timeout = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY)
+        const timeout = setTimeout(
+          () => scrollToBottom("auto"),
+          SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY
+        )
         addTimeout(timeout)
         isInitialScrollRef.current = false
       }
@@ -192,7 +218,10 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
       const handleImageLoad = () => {
         if (isScrolledToBottom && !userScrollingImageRef.current) {
-          const timeout = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY)
+          const timeout = setTimeout(
+            () => scrollToBottom("auto"),
+            SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+          )
           addTimeout(timeout)
         }
       }
@@ -206,7 +235,10 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
       return () => {
         if (currentScrollContainer) {
-          currentScrollContainer.removeEventListener("scroll", trackUserScrolling)
+          currentScrollContainer.removeEventListener(
+            "scroll",
+            trackUserScrolling
+          )
 
           const images = currentScrollContainer.querySelectorAll("img")
           images.forEach((img) => {
@@ -231,7 +263,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     onScrollToTopRef,
     forceScrollToBottom,
     scrollToBottom,
-    addTimeout
+    addTimeout,
     // Refs are intentionally omitted to prevent infinite re-renders
   ])
 
@@ -264,7 +296,11 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       const currentHeight = window.innerHeight
       const heightDiff = initialHeight - currentHeight
 
-      if (Math.abs(heightDiff - previousDiff) < SCROLL_CONSTANTS.KEYBOARD_HEIGHT_CHANGE_THRESHOLD) return
+      if (
+        Math.abs(heightDiff - previousDiff) <
+        SCROLL_CONSTANTS.KEYBOARD_HEIGHT_CHANGE_THRESHOLD
+      )
+        return
       previousDiff = heightDiff
 
       if (heightDiff > SCROLL_CONSTANTS.MIN_KEYBOARD_HEIGHT) {
@@ -279,7 +315,10 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
           }
 
           if (isScrolledToBottom) {
-            const timeout = setTimeout(() => scrollToBottom("auto"), SCROLL_CONSTANTS.KEYBOARD_SCROLL_DELAY)
+            const timeout = setTimeout(
+              () => scrollToBottom("auto"),
+              SCROLL_CONSTANTS.KEYBOARD_SCROLL_DELAY
+            )
             addTimeout(timeout)
           }
         }
@@ -309,87 +348,102 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   }, [isScrolledToBottom, scrollToBottom, addTimeout])
   // Refs are intentionally omitted to prevent infinite re-renders
 
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    if (!scrollContainerRef.current) return
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!scrollContainerRef.current) return
 
-    const scrollContainer = scrollContainerRef.current
-    const scrollTop = scrollContainer.scrollTop
-    const scrollHeight = scrollContainer.scrollHeight
-    const clientHeight = scrollContainer.clientHeight
+      const scrollContainer = scrollContainerRef.current
+      const scrollTop = scrollContainer.scrollTop
+      const scrollHeight = scrollContainer.scrollHeight
+      const clientHeight = scrollContainer.clientHeight
 
-    const isBottom = scrollHeight - scrollTop - clientHeight < SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
+      const isBottom =
+        scrollHeight - scrollTop - clientHeight <
+        SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
 
-    // Only mark as manual scrolling if:
-    // 1. User scrolled away from bottom AND
-    // 2. The scroll position actually decreased significantly (user scrolled up) AND
-    // 3. Content hasn't changed AND we're not in streaming mode
-    if (!isBottom && isScrolledToBottom) {
-      const contentUnchanged = scrollHeight === scrollHeightRef.current
-      const isStreamingMode = streamingTimeoutRef.current !== null
+      // Only mark as manual scrolling if:
+      // 1. User scrolled away from bottom AND
+      // 2. The scroll position actually decreased significantly (user scrolled up) AND
+      // 3. Content hasn't changed AND we're not in streaming mode
+      if (!isBottom && isScrolledToBottom) {
+        const contentUnchanged = scrollHeight === scrollHeightRef.current
+        const isStreamingMode = streamingTimeoutRef.current !== null
 
-      // During streaming mode, be EXTREMELY restrictive about manual scroll detection
-      if (isStreamingMode) {
-        // During streaming, only consider it manual if:
-        // 1. User scrolled up by more than threshold
-        // 2. AND content didn't change at all
-        // 3. AND they're currently far from bottom
-        const verySignificantScrollUp =
-          scrollTop < prevScrollTopRef.current - SCROLL_CONSTANTS.VERY_SIGNIFICANT_SCROLL_UP
-        const veryFarFromBottom = scrollHeight - scrollTop - clientHeight > SCROLL_CONSTANTS.VERY_FAR_FROM_BOTTOM
+        // During streaming mode, be EXTREMELY restrictive about manual scroll detection
+        if (isStreamingMode) {
+          // During streaming, only consider it manual if:
+          // 1. User scrolled up by more than threshold
+          // 2. AND content didn't change at all
+          // 3. AND they're currently far from bottom
+          const verySignificantScrollUp =
+            scrollTop <
+            prevScrollTopRef.current -
+              SCROLL_CONSTANTS.VERY_SIGNIFICANT_SCROLL_UP
+          const veryFarFromBottom =
+            scrollHeight - scrollTop - clientHeight >
+            SCROLL_CONSTANTS.VERY_FAR_FROM_BOTTOM
 
-        if (verySignificantScrollUp && contentUnchanged && veryFarFromBottom) {
-          userScrollingManualRef.current = true
-          const timeout = setTimeout(() => {
-            userScrollingManualRef.current = false
-          }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT)
-          addTimeout(timeout)
-        }
-      } else {
-        // Normal mode - less restrictive
-        const scrolledUp = scrollTop < prevScrollTopRef.current - SCROLL_CONSTANTS.SIGNIFICANT_SCROLL_UP
-        if (scrolledUp && contentUnchanged) {
-          userScrollingManualRef.current = true
-          const timeout = setTimeout(() => {
-            userScrollingManualRef.current = false
-          }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT_NORMAL)
-          addTimeout(timeout)
+          if (
+            verySignificantScrollUp &&
+            contentUnchanged &&
+            veryFarFromBottom
+          ) {
+            userScrollingManualRef.current = true
+            const timeout = setTimeout(() => {
+              userScrollingManualRef.current = false
+            }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT)
+            addTimeout(timeout)
+          }
+        } else {
+          // Normal mode - less restrictive
+          const scrolledUp =
+            scrollTop <
+            prevScrollTopRef.current - SCROLL_CONSTANTS.SIGNIFICANT_SCROLL_UP
+          if (scrolledUp && contentUnchanged) {
+            userScrollingManualRef.current = true
+            const timeout = setTimeout(() => {
+              userScrollingManualRef.current = false
+            }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT_NORMAL)
+            addTimeout(timeout)
+          }
         }
       }
-    }
 
-    // If user scrolled back to bottom, clear all manual scrolling flags more aggressively
-    if (isBottom) {
-      clearAllScrollFlags()
-    }
+      // If user scrolled back to bottom, clear all manual scrolling flags more aggressively
+      if (isBottom) {
+        clearAllScrollFlags()
+      }
 
-    setIsScrolledToBottom(isBottom)
-    setShowScrollToBottom(!isBottom)
+      setIsScrolledToBottom(isBottom)
+      setShowScrollToBottom(!isBottom)
 
-    const isNearTop = scrollTop < SCROLL_CONSTANTS.SCROLL_TO_TOP_THRESHOLD
+      const isNearTop = scrollTop < SCROLL_CONSTANTS.SCROLL_TO_TOP_THRESHOLD
 
-    if (
-      isNearTop &&
-      scrollTop < prevScrollTopRef.current &&
-      scrollHeightRef.current === scrollHeight
-    ) {
-      detectScrollToTop()
-    }
+      if (
+        isNearTop &&
+        scrollTop < prevScrollTopRef.current &&
+        scrollHeightRef.current === scrollHeight
+      ) {
+        detectScrollToTop()
+      }
 
-    prevScrollTopRef.current = scrollTop
-    scrollHeightRef.current = scrollHeight
+      prevScrollTopRef.current = scrollTop
+      scrollHeightRef.current = scrollHeight
 
-    if (onScroll) {
-      onScroll(e.nativeEvent)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isScrolledToBottom,
-    detectScrollToTop,
-    onScroll,
-    clearAllScrollFlags,
-    addTimeout
-    // Refs are intentionally omitted to prevent infinite re-renders
-  ])
+      if (onScroll) {
+        onScroll(e.nativeEvent)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [
+      isScrolledToBottom,
+      detectScrollToTop,
+      onScroll,
+      clearAllScrollFlags,
+      addTimeout,
+      // Refs are intentionally omitted to prevent infinite re-renders
+    ]
+  )
 
   useEffect(() => {
     // Detect if we're in streaming mode (content changing rapidly)
@@ -412,8 +466,10 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
         scrollContainer.clientHeight
       : 999
 
-    const isAtBottom = currentDistanceFromBottom < SCROLL_CONSTANTS.AT_BOTTOM_THRESHOLD
-    const isNearBottom = currentDistanceFromBottom < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD
+    const isAtBottom =
+      currentDistanceFromBottom < SCROLL_CONSTANTS.AT_BOTTOM_THRESHOLD
+    const isNearBottom =
+      currentDistanceFromBottom < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD
 
     // During streaming mode, be much more aggressive about auto-scrolling
     const isStreamingMode = streamingTimeoutRef.current !== null
@@ -449,7 +505,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
           SCROLL_CONSTANTS.EXTRA_PERSISTENCE_DELAYS.forEach((delay) => {
             const persistenceTimeout = setTimeout(() => {
               const extraCheck = isStreamingMode
-                ? !userScrollingImageRef.current && !userScrollingKeyboardRef.current
+                ? !userScrollingImageRef.current &&
+                  !userScrollingKeyboardRef.current
                 : !userScrollingImageRef.current &&
                   !userScrollingKeyboardRef.current &&
                   !userScrollingManualRef.current
@@ -458,12 +515,12 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
                 scrollToBottom("auto")
               }
             }, delay)
-            
+
             addTimeout(persistenceTimeout)
           })
         }
       }, SCROLL_CONSTANTS.SCROLL_FOLLOW_UP_DELAY)
-      
+
       addTimeout(followUpTimeout)
     }
 
@@ -472,12 +529,12 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    children, 
-    isScrolledToBottom, 
-    initialScrollBehavior, 
-    onScrollComplete, 
-    scrollToBottom, 
-    addTimeout
+    children,
+    isScrolledToBottom,
+    initialScrollBehavior,
+    onScrollComplete,
+    scrollToBottom,
+    addTimeout,
     // Refs are intentionally omitted to prevent infinite re-renders
   ])
 
@@ -613,7 +670,10 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           scrollContainer.clientHeight
 
         // If user is at bottom (within threshold), auto-scroll to accommodate sync indicator
-        if (currentDistanceFromBottom < SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE) {
+        if (
+          currentDistanceFromBottom <
+          SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
+        ) {
           const timeout = setTimeout(() => {
             if (forceScrollToBottomRef.current) {
               forceScrollToBottomRef.current()
@@ -724,52 +784,61 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
   }, [shouldFetchNext, fetchNextPage, addTimeout])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleCopy = useCallback((message: any, type: "prompt" | "response" = "prompt") => {
-    const textToCopy = type === "prompt" ? message.prompt : message.response
-    if (!textToCopy) {
-      toast.error("No content to copy")
-      return
-    }
-
-    navigator.clipboard.writeText(textToCopy).then(
-      () => {
-        toast.success("Copied to clipboard")
-      },
-      (err) => {
-        console.error("Could not copy text: ", err)
-        toast.error("Failed to copy text")
+  const handleCopy = useCallback(
+    (message: any, type: "prompt" | "response" = "prompt") => {
+      const textToCopy = type === "prompt" ? message.prompt : message.response
+      if (!textToCopy) {
+        toast.error("No content to copy")
+        return
       }
-    )
-  }, [])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleMessageDelete = useCallback(async (message: any) => {
-    if (!message.id) {
-      console.error("Cannot delete message: missing ID")
-      toast.error("Failed to delete message")
-      return
-    }
-    try {
-      confirmMemoryDeletion(message.id, {
-        onSuccess: () => {
-          refetch()
+      navigator.clipboard.writeText(textToCopy).then(
+        () => {
+          toast.success("Copied to clipboard")
         },
-      })
-    } catch (error) {
-      console.error("Error deleting message:", error)
-      toast.error("Failed to delete message")
-    }
-  }, [confirmMemoryDeletion, refetch])
+        (err) => {
+          console.error("Could not copy text: ", err)
+          toast.error("Failed to copy text")
+        }
+      )
+    },
+    []
+  )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleShowMemories = useCallback(async (message: any) => {
-    try {
-      await showMemoryNetwork(message)
-    } catch (error) {
-      console.error("Error showing memory network:", error)
-      toast.error("Failed to show memory network")
-    }
-  }, [showMemoryNetwork])
+  const handleMessageDelete = useCallback(
+    async (message: any) => {
+      if (!message.id) {
+        console.error("Cannot delete message: missing ID")
+        toast.error("Failed to delete message")
+        return
+      }
+      try {
+        confirmMemoryDeletion(message.id, {
+          onSuccess: () => {
+            refetch()
+          },
+        })
+      } catch (error) {
+        console.error("Error deleting message:", error)
+        toast.error("Failed to delete message")
+      }
+    },
+    [confirmMemoryDeletion, refetch]
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleShowMemories = useCallback(
+    async (message: any) => {
+      try {
+        await showMemoryNetwork(message)
+      } catch (error) {
+        console.error("Error showing memory network:", error)
+        toast.error("Failed to show memory network")
+      }
+    },
+    [showMemoryNetwork]
+  )
 
   // Use the externally passed ref for scroll position detection
   useEffect(() => {

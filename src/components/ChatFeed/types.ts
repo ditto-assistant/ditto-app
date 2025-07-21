@@ -3,7 +3,7 @@ import { ReactNode, MutableRefObject } from "react"
 // Scroll behavior type - consolidated from multiple boolean flags
 export type ScrollBehavior = "smooth" | "auto"
 
-export type ScrollState = "idle" | "userScrolling" | "streaming" 
+export type ScrollState = "idle" | "userScrolling" | "streaming"
 
 // Refs for scroll detection and control
 export interface ScrollRefs {
@@ -22,7 +22,7 @@ export interface ScrollRefs {
 // Force scroll function type
 export type ForceScrollFunction = () => void
 
-// Scroll detection function type  
+// Scroll detection function type
 export type ScrollDetectionFunction = () => void
 
 // CustomScrollToBottom component props
@@ -47,7 +47,7 @@ export interface ChatFeedProps {}
 export interface MessageMenuProps {
   id: string
   onCopy: () => void
-  onDelete: () => void  
+  onDelete: () => void
   onShowMemories: () => void
 }
 
