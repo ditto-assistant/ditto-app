@@ -258,7 +258,7 @@ export default function ChatMessage({
 
             <DropdownMenu
               onOpenChange={(open) => {
-                if (open) {
+                if (open && !showSyncIndicator) {
                   handleFetchSubjects()
                 }
               }}
@@ -267,8 +267,12 @@ export default function ChatMessage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-foreground/70 hover:bg-background/20"
+                  className={cn(
+                    "h-8 w-8 text-foreground/70 hover:bg-background/20",
+                    showSyncIndicator && "opacity-50 cursor-not-allowed"
+                  )}
                   aria-label="View linked subjects"
+                  disabled={showSyncIndicator}
                 >
                   {isLoadingSubjects ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
