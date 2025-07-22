@@ -237,27 +237,28 @@ export default function ChatMessage({
           </Avatar>
         </div>
 
-        {/* Action buttons and timestamp - only show if not syncing */}
-        {!isOptimistic && !showSyncIndicator && (
+        {isOptimistic ? (
+          <div className="text-xs opacity-70 flex-shrink-0">
+            {isUser
+              ? formatTimestamp(timestamp)
+              : content === ""
+                ? "Thinking..."
+                : "Streaming..."}
+          </div>
+        ) : (
           <div
             className={cn(
               "flex items-center gap-1.5 flex-1",
               isUser ? "flex-row-reverse" : "flex-row"
             )}
           >
-            {/* Timestamp */}
             <div className="text-xs opacity-70 flex-shrink-0">
-              {isOptimistic
-                ? content === ""
-                  ? "Thinking..."
-                  : "Streaming..."
-                : formatTimestamp(timestamp)}
+              {formatTimestamp(timestamp)}
             </div>
 
-            {/* Subjects Dropdown */}
             <DropdownMenu
               onOpenChange={(open) => {
-                if (open) {
+                if (open && !showSyncIndicator) {
                   handleFetchSubjects()
                 }
               }}
@@ -266,8 +267,12 @@ export default function ChatMessage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-foreground/70 hover:bg-background/20"
+                  className={cn(
+                    "h-8 w-8 text-foreground/70 hover:bg-background/20",
+                    showSyncIndicator && "opacity-50 cursor-not-allowed"
+                  )}
                   aria-label="View linked subjects"
+                  disabled={showSyncIndicator}
                 >
                   {isLoadingSubjects ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -307,7 +312,6 @@ export default function ChatMessage({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Copy Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -321,7 +325,6 @@ export default function ChatMessage({
               <Copy className="h-5 w-5" />
             </Button>
 
-            {/* Memory Graph Viewer Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -335,30 +338,26 @@ export default function ChatMessage({
               <Network className="h-5 w-5" />
             </Button>
 
-            {/* Delete Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-foreground/70 hover:bg-background/20 hover:text-destructive"
+              className={cn(
+                "h-8 w-8 text-foreground/70 hover:bg-background/20",
+                showSyncIndicator
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:text-destructive"
+              )}
               onClick={() => {
-                triggerLightHaptic()
-                menuProps.onDelete()
+                if (!showSyncIndicator) {
+                  triggerLightHaptic()
+                  menuProps.onDelete()
+                }
               }}
+              disabled={showSyncIndicator}
               aria-label="Delete message"
             >
               <Trash className="h-5 w-5" />
             </Button>
-          </div>
-        )}
-
-        {/* Timestamp only (when syncing or optimistic) */}
-        {(isOptimistic || showSyncIndicator) && (
-          <div className="text-xs opacity-70 flex-shrink-0">
-            {isOptimistic
-              ? content === ""
-                ? "Thinking..."
-                : "Streaming..."
-              : formatTimestamp(timestamp)}
           </div>
         )}
       </div>

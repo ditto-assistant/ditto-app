@@ -1,0 +1,971 @@
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useCallback,
+} from "react"
+import "./ChatFeed.css"
+import { ChevronDown } from "lucide-react"
+import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
+import { toast } from "sonner"
+import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
+import { useConversationHistory } from "@/hooks/useConversationHistory"
+import { usePlatform } from "@/hooks/usePlatform"
+import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
+import ChatMessage from "./ChatMessage"
+
+// Import constants and types
+import {
+  SCROLL_CONSTANTS,
+  UI_CONSTANTS,
+  A11Y_CONSTANTS,
+} from "./ChatFeed/constants"
+import type {
+  CustomScrollToBottomProps,
+  ChatFeedProps,
+  ScrollBehavior,
+  ForceScrollFunction,
+  ScrollDetectionFunction,
+} from "./ChatFeed/types"
+
+// Custom hook for timeout cleanup management
+function useTimeoutCleanup() {
+  const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set())
+
+  const addTimeout = useCallback((timeout: NodeJS.Timeout) => {
+    timeoutsRef.current.add(timeout)
+  }, [])
+
+  const clearAllTimeouts = useCallback(() => {
+    timeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+    timeoutsRef.current.clear()
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts()
+    }
+  }, [clearAllTimeouts])
+
+  return { addTimeout, clearAllTimeouts }
+}
+
+// Custom hook for scroll state management
+function useScrollState() {
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
+
+  // Consolidated scroll flags
+  const userScrollingImageRef = useRef(false)
+  const userScrollingKeyboardRef = useRef(false)
+  const userScrollingManualRef = useRef(false)
+  const streamingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Scroll position tracking
+  const isInitialScrollRef = useRef(true)
+  const prevScrollTopRef = useRef(0)
+  const scrollHeightRef = useRef(0)
+
+  const clearAllScrollFlags = useCallback(() => {
+    userScrollingManualRef.current = false
+    userScrollingImageRef.current = false
+    userScrollingKeyboardRef.current = false
+  }, [])
+
+  return {
+    showScrollToBottom,
+    setShowScrollToBottom,
+    isScrolledToBottom,
+    setIsScrolledToBottom,
+    userScrollingImageRef,
+    userScrollingKeyboardRef,
+    userScrollingManualRef,
+    streamingTimeoutRef,
+    isInitialScrollRef,
+    prevScrollTopRef,
+    scrollHeightRef,
+    clearAllScrollFlags,
+  }
+}
+
+const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
+  children,
+  onScroll,
+  onScrollComplete,
+  className: containerClassName,
+  style: containerStyle,
+  scrollViewClassName,
+  initialScrollBehavior = "auto",
+  detectScrollToTop = () => {},
+  onScrollToTopRef,
+  forceScrollToBottomRef,
+}) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const scrollButtonRef = useRef<HTMLButtonElement>(null)
+  const prefersReducedMotion = useReducedMotion()
+  const { addTimeout, clearAllTimeouts } = useTimeoutCleanup()
+
+  const {
+    showScrollToBottom,
+    setShowScrollToBottom,
+    isScrolledToBottom,
+    setIsScrolledToBottom,
+    userScrollingImageRef,
+    userScrollingKeyboardRef,
+    userScrollingManualRef,
+    streamingTimeoutRef,
+    isInitialScrollRef,
+    prevScrollTopRef,
+    scrollHeightRef,
+    clearAllScrollFlags,
+  } = useScrollState()
+
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      if (!scrollContainerRef.current) return
+
+      const scrollContainer = scrollContainerRef.current
+
+      // Respect reduced motion preference
+      const effectiveBehavior = prefersReducedMotion ? "auto" : behavior
+
+      // For immediate scrolling during streaming, reduce timeout
+      const delay =
+        effectiveBehavior === "auto"
+          ? SCROLL_CONSTANTS.IMMEDIATE_SCROLL_DELAY
+          : SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+
+      const timeout = setTimeout(() => {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: effectiveBehavior,
+        })
+      }, delay)
+
+      addTimeout(timeout)
+    },
+    [prefersReducedMotion, addTimeout]
+  )
+
+  // Expose force scroll function to parent
+  const forceScrollToBottom: ForceScrollFunction = useCallback(() => {
+    // Clear all manual scrolling flags and force scroll to bottom for new messages
+    clearAllScrollFlags()
+
+    // Force scroll to bottom immediately
+    if (scrollContainerRef.current) {
+      const timeout1 = setTimeout(
+        () => scrollToBottom("auto"),
+        SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+      )
+      const timeout2 = setTimeout(
+        () => scrollToBottom("auto"),
+        SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY + 50
+      )
+      const timeout3 = setTimeout(
+        () => scrollToBottom("auto"),
+        SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY * 3
+      )
+
+      addTimeout(timeout1)
+      addTimeout(timeout2)
+      addTimeout(timeout3)
+    }
+  }, [scrollToBottom, clearAllScrollFlags, addTimeout])
+
+  useEffect(() => {
+    if (onScrollToTopRef) {
+      onScrollToTopRef.current = detectScrollToTop
+    }
+
+    if (forceScrollToBottomRef) {
+      forceScrollToBottomRef.current = forceScrollToBottom
+    }
+
+    if (scrollContainerRef.current) {
+      if (isInitialScrollRef.current) {
+        // Force immediate scroll to bottom on initial load
+        scrollToBottom("auto")
+        // Double-check to ensure we're fully at bottom
+        const timeout = setTimeout(
+          () => scrollToBottom("auto"),
+          SCROLL_CONSTANTS.INITIAL_SCROLL_DELAY
+        )
+        addTimeout(timeout)
+        isInitialScrollRef.current = false
+      }
+
+      let scrollTimer: NodeJS.Timeout | null = null
+
+      const trackUserScrolling = () => {
+        userScrollingImageRef.current = true
+        userScrollingManualRef.current = true
+        if (scrollTimer) clearTimeout(scrollTimer)
+        scrollTimer = setTimeout(() => {
+          userScrollingImageRef.current = false
+          userScrollingManualRef.current = false
+        }, SCROLL_CONSTANTS.USER_SCROLL_TIMEOUT)
+      }
+
+      // Store the ref value in a variable to avoid issues in cleanup function
+      const currentScrollContainer = scrollContainerRef.current
+
+      if (currentScrollContainer) {
+        currentScrollContainer.addEventListener("scroll", trackUserScrolling)
+      }
+
+      const handleImageLoad = () => {
+        if (isScrolledToBottom && !userScrollingImageRef.current) {
+          const timeout = setTimeout(
+            () => scrollToBottom("auto"),
+            SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
+          )
+          addTimeout(timeout)
+        }
+      }
+
+      const images = currentScrollContainer?.querySelectorAll("img") || []
+      images.forEach((img) => {
+        if (!img.complete) {
+          img.addEventListener("load", handleImageLoad)
+        }
+      })
+
+      return () => {
+        if (currentScrollContainer) {
+          currentScrollContainer.removeEventListener(
+            "scroll",
+            trackUserScrolling
+          )
+
+          const images = currentScrollContainer.querySelectorAll("img")
+          images.forEach((img) => {
+            img.removeEventListener("load", handleImageLoad)
+          })
+        }
+        if (scrollTimer) clearTimeout(scrollTimer)
+      }
+    }
+
+    // Cleanup streaming timeout on unmount
+    return () => {
+      if (streamingTimeoutRef.current) {
+        clearTimeout(streamingTimeoutRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    detectScrollToTop,
+    initialScrollBehavior,
+    isScrolledToBottom,
+    onScrollToTopRef,
+    forceScrollToBottom,
+    scrollToBottom,
+    addTimeout,
+    // Refs are intentionally omitted to prevent infinite re-renders
+  ])
+
+  useEffect(() => {
+    const initialHeight = window.innerHeight
+    let isKeyboardVisible = false
+    let previousDiff = 0
+    let scrollTimeout: NodeJS.Timeout | null = null
+
+    const setScrolling = () => {
+      userScrollingKeyboardRef.current = true
+      userScrollingManualRef.current = true
+      if (scrollTimeout) clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        userScrollingKeyboardRef.current = false
+        userScrollingManualRef.current = false
+      }, SCROLL_CONSTANTS.USER_SCROLL_TIMEOUT)
+    }
+
+    // Store the ref value in a variable to avoid issues in cleanup function
+    const currentScrollContainer = scrollContainerRef.current
+
+    if (currentScrollContainer) {
+      currentScrollContainer.addEventListener("scroll", setScrolling)
+    }
+
+    const handleResize = () => {
+      if (userScrollingKeyboardRef.current) return
+
+      const currentHeight = window.innerHeight
+      const heightDiff = initialHeight - currentHeight
+
+      if (
+        Math.abs(heightDiff - previousDiff) <
+        SCROLL_CONSTANTS.KEYBOARD_HEIGHT_CHANGE_THRESHOLD
+      )
+        return
+      previousDiff = heightDiff
+
+      if (heightDiff > SCROLL_CONSTANTS.MIN_KEYBOARD_HEIGHT) {
+        if (!isKeyboardVisible) {
+          isKeyboardVisible = true
+
+          // Use ref instead of DOM query
+          const button = scrollButtonRef.current
+          if (button) {
+            button.style.bottom = `${heightDiff + UI_CONSTANTS.KEYBOARD_BUTTON_OFFSET}px`
+            button.style.transition = UI_CONSTANTS.BUTTON_TRANSITION_UP
+          }
+
+          if (isScrolledToBottom) {
+            const timeout = setTimeout(
+              () => scrollToBottom("auto"),
+              SCROLL_CONSTANTS.KEYBOARD_SCROLL_DELAY
+            )
+            addTimeout(timeout)
+          }
+        }
+      } else {
+        if (isKeyboardVisible) {
+          isKeyboardVisible = false
+
+          // Use ref instead of DOM query
+          const button = scrollButtonRef.current
+          if (button) {
+            button.style.bottom = ""
+            button.style.transition = UI_CONSTANTS.BUTTON_TRANSITION_DOWN
+          }
+        }
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      if (currentScrollContainer) {
+        currentScrollContainer.removeEventListener("scroll", setScrolling)
+      }
+      if (scrollTimeout) clearTimeout(scrollTimeout)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScrolledToBottom, scrollToBottom, addTimeout])
+  // Refs are intentionally omitted to prevent infinite re-renders
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!scrollContainerRef.current) return
+
+      const scrollContainer = scrollContainerRef.current
+      const scrollTop = scrollContainer.scrollTop
+      const scrollHeight = scrollContainer.scrollHeight
+      const clientHeight = scrollContainer.clientHeight
+
+      const isBottom =
+        scrollHeight - scrollTop - clientHeight <
+        SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
+
+      // Only mark as manual scrolling if:
+      // 1. User scrolled away from bottom AND
+      // 2. The scroll position actually decreased significantly (user scrolled up) AND
+      // 3. Content hasn't changed AND we're not in streaming mode
+      if (!isBottom && isScrolledToBottom) {
+        const contentUnchanged = scrollHeight === scrollHeightRef.current
+        const isStreamingMode = streamingTimeoutRef.current !== null
+
+        // During streaming mode, be EXTREMELY restrictive about manual scroll detection
+        if (isStreamingMode) {
+          // During streaming, only consider it manual if:
+          // 1. User scrolled up by more than threshold
+          // 2. AND content didn't change at all
+          // 3. AND they're currently far from bottom
+          const verySignificantScrollUp =
+            scrollTop <
+            prevScrollTopRef.current -
+              SCROLL_CONSTANTS.VERY_SIGNIFICANT_SCROLL_UP
+          const veryFarFromBottom =
+            scrollHeight - scrollTop - clientHeight >
+            SCROLL_CONSTANTS.VERY_FAR_FROM_BOTTOM
+
+          if (
+            verySignificantScrollUp &&
+            contentUnchanged &&
+            veryFarFromBottom
+          ) {
+            userScrollingManualRef.current = true
+            const timeout = setTimeout(() => {
+              userScrollingManualRef.current = false
+            }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT)
+            addTimeout(timeout)
+          }
+        } else {
+          // Normal mode - less restrictive
+          const scrolledUp =
+            scrollTop <
+            prevScrollTopRef.current - SCROLL_CONSTANTS.SIGNIFICANT_SCROLL_UP
+          if (scrolledUp && contentUnchanged) {
+            userScrollingManualRef.current = true
+            const timeout = setTimeout(() => {
+              userScrollingManualRef.current = false
+            }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT_NORMAL)
+            addTimeout(timeout)
+          }
+        }
+      }
+
+      // If user scrolled back to bottom, clear all manual scrolling flags more aggressively
+      if (isBottom) {
+        clearAllScrollFlags()
+      }
+
+      setIsScrolledToBottom(isBottom)
+      setShowScrollToBottom(!isBottom)
+
+      const isNearTop = scrollTop < SCROLL_CONSTANTS.SCROLL_TO_TOP_THRESHOLD
+
+      if (
+        isNearTop &&
+        scrollTop < prevScrollTopRef.current &&
+        scrollHeightRef.current === scrollHeight
+      ) {
+        detectScrollToTop()
+      }
+
+      prevScrollTopRef.current = scrollTop
+      scrollHeightRef.current = scrollHeight
+
+      if (onScroll) {
+        onScroll(e.nativeEvent)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [
+      isScrolledToBottom,
+      detectScrollToTop,
+      onScroll,
+      clearAllScrollFlags,
+      addTimeout,
+      // Refs are intentionally omitted to prevent infinite re-renders
+    ]
+  )
+
+  useEffect(() => {
+    // Detect if we're in streaming mode (content changing rapidly)
+    if (streamingTimeoutRef.current) {
+      clearTimeout(streamingTimeoutRef.current)
+    }
+
+    // Set streaming mode timeout - we're considered "streaming" for X seconds after content changes
+    streamingTimeoutRef.current = setTimeout(() => {
+      streamingTimeoutRef.current = null
+    }, SCROLL_CONSTANTS.STREAMING_MODE_TIMEOUT)
+
+    // Auto-scroll logic
+    const scrollContainer = scrollContainerRef.current
+
+    // Check current real-time scroll position instead of relying on state
+    const currentDistanceFromBottom = scrollContainer
+      ? scrollContainer.scrollHeight -
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight
+      : 999
+
+    const isAtBottom =
+      currentDistanceFromBottom < SCROLL_CONSTANTS.AT_BOTTOM_THRESHOLD
+    const isNearBottom =
+      currentDistanceFromBottom < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD
+
+    // During streaming mode, be much more aggressive about auto-scrolling
+    const isStreamingMode = streamingTimeoutRef.current !== null
+
+    // During streaming mode, ignore manual scroll flag completely and be very aggressive
+    const shouldAutoScroll =
+      scrollContainer &&
+      (isStreamingMode
+        ? (isAtBottom || isNearBottom) &&
+          !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current
+        : (isAtBottom || isNearBottom) &&
+          !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current &&
+          !userScrollingManualRef.current)
+
+    if (shouldAutoScroll) {
+      scrollToBottom("auto") // Use "auto" for smoother streaming
+
+      // Much more aggressive follow-up during streaming
+      const followUpTimeout = setTimeout(() => {
+        // During streaming, ignore manual flag entirely in follow-ups
+        const stillShouldAutoScroll = isStreamingMode
+          ? !userScrollingImageRef.current && !userScrollingKeyboardRef.current
+          : !userScrollingImageRef.current &&
+            !userScrollingKeyboardRef.current &&
+            !userScrollingManualRef.current
+
+        if (stillShouldAutoScroll) {
+          scrollToBottom("auto")
+
+          // Extra persistence for streaming - multiple checks
+          SCROLL_CONSTANTS.EXTRA_PERSISTENCE_DELAYS.forEach((delay) => {
+            const persistenceTimeout = setTimeout(() => {
+              const extraCheck = isStreamingMode
+                ? !userScrollingImageRef.current &&
+                  !userScrollingKeyboardRef.current
+                : !userScrollingImageRef.current &&
+                  !userScrollingKeyboardRef.current &&
+                  !userScrollingManualRef.current
+
+              if (extraCheck) {
+                scrollToBottom("auto")
+              }
+            }, delay)
+
+            addTimeout(persistenceTimeout)
+          })
+        }
+      }, SCROLL_CONSTANTS.SCROLL_FOLLOW_UP_DELAY)
+
+      addTimeout(followUpTimeout)
+    }
+
+    if (onScrollComplete) {
+      onScrollComplete()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    children,
+    isScrolledToBottom,
+    initialScrollBehavior,
+    onScrollComplete,
+    scrollToBottom,
+    addTimeout,
+    // Refs are intentionally omitted to prevent infinite re-renders
+  ])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts()
+    }
+  }, [clearAllTimeouts])
+
+  return (
+    <div className={containerClassName} style={containerStyle}>
+      <div
+        ref={scrollContainerRef}
+        className={scrollViewClassName || "custom-scroll-view"}
+        onScroll={handleScroll}
+        style={{
+          overflowY: "auto",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        {children}
+      </div>
+
+      {showScrollToBottom && (
+        <button
+          ref={scrollButtonRef}
+          className="follow-button"
+          onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            // Clear all manual scrolling flags when user explicitly scrolls to bottom
+            clearAllScrollFlags()
+            scrollToBottom()
+          }}
+          role="button"
+          aria-label={A11Y_CONSTANTS.SCROLL_TO_BOTTOM_LABEL}
+          aria-describedby="scroll-to-bottom-description"
+          style={{
+            visibility: "visible",
+            display: "flex",
+            pointerEvents: "auto",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
+            touchAction: "none",
+            fontSize: "var(--font-size-default)",
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation()
+          }}
+        >
+          <ChevronDown size={18} />
+          <span id="scroll-to-bottom-description" className="sr-only">
+            {A11Y_CONSTANTS.SCROLL_TO_BOTTOM_DESCRIPTION}
+          </span>
+        </button>
+      )}
+    </div>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
+  const {
+    messages,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useConversationHistory()
+  const { showMemoryNetwork } = useMemoryNetwork()
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { isMobile } = usePlatform()
+  const { syncsInProgress, checkStatuses } = useMemorySyncContext()
+
+  const [messagesVisible, setMessagesVisible] = useState(false)
+  const [shouldFetchNext, setShouldFetchNext] = useState(false)
+  const initialRenderRef = useRef(true)
+  const fetchingRef = useRef(false)
+  const detectScrollToTopRef = useRef<ScrollDetectionFunction | null>(null)
+  const forceScrollToBottomRef = useRef<ForceScrollFunction | null>(null)
+  const previousMessageCountRef = useRef(0)
+  const previousSyncCountRef = useRef(0)
+  const messagesScrollViewRef = useRef<HTMLDivElement>(null)
+
+  const { addTimeout, clearAllTimeouts } = useTimeoutCleanup()
+
+  useEffect(() => {
+    if (messagesVisible && forceScrollToBottomRef.current) {
+      forceScrollToBottomRef.current()
+    }
+  }, [messagesVisible])
+
+  // Force scroll to bottom when new optimistic messages are added (user sending new message)
+  useEffect(() => {
+    const currentMessageCount = messages.length
+    const previousMessageCount = previousMessageCountRef.current
+
+    // Check if a new message was added (message count increased)
+    if (currentMessageCount > previousMessageCount && currentMessageCount > 0) {
+      // Check if the newest message (first in array) is optimistic
+      const newestMessage = messages[0]
+      const isNewOptimisticMessage = newestMessage?.isOptimistic === true
+
+      if (isNewOptimisticMessage && forceScrollToBottomRef.current) {
+        // Force scroll to bottom for new messages
+        forceScrollToBottomRef.current()
+        // Extra persistence for new messages
+        const timeout = setTimeout(() => {
+          if (forceScrollToBottomRef.current) {
+            forceScrollToBottomRef.current()
+          }
+        }, SCROLL_CONSTANTS.NEW_MESSAGE_SCROLL_DELAY)
+        addTimeout(timeout)
+      }
+    }
+
+    // Update the previous message count
+    previousMessageCountRef.current = currentMessageCount
+  }, [messages, addTimeout])
+
+  // Force scroll to bottom when sync indicators appear (if user is at bottom)
+  useEffect(() => {
+    const currentSyncCount = syncsInProgress.size
+    const previousSyncCount = previousSyncCountRef.current
+
+    // Check if a new sync started (sync count increased)
+    if (
+      currentSyncCount > previousSyncCount &&
+      forceScrollToBottomRef.current
+    ) {
+      // Check if user is currently at or near bottom using ref instead of DOM query
+      const scrollContainer = messagesScrollViewRef.current
+      if (scrollContainer) {
+        const currentDistanceFromBottom =
+          scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight
+
+        // If user is at bottom (within threshold), auto-scroll to accommodate sync indicator
+        if (
+          currentDistanceFromBottom <
+          SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
+        ) {
+          const timeout = setTimeout(() => {
+            if (forceScrollToBottomRef.current) {
+              forceScrollToBottomRef.current()
+            }
+          }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
+          addTimeout(timeout)
+        }
+      }
+    }
+
+    // Update the previous sync count
+    previousSyncCountRef.current = currentSyncCount
+  }, [syncsInProgress, addTimeout])
+
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      const messageIDs = messages
+        .filter((msg) => !msg.isOptimistic && msg.response)
+        .map((msg) => msg.id)
+      if (messageIDs.length > 0) {
+        checkStatuses(messageIDs)
+      }
+    }
+  }, [isLoading, messages, checkStatuses])
+
+  useEffect(() => {
+    let isMounted = true
+
+    if (!isLoading && messages.length > 0) {
+      requestAnimationFrame(() => {
+        if (!isMounted) return
+
+        if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+          const timeout = setTimeout(() => {
+            if (isMounted) {
+              setMessagesVisible(true)
+              initialRenderRef.current = false
+            }
+          }, SCROLL_CONSTANTS.MOBILE_RENDER_DELAY)
+          addTimeout(timeout)
+        } else {
+          setMessagesVisible(true)
+          initialRenderRef.current = false
+        }
+      })
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [isLoading, messages, isMobile, addTimeout])
+
+  const handleScrollToTop = useCallback(() => {
+    if (
+      hasNextPage &&
+      !isLoading &&
+      !isFetchingNextPage &&
+      !fetchingRef.current
+    ) {
+      fetchingRef.current = true
+      setShouldFetchNext(true)
+    }
+  }, [hasNextPage, isLoading, isFetchingNextPage])
+
+  useEffect(() => {
+    const fetchOlderMessages = async () => {
+      if (!shouldFetchNext) return
+
+      try {
+        // Get initial scroll position using ref instead of DOM query
+        const scrollContainer = messagesScrollViewRef.current
+        let prevHeight = 0
+
+        if (scrollContainer) {
+          prevHeight = scrollContainer.scrollHeight
+        }
+
+        await fetchNextPage()
+
+        // Set a reasonable timeout to ensure DOM is updated
+        const timeout = setTimeout(() => {
+          if (scrollContainer) {
+            // Get the new scroll height and calculate difference
+            const newHeight = scrollContainer.scrollHeight
+            const heightDifference = newHeight - prevHeight
+
+            // Position just below the new content
+            // This is the key implementation from main branch that works correctly
+            if (heightDifference > 0) {
+              scrollContainer.scrollTop = heightDifference
+            }
+          }
+
+          fetchingRef.current = false
+          setShouldFetchNext(false)
+        }, SCROLL_CONSTANTS.FETCH_SCROLL_POSITION_DELAY)
+        addTimeout(timeout)
+      } catch (error) {
+        console.error("Error loading more messages:", error)
+        fetchingRef.current = false
+        setShouldFetchNext(false)
+      }
+    }
+
+    if (shouldFetchNext) {
+      fetchOlderMessages()
+    }
+  }, [shouldFetchNext, fetchNextPage, addTimeout])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleCopy = useCallback(
+    (message: any, type: "prompt" | "response" = "prompt") => {
+      const textToCopy = type === "prompt" ? message.prompt : message.response
+      if (!textToCopy) {
+        toast.error("No content to copy")
+        return
+      }
+
+      navigator.clipboard.writeText(textToCopy).then(
+        () => {
+          toast.success("Copied to clipboard")
+        },
+        (err) => {
+          console.error("Could not copy text: ", err)
+          toast.error("Failed to copy text")
+        }
+      )
+    },
+    []
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleMessageDelete = useCallback(
+    async (message: any) => {
+      if (!message.id) {
+        console.error("Cannot delete message: missing ID")
+        toast.error("Failed to delete message")
+        return
+      }
+      try {
+        confirmMemoryDeletion(message.id, {
+          onSuccess: () => {
+            refetch()
+          },
+        })
+      } catch (error) {
+        console.error("Error deleting message:", error)
+        toast.error("Failed to delete message")
+      }
+    },
+    [confirmMemoryDeletion, refetch]
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleShowMemories = useCallback(
+    async (message: any) => {
+      try {
+        await showMemoryNetwork(message)
+      } catch (error) {
+        console.error("Error showing memory network:", error)
+        toast.error("Failed to show memory network")
+      }
+    },
+    [showMemoryNetwork]
+  )
+
+  // Use the externally passed ref for scroll position detection
+  useEffect(() => {
+    if (ref) {
+      // If a ref is passed from parent, use it to access internal scrolling functionality
+      if (typeof ref === "function") {
+        // Function refs get called with the DOM element
+        ref(detectScrollToTopRef.current)
+      } else if (ref.current !== undefined) {
+        // Object refs need their .current property assigned
+        ref.current = detectScrollToTopRef.current
+      }
+    }
+  }, [ref])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts()
+    }
+  }, [clearAllTimeouts])
+
+  return (
+    <div className="chat-feed-container">
+      {isFetchingNextPage && (
+        <div
+          className="loading-indicator"
+          style={{ position: "sticky", top: 0, zIndex: 10 }}
+        >
+          <div className="loading-spinner"></div>
+          <div>Loading more messages...</div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="empty-chat-message">
+          <div className="loading-spinner"></div>
+          <p>Loading conversation...</p>
+        </div>
+      ) : messages && messages.length > 0 ? (
+        <CustomScrollToBottom
+          className="messages-container"
+          scrollViewClassName="messages-scroll-view"
+          initialScrollBehavior="auto"
+          detectScrollToTop={handleScrollToTop}
+          onScrollToTopRef={detectScrollToTopRef}
+          forceScrollToBottomRef={forceScrollToBottomRef}
+          style={{
+            opacity: messagesVisible ? 1 : 0,
+            transition: UI_CONSTANTS.OPACITY_TRANSITION,
+          }}
+        >
+          {messages
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((message: any, index: number) => {
+              const isUser =
+                message.prompt && !message.prompt.includes("SYSTEM:")
+              const isLast = index === messages.length - 1
+
+              const syncState = syncsInProgress.get(message.id)
+              const showSync = !!syncState
+              const syncStage = syncState?.stage || 1
+
+              return (
+                <div key={message.id || index} className="message-pair">
+                  {message.prompt && isUser && (
+                    <ChatMessage
+                      content={message.prompt}
+                      timestamp={
+                        message.timestamp
+                          ? new Date(message.timestamp).getTime()
+                          : Date.now()
+                      }
+                      isUser={true}
+                      isLast={isLast}
+                      isOptimistic={message.isOptimistic}
+                      menuProps={{
+                        id: message.id,
+                        onCopy: () => handleCopy(message, "prompt"),
+                        onDelete: () => handleMessageDelete(message),
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                      showSyncIndicator={showSync}
+                      syncStage={syncStage}
+                    />
+                  )}
+
+                  {message.response && (
+                    <ChatMessage
+                      content={message.response}
+                      timestamp={
+                        message.timestamp
+                          ? new Date(message.timestamp).getTime()
+                          : Date.now()
+                      }
+                      isUser={false}
+                      isLast={isLast}
+                      isOptimistic={message.isOptimistic}
+                      menuProps={{
+                        id: message.id,
+                        onCopy: () => handleCopy(message, "response"),
+                        onDelete: () => handleMessageDelete(message),
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                      showSyncIndicator={showSync}
+                      syncStage={syncStage}
+                    />
+                  )}
+                </div>
+              )
+            })
+            .reverse()}
+        </CustomScrollToBottom>
+      ) : (
+        <div className="empty-chat-message">
+          <p>No messages yet. Start a conversation!</p>
+        </div>
+      )}
+    </div>
+  )
+})
+
+ChatFeed.displayName = "ChatFeed"
+export default ChatFeed
