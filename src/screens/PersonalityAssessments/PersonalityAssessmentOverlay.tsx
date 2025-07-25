@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import {
   Brain,
-  TrendingUp,
   User,
   Award,
   X as LucideX,
@@ -57,8 +56,9 @@ interface LastSyncStatus {
 export default function PersonalityAssessmentOverlay() {
   const { user } = useAuth()
   const { count: messageCount, loading: memoryCountLoading } = useMemoryCount()
-  const { assessments, loading, error, refetch, updateAssessments } =
-    usePersonalityAssessments(user?.uid)
+  const { assessments, loading, error, refetch } = usePersonalityAssessments(
+    user?.uid
+  )
   const [selectedAssessment, setSelectedAssessment] =
     useState<PersonalityAssessment | null>(null)
   const [isSyncing, setIsSyncing] = useState(false)
@@ -73,7 +73,7 @@ export default function PersonalityAssessmentOverlay() {
   const hasEnoughMessages = messageCount >= 30
 
   const pollForCompletion = useCallback(
-    async (initialLastSyncTime: string | null) => {
+    async (_initialLastSyncTime: string | null) => {
       if (!user?.uid) return
 
       let pollCount = 0
@@ -254,7 +254,7 @@ export default function PersonalityAssessmentOverlay() {
     return () => {
       unsubscribe()
     }
-  }, [user?.uid, fetchLastSyncStatus, pollForCompletion, refetch])
+  }, [user?.uid, fetchLastSyncStatus, pollForCompletion, refetch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRefresh = useCallback(() => {
     refetch()
@@ -404,19 +404,6 @@ export default function PersonalityAssessmentOverlay() {
     })
   }
 
-  const getAssessmentIcon = (assessmentId: string) => {
-    switch (assessmentId) {
-      case "big-five":
-        return <TrendingUp className="h-6 w-6" />
-      case "mbti":
-        return <User className="h-6 w-6" />
-      case "disc":
-        return <Award className="h-6 w-6" />
-      default:
-        return <Brain className="h-6 w-6" />
-    }
-  }
-
   const getAssessmentGradient = (assessmentId: string) => {
     switch (assessmentId) {
       case "big-five":
@@ -427,32 +414,6 @@ export default function PersonalityAssessmentOverlay() {
         return "from-green-500 to-green-600"
       default:
         return "from-gray-500 to-gray-600"
-    }
-  }
-
-  const getAssessmentBadgeColor = (assessmentId: string) => {
-    switch (assessmentId) {
-      case "big-five":
-        return "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-      case "mbti":
-        return "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700"
-      case "disc":
-        return "bg-green-100 text-green-700 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
-      default:
-        return "bg-muted text-muted-foreground border-border"
-    }
-  }
-
-  const getShortDescription = (assessmentId: string) => {
-    switch (assessmentId) {
-      case "big-five":
-        return "Five key personality dimensions"
-      case "mbti":
-        return "16 personality types based on preferences"
-      case "disc":
-        return "Four behavioral styles for work & life"
-      default:
-        return "Personality insights"
     }
   }
 
@@ -789,7 +750,7 @@ export default function PersonalityAssessmentOverlay() {
             >
               ← Back to Your Insights
             </Button>
-            <p>This insight type isn't supported for display yet</p>
+            <p>This insight type isn&apos;t supported for display yet</p>
           </div>
         )
     }
@@ -891,7 +852,8 @@ export default function PersonalityAssessmentOverlay() {
                     </h4>
                     <p className="text-sm text-green-700 dark:text-green-300">
                       Discuss your dreams, goals, what motivates you, and what
-                      you're working toward. Your ambitions shape who you are.
+                      you&apos;re working toward. Your ambitions shape who you
+                      are.
                     </p>
                   </div>
                 </div>
@@ -909,9 +871,9 @@ export default function PersonalityAssessmentOverlay() {
                       Be Naturally Yourself
                     </h4>
                     <p className="text-sm text-orange-700 dark:text-orange-300">
-                      Don't try to impress or perform. Just be genuine in your
-                      conversations. Ditto learns best when you're being
-                      authentically you.
+                      Don&apos;t try to impress or perform. Just be genuine in
+                      your conversations. Ditto learns best when you&apos;re
+                      being authentically you.
                     </p>
                   </div>
                 </div>
@@ -927,9 +889,9 @@ export default function PersonalityAssessmentOverlay() {
               </span>
             </div>
             <p className="text-sm text-purple-700 dark:text-purple-300">
-              Think of Ditto as a close friend you're meeting for coffee. Share
-              the good, the challenging, and everything in between. The richer
-              your conversations, the deeper their understanding.
+              Think of Ditto as a close friend you&apos;re meeting for coffee.
+              Share the good, the challenging, and everything in between. The
+              richer your conversations, the deeper their understanding.
             </p>
           </div>
 
@@ -978,7 +940,7 @@ export default function PersonalityAssessmentOverlay() {
                     <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary" />
                   </div>
                   <p className="text-muted-foreground font-medium">
-                    Loading Ditto's understanding of you...
+                    Loading Ditto&apos;s understanding of you...
                   </p>
                 </div>
               </div>
@@ -992,7 +954,7 @@ export default function PersonalityAssessmentOverlay() {
                     <AlertCircle className="h-8 w-8 text-red-500" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Couldn't load personality insights
+                    Couldn&apos;t load personality insights
                   </h3>
                   <p className="text-muted-foreground mb-4">{error}</p>
                   <Button
@@ -1166,7 +1128,7 @@ export default function PersonalityAssessmentOverlay() {
                     )}
                   >
                     <Sparkles className="h-5 w-5 mr-2" />
-                    Update Ditto's Understanding
+                    Update Ditto&apos;s Understanding
                   </Button>
                 </div>
               )}
@@ -1189,7 +1151,7 @@ export default function PersonalityAssessmentOverlay() {
                             </div>
                             <div className="min-w-0 flex-1">
                               <h3 className="font-semibold text-base sm:text-lg text-foreground">
-                                Update Ditto's Understanding
+                                Update Ditto&apos;s Understanding
                               </h3>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                                 <span>

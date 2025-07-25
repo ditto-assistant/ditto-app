@@ -433,7 +433,6 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       if (onScroll) {
         onScroll(e.nativeEvent)
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [
       isScrolledToBottom,
@@ -789,7 +788,6 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     }
   }, [shouldFetchNext, fetchNextPage, addTimeout])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCopy = useCallback(
     (message: any, type: "prompt" | "response" = "prompt") => {
       const textToCopy = type === "prompt" ? message.prompt : message.response
@@ -811,7 +809,6 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     []
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleMessageDelete = useCallback(
     async (message: any) => {
       if (!message.id) {
@@ -833,7 +830,6 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     [confirmMemoryDeletion, refetch]
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleShowMemories = useCallback(
     async (message: any) => {
       try {
