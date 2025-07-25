@@ -61,7 +61,7 @@ const BigFiveResults: React.FC<BigFiveResultsProps> = ({
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Assessments
+          Back
         </Button>
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-blue-600" />

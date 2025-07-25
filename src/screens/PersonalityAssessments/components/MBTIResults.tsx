@@ -87,7 +87,7 @@ const MBTIResults: React.FC<MBTIResultsProps> = ({
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Assessments
+          Back
         </Button>
         <div className="flex items-center gap-2">
           <User className="h-5 w-5 text-purple-600" />
