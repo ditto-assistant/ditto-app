@@ -371,7 +371,7 @@ export default function SendMessage({
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-1 pb-2 text-sm">
-              {user?.data?.planTier > 0 ? (
+              {(user?.data?.planTier ?? 0) > 0 ? (
                 <>
                   You&apos;ve run out of tokens. Upgrade your plan or buy extra
                   tokens to keep using{" "}
@@ -413,16 +413,17 @@ export default function SendMessage({
                 </Button>
               )}
 
-              {user?.data?.planTier > 0 && user?.data?.planTier < 3 && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={openSubscriptionsTab}
-                >
-                  <Crown className="mr-2 h-4 w-4" /> Manage Subscription
-                </Button>
-              )}
+              {(user?.data?.planTier ?? 0) > 0 &&
+                (user?.data?.planTier ?? 0) < 3 && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={openSubscriptionsTab}
+                  >
+                    <Crown className="mr-2 h-4 w-4" /> Manage Subscription
+                  </Button>
+                )}
 
               <Button
                 variant="outline"
