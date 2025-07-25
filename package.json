@@ -1,7 +1,6 @@
 {
   "name": "ditto-pwa",
   "version": "0.17.0",
-
   "private": true,
   "type": "module",
   "dependencies": {
