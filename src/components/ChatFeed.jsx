@@ -42,8 +42,6 @@ const CustomScrollToBottom = ({
 
   const userScrollingImageRef = useRef(false)
   const userScrollingKeyboardRef = useRef(false)
-  const userScrollingManualRef = useRef(false)
-  const streamingTimeoutRef = useRef(null)
 
   useEffect(() => {
     if (onScrollToTopRef) {
@@ -60,11 +58,9 @@ const CustomScrollToBottom = ({
 
       const trackUserScrolling = () => {
         userScrollingImageRef.current = true
-        userScrollingManualRef.current = true
         clearTimeout(scrollTimer)
         scrollTimer = setTimeout(() => {
           userScrollingImageRef.current = false
-          userScrollingManualRef.current = false
         }, 200)
       }
 
@@ -76,7 +72,7 @@ const CustomScrollToBottom = ({
       }
 
       const handleImageLoad = () => {
-        if (isScrolledToBottom && !userScrollingImageRef.current && !userScrollingManualRef.current) {
+        if (isScrolledToBottom && !userScrollingImageRef.current) {
           setTimeout(() => scrollToBottom("auto"), 50)
         }
       }
@@ -151,7 +147,7 @@ const CustomScrollToBottom = ({
             button.style.transition = "bottom 0.2s ease-out"
           }
 
-          if (isScrolledToBottom && !userScrollingManualRef.current) {
+          if (isScrolledToBottom) {
             setTimeout(() => scrollToBottom("auto"), 100)
           }
         }
@@ -187,38 +183,6 @@ const CustomScrollToBottom = ({
     const clientHeight = scrollContainer.clientHeight
 
     const isBottom = scrollHeight - scrollTop - clientHeight < 30
-
-    // Only mark as manual scrolling if:
-    // 1. User scrolled away from bottom AND
-    // 2. The scroll position actually decreased significantly (user scrolled up) AND
-    // 3. Content hasn't changed AND we're not in streaming mode
-    if (!isBottom && isScrolledToBottom) {
-      const contentUnchanged = scrollHeight === scrollHeightRef.current
-      const isStreamingMode = streamingTimeoutRef.current !== null
-
-      // During streaming mode, be more restrictive about manual scroll detection
-      if (isStreamingMode) {
-        const significantScrollUp = scrollTop < prevScrollTopRef.current - 100
-        const farFromBottom = scrollHeight - scrollTop - clientHeight > 200
-
-        if (significantScrollUp && contentUnchanged && farFromBottom) {
-          userScrollingManualRef.current = true
-          setTimeout(() => {
-            userScrollingManualRef.current = false
-          }, 2000)
-        }
-      } else {
-        // Normal mode - less restrictive
-        const scrolledUp = scrollTop < prevScrollTopRef.current - 50
-        if (scrolledUp && contentUnchanged) {
-          userScrollingManualRef.current = true
-          setTimeout(() => {
-            userScrollingManualRef.current = false
-          }, 1000)
-        }
-      }
-    }
-
     setIsScrolledToBottom(isBottom)
     setShowScrollToBottom(!isBottom)
 
@@ -241,11 +205,11 @@ const CustomScrollToBottom = ({
   }
 
   useEffect(() => {
-    if (scrollContainerRef.current && isScrolledToBottom && !userScrollingManualRef.current) {
+    if (scrollContainerRef.current && isScrolledToBottom) {
       scrollToBottom(initialScrollBehavior)
 
       setTimeout(() => {
-        if (isScrolledToBottom && !userScrollingManualRef.current) {
+        if (isScrolledToBottom) {
           scrollToBottom(initialScrollBehavior)
         }
       }, 300)
