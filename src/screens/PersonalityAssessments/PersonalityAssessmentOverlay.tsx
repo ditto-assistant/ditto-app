@@ -576,9 +576,11 @@ export default function PersonalityAssessmentOverlay() {
       case "big-five": {
         const bigFiveResults = assessment.results as BigFiveResultsType
         return (
-          <div className="flex items-center justify-between">
-            <BigFivePentagon results={bigFiveResults} />
-            <div className="flex-1 ml-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex justify-center sm:block">
+              <BigFivePentagon results={bigFiveResults} />
+            </div>
+            <div className="flex-1 min-w-0">
               <h4 className="font-medium text-sm mb-2">
                 Your Strongest Qualities
               </h4>
@@ -589,11 +591,11 @@ export default function PersonalityAssessmentOverlay() {
                   .map(([key, dim]) => (
                     <div
                       key={key}
-                      className="flex items-center justify-between text-sm"
+                      className="flex items-center justify-between text-sm min-w-0"
                     >
-                      <span className="capitalize">{key}</span>
-                      <div className="flex items-center gap-1">
-                        <div className="flex">
+                      <span className="capitalize shrink-0">{key}</span>
+                      <div className="flex items-center gap-1 min-w-0 ml-2">
+                        <div className="flex shrink-0">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
@@ -606,7 +608,7 @@ export default function PersonalityAssessmentOverlay() {
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-muted-foreground ml-1">
+                        <span className="text-xs text-muted-foreground ml-1 shrink-0">
                           {dim.score.toFixed(1)}/5
                         </span>
                       </div>
@@ -633,14 +635,14 @@ export default function PersonalityAssessmentOverlay() {
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {Object.entries(mbtiResults.dimension_details || {}).map(
                 ([key, details]) => (
                   <div
                     key={key}
-                    className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded min-w-0"
                   >
-                    <span className="font-medium">
+                    <span className="font-medium shrink-0">
                       {key === "E"
                         ? "Energy"
                         : key === "S"
@@ -649,11 +651,11 @@ export default function PersonalityAssessmentOverlay() {
                             ? "Decisions"
                             : "Structure"}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-medium">
+                    <div className="flex items-center gap-1 min-w-0 ml-2">
+                      <span className="text-xs font-medium shrink-0">
                         {details.preference}
                       </span>
-                      <div className="w-8 h-1 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-6 sm:w-8 h-1 bg-gray-200 rounded-full overflow-hidden shrink-0">
                         <div
                           className="h-full bg-purple-500 rounded-full transition-all duration-300"
                           style={{ width: `${details.strength}%` }}
@@ -704,14 +706,14 @@ export default function PersonalityAssessmentOverlay() {
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {Object.entries(discResults.dimension_scores || {}).map(
                 ([key, dim]) => (
                   <div
                     key={key}
-                    className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded min-w-0"
                   >
-                    <span className="font-medium capitalize">
+                    <span className="font-medium capitalize shrink-0">
                       {key === "d"
                         ? "Direct"
                         : key === "i"
@@ -720,14 +722,14 @@ export default function PersonalityAssessmentOverlay() {
                             ? "Supportive"
                             : "Careful"}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex items-center gap-1 min-w-0 ml-2">
+                      <div className="w-8 sm:w-12 h-1 bg-gray-200 rounded-full overflow-hidden shrink-0">
                         <div
                           className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-300"
                           style={{ width: `${dim.percentage}%` }}
                         />
                       </div>
-                      <span className="text-xs font-medium w-8 text-right">
+                      <span className="text-xs font-medium w-6 sm:w-8 text-right shrink-0">
                         {dim.percentage}%
                       </span>
                     </div>
@@ -946,14 +948,14 @@ export default function PersonalityAssessmentOverlay() {
     <>
       <Modal id="personalityAssessments" title="Ditto's Personality">
         <div className="flex flex-col h-full bg-background text-foreground">
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {/* Header with Info Button */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">
+            <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                   How Well Does Ditto Know You?
                 </h2>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                   Based on your conversations and shared experiences
                 </p>
               </div>
@@ -961,9 +963,9 @@ export default function PersonalityAssessmentOverlay() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowInfoModal(true)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground shrink-0"
               >
-                <Info className="h-5 w-5" />
+                <Info className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
 
@@ -1179,17 +1181,17 @@ export default function PersonalityAssessmentOverlay() {
                   {/* Update Button for existing users */}
                   {hasEnoughMessages && (
                     <Card className="border-2 border-dashed border-border bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:shadow-lg transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
-                              <Sparkles className="h-6 w-6 text-white" />
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                            <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shrink-0">
+                              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                             </div>
-                            <div>
-                              <h3 className="font-semibold text-lg text-foreground">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-base sm:text-lg text-foreground">
                                 Update Ditto's Understanding
                               </h3>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                                 <span>
                                   Refresh insights based on recent conversations
                                 </span>
@@ -1204,11 +1206,11 @@ export default function PersonalityAssessmentOverlay() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
+                          <div className="flex flex-col items-end gap-2 shrink-0">
                             {lastSyncStatus && !lastSyncStatus.can_sync && (
                               <Badge
                                 variant="outline"
-                                className="text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700"
+                                className="text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700 text-xs"
                               >
                                 <Timer className="h-3 w-3 mr-1" />
                                 {lastSyncStatus.hours_until_next_sync.toFixed(
@@ -1220,6 +1222,7 @@ export default function PersonalityAssessmentOverlay() {
                             <Button
                               onClick={handleStartAssessment}
                               disabled={!canSync}
+                              size="sm"
                               className={cn(
                                 "shadow-lg transition-all duration-200",
                                 canSync
@@ -1258,7 +1261,7 @@ export default function PersonalityAssessmentOverlay() {
                       .map((assessment: PersonalityAssessment) => (
                         <Card
                           key={`${assessment.assessment_id}-${assessment.session_id}`}
-                          className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card pt-0 pb-6"
+                          className="group cursor-pointer hover:shadow-xl transition-all duration-200 border-0 shadow-lg hover:scale-[1.02] bg-card pt-0 pb-4 sm:pb-6 min-w-0"
                           onClick={() => setSelectedAssessment(assessment)}
                         >
                           <div
@@ -1268,11 +1271,11 @@ export default function PersonalityAssessmentOverlay() {
                             )}
                           />
                           <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                                 <div
                                   className={cn(
-                                    "p-3 rounded-xl bg-gradient-to-r text-white shadow-lg",
+                                    "p-2 sm:p-3 rounded-xl bg-gradient-to-r text-white shadow-lg shrink-0",
                                     getAssessmentGradient(
                                       assessment.assessment_id
                                     )
@@ -1280,39 +1283,39 @@ export default function PersonalityAssessmentOverlay() {
                                 >
                                   {getInsightIcon(assessment.assessment_id)}
                                 </div>
-                                <div className="flex-1">
-                                  <CardTitle className="text-xl font-bold text-foreground">
+                                <div className="flex-1 min-w-0">
+                                  <CardTitle className="text-lg sm:text-xl font-bold text-foreground">
                                     {getFriendlyAssessmentName(
                                       assessment.assessment_id
                                     )}
                                   </CardTitle>
-                                  <p className="text-muted-foreground mt-1 text-sm">
+                                  <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
                                     {getFriendlyDescription(
                                       assessment.assessment_id
                                     )}
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-full">
+                              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                                <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-full">
                                   <Sparkles className="h-3 w-3 text-primary" />
                                   <span className="text-xs font-medium text-muted-foreground">
                                     Insights
                                   </span>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                               </div>
                             </div>
                           </CardHeader>
-                          <CardContent className="pt-0 space-y-4">
+                          <CardContent className="pt-0 space-y-3 sm:space-y-4 px-4 sm:px-6">
                             {/* Key Results Preview */}
-                            <div className="bg-muted/30 rounded-lg p-4">
+                            <div className="bg-muted/30 rounded-lg p-3 sm:p-4">
                               {renderInlineResults(assessment)}
                             </div>
 
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800 w-fit">
                                   <div className="text-center">
                                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
                                       {getUniqueMetric(assessment).value}
@@ -1323,8 +1326,8 @@ export default function PersonalityAssessmentOverlay() {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <Sparkles className="h-4 w-4 text-purple-500" />
-                                  <span>
+                                  <Sparkles className="h-4 w-4 text-purple-500 shrink-0" />
+                                  <span className="text-xs sm:text-sm">
                                     Discovered{" "}
                                     {formatDate(assessment.completed_at)}
                                   </span>
@@ -1333,7 +1336,7 @@ export default function PersonalityAssessmentOverlay() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 shrink-0 self-start sm:self-center"
                               >
                                 Explore More
                                 <ChevronRight className="h-4 w-4 ml-1" />

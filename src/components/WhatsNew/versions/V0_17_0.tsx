@@ -13,12 +13,6 @@ const sections: Section[] = [
       },
       {
         type: "new",
-        title: "Unique Personality Metrics",
-        description:
-          "Each personality insight now shows meaningful metrics like Complexity %, Clarity %, and Adaptability % instead of repetitive conversation counts.",
-      },
-      {
-        type: "new",
         title: "Star Ratings & Visual Results",
         description:
           "Replaced formal scores with friendly star ratings and beautiful progress bars with smooth animations for a more engaging experience.",
@@ -32,13 +26,7 @@ const sections: Section[] = [
         type: "improved",
         title: "Friendship-Focused Language",
         description:
-          "Completely transformed all text to feel like building a friendship - 'Sync AI Personality' became 'Update Ditto's Understanding' and removed all formal assessment language.",
-      },
-      {
-        type: "improved",
-        title: "Friendly Assessment Names",
-        description:
-          "Rebranded personality tests with warmer names: 'Your Core Nature', 'How You See the World', and 'Your Connection Style' instead of technical terms.",
+          "Completely transformed all text to feel like building a friendship - 'Sync AI Personality' became 'Update Ditto's Understanding' and removed all formal language.",
       },
       {
         type: "improved",
