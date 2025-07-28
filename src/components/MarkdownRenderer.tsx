@@ -9,6 +9,7 @@ import { Copy } from "lucide-react"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
+import remarkGfm from "remark-gfm"
 import "./MarkdownRenderer.css"
 import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 interface MarkdownRendererProps {
@@ -40,11 +41,45 @@ const MarkdownRenderer = ({
   return (
     <div className={`markdown-content ${className}`}>
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           a: ({ href, children, ...props }) => (
             <a {...props} href={href} target="_blank" rel="noopener noreferrer">
               {children}
             </a>
+          ),
+          // Table components
+          table: ({ children, ...props }) => (
+            <div className="table-wrapper">
+              <table className="markdown-table" {...props}>
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children, ...props }) => (
+            <thead className="markdown-table-head" {...props}>
+              {children}
+            </thead>
+          ),
+          tbody: ({ children, ...props }) => (
+            <tbody className="markdown-table-body" {...props}>
+              {children}
+            </tbody>
+          ),
+          tr: ({ children, ...props }) => (
+            <tr className="markdown-table-row" {...props}>
+              {children}
+            </tr>
+          ),
+          th: ({ children, ...props }) => (
+            <th className="markdown-table-header" {...props}>
+              {children}
+            </th>
+          ),
+          td: ({ children, ...props }) => (
+            <td className="markdown-table-cell" {...props}>
+              {children}
+            </td>
           ),
           img: ({ src, alt, ...props }) => (
             <img

@@ -361,3 +361,137 @@
   color: var(--muted-foreground);
   font-style: italic;
 }
+
+/* Table styling */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--foreground);
+  background-color: var(--card);
+}
+
+.markdown-table-head {
+  background-color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.markdown-table-header {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--foreground);
+  background-color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.markdown-table-header:last-child {
+  border-right: none;
+}
+
+.markdown-table-body {
+  background-color: var(--card);
+}
+
+.markdown-table-row {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.markdown-table-row:hover {
+  background-color: var(--muted/50);
+}
+
+.markdown-table-row:last-child {
+  border-bottom: none;
+}
+
+.markdown-table-cell {
+  padding: 12px 16px;
+  border-right: 1px solid var(--border);
+  vertical-align: top;
+  word-wrap: break-word;
+  max-width: 200px;
+}
+
+.markdown-table-cell:last-child {
+  border-right: none;
+}
+
+/* Responsive table styling for mobile */
+@media (max-width: 768px) {
+  .table-wrapper {
+    font-size: 0.8em;
+  }
+
+  .markdown-table-header,
+  .markdown-table-cell {
+    padding: 8px 12px;
+    min-width: 100px;
+  }
+
+  .markdown-table-cell {
+    max-width: 150px;
+  }
+}
+
+/* Dark mode specific table styling */
+.dark .markdown-table {
+  border-color: var(--border);
+}
+
+.dark .markdown-table-head {
+  background-color: var(--muted);
+}
+
+.dark .markdown-table-header {
+  background-color: var(--muted);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.dark .markdown-table-row:hover {
+  background-color: var(--muted/30);
+}
+
+.dark .markdown-table-cell {
+  border-color: var(--border);
+}
+
+/* Ensure tables don't break the layout */
+.markdown-content .table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar for table wrapper */
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
+}
