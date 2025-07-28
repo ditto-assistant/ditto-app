@@ -380,6 +380,39 @@ const MarkdownRendererCore = ({
               {children}
             </a>
           ),
+          // Table components
+          table: ({ children, ...props }) => (
+            <div className="table-wrapper">
+              <table className="markdown-table" {...props}>
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children, ...props }) => (
+            <thead className="markdown-table-head" {...props}>
+              {children}
+            </thead>
+          ),
+          tbody: ({ children, ...props }) => (
+            <tbody className="markdown-table-body" {...props}>
+              {children}
+            </tbody>
+          ),
+          tr: ({ children, ...props }) => (
+            <tr className="markdown-table-row" {...props}>
+              {children}
+            </tr>
+          ),
+          th: ({ children, ...props }) => (
+            <th className="markdown-table-header" {...props}>
+              {children}
+            </th>
+          ),
+          td: ({ children, ...props }) => (
+            <td className="markdown-table-cell" {...props}>
+              {children}
+            </td>
+          ),
           img: ({ src, alt, ...props }) => (
             <img
               src={src}
