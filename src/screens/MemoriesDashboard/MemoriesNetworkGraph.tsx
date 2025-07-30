@@ -276,7 +276,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         },
         interaction: {
           dragNodes: true,
-          menuMobile: true,
           tooltipDelay: 200,
           hover: true,
           zoomView: true, // Enable zoom for all devices
