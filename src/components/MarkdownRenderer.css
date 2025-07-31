@@ -141,6 +141,73 @@
   padding-left: 1.5em;
 }
 
+/* Enhanced list styling to fix bullet rendering issues */
+.markdown-list {
+  margin: 0.8em 0;
+  padding-left: 1.5em;
+  color: var(--foreground);
+}
+
+.markdown-ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.markdown-ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.markdown-list-item {
+  margin: 0.4em 0;
+  line-height: 1.5;
+  display: list-item;
+  color: var(--foreground);
+}
+
+/* Ensure bullets are visible in all themes */
+.markdown-ul .markdown-list-item::marker {
+  color: var(--foreground);
+  font-size: 1em;
+}
+
+.markdown-ol .markdown-list-item::marker {
+  color: var(--foreground);
+  font-weight: normal;
+}
+
+/* Fix for iOS list rendering */
+@supports (-webkit-touch-callout: none) {
+  .markdown-ul {
+    list-style-type: disc !important;
+    -webkit-padding-start: 1.5em;
+  }
+
+  .markdown-ol {
+    list-style-type: decimal !important;
+    -webkit-padding-start: 1.5em;
+  }
+
+  .markdown-list-item {
+    display: list-item !important;
+    list-style: inherit !important;
+  }
+}
+
+/* Nested list support */
+.markdown-list .markdown-list {
+  margin: 0.2em 0;
+  padding-left: 1.2em;
+}
+
+.markdown-ul .markdown-ul {
+  list-style-type: circle;
+}
+
+.markdown-ul .markdown-ul .markdown-ul {
+  list-style-type: square;
+}
+
 /* Image container styling */
 .image-container {
   display: flex;
@@ -360,4 +427,218 @@
   margin-right: 0;
   color: var(--muted-foreground);
   font-style: italic;
+}
+
+/* Table styling */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  /* Enhanced accessibility */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Focus management for keyboard navigation */
+.table-wrapper:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.table-wrapper:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--foreground);
+  background-color: var(--card);
+  /* Ensure proper table semantics for screen readers */
+  border-spacing: 0;
+}
+
+.markdown-table-head {
+  background-color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.markdown-table-header {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--foreground);
+  background-color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  min-width: 120px;
+  /* Enhanced accessibility for header cells */
+  position: relative;
+}
+
+.markdown-table-header:last-child {
+  border-right: none;
+}
+
+/* Focus styles for interactive table elements */
+.markdown-table-header:focus,
+.markdown-table-cell:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+  position: relative;
+  z-index: 1;
+}
+
+.markdown-table-body {
+  background-color: var(--card);
+}
+
+.markdown-table-row {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.markdown-table-row:hover {
+  background-color: var(--muted/50);
+}
+
+.markdown-table-row:last-child {
+  border-bottom: none;
+}
+
+.markdown-table-cell {
+  padding: 12px 16px;
+  border-right: 1px solid var(--border);
+  vertical-align: top;
+  word-wrap: break-word;
+  max-width: 200px;
+}
+
+.markdown-table-cell:last-child {
+  border-right: none;
+}
+
+/* Enhanced responsive table styling for mobile */
+@media (max-width: 768px) {
+  .table-wrapper {
+    font-size: 0.8em;
+    /* Improve touch scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  .markdown-table-header,
+  .markdown-table-cell {
+    padding: 8px 12px;
+    min-width: 100px;
+    /* Better touch targets */
+    min-height: 44px;
+  }
+
+  .markdown-table-cell {
+    max-width: 150px;
+  }
+
+  /* Larger focus indicators on mobile */
+  .table-wrapper:focus,
+  .table-wrapper:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Improved mobile accessibility */
+@media (max-width: 480px) {
+  .markdown-table-header,
+  .markdown-table-cell {
+    padding: 6px 8px;
+    min-width: 80px;
+    font-size: 0.9em;
+  }
+}
+
+/* Dark mode specific table styling */
+.dark .markdown-table {
+  border-color: var(--border);
+}
+
+.dark .markdown-table-head {
+  background-color: var(--muted);
+}
+
+.dark .markdown-table-header {
+  background-color: var(--muted);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.dark .markdown-table-row:hover {
+  background-color: var(--muted/30);
+}
+
+.dark .markdown-table-cell {
+  border-color: var(--border);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .markdown-table {
+    border: 2px solid var(--foreground);
+  }
+
+  .markdown-table-header,
+  .markdown-table-cell {
+    border: 1px solid var(--foreground);
+  }
+
+  .markdown-table-row:hover {
+    background-color: var(--foreground);
+    color: var(--background);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .markdown-table-row {
+    transition: none;
+  }
+
+  .table-wrapper {
+    scroll-behavior: auto;
+  }
+}
+
+/* Ensure tables don't break the layout */
+.markdown-content .table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Consolidated scrollbar styles for better performance */
+.table-wrapper::-webkit-scrollbar,
+.code-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track,
+.code-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb,
+.code-container::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover,
+.code-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
 }
