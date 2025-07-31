@@ -141,6 +141,73 @@
   padding-left: 1.5em;
 }
 
+/* Enhanced list styling to fix bullet rendering issues */
+.markdown-list {
+  margin: 0.8em 0;
+  padding-left: 1.5em;
+  color: var(--foreground);
+}
+
+.markdown-ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.markdown-ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.markdown-list-item {
+  margin: 0.4em 0;
+  line-height: 1.5;
+  display: list-item;
+  color: var(--foreground);
+}
+
+/* Ensure bullets are visible in all themes */
+.markdown-ul .markdown-list-item::marker {
+  color: var(--foreground);
+  font-size: 1em;
+}
+
+.markdown-ol .markdown-list-item::marker {
+  color: var(--foreground);
+  font-weight: normal;
+}
+
+/* Fix for iOS list rendering */
+@supports (-webkit-touch-callout: none) {
+  .markdown-ul {
+    list-style-type: disc !important;
+    -webkit-padding-start: 1.5em;
+  }
+
+  .markdown-ol {
+    list-style-type: decimal !important;
+    -webkit-padding-start: 1.5em;
+  }
+
+  .markdown-list-item {
+    display: list-item !important;
+    list-style: inherit !important;
+  }
+}
+
+/* Nested list support */
+.markdown-list .markdown-list {
+  margin: 0.2em 0;
+  padding-left: 1.2em;
+}
+
+.markdown-ul .markdown-ul {
+  list-style-type: circle;
+}
+
+.markdown-ul .markdown-ul .markdown-ul {
+  list-style-type: square;
+}
+
 /* Image container styling */
 .image-container {
   display: flex;
