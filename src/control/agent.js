@@ -1,5 +1,8 @@
 import { promptLLMV2, cancelPromptLLMV2 } from "../api/LLM"
-import { mainTemplate, systemTemplate } from "../control/templates/mainTemplate"
+import {
+  systemTemplate,
+  userMessageTemplate,
+} from "../control/templates/mainTemplate"
 import { handleImageGeneration } from "./agentflows/imageFlow"
 import { handleGoogleSearch } from "./agentflows/searchFlow"
 import { modelSupportsImageAttachments } from "@/types/llm"
@@ -142,17 +145,16 @@ export const sendPrompt = async (
       throw new Error("No examples found")
     }
 
-    const constructedPrompt = mainTemplate({
+    const constructedPrompt = userMessageTemplate(prompt)
+
+    const systemPrompt = systemTemplate({
+      userID,
       memories: memories.ok,
       examples: examplesString.ok,
       firstName,
       timestamp: new Date().toISOString(),
-      usersPrompt: prompt,
       toolPreferences: preferences.tools,
-      userID,
     })
-
-    const systemPrompt = systemTemplate(userID)
 
     console.log("%c" + systemPrompt, "color: orange")
     console.log("%c" + constructedPrompt, "color: green")
