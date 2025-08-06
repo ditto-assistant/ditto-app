@@ -46,7 +46,9 @@ export const systemTemplate = (params: {
     // Get personality information from localStorage
     const personalitySummary = PersonalityStorage.getPersonalitySummary(userID)
     if (personalitySummary) {
-      console.log("🧠 SystemTemplate: Found personality summary for user.")
+      if (import.meta.env.DEV) {
+        console.log("🧠 SystemTemplate: Found personality summary for user.")
+      }
       baseSystem += `\n\n## User's Personality Profile:\n${personalitySummary}\n\nUse this personality information to better understand and respond to the user's communication style and preferences.`
     }
   }
@@ -113,5 +115,13 @@ You are having a conversation with ${firstName}. Respond naturally and helpfully
 }
 
 export const userMessageTemplate = (userPrompt: string) => {
-  return userPrompt
+  // Basic input validation to prevent prompt injection
+  if (!userPrompt || typeof userPrompt !== "string") {
+    return ""
+  }
+  
+  // Trim and limit length to prevent excessive input (~50k tokens worth)
+  const sanitized = userPrompt.trim().slice(0, 200000)
+  
+  return sanitized
 }

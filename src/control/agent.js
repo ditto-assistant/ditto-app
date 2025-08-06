@@ -81,6 +81,20 @@ export const sendPrompt = async (
   planTier,
   onMemorySync = null
 ) => {
+  // Validate required parameters
+  if (!userID || typeof userID !== "string") {
+    throw new Error("Valid userID is required")
+  }
+  if (!firstName || typeof firstName !== "string") {
+    throw new Error("Valid firstName is required")
+  }
+  if (!prompt || typeof prompt !== "string") {
+    throw new Error("Valid prompt is required")
+  }
+  if (!preferences || typeof preferences !== "object") {
+    throw new Error("Valid preferences object is required")
+  }
+
   const isPremiumUser = planTier > 0
   try {
     // Create a thinking indicator in localStorage to show we're processing
@@ -156,8 +170,10 @@ export const sendPrompt = async (
       toolPreferences: preferences.tools,
     })
 
-    console.log("%c" + systemPrompt, "color: orange")
-    console.log("%c" + constructedPrompt, "color: green")
+    if (import.meta.env.DEV) {
+      console.log("%c" + systemPrompt, "color: orange")
+      console.log("%c" + constructedPrompt, "color: green")
+    }
 
     let mainAgentModel = preferences.mainModel
     if (image && !modelSupportsImageAttachments(mainAgentModel)) {
