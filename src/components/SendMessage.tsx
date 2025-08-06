@@ -11,13 +11,12 @@ import {
   Bolt,
   X,
   Square,
-  UserCheck,
 } from "lucide-react"
 import { sendPrompt, cancelPrompt } from "@/control/agent"
 import { uploadImage } from "@/api/userContent"
 import { cn } from "@/lib/utils"
 import { HapticPattern, triggerHaptic } from "@/utils/haptics"
-import { DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
+import { DEFAULT_MODELS, FREE_MODEL_ID, DITTO_LOGO } from "@/constants"
 import { ErrorPaymentRequired } from "@/types/errors"
 import { useAuth } from "@/hooks/useAuth"
 import { useBalance } from "@/hooks/useBalance"
@@ -31,6 +30,7 @@ import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useUser } from "@/hooks/useUser"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import { useIOSDetection } from "@/hooks/useIOSDetection"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -52,12 +52,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import VoiceInputButton from "./VoiceInputButton"
 
 interface SendMessageProps {
   onCameraOpen: () => void
   capturedImage: string | null
   onClearCapturedImage: () => void
   onStop: () => void
+  onLiveModeClick?: () => void
 }
 
 export default function SendMessage({
@@ -65,6 +67,7 @@ export default function SendMessage({
   capturedImage,
   onClearCapturedImage,
   onStop,
+  onLiveModeClick,
 }: SendMessageProps) {
   const [image, setImage] = useState<string | File>(capturedImage || "")
   const [isUploading, setIsUploading] = useState(false)
@@ -254,6 +257,17 @@ export default function SendMessage({
     ]
   )
 
+  // Handle voice input through the same pipeline
+  const handleVoiceTranscript = useCallback(
+    (transcript: string) => {
+      if (transcript.trim()) {
+        setMessage(transcript.trim())
+        // Just populate the text field - user can manually submit if desired
+      }
+    },
+    [setMessage]
+  )
+
   useEffect(() => {
     registerSubmitCallback(() => handleSubmit())
   }, [registerSubmitCallback, handleSubmit])
@@ -348,7 +362,7 @@ export default function SendMessage({
 
   return (
     <div
-      className="w-full z-[300] backdrop-blur-md border-t border-border bg-[var(--footer-background)]"
+      className="w-full z-[200] backdrop-blur-md border-t border-border bg-[var(--footer-background)]"
       style={{
         paddingBottom:
           iosInfo.isIOS && iosInfo.isPWA
@@ -449,12 +463,25 @@ export default function SendMessage({
                 onChange={handleInputChange}
                 placeholder="Message Ditto"
                 className={cn(
-                  "resize-none w-full px-3 py-2.5 rounded-lg transition-all",
+                  "resize-none w-full px-3 py-2.5 pr-12 rounded-lg transition-all", // Added pr-12 for button space
                   "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
                   autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // toggle scroll
                   "focus-visible:ring-1 focus-visible:ring-primary"
                 )}
               />
+              
+              {/* Voice Input Button - floating inside textarea */}
+              <div className="absolute right-2 bottom-2">
+                <VoiceInputButton
+                  onTranscript={handleVoiceTranscript}
+                  onTranscriptChange={setMessage}
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
+                  disabled={showSalesPitch || isUploading}
+                  autoSubmit={false}
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between w-full relative">
@@ -517,27 +544,36 @@ export default function SendMessage({
                 </DropdownMenu>
               </div>
 
-              {/* Center - Personality Assessments button */}
+              {/* Center - Live Mode button (Ditto icon) */}
               <div className="absolute left-1/2 transform -translate-x-1/2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        triggerLightHaptic()
-                        modal.createOpenHandler("personalityAssessments")()
-                      }}
-                      aria-label="View personality assessments"
-                      className="h-10 w-10 rounded-full bg-background ring-2 ring-purple-500/70 shadow-lg shadow-purple-500/50 hover:scale-110 hover:ring-purple-500 hover:shadow-xl hover:shadow-purple-500/80 transition-all"
-                    >
-                      <UserCheck className="h-5 w-5 text-purple-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>My Personality</TooltipContent>
-                </Tooltip>
+                {onLiveModeClick && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          triggerLightHaptic()
+                          onLiveModeClick()
+                        }}
+                        aria-label="Open Live Mode"
+                        className="h-12 w-12 rounded-full p-0 hover:scale-110 transition-all"
+                        disabled={showSalesPitch || isUploading}
+                      >
+                        <Avatar className="h-11 w-11 ring-2 ring-blue-500/70 shadow-lg shadow-blue-500/50">
+                          <AvatarImage
+                            src={DITTO_LOGO}
+                            alt="Ditto"
+                            className="h-11 w-11 rounded-full rainbow-gradient"
+                          />
+                        </Avatar>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Live Mode</TooltipContent>
+                  </Tooltip>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5">

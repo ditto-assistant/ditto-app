@@ -1,5 +1,5 @@
 import React from "react"
-import { MessageSquareWarning, Settings, Brain } from "lucide-react"
+import { MessageSquareWarning, Settings, Brain, UserCheck } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
@@ -10,10 +10,13 @@ import {
 } from "@/components/ui/tooltip"
 import { DITTO_LOGO } from "@/constants"
 import { cn } from "@/lib/utils"
+import HeyDittoLogo from "@/components/ui/HeyDittoLogo"
 
-const BRAND_TEXT = "Hey Ditto"
+interface TopBarProps {
+  // Removed onLiveModeClick prop
+}
 
-const TopBar: React.FC = () => {
+const TopBar: React.FC<TopBarProps> = () => {
   const modal = useModal()
   const openFeedbackModal = modal.createOpenHandler("feedback")
   const openSettingsModal = modal.createOpenHandler("settings")
@@ -32,7 +35,7 @@ const TopBar: React.FC = () => {
 
   return (
     <header role="banner" className={topBarClasses}>
-      {/* Left side - Feedback and Memories buttons */}
+      {/* Left side - Feedback, Live Mode, and Memories buttons */}
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -48,6 +51,9 @@ const TopBar: React.FC = () => {
           </TooltipTrigger>
           <TooltipContent side="bottom">Feedback</TooltipContent>
         </Tooltip>
+
+        {/* Live Mode Button */}
+        {/* Removed Live Mode Button */}
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -65,35 +71,43 @@ const TopBar: React.FC = () => {
         </Tooltip>
       </div>
 
-      {/* Center - Logo and Brand Text */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-        <Avatar className="h-8 w-8 ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50">
-          <AvatarImage
-            src={DITTO_LOGO}
-            alt="Ditto"
-            className="h-8 w-8 rounded-full rainbow-gradient"
-          />
-        </Avatar>
-        <span className="text-lg font-medium text-foreground select-none">
-          {BRAND_TEXT}
-        </span>
+      {/* Center - Hey Ditto Words Logo */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+        <HeyDittoLogo className="h-8" />
       </div>
 
-      {/* Right - Settings button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={openSettingsModal}
-            aria-label="Open settings"
-            className={iconButtonClasses}
-          >
-            <Settings className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Settings</TooltipContent>
-      </Tooltip>
+      {/* Right - Personality and Settings buttons */}
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={modal.createOpenHandler("personalityAssessments")}
+              aria-label="View personality assessments"
+              className={iconButtonClasses}
+            >
+              <UserCheck className="h-5 w-5 text-purple-600 group-hover:text-purple-500 transition-colors" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">My Personality</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openSettingsModal}
+              aria-label="Open settings"
+              className={iconButtonClasses}
+            >
+              <Settings className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Settings</TooltipContent>
+        </Tooltip>
+      </div>
     </header>
   )
 }
