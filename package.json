@@ -39,7 +39,7 @@
     "vis-data": "^8.0.1",
     "vis-network": "^9.1.13",
     "vite-plugin-pwa": "^1.0.1",
-    "zod": "^4.0.10"
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
