@@ -3,7 +3,12 @@ import { MemorySlider } from "@/components/ui/sliders/MemorySlider"
 import { MEMORY_CONFIG } from "@/constants"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
-import { Zap } from "lucide-react"
+import { Zap, Info } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import "./MemoryControlsModal.css"
 
 const redirectToGeneralTab = () => {
@@ -65,7 +70,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
         max={MEMORY_CONFIG.shortTerm.max}
         step={MEMORY_CONFIG.shortTerm.step}
         marks={MEMORY_CONFIG.shortTerm.marks}
-        description={`Number of recent messages to include in short-term memory (max ${MEMORY_CONFIG.shortTerm.max})`}
+        tooltip="Controls how many of your recent conversation turns Ditto remembers. Higher values help Ditto maintain context over longer conversations."
         minimumTier={minimumTier}
       />
 
@@ -77,7 +82,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
         max={MEMORY_CONFIG.longTerm.max}
         step={MEMORY_CONFIG.longTerm.step}
         marks={MEMORY_CONFIG.longTerm.marks}
-        description={`Chain of memory depths for long-term memory search (max ${MEMORY_CONFIG.longTerm.maxChainLength} levels, max ${MEMORY_CONFIG.longTerm.max} memories per level)`}
+        tooltip="Retrieves relevant memories from your conversation history based on current topics. Each level searches deeper into your past conversations."
         showChainControls
         maxChainLength={MEMORY_CONFIG.longTerm.maxChainLength}
         minimumTier={minimumTier}

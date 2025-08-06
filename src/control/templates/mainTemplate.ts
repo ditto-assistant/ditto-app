@@ -119,9 +119,9 @@ export const userMessageTemplate = (userPrompt: string) => {
   if (!userPrompt || typeof userPrompt !== "string") {
     return ""
   }
-  
+
   // Trim and limit length to prevent excessive input (~50k tokens worth)
   const sanitized = userPrompt.trim().slice(0, 200000)
-  
+
   return sanitized
 }

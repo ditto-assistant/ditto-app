@@ -1,7 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from "react"
-import { Plus, Minus, Zap } from "lucide-react"
+import { Plus, Minus, Zap, Info } from "lucide-react"
 import { useUser } from "@/hooks/useUser"
 import { Slider } from "@/components/ui/slider"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 interface MemorySliderProps {
@@ -13,9 +18,11 @@ interface MemorySliderProps {
   step?: number
   debounceMs?: number
   description?: string
+  tooltip?: string
   showChainControls?: boolean
   maxChainLength?: number
   minimumTier?: number
+  marks?: { value: number; label: string }[]
 }
 
 function useDebounce<T>(
@@ -52,9 +59,11 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   step = 1,
   debounceMs = 500,
   description,
+  tooltip,
   showChainControls = false,
   maxChainLength = 3,
   minimumTier,
+  marks,
 }) => {
   const { data: user } = useUser()
   const [localValues, setLocalValues] = useState<number[]>(values)
@@ -133,12 +142,20 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
       )}
     >
       <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <span className="font-semibold text-foreground">{label}</span>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">{tooltip}</TooltipContent>
+            </Tooltip>
+          )}
           {!showChainControls && (
             <span
               className={cn(
-                "font-mono px-2 py-1 bg-muted rounded text-sm transition-opacity",
+                "font-mono px-2 py-1 bg-muted rounded text-sm transition-opacity ml-auto",
                 isSaving && "opacity-50"
               )}
             >
@@ -153,46 +170,68 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
       )}
 
       {showChainControls && (
-        <div className="bg-muted p-2 rounded-md mb-3 flex justify-between items-center">
-          <div className="flex items-center font-mono text-sm text-foreground">
-            <span className={cn(isSaving && "opacity-50")}>
-              {localValues.map((v, i) => (
-                <React.Fragment key={i}>
-                  {i > 0 && (
-                    <span className="mx-1.5 text-muted-foreground text-xs">
-                      →
-                    </span>
-                  )}
-                  <span className="bg-background px-1.5 py-0.5 rounded min-w-[2ch] text-center">
-                    {v}
-                  </span>
-                </React.Fragment>
-              ))}
-            </span>
-          </div>
-          <div className="flex gap-1.5">
-            <button
-              className={cn(
-                "flex items-center justify-center w-6 h-6 rounded bg-background text-foreground transition-colors",
-                "hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              onClick={handleRemoveChain}
-              disabled={localValues.length <= 1 || isLocked}
-              title="Remove last chain level"
-            >
-              <Minus className="h-3 w-3" />
-            </button>
-            <button
-              className={cn(
-                "flex items-center justify-center w-6 h-6 rounded bg-background text-foreground transition-colors",
-                "hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              onClick={handleAddChain}
-              disabled={localValues.length >= maxChainLength || isLocked}
-              title="Add chain level"
-            >
-              <Plus className="h-3 w-3" />
-            </button>
+        <div className="bg-muted/50 p-3 rounded-lg mb-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Chain Levels:
+              </span>
+              <div className="flex items-center gap-2">
+                {[0, 1, 2].map((index) => {
+                  const isActive = index < localValues.length
+                  const canAdd =
+                    index === localValues.length && index <= maxChainLength
+                  const canRemove =
+                    index === localValues.length - 1 && localValues.length > 1
+
+                  return (
+                    <button
+                      key={index}
+                      className={cn(
+                        "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground",
+                        index === 0 && "cursor-default",
+                        (canAdd || canRemove) &&
+                          !isLocked &&
+                          "hover:bg-muted-foreground/20 cursor-pointer",
+                        isLocked && "cursor-not-allowed"
+                      )}
+                      onClick={() => {
+                        if (index === 0 || isLocked) return
+
+                        if (canRemove) {
+                          // Remove this level
+                          handleRemoveChain()
+                        } else if (canAdd) {
+                          // Add a new level
+                          handleAddChain()
+                        }
+                      }}
+                      disabled={index === 0 || isLocked}
+                    >
+                      {index + 1}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="flex items-center font-mono text-sm">
+              <span
+                className={cn(
+                  "text-muted-foreground",
+                  isSaving && "opacity-50"
+                )}
+              >
+                {localValues.map((v, i) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className="mx-1">→</span>}
+                    <span className="text-foreground font-semibold">{v}</span>
+                  </React.Fragment>
+                ))}
+              </span>
+            </div>
           </div>
         </div>
       )}
