@@ -153,53 +153,55 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
       )}
 
       {showChainControls && (
-        <div className="bg-muted p-3 rounded-md mb-4 flex justify-between items-center">
-          <div className="flex items-center font-mono text-base text-foreground">
+        <div className="bg-muted p-2 rounded-md mb-3 flex justify-between items-center">
+          <div className="flex items-center font-mono text-sm text-foreground">
             <span className={cn(isSaving && "opacity-50")}>
               {localValues.map((v, i) => (
                 <React.Fragment key={i}>
                   {i > 0 && (
-                    <span className="mx-2 text-muted-foreground">→</span>
+                    <span className="mx-1.5 text-muted-foreground text-xs">
+                      →
+                    </span>
                   )}
-                  <span className="bg-background px-2 py-1 rounded min-w-[2ch] text-center">
+                  <span className="bg-background px-1.5 py-0.5 rounded min-w-[2ch] text-center">
                     {v}
                   </span>
                 </React.Fragment>
               ))}
             </span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <button
               className={cn(
-                "flex items-center justify-center w-7 h-7 rounded bg-background text-foreground transition-colors",
+                "flex items-center justify-center w-6 h-6 rounded bg-background text-foreground transition-colors",
                 "hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
               )}
               onClick={handleRemoveChain}
               disabled={localValues.length <= 1 || isLocked}
               title="Remove last chain level"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-3 w-3" />
             </button>
             <button
               className={cn(
-                "flex items-center justify-center w-7 h-7 rounded bg-background text-foreground transition-colors",
+                "flex items-center justify-center w-6 h-6 rounded bg-background text-foreground transition-colors",
                 "hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
               )}
               onClick={handleAddChain}
               disabled={localValues.length >= maxChainLength || isLocked}
               title="Add chain level"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
             </button>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {localValues.map((value, index) => (
-          <div key={index} className="flex items-center gap-4">
+          <div key={index} className="flex items-center gap-3">
             {showChainControls && (
-              <div className="text-sm text-muted-foreground min-w-[60px]">
+              <div className="text-sm text-muted-foreground min-w-[50px]">
                 Level {index + 1}
               </div>
             )}
