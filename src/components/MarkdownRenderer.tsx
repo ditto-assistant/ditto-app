@@ -1,3 +1,4 @@
+import React from "react"
 import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import {
@@ -10,12 +11,47 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
 import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
 import "./MarkdownRenderer.css"
 import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 
 interface MarkdownRendererProps {
   content: string
   className?: string
+}
+
+// Error boundary for catching rendering errors
+class MarkdownErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("MarkdownRenderer error:", error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="markdown-content markdown-error">
+          <p style={{ color: "var(--muted-foreground)" }}>
+            Error rendering markdown content. The content may contain
+            unsupported formatting.
+          </p>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
 }
 
 // TypeScript interfaces for safe code block handling
@@ -52,19 +88,6 @@ const MAX_CONTENT_LENGTH = 100000 // 100KB limit
 const MAX_TABLE_ROWS = 100
 const MAX_TABLE_COLUMNS = 20
 
-// Input sanitization for security
-const sanitizeTableContent = (content: string): string => {
-  if (typeof content !== "string") {
-    return ""
-  }
-
-  // Basic XSS protection - remove script tags and on* attributes
-  return content
-    .replace(/<script[^>]*>.*?<\/script>/gi, "")
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, "")
-    .replace(/javascript:/gi, "")
-}
-
 // Custom table parser that works without remark-gfm
 const parseMarkdownTables = (content: string): string => {
   if (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH) {
@@ -72,22 +95,13 @@ const parseMarkdownTables = (content: string): string => {
     return content
   }
 
-  let processedContent = content
+  // Quick check to avoid processing if no tables are present
+  // This improves performance during streaming
+  if (!content.includes("|")) {
+    return content
+  }
 
-  // First, extract and process tables from ```markdown code blocks
-  const markdownCodeBlockRegex = /```markdown\n([\s\S]*?)\n```/g
-  processedContent = processedContent.replace(
-    markdownCodeBlockRegex,
-    (match, codeContent) => {
-      // Process tables within the markdown code block
-      const sanitizedContent = sanitizeTableContent(codeContent)
-      return processTableContent(sanitizedContent)
-    }
-  )
-
-  // Then process any remaining tables in the regular content
-  const sanitizedContent = sanitizeTableContent(processedContent)
-  return processTableContent(sanitizedContent)
+  return processTableContent(content)
 }
 
 const processTableContent = (content: string): string => {
@@ -105,13 +119,24 @@ const processTableContent = (content: string): string => {
       const isTableStart = nextLine.includes("|") && nextLine.includes("-")
 
       if (isTableStart) {
-        // Found a table! Parse it
-        try {
-          const tableHTML = parseTable(lines, i)
-          result.push(tableHTML.html)
-          i = tableHTML.endIndex
-        } catch (error) {
-          console.warn("Failed to parse markdown table:", error)
+        // Check if we have at least one data row after the separator
+        // This prevents rendering incomplete tables during streaming
+        const hasDataRow =
+          i + 2 < lines.length && lines[i + 2].trim().includes("|")
+
+        if (hasDataRow) {
+          // Found a complete enough table! Parse it
+          try {
+            const tableHTML = parseTable(lines, i)
+            result.push(tableHTML.html)
+            i = tableHTML.endIndex
+          } catch (error) {
+            console.warn("Failed to parse markdown table:", error)
+            result.push(lines[i])
+            i++
+          }
+        } else {
+          // Table is incomplete (still streaming), keep as markdown
           result.push(lines[i])
           i++
         }
@@ -126,6 +151,34 @@ const processTableContent = (content: string): string => {
   }
 
   return result.join("\n")
+}
+
+// Helper function to process markdown within table cells
+const processTableCellMarkdown = (text: string): string => {
+  if (!text) return ""
+
+  // Process bold text
+  text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+  text = text.replace(/__([^_]+)__/g, "<strong>$1</strong>")
+
+  // Process italic text
+  text = text.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
+  text = text.replace(/(?<!_)_([^_]+)_(?!_)/g, "<em>$1</em>")
+
+  // Process inline code
+  text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+
+  // Process line breaks
+  text = text.replace(/<br\s*\/?>/gi, "<br>")
+  text = text.replace(/\n/g, "<br>")
+
+  // Process links
+  text = text.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+  )
+
+  return text
 }
 
 const parseTable = (
@@ -156,10 +209,7 @@ const parseTable = (
       break
     }
 
-    const cells = line
-      .split("|")
-      .map((c) => sanitizeTableContent(c.trim()))
-      .filter((c) => c.length > 0)
+    const cells = line.split("|").filter((c) => c.length > 0)
 
     if (cells.length > 0) {
       rows.push(cells)
@@ -171,20 +221,22 @@ const parseTable = (
   let html =
     '\n<div class="table-wrapper" role="region" aria-label="Data table" tabindex="0">\n<table class="markdown-table" role="table">\n'
 
-  // Header with accessibility
+  // Header with accessibility and markdown processing
   html +=
     '<thead class="markdown-table-head">\n<tr class="markdown-table-row" role="row">\n'
   headers.forEach((header) => {
-    html += `<th class="markdown-table-header" role="columnheader" scope="col">${header}</th>\n`
+    const processedHeader = processTableCellMarkdown(header)
+    html += `<th class="markdown-table-header" role="columnheader" scope="col">${processedHeader}</th>\n`
   })
   html += "</tr>\n</thead>\n"
 
-  // Body with accessibility
+  // Body with accessibility and markdown processing
   html += '<tbody class="markdown-table-body">\n'
   rows.forEach((row) => {
     html += '<tr class="markdown-table-row" role="row">\n'
     row.forEach((cell) => {
-      html += `<td class="markdown-table-cell" role="gridcell">${cell}</td>\n`
+      const processedCell = processTableCellMarkdown(cell)
+      html += `<td class="markdown-table-cell" role="gridcell">${processedCell}</td>\n`
     })
     html += "</tr>\n"
   })
@@ -196,7 +248,7 @@ const parseTable = (
   }
 }
 
-const MarkdownRenderer = ({
+const MarkdownRendererCore = ({
   content,
   className = "",
 }: MarkdownRendererProps) => {
@@ -217,13 +269,35 @@ const MarkdownRenderer = ({
   // Choose the appropriate syntax highlighting theme based on the current theme
   const syntaxTheme = theme === "dark" ? vscDarkPlus : oneLight
 
-  // Pre-process content to handle tables
-  const processedContent = parseMarkdownTables(content)
+  // Minimal preprocessing to handle Unicode issues before rehype-sanitize
+  const preProcessContent = (text: string): string => {
+    if (typeof text !== "string") return ""
+
+    // Only fix Unicode characters that cause DOM parsing errors
+    // Non-breaking hyphen (U+2011) is the main culprit from the error reports
+    text = text.replace(/\u2011/g, "-")
+
+    // Remove zero-width characters that can cause parsing issues
+    text = text.replace(/[\u200B-\u200D\uFEFF]/g, "")
+
+    return text
+  }
+
+  // Pre-process content to handle tables and Unicode issues
+  let processedContent: string
+  try {
+    const preprocessedContent = preProcessContent(content)
+    processedContent = parseMarkdownTables(preprocessedContent)
+  } catch (error) {
+    console.error("Error processing markdown content:", error)
+    // Fallback to displaying raw content with basic escaping
+    processedContent = content.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  }
 
   return (
     <div className={`markdown-content ${className}`}>
       <ReactMarkdown
-        rehypePlugins={[rehypeRaw]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, {}]]}
         components={{
           a: ({ href, children, ...props }) => (
             <a {...props} href={href} target="_blank" rel="noopener noreferrer">
@@ -366,6 +440,15 @@ const MarkdownRenderer = ({
         {processedContent}
       </ReactMarkdown>
     </div>
+  )
+}
+
+// Wrap the core component with error boundary
+const MarkdownRenderer = (props: MarkdownRendererProps) => {
+  return (
+    <MarkdownErrorBoundary>
+      <MarkdownRendererCore {...props} />
+    </MarkdownErrorBoundary>
   )
 }
 
