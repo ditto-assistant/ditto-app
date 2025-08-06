@@ -11,13 +11,53 @@ import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
 import rehypeRaw from "rehype-raw"
-import rehypeSanitize from "rehype-sanitize"
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
+import addClasses from "rehype-class-names"
 import "./MarkdownRenderer.css"
 import { triggerHaptic, HapticPattern } from "@/utils/haptics"
 
 interface MarkdownRendererProps {
   content: string
   className?: string
+}
+
+// Configuration for rehype-class-names plugin
+// Using supported selectors from hast-util-select
+const classNamesConfig = {
+  table: "markdown-table",
+  thead: "markdown-table-head",
+  tbody: "markdown-table-body",
+  tr: "markdown-table-row",
+  th: "markdown-table-header",
+  td: "markdown-table-cell",
+  ul: "markdown-list markdown-ul",
+  ol: "markdown-list markdown-ol",
+  li: "markdown-list-item",
+  img: "markdown-image",
+  // Original approach - code elements that are not inside pre elements
+  "code:not(pre code)": "inline-code",
+}
+
+// Minimal sanitizer schema that allows class attributes on elements that need them
+const sanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    // Allow className on table elements
+    table: [...(defaultSchema?.attributes?.table ?? []), ["className"]],
+    thead: [...(defaultSchema?.attributes?.thead ?? []), ["className"]],
+    tbody: [...(defaultSchema?.attributes?.tbody ?? []), ["className"]],
+    tr: [...(defaultSchema?.attributes?.tr ?? []), ["className"]],
+    th: [...(defaultSchema?.attributes?.th ?? []), ["className"]],
+    td: [...(defaultSchema?.attributes?.td ?? []), ["className"]],
+    // Allow className on list elements
+    ul: [...(defaultSchema?.attributes?.ul ?? []), ["className"]],
+    ol: [...(defaultSchema?.attributes?.ol ?? []), ["className"]],
+    li: [...(defaultSchema?.attributes?.li ?? []), ["className"]],
+    // Allow className on other elements
+    img: [...(defaultSchema?.attributes?.img ?? []), ["className"]],
+    code: [...(defaultSchema?.attributes?.code ?? []), ["className"]],
+  },
 }
 
 // Error boundary for catching rendering errors
@@ -77,10 +117,32 @@ const isCodeElement = (element: any): element is CodeElement => {
 
 const extractCodeContent = (codeElement: CodeElement): string => {
   const { children } = codeElement.props
-  if (Array.isArray(children)) {
-    return String(children[0] || "")
+
+  // Helper function to recursively extract text from React elements
+  const extractText = (node: any): string => {
+    if (typeof node === "string") {
+      return node
+    }
+    if (typeof node === "number") {
+      return String(node)
+    }
+    if (node === null || node === undefined) {
+      return ""
+    }
+    if (Array.isArray(node)) {
+      return node.map(extractText).join("")
+    }
+    if (typeof node === "object" && node.props && node.props.children) {
+      return extractText(node.props.children)
+    }
+    // For any other object types, try to get nodeValue or textContent
+    if (typeof node === "object" && node.nodeValue) {
+      return node.nodeValue
+    }
+    return ""
   }
-  return String(children || "")
+
+  return extractText(children)
 }
 
 // Constants for security and validation
@@ -157,6 +219,12 @@ const processTableContent = (content: string): string => {
 const processTableCellMarkdown = (text: string): string => {
   if (!text) return ""
 
+  // Process code blocks (triple backticks) first, before inline code
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, language, code) => {
+    const langClass = language ? ` language-${language}` : ""
+    return `<pre><code${langClass ? ` class="${langClass.trim()}"` : ""}>${code.trim()}</code></pre>`
+  })
+
   // Process bold text
   text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
   text = text.replace(/__([^_]+)__/g, "<strong>$1</strong>")
@@ -165,8 +233,12 @@ const processTableCellMarkdown = (text: string): string => {
   text = text.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
   text = text.replace(/(?<!_)_([^_]+)_(?!_)/g, "<em>$1</em>")
 
-  // Process inline code
-  text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+  // Process inline code (single backticks) - but avoid already processed code blocks
+  // Class will be added by rehype-class-names plugin
+  text = text.replace(
+    /(?<!<code[^>]*>)`([^`]+)`(?![^<]*<\/code>)/g,
+    "<code>$1</code>"
+  )
 
   // Process line breaks
   text = text.replace(/<br\s*\/?>/gi, "<br>")
@@ -218,25 +290,25 @@ const parseTable = (
   }
 
   // Generate HTML with proper formatting and accessibility
+  // Classes are now handled by rehype-class-names plugin
   let html =
-    '\n<div class="table-wrapper" role="region" aria-label="Data table" tabindex="0">\n<table class="markdown-table" role="table">\n'
+    '\n<div class="table-wrapper" role="region" aria-label="Data table" tabindex="0">\n<table role="table">\n'
 
   // Header with accessibility and markdown processing
-  html +=
-    '<thead class="markdown-table-head">\n<tr class="markdown-table-row" role="row">\n'
+  html += '<thead>\n<tr role="row">\n'
   headers.forEach((header) => {
     const processedHeader = processTableCellMarkdown(header)
-    html += `<th class="markdown-table-header" role="columnheader" scope="col">${processedHeader}</th>\n`
+    html += `<th role="columnheader" scope="col">${processedHeader}</th>\n`
   })
   html += "</tr>\n</thead>\n"
 
   // Body with accessibility and markdown processing
-  html += '<tbody class="markdown-table-body">\n'
+  html += "<tbody>\n"
   rows.forEach((row) => {
-    html += '<tr class="markdown-table-row" role="row">\n'
+    html += '<tr role="row">\n'
     row.forEach((cell) => {
       const processedCell = processTableCellMarkdown(cell)
-      html += `<td class="markdown-table-cell" role="gridcell">${processedCell}</td>\n`
+      html += `<td role="gridcell">${processedCell}</td>\n`
     })
     html += "</tr>\n"
   })
@@ -297,35 +369,23 @@ const MarkdownRendererCore = ({
   return (
     <div className={`markdown-content ${className}`}>
       <ReactMarkdown
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, {}]]}
+        rehypePlugins={[
+          rehypeRaw,
+          [addClasses, classNamesConfig],
+          [rehypeSanitize, sanitizeSchema],
+        ]}
         components={{
           a: ({ href, children, ...props }) => (
             <a {...props} href={href} target="_blank" rel="noopener noreferrer">
               {children}
             </a>
           ),
-          // Enhanced list handling
-          ul: ({ children, ...props }) => (
-            <ul className="markdown-list markdown-ul" {...props}>
-              {children}
-            </ul>
-          ),
-          ol: ({ children, ...props }) => (
-            <ol className="markdown-list markdown-ol" {...props}>
-              {children}
-            </ol>
-          ),
-          li: ({ children, ...props }) => (
-            <li className="markdown-list-item" {...props}>
-              {children}
-            </li>
-          ),
           img: ({ src, alt, ...props }) => (
             <img
               src={src}
               alt={alt || ""}
               {...props}
-              className="markdown-image image-container"
+              className="image-container"
               style={{
                 minHeight: isIOS ? "180px" : "auto",
                 minWidth: "100px",
@@ -347,6 +407,7 @@ const MarkdownRendererCore = ({
             const value = String(children).trim()
 
             // For inline code, we wrap it with a container to position the copy button
+            // The inline-code class is now handled by rehype-class-names plugin
             return (
               <span className="inline-code-container">
                 <code className={className} {...props}>

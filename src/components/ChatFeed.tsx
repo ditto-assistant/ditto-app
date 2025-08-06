@@ -4,6 +4,7 @@ import React, {
   useState,
   forwardRef,
   useCallback,
+  useMemo,
 } from "react"
 import "./ChatFeed.css"
 import { ChevronDown } from "lucide-react"
@@ -693,16 +694,18 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     previousSyncCountRef.current = currentSyncCount
   }, [syncsInProgress, addTimeout])
 
+  // Compute non-optimistic message IDs outside the effect
+  const nonOptimisticMessageIDs = useMemo(() => {
+    return messages
+      .filter((msg) => !msg.isOptimistic && msg.response)
+      .map((msg) => msg.id)
+  }, [messages])
+
   useEffect(() => {
-    if (!isLoading && messages.length > 0) {
-      const messageIDs = messages
-        .filter((msg) => !msg.isOptimistic && msg.response)
-        .map((msg) => msg.id)
-      if (messageIDs.length > 0) {
-        checkStatuses(messageIDs)
-      }
+    if (!isLoading && nonOptimisticMessageIDs.length > 0) {
+      checkStatuses(nonOptimisticMessageIDs)
     }
-  }, [isLoading, messages, checkStatuses])
+  }, [isLoading, nonOptimisticMessageIDs, checkStatuses]) // Now all dependencies are explicit
 
   useEffect(() => {
     let isMounted = true

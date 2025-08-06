@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { startSync, getSyncStatus } from "@/api/sync"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -11,6 +11,10 @@ export const useMemorySync = () => {
     Map<string, SyncState>
   >(new Map())
   const { user } = useAuth()
+  const syncsRef = useRef<Map<string, SyncState>>(new Map())
+
+  // Keep ref in sync with state
+  syncsRef.current = syncsInProgress
 
   const triggerSync = useCallback(
     async (messageId: string) => {
@@ -20,8 +24,14 @@ export const useMemorySync = () => {
         return
       }
 
-      setSyncsInProgress((prev) => new Map(prev).set(messageId, { stage: 1 }))
+      // Start the sync job on the backend
       await startSync(user.uid, messageId)
+
+      // Add to local state to start polling, but with a slight delay to ensure
+      // the message streaming is complete and the backend sync job is initiated
+      setTimeout(() => {
+        setSyncsInProgress((prev) => new Map(prev).set(messageId, { stage: 1 }))
+      }, 1000) // 1 second delay to ensure streaming is done
     },
     [user?.uid, syncsInProgress]
   )
@@ -53,14 +63,17 @@ export const useMemorySync = () => {
     const pollStatuses = async () => {
       if (isCancelled) return
 
+      // Use ref to get current syncs without causing re-renders
+      const currentSyncs = syncsRef.current
+
       // Only poll if there are syncs in progress
-      if (syncsInProgress.size === 0) {
+      if (currentSyncs.size === 0) {
         // No active syncs, wait longer before checking again (10 seconds instead of 2)
         timeoutId = setTimeout(pollStatuses, 10000)
         return
       }
 
-      const messageIDs = Array.from(syncsInProgress.keys())
+      const messageIDs = Array.from(currentSyncs.keys())
       const result = await getSyncStatus(messageIDs)
 
       if (isCancelled) return
@@ -106,7 +119,7 @@ export const useMemorySync = () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [syncsInProgress])
+  }, []) // Remove syncsInProgress dependency
 
   return {
     syncsInProgress,
