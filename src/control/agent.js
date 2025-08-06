@@ -162,7 +162,7 @@ export const sendPrompt = async (
     let mainAgentModel = preferences.mainModel
     if (image && !modelSupportsImageAttachments(mainAgentModel)) {
       if (isPremiumUser) {
-        mainAgentModel = "claude-3-5-sonnet"
+        mainAgentModel = "gpt-4.1-mini"
       } else {
         mainAgentModel = "meta/llama-4-scout-17b-16e-instruct-maas"
       }
