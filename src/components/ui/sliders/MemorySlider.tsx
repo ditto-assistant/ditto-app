@@ -1,12 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from "react"
-import { Plus, Minus, Zap, Info } from "lucide-react"
+import { Zap, Info } from "lucide-react"
 import { useUser } from "@/hooks/useUser"
 import { Slider } from "@/components/ui/slider"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface MemorySliderProps {
@@ -17,10 +13,8 @@ interface MemorySliderProps {
   max?: number
   step?: number
   debounceMs?: number
-  description?: string
-  tooltip?: string
-  showChainControls?: boolean
-  maxChainLength?: number
+  onInfoClick?: () => void
+  showLongTermLevels?: boolean
   minimumTier?: number
   marks?: { value: number; label: string }[]
 }
@@ -58,10 +52,8 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   max = 10,
   step = 1,
   debounceMs = 500,
-  description,
-  tooltip,
-  showChainControls = false,
-  maxChainLength = 3,
+  onInfoClick,
+  showLongTermLevels = false,
   minimumTier,
   marks,
 }) => {
@@ -115,24 +107,10 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
     [debouncedOnChange]
   )
 
-  const handleAddChain = useCallback(() => {
-    if (localValues.length < maxChainLength) {
-      const newValues = [
-        ...localValues,
-        localValues[localValues.length - 1] || 5,
-      ]
-      setLocalValues(newValues)
-      debouncedOnChange(newValues)
-    }
-  }, [localValues, debouncedOnChange, maxChainLength])
-
-  const handleRemoveChain = useCallback(() => {
-    if (localValues.length > 1) {
-      const newValues = localValues.slice(0, -1)
-      setLocalValues(newValues)
-      debouncedOnChange(newValues)
-    }
-  }, [localValues, debouncedOnChange])
+  // Ensure we always have exactly 2 values for long-term memory
+  const displayValues = showLongTermLevels
+    ? [...localValues.slice(0, 2), ...(localValues.length < 2 ? [0] : [])]
+    : localValues
 
   return (
     <div
@@ -144,119 +122,67 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-foreground">{label}</span>
-          {tooltip && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">{tooltip}</TooltipContent>
-            </Tooltip>
-          )}
-          {!showChainControls && (
-            <span
-              className={cn(
-                "font-mono px-2 py-1 bg-muted rounded text-sm transition-opacity ml-auto",
-                isSaving && "opacity-50"
-              )}
+          {onInfoClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 h-6 w-6"
+              onClick={(e) => {
+                e.stopPropagation()
+                onInfoClick()
+              }}
             >
-              {localValues[0]}
-            </span>
+              <Info className="h-4 w-4" />
+            </Button>
           )}
         </div>
+        {!showLongTermLevels && (
+          <span
+            className={cn(
+              "font-mono px-2 py-1 bg-muted rounded text-sm transition-opacity",
+              isSaving && "opacity-50"
+            )}
+          >
+            {localValues[0]}
+          </span>
+        )}
       </div>
 
-      {description && (
-        <div className="text-sm text-muted-foreground mb-4">{description}</div>
-      )}
-
-      {showChainControls && (
-        <div className="bg-muted/50 p-3 rounded-lg mb-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Chain Levels:
-              </span>
-              <div className="flex items-center gap-2">
-                {[0, 1, 2].map((index) => {
-                  const isActive = index < localValues.length
-                  const canAdd =
-                    index === localValues.length && index <= maxChainLength
-                  const canRemove =
-                    index === localValues.length - 1 && localValues.length > 1
-
-                  return (
-                    <button
-                      key={index}
-                      className={cn(
-                        "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground",
-                        index === 0 && "cursor-default",
-                        (canAdd || canRemove) &&
-                          !isLocked &&
-                          "hover:bg-muted-foreground/20 cursor-pointer",
-                        isLocked && "cursor-not-allowed"
-                      )}
-                      onClick={() => {
-                        if (index === 0 || isLocked) return
-
-                        if (canRemove) {
-                          // Remove this level
-                          handleRemoveChain()
-                        } else if (canAdd) {
-                          // Add a new level
-                          handleAddChain()
-                        }
-                      }}
-                      disabled={index === 0 || isLocked}
-                    >
-                      {index + 1}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-            <div className="flex items-center font-mono text-sm">
-              <span
-                className={cn(
-                  "text-muted-foreground",
-                  isSaving && "opacity-50"
-                )}
-              >
-                {localValues.map((v, i) => (
-                  <React.Fragment key={i}>
-                    {i > 0 && <span className="mx-1">→</span>}
-                    <span className="text-foreground font-semibold">{v}</span>
-                  </React.Fragment>
-                ))}
-              </span>
-            </div>
+      {showLongTermLevels && (
+        <div className="bg-muted/50 p-2 rounded-md mb-3 flex justify-end">
+          <div className="flex items-center font-mono text-sm text-foreground">
+            <span className={cn(isSaving && "opacity-50")}>
+              Level 1: <span className="font-semibold">{displayValues[0]}</span>
+              <span className="mx-2 text-muted-foreground">→</span>
+              Level 2: <span className="font-semibold">{displayValues[1]}</span>
+            </span>
           </div>
         </div>
       )}
 
       <div className="flex flex-col gap-4">
-        {localValues.map((value, index) => (
-          <div key={index} className="flex items-center gap-3">
-            {showChainControls && (
-              <div className="text-sm text-muted-foreground min-w-[50px]">
-                Level {index + 1}
-              </div>
-            )}
-            <Slider
-              key={`memory-slider-${index}`}
-              defaultValue={[value]}
-              onValueChange={handleSlideChange(index)}
-              onValueCommit={handleSlideCommit(index)}
-              min={min}
-              max={max}
-              step={step}
-              disabled={isLocked}
-              className="flex-1"
-            />
-          </div>
-        ))}
+        {(showLongTermLevels ? displayValues : localValues).map(
+          (value, index) => (
+            <div key={index} className="flex items-center gap-3">
+              {showLongTermLevels && (
+                <div className="text-sm text-muted-foreground min-w-[60px]">
+                  Level {index + 1}
+                </div>
+              )}
+              <Slider
+                key={`memory-slider-${index}`}
+                defaultValue={[value]}
+                onValueChange={handleSlideChange(index)}
+                onValueCommit={handleSlideCommit(index)}
+                min={min}
+                max={max}
+                step={step}
+                disabled={isLocked}
+                className="flex-1"
+              />
+            </div>
+          )
+        )}
       </div>
 
       {isLocked && (
