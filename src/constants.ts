@@ -372,7 +372,7 @@ export const TOOLS = [
 export const MEMORY_CONFIG = {
   shortTerm: {
     min: 0,
-    max: 10,
+    max: 15,
     step: 1,
     marks: [
       { value: 0, label: "0" },
@@ -381,7 +381,9 @@ export const MEMORY_CONFIG = {
       { value: 5, label: "5" },
       { value: 7, label: "7" },
       { value: 9, label: "9" },
-      { value: 10, label: "10" },
+      { value: 11, label: "11" },
+      { value: 13, label: "13" },
+      { value: 15, label: "15" },
     ],
   },
   longTerm: {
