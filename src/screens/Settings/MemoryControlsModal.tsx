@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { MemorySlider } from "@/components/ui/sliders/MemorySlider"
+import { MemoryVisualization } from "./MemoryVisualization"
 import { MEMORY_CONFIG } from "@/constants"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
@@ -131,6 +132,21 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
             </p>
           </div>
         )}
+      </div>
+
+      {/* Memory Visualization */}
+      <div className="bg-muted/50 rounded-lg p-4 mt-6">
+        <h4 className="text-sm font-semibold mb-3 text-foreground">
+          Memory Structure
+        </h4>
+        <div className="h-64">
+          <MemoryVisualization
+            shortTermCount={preferences.memory.shortTermMemoryCount}
+            longTermLevel1={preferences.memory.longTermMemoryChain[0] || 0}
+            longTermLevel2={preferences.memory.longTermMemoryChain[1] || 0}
+            className="w-full h-full"
+          />
+        </div>
       </div>
 
       {isLocked && (

@@ -134,29 +134,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
             </Button>
           )}
         </div>
-        {!showLongTermLevels && (
-          <span
-            className={cn(
-              "font-mono px-2 py-1 bg-muted rounded text-sm transition-opacity",
-              isSaving && "opacity-50"
-            )}
-          >
-            {localValues[0]}
-          </span>
-        )}
       </div>
-
-      {showLongTermLevels && (
-        <div className="bg-muted/50 p-2 rounded-md mb-3 flex justify-end">
-          <div className="flex items-center font-mono text-sm text-foreground">
-            <span className={cn(isSaving && "opacity-50")}>
-              Level 1: <span className="font-semibold">{displayValues[0]}</span>
-              <span className="mx-2 text-muted-foreground">→</span>
-              Level 2: <span className="font-semibold">{displayValues[1]}</span>
-            </span>
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col gap-4">
         {(showLongTermLevels ? displayValues : localValues).map(
@@ -167,17 +145,25 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
                   Level {index + 1}
                 </div>
               )}
-              <Slider
-                key={`memory-slider-${index}`}
-                defaultValue={[value]}
-                onValueChange={handleSlideChange(index)}
-                onValueCommit={handleSlideCommit(index)}
-                min={min}
-                max={max}
-                step={step}
-                disabled={isLocked}
-                className="flex-1"
-              />
+              <div className="flex-1 flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-4 text-center">
+                  {min}
+                </span>
+                <Slider
+                  key={`memory-slider-${index}`}
+                  defaultValue={[value]}
+                  onValueChange={handleSlideChange(index)}
+                  onValueCommit={handleSlideCommit(index)}
+                  min={min}
+                  max={max}
+                  step={step}
+                  disabled={isLocked}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground w-4 text-center">
+                  {max}
+                </span>
+              </div>
             </div>
           )
         )}
