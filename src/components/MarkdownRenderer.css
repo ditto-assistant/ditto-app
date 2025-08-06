@@ -429,17 +429,19 @@
   font-style: italic;
 }
 
-/* Table styling */
+/* Table styling with enhanced borders */
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
   margin: 1rem 0;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   background-color: var(--card);
   /* Enhanced accessibility */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  /* Add subtle shadow for better definition */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Focus management for keyboard navigation */
@@ -466,7 +468,7 @@
 
 .markdown-table-head {
   background-color: var(--muted);
-  border-bottom: 2px solid var(--border);
+  border-bottom: 3px solid var(--border);
 }
 
 .markdown-table-header {
@@ -475,8 +477,8 @@
   font-weight: 600;
   color: var(--foreground);
   background-color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  border-right: 2px solid var(--border);
   white-space: nowrap;
   min-width: 120px;
   /* Enhanced accessibility for header cells */
@@ -525,6 +527,39 @@
   border-right: none;
 }
 
+/* Inline code styling within table cells */
+.markdown-table-cell code.inline-code,
+.markdown-table-header code.inline-code {
+  background-color: var(--more-muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+  color: var(--foreground);
+}
+
+/* Bold and italic text within tables */
+.markdown-table-cell strong,
+.markdown-table-header strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.markdown-table-cell em,
+.markdown-table-header em {
+  font-style: italic;
+  color: var(--foreground);
+}
+
+/* Links within tables */
+.markdown-table-cell a,
+.markdown-table-header a {
+  color: var(--text-link);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
 /* Enhanced responsive table styling for mobile */
 @media (max-width: 768px) {
   .table-wrapper {
@@ -563,7 +598,7 @@
   }
 }
 
-/* Dark mode specific table styling */
+/* Dark mode specific table styling with enhanced borders */
 .dark .markdown-table {
   border-color: var(--border);
 }
@@ -584,6 +619,11 @@
 
 .dark .markdown-table-cell {
   border-color: var(--border);
+}
+
+.dark .table-wrapper {
+  border-color: var(--border);
+  box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
 }
 
 /* High contrast mode support */
