@@ -349,7 +349,7 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   tools: DEFAULT_TOOL_PREFERENCES,
   memory: {
     shortTermMemoryCount: 5,
-    longTermMemoryChain: [3, 2, 1],
+    longTermMemoryChain: [4, 2],
   },
 } as const
 
@@ -394,6 +394,6 @@ export const MEMORY_CONFIG = {
       { value: 3, label: "3" },
       { value: 5, label: "5" },
     ],
-    maxChainLength: 5,
+    maxChainLength: 2,
   },
 } as const
