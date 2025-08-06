@@ -3,7 +3,7 @@ import { MemorySlider } from "@/components/ui/sliders/MemorySlider"
 import { MEMORY_CONFIG } from "@/constants"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
-import { Zap, Info, X } from "lucide-react"
+import { Zap, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import "./MemoryControlsModal.css"
 
@@ -72,7 +72,6 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
           min={MEMORY_CONFIG.shortTerm.min}
           max={MEMORY_CONFIG.shortTerm.max}
           step={MEMORY_CONFIG.shortTerm.step}
-          marks={MEMORY_CONFIG.shortTerm.marks}
           onInfoClick={() => setShowShortTermInfo(true)}
           minimumTier={minimumTier}
         />
@@ -93,7 +92,7 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
               Controls how many of your recent conversation turns Ditto
               remembers. Higher values help Ditto maintain context over longer
               conversations. Each unit represents one complete exchange (your
-              message + Ditto's response).
+              message + Ditto&apos;s response).
             </p>
           </div>
         )}
@@ -107,7 +106,6 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
           min={MEMORY_CONFIG.longTerm.min}
           max={MEMORY_CONFIG.longTerm.max}
           step={MEMORY_CONFIG.longTerm.step}
-          marks={MEMORY_CONFIG.longTerm.marks}
           onInfoClick={() => setShowLongTermInfo(true)}
           showLongTermLevels
           minimumTier={minimumTier}

@@ -16,7 +16,6 @@ interface MemorySliderProps {
   onInfoClick?: () => void
   showLongTermLevels?: boolean
   minimumTier?: number
-  marks?: { value: number; label: string }[]
 }
 
 function useDebounce<T>(
@@ -55,7 +54,6 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   onInfoClick,
   showLongTermLevels = false,
   minimumTier,
-  marks,
 }) => {
   const { data: user } = useUser()
   const [localValues, setLocalValues] = useState<number[]>(values)

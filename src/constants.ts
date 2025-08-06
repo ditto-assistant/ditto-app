@@ -374,28 +374,11 @@ export const MEMORY_CONFIG = {
     min: 0,
     max: 15,
     step: 1,
-    marks: [
-      { value: 0, label: "0" },
-      { value: 1, label: "1" },
-      { value: 3, label: "3" },
-      { value: 5, label: "5" },
-      { value: 7, label: "7" },
-      { value: 9, label: "9" },
-      { value: 11, label: "11" },
-      { value: 13, label: "13" },
-      { value: 15, label: "15" },
-    ],
   },
   longTerm: {
     min: 0,
     max: 5,
     step: 1,
-    marks: [
-      { value: 0, label: "0" },
-      { value: 1, label: "1" },
-      { value: 3, label: "3" },
-      { value: 5, label: "5" },
-    ],
     maxChainLength: 2,
   },
 } as const
