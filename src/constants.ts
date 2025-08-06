@@ -348,7 +348,7 @@ export const DEFAULT_PREFERENCES: ModelPreferences = {
   },
   tools: DEFAULT_TOOL_PREFERENCES,
   memory: {
-    shortTermMemoryCount: 5,
+    shortTermMemoryCount: 15,
     longTermMemoryChain: [4, 3],
   },
 } as const
