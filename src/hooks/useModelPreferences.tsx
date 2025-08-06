@@ -1,7 +1,7 @@
 import { useContext, createContext } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { DEFAULT_PREFERENCES } from "@/constants"
+import { DEFAULT_PREFERENCES, MEMORY_CONFIG } from "@/constants"
 import { ModelPreferences } from "@/types/llm"
 import { useAuth } from "./useAuth"
 import { useUser } from "./useUser"
@@ -103,6 +103,19 @@ function useModels() {
           modelPreferences.memory = {
             ...modelPreferences.memory,
             ...prefs.memory,
+          }
+
+          // Validate and truncate longTermMemoryChain if it exceeds maxChainLength
+          if (
+            modelPreferences.memory.longTermMemoryChain &&
+            modelPreferences.memory.longTermMemoryChain.length >
+              MEMORY_CONFIG.longTerm.maxChainLength
+          ) {
+            modelPreferences.memory.longTermMemoryChain =
+              modelPreferences.memory.longTermMemoryChain.slice(
+                0,
+                MEMORY_CONFIG.longTerm.maxChainLength
+              )
           }
         }
       }

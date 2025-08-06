@@ -29,12 +29,6 @@ interface CodeElement {
   props: ReactMarkdownCodeProps
 }
 
-type CodeBlockChildren =
-  | {
-      "code-0"?: CodeElement
-    }
-  | CodeElement
-
 // Type guards for safe property access
 const isCodeElement = (element: any): element is CodeElement => {
   return (
@@ -43,10 +37,6 @@ const isCodeElement = (element: any): element is CodeElement => {
     element.props &&
     typeof element.props === "object"
   )
-}
-
-const hasCodeTag = (element: CodeElement): boolean => {
-  return element.props.node?.tagName === "code"
 }
 
 const extractCodeContent = (codeElement: CodeElement): string => {
@@ -145,10 +135,7 @@ const parseTable = (
   if (!Array.isArray(lines) || startIndex >= lines.length) {
     throw new Error("Invalid table parsing parameters")
   }
-
   const headerLine = lines[startIndex]?.trim() || ""
-  const separatorLine = lines[startIndex + 1]?.trim() || ""
-
   // Parse header with validation
   const headers = headerLine
     .split("|")

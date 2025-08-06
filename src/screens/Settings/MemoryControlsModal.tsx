@@ -1,9 +1,11 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import { MemorySlider } from "@/components/ui/sliders/MemorySlider"
+import { MemoryVisualization } from "./MemoryVisualization"
 import { MEMORY_CONFIG } from "@/constants"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { useUser } from "@/hooks/useUser"
-import { Zap } from "lucide-react"
+import { Zap, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import "./MemoryControlsModal.css"
 
 const redirectToGeneralTab = () => {
@@ -41,47 +43,111 @@ const MemoryControlsModal: React.FC<MemoryControlsModalProps> = ({
   const handleLongTermChange = useCallback(
     (newValues: number[]) => {
       if (!preferences) return
-      if (newValues.length <= MEMORY_CONFIG.longTerm.maxChainLength) {
-        updatePreferences({
-          memory: {
-            ...preferences.memory,
-            longTermMemoryChain: newValues,
-          },
-        })
+      // Always keep exactly 2 levels
+      const finalValues = newValues.slice(0, 2)
+      while (finalValues.length < 2) {
+        finalValues.push(0)
       }
+      updatePreferences({
+        memory: {
+          ...preferences.memory,
+          longTermMemoryChain: finalValues,
+        },
+      })
     },
     [preferences, updatePreferences]
   )
+
+  const [showShortTermInfo, setShowShortTermInfo] = useState(false)
+  const [showLongTermInfo, setShowLongTermInfo] = useState(false)
 
   if (!preferences) return null
 
   return (
     <div className="memory-controls-content space-y-4">
-      <MemorySlider
-        label="Short Term Memory"
-        values={[preferences.memory.shortTermMemoryCount]}
-        onChange={handleShortTermChange}
-        min={MEMORY_CONFIG.shortTerm.min}
-        max={MEMORY_CONFIG.shortTerm.max}
-        step={MEMORY_CONFIG.shortTerm.step}
-        marks={MEMORY_CONFIG.shortTerm.marks}
-        description={`Number of recent messages to include in short-term memory (max ${MEMORY_CONFIG.shortTerm.max})`}
-        minimumTier={minimumTier}
-      />
+      <div className="relative">
+        <MemorySlider
+          label="Short Term Memory"
+          values={[preferences.memory.shortTermMemoryCount]}
+          onChange={handleShortTermChange}
+          min={MEMORY_CONFIG.shortTerm.min}
+          max={MEMORY_CONFIG.shortTerm.max}
+          step={MEMORY_CONFIG.shortTerm.step}
+          onInfoClick={() => setShowShortTermInfo(true)}
+          minimumTier={minimumTier}
+        />
+        {showShortTermInfo && (
+          <div className="absolute top-0 left-0 right-0 bg-background border rounded-lg p-4 shadow-lg z-10">
+            <div className="flex justify-between items-start mb-2">
+              <h4 className="font-semibold">Short Term Memory</h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-0 h-6 w-6"
+                onClick={() => setShowShortTermInfo(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Controls how many of your recent conversation turns Ditto
+              remembers. Higher values help Ditto maintain context over longer
+              conversations. Each unit represents one complete exchange (your
+              message + Ditto&apos;s response).
+            </p>
+          </div>
+        )}
+      </div>
 
-      <MemorySlider
-        label="Long Term Memory Chain"
-        values={preferences.memory.longTermMemoryChain}
-        onChange={handleLongTermChange}
-        min={MEMORY_CONFIG.longTerm.min}
-        max={MEMORY_CONFIG.longTerm.max}
-        step={MEMORY_CONFIG.longTerm.step}
-        marks={MEMORY_CONFIG.longTerm.marks}
-        description={`Chain of memory depths for long-term memory search (max ${MEMORY_CONFIG.longTerm.maxChainLength} levels, max ${MEMORY_CONFIG.longTerm.max} memories per level)`}
-        showChainControls
-        maxChainLength={MEMORY_CONFIG.longTerm.maxChainLength}
-        minimumTier={minimumTier}
-      />
+      <div className="relative">
+        <MemorySlider
+          label="Long Term Memory"
+          values={preferences.memory.longTermMemoryChain.slice(0, 2)}
+          onChange={handleLongTermChange}
+          min={MEMORY_CONFIG.longTerm.min}
+          max={MEMORY_CONFIG.longTerm.max}
+          step={MEMORY_CONFIG.longTerm.step}
+          onInfoClick={() => setShowLongTermInfo(true)}
+          showLongTermLevels
+          minimumTier={minimumTier}
+        />
+        {showLongTermInfo && (
+          <div className="absolute top-0 left-0 right-0 bg-background border rounded-lg p-4 shadow-lg z-10">
+            <div className="flex justify-between items-start mb-2">
+              <h4 className="font-semibold">Long Term Memory</h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-0 h-6 w-6"
+                onClick={() => setShowLongTermInfo(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Retrieves relevant memories from your conversation history based
+              on current topics. Level 1 searches your most relevant past
+              conversations, while Level 2 searches deeper for additional
+              context. Set either level to 0 to disable it.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Memory Visualization */}
+      <div className="bg-muted/50 rounded-lg p-4 mt-6">
+        <h4 className="text-sm font-semibold mb-3 text-foreground">
+          Memory Structure
+        </h4>
+        <div className="h-64">
+          <MemoryVisualization
+            shortTermCount={preferences.memory.shortTermMemoryCount}
+            longTermLevel1={preferences.memory.longTermMemoryChain[0] || 0}
+            longTermLevel2={preferences.memory.longTermMemoryChain[1] || 0}
+            className="w-full h-full"
+          />
+        </div>
+      </div>
 
       {isLocked && (
         <div onClick={redirectToGeneralTab} className="upgrade-overlay">

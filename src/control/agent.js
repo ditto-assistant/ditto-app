@@ -1,5 +1,8 @@
 import { promptLLMV2, cancelPromptLLMV2 } from "../api/LLM"
-import { mainTemplate, systemTemplate } from "../control/templates/mainTemplate"
+import {
+  systemTemplate,
+  userMessageTemplate,
+} from "../control/templates/mainTemplate"
 import { handleImageGeneration } from "./agentflows/imageFlow"
 import { handleGoogleSearch } from "./agentflows/searchFlow"
 import { modelSupportsImageAttachments } from "@/types/llm"
@@ -78,6 +81,20 @@ export const sendPrompt = async (
   planTier,
   onMemorySync = null
 ) => {
+  // Validate required parameters
+  if (!userID || typeof userID !== "string") {
+    throw new Error("Valid userID is required")
+  }
+  if (!firstName || typeof firstName !== "string") {
+    throw new Error("Valid firstName is required")
+  }
+  if (!prompt || typeof prompt !== "string") {
+    throw new Error("Valid prompt is required")
+  }
+  if (!preferences || typeof preferences !== "object") {
+    throw new Error("Valid preferences object is required")
+  }
+
   const isPremiumUser = planTier > 0
   try {
     // Create a thinking indicator in localStorage to show we're processing
@@ -142,25 +159,26 @@ export const sendPrompt = async (
       throw new Error("No examples found")
     }
 
-    const constructedPrompt = mainTemplate({
+    const constructedPrompt = userMessageTemplate(prompt)
+
+    const systemPrompt = systemTemplate({
+      userID,
       memories: memories.ok,
       examples: examplesString.ok,
       firstName,
       timestamp: new Date().toISOString(),
-      usersPrompt: prompt,
       toolPreferences: preferences.tools,
-      userID,
     })
 
-    const systemPrompt = systemTemplate(userID)
-
-    console.log("%c" + systemPrompt, "color: orange")
-    console.log("%c" + constructedPrompt, "color: green")
+    if (import.meta.env.DEV) {
+      console.log("%c" + systemPrompt, "color: orange")
+      console.log("%c" + constructedPrompt, "color: green")
+    }
 
     let mainAgentModel = preferences.mainModel
     if (image && !modelSupportsImageAttachments(mainAgentModel)) {
       if (isPremiumUser) {
-        mainAgentModel = "claude-3-5-sonnet"
+        mainAgentModel = "gpt-4.1-mini"
       } else {
         mainAgentModel = "meta/llama-4-scout-17b-16e-instruct-maas"
       }

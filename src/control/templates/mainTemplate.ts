@@ -15,23 +15,7 @@ const getToolsModule = (params: {
   return enabledTools as Tool[]
 }
 
-export const systemTemplate = (userID?: string) => {
-  let baseSystem =
-    "You are a friendly AI named Ditto here to help the user who is your best friend."
-
-  if (userID) {
-    // Get personality information from localStorage
-    const personalitySummary = PersonalityStorage.getPersonalitySummary(userID)
-    if (personalitySummary) {
-      console.log("🧠 SystemTemplate: Found personality summary for user.")
-      baseSystem += `\n\n## User's Personality Profile:\n${personalitySummary}\n\nUse this personality information to better understand and respond to the user's communication style and preferences.`
-    }
-  }
-
-  return baseSystem
-}
-
-export const getTimezoneString = (): string => {
+const getTimezoneString = (): string => {
   let timezoneString
   let timezone = new Date()
     .toLocaleString("en-US", { timeZoneName: "short" })
@@ -44,42 +28,43 @@ export const getTimezoneString = (): string => {
   return timezoneString
 }
 
-export const mainTemplate = (params: {
+export const systemTemplate = (params: {
+  userID?: string
   memories: string
   examples: string
   firstName: string
   timestamp: string
-  usersPrompt: string
   toolPreferences: ToolPreferences
-  userID: string
 }) => {
-  const {
-    memories,
-    examples,
-    firstName,
-    timestamp,
-    usersPrompt,
-    toolPreferences,
-    userID,
-  } = params
-  console.log("toolPreferences", params)
-  const tools = getToolsModule({
-    toolPreferences,
-  })
+  const { userID, memories, examples, firstName, timestamp, toolPreferences } =
+    params
+
+  let baseSystem =
+    "You are a friendly AI named Ditto here to help the user who is your best friend."
+
+  if (userID) {
+    // Get personality information from localStorage
+    const personalitySummary = PersonalityStorage.getPersonalitySummary(userID)
+    if (personalitySummary) {
+      if (import.meta.env.DEV) {
+        console.log("🧠 SystemTemplate: Found personality summary for user.")
+      }
+      baseSystem += `\n\n## User's Personality Profile:\n${personalitySummary}\n\nUse this personality information to better understand and respond to the user's communication style and preferences.`
+    }
+  }
+
+  const tools = getToolsModule({ toolPreferences })
 
   const toolsSection =
     tools.length > 0
-      ? `
-## Available Tools
-${tools
-  .map(
-    (tool, index) =>
-      `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
-  )
-  .join("\n")}`
+      ? `\n\n## Available Tools\n${tools
+          .map(
+            (tool, index) =>
+              `${index + 1}. ${tool.name}: ${tool.description} (Trigger: ${tool.trigger})`
+          )
+          .join("\n")}`
       : ""
 
-  console.log("prefiltered examples", examples)
   const filteredExamples = examples
     .split("\n\n")
     .filter((example) => {
@@ -106,33 +91,37 @@ ${tools
 
   const examplesSection =
     tools.length > 0 && filteredExamples
-      ? `
-
-## Examples of User Prompts that need tools:
--- Begin Examples --
-${filteredExamples}
--- End Examples --`
+      ? `\n\n## Examples of User Prompts that need tools:\n-- Begin Examples --\n${filteredExamples}\n-- End Examples --`
       : ""
 
-  let prompt = `The following is a conversation between an AI named Ditto and a human that are best friends. Ditto is helpful and answers factual questions correctly but maintains a friendly relationship with the human.
+  const currentTime =
+    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
+
+  const systemPrompt = `${baseSystem}
+
 ${toolsSection}${examplesSection}
 
-<!memories>
+## Context Information
+- User's Name: ${firstName}
+- Current Timestamp: ${timestamp}
+- Current Time in User's Timezone: ${currentTime}
 
-User's Name: <!users_name>
-Current Timestamp: <!timestamp>
-Current Time in User's Timezone: <!time>
-User's Prompt: <!users_prompt>
-Ditto:`
+## Memory Context
+${memories}
 
-  prompt = prompt.replace(
-    "<!time>",
-    getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
-  )
-  prompt = prompt.replace("<!memories>", memories)
-  prompt = prompt.replace("<!examples>", examples)
-  prompt = prompt.replace("<!users_name>", firstName)
-  prompt = prompt.replace("<!timestamp>", timestamp)
-  prompt = prompt.replace("<!users_prompt>", usersPrompt)
-  return prompt
+You are having a conversation with ${firstName}. Respond naturally and helpfully as their AI best friend, Ditto.`
+
+  return systemPrompt
+}
+
+export const userMessageTemplate = (userPrompt: string) => {
+  // Basic input validation to prevent prompt injection
+  if (!userPrompt || typeof userPrompt !== "string") {
+    return ""
+  }
+
+  // Trim and limit length to prevent excessive input (~50k tokens worth)
+  const sanitized = userPrompt.trim().slice(0, 200000)
+
+  return sanitized
 }
