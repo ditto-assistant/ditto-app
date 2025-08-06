@@ -79,12 +79,16 @@ while IFS= read -r pr_json; do
             log DEBUG "Checking status check $check_count/$total_checks ($check_name): $check_status"
         fi
         
-        if [ "$check_status" != "SUCCESS" ] && [ "$check_status" != "NEUTRAL" ]; then
+        if [ "$check_status" != "SUCCESS" ] && [ "$check_status" != "NEUTRAL" ] && [ "$check_status" != "SKIPPED" ]; then
             checks_passed=false
             log INFO "❌ Check '$check_name' failed with status: $check_status"
             break
         elif [ "$VERBOSE" = true ]; then
-            log DEBUG "✅ Check '$check_name' passed with status: $check_status"
+            if [ "$check_status" = "SKIPPED" ]; then
+                log DEBUG "⏭️  Check '$check_name' skipped (status: $check_status)"
+            else
+                log DEBUG "✅ Check '$check_name' passed with status: $check_status"
+            fi
         fi
     done < <(echo "$pr_json" | jq -r '.statusCheckRollup[].conclusion')
     
