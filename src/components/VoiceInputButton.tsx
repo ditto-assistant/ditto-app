@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react"
-import { Mic, MicOff, Loader2 } from "lucide-react"
+import { Mic, MicOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
@@ -30,14 +30,12 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   const {
     isSupported,
     isListening,
-    transcript,
     finalTranscript,
     interimTranscript,
     error,
     startListening,
     stopListening,
     resetTranscript,
-    browserSupportMessage,
   } = useSpeechRecognition()
 
   // Track when user manually stops to prevent auto-submit
@@ -50,7 +48,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
   // Get user's auto-submit preference
   const speechPrefs = user?.preferences?.speech
-  const enableAutoSubmit = speechPrefs?.enableAutoSubmit ?? false
+  const _enableAutoSubmit = speechPrefs?.enableAutoSubmit ?? false
 
   // Handle transcript changes - only when actively listening AND not manually stopped
   useEffect(() => {

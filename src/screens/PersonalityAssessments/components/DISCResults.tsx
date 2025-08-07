@@ -36,7 +36,7 @@ const DISCResults: React.FC<DISCResultsProps> = ({
   answers,
   onBack,
 }) => {
-  const getDimensionColor = (id: string, percentage: number) => {
+  const getDimensionColor = (id: string, _percentage: number) => {
     const colors = {
       d: "bg-red-500",
       i: "bg-yellow-500",

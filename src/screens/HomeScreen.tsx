@@ -29,8 +29,8 @@ export default function HomeScreen() {
 
   // Live Mode modal state
   const [isLiveModeOpen, setIsLiveModeOpen] = useState(false)
-  const [liveModeProcessing, setLiveModeProcessing] = useState(false)
-  const [lastLiveModeResponse, setLastLiveModeResponse] = useState<string>("")
+  const [_liveModeProcessing, setLiveModeProcessing] = useState(false)
+  const [_lastLiveModeResponse, setLastLiveModeResponse] = useState<string>("")
 
   const appBodyRef = useRef(null)
 
@@ -110,7 +110,7 @@ export default function HomeScreen() {
     setLiveModeProcessing(false)
   }
 
-  const handleLiveModeSendMessage = async (message: string) => {
+  const _handleLiveModeSendMessage = async (message: string) => {
     setLiveModeProcessing(true)
 
     try {

@@ -24,7 +24,7 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
   const { data: user } = useUser()
   const { mutate: updatePreferences, isPending: isUpdatingPreferences } =
     useUserPreferences()
-  const { speak, stop, isPlaying, isSupported, error } = useSpeechSynthesis()
+  const { speak, stop, isPlaying, isSupported } = useSpeechSynthesis()
 
   const speechPrefs = user?.preferences?.speech
   const isReadbackEnabled = speechPrefs?.enableReadback ?? false

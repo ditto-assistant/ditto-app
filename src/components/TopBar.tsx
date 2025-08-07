@@ -2,18 +2,18 @@ import React from "react"
 import { MessageSquareWarning, Settings, Brain, UserCheck } from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { DITTO_LOGO } from "@/constants"
 import { cn } from "@/lib/utils"
 import HeyDittoLogo from "@/components/ui/HeyDittoLogo"
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface TopBarProps {
   // Removed onLiveModeClick prop
+  // Empty interface is intentional for future extensibility
 }
 
 const TopBar: React.FC<TopBarProps> = () => {
