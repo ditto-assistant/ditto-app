@@ -6,9 +6,9 @@ interface HeyDittoLogoProps {
   alt?: string
 }
 
-const HeyDittoLogo: React.FC<HeyDittoLogoProps> = ({ 
+const HeyDittoLogo: React.FC<HeyDittoLogoProps> = ({
   className,
-  alt = "Hey Ditto" 
+  alt = "Hey Ditto",
 }) => {
   return (
     <img
@@ -29,4 +29,4 @@ const HeyDittoLogo: React.FC<HeyDittoLogoProps> = ({
   )
 }
 
-export default HeyDittoLogo 
+export default HeyDittoLogo

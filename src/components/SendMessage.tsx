@@ -469,7 +469,7 @@ export default function SendMessage({
                   "focus-visible:ring-1 focus-visible:ring-primary"
                 )}
               />
-              
+
               {/* Voice Input Button - floating inside textarea */}
               <div className="absolute right-2 bottom-2">
                 <VoiceInputButton

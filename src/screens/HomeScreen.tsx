@@ -15,7 +15,6 @@ import { getUpdateState } from "@/utils/updateService"
 import { usePersonalityPreload } from "@/hooks/usePersonalityPreload"
 import { useAuth } from "@/hooks/useAuth"
 
-
 export default function HomeScreen() {
   const balance = useBalance()
   const modal = useModal()
@@ -28,7 +27,7 @@ export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
-  // Live Mode modal state  
+  // Live Mode modal state
   const [isLiveModeOpen, setIsLiveModeOpen] = useState(false)
   const [liveModeProcessing, setLiveModeProcessing] = useState(false)
   const [lastLiveModeResponse, setLastLiveModeResponse] = useState<string>("")
@@ -113,19 +112,20 @@ export default function HomeScreen() {
 
   const handleLiveModeSendMessage = async (message: string) => {
     setLiveModeProcessing(true)
-    
+
     try {
       // For now, we'll simulate sending a message to the chat
-      // In a full implementation, you'd want to integrate this with the 
+      // In a full implementation, you'd want to integrate this with the
       // existing chat system more deeply
-      
+
       // Simulate processing time
       setTimeout(() => {
         setLiveModeProcessing(false)
         // Simulate a response - in reality this would come from the AI
-        setLastLiveModeResponse(`I heard you say: "${message}". That's interesting! How can I help you with that?`)
+        setLastLiveModeResponse(
+          `I heard you say: "${message}". That's interesting! How can I help you with that?`
+        )
       }, 1500)
-      
     } catch (error) {
       console.error("Error sending live mode message:", error)
       setLiveModeProcessing(false)
@@ -156,7 +156,7 @@ export default function HomeScreen() {
         onCapture={handleCaptureImage}
       />
 
-      <LiveModeModal 
+      <LiveModeModal
         isOpen={isLiveModeOpen}
         onClose={handleLiveModeClose}
         onMessageSent={(message, response) => {

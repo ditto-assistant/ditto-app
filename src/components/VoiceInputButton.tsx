@@ -45,7 +45,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
   // Track when isListening changes
   useEffect(() => {
-    console.log('🎤 isListening state changed:', isListening)
+    console.log("🎤 isListening state changed:", isListening)
   }, [isListening])
 
   // Get user's auto-submit preference
@@ -78,22 +78,22 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   }, [error])
 
   const handleClick = () => {
-    console.log('🎤 Button clicked, isListening:', isListening)
+    console.log("🎤 Button clicked, isListening:", isListening)
     triggerHaptic(HapticPattern.Medium)
 
     if (isListening) {
-      console.log('🎤 Stopping listening...')
+      console.log("🎤 Stopping listening...")
       // Mark as manually stopped to prevent auto-submit
       manuallyStoppedRef.current = true
       stopListening()
-      
+
       // When manually stopping, don't do anything with the transcript
       // The ongoing transcript updates through onTranscriptChange will handle text field population
-      
+
       // Reset transcript immediately to prevent any lingering effects
       resetTranscript()
     } else {
-      console.log('🎤 Starting listening...')
+      console.log("🎤 Starting listening...")
       // Reset the manual stop flag and transcript when starting fresh
       manuallyStoppedRef.current = false
       resetTranscript()
@@ -151,13 +151,13 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   const sizeClasses = {
     sm: "h-7 w-7",
     md: "h-8 w-8",
-    lg: "h-10 w-10"
+    lg: "h-10 w-10",
   }
 
   const iconSizes = {
     sm: "h-4 w-4",
     md: "h-5 w-5",
-    lg: "h-6 w-6"
+    lg: "h-6 w-6",
   }
 
   return (
@@ -168,7 +168,8 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       className={cn(
         sizeClasses[size],
         "transition-colors relative",
-        isListening && "animate-pulse bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800",
+        isListening &&
+          "animate-pulse bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800",
         className
       )}
       onClick={handleClick}
@@ -176,10 +177,8 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       aria-label={getAriaLabel()}
       title={getTooltip()}
     >
-      <div className={iconSizes[size]}>
-        {getIcon()}
-      </div>
-      
+      <div className={iconSizes[size]}>{getIcon()}</div>
+
       {/* Recording indicator */}
       {isListening && (
         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
@@ -188,4 +187,4 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   )
 }
 
-export default VoiceInputButton 
+export default VoiceInputButton

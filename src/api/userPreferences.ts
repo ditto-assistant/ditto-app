@@ -1,6 +1,13 @@
 import { BASE_URL } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
-import { PreferredModels, UserSchema, User, ToolPreferences, MemoryPreferences, SpeechPreferences } from "./getUser"
+import {
+  PreferredModels,
+  UserSchema,
+  User,
+  ToolPreferences,
+  MemoryPreferences,
+  SpeechPreferences,
+} from "./getUser"
 
 // Special error for payment required
 export const ErrorPaymentRequired = new Error("Payment required")

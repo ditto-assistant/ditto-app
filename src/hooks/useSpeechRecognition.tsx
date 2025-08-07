@@ -20,9 +20,15 @@ interface SpeechRecognitionType extends EventTarget {
   onaudioend: ((this: SpeechRecognitionType, ev: Event) => any) | null
   onaudiostart: ((this: SpeechRecognitionType, ev: Event) => any) | null
   onend: ((this: SpeechRecognitionType, ev: Event) => any) | null
-  onerror: ((this: SpeechRecognitionType, ev: SpeechRecognitionErrorEvent) => any) | null
-  onnomatch: ((this: SpeechRecognitionType, ev: SpeechRecognitionEvent) => any) | null
-  onresult: ((this: SpeechRecognitionType, ev: SpeechRecognitionEvent) => any) | null
+  onerror:
+    | ((this: SpeechRecognitionType, ev: SpeechRecognitionErrorEvent) => any)
+    | null
+  onnomatch:
+    | ((this: SpeechRecognitionType, ev: SpeechRecognitionEvent) => any)
+    | null
+  onresult:
+    | ((this: SpeechRecognitionType, ev: SpeechRecognitionEvent) => any)
+    | null
   onsoundend: ((this: SpeechRecognitionType, ev: Event) => any) | null
   onsoundstart: ((this: SpeechRecognitionType, ev: Event) => any) | null
   onspeechend: ((this: SpeechRecognitionType, ev: Event) => any) | null
@@ -52,13 +58,13 @@ export interface UseSpeechRecognitionReturn {
   finalTranscript: string
   interimTranscript: string
   error: string | null
-  
+
   // Actions
   startListening: () => void
   stopListening: () => void
   abortListening: () => void
   resetTranscript: () => void
-  
+
   // Browser compatibility info
   browserSupportMessage: string | null
 }
@@ -74,7 +80,9 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
   const [finalTranscript, setFinalTranscript] = useState("")
   const [interimTranscript, setInterimTranscript] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [browserSupportMessage, setBrowserSupportMessage] = useState<string | null>(null)
+  const [browserSupportMessage, setBrowserSupportMessage] = useState<
+    string | null
+  >(null)
 
   // Refs
   const recognitionRef = useRef<SpeechRecognitionType | null>(null)
@@ -83,14 +91,15 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition
 
       if (SpeechRecognition) {
         setIsSupported(true)
         recognitionRef.current = new SpeechRecognition()
-        
+
         const recognition = recognitionRef.current
-        
+
         // Configure recognition
         recognition.continuous = speechPrefs?.enableContinuousListening ?? true
         recognition.interimResults = true
@@ -129,32 +138,37 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
           setIsListening(false)
-          
+
           let errorMessage = "Speech recognition error"
-          
+
           switch (event.error) {
             case "no-speech":
-              errorMessage = "No speech was detected. Please try speaking louder or check your microphone."
+              errorMessage =
+                "No speech was detected. Please try speaking louder or check your microphone."
               break
             case "audio-capture":
-              errorMessage = "Audio capture failed. Please check your microphone permissions."
+              errorMessage =
+                "Audio capture failed. Please check your microphone permissions."
               break
             case "not-allowed":
-              errorMessage = "Microphone access was denied. Please enable microphone permissions."
+              errorMessage =
+                "Microphone access was denied. Please enable microphone permissions."
               break
             case "network":
               errorMessage = "Network error occurred during speech recognition."
               break
             case "language-not-supported":
-              errorMessage = "The selected language is not supported for speech recognition."
+              errorMessage =
+                "The selected language is not supported for speech recognition."
               break
             case "service-not-allowed":
-              errorMessage = "Speech recognition service is not allowed on this page."
+              errorMessage =
+                "Speech recognition service is not allowed on this page."
               break
             default:
               errorMessage = `Speech recognition error: ${event.error}`
           }
-          
+
           setError(errorMessage)
         }
 
@@ -169,20 +183,25 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
         recognition.onspeechstart = () => {
           setError(null)
         }
-
       } else {
         // Check browser and provide helpful message
         const userAgent = navigator.userAgent.toLowerCase()
         let message = "Speech recognition is not supported in this browser."
-        
+
         if (userAgent.includes("firefox")) {
-          message = "Speech recognition is not yet supported in Firefox. Please try Chrome, Edge, or Safari."
-        } else if (userAgent.includes("safari") && !userAgent.includes("chrome")) {
-          message = "Speech recognition may have limited support in Safari. For best results, please try Chrome."
+          message =
+            "Speech recognition is not yet supported in Firefox. Please try Chrome, Edge, or Safari."
+        } else if (
+          userAgent.includes("safari") &&
+          !userAgent.includes("chrome")
+        ) {
+          message =
+            "Speech recognition may have limited support in Safari. For best results, please try Chrome."
         } else if (userAgent.includes("edge")) {
-          message = "Speech recognition may have limited support in Edge. For best results, please try Chrome."
+          message =
+            "Speech recognition may have limited support in Edge. For best results, please try Chrome."
         }
-        
+
         setBrowserSupportMessage(message)
         setError(message)
       }
@@ -214,7 +233,7 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
       // Reset interim transcript when starting
       setInterimTranscript("")
       setError(null)
-      
+
       recognitionRef.current.start()
     } catch (error) {
       setError("Failed to start speech recognition. Please try again.")
@@ -251,14 +270,14 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
     finalTranscript,
     interimTranscript,
     error,
-    
+
     // Actions
     startListening,
     stopListening,
     abortListening,
     resetTranscript,
-    
+
     // Browser compatibility info
     browserSupportMessage,
   }
-} 
+}

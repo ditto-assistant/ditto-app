@@ -22,7 +22,8 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
   className,
 }) => {
   const { data: user } = useUser()
-  const { mutate: updatePreferences, isPending: isUpdatingPreferences } = useUserPreferences()
+  const { mutate: updatePreferences, isPending: isUpdatingPreferences } =
+    useUserPreferences()
   const { speak, stop, isPlaying, isSupported, error } = useSpeechSynthesis()
 
   const speechPrefs = user?.preferences?.speech
@@ -30,7 +31,7 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
 
   const handleGlobalToggle = () => {
     triggerHaptic(HapticPattern.Light)
-    
+
     updatePreferences({
       speech: {
         enableReadback: !isReadbackEnabled,
@@ -40,7 +41,7 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
 
   const handleSpeak = () => {
     triggerHaptic(HapticPattern.Light)
-    
+
     if (isPlaying) {
       stop()
     } else if (text) {
@@ -68,7 +69,7 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
     if (isLoading) {
       return <Loader2 className="animate-spin" />
     }
-    
+
     if (showGlobalToggle) {
       return isReadbackEnabled ? <Volume2 /> : <VolumeX />
     } else {
@@ -78,7 +79,9 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
 
   const getAriaLabel = () => {
     if (showGlobalToggle) {
-      return isReadbackEnabled ? "Disable voice readback" : "Enable voice readback"
+      return isReadbackEnabled
+        ? "Disable voice readback"
+        : "Enable voice readback"
     } else {
       return isPlaying ? "Stop speaking" : "Read aloud"
     }
@@ -86,7 +89,7 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
 
   const getTooltip = () => {
     if (showGlobalToggle) {
-      return isReadbackEnabled 
+      return isReadbackEnabled
         ? "Voice readback is ON - Click to disable"
         : "Voice readback is OFF - Click to enable"
     } else {
@@ -96,14 +99,14 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
 
   const sizeClasses = {
     sm: "h-7 w-7",
-    md: "h-8 w-8", 
-    lg: "h-10 w-10"
+    md: "h-8 w-8",
+    lg: "h-10 w-10",
   }
 
   const iconSizes = {
     sm: "h-4 w-4",
     md: "h-5 w-5",
-    lg: "h-6 w-6"
+    lg: "h-6 w-6",
   }
 
   return (
@@ -121,11 +124,9 @@ const SpeakerToggleButton: React.FC<SpeakerToggleButtonProps> = ({
       aria-label={getAriaLabel()}
       title={getTooltip()}
     >
-      <div className={iconSizes[size]}>
-        {getIcon()}
-      </div>
+      <div className={iconSizes[size]}>{getIcon()}</div>
     </Button>
   )
 }
 
-export default SpeakerToggleButton 
+export default SpeakerToggleButton

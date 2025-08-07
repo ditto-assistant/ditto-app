@@ -8,13 +8,13 @@ export interface UseSpeechSynthesisReturn {
   voices: SpeechSynthesisVoice[]
   currentText: string | null
   error: string | null
-  
+
   // Actions
   speak: (text: string) => void
   stop: () => void
   pause: () => void
   resume: () => void
-  
+
   // Settings
   currentVoice: SpeechSynthesisVoice | null
   setVoice: (voice: SpeechSynthesisVoice) => void
@@ -28,7 +28,9 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
   const [isSupported, setIsSupported] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
-  const [currentVoice, setCurrentVoice] = useState<SpeechSynthesisVoice | null>(null)
+  const [currentVoice, setCurrentVoice] = useState<SpeechSynthesisVoice | null>(
+    null
+  )
   const [currentText, setCurrentText] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,23 +55,25 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
 
           // First, try to find voice by name if specified
           if (speechPrefs.voiceName) {
-            preferredVoice = availableVoices.find(
-              (voice) => voice.name === speechPrefs.voiceName
-            ) || null
+            preferredVoice =
+              availableVoices.find(
+                (voice) => voice.name === speechPrefs.voiceName
+              ) || null
           }
 
           // Fallback to language match
           if (!preferredVoice) {
-            preferredVoice = availableVoices.find(
-              (voice) => voice.lang.startsWith(speechPrefs.voiceLanguage || "en-US")
-            ) || null
+            preferredVoice =
+              availableVoices.find((voice) =>
+                voice.lang.startsWith(speechPrefs.voiceLanguage || "en-US")
+              ) || null
           }
 
           // Final fallback to English
           if (!preferredVoice) {
-            preferredVoice = availableVoices.find(
-              (voice) => voice.lang.startsWith("en")
-            ) || availableVoices[0]
+            preferredVoice =
+              availableVoices.find((voice) => voice.lang.startsWith("en")) ||
+              availableVoices[0]
           }
 
           setCurrentVoice(preferredVoice)
@@ -89,89 +93,93 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
   }, [speechPrefs?.voiceLanguage, speechPrefs?.voiceName])
 
   // Get the best voice for a given language
-  const getBestVoice = useCallback((lang: string = 'en-US'): SpeechSynthesisVoice | null => {
-    if (!voices.length) return null
-    
-    // Define voice quality priorities based on research
-    const voiceQualityOrder = [
-      // Premium Google voices (highest quality)
-      'Google',
-      'Microsoft',
-      'Amazon',
-      'Enhanced',
-      'Premium',
-      'Neural',
-      
-      // High-quality system voices
-      'Samantha', // macOS
-      'Alex', // macOS  
-      'Victoria', // macOS
-      'Karen', // macOS
-      'Moira', // macOS
-      'Tessa', // macOS
-      'Veena', // macOS
-      'Fiona', // macOS
-      'Daniel', // macOS
-      'Serena', // macOS
-      
-      // Windows high-quality voices
-      'Hazel', // Windows
-      'Zira', // Windows
-      'David', // Windows
-      'Mark', // Windows
-      'Catherine', // Windows
-      
-      // Good quality alternatives
-      'Natural',
-      'HD',
-      'Plus',
-      'Pro',
-      
-      // Fallback to any voice with the right language
-      ''
-    ]
-    
-    // Filter voices by language first
-    const langVoices = voices.filter(voice => 
-      voice.lang.toLowerCase().startsWith(lang.toLowerCase().split('-')[0])
-    )
-    
-    if (!langVoices.length) {
-      // Fallback to English if target language not available
-      const englishVoices = voices.filter(voice => 
-        voice.lang.toLowerCase().startsWith('en')
+  const getBestVoice = useCallback(
+    (lang: string = "en-US"): SpeechSynthesisVoice | null => {
+      if (!voices.length) return null
+
+      // Define voice quality priorities based on research
+      const voiceQualityOrder = [
+        // Premium Google voices (highest quality)
+        "Google",
+        "Microsoft",
+        "Amazon",
+        "Enhanced",
+        "Premium",
+        "Neural",
+
+        // High-quality system voices
+        "Samantha", // macOS
+        "Alex", // macOS
+        "Victoria", // macOS
+        "Karen", // macOS
+        "Moira", // macOS
+        "Tessa", // macOS
+        "Veena", // macOS
+        "Fiona", // macOS
+        "Daniel", // macOS
+        "Serena", // macOS
+
+        // Windows high-quality voices
+        "Hazel", // Windows
+        "Zira", // Windows
+        "David", // Windows
+        "Mark", // Windows
+        "Catherine", // Windows
+
+        // Good quality alternatives
+        "Natural",
+        "HD",
+        "Plus",
+        "Pro",
+
+        // Fallback to any voice with the right language
+        "",
+      ]
+
+      // Filter voices by language first
+      const langVoices = voices.filter((voice) =>
+        voice.lang.toLowerCase().startsWith(lang.toLowerCase().split("-")[0])
       )
-      if (englishVoices.length) return englishVoices[0]
-      return voices[0] || null
-    }
-    
-    // Find the best quality voice for the language
-    for (const qualityIndicator of voiceQualityOrder) {
-      const qualityVoice = langVoices.find(voice => 
-        voice.name.includes(qualityIndicator) || 
-        voice.voiceURI.includes(qualityIndicator)
-      )
-      if (qualityVoice) return qualityVoice
-    }
-    
-    // If no high-quality voice found, prefer:
-    // 1. Non-default voices (often higher quality)
-    // 2. Voices with longer names (often more descriptive/higher quality)
-    // 3. First available voice
-    const nonDefaultVoices = langVoices.filter(voice => !voice.default)
-    if (nonDefaultVoices.length) {
-      // Sort by name length (longer names often indicate better voices)
-      nonDefaultVoices.sort((a, b) => b.name.length - a.name.length)
-      return nonDefaultVoices[0]
-    }
-    
-    return langVoices[0]
-  }, [voices])
+
+      if (!langVoices.length) {
+        // Fallback to English if target language not available
+        const englishVoices = voices.filter((voice) =>
+          voice.lang.toLowerCase().startsWith("en")
+        )
+        if (englishVoices.length) return englishVoices[0]
+        return voices[0] || null
+      }
+
+      // Find the best quality voice for the language
+      for (const qualityIndicator of voiceQualityOrder) {
+        const qualityVoice = langVoices.find(
+          (voice) =>
+            voice.name.includes(qualityIndicator) ||
+            voice.voiceURI.includes(qualityIndicator)
+        )
+        if (qualityVoice) return qualityVoice
+      }
+
+      // If no high-quality voice found, prefer:
+      // 1. Non-default voices (often higher quality)
+      // 2. Voices with longer names (often more descriptive/higher quality)
+      // 3. First available voice
+      const nonDefaultVoices = langVoices.filter((voice) => !voice.default)
+      if (nonDefaultVoices.length) {
+        // Sort by name length (longer names often indicate better voices)
+        nonDefaultVoices.sort((a, b) => b.name.length - a.name.length)
+        return nonDefaultVoices[0]
+      }
+
+      return langVoices[0]
+    },
+    [voices]
+  )
 
   // Set voice based on user preferences or best available
   useEffect(() => {
     if (voices.length && !currentVoice) {
-      const userVoiceLang = speechPrefs?.voiceLanguage || 'en-US'
+      const userVoiceLang = speechPrefs?.voiceLanguage || "en-US"
       const bestVoice = getBestVoice(userVoiceLang)
       if (bestVoice) {
         setCurrentVoice(bestVoice)
@@ -269,15 +277,15 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
     voices,
     currentText,
     error,
-    
+
     // Actions
     speak,
     stop,
     pause,
     resume,
-    
+
     // Settings
     currentVoice,
     setVoice,
   }
-} 
+}
