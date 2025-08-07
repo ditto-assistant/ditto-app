@@ -559,14 +559,14 @@ export default function SendMessage({
                           onLiveModeClick()
                         }}
                         aria-label="Open Live Mode"
-                        className="h-12 w-12 rounded-full p-0 hover:scale-110 transition-all"
+                        className="h-11 w-11 rounded-full p-0 hover:scale-110 transition-all"
                         disabled={showSalesPitch || isUploading}
                       >
-                        <Avatar className="h-11 w-11 ring-2 ring-blue-500/70 shadow-lg shadow-blue-500/50">
+                        <Avatar className="h-10 w-10 ring-2 ring-blue-500/70 shadow-lg shadow-blue-500/50">
                           <AvatarImage
                             src={DITTO_LOGO}
                             alt="Ditto"
-                            className="h-11 w-11 rounded-full rainbow-gradient"
+                            className="h-10 w-10 rounded-full rainbow-gradient"
                           />
                         </Avatar>
                       </Button>
