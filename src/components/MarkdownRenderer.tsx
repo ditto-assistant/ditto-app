@@ -163,7 +163,18 @@ const parseMarkdownTables = (content: string): string => {
     return content
   }
 
-  return processTableContent(content)
+  // First, extract tables from ```markdown code blocks
+  let processedContent = content.replace(/```markdown\s*\n([\s\S]*?)\n```/g, (match, tableContent) => {
+    // Check if this code block contains a table
+    if (tableContent.includes("|") && tableContent.includes("-")) {
+      // Process just the table content and return it without the code block wrapper
+      return processTableContent(tableContent)
+    }
+    return match // Return original if not a table
+  })
+
+  // Then process any remaining tables that aren't in code blocks
+  return processTableContent(processedContent)
 }
 
 const processTableContent = (content: string): string => {
