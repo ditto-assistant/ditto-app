@@ -25,12 +25,28 @@ const MemoryPreferencesSchema = z.object({
   longTermMemoryChain: z.array(z.number()),
 })
 
+// Define the speech preferences schema
+const SpeechPreferencesSchema = z.object({
+  // Text-to-Speech settings
+  enableReadback: z.boolean().default(false), // Global toggle for TTS readback
+  voiceLanguage: z.string().default("en-US"), // Voice language/locale
+  voiceRate: z.number().min(0.1).max(10).default(1), // Speech rate (0.1 to 10)
+  voicePitch: z.number().min(0).max(2).default(1), // Voice pitch (0 to 2)
+  voiceVolume: z.number().min(0).max(1).default(1), // Voice volume (0 to 1)
+  voiceName: z.string().optional(), // Specific voice name if selected
+  // Speech-to-Text settings
+  inputLanguage: z.string().default("en-US"), // STT input language
+  enableContinuousListening: z.boolean().default(true), // Continuous vs single utterance
+  enableAutoSubmit: z.boolean().default(false), // Auto-submit on speech end
+})
+
 // Define the preferences schema
 const UserPreferencesSchema = z.object({
   preferredModels: PreferredModelsSchema,
   theme: z.enum(["light", "dark", "system"]),
   tools: ToolPreferencesSchema,
   memory: MemoryPreferencesSchema,
+  speech: SpeechPreferencesSchema.default({}), // Add speech preferences with defaults
 })
 
 // Define the user schema with the new preferences structure
@@ -59,6 +75,9 @@ export const UserSchema = z.object({
 
 export type UserPreferences = z.infer<typeof UserPreferencesSchema>
 export type PreferredModels = z.infer<typeof PreferredModelsSchema>
+export type ToolPreferences = z.infer<typeof ToolPreferencesSchema>
+export type MemoryPreferences = z.infer<typeof MemoryPreferencesSchema>
+export type SpeechPreferences = z.infer<typeof SpeechPreferencesSchema>
 export type User = z.infer<typeof UserSchema>
 
 export async function getUser(): Promise<Result<User>> {

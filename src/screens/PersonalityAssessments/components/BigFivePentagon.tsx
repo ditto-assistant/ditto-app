@@ -77,7 +77,7 @@ export const BigFivePentagon = ({ results }: BigFivePentagonProps) => {
         />
 
         {/* Dimension labels */}
-        {dimensions.map(([key, dim], index) => {
+        {dimensions.map(([key, _dim], index) => {
           const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
           const labelRadius = radius + 15
           const x = center + labelRadius * Math.cos(angle)

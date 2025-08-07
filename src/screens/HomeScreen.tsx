@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
 import CameraModal from "@/components/CameraModal"
+import LiveModeModal from "@/components/LiveModeModal"
 import TopBar from "@/components/TopBar"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
@@ -13,24 +14,30 @@ import useWhatsNew from "@/hooks/useWhatsNew"
 import { getUpdateState } from "@/utils/updateService"
 import { usePersonalityPreload } from "@/hooks/usePersonalityPreload"
 import { useAuth } from "@/hooks/useAuth"
+import SpeechDebugInfo from "@/components/SpeechDebugInfo"
 
 export default function HomeScreen() {
   const balance = useBalance()
-  const { createOpenHandler } = useModal()
-  const [searchParams] = useSearchParams()
-  const [isCameraOpen, setIsCameraOpen] = useState(false)
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  // Use the TOS check hook to determine if we need to show the TOS dialog
+  const modal = useModal()
   const { showTOS, setShowTOS } = useTOSCheck()
+  const [searchParams] = useSearchParams()
   const { openWhatsNew } = useWhatsNew()
   const { user } = useAuth()
 
-  // Preload personality assessments on app startup
+  // Camera modal state
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+
+  // Live Mode modal state
+  const [isLiveModeOpen, setIsLiveModeOpen] = useState(false)
+  const [_liveModeProcessing, setLiveModeProcessing] = useState(false)
+  const [_lastLiveModeResponse, setLastLiveModeResponse] = useState<string>("")
+
+  const appBodyRef = useRef(null)
+
   usePersonalityPreload(user?.uid)
 
-  const appBodyRef = useRef<HTMLDivElement>(null)
-
-  // Handle URL parameters to open modals directly
+  // Handle URL parameters for opening modals
   useEffect(() => {
     const openModal = searchParams.get("openModal") as ModalId
     const openTab = searchParams.get("openTab")
@@ -41,7 +48,7 @@ export default function HomeScreen() {
     window.history.replaceState({}, document.title, currentUrl)
 
     if (tokenSuccess === "true") {
-      const openTokenModal = createOpenHandler("tokenCheckout")
+      const openTokenModal = modal.createOpenHandler("tokenCheckout")
       openTokenModal()
 
       // This will be detected in the TokenModal component via initialSuccess prop
@@ -49,14 +56,14 @@ export default function HomeScreen() {
     } else if (openModal) {
       // Use the enhanced createOpenHandler with the tab ID
       if (openModal === "settings" && openTab) {
-        const openSettingsWithTab = createOpenHandler("settings", openTab)
+        const openSettingsWithTab = modal.createOpenHandler("settings", openTab)
         openSettingsWithTab()
       } else {
-        const openModalHandler = createOpenHandler(openModal)
+        const openModalHandler = modal.createOpenHandler(openModal)
         openModalHandler()
       }
     }
-  }, [searchParams, createOpenHandler])
+  }, [searchParams, modal])
 
   // Handle showing What's New modal when app is reloaded after update
   useEffect(() => {
@@ -93,10 +100,43 @@ export default function HomeScreen() {
     setCapturedImage(imageDataURL)
   }
 
+  // Live Mode handlers
+  const handleLiveModeOpen = () => {
+    setIsLiveModeOpen(true)
+  }
+
+  const handleLiveModeClose = () => {
+    setIsLiveModeOpen(false)
+    setLastLiveModeResponse("")
+    setLiveModeProcessing(false)
+  }
+
+  const _handleLiveModeSendMessage = async (message: string) => {
+    setLiveModeProcessing(true)
+
+    try {
+      // For now, we'll simulate sending a message to the chat
+      // In a full implementation, you'd want to integrate this with the
+      // existing chat system more deeply
+
+      // Simulate processing time
+      setTimeout(() => {
+        setLiveModeProcessing(false)
+        // Simulate a response - in reality this would come from the AI
+        setLastLiveModeResponse(
+          `I heard you say: "${message}". That's interesting! How can I help you with that?`
+        )
+      }, 1500)
+    } catch (error) {
+      console.error("Error sending live mode message:", error)
+      setLiveModeProcessing(false)
+    }
+  }
+
   return (
     <div className="app fixed inset-0 touch-pan-y flex flex-col">
       <Suspense fallback={<FullScreenSpinner />}>
-        <div className="flex-1 flex flex-col overflow-hidden pb-0">
+        <div className="flex flex-col h-full">
           <TopBar />
           <ChatFeed ref={appBodyRef} />
           <SendMessage
@@ -106,6 +146,7 @@ export default function HomeScreen() {
             onStop={() => {
               balance.refetch()
             }}
+            onLiveModeClick={handleLiveModeOpen}
           />
         </div>
       </Suspense>
@@ -116,11 +157,23 @@ export default function HomeScreen() {
         onCapture={handleCaptureImage}
       />
 
+      <LiveModeModal
+        isOpen={isLiveModeOpen}
+        onClose={handleLiveModeClose}
+        onMessageSent={(message, response) => {
+          // Optional: Handle message sent in live mode
+          setLastLiveModeResponse(response)
+        }}
+      />
+
       <TermsOfServiceDialog
         open={showTOS}
         onOpenChange={setShowTOS}
         isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
       />
+
+      {/* Speech Debug Info - only show in development or when ?debug=speech in URL */}
+      <SpeechDebugInfo showDetails={searchParams.get("debug") === "speech"} />
     </div>
   )
 }
