@@ -87,6 +87,8 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
   // Refs
   const recognitionRef = useRef<SpeechRecognitionType | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const processedResultsRef = useRef<Set<string>>(new Set()) // Track processed final results
+  const lastResultLengthRef = useRef<number>(0) // Track last result length for Android compatibility
 
   // Initialize speech recognition
   useEffect(() => {
@@ -110,6 +112,9 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
         recognition.onstart = () => {
           setIsListening(true)
           setError(null)
+          // Reset tracking refs when starting new session
+          processedResultsRef.current.clear()
+          lastResultLengthRef.current = 0
         }
 
         recognition.onend = () => {
@@ -118,21 +123,52 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
           let interim = ""
-          let final = ""
+          let newFinalText = ""
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
+          // Process all results from the beginning to ensure consistency
+          // This is especially important for Android where resultIndex can be unreliable
+          for (let i = 0; i < event.results.length; i++) {
             const result = event.results[i]
+            const resultText = result[0].transcript.trim()
+
             if (result.isFinal) {
-              final += result[0].transcript
+              // Create a unique key combining index and text to avoid exact duplicates
+              const resultKey = `${i}-${resultText}`
+
+              // For final results, only add if we haven't processed this exact text before
+              if (resultText && !processedResultsRef.current.has(resultKey)) {
+                processedResultsRef.current.add(resultKey)
+
+                // Add proper spacing if there's existing text
+                if (newFinalText) {
+                  newFinalText += " " + resultText
+                } else {
+                  newFinalText = resultText
+                }
+              }
             } else {
-              interim += result[0].transcript
+              // For interim results, take the latest one (typically the last result)
+              // This helps avoid duplicated interim text
+              if (resultText) {
+                interim = resultText
+              }
             }
           }
 
+          // Update interim transcript
           setInterimTranscript(interim)
-          if (final) {
-            setFinalTranscript((prev) => prev + final)
-            setTranscript((prev) => (prev + final).trim())
+
+          // Update final transcript by appending new final text
+          if (newFinalText) {
+            setFinalTranscript((prev) => {
+              const updated = prev ? prev + " " + newFinalText : newFinalText
+              return updated.trim()
+            })
+
+            setTranscript((prev) => {
+              const updated = prev ? prev + " " + newFinalText : newFinalText
+              return updated.trim()
+            })
           }
         }
 
@@ -230,9 +266,11 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
         clearTimeout(timeoutRef.current)
       }
 
-      // Reset interim transcript when starting
+      // Reset interim transcript and tracking when starting
       setInterimTranscript("")
       setError(null)
+      processedResultsRef.current.clear()
+      lastResultLengthRef.current = 0
 
       recognitionRef.current.start()
     } catch (error) {
@@ -252,6 +290,8 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
       recognitionRef.current.abort()
       setIsListening(false)
       setInterimTranscript("")
+      processedResultsRef.current.clear()
+      lastResultLengthRef.current = 0
     }
   }, [])
 
@@ -260,6 +300,8 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
     setFinalTranscript("")
     setInterimTranscript("")
     setError(null)
+    processedResultsRef.current.clear()
+    lastResultLengthRef.current = 0
   }, [])
 
   return {

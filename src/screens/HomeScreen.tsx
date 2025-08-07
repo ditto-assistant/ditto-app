@@ -14,6 +14,7 @@ import useWhatsNew from "@/hooks/useWhatsNew"
 import { getUpdateState } from "@/utils/updateService"
 import { usePersonalityPreload } from "@/hooks/usePersonalityPreload"
 import { useAuth } from "@/hooks/useAuth"
+import SpeechDebugInfo from "@/components/SpeechDebugInfo"
 
 export default function HomeScreen() {
   const balance = useBalance()
@@ -170,6 +171,9 @@ export default function HomeScreen() {
         onOpenChange={setShowTOS}
         isNewAccount={true} // Always show Accept/Decline for users who haven't accepted TOS
       />
+
+      {/* Speech Debug Info - only show in development or when ?debug=speech in URL */}
+      <SpeechDebugInfo showDetails={searchParams.get("debug") === "speech"} />
     </div>
   )
 }

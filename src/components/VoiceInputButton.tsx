@@ -53,7 +53,16 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   // Handle transcript changes - only when actively listening AND not manually stopped
   useEffect(() => {
     if (onTranscriptChange && isListening && !manuallyStoppedRef.current) {
-      const fullTranscript = (finalTranscript + " " + interimTranscript).trim()
+      // Combine final and interim transcripts with proper spacing
+      let fullTranscript = ""
+      if (finalTranscript && interimTranscript) {
+        fullTranscript = `${finalTranscript} ${interimTranscript}`.trim()
+      } else if (finalTranscript) {
+        fullTranscript = finalTranscript.trim()
+      } else if (interimTranscript) {
+        fullTranscript = interimTranscript.trim()
+      }
+
       if (fullTranscript) {
         onTranscriptChange(fullTranscript)
       }
