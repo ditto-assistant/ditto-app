@@ -352,6 +352,16 @@ const MarkdownRendererCore = ({
     // Remove zero-width characters that can cause parsing issues
     text = text.replace(/[\u200B-\u200D\uFEFF]/g, "")
 
+    // Strip ```markdown fenced blocks to prevent breaking our custom table parser
+    // Replace ```markdown\n...\n``` with the inner content
+    text = text.replace(
+      /```\s*markdown\n([\s\S]*?)```/gi,
+      (m, inner) => inner.trim() + "\n"
+    )
+
+    // Also handle trailing triple backticks left at the end of messages
+    text = text.replace(/\n?```\s*$/g, "")
+
     return text
   }
 

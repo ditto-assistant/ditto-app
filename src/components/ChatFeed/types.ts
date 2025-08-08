@@ -37,6 +37,8 @@ export interface CustomScrollToBottomProps {
   detectScrollToTop?: ScrollDetectionFunction
   onScrollToTopRef?: MutableRefObject<ScrollDetectionFunction | null>
   forceScrollToBottomRef?: MutableRefObject<ForceScrollFunction | null>
+  // Optional: expose internal scroll container ref to parent for distance computations
+  scrollContainerRefExternal?: MutableRefObject<HTMLDivElement | null>
 }
 
 // Main ChatFeed component props (forwardRef pattern)

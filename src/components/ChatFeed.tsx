@@ -102,6 +102,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   detectScrollToTop = () => {},
   onScrollToTopRef,
   forceScrollToBottomRef,
+  scrollContainerRefExternal,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const scrollButtonRef = useRef<HTMLButtonElement>(null)
@@ -122,6 +123,14 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     scrollHeightRef,
     clearAllScrollFlags,
   } = useScrollState()
+
+  const rafIdRef = useRef<number | null>(null)
+  const cancelRaf = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+  }, [])
 
   const scrollToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
@@ -183,6 +192,11 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
     if (forceScrollToBottomRef) {
       forceScrollToBottomRef.current = forceScrollToBottom
+    }
+
+    // expose internal scroll container to parent
+    if (scrollContainerRefExternal) {
+      scrollContainerRefExternal.current = scrollContainerRef.current
     }
 
     if (scrollContainerRef.current) {
@@ -265,6 +279,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     forceScrollToBottom,
     scrollToBottom,
     addTimeout,
+    scrollContainerRefExternal,
     // Refs are intentionally omitted to prevent infinite re-renders
   ])
 
@@ -454,6 +469,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     // Set streaming mode timeout - we're considered "streaming" for X seconds after content changes
     streamingTimeoutRef.current = setTimeout(() => {
       streamingTimeoutRef.current = null
+      // stop any ongoing raf follow
+      cancelRaf()
     }, SCROLL_CONSTANTS.STREAMING_MODE_TIMEOUT)
 
     // Auto-scroll logic
@@ -524,6 +541,44 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       addTimeout(followUpTimeout)
     }
 
+    // Start a short-lived RAF follow loop while streaming for ultra-fast updates
+    if (isStreamingMode && scrollContainer) {
+      let startTime = performance.now()
+      const maxDurationMs = Math.min(
+        SCROLL_CONSTANTS.STREAMING_MODE_TIMEOUT,
+        1500
+      )
+
+      const tick = (now: number) => {
+        if (
+          now - startTime > maxDurationMs ||
+          streamingTimeoutRef.current === null
+        ) {
+          cancelRaf()
+          return
+        }
+
+        const distance =
+          scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight
+
+        if (
+          distance < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD &&
+          !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current
+        ) {
+          // keep pinned to bottom
+          scrollContainer.scrollTop = scrollContainer.scrollHeight
+        }
+
+        rafIdRef.current = requestAnimationFrame(tick)
+      }
+
+      cancelRaf()
+      rafIdRef.current = requestAnimationFrame(tick)
+    }
+
     if (onScrollComplete) {
       onScrollComplete()
     }
@@ -535,15 +590,17 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     onScrollComplete,
     scrollToBottom,
     addTimeout,
+    cancelRaf,
     // Refs are intentionally omitted to prevent infinite re-renders
   ])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      cancelRaf()
       clearAllTimeouts()
     }
-  }, [clearAllTimeouts])
+  }, [clearAllTimeouts, cancelRaf])
 
   return (
     <div className={containerClassName} style={containerStyle}>
@@ -891,6 +948,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           detectScrollToTop={handleScrollToTop}
           onScrollToTopRef={detectScrollToTopRef}
           forceScrollToBottomRef={forceScrollToBottomRef}
+          scrollContainerRefExternal={messagesScrollViewRef}
           style={{
             opacity: messagesVisible ? 1 : 0,
             transition: UI_CONSTANTS.OPACITY_TRANSITION,
