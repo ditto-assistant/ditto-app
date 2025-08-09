@@ -103,6 +103,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   onScrollToTopRef,
   forceScrollToBottomRef,
   scrollContainerRefExternal,
+  messages = [],
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const scrollButtonRef = useRef<HTMLButtonElement>(null)
@@ -461,6 +462,22 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   )
 
   useEffect(() => {
+    // Check if there are any optimistic messages being generated
+    const hasOptimisticMessages = messages.some(
+      (msg) => msg.isOptimistic === true
+    )
+
+    // Only enter streaming mode if there are optimistic messages
+    if (!hasOptimisticMessages) {
+      // Clear any existing streaming timeout and RAF when no generation is happening
+      if (streamingTimeoutRef.current) {
+        clearTimeout(streamingTimeoutRef.current)
+        streamingTimeoutRef.current = null
+      }
+      cancelRaf()
+      return
+    }
+
     // Detect if we're in streaming mode (content changing rapidly)
     if (streamingTimeoutRef.current) {
       clearTimeout(streamingTimeoutRef.current)
@@ -584,7 +601,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    children,
+    messages, // Now we depend on messages to detect optimistic state changes
     isScrolledToBottom,
     initialScrollBehavior,
     onScrollComplete,
@@ -949,6 +966,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           onScrollToTopRef={detectScrollToTopRef}
           forceScrollToBottomRef={forceScrollToBottomRef}
           scrollContainerRefExternal={messagesScrollViewRef}
+          messages={messages}
           style={{
             opacity: messagesVisible ? 1 : 0,
             transition: UI_CONSTANTS.OPACITY_TRANSITION,
