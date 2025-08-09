@@ -102,6 +102,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   detectScrollToTop = () => {},
   onScrollToTopRef,
   forceScrollToBottomRef,
+  scrollContainerRefExternal,
+  messages = [],
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const scrollButtonRef = useRef<HTMLButtonElement>(null)
@@ -122,6 +124,14 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     scrollHeightRef,
     clearAllScrollFlags,
   } = useScrollState()
+
+  const rafIdRef = useRef<number | null>(null)
+  const cancelRaf = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+  }, [])
 
   const scrollToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
@@ -183,6 +193,11 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
     if (forceScrollToBottomRef) {
       forceScrollToBottomRef.current = forceScrollToBottom
+    }
+
+    // expose internal scroll container to parent
+    if (scrollContainerRefExternal) {
+      scrollContainerRefExternal.current = scrollContainerRef.current
     }
 
     if (scrollContainerRef.current) {
@@ -265,6 +280,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     forceScrollToBottom,
     scrollToBottom,
     addTimeout,
+    scrollContainerRefExternal,
     // Refs are intentionally omitted to prevent infinite re-renders
   ])
 
@@ -446,6 +462,22 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   )
 
   useEffect(() => {
+    // Check if there are any optimistic messages being generated
+    const hasOptimisticMessages = messages.some(
+      (msg) => msg.isOptimistic === true
+    )
+
+    // Only enter streaming mode if there are optimistic messages
+    if (!hasOptimisticMessages) {
+      // Clear any existing streaming timeout and RAF when no generation is happening
+      if (streamingTimeoutRef.current) {
+        clearTimeout(streamingTimeoutRef.current)
+        streamingTimeoutRef.current = null
+      }
+      cancelRaf()
+      return
+    }
+
     // Detect if we're in streaming mode (content changing rapidly)
     if (streamingTimeoutRef.current) {
       clearTimeout(streamingTimeoutRef.current)
@@ -454,6 +486,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     // Set streaming mode timeout - we're considered "streaming" for X seconds after content changes
     streamingTimeoutRef.current = setTimeout(() => {
       streamingTimeoutRef.current = null
+      // stop any ongoing raf follow
+      cancelRaf()
     }, SCROLL_CONSTANTS.STREAMING_MODE_TIMEOUT)
 
     // Auto-scroll logic
@@ -524,26 +558,66 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       addTimeout(followUpTimeout)
     }
 
+    // Start a short-lived RAF follow loop while streaming for ultra-fast updates
+    if (isStreamingMode && scrollContainer) {
+      let startTime = performance.now()
+      const maxDurationMs = Math.min(
+        SCROLL_CONSTANTS.STREAMING_MODE_TIMEOUT,
+        1500
+      )
+
+      const tick = (now: number) => {
+        if (
+          now - startTime > maxDurationMs ||
+          streamingTimeoutRef.current === null
+        ) {
+          cancelRaf()
+          return
+        }
+
+        const distance =
+          scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight
+
+        if (
+          distance < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD &&
+          !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current
+        ) {
+          // keep pinned to bottom
+          scrollContainer.scrollTop = scrollContainer.scrollHeight
+        }
+
+        rafIdRef.current = requestAnimationFrame(tick)
+      }
+
+      cancelRaf()
+      rafIdRef.current = requestAnimationFrame(tick)
+    }
+
     if (onScrollComplete) {
       onScrollComplete()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    children,
+    messages, // Now we depend on messages to detect optimistic state changes
     isScrolledToBottom,
     initialScrollBehavior,
     onScrollComplete,
     scrollToBottom,
     addTimeout,
+    cancelRaf,
     // Refs are intentionally omitted to prevent infinite re-renders
   ])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      cancelRaf()
       clearAllTimeouts()
     }
-  }, [clearAllTimeouts])
+  }, [clearAllTimeouts, cancelRaf])
 
   return (
     <div className={containerClassName} style={containerStyle}>
@@ -625,9 +699,15 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
 
   useEffect(() => {
     if (messagesVisible && forceScrollToBottomRef.current) {
-      forceScrollToBottomRef.current()
+      // Only force scroll if there are optimistic messages being generated
+      const hasOptimisticMessages = messages.some(
+        (msg) => msg.isOptimistic === true
+      )
+      if (hasOptimisticMessages) {
+        forceScrollToBottomRef.current()
+      }
     }
-  }, [messagesVisible])
+  }, [messagesVisible, messages])
 
   // Force scroll to bottom when new optimistic messages are added (user sending new message)
   useEffect(() => {
@@ -676,23 +756,30 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           scrollContainer.clientHeight
 
         // If user is at bottom (within threshold), auto-scroll to accommodate sync indicator
+        // But only if there are optimistic messages or sync is related to recent generation
         if (
           currentDistanceFromBottom <
           SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
         ) {
-          const timeout = setTimeout(() => {
-            if (forceScrollToBottomRef.current) {
-              forceScrollToBottomRef.current()
-            }
-          }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
-          addTimeout(timeout)
+          const hasOptimisticMessages = messages.some(
+            (msg) => msg.isOptimistic === true
+          )
+          // Allow sync scroll if there are optimistic messages OR if sync just started (could be related to recent generation)
+          if (hasOptimisticMessages || currentSyncCount > 0) {
+            const timeout = setTimeout(() => {
+              if (forceScrollToBottomRef.current) {
+                forceScrollToBottomRef.current()
+              }
+            }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
+            addTimeout(timeout)
+          }
         }
       }
     }
 
     // Update the previous sync count
     previousSyncCountRef.current = currentSyncCount
-  }, [syncsInProgress, addTimeout])
+  }, [syncsInProgress, messages, addTimeout])
 
   // Compute non-optimistic message IDs outside the effect
   const nonOptimisticMessageIDs = useMemo(() => {
@@ -891,6 +978,8 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           detectScrollToTop={handleScrollToTop}
           onScrollToTopRef={detectScrollToTopRef}
           forceScrollToBottomRef={forceScrollToBottomRef}
+          scrollContainerRefExternal={messagesScrollViewRef}
+          messages={messages}
           style={{
             opacity: messagesVisible ? 1 : 0,
             transition: UI_CONSTANTS.OPACITY_TRANSITION,
