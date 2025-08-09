@@ -699,9 +699,15 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
 
   useEffect(() => {
     if (messagesVisible && forceScrollToBottomRef.current) {
-      forceScrollToBottomRef.current()
+      // Only force scroll if there are optimistic messages being generated
+      const hasOptimisticMessages = messages.some(
+        (msg) => msg.isOptimistic === true
+      )
+      if (hasOptimisticMessages) {
+        forceScrollToBottomRef.current()
+      }
     }
-  }, [messagesVisible])
+  }, [messagesVisible, messages])
 
   // Force scroll to bottom when new optimistic messages are added (user sending new message)
   useEffect(() => {
@@ -750,23 +756,30 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           scrollContainer.clientHeight
 
         // If user is at bottom (within threshold), auto-scroll to accommodate sync indicator
+        // But only if there are optimistic messages or sync is related to recent generation
         if (
           currentDistanceFromBottom <
           SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
         ) {
-          const timeout = setTimeout(() => {
-            if (forceScrollToBottomRef.current) {
-              forceScrollToBottomRef.current()
-            }
-          }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
-          addTimeout(timeout)
+          const hasOptimisticMessages = messages.some(
+            (msg) => msg.isOptimistic === true
+          )
+          // Allow sync scroll if there are optimistic messages OR if sync just started (could be related to recent generation)
+          if (hasOptimisticMessages || currentSyncCount > 0) {
+            const timeout = setTimeout(() => {
+              if (forceScrollToBottomRef.current) {
+                forceScrollToBottomRef.current()
+              }
+            }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
+            addTimeout(timeout)
+          }
         }
       }
     }
 
     // Update the previous sync count
     previousSyncCountRef.current = currentSyncCount
-  }, [syncsInProgress, addTimeout])
+  }, [syncsInProgress, messages, addTimeout])
 
   // Compute non-optimistic message IDs outside the effect
   const nonOptimisticMessageIDs = useMemo(() => {
