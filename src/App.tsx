@@ -29,6 +29,7 @@ import { ServicesProvider } from "@/hooks/useServices"
 import { initUpdateService } from "@/utils/updateService"
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler"
 import UpdateNotification from "@/components/UpdateNotification"
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt"
 import WhatsNew from "@/components/WhatsNew/WhatsNew"
 import Layout from "./components/ui/Layout"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -173,6 +174,7 @@ function App() {
                                           <RouterProvider router={router} />
                                         </AppErrorBoundary>
                                         <UpdateNotification />
+                                        <PWAInstallPrompt />
 
                                         <ToasterWrapper />
                                         <ReactQueryDevtools
