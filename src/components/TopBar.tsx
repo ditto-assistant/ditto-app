@@ -35,7 +35,7 @@ const TopBar: React.FC<TopBarProps> = () => {
 
   return (
     <header role="banner" className={topBarClasses}>
-      {/* Left side - Feedback, Live Mode, and Memories buttons */}
+      {/* Left side - Feedback and Memories buttons */}
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -52,8 +52,7 @@ const TopBar: React.FC<TopBarProps> = () => {
           <TooltipContent side="bottom">Feedback</TooltipContent>
         </Tooltip>
 
-        {/* Live Mode Button */}
-        {/* Removed Live Mode Button */}
+        {/* Live Mode Button removed */}
 
         <Tooltip>
           <TooltipTrigger asChild>

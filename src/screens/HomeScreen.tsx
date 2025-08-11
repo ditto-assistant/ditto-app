@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router"
 import ChatFeed from "@/components/ChatFeed"
 import SendMessage from "@/components/SendMessage"
 import CameraModal from "@/components/CameraModal"
-import LiveModeModal from "@/components/LiveModeModal"
 import TopBar from "@/components/TopBar"
 import TermsOfServiceDialog from "@/components/ui/TermsOfServiceDialog"
 import FullScreenSpinner from "@/components/ui/loading/LoadingSpinner"
@@ -28,10 +27,7 @@ export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
-  // Live Mode modal state
-  const [isLiveModeOpen, setIsLiveModeOpen] = useState(false)
-  const [_liveModeProcessing, setLiveModeProcessing] = useState(false)
-  const [_lastLiveModeResponse, setLastLiveModeResponse] = useState<string>("")
+  // Removed Live Mode modal state
 
   const appBodyRef = useRef(null)
 
@@ -100,38 +96,7 @@ export default function HomeScreen() {
     setCapturedImage(imageDataURL)
   }
 
-  // Live Mode handlers
-  const handleLiveModeOpen = () => {
-    setIsLiveModeOpen(true)
-  }
-
-  const handleLiveModeClose = () => {
-    setIsLiveModeOpen(false)
-    setLastLiveModeResponse("")
-    setLiveModeProcessing(false)
-  }
-
-  const _handleLiveModeSendMessage = async (message: string) => {
-    setLiveModeProcessing(true)
-
-    try {
-      // For now, we'll simulate sending a message to the chat
-      // In a full implementation, you'd want to integrate this with the
-      // existing chat system more deeply
-
-      // Simulate processing time
-      setTimeout(() => {
-        setLiveModeProcessing(false)
-        // Simulate a response - in reality this would come from the AI
-        setLastLiveModeResponse(
-          `I heard you say: "${message}". That's interesting! How can I help you with that?`
-        )
-      }, 1500)
-    } catch (error) {
-      console.error("Error sending live mode message:", error)
-      setLiveModeProcessing(false)
-    }
-  }
+  // Removed Live Mode handlers
 
   return (
     <div className="app fixed inset-0 touch-pan-y flex flex-col">
@@ -146,7 +111,6 @@ export default function HomeScreen() {
             onStop={() => {
               balance.refetch()
             }}
-            onLiveModeClick={handleLiveModeOpen}
           />
         </div>
       </Suspense>
@@ -157,14 +121,7 @@ export default function HomeScreen() {
         onCapture={handleCaptureImage}
       />
 
-      <LiveModeModal
-        isOpen={isLiveModeOpen}
-        onClose={handleLiveModeClose}
-        onMessageSent={(message, response) => {
-          // Optional: Handle message sent in live mode
-          setLastLiveModeResponse(response)
-        }}
-      />
+      {/* Removed LiveModeModal */}
 
       <TermsOfServiceDialog
         open={showTOS}

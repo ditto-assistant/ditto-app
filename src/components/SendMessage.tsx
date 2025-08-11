@@ -59,7 +59,6 @@ interface SendMessageProps {
   capturedImage: string | null
   onClearCapturedImage: () => void
   onStop: () => void
-  onLiveModeClick?: () => void
 }
 
 export default function SendMessage({
@@ -67,7 +66,6 @@ export default function SendMessage({
   capturedImage,
   onClearCapturedImage,
   onStop,
-  onLiveModeClick,
 }: SendMessageProps) {
   const [image, setImage] = useState<string | File>(capturedImage || "")
   const [isUploading, setIsUploading] = useState(false)
@@ -544,37 +542,7 @@ export default function SendMessage({
                 </DropdownMenu>
               </div>
 
-              {/* Center - Live Mode button (Ditto icon) */}
-              <div className="absolute left-1/2 transform -translate-x-1/2">
-                {onLiveModeClick && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          triggerLightHaptic()
-                          onLiveModeClick()
-                        }}
-                        aria-label="Open Live Mode"
-                        className="h-11 w-11 rounded-full p-0 hover:scale-110 transition-all"
-                        disabled={showSalesPitch || isUploading}
-                      >
-                        <Avatar className="h-10 w-10 ring-2 ring-blue-500/70 shadow-lg shadow-blue-500/50">
-                          <AvatarImage
-                            src={DITTO_LOGO}
-                            alt="Ditto"
-                            className="h-10 w-10 rounded-full rainbow-gradient"
-                          />
-                        </Avatar>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Live Mode</TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
+              {/* Removed bottom-center Live Mode button */}
 
               <div className="flex items-center gap-1.5">
                 {/* Send/Stop button */}

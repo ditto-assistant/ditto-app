@@ -9,7 +9,7 @@ import { useFontSize } from "@/hooks/useFontSize"
 import SyncIndicator from "./SyncIndicator"
 import { getSubjectsForPairs, SubjectWithCount } from "@/api/subjects"
 import { toast } from "sonner"
-import SpeakerToggleButton from "./SpeakerToggleButton"
+import ReadAloudButton from "./ReadAloudButton"
 
 // UI component imports
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -313,10 +313,10 @@ export default function ChatMessage({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Speaker toggle button - only for bot messages */}
+            {/* Read Aloud button - only for bot messages */}
             {!isUser && (
-              <SpeakerToggleButton
-                text={content}
+              <ReadAloudButton
+                pairID={menuProps.id}
                 size="md"
                 variant="ghost"
                 className="h-8 w-8"
