@@ -41,6 +41,24 @@
   color: var(--foreground);
 }
 
+/* Ensure bullets and numbers are visible regardless of global styles */
+.markdown-content ul {
+  list-style-type: disc;
+  list-style-position: outside;
+  padding-left: 1.5em;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+  padding-left: 1.5em;
+}
+
+/* Ensure list items render with markers */
+.markdown-content li {
+  display: list-item;
+}
+
 /* Inline code container styles */
 .inline-code-container {
   position: relative;
@@ -166,26 +184,6 @@
 .markdown-ol {
   list-style-type: decimal;
   list-style-position: outside;
-}
-
-.markdown-list-item {
-  margin: 0.4em 0;
-  line-height: 1.5;
-  display: list-item;
-  color: var(--foreground);
-}
-
-/* Ensure bullets are visible in all themes */
-.markdown-ul .markdown-list-item::marker,
-.markdown-content ul li::marker {
-  color: var(--foreground);
-  font-size: 1em;
-}
-
-.markdown-ol .markdown-list-item::marker,
-.markdown-content ol li::marker {
-  color: var(--foreground);
-  font-weight: normal;
 }
 
 /* Fix for iOS list rendering */
