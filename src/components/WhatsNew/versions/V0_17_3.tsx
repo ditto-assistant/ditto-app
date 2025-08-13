@@ -9,7 +9,7 @@ const sections: Section[] = [
         type: "new",
         title: "Memory Stats Module",
         description:
-          "Ditto is now automatically aware of your top conversation subjects, total memory count, and more, helping them understand your interests and conversation patterns better. This intelligent context sharing improves response relevance without any action required from you.",
+          "Ditto now automatically includes your top 15 conversation subjects and memory count in the system prompt, helping the AI understand your interests and conversation patterns better. This intelligent context sharing improves response relevance without any action required from you.",
       },
     ],
   },
