@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useAuth } from "./useAuth"
 import { getTopSubjects } from "@/api/kg"
 import { getConversationCount } from "@/api/userContent"
@@ -22,6 +21,9 @@ export function useMemoryStats(limit: number = 15): MemoryStats {
     queryKey: ["memory-stats", user?.uid, limit],
     enabled: !!user?.uid,
     staleTime: 60 * 1000, // 1 minute cache
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     queryFn: async () => {
       if (!user?.uid) {
         return { totalMemoryCount: 0, topSubjects: [] }
@@ -51,24 +53,6 @@ export function useMemoryStats(limit: number = 15): MemoryStats {
     },
   })
 
-  // Attach event listeners to refetch on memory updates/deletes
-  useEffect(() => {
-    if (!user?.uid) return
-
-    const handleMemoryUpdate = () => {
-      // Soft refetch
-      query.refetch()
-    }
-
-    window.addEventListener("memoryUpdated", handleMemoryUpdate)
-    window.addEventListener("memoryDeleted", handleMemoryUpdate)
-
-    return () => {
-      window.removeEventListener("memoryUpdated", handleMemoryUpdate)
-      window.removeEventListener("memoryDeleted", handleMemoryUpdate)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, limit])
 
   return {
     totalMemoryCount: query.data?.totalMemoryCount ?? 0,
