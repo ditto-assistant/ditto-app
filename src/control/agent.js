@@ -12,6 +12,8 @@ import { createPrompt } from "@/api/createPrompt"
 import { searchExamples } from "@/api/searchExamples"
 import { DEFAULT_PREFERENCES } from "@/constants"
 import { imageGenerationMessageService } from "@/utils/imageGenerationMessages"
+import { fetchMemoryStats } from "@/api/memoryStats"
+import { generateMemoryStatsSection } from "../control/templates/memoryStatsTemplate"
 
 /**@typedef {import("@/types/llm").ModelPreferences} ModelPreferences */
 
@@ -129,7 +131,7 @@ export const sendPrompt = async (
       planTier > 0
         ? preferences.memory.shortTermMemoryCount
         : DEFAULT_PREFERENCES.memory.shortTermMemoryCount
-    const [memories, examplesString] = await Promise.all([
+    const [memories, examplesString, memoryStats] = await Promise.all([
       getMemories(
         {
           userID,
@@ -145,6 +147,7 @@ export const sendPrompt = async (
         "text/plain"
       ),
       searchExamples(pairID),
+      fetchMemoryStats(userID, 15), // Fetch top 15 subjects for memory stats
     ])
     if (memories.err) {
       throw new Error(memories.err)
@@ -168,9 +171,31 @@ export const sendPrompt = async (
       firstName,
       timestamp: new Date().toISOString(),
       toolPreferences: preferences.tools,
+      memoryStats: memoryStats, // Pass memory stats (can be null)
     })
 
     if (import.meta.env.DEV) {
+      // Log Memory Stats Module in green above the system prompt to verify
+      try {
+        const memoryStatsSection = memoryStats
+          ? generateMemoryStatsSection(memoryStats)
+          : ""
+        if (memoryStatsSection && memoryStatsSection.trim()) {
+          console.log("%c" + memoryStatsSection, "color: green")
+        } else {
+          console.log(
+            "%c[MemoryStats] No memory stats available (user has 0 memories or fetch failed)",
+            "color: green"
+          )
+        }
+      } catch (e) {
+        console.log(
+          "%c[MemoryStats] Error generating memory stats section: " +
+            (e && e.message ? e.message : e),
+          "color: green"
+        )
+      }
+
       console.log("%c" + systemPrompt, "color: orange")
       console.log("%c" + constructedPrompt, "color: green")
     }
