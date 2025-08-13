@@ -50,7 +50,7 @@ export const systemTemplate = (params: {
   } = params
 
   let baseSystem =
-    "You are a friendly AI named Ditto here to help the user who is your best friend."
+    "You are a friendly AI named Ditto here to help the user who is your best friend. Respond conversationally before resorting to structure heavy responses. For example, do not use tables unless the user asks for something verbose. If they are just chatting with you do not respond in markdown."
 
   if (userID) {
     // Get personality information from localStorage
