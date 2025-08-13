@@ -53,7 +53,6 @@ export function useMemoryStats(limit: number = 15): MemoryStats {
     },
   })
 
-
   return {
     totalMemoryCount: query.data?.totalMemoryCount ?? 0,
     topSubjects: query.data?.topSubjects ?? [],
