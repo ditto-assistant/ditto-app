@@ -163,6 +163,7 @@ const parseMarkdownTables = (content: string): string => {
     return content
   }
 
+  // Process any tables in the content
   return processTableContent(content)
 }
 
@@ -344,6 +345,17 @@ const MarkdownRendererCore = ({
   // Minimal preprocessing to handle Unicode issues before rehype-sanitize
   const preProcessContent = (text: string): string => {
     if (typeof text !== "string") return ""
+
+    // First, extract all content from ```markdown code blocks
+    // This prevents ReactMarkdown from treating them as code blocks
+    text = text.replace(
+      /```markdown\s*\n([\s\S]*?)\n```/g,
+      (match, markdownContent) => {
+        // Return the raw markdown content without the code block wrapper
+        // Preserve the whitespace and formatting
+        return "\n" + markdownContent + "\n"
+      }
+    )
 
     // Only fix Unicode characters that cause DOM parsing errors
     // Non-breaking hyphen (U+2011) is the main culprit from the error reports
