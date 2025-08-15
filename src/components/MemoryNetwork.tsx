@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react"
+import { Switch } from "@/components/ui/switch"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
 import Modal from "./ui/modals/Modal"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
@@ -7,6 +10,7 @@ import "./MemoryNetwork.css"
 export default function MemoryNetworkModal() {
   const { memories, loading, currentRootMemory } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
+  const [showSubjects, setShowSubjects] = useState(true)
 
   useEffect(() => {
     if (!loading && currentRootMemory && memories !== undefined) {
@@ -41,10 +45,25 @@ export default function MemoryNetworkModal() {
   return (
     <Modal id="memoryNetwork" title="Memory Network">
       <div className="flex flex-col h-full w-full p-0 m-0">
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 select-none cursor-pointer">
+                <Switch
+                  checked={showSubjects}
+                  onCheckedChange={(v) => setShowSubjects(!!v)}
+                />
+                <span className="text-sm text-muted-foreground">Show top subject per node</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Powered by /pairs/subjects</TooltipContent>
+          </Tooltip>
+        </div>
         {isReady ? (
           <MemoriesNetworkGraph
             memories={memories || []}
             rootNodeConfig={rootNodeConfig}
+            showSubjects={showSubjects}
           />
         ) : (
           <div className="w-full h-full min-h-[500px] flex items-center justify-center">
