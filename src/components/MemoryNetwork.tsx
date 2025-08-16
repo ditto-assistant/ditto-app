@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Switch } from "@/components/ui/switch"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import Modal from "./ui/modals/Modal"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
@@ -50,10 +50,17 @@ export default function MemoryNetworkModal() {
             <TooltipTrigger asChild>
               <div className="flex items-center gap-2 select-none cursor-pointer">
                 <Switch
+                  id="show-subjects-toggle"
                   checked={showSubjects}
                   onCheckedChange={(v) => setShowSubjects(!!v)}
+                  aria-label="Toggle subject display on memory network nodes"
                 />
-                <span className="text-sm text-muted-foreground">Show top subject per node</span>
+                <label 
+                  htmlFor="show-subjects-toggle" 
+                  className="text-sm text-muted-foreground cursor-pointer"
+                >
+                  Show top subject per node
+                </label>
               </div>
             </TooltipTrigger>
             <TooltipContent>Powered by /pairs/subjects</TooltipContent>

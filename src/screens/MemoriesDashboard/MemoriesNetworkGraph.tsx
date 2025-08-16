@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Info } from "lucide-react"
+import { toast } from "sonner"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
@@ -16,7 +17,6 @@ import {
   FitOptions,
 } from "vis-network"
 import { getSubjectsForPairs, SubjectWithCount } from "@/api/subjects"
-import { Switch } from "@/components/ui/switch"
 
 // Global cache of node positions to preserve layout across modal instances
 // This was originally in MemoriesDashboardOverlay.tsx
@@ -63,7 +63,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const [subjectsByPairId, setSubjectsByPairId] = useState<
     Map<string, SubjectWithCount[]>
   >(new Map())
-  const [showSubjects, setShowSubjects] = useState<boolean>(true)
 
   // Collect all pair IDs present in this graph (root + children)
   const pairIDs = useMemo(() => {
@@ -87,8 +86,14 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       }
       const res = await getSubjectsForPairs(pairIDs)
       if (!cancelled) {
-        if (res.ok) setSubjectsByPairId(res.ok)
-        else console.error("Failed to fetch subjects for pairs:", res.err)
+        if (res.ok) {
+          setSubjectsByPairId(res.ok)
+        } else {
+          console.error("Failed to fetch subjects for pairs:", res.err)
+          toast.error("Failed to load subjects for memory network", {
+            description: "Subject information may not be available for some nodes"
+          })
+        }
       }
     })()
     return () => {
@@ -496,6 +501,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     fitAllNodes,
     isMobile,
     theme,
+    showSubjects,
+    getTopSubject,
   ])
 
   // Attempt to refit when ready changes
