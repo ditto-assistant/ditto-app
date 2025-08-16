@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Info } from "lucide-react"
+import { toast } from "sonner"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
@@ -15,6 +16,7 @@ import {
   Options,
   FitOptions,
 } from "vis-network"
+import { getSubjectsForPairs, SubjectWithCount } from "@/api/subjects"
 
 // Global cache of node positions to preserve layout across modal instances
 // This was originally in MemoriesDashboardOverlay.tsx
@@ -33,12 +35,14 @@ interface RootNodeConfig {
 interface MemoriesNetworkGraphProps {
   memories: Memory[] // These are children/related memories to the root node
   rootNodeConfig: RootNodeConfig // New prop for root node
+  showSubjects: boolean
   // onNodeClick is handled by showMemoryNode from the hook context, no need to pass as prop if using the hook directly
 }
 
 const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   memories,
   rootNodeConfig,
+  showSubjects,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const networkRef = useRef<VisNetwork | null>(null)
@@ -55,6 +59,56 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const [isOpeningNode, setIsOpeningNode] = useState(false)
   const { isMobile } = usePlatform()
   const { theme } = useTheme()
+
+  const [subjectsByPairId, setSubjectsByPairId] = useState<
+    Map<string, SubjectWithCount[]>
+  >(new Map())
+
+  // Collect all pair IDs present in this graph (root + children)
+  const pairIDs = useMemo(() => {
+    const ids = new Set<string>()
+    if (rootNodeConfig.originalMemory?.id) ids.add(rootNodeConfig.originalMemory.id)
+    const traverse = (m: Memory) => {
+      ids.add(m.id)
+      m.children?.forEach(traverse)
+    }
+    memories.forEach(traverse)
+    return Array.from(ids)
+  }, [memories, rootNodeConfig.originalMemory?.id])
+
+  // Fetch subjects for the pair IDs
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (pairIDs.length === 0) {
+        setSubjectsByPairId(new Map())
+        return
+      }
+      const res = await getSubjectsForPairs(pairIDs)
+      if (!cancelled) {
+        if (res.ok) {
+          setSubjectsByPairId(res.ok)
+        } else {
+          console.error("Failed to fetch subjects for pairs:", res.err)
+          toast.error("Failed to load subjects for memory network", {
+            description: "Subject information may not be available for some nodes"
+          })
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [pairIDs])
+
+  const getTopSubject = useCallback(
+    (pairId: string): SubjectWithCount | null => {
+      const arr = subjectsByPairId.get(pairId)
+      if (!arr || arr.length === 0) return null
+      return arr.reduce((a, b) => (b.pair_count > a.pair_count ? b : a))
+    },
+    [subjectsByPairId]
+  )
 
   // Refs to track fit operations
   const isFittingRef = useRef<boolean>(false)
@@ -170,11 +224,20 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
 
     // Add the root node using rootNodeConfig
+    const rootTopSubject = rootNodeConfig.originalMemory
+      ? getTopSubject(rootNodeConfig.originalMemory.id)
+      : null
+    const rootLabelBase =
+      rootNodeConfig.label.substring(0, 30) +
+      (rootNodeConfig.label.length > 30 ? "..." : "")
+    const rootLabel =
+      showSubjects && rootTopSubject
+        ? `${rootLabelBase}\n• ${rootTopSubject.subject_text} (${rootTopSubject.pair_count})`
+        : rootLabelBase
+
     nodes.add({
       id: rootNodeConfig.id,
-      label:
-        rootNodeConfig.label.substring(0, 30) +
-        (rootNodeConfig.label.length > 30 ? "..." : ""),
+      label: rootLabel,
       title: rootNodeConfig.title || rootNodeConfig.label,
       color:
         rootNodeConfig.color ||
@@ -206,16 +269,21 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       const colors = ["#3498DB", "#2ECC71", "#9B59B6", "#F1C40F", "#E74C3C"]
       const nodeColor = colors[depth % colors.length]
-      const label = memory.prompt
-        ? memory.prompt.substring(0, 20) +
-          (memory.prompt.length > 20 ? "..." : "")
+      const labelBase = memory.prompt
+        ? memory.prompt.substring(0, 20) + (memory.prompt.length > 20 ? "..." : "")
         : "Memory"
+
+      const top = getTopSubject(memory.id)
+      const label = showSubjects && top
+        ? `${labelBase}\n• ${top.subject_text} (${top.pair_count})`
+        : labelBase
+
       // Assuming vector_distance is similarity where higher is better (0 to 1 scale)
       const scorePercentage = (memory.vector_distance * 100).toFixed(1)
 
       nodes.add({
         id: nodeId,
-        label: label,
+        label,
         title: `Prompt: ${memory.prompt}\nMatch: ${scorePercentage}%`,
         color: nodeColor,
         level: depth + 1,
@@ -433,6 +501,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     fitAllNodes,
     isMobile,
     theme,
+    showSubjects,
+    getTopSubject,
   ])
 
   // Attempt to refit when ready changes
