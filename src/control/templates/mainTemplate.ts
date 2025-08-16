@@ -1,6 +1,8 @@
 import { TOOLS } from "../../constants"
 import type { Tool, ToolPreferences } from "../../types/llm"
 import { PersonalityStorage } from "../../utils/personalityStorage"
+import { generateMemoryStatsSection } from "./memoryStatsTemplate"
+import type { MemoryStatsParams } from "../../api/memoryStats"
 
 const getToolsModule = (params: {
   toolPreferences: ToolPreferences
@@ -35,12 +37,20 @@ export const systemTemplate = (params: {
   firstName: string
   timestamp: string
   toolPreferences: ToolPreferences
+  memoryStats?: MemoryStatsParams
 }) => {
-  const { userID, memories, examples, firstName, timestamp, toolPreferences } =
-    params
+  const {
+    userID,
+    memories,
+    examples,
+    firstName,
+    timestamp,
+    toolPreferences,
+    memoryStats,
+  } = params
 
   let baseSystem =
-    "You are a friendly AI named Ditto here to help the user who is your best friend."
+    "You are a friendly AI named Ditto here to help the user who is your best friend. Respond conversationally before resorting to structure heavy responses. For example, do not use tables unless the user asks for something verbose. If they are just chatting with you do not respond in markdown."
 
   if (userID) {
     // Get personality information from localStorage
@@ -97,9 +107,14 @@ export const systemTemplate = (params: {
   const currentTime =
     getTimezoneString() + " " + (new Date().getHours() >= 12 ? "PM" : "AM")
 
+  // Generate memory stats section if data is available
+  const memoryStatsSection = memoryStats
+    ? `\n\n${generateMemoryStatsSection(memoryStats)}`
+    : ""
+
   const systemPrompt = `${baseSystem}
 
-${toolsSection}${examplesSection}
+${toolsSection}${examplesSection}${memoryStatsSection}
 
 ## Context Information
 - User's Name: ${firstName}
