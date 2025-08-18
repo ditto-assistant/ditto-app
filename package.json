@@ -70,7 +70,7 @@
     "shadcn": "^2.10.0",
     "tailwindcss": "^4.1.11",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^7.0.6",
+    "vite": "^7.1.2",
     "vite-env": "^1.0.0"
   },
   "scripts": {
