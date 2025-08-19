@@ -1,20 +1,358 @@
-/* Memory Network Styles */
-/* 
-Only keeping essential styles needed for the vis-network library 
-to function properly. The rest is handled by Tailwind.
-*/
+/* Memory Network Styles - Award-Winning Neural Interface */
 
-/* Make network nodes more visible */
+/* Neuron-inspired network styling */
 .vis-network .vis-node {
   border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 15px rgba(255, 255, 255, 0.3),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+  filter: drop-shadow(0 0 8px rgba(114, 137, 218, 0.4));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.vis-network .vis-node:hover {
+  box-shadow:
+    0 0 25px rgba(255, 255, 255, 0.5),
+    inset 0 0 15px rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 0 12px rgba(114, 137, 218, 0.6));
+  transform: scale(1.05);
+}
+
+/* Enhanced edge styling with dynamic thickness */
 .vis-network .vis-edge {
   stroke-width: 2px;
+  filter: drop-shadow(0 0 3px rgba(160, 160, 160, 0.3));
+  transition: all 0.3s ease;
 }
 
-/* Essential styles for TableView */
+.vis-network .vis-edge.strong-connection {
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 6px rgba(114, 137, 218, 0.5));
+}
+
+.vis-network .vis-edge.weak-connection {
+  stroke-width: 1px;
+  opacity: 0.6;
+}
+
+/* Subject nodes special styling */
+.vis-network .vis-node.subject-node {
+  border: 2px solid rgba(46, 204, 113, 0.8);
+  box-shadow:
+    0 0 12px rgba(46, 204, 113, 0.4),
+    inset 0 0 8px rgba(46, 204, 113, 0.1);
+  filter: drop-shadow(0 0 6px rgba(46, 204, 113, 0.3));
+}
+
+.vis-network .vis-node.subject-node.key-subject {
+  border: 2px solid rgba(255, 215, 0, 0.9);
+  box-shadow:
+    0 0 15px rgba(255, 215, 0, 0.5),
+    inset 0 0 10px rgba(255, 215, 0, 0.2);
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+}
+
+/* Floating memory preview */
+.memory-preview-card {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 16px;
+  max-width: 320px;
+  min-width: 280px;
+  z-index: 30;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(114, 137, 218, 0.2);
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.memory-preview-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.3) 0%,
+    rgba(46, 204, 113, 0.3) 50%,
+    rgba(241, 196, 15, 0.3) 100%
+  );
+  border-radius: 16px;
+  z-index: -1;
+}
+
+.memory-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.memory-preview-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #7289da, #2ecc71);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+}
+
+.memory-preview-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8e8e8;
+  flex: 1;
+}
+
+.memory-preview-content {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  line-height: 1.4;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.memory-preview-subjects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memory-preview-subject {
+  background: rgba(46, 204, 113, 0.2);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.memory-preview-subject.key-subject {
+  background: rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+}
+
+/* Network controls */
+.memory-network-controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memory-network-control-button {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+.memory-network-control-button:hover {
+  background: rgba(114, 137, 218, 0.3);
+  border-color: rgba(114, 137, 218, 0.5);
+  transform: scale(1.05);
+}
+
+.memory-network-control-button.active {
+  background: rgba(114, 137, 218, 0.5);
+  border-color: rgba(114, 137, 218, 0.8);
+}
+
+/* Path tracing visualization */
+.vis-network .vis-edge.path-trace {
+  stroke-width: 5px;
+  color: rgba(255, 193, 7, 0.9);
+  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
+  animation: pathFlow 2s ease-in-out infinite;
+}
+
+@keyframes pathFlow {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Memory type indicators */
+.memory-type-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #7289da, #2ecc71);
+  border: 2px solid rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: white;
+  z-index: 10;
+}
+
+/* Network statistics overlay */
+.memory-network-stats {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  font-size: 12px;
+  min-width: 200px;
+}
+
+.memory-network-stats-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #7289da;
+}
+
+.memory-network-stats-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.memory-network-stats-value {
+  color: #2ecc71;
+  font-weight: 500;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .memory-network-controls {
+    top: 8px;
+    left: 8px;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .memory-network-control-button {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+  }
+
+  .memory-preview-card {
+    max-width: 280px;
+    min-width: 240px;
+    padding: 12px;
+  }
+
+  .memory-network-stats {
+    bottom: 8px;
+    left: 8px;
+    padding: 8px 12px;
+    min-width: 150px;
+    font-size: 11px;
+  }
+
+  .vis-network .vis-node {
+    box-shadow:
+      0 0 10px rgba(255, 255, 255, 0.3),
+      inset 0 0 5px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Accessibility and performance */
+@media (prefers-reduced-motion: reduce) {
+  .vis-network .vis-node,
+  .vis-network .vis-edge,
+  .memory-preview-card,
+  .memory-network-control-button {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .vis-network .vis-node {
+    border-width: 3px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
+
+  .memory-preview-card {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.98);
+  }
+}
+
+/* Loading states */
+.memory-network-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 40;
+}
+
+.memory-network-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(114, 137, 218, 0.2);
+  border-top: 3px solid #7289da;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.memory-network-loading-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Original TableView styles preserved */
 .memory-node {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -258,34 +596,6 @@ to function properly. The rest is handled by Tailwind.
   background-color: rgba(220, 30, 30, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  #memory-network-container {
-    width: 100% !important;
-    touch-action: none !important;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  .vis-network {
-    touch-action: none !important;
-    -webkit-user-select: none;
-    user-select: none;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  .memory-table {
-    width: 100% !important;
-    padding: 12px 8px;
-  }
-
-  .memory-node {
-    width: 100%;
-    max-width: 100%;
-  }
 }
 
 /* Ensure proper network visibility on all devices */

@@ -1,5 +1,5 @@
-const MODE = import.meta.env.MODE
-// const MODE = "staging"
+// const MODE = import.meta.env.MODE
+const MODE = "staging"
 
 function getBaseURL(dittoEnv: string) {
   switch (dittoEnv) {
@@ -79,6 +79,7 @@ export const routes = {
   personalityAssessmentStart: PG_VECTOR_API_URL + "/personality-assessment",
   personalityLastSync: PG_VECTOR_API_URL + "/personality/last-sync",
   pairSubjects: PG_VECTOR_API_URL + "/pairs/subjects",
+  pairDetails: PG_VECTOR_API_URL + "/pairs/details",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

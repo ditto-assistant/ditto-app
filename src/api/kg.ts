@@ -397,3 +397,84 @@ export async function renameSubject({
     return { err: `Unable to rename subject. Error: ${error}` }
   }
 }
+
+export const PairSubjectSchema = z.object({
+  id: z.string(),
+  subject_text: z.string(),
+  description: z.string().optional(),
+  pair_count: z.number(),
+  is_key_subject: z.boolean(),
+})
+export type PairSubject = z.infer<typeof PairSubjectSchema>
+
+export const ComprehensivePairDetailsSchema = z
+  .object({
+    id: z.string(),
+    title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    timestamp: z.string().nullable(),
+    timestamp_formatted: z.string(),
+    subjects: z.array(PairSubjectSchema),
+  })
+  .transform((data) => ({
+    ...data,
+    title: data.title ?? "Memory Pair",
+    description: data.description ?? "",
+  }))
+export type ComprehensivePairDetails = z.infer<
+  typeof ComprehensivePairDetailsSchema
+>
+
+export const ComprehensivePairDetailsResponseSchema = z.record(
+  z.string(),
+  ComprehensivePairDetailsSchema
+)
+export type ComprehensivePairDetailsResponse = z.infer<
+  typeof ComprehensivePairDetailsResponseSchema
+>
+
+export async function getComprehensivePairDetails({
+  pairIDs,
+}: {
+  pairIDs: string[]
+}): Promise<Result<ComprehensivePairDetailsResponse>> {
+  if (pairIDs.length === 0) {
+    return { ok: {} }
+  }
+
+  const tok = await getToken()
+  if (tok.err) return { err: "Unable to get token" }
+  if (!tok.ok) return { err: "No token" }
+
+  try {
+    const response = await fetch(routes.pairDetails, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        pair_ids: pairIDs,
+      }),
+    })
+
+    if (response.ok) {
+      const rawData: unknown = await response.json()
+      const validatedData =
+        ComprehensivePairDetailsResponseSchema.safeParse(rawData)
+      if (!validatedData.success) {
+        return {
+          err: `getComprehensivePairDetails: Invalid response data: ${validatedData.error}`,
+        }
+      }
+      return { ok: validatedData.data }
+    } else {
+      return {
+        err: `Unable to get comprehensive pair details. Error: ${response.status}`,
+      }
+    }
+  } catch (error) {
+    return { err: `Unable to get comprehensive pair details. Error: ${error}` }
+  }
+}
