@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import {
-  Info,
-  Search,
-  Target,
-  Route,
-  BarChart3,
-  Zap,
-  Brain,
-  Eye,
-} from "lucide-react"
+import { Target, BarChart3, Brain } from "lucide-react"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
@@ -90,7 +81,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const [isOpeningNode, setIsOpeningNode] = useState(false)
 
   const [showStats, setShowStats] = useState(true)
-  const [tracingPath, setTracingPath] = useState<string[]>([])
   const [previewNode, setPreviewNode] = useState<{
     nodeId: string
     x: number
@@ -154,7 +144,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
   }, [])
 
-  const handleNodeHover = useCallback((nodeId: string, event: any) => {
+  const handleNodeHover = useCallback((nodeId: string, _event: unknown) => {
     if (!networkRef.current) return
     const memory = memoryMapRef.current.get(nodeId)
     if (memory && typeof memory === "object" && "prompt" in memory) {
@@ -289,12 +279,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         // Dynamic edge thickness based on memory relevance
         const relevanceScore = memory.vector_distance || 0.5
         const edgeWidth = Math.max(1, Math.floor(relevanceScore * 4))
-        const edgeClass =
-          relevanceScore > 0.8
-            ? "strong-connection"
-            : relevanceScore < 0.3
-              ? "weak-connection"
-              : ""
 
         edges.add({
           from: parentNodeId,
@@ -529,6 +513,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     memories,
     rootNodeConfig,
     handleNodeClick,
+    isReady,
     isOpeningNode,
     fitAllNodes,
     isMobile,
@@ -561,7 +546,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         <Brain size={32} className="text-primary/60" />
         <p className="text-base font-medium">Your Neural Memory Network</p>
         <p className="text-sm opacity-70">
-          Search to explore your AI's hippocampus
+          Search to explore your AI&apos;s hippocampus
         </p>
       </div>
     )
@@ -584,13 +569,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           title="Toggle Statistics"
         >
           <BarChart3 size={18} />
-        </button>
-        <button
-          className="memory-network-control-button"
-          onClick={() => setTracingPath([])}
-          title="Clear Path Trace"
-        >
-          <Route size={18} />
         </button>
       </div>
 

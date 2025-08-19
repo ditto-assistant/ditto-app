@@ -1,10 +1,4 @@
-import {
-  ReactNode,
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from "react"
+import { ReactNode, createContext, useContext, useState } from "react"
 import { useModal } from "./useModal"
 import { getMemories, Memory } from "@/api/getMemories"
 import { getComprehensivePairDetails, ComprehensivePairDetails } from "@/api/kg"
