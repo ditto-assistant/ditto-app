@@ -81,7 +81,7 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
         },
         fetchMemories: async (memory) => {
           try {
-            setLoading(true)
+            // Don't set loading here - it's already set by showMemoryNetwork
             setCurrentRootMemory(memory)
 
             const userID = auth.currentUser?.uid
@@ -147,14 +147,20 @@ export function useMemoryNetwork() {
 
   const showMemoryNetwork = async (message: Memory) => {
     try {
+      // Set loading and open modal immediately for instant feedback
+      context.setLoading(true)
       context.setCurrentRootMemory(message)
-      await context.fetchMemories(message)
       openModal()
+
+      // Fetch data in background
+      await context.fetchMemories(message)
     } catch (error: unknown) {
       console.error("Error showing memory network:", error)
       toast.error(
         `Failed to show memory network: ${error instanceof Error ? error.message : "Unknown error"}`
       )
+      // Ensure loading is stopped on error
+      context.setLoading(false)
     }
   }
 

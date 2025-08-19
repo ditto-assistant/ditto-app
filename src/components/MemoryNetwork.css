@@ -52,7 +52,7 @@
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
 }
 
-/* Floating memory preview */
+/* Floating memory preview - now works as a modal */
 .memory-preview-card {
   position: absolute;
   background: rgba(0, 0, 0, 0.95);
@@ -68,7 +68,11 @@
     0 0 20px rgba(114, 137, 218, 0.2);
   transform: translateY(-10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.memory-preview-card.fixed {
+  pointer-events: auto;
 }
 
 .memory-preview-card::before {

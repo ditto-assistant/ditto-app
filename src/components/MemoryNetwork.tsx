@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Modal from "./ui/modals/Modal"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import MemoriesNetworkGraph from "@/screens/MemoriesDashboard/MemoriesNetworkGraph"
+import { LoadingSpinner } from "./ui/loading/LoadingSpinner"
 import "./MemoryNetwork.css"
 
 export default function MemoryNetworkModal() {
@@ -19,7 +20,8 @@ export default function MemoryNetworkModal() {
   if (loading || !currentRootMemory) {
     return (
       <Modal id="memoryNetwork" title="Memory Network">
-        <div className="w-full h-full min-h-[500px] flex items-center justify-center">
+        <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center gap-4">
+          <LoadingSpinner size={50} inline={true} />
           <div className="text-muted-foreground">Loading memory network...</div>
         </div>
       </Modal>
@@ -47,7 +49,8 @@ export default function MemoryNetworkModal() {
             rootNodeConfig={rootNodeConfig}
           />
         ) : (
-          <div className="w-full h-full min-h-[500px] flex items-center justify-center">
+          <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center gap-4">
+            <LoadingSpinner size={50} inline={true} />
             <div className="text-muted-foreground">
               {loading || !currentRootMemory
                 ? "Loading memory network..."

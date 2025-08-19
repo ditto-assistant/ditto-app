@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Target, BarChart3, Brain } from "lucide-react"
+import { Target, BarChart3, Brain, MessageCircle, X } from "lucide-react"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
@@ -79,10 +79,10 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const { pairDetails } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
   const [isOpeningNode, setIsOpeningNode] = useState(false)
-
   const [showStats, setShowStats] = useState(true)
-  const [previewNode, setPreviewNode] = useState<{
+  const [selectedNode, setSelectedNode] = useState<{
     nodeId: string
+    memory: Memory
     x: number
     y: number
   } | null>(null)
@@ -143,47 +143,30 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
   }, [])
 
-  const handleNodeHover = useCallback((nodeId: string, _event: unknown) => {
-    if (!networkRef.current) return
-    const memory = memoryMapRef.current.get(nodeId)
-    if (memory && typeof memory === "object" && "prompt" in memory) {
-      const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
-      if (canvasPos) {
-        const domPos = networkRef.current.canvasToDOM(canvasPos)
-        setPreviewNode({ nodeId, x: domPos.x, y: domPos.y })
+  const handleNodeClick = useCallback((nodeId: string) => {
+    const clickedItem = memoryMapRef.current.get(nodeId)
+    if (
+      clickedItem &&
+      !(clickedItem as RootNodeConfig).isQueryNode &&
+      !("query" in clickedItem)
+    ) {
+      const clickedMemory = clickedItem as Memory
+
+      // Get node position for modal positioning
+      if (networkRef.current) {
+        const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
+        if (canvasPos) {
+          const domPos = networkRef.current.canvasToDOM(canvasPos)
+          setSelectedNode({
+            nodeId,
+            memory: clickedMemory,
+            x: domPos.x,
+            y: domPos.y,
+          })
+        }
       }
     }
   }, [])
-
-  const handleNodeClick = useCallback(
-    (nodeId: string) => {
-      const clickedItem = memoryMapRef.current.get(nodeId)
-      if (
-        clickedItem &&
-        !(clickedItem as RootNodeConfig).isQueryNode &&
-        !("query" in clickedItem)
-      ) {
-        const clickedMemory = clickedItem as Memory
-        setIsOpeningNode(true)
-        if (networkRef.current && nodesDatasetRef.current) {
-          networkRef.current.storePositions()
-          nodesDatasetRef.current
-            .get({ fields: ["id", "x", "y"] })
-            .forEach((node) => {
-              if (node.x != null && node.y != null) {
-                persistedNodePositions[node.id as string] = {
-                  x: node.x,
-                  y: node.y,
-                }
-              }
-            })
-        }
-        showMemoryNode(clickedMemory as MemoryWithLevel)
-        setTimeout(() => setIsOpeningNode(false), 500)
-      }
-    },
-    [showMemoryNode]
-  )
 
   useEffect(() => {
     if (isOpeningNode) return
@@ -448,14 +431,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             handleNodeClick(clickedNodeId)
           }
         })
-
-        networkRef.current.on("hoverNode", (params) => {
-          handleNodeHover(params.node, params.event)
-        })
-
-        networkRef.current.on("blurNode", () => {
-          setPreviewNode(null)
-        })
       }
 
       networkRef.current.once("stabilizationIterationsDone", () => {
@@ -605,20 +580,21 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       )}
 
       {/* Floating Memory Preview */}
-      {previewNode && (
+      {selectedNode && (
         <div
-          className="memory-preview-card"
+          className="memory-preview-card fixed z-50"
           style={{
-            left: Math.min(previewNode.x + 20, window.innerWidth - 340),
-            top: Math.max(previewNode.y - 100, 20),
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            maxWidth: "400px",
+            minWidth: "320px",
           }}
         >
           {(() => {
-            const memory = memoryMapRef.current.get(previewNode.nodeId)
-            if (!memory || typeof memory !== "object" || !("prompt" in memory))
-              return null
-            const memoryType = getMemoryType(memory as Memory)
-            const details = pairDetails[(memory as Memory).id]
+            const memory = selectedNode.memory
+            const memoryType = getMemoryType(memory)
+            const details = pairDetails[memory.id]
 
             return (
               <>
@@ -627,26 +603,60 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                   <div className="memory-preview-title">
                     {memoryType.type.toUpperCase()}
                   </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <button
+                      onClick={() => {
+                        setIsOpeningNode(true)
+                        if (networkRef.current && nodesDatasetRef.current) {
+                          networkRef.current.storePositions()
+                          nodesDatasetRef.current
+                            .get({ fields: ["id", "x", "y"] })
+                            .forEach((node) => {
+                              if (node.x != null && node.y != null) {
+                                persistedNodePositions[node.id as string] = {
+                                  x: node.x,
+                                  y: node.y,
+                                }
+                              }
+                            })
+                        }
+                        showMemoryNode(memory as MemoryWithLevel)
+                        setSelectedNode(null)
+                        setTimeout(() => setIsOpeningNode(false), 500)
+                      }}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      title="Open Chat Message"
+                    >
+                      <MessageCircle size={16} className="text-blue-400" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedNode(null)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      title="Close"
+                    >
+                      <X size={16} className="text-white/60" />
+                    </button>
+                  </div>
                 </div>
                 <div className="memory-preview-content">
-                  {(memory as Memory).prompt || "No content available"}
+                  {memory.prompt || "No content available"}
                 </div>
                 {details && details.subjects.length > 0 && (
-                  <div className="memory-preview-subjects">
-                    {details.subjects.slice(0, 4).map((subj, idx) => (
-                      <div
-                        key={idx}
-                        className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
-                      >
-                        {subj.subject_text} ({subj.pair_count})
-                      </div>
-                    ))}
-                    {details.subjects.length > 4 && (
-                      <div className="memory-preview-subject">
-                        +{details.subjects.length - 4} more
-                      </div>
-                    )}
-                  </div>
+                  <>
+                    <div className="text-sm font-medium text-white/80 mb-2">
+                      Related Subjects ({details.subjects.length})
+                    </div>
+                    <div className="memory-preview-subjects">
+                      {details.subjects.map((subj, idx) => (
+                        <div
+                          key={idx}
+                          className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
+                        >
+                          {subj.subject_text} ({subj.pair_count})
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </>
             )
