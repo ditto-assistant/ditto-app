@@ -92,28 +92,27 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Calculate network statistics
-  const networkStats = React.useMemo(() => {
-    const totalMemories = memories.length + 1 // +1 for root
-    const totalSubjects = Object.values(pairDetails).reduce(
-      (sum, pd) => sum + pd.subjects.length,
-      0
-    )
-    const keySubjects = Object.values(pairDetails).reduce(
-      (sum, pd) => sum + pd.subjects.filter((s) => s.is_key_subject).length,
-      0
-    )
-    const avgSubjectsPerMemory =
-      totalMemories > 0 ? (totalSubjects / totalMemories).toFixed(1) : "0"
-
-    return {
-      totalMemories,
-      totalSubjects,
-      keySubjects,
-      avgSubjectsPerMemory,
-      memoryDepth: Math.max(...memories.map((m) => getMemoryDepth(m)), 1),
-    }
-  }, [memories, pairDetails])
+  // Simple network statistics to avoid re-render loops
+  const totalMemories = memories.length + 1
+  const totalSubjects = Object.values(pairDetails).reduce(
+    (sum, pd) => sum + pd.subjects.length,
+    0
+  )
+  const keySubjects = Object.values(pairDetails).reduce(
+    (sum, pd) => sum + pd.subjects.filter((s) => s.is_key_subject).length,
+    0
+  )
+  const networkStats = {
+    totalMemories,
+    totalSubjects,
+    keySubjects,
+    avgSubjectsPerMemory:
+      totalMemories > 0 ? (totalSubjects / totalMemories).toFixed(1) : "0",
+    memoryDepth:
+      memories.length > 0
+        ? Math.max(...memories.map((m) => getMemoryDepth(m)), 1)
+        : 1,
+  }
 
   const fitAllNodes = useCallback(() => {
     if (isFittingRef.current) return
@@ -513,14 +512,10 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     memories,
     rootNodeConfig,
     handleNodeClick,
-    isReady,
     isOpeningNode,
     fitAllNodes,
     isMobile,
     theme,
-    pairDetails,
-    networkStats,
-    handleNodeHover,
   ])
 
   useEffect(() => {
