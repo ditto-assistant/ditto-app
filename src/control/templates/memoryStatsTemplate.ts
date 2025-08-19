@@ -1,30 +1,37 @@
-import { MemoryStats } from "@/hooks/useMemoryStats"
+import { Subject } from "@/types/common"
+import type { MemoryStatsParams } from "../../api/memoryStats"
 
-/**
- * Creates a memory stats section for the system prompt
- * @param memoryStats - The memory statistics object
- * @returns Formatted memory stats string
- */
-export function createMemoryStatsPrompt(memoryStats: MemoryStats): string {
-  if (!memoryStats || memoryStats.loading || memoryStats.error) {
+export const generateMemoryStatsSection = (
+  params: MemoryStatsParams
+): string => {
+  const { totalMemoryCount, topSubjects } = params
+
+  // Don't show the module if user has 0 memories
+  if (totalMemoryCount === 0) {
     return ""
   }
 
-  const { totalMemoryCount, topSubjects } = memoryStats
+  let section = `## Memory Stats Module
 
-  // Build the memory stats section
-  let prompt = `\n\n## USER MEMORY CONTEXT\n`
-  prompt += `Total Conversations: ${totalMemoryCount}\n`
+You have access to ${totalMemoryCount} conversation memories that capture your interactions with ${params.totalMemoryCount > 1 ? "the user" : "this user"}.`
 
-  if (topSubjects && topSubjects.length > 0) {
-    prompt += `\nTop Conversation Subjects:\n`
+  // Add top subjects section if we have subjects
+  if (topSubjects.length > 0) {
+    section += `\n\n### Top Memory Subjects\nHere are the main topics you've discussed together, ordered by frequency:\n`
+
     topSubjects.forEach((subject, index) => {
-      const description = subject.description ? ` - ${subject.description}` : ""
-      prompt += `${index + 1}. ${subject.subject_text} (${subject.pair_count} conversations)${description}\n`
+      const subjectLine = `${index + 1}. **${subject.subject_text}** (${subject.pair_count} conversation${subject.pair_count === 1 ? "" : "s"})`
+
+      // Add description if available
+      if (subject.description && subject.description.trim()) {
+        section += `\n${subjectLine}\n   - ${subject.description}`
+      } else {
+        section += `\n${subjectLine}`
+      }
     })
   }
 
-  prompt += `\nThis context helps you understand the user's interests and conversation patterns. Use this information to provide more relevant and personalized responses.`
+  section += `\n\nThese memory statistics help you understand the user's interests and conversation patterns.`
 
-  return prompt
+  return section
 }
