@@ -59,9 +59,10 @@
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
-  padding: 16px;
-  max-width: 320px;
-  min-width: 280px;
+  padding: 20px;
+  max-width: min(90vw, 520px);
+  min-width: min(90vw, 400px);
+  max-height: min(85vh, 700px);
   z-index: 30;
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.4),
@@ -69,6 +70,9 @@
   transform: translateY(-10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .memory-preview-card.fixed {
@@ -96,25 +100,26 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .memory-preview-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: linear-gradient(45deg, #7289da, #2ecc71);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 12px;
   color: white;
 }
 
 .memory-preview-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #e8e8e8;
   flex: 1;
@@ -122,11 +127,198 @@
 
 .memory-preview-content {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
-  line-height: 1.4;
-  max-height: 120px;
+  font-size: 14px;
+  line-height: 1.5;
   overflow-y: auto;
-  margin-bottom: 12px;
+  flex: 1;
+  min-height: 0;
+  max-height: 70vh;
+  padding-right: 4px;
+  /* Ensure scrolling works properly */
+  overflow-x: hidden;
+  /* Force scrolling to work */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar styling for the content */
+.memory-preview-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.memory-preview-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.memory-preview-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.memory-preview-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Enhanced scrollbar for chat messages */
+.memory-preview-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Chat message styling */
+.chat-message-user {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.chat-message-ditto {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.chat-message-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
+}
+
+.chat-message-avatar.user {
+  background: #3b82f6;
+}
+
+.chat-message-avatar.ditto {
+  background: #22c55e;
+}
+
+/* Copy button styling */
+.copy-button {
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  transform: scale(1.1);
+}
+
+.group:hover .copy-button {
+  opacity: 1;
+}
+
+/* ChatMessage component scrolling support */
+.memory-preview-content .prose {
+  max-height: none;
+  overflow: visible;
+}
+
+.memory-preview-content .prose > * {
+  max-width: none;
+}
+
+/* Ensure ChatMessage content can scroll */
+.memory-preview-content .prose .prose-invert {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Ensure ChatMessage components can scroll properly */
+.memory-preview-content .prose {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-content .prose-invert {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Override any height constraints from ChatMessage component */
+.memory-preview-content > div {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-content .space-y-4 {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure ChatMessage components in memory network modal can scroll */
+.memory-preview-card .memory-preview-content .prose {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-card .memory-preview-content .prose-invert {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-card .memory-preview-content .prose > * {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Override any flex constraints that might prevent scrolling */
+.memory-preview-card .memory-preview-content > div {
+  flex: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Connected pairs scrollable area - removed as section was removed */
+
+/* Slide animations for chat message modal */
+@keyframes slideInRight {
+  from {
+    transform: translate(100%, -50%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-100%, -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translate(-100%, -50%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-in-out forwards;
+}
+
+.animate-slide-out-left {
+  animation: slideOutLeft 0.3s ease-in-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-in-out forwards;
 }
 
 .memory-preview-subjects {
@@ -274,9 +466,10 @@
   }
 
   .memory-preview-card {
-    max-width: 280px;
-    min-width: 240px;
-    padding: 12px;
+    max-width: min(95vw, 380px);
+    min-width: min(95vw, 320px);
+    max-height: min(85vh, 500px);
+    padding: 16px;
   }
 
   .memory-network-stats {
@@ -614,4 +807,146 @@
   width: 100%;
   height: 100%;
   min-height: 500px;
+}
+
+/* Legend overlay (top-right) */
+.memory-network-legend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 160px;
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+}
+
+.memory-network-legend .legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.memory-network-legend .legend-title {
+  font-weight: 600;
+  color: #9aa7ff;
+  font-size: 12px;
+}
+
+.memory-network-legend .legend-close {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.memory-network-legend .legend-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.memory-network-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin: 4px 0;
+}
+
+.memory-network-legend .legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.memory-network-legend .legend-swatch.node.query {
+  background: #ED4245;
+}
+
+.memory-network-legend .legend-swatch.node.memory {
+  background: #9B59B6;
+}
+
+.memory-network-legend .legend-swatch.node.subject {
+  background: #2ECC71;
+}
+
+.memory-network-legend .legend-swatch.node.key-subject {
+  background: #FFD700;
+}
+
+.memory-network-legend .legend-note {
+  margin-top: 6px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+/* Legend toggle button (when hidden) */
+.memory-network-legend-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.memory-network-legend-toggle:hover {
+  background: rgba(114, 137, 218, 0.3);
+  border-color: rgba(114, 137, 218, 0.5);
+  transform: scale(1.03);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .memory-network-legend {
+    top: 8px;
+    right: 8px;
+    padding: 8px;
+    min-width: 140px;
+    font-size: 11px;
+  }
+  
+  .memory-network-legend .legend-title {
+    font-size: 11px;
+  }
+  
+  .memory-network-legend .legend-item {
+    font-size: 10px;
+    margin: 3px 0;
+    gap: 6px;
+  }
+  
+  .memory-network-legend .legend-swatch {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .memory-network-legend .legend-note {
+    font-size: 9px;
+  }
+  
+  .memory-network-legend-toggle {
+    top: 8px;
+    right: 8px;
+    padding: 5px;
+  }
 }

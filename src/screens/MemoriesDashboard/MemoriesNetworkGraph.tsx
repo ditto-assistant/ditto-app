@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Target, BarChart3, Brain, MessageCircle, X } from "lucide-react"
+import { Target, BarChart3, Brain, MessageCircle, X, Info, Maximize2, ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
+import ChatMessage from "@/components/ChatMessage"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
 import {
-  useMemoryNodeViewer,
   MemoryWithLevel,
 } from "@/hooks/useMemoryNodeViewer"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
@@ -75,19 +76,48 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       Memory | { isQueryNode: boolean; query?: string; originalMemory?: Memory }
     >
   >(new Map())
-  const { showMemoryNode } = useMemoryNodeViewer()
+  // Removed useMemoryNodeViewer - now using inline chat message view
   const { pairDetails } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
-  const [isOpeningNode, setIsOpeningNode] = useState(false)
+  // Removed isOpeningNode - no longer needed with inline chat view
   const [showStats, setShowStats] = useState(true)
+  const [showLegend, setShowLegend] = useState(true)
+  const [selectedNodeForModal, setSelectedNodeForModal] = useState<{
+    memory: Memory | null
+    position: { x: number; y: number }
+  } | null>(null)
+  const [selectedKeySubject, setSelectedKeySubject] = useState<{
+    subject: any
+    position: { x: number; y: number }
+  } | null>(null)
   const [selectedNode, setSelectedNode] = useState<{
     nodeId: string
     memory: Memory
     x: number
     y: number
   } | null>(null)
+  const [showChatMessage, setShowChatMessage] = useState<{
+    memory: Memory
+    position: { x: number; y: number }
+  } | null>(null)
+  const [isAnimatingBack, setIsAnimatingBack] = useState(false)
+  const [previousNodeStats, setPreviousNodeStats] = useState<{
+    memory: Memory | null
+    position: { x: number; y: number }
+  } | null>(null)
+  const previousNodeStatsRef = useRef<{
+    memory: Memory | null
+    position: { x: number; y: number }
+  } | null>(null)
   const { isMobile } = usePlatform()
   const { theme } = useTheme()
+
+  // Cleanup animation state when modals are closed
+  useEffect(() => {
+    if (!showChatMessage && !selectedNodeForModal && !selectedKeySubject) {
+      setIsAnimatingBack(false)
+    }
+  }, [showChatMessage, selectedNodeForModal, selectedKeySubject])
 
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -144,6 +174,48 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   }, [])
 
   const handleNodeClick = useCallback((nodeId: string) => {
+    console.log("Node clicked:", nodeId)
+    
+    // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
+    if (nodeId.startsWith('shared-subject-')) {
+      console.log("Subject node detected:", nodeId)
+      // Extract subject ID from the nodeId
+      const subjectId = nodeId.replace('shared-subject-', '')
+      console.log("Looking for subject ID:", subjectId)
+      
+      // Find the subject in pairDetails
+      let foundSubject = null
+      Object.entries(pairDetails).forEach(([pairId, details]) => {
+        if (details && details.subjects) {
+          const subject = details.subjects.find(s => s.id === subjectId)
+          if (subject) {
+            console.log("Found subject:", subject)
+            foundSubject = subject
+          }
+        }
+      })
+      
+      if (foundSubject) {
+        console.log("Setting selectedKeySubject with:", foundSubject)
+        // Get node position for modal positioning
+        if (networkRef.current) {
+          const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
+          if (canvasPos) {
+            const domPos = networkRef.current.canvasToDOM(canvasPos)
+            setSelectedKeySubject({
+              subject: foundSubject,
+              position: { x: domPos.x, y: domPos.y }
+            })
+          }
+        }
+      } else {
+        console.log("Subject not found for ID:", subjectId)
+      }
+      return
+    }
+
+    // Handle memory node clicks (existing logic)
+    console.log("Memory node detected:", nodeId)
     const clickedItem = memoryMapRef.current.get(nodeId)
     if (
       clickedItem &&
@@ -157,20 +229,16 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
         if (canvasPos) {
           const domPos = networkRef.current.canvasToDOM(canvasPos)
-          setSelectedNode({
-            nodeId,
+          setSelectedNodeForModal({
             memory: clickedMemory,
-            x: domPos.x,
-            y: domPos.y,
+            position: { x: domPos.x, y: domPos.y }
           })
         }
       }
     }
-  }, [])
+  }, [pairDetails])
 
   useEffect(() => {
-    if (isOpeningNode) return
-
     let effectiveTheme = theme
     if (theme === "system") {
       effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -184,7 +252,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     const edges = new DataSet<Edge>()
     memoryMapRef.current.clear()
 
-    if (!isOpeningNode) setIsReady(false)
+    setIsReady(false)
 
     // Enhanced root node with neural styling
     const rootSize = 35 + Math.min(networkStats.totalSubjects * 2, 15)
@@ -560,7 +628,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     memories,
     rootNodeConfig,
     handleNodeClick,
-    isOpeningNode,
     fitAllNodes,
     isMobile,
     theme,
@@ -602,18 +669,55 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         <button
           className="memory-network-control-button"
           onClick={fitAllNodes}
-          title="Fit All Nodes"
+          title="Fit to screen"
         >
-          <Target size={18} />
-        </button>
-        <button
-          className={`memory-network-control-button ${showStats ? "active" : ""}`}
-          onClick={() => setShowStats(!showStats)}
-          title="Toggle Statistics"
-        >
-          <BarChart3 size={18} />
+          <Maximize2 size={18} />
         </button>
       </div>
+
+      {/* Legend */}
+      {showLegend ? (
+        <div className="memory-network-legend">
+          <div className="legend-header">
+            <span className="legend-title">Legend</span>
+            <button
+              className="legend-close"
+              onClick={() => setShowLegend(false)}
+            >
+              <X size={14} />
+            </button>
+          </div>
+
+          <div className="legend-item">
+            <span className="legend-swatch node query"></span>
+            <span>Query Root</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-swatch node memory"></span>
+            <span>Memory</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-swatch node subject"></span>
+            <span>Subject</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-swatch node key-subject"></span>
+            <span>Key Subject</span>
+          </div>
+
+          <div className="legend-note">
+            Node size = connection count
+          </div>
+        </div>
+      ) : (
+        <button
+          className="memory-network-legend-toggle"
+          onClick={() => setShowLegend(true)}
+          title="Show legend"
+        >
+          <Info size={16} />
+        </button>
+      )}
 
       {/* Network Statistics */}
       {showStats && (
@@ -653,19 +757,17 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       )}
 
       {/* Floating Memory Preview */}
-      {selectedNode && (
-        <div
-          className="memory-preview-card fixed z-50"
-          style={{
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-            maxWidth: "400px",
-            minWidth: "320px",
-          }}
-        >
+      {selectedNodeForModal && selectedNodeForModal.memory && (
+                  <div
+            className="memory-preview-card fixed z-50"
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
           {(() => {
-            const memory = selectedNode.memory
+            const memory = selectedNodeForModal.memory!
             const memoryType = getMemoryType(memory)
             const details = pairDetails[memory.id]
 
@@ -679,23 +781,20 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                   <div className="flex items-center gap-2 ml-auto">
                     <button
                       onClick={() => {
-                        setIsOpeningNode(true)
-                        if (networkRef.current && nodesDatasetRef.current) {
-                          networkRef.current.storePositions()
-                          nodesDatasetRef.current
-                            .get({ fields: ["id", "x", "y"] })
-                            .forEach((node) => {
-                              if (node.x != null && node.y != null) {
-                                persistedNodePositions[node.id as string] = {
-                                  x: node.x,
-                                  y: node.y,
-                                }
-                              }
-                            })
+                        // Store the current node stats before opening chat
+                        console.log("Opening chat message, selectedNodeForModal:", selectedNodeForModal)
+                        
+                        // Store in both state and ref for reliability
+                        setPreviousNodeStats(selectedNodeForModal)
+                        previousNodeStatsRef.current = selectedNodeForModal
+                        
+                        if (selectedNodeForModal.memory) {
+                          setShowChatMessage({
+                            memory: selectedNodeForModal.memory,
+                            position: selectedNodeForModal.position
+                          })
+                          setSelectedNodeForModal(null)
                         }
-                        showMemoryNode(memory as MemoryWithLevel)
-                        setSelectedNode(null)
-                        setTimeout(() => setIsOpeningNode(false), 500)
                       }}
                       className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                       title="Open Chat Message"
@@ -703,7 +802,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                       <MessageCircle size={16} className="text-blue-400" />
                     </button>
                     <button
-                      onClick={() => setSelectedNode(null)}
+                      onClick={() => setSelectedNodeForModal(null)}
                       className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                       title="Close"
                     >
@@ -737,6 +836,263 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         </div>
       )}
 
+      {/* Floating Key Subject Preview */}
+      {selectedKeySubject && (
+        <>
+          {/* Backdrop for click-outside */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setSelectedKeySubject(null)}
+          />
+          <div
+            className="memory-preview-card fixed z-50"
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            {(() => {
+              console.log("Rendering key subject modal for:", selectedKeySubject.subject)
+              const subject = selectedKeySubject.subject
+              const subjectId = subject.id
+              const subjectName = subject.subject_text
+              const subjectDescription = subject.description
+
+              /* Connected Memory Pairs section removed */
+
+              return (
+                <>
+                  <div className="memory-preview-header">
+                    <div className="memory-preview-icon">⭐</div>
+                    <div className="memory-preview-title">
+                      Key Subject: {subjectName}
+                    </div>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button
+                        onClick={() => setSelectedKeySubject(null)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        title="Close"
+                      >
+                        <X size={16} className="text-white/60" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="memory-preview-content">
+                    <div className="mb-3">
+                      <p className="text-sm text-white/90 mb-2">
+                        <strong>Subject:</strong> {subjectName}
+                      </p>
+                      {subjectDescription && (
+                        <p className="text-sm text-white/80 mb-2">
+                          <strong>Description:</strong> {subjectDescription}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="mb-4 p-4 bg-white/5 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-400 mb-3">📊 Statistics</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Total Connections:</span>
+                          <span className="font-medium text-green-400">{subject.pair_count}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Subject Type:</span>
+                          <span className="font-medium text-yellow-400">
+                            {subject.is_key_subject ? 'Key Subject' : 'Regular'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Network Impact:</span>
+                          <span className="font-medium text-purple-400">
+                            {((subject.pair_count / totalMemories) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Relevance Score:</span>
+                          <span className="font-medium text-orange-400">
+                            {Math.min(subject.pair_count * 20, 100)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Connected Memory Pairs section removed to avoid modal overflow */}
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        </>
+      )}
+
+      {/* Floating Chat Message View */}
+      {showChatMessage && (
+        <>
+          {/* Backdrop for click-outside - removed to prevent interference */}
+          <div
+            className={`memory-preview-card fixed z-50 transition-all duration-300 ease-in-out ${
+              isAnimatingBack ? 'animate-slide-out-left' : 'animate-slide-in-right'
+            }`}
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+            onClick={(e) => {
+              // Prevent clicks inside the modal from bubbling up
+              e.stopPropagation()
+            }}
+          >
+            {(() => {
+              const memory = showChatMessage.memory
+              
+              // Edge case: memory object validation
+              if (!memory || !memory.id) {
+                return (
+                  <div className="p-4 text-center">
+                    <div className="text-red-400 mb-2">⚠️</div>
+                    <div className="text-white/80">Invalid memory data</div>
+                    <button
+                      onClick={() => setShowChatMessage(null)}
+                      className="mt-3 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )
+              }
+              
+              const memoryType = getMemoryType(memory)
+
+              return (
+                <>
+                  <div className="memory-preview-header">
+                    <div className="memory-preview-icon">{memoryType.icon}</div>
+                    <div className="memory-preview-title">
+                      Chat Message
+                    </div>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button
+                        onClick={() => {
+                          // Prevent multiple rapid clicks during animation
+                          if (isAnimatingBack) return
+                          
+                          console.log("Back button clicked, previousNodeStats:", previousNodeStats)
+                          console.log("Back button clicked, previousNodeStatsRef:", previousNodeStatsRef.current)
+                          
+                          // Animate back to node stats
+                          setIsAnimatingBack(true)
+                          
+                          // Use a shorter timeout to make the transition feel more responsive
+                          setTimeout(() => {
+                            // Try state first, then ref as fallback
+                            const statsToRestore = previousNodeStats || previousNodeStatsRef.current
+                            
+                            if (statsToRestore && statsToRestore.memory) {
+                              console.log("Restoring node stats:", statsToRestore)
+                              // Set the node stats immediately
+                              setSelectedNodeForModal(statsToRestore)
+                              // Close the chat and clean up
+                              setShowChatMessage(null)
+                              setPreviousNodeStats(null)
+                              previousNodeStatsRef.current = null
+                              setIsAnimatingBack(false)
+                            } else {
+                              console.log("No valid previousNodeStats, just closing")
+                              setShowChatMessage(null)
+                              setIsAnimatingBack(false)
+                            }
+                          }, 250) // Slightly shorter than the CSS animation
+                        }}
+                        className={`p-2 hover:bg-white/10 rounded-lg transition-colors ${
+                          isAnimatingBack ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        title="Back to Node Stats"
+                        disabled={isAnimatingBack}
+                      >
+                        <ArrowLeft size={16} className="text-blue-400" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Prevent closing during back animation
+                          if (isAnimatingBack) return
+                          setShowChatMessage(null)
+                        }}
+                        className={`p-2 hover:bg-white/10 rounded-lg transition-colors ${
+                          isAnimatingBack ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        title="Close"
+                        disabled={isAnimatingBack}
+                      >
+                        <X size={16} className="text-white/60" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="memory-preview-content">
+                    <div className="space-y-4">
+                      {/* User Message */}
+                      {memory.prompt && (
+                        <div className="mb-4">
+                          <ChatMessage
+                            content={memory.prompt}
+                            timestamp={memory.timestamp}
+                            isUser={true}
+                            isLast={false}
+                            isOptimistic={false}
+                            menuProps={{
+                              onCopy: () => {
+                                navigator.clipboard.writeText(memory.prompt)
+                                  .then(() => toast.success("Copied to clipboard"))
+                                  .catch(() => toast.error("Failed to copy"))
+                              },
+                              onDelete: () => {
+                                toast.info("Delete not available in network view")
+                              },
+                              onShowMemories: () => {
+                                toast.info("Already viewing memory network")
+                              },
+                              id: memory.id
+                            }}
+                          />
+                        </div>
+                      )}
+                      {/* Ditto's Response */}
+                      {memory.response && (
+                        <div>
+                          <ChatMessage
+                            content={memory.response}
+                            timestamp={memory.timestamp}
+                            isUser={false}
+                            isLast={false}
+                            isOptimistic={false}
+                            menuProps={{
+                              onCopy: () => {
+                                navigator.clipboard.writeText(memory.response)
+                                  .then(() => toast.success("Copied to clipboard"))
+                                  .catch(() => toast.error("Failed to copy"))
+                              },
+                              onDelete: () => {
+                                toast.info("Delete not available in network view")
+                              },
+                              onShowMemories: () => {
+                                toast.info("Already viewing memory network")
+                              },
+                              id: memory.id
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        </>
+      )}
+
       <div
         ref={containerRef}
         className="flex-1 relative w-full rounded-lg bg-muted border border-border overflow-hidden"
@@ -745,8 +1101,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       {!isReady &&
         nodesDatasetRef.current &&
-        nodesDatasetRef.current.length > 0 &&
-        !isOpeningNode && (
+        nodesDatasetRef.current.length > 0 && (
           <div className="memory-network-loading">
             <div className="memory-network-loading-spinner"></div>
             <div className="memory-network-loading-text">
