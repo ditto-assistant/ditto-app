@@ -538,6 +538,26 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           },
           adaptiveTimestep: true,
           wind: { x: 0, y: 0 },
+          // Mobile-specific physics optimizations
+          ...(isMobile && {
+            stabilization: {
+              enabled: true,
+              iterations: 200, // Fewer iterations for faster stabilization on mobile
+              fit: true,
+              updateInterval: 50, // Slower updates for better performance on mobile
+              onlyDynamicEdges: false,
+            },
+            adaptiveTimestep: true,
+            // Reduce physics complexity on mobile for better performance
+            forceAtlas2Based: {
+              gravitationalConstant: -60, // Reduced gravity for more stable layout
+              centralGravity: 0.003,
+              springLength: 120,
+              springConstant: 0.08,
+              damping: 0.7, // Increased damping for stability
+              avoidOverlap: 1.0,
+            },
+          }),
         },
         interaction: {
           dragNodes: true,
@@ -549,10 +569,45 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           selectable: true,
           selectConnectedEdges: true,
           hoverConnectedEdges: true,
+          // Mobile-specific touch optimizations
+          touch: {
+            enabled: true,
+            delay: 0, // Remove delay for immediate response
+            pinchToZoom: true,
+            panToDrag: true,
+          },
+          // Ensure click events work properly on mobile
+          clickToUse: false,
+          // Mobile-specific improvements
+          ...(isMobile && {
+            tooltipDelay: 0, // Immediate tooltip on mobile
+            hover: false, // Disable hover on mobile for better touch
+            dragNodes: false, // Disable node dragging on mobile to prevent accidental moves
+          }),
+          // Additional mobile optimizations
+          ...(isMobile && {
+            // Ensure proper touch event handling
+            touch: {
+              enabled: true,
+              delay: 0,
+              pinchToZoom: true,
+              panToDrag: true,
+            },
+            // Disable features that don't work well on mobile
+            keyboard: false,
+            // Ensure immediate response
+            clickToUse: false,
+          }),
         },
         nodes: {
           borderWidth: 2,
           font: { color: nodeFontColor, size: 12, face: "Inter, Arial" },
+          // Mobile-specific node improvements
+          ...(isMobile && {
+            size: 20, // Ensure minimum size for touch
+            borderWidth: 3, // Thicker borders for better visibility
+            shadow: true, // Enable shadows for better depth perception
+          }),
         },
         edges: {
           smooth: { enabled: true, type: "dynamic", roundness: 0.4 },
@@ -576,12 +631,46 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           options
         )
 
+        // Ensure mobile-specific settings are applied immediately
+        if (isMobile) {
+          // Force immediate interaction readiness on mobile
+          setTimeout(() => {
+            if (networkRef.current) {
+              networkRef.current.setOptions({
+                interaction: {
+                  tooltipDelay: 0,
+                  hover: false,
+                  dragNodes: false,
+                },
+              })
+            }
+          }, 100)
+        }
+
         networkRef.current.on("click", (params) => {
           if (params.nodes.length > 0) {
             const clickedNodeId = params.nodes[0] as string
             handleNodeClick(clickedNodeId)
           }
         })
+
+        // Mobile-specific optimizations are handled in the options above
+
+        // Add additional event handling for better mobile compatibility
+        if (isMobile) {
+          // Ensure the network is ready for interaction immediately
+          networkRef.current.on("stabilizationIterationsDone", () => {
+            // Force the network to be immediately interactive on mobile
+            if (networkRef.current) {
+              networkRef.current.setOptions({
+                interaction: {
+                  tooltipDelay: 0,
+                  hover: false,
+                },
+              })
+            }
+          })
+        }
       }
 
       networkRef.current.once("stabilizationIterationsDone", () => {
@@ -759,85 +848,96 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       {/* Floating Memory Preview */}
       {selectedNodeForModal && selectedNodeForModal.memory && (
-        <div
-          className="memory-preview-card fixed z-50"
-          style={{
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          {(() => {
-            const memory = selectedNodeForModal.memory!
-            const memoryType = getMemoryType(memory)
-            const details = pairDetails[memory.id]
+        <>
+          {/* Backdrop for click-outside */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setSelectedNodeForModal(null)}
+          />
+          <div
+            className="memory-preview-card fixed z-50"
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+            onClick={(e) => {
+              // Prevent clicks inside the modal from bubbling up to the backdrop
+              e.stopPropagation()
+            }}
+          >
+            {(() => {
+              const memory = selectedNodeForModal.memory!
+              const memoryType = getMemoryType(memory)
+              const details = pairDetails[memory.id]
 
-            return (
-              <>
-                <div className="memory-preview-header">
-                  <div className="memory-preview-icon">{memoryType.icon}</div>
-                  <div className="memory-preview-title">
-                    {memoryType.type.toUpperCase()}
-                  </div>
-                  <div className="flex items-center gap-2 ml-auto">
-                    <button
-                      onClick={() => {
-                        // Store the current node stats before opening chat
-                        console.log(
-                          "Opening chat message, selectedNodeForModal:",
-                          selectedNodeForModal
-                        )
-
-                        // Store in both state and ref for reliability
-                        setPreviousNodeStats(selectedNodeForModal)
-                        previousNodeStatsRef.current = selectedNodeForModal
-
-                        if (selectedNodeForModal.memory) {
-                          setShowChatMessage({
-                            memory: selectedNodeForModal.memory,
-                            position: selectedNodeForModal.position,
-                          })
-                          setSelectedNodeForModal(null)
-                        }
-                      }}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      title="Open Chat Message"
-                    >
-                      <MessageCircle size={16} className="text-blue-400" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedNodeForModal(null)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      title="Close"
-                    >
-                      <X size={16} className="text-white/60" />
-                    </button>
-                  </div>
-                </div>
-                <div className="memory-preview-content">
-                  {memory.prompt || "No content available"}
-                </div>
-                {details && details.subjects.length > 0 && (
-                  <>
-                    <div className="text-sm font-medium text-white/80 mb-2">
-                      Related Subjects ({details.subjects.length})
+              return (
+                <>
+                  <div className="memory-preview-header">
+                    <div className="memory-preview-icon">{memoryType.icon}</div>
+                    <div className="memory-preview-title">
+                      {memoryType.type.toUpperCase()}
                     </div>
-                    <div className="memory-preview-subjects">
-                      {details.subjects.map((subj, idx) => (
-                        <div
-                          key={idx}
-                          className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
-                        >
-                          {subj.subject_text} ({subj.pair_count})
-                        </div>
-                      ))}
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button
+                        onClick={() => {
+                          // Store the current node stats before opening chat
+                          console.log(
+                            "Opening chat message, selectedNodeForModal:",
+                            selectedNodeForModal
+                          )
+
+                          // Store in both state and ref for reliability
+                          setPreviousNodeStats(selectedNodeForModal)
+                          previousNodeStatsRef.current = selectedNodeForModal
+
+                          if (selectedNodeForModal.memory) {
+                            setShowChatMessage({
+                              memory: selectedNodeForModal.memory,
+                              position: selectedNodeForModal.position,
+                            })
+                            setSelectedNodeForModal(null)
+                          }
+                        }}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        title="Open Chat Message"
+                      >
+                        <MessageCircle size={16} className="text-blue-400" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedNodeForModal(null)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        title="Close"
+                      >
+                        <X size={16} className="text-white/60" />
+                      </button>
                     </div>
-                  </>
-                )}
-              </>
-            )
-          })()}
-        </div>
+                  </div>
+                  <div className="memory-preview-content">
+                    {memory.prompt || "No content available"}
+                  </div>
+                  {details && details.subjects.length > 0 && (
+                    <>
+                      <div className="text-sm font-medium text-white/80 mb-2">
+                        Related Subjects ({details.subjects.length})
+                      </div>
+                      <div className="memory-preview-subjects">
+                        {details.subjects.map((subj, idx) => (
+                          <div
+                            key={idx}
+                            className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
+                          >
+                            {subj.subject_text} ({subj.pair_count})
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              )
+            })()}
+          </div>
+        </>
       )}
 
       {/* Floating Key Subject Preview */}
@@ -854,6 +954,10 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%)",
+            }}
+            onClick={(e) => {
+              // Prevent clicks inside the modal from bubbling up to the backdrop
+              e.stopPropagation()
             }}
           >
             {(() => {
@@ -949,7 +1053,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       {/* Floating Chat Message View */}
       {showChatMessage && (
         <>
-          {/* Backdrop for click-outside - removed to prevent interference */}
+          {/* Backdrop for click-outside */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowChatMessage(null)}
+          />
           <div
             className={`memory-preview-card fixed z-50 transition-all duration-300 ease-in-out ${
               isAnimatingBack
@@ -962,7 +1070,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
               transform: "translate(-50%, -50%)",
             }}
             onClick={(e) => {
-              // Prevent clicks inside the modal from bubbling up
+              // Prevent clicks inside the modal from bubbling up to the backdrop
               e.stopPropagation()
             }}
           >

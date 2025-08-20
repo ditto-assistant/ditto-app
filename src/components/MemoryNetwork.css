@@ -75,8 +75,56 @@
   flex-direction: column;
 }
 
+/* Modal backdrop styling */
+.memory-preview-card + div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+/* Ensure modals are properly layered */
 .memory-preview-card.fixed {
+  z-index: 50;
   pointer-events: auto;
+}
+
+/* Prevent text selection in modals */
+.memory-preview-card {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ensure modal content is properly touchable */
+.memory-preview-card * {
+  pointer-events: auto;
+}
+
+/* Modal backdrop improvements */
+.memory-preview-card + div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+/* Additional backdrop styling for better visibility */
+.memory-preview-card ~ div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+/* Ensure proper touch handling for all modals */
+.memory-preview-card,
+.memory-preview-card * {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .memory-preview-card::before {
@@ -485,6 +533,83 @@
       0 0 10px rgba(255, 255, 255, 0.3),
       inset 0 0 5px rgba(255, 255, 255, 0.1);
   }
+
+  /* Mobile touch optimizations */
+  .vis-network .vis-node {
+    /* Ensure nodes are easily tappable on mobile */
+    min-width: 44px;
+    min-height: 44px;
+    /* Improve touch response */
+    touch-action: manipulation;
+    /* Remove hover effects that don't work well on mobile */
+    transition: all 0.2s ease;
+  }
+
+  .vis-network .vis-node:hover {
+    /* Simplified hover for mobile */
+    transform: scale(1.02);
+    box-shadow:
+      0 0 15px rgba(255, 255, 255, 0.4),
+      inset 0 0 8px rgba(255, 255, 255, 0.15);
+  }
+
+  /* Ensure edges don't interfere with node tapping */
+  .vis-network .vis-edge {
+    pointer-events: none;
+  }
+
+  /* Make sure the network container is touch-friendly */
+  .memory-network-container {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #memory-network-container {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Force proper sizing for all node types on mobile */
+  .vis-network .vis-node[data-id*="shared-subject"] {
+    /* Ensure subject nodes are properly sized for touch */
+    min-width: 48px !important;
+    min-height: 48px !important;
+    /* Make key subjects even more prominent */
+    border-width: 3px !important;
+  }
+
+  .vis-network .vis-node[data-id*="shared-subject"].key-subject {
+    /* Key subjects should be even more touchable */
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-width: 4px !important;
+  }
+
+  /* Ensure memory nodes are also properly sized */
+  .vis-network .vis-node:not([data-id*="shared-subject"]) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* Mobile modal improvements */
+  .memory-preview-card {
+    /* Ensure modals are properly sized for mobile */
+    max-width: min(95vw, 360px);
+    min-width: min(95vw, 300px);
+    max-height: min(90vh, 600px);
+    /* Improve touch handling */
+    touch-action: manipulation;
+    /* Ensure proper z-index on mobile */
+    z-index: 60;
+  }
+
+  /* Mobile backdrop improvements */
+  .memory-preview-card + div[class*="fixed inset-0"],
+  .memory-preview-card ~ div[class*="fixed inset-0"] {
+    /* Ensure backdrop is visible on mobile */
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+  }
 }
 
 /* Accessibility and performance */
@@ -809,6 +934,53 @@
   min-height: 500px;
 }
 
+/* Mobile touch target improvements */
+@media (max-width: 768px) {
+  /* Ensure all interactive elements meet mobile touch target requirements */
+  .vis-network .vis-node {
+    /* Minimum 44x44px touch target as per mobile guidelines */
+    min-width: 44px !important;
+    min-height: 44px !important;
+    /* Improve touch response */
+    touch-action: manipulation;
+    /* Ensure proper cursor for touch devices */
+    cursor: pointer;
+  }
+
+  /* Make sure the network area is properly sized for mobile */
+  .vis-network {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure the canvas has proper touch handling */
+  .vis-network canvas {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  /* Force proper sizing for all node types on mobile */
+  .vis-network .vis-node[data-id*="shared-subject"] {
+    /* Ensure subject nodes are properly sized for touch */
+    min-width: 48px !important;
+    min-height: 48px !important;
+    /* Make key subjects even more prominent */
+    border-width: 3px !important;
+  }
+
+  .vis-network .vis-node[data-id*="shared-subject"].key-subject {
+    /* Key subjects should be even more touchable */
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-width: 4px !important;
+  }
+
+  /* Ensure memory nodes are also properly sized */
+  .vis-network .vis-node:not([data-id*="shared-subject"]) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
 /* Legend overlay (top-right) */
 .memory-network-legend {
   position: absolute;
@@ -948,5 +1120,53 @@
     top: 8px;
     right: 8px;
     padding: 5px;
+  }
+}
+
+/* Memory Network Modal - ensure proper touch handling */
+#memoryNetwork {
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+
+#memoryNetwork .modal-content {
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure the network container itself has proper touch handling */
+.memory-network-container,
+#memory-network-container {
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent text selection that might interfere with touch */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Additional mobile touch optimizations */
+@media (max-width: 768px) {
+  /* Ensure the modal content is properly touchable */
+  #memoryNetwork .modal-content {
+    /* Prevent any touch event interference */
+    touch-action: pan-x pan-y pinch-zoom;
+    /* Ensure proper scrolling */
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure the network container is properly sized for mobile */
+  .memory-network-container,
+  #memory-network-container {
+    /* Ensure proper touch handling */
+    touch-action: pan-x pan-y pinch-zoom;
+    /* Prevent any interference with touch gestures */
+    pointer-events: auto;
+    /* Ensure proper sizing */
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 400px !important;
   }
 }
