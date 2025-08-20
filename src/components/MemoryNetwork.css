@@ -1,5 +1,161 @@
 /* Memory Network Styles - Award-Winning Neural Interface */
 
+/* Neural Dashboard Specific Styles */
+.neural-dashboard-container {
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.05) 0%,
+    rgba(46, 204, 113, 0.05) 100%
+  );
+  border-radius: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.neural-dashboard-header {
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  min-height: 0;
+  transition: all 0.3s ease;
+}
+
+.neural-dashboard-search-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.neural-dashboard-search-input:focus {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(114, 137, 218, 0.5) !important;
+  box-shadow: 0 0 20px rgba(114, 137, 218, 0.3) !important;
+  outline: none !important;
+}
+
+.neural-dashboard-button {
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.8) 0%,
+    rgba(46, 204, 113, 0.8) 100%
+  );
+  border: none;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(114, 137, 218, 0.3);
+}
+
+.neural-dashboard-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(114, 137, 218, 0.4);
+}
+
+.neural-dashboard-compact-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.neural-dashboard-compact-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.neural-dashboard-search-toggle {
+  background: rgba(114, 137, 218, 0.1);
+  border: 1px solid rgba(114, 137, 218, 0.2);
+  transition: all 0.2s ease;
+}
+
+.neural-dashboard-search-toggle:hover {
+  background: rgba(114, 137, 218, 0.2);
+  border-color: rgba(114, 137, 218, 0.3);
+  transform: scale(1.05);
+}
+
+.neural-dashboard-button:disabled {
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.neural-dashboard-loading {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.neural-dashboard-stats-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.neural-dashboard-stats-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.neural-dashboard-legend {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.neural-dashboard-legend-item {
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.neural-dashboard-legend-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px);
+}
+
+.neural-glow {
+  filter: drop-shadow(0 0 8px rgba(114, 137, 218, 0.4)) !important;
+  text-shadow: 0 0 10px rgba(114, 137, 218, 0.3);
+}
+
+.neural-pulse {
+  animation: neuralPulse 2s ease-in-out infinite;
+}
+
+@keyframes neuralPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.neural-connection {
+  background: linear-gradient(
+    90deg,
+    rgba(114, 137, 218, 0.3) 0%,
+    rgba(46, 204, 113, 0.3) 50%,
+    rgba(241, 196, 15, 0.3) 100%
+  );
+  height: 2px;
+  width: 100%;
+  border-radius: 1px;
+  margin: 8px 0;
+  opacity: 0.6;
+}
+
 /* Neuron-inspired network styling */
 .vis-network .vis-node {
   border: 2px solid rgba(255, 255, 255, 0.8);
@@ -396,7 +552,7 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  z-index: 20;
+  z-index: 30;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -526,6 +682,61 @@
     padding: 8px 12px;
     min-width: 150px;
     font-size: 11px;
+  }
+
+  /* Dashboard mobile optimizations */
+  .neural-dashboard-header {
+    padding: 12px 16px;
+  }
+
+  .neural-dashboard-search {
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .neural-dashboard-search .search-input {
+    width: 100%;
+  }
+
+  .neural-dashboard-search .search-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .neural-dashboard-stats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .neural-dashboard-legend {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90vw;
+    max-height: 80vh;
+    margin: 0;
+    z-index: 50;
+  }
+
+  .neural-dashboard-header {
+    padding: 8px 12px;
+  }
+
+  .neural-dashboard-header .flex {
+    gap: 4px;
+  }
+
+  .neural-dashboard-header button {
+    padding: 4px 6px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .neural-dashboard-header .text-xs {
+    font-size: 10px;
+    padding: 2px 4px;
   }
 
   .vis-network .vis-node {
@@ -986,7 +1197,7 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 20;
+  z-index: 30;
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1070,7 +1281,7 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 20;
+  z-index: 30;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);

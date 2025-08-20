@@ -24,6 +24,7 @@ import {
   Options,
   FitOptions,
 } from "vis-network"
+import { ComprehensivePairDetails, PairSubject } from "@/api/kg"
 
 const persistedNodePositions: Record<string, { x: number; y: number }> = {}
 
@@ -39,6 +40,8 @@ interface RootNodeConfig {
 interface MemoriesNetworkGraphProps {
   memories: Memory[]
   rootNodeConfig: RootNodeConfig
+  pairDetails?: Record<string, ComprehensivePairDetails>
+  onRootNodeClick?: () => void
 }
 
 const SUBJECT_NODE_COLOR = "#2ECC71"
@@ -72,6 +75,8 @@ const getMemoryDepth = (memory: Memory): number => {
 const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   memories,
   rootNodeConfig,
+  pairDetails: externalPairDetails,
+  onRootNodeClick,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const networkRef = useRef<VisNetwork | null>(null)
@@ -84,7 +89,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     >
   >(new Map())
   // Removed useMemoryNodeViewer - now using inline chat message view
-  const { pairDetails } = useMemoryNetwork()
+  const { pairDetails: contextPairDetails } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
   // Removed isOpeningNode - no longer needed with inline chat view
   const [showStats, setShowStats] = useState(true)
@@ -94,7 +99,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     position: { x: number; y: number }
   } | null>(null)
   const [selectedKeySubject, setSelectedKeySubject] = useState<{
-    subject: any
+    subject: PairSubject
     position: { x: number; y: number }
   } | null>(null)
   const [selectedNode, setSelectedNode] = useState<{
@@ -119,6 +124,25 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const { isMobile } = usePlatform()
   const { theme } = useTheme()
 
+  // Use external pair details if provided, otherwise fall back to context
+  const pairDetails = externalPairDetails || contextPairDetails
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (networkRef.current) {
+        networkRef.current.redraw()
+        networkRef.current.setSize("100%", "100%")
+        setTimeout(() => {
+          fitAllNodes()
+        }, 100)
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
   // Cleanup animation state when modals are closed
   useEffect(() => {
     if (!showChatMessage && !selectedNodeForModal && !selectedKeySubject) {
@@ -136,7 +160,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     0
   )
   const keySubjects = Object.values(pairDetails).reduce(
-    (sum, pd) => sum + pd.subjects.filter((s) => s.is_key_subject).length,
+    (sum, pd) =>
+      sum + pd.subjects.filter((s: PairSubject) => s.is_key_subject).length,
     0
   )
   const networkStats = {
@@ -183,6 +208,12 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const handleNodeClick = useCallback(
     (nodeId: string) => {
       console.log("Node clicked:", nodeId)
+
+      // Handle root node click
+      if (nodeId === rootNodeConfig.id && onRootNodeClick) {
+        onRootNodeClick()
+        return
+      }
 
       // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
       if (nodeId.startsWith("shared-subject-")) {
@@ -245,7 +276,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         }
       }
     },
-    [pairDetails]
+    [pairDetails, rootNodeConfig, onRootNodeClick]
   )
 
   useEffect(() => {
@@ -373,7 +404,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     const consolidatedSubjects = new Map<
       string,
       {
-        subject: any
+        subject: PairSubject
         connectedMemoryNodes: string[]
         totalConnections: number
       }
@@ -382,7 +413,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     // Collect all subjects and their connections
     Object.entries(pairDetails).forEach(([pairId, details]) => {
       if (details && details.subjects && details.subjects.length > 0) {
-        details.subjects.forEach((subj) => {
+        details.subjects.forEach((subj: PairSubject) => {
           const subjectKey = subj.subject_text // Use subject_text as unique key
 
           if (consolidatedSubjects.has(subjectKey)) {
@@ -675,7 +706,12 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       networkRef.current.once("stabilizationIterationsDone", () => {
         setIsReady(true)
+        // Force resize and fit
         setTimeout(() => {
+          if (networkRef.current) {
+            networkRef.current.redraw()
+            networkRef.current.setSize("100%", "100%")
+          }
           fitAllNodes()
         }, 200)
         if (networkRef.current && nodesDatasetRef.current) {
@@ -723,7 +759,16 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         }
       }
     }
-  }, [memories, rootNodeConfig, handleNodeClick, fitAllNodes, isMobile, theme])
+  }, [
+    memories,
+    rootNodeConfig,
+    handleNodeClick,
+    fitAllNodes,
+    isMobile,
+    theme,
+    pairDetails,
+    onRootNodeClick,
+  ])
 
   useEffect(() => {
     if (
@@ -755,7 +800,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-[300px] relative">
+    <div className="absolute inset-0 flex flex-col w-full h-full relative">
       {/* Network Controls */}
       <div className="memory-network-controls">
         <button
@@ -922,14 +967,16 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                         Related Subjects ({details.subjects.length})
                       </div>
                       <div className="memory-preview-subjects">
-                        {details.subjects.map((subj, idx) => (
-                          <div
-                            key={idx}
-                            className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
-                          >
-                            {subj.subject_text} ({subj.pair_count})
-                          </div>
-                        ))}
+                        {details.subjects.map(
+                          (subj: PairSubject, idx: number) => (
+                            <div
+                              key={idx}
+                              className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
+                            >
+                              {subj.subject_text} ({subj.pair_count})
+                            </div>
+                          )
+                        )}
                       </div>
                     </>
                   )}
@@ -1244,7 +1291,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       <div
         ref={containerRef}
-        className="flex-1 relative w-full rounded-lg bg-muted border border-border overflow-hidden"
+        className="absolute inset-0 w-full h-full bg-background overflow-hidden"
         style={{ visibility: isReady ? "visible" : "hidden" }}
       />
 
