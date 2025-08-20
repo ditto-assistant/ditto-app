@@ -277,78 +277,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         })
       }
 
-      // Enhanced subject nodes with better positioning and styling
-      const details = pairDetails[memory.id]
-      if (details && details.subjects && details.subjects.length > 0) {
-        const limited = [...details.subjects]
-          .sort((a, b) => b.pair_count - a.pair_count)
-          .slice(0, MAX_SUBJECTS_PER_PAIR)
-
-        // Smart circular arrangement avoiding overlap
-        const subjectCount = limited.length
-        const baseRadius = 50 + subjectCount * 5
-        const angleOffset = Math.random() * Math.PI * 2 // Randomize starting angle
-
-        limited.forEach((subj, idx) => {
-          const subjectNodeId = `${nodeId}-sub-${subj.id}`
-          const angle = angleOffset + (idx * (2 * Math.PI)) / subjectCount
-          const radiusVariation = baseRadius + (Math.random() - 0.5) * 10 // Add slight variation
-
-          const subjectSize = Math.min(
-            SUBJECT_NODE_SIZE + Math.log(subj.pair_count) * 2,
-            22
-          )
-          const subjectColor = subj.is_key_subject
-            ? KEY_SUBJECT_COLOR
-            : SUBJECT_NODE_COLOR
-
-          nodes.add({
-            id: subjectNodeId,
-            label: `${subj.subject_text.substring(0, 16)}${subj.subject_text.length > 16 ? "..." : ""}\n(${subj.pair_count})`,
-            title: `Subject: ${subj.subject_text}\nConnected to ${subj.pair_count} memories\n${subj.is_key_subject ? "⭐ Key Subject" : "Regular Subject"}${subj.description ? `\n\n${subj.description}` : ""}`,
-            color: {
-              background: subjectColor,
-              border: subj.is_key_subject ? "#FFD700" : "#2ECC71",
-              highlight: { background: "#7289da", border: "#ffffff" },
-            },
-            level: depth + 2,
-            shape: "dot",
-            size: subjectSize,
-            font: {
-              size: 9,
-              color: "#ffffff",
-              face: "Inter, Arial",
-              multi: "md",
-              strokeWidth: 1,
-              strokeColor: "#000000",
-            },
-            opacity: opacity * 0.9,
-            x:
-              (persistedNodePositions[nodeId]?.x ?? 0) +
-              Math.cos(angle) * radiusVariation,
-            y:
-              (persistedNodePositions[nodeId]?.y ?? 0) +
-              Math.sin(angle) * radiusVariation,
-          })
-
-          // Enhanced subject edges with organic curves
-          edges.add({
-            from: nodeId,
-            to: subjectNodeId,
-            color: {
-              color: subj.is_key_subject
-                ? "rgba(255, 215, 0, 0.6)"
-                : "rgba(143, 217, 168, 0.6)",
-              highlight: "#66afe9",
-            },
-            dashes: [5, 5],
-            arrows: { to: { enabled: false } },
-            length: 35,
-            width: Math.min(1 + Math.log(subj.pair_count) * 0.5, 3),
-            smooth: { enabled: true, type: "curvedCW", roundness: 0.2 },
-          })
-        })
-      }
+      // Remove individual subject nodes creation from here
+      // Subject consolidation will happen later
 
       if (memory.children && memory.children.length > 0) {
         memory.children.forEach((child) => {
@@ -358,7 +288,150 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
 
     memories.forEach((rootMemory, index) => {
-      addMemoryRecursive(rootMemory, rootNodeConfig.id, 0, `root${index}`)
+      addMemoryRecursive(rootMemory, rootNodeConfig.id, 1, `child-${index}`)
+    })
+
+    // Consolidate subjects across all memory pairs
+    const consolidatedSubjects = new Map<
+      string,
+      {
+        subject: any
+        connectedMemoryNodes: string[]
+        totalConnections: number
+      }
+    >()
+
+    // Collect all subjects and their connections
+    Object.entries(pairDetails).forEach(([pairId, details]) => {
+      if (details && details.subjects && details.subjects.length > 0) {
+        details.subjects.forEach((subj) => {
+          const subjectKey = subj.subject_text // Use subject_text as unique key
+
+          if (consolidatedSubjects.has(subjectKey)) {
+            const existing = consolidatedSubjects.get(subjectKey)!
+            // Find the memory node for this pair
+            const memoryNodeId = Array.from(memoryMapRef.current.keys()).find(
+              (nodeId) => {
+                const memory = memoryMapRef.current.get(nodeId)
+                return memory && "id" in memory && memory.id === pairId
+              }
+            )
+            if (
+              memoryNodeId &&
+              !existing.connectedMemoryNodes.includes(memoryNodeId)
+            ) {
+              existing.connectedMemoryNodes.push(memoryNodeId)
+              existing.totalConnections++
+            }
+            // Keep the subject with higher pair_count
+            if (subj.pair_count > existing.subject.pair_count) {
+              existing.subject = subj
+            }
+          } else {
+            // Find the memory node for this pair
+            const memoryNodeId = Array.from(memoryMapRef.current.keys()).find(
+              (nodeId) => {
+                const memory = memoryMapRef.current.get(nodeId)
+                return memory && "id" in memory && memory.id === pairId
+              }
+            )
+            consolidatedSubjects.set(subjectKey, {
+              subject: subj,
+              connectedMemoryNodes: memoryNodeId ? [memoryNodeId] : [],
+              totalConnections: 1,
+            })
+          }
+        })
+      }
+    })
+
+    // Create consolidated subject nodes
+    const subjectEntries = Array.from(consolidatedSubjects.entries())
+      .sort((a, b) => b[1].totalConnections - a[1].totalConnections) // Sort by total connections
+      .slice(0, MAX_SUBJECTS_PER_PAIR * 3) // Allow more subjects for the whole network
+
+    // Position subjects in a strategic layout around the network
+    const networkBounds = {
+      minX: -200,
+      maxX: 200,
+      minY: -200,
+      maxY: 200,
+    }
+
+    subjectEntries.forEach(([subjectKey, data], idx) => {
+      const subj = data.subject
+      const connections = data.totalConnections
+
+      // Calculate size based on total connections across the network
+      const subjectSize = Math.min(
+        SUBJECT_NODE_SIZE + Math.log(connections + 1) * 4, // Larger scaling for shared nodes
+        35 // Increased max size for important subjects
+      )
+
+      const subjectColor = subj.is_key_subject
+        ? KEY_SUBJECT_COLOR
+        : SUBJECT_NODE_COLOR
+      const subjectNodeId = `shared-subject-${subj.id}`
+
+      // Strategic positioning: arrange in a loose grid around the network
+      const gridCols = Math.ceil(Math.sqrt(subjectEntries.length))
+      const gridRow = Math.floor(idx / gridCols)
+      const gridCol = idx % gridCols
+
+      const spacing = 120
+      const offsetX = (gridCol - gridCols / 2) * spacing
+      const offsetY =
+        (gridRow - Math.ceil(subjectEntries.length / gridCols) / 2) * spacing
+
+      // Add some randomization to avoid perfect grid
+      const randomOffset = 30
+      const finalX = offsetX + (Math.random() - 0.5) * randomOffset
+      const finalY = offsetY + (Math.random() - 0.5) * randomOffset
+
+      nodes.add({
+        id: subjectNodeId,
+        label: `${subj.subject_text.substring(0, 18)}${subj.subject_text.length > 18 ? "..." : ""}\n(${connections} ${connections === 1 ? "memory" : "memories"})`,
+        title: `Subject: ${subj.subject_text}\nConnected to ${connections} memories across network\n${subj.is_key_subject ? "⭐ Key Subject" : "Regular Subject"}${subj.description ? `\n\n${subj.description}` : ""}`,
+        color: {
+          background: subjectColor,
+          border: subj.is_key_subject ? "#FFD700" : "#2ECC71",
+          highlight: { background: "#7289da", border: "#ffffff" },
+        },
+        level: 10, // High level to keep subjects on the periphery
+        shape: "dot",
+        size: subjectSize,
+        font: {
+          size: Math.min(10 + Math.log(connections), 14), // Dynamic font size
+          color: "#ffffff",
+          face: "Inter, Arial",
+          multi: "md",
+          strokeWidth: 1,
+          strokeColor: "#000000",
+        },
+        x: finalX,
+        y: finalY,
+      })
+
+      // Connect to all related memory nodes
+      data.connectedMemoryNodes.forEach((memoryNodeId) => {
+        const connectionStrength = Math.min(connections, 5) // Cap edge thickness
+
+        edges.add({
+          from: memoryNodeId,
+          to: subjectNodeId,
+          color: {
+            color: subj.is_key_subject
+              ? `rgba(255, 215, 0, ${0.3 + connectionStrength * 0.1})`
+              : `rgba(143, 217, 168, ${0.3 + connectionStrength * 0.1})`,
+            highlight: "#66afe9",
+          },
+          dashes: [3, 7], // Distinctive dashed pattern for subject connections
+          arrows: { to: { enabled: false } },
+          length: 100 + connections * 10, // Longer edges for shared subjects
+          width: Math.min(0.5 + Math.log(connections) * 0.5, 4), // Dynamic width based on connections
+          smooth: { enabled: true, type: "curvedCW", roundness: 0.3 },
+        })
+      })
     })
 
     nodesDatasetRef.current = nodes
