@@ -871,19 +871,19 @@
 }
 
 .memory-network-legend .legend-swatch.node.query {
-  background: #ED4245;
+  background: #ed4245;
 }
 
 .memory-network-legend .legend-swatch.node.memory {
-  background: #9B59B6;
+  background: #9b59b6;
 }
 
 .memory-network-legend .legend-swatch.node.subject {
-  background: #2ECC71;
+  background: #2ecc71;
 }
 
 .memory-network-legend .legend-swatch.node.key-subject {
-  background: #FFD700;
+  background: #ffd700;
 }
 
 .memory-network-legend .legend-note {
@@ -924,26 +924,26 @@
     min-width: 140px;
     font-size: 11px;
   }
-  
+
   .memory-network-legend .legend-title {
     font-size: 11px;
   }
-  
+
   .memory-network-legend .legend-item {
     font-size: 10px;
     margin: 3px 0;
     gap: 6px;
   }
-  
+
   .memory-network-legend .legend-swatch {
     width: 12px;
     height: 12px;
   }
-  
+
   .memory-network-legend .legend-note {
     font-size: 9px;
   }
-  
+
   .memory-network-legend-toggle {
     top: 8px;
     right: 8px;

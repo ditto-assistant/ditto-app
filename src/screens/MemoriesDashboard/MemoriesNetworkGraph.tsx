@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Target, BarChart3, Brain, MessageCircle, X, Info, Maximize2, ArrowLeft } from "lucide-react"
+import {
+  Target,
+  BarChart3,
+  Brain,
+  MessageCircle,
+  X,
+  Info,
+  Maximize2,
+  ArrowLeft,
+} from "lucide-react"
 import { toast } from "sonner"
 import ChatMessage from "@/components/ChatMessage"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
-import {
-  MemoryWithLevel,
-} from "@/hooks/useMemoryNodeViewer"
+import { MemoryWithLevel } from "@/hooks/useMemoryNodeViewer"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import { DataSet } from "vis-data"
 import {
@@ -173,70 +180,73 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
   }, [])
 
-  const handleNodeClick = useCallback((nodeId: string) => {
-    console.log("Node clicked:", nodeId)
-    
-    // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
-    if (nodeId.startsWith('shared-subject-')) {
-      console.log("Subject node detected:", nodeId)
-      // Extract subject ID from the nodeId
-      const subjectId = nodeId.replace('shared-subject-', '')
-      console.log("Looking for subject ID:", subjectId)
-      
-      // Find the subject in pairDetails
-      let foundSubject = null
-      Object.entries(pairDetails).forEach(([pairId, details]) => {
-        if (details && details.subjects) {
-          const subject = details.subjects.find(s => s.id === subjectId)
-          if (subject) {
-            console.log("Found subject:", subject)
-            foundSubject = subject
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      console.log("Node clicked:", nodeId)
+
+      // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
+      if (nodeId.startsWith("shared-subject-")) {
+        console.log("Subject node detected:", nodeId)
+        // Extract subject ID from the nodeId
+        const subjectId = nodeId.replace("shared-subject-", "")
+        console.log("Looking for subject ID:", subjectId)
+
+        // Find the subject in pairDetails
+        let foundSubject = null
+        Object.entries(pairDetails).forEach(([pairId, details]) => {
+          if (details && details.subjects) {
+            const subject = details.subjects.find((s) => s.id === subjectId)
+            if (subject) {
+              console.log("Found subject:", subject)
+              foundSubject = subject
+            }
           }
+        })
+
+        if (foundSubject) {
+          console.log("Setting selectedKeySubject with:", foundSubject)
+          // Get node position for modal positioning
+          if (networkRef.current) {
+            const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
+            if (canvasPos) {
+              const domPos = networkRef.current.canvasToDOM(canvasPos)
+              setSelectedKeySubject({
+                subject: foundSubject,
+                position: { x: domPos.x, y: domPos.y },
+              })
+            }
+          }
+        } else {
+          console.log("Subject not found for ID:", subjectId)
         }
-      })
-      
-      if (foundSubject) {
-        console.log("Setting selectedKeySubject with:", foundSubject)
+        return
+      }
+
+      // Handle memory node clicks (existing logic)
+      console.log("Memory node detected:", nodeId)
+      const clickedItem = memoryMapRef.current.get(nodeId)
+      if (
+        clickedItem &&
+        !(clickedItem as RootNodeConfig).isQueryNode &&
+        !("query" in clickedItem)
+      ) {
+        const clickedMemory = clickedItem as Memory
+
         // Get node position for modal positioning
         if (networkRef.current) {
           const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
           if (canvasPos) {
             const domPos = networkRef.current.canvasToDOM(canvasPos)
-            setSelectedKeySubject({
-              subject: foundSubject,
-              position: { x: domPos.x, y: domPos.y }
+            setSelectedNodeForModal({
+              memory: clickedMemory,
+              position: { x: domPos.x, y: domPos.y },
             })
           }
         }
-      } else {
-        console.log("Subject not found for ID:", subjectId)
       }
-      return
-    }
-
-    // Handle memory node clicks (existing logic)
-    console.log("Memory node detected:", nodeId)
-    const clickedItem = memoryMapRef.current.get(nodeId)
-    if (
-      clickedItem &&
-      !(clickedItem as RootNodeConfig).isQueryNode &&
-      !("query" in clickedItem)
-    ) {
-      const clickedMemory = clickedItem as Memory
-
-      // Get node position for modal positioning
-      if (networkRef.current) {
-        const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
-        if (canvasPos) {
-          const domPos = networkRef.current.canvasToDOM(canvasPos)
-          setSelectedNodeForModal({
-            memory: clickedMemory,
-            position: { x: domPos.x, y: domPos.y }
-          })
-        }
-      }
-    }
-  }, [pairDetails])
+    },
+    [pairDetails]
+  )
 
   useEffect(() => {
     let effectiveTheme = theme
@@ -624,14 +634,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         }
       }
     }
-  }, [
-    memories,
-    rootNodeConfig,
-    handleNodeClick,
-    fitAllNodes,
-    isMobile,
-    theme,
-  ])
+  }, [memories, rootNodeConfig, handleNodeClick, fitAllNodes, isMobile, theme])
 
   useEffect(() => {
     if (
@@ -705,9 +708,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             <span>Key Subject</span>
           </div>
 
-          <div className="legend-note">
-            Node size = connection count
-          </div>
+          <div className="legend-note">Node size = connection count</div>
         </div>
       ) : (
         <button
@@ -758,14 +759,14 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       {/* Floating Memory Preview */}
       {selectedNodeForModal && selectedNodeForModal.memory && (
-                  <div
-            className="memory-preview-card fixed z-50"
-            style={{
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
+        <div
+          className="memory-preview-card fixed z-50"
+          style={{
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
           {(() => {
             const memory = selectedNodeForModal.memory!
             const memoryType = getMemoryType(memory)
@@ -782,16 +783,19 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                     <button
                       onClick={() => {
                         // Store the current node stats before opening chat
-                        console.log("Opening chat message, selectedNodeForModal:", selectedNodeForModal)
-                        
+                        console.log(
+                          "Opening chat message, selectedNodeForModal:",
+                          selectedNodeForModal
+                        )
+
                         // Store in both state and ref for reliability
                         setPreviousNodeStats(selectedNodeForModal)
                         previousNodeStatsRef.current = selectedNodeForModal
-                        
+
                         if (selectedNodeForModal.memory) {
                           setShowChatMessage({
                             memory: selectedNodeForModal.memory,
-                            position: selectedNodeForModal.position
+                            position: selectedNodeForModal.position,
                           })
                           setSelectedNodeForModal(null)
                         }
@@ -853,7 +857,10 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             }}
           >
             {(() => {
-              console.log("Rendering key subject modal for:", selectedKeySubject.subject)
+              console.log(
+                "Rendering key subject modal for:",
+                selectedKeySubject.subject
+              )
               const subject = selectedKeySubject.subject
               const subjectId = subject.id
               const subjectName = subject.subject_text
@@ -889,28 +896,40 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="mb-4 p-4 bg-white/5 rounded-lg">
-                      <h4 className="text-sm font-semibold text-blue-400 mb-3">📊 Statistics</h4>
+                      <h4 className="text-sm font-semibold text-blue-400 mb-3">
+                        📊 Statistics
+                      </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-white/70">Total Connections:</span>
-                          <span className="font-medium text-green-400">{subject.pair_count}</span>
+                          <span className="text-white/70">
+                            Total Connections:
+                          </span>
+                          <span className="font-medium text-green-400">
+                            {subject.pair_count}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-white/70">Subject Type:</span>
                           <span className="font-medium text-yellow-400">
-                            {subject.is_key_subject ? 'Key Subject' : 'Regular'}
+                            {subject.is_key_subject ? "Key Subject" : "Regular"}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-white/70">Network Impact:</span>
                           <span className="font-medium text-purple-400">
-                            {((subject.pair_count / totalMemories) * 100).toFixed(1)}%
+                            {(
+                              (subject.pair_count / totalMemories) *
+                              100
+                            ).toFixed(1)}
+                            %
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Relevance Score:</span>
+                          <span className="text-white/70">
+                            Relevance Score:
+                          </span>
                           <span className="font-medium text-orange-400">
                             {Math.min(subject.pair_count * 20, 100)}%
                           </span>
@@ -933,7 +952,9 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           {/* Backdrop for click-outside - removed to prevent interference */}
           <div
             className={`memory-preview-card fixed z-50 transition-all duration-300 ease-in-out ${
-              isAnimatingBack ? 'animate-slide-out-left' : 'animate-slide-in-right'
+              isAnimatingBack
+                ? "animate-slide-out-left"
+                : "animate-slide-in-right"
             }`}
             style={{
               left: "50%",
@@ -947,7 +968,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           >
             {(() => {
               const memory = showChatMessage.memory
-              
+
               // Edge case: memory object validation
               if (!memory || !memory.id) {
                 return (
@@ -963,35 +984,43 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                   </div>
                 )
               }
-              
+
               const memoryType = getMemoryType(memory)
 
               return (
                 <>
                   <div className="memory-preview-header">
                     <div className="memory-preview-icon">{memoryType.icon}</div>
-                    <div className="memory-preview-title">
-                      Chat Message
-                    </div>
+                    <div className="memory-preview-title">Chat Message</div>
                     <div className="flex items-center gap-2 ml-auto">
                       <button
                         onClick={() => {
                           // Prevent multiple rapid clicks during animation
                           if (isAnimatingBack) return
-                          
-                          console.log("Back button clicked, previousNodeStats:", previousNodeStats)
-                          console.log("Back button clicked, previousNodeStatsRef:", previousNodeStatsRef.current)
-                          
+
+                          console.log(
+                            "Back button clicked, previousNodeStats:",
+                            previousNodeStats
+                          )
+                          console.log(
+                            "Back button clicked, previousNodeStatsRef:",
+                            previousNodeStatsRef.current
+                          )
+
                           // Animate back to node stats
                           setIsAnimatingBack(true)
-                          
+
                           // Use a shorter timeout to make the transition feel more responsive
                           setTimeout(() => {
                             // Try state first, then ref as fallback
-                            const statsToRestore = previousNodeStats || previousNodeStatsRef.current
-                            
+                            const statsToRestore =
+                              previousNodeStats || previousNodeStatsRef.current
+
                             if (statsToRestore && statsToRestore.memory) {
-                              console.log("Restoring node stats:", statsToRestore)
+                              console.log(
+                                "Restoring node stats:",
+                                statsToRestore
+                              )
                               // Set the node stats immediately
                               setSelectedNodeForModal(statsToRestore)
                               // Close the chat and clean up
@@ -1000,14 +1029,16 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                               previousNodeStatsRef.current = null
                               setIsAnimatingBack(false)
                             } else {
-                              console.log("No valid previousNodeStats, just closing")
+                              console.log(
+                                "No valid previousNodeStats, just closing"
+                              )
                               setShowChatMessage(null)
                               setIsAnimatingBack(false)
                             }
                           }, 250) // Slightly shorter than the CSS animation
                         }}
                         className={`p-2 hover:bg-white/10 rounded-lg transition-colors ${
-                          isAnimatingBack ? 'opacity-50 cursor-not-allowed' : ''
+                          isAnimatingBack ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                         title="Back to Node Stats"
                         disabled={isAnimatingBack}
@@ -1021,7 +1052,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                           setShowChatMessage(null)
                         }}
                         className={`p-2 hover:bg-white/10 rounded-lg transition-colors ${
-                          isAnimatingBack ? 'opacity-50 cursor-not-allowed' : ''
+                          isAnimatingBack ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                         title="Close"
                         disabled={isAnimatingBack}
@@ -1043,17 +1074,22 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                             isOptimistic={false}
                             menuProps={{
                               onCopy: () => {
-                                navigator.clipboard.writeText(memory.prompt)
-                                  .then(() => toast.success("Copied to clipboard"))
+                                navigator.clipboard
+                                  .writeText(memory.prompt)
+                                  .then(() =>
+                                    toast.success("Copied to clipboard")
+                                  )
                                   .catch(() => toast.error("Failed to copy"))
                               },
                               onDelete: () => {
-                                toast.info("Delete not available in network view")
+                                toast.info(
+                                  "Delete not available in network view"
+                                )
                               },
                               onShowMemories: () => {
                                 toast.info("Already viewing memory network")
                               },
-                              id: memory.id
+                              id: memory.id,
                             }}
                           />
                         </div>
@@ -1069,17 +1105,22 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                             isOptimistic={false}
                             menuProps={{
                               onCopy: () => {
-                                navigator.clipboard.writeText(memory.response)
-                                  .then(() => toast.success("Copied to clipboard"))
+                                navigator.clipboard
+                                  .writeText(memory.response)
+                                  .then(() =>
+                                    toast.success("Copied to clipboard")
+                                  )
                                   .catch(() => toast.error("Failed to copy"))
                               },
                               onDelete: () => {
-                                toast.info("Delete not available in network view")
+                                toast.info(
+                                  "Delete not available in network view"
+                                )
                               },
                               onShowMemories: () => {
                                 toast.info("Already viewing memory network")
                               },
-                              id: memory.id
+                              id: memory.id,
                             }}
                           />
                         </div>
