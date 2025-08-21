@@ -32,6 +32,7 @@ interface NetworkState {
   isInitialLoad: boolean
   pairDetails: Record<string, ComprehensivePairDetails>
   showTopSubjectsModal: boolean
+  showSearchQueryModal: boolean
 }
 
 export default function MemoriesDashboardOverlay() {
@@ -53,6 +54,7 @@ export default function MemoriesDashboardOverlay() {
     isInitialLoad: true,
     pairDetails: {},
     showTopSubjectsModal: false,
+    showSearchQueryModal: false,
   })
   const [searchExpanded, setSearchExpanded] = useState(false)
 
@@ -212,6 +214,7 @@ export default function MemoriesDashboardOverlay() {
           isInitialLoad: false,
           pairDetails: allPairDetails,
           showTopSubjectsModal: false,
+          showSearchQueryModal: false,
         })
       } catch (error) {
         console.error("Error initializing network:", error)
@@ -485,14 +488,16 @@ export default function MemoriesDashboardOverlay() {
     [user?.uid, preferences, collectPairIds]
   )
 
-  // Handle root node click to show top subjects
+  // Handle root node click to show appropriate modal
   const handleRootNodeClick = useCallback(() => {
     setNetworkState((prev) => {
-      // Only show modal if we're in top subjects view
       if (prev.searchTerm === "Top Memory Subjects") {
+        // Show top subjects modal for initial view
         return { ...prev, showTopSubjectsModal: true }
+      } else {
+        // Show search query modal for search results
+        return { ...prev, showSearchQueryModal: true }
       }
-      return prev
     })
   }, []) // No dependencies to prevent network re-render
 
@@ -504,8 +509,14 @@ export default function MemoriesDashboardOverlay() {
       title: `Your search: ${networkState.searchTerm}`,
       isQueryNode: true,
       color: "#7289da",
+      // Add search-specific data for the root node modal
+      searchData: {
+        searchTerm: networkState.searchTerm,
+        resultCount: networkState.memories.length,
+        timestamp: new Date().toISOString(),
+      },
     }),
-    [networkState.searchTerm]
+    [networkState.searchTerm, networkState.memories.length]
   )
 
   // Format count for display
@@ -775,6 +786,135 @@ export default function MemoriesDashboardOverlay() {
               <p className="text-xs text-muted-foreground/80 mt-2 italic">
                 💡 Click any subject to explore its memories
               </p>
+            </div>
+          </>
+        )}
+
+        {/* Search Query Modal */}
+        {networkState.showSearchQueryModal && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-[99] bg-black/30"
+              onClick={() =>
+                setNetworkState((prev) => ({
+                  ...prev,
+                  showSearchQueryModal: false,
+                }))
+              }
+            />
+            <div
+              className="neural-dashboard-legend fixed z-[100] bg-background/95 border border-border/50 rounded-lg p-4 w-[min(90vw,420px)] max-w-[90vw] shadow-lg"
+              style={{
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                // Ensure proper mobile positioning
+                position: "fixed",
+                maxHeight: "80vh",
+                margin: 0,
+                // Force visibility
+                visibility: "visible",
+                opacity: 1,
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-sm text-primary flex items-center gap-2 neural-glow">
+                  <Target className="h-4 w-4 neural-pulse" />
+                  Search Query Details
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setNetworkState((prev) => ({
+                      ...prev,
+                      showSearchQueryModal: false,
+                    }))
+                  }
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground neural-glow"
+                >
+                  ×
+                </Button>
+              </div>
+              <div className="space-y-3">
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
+                  <h5 className="font-medium text-primary mb-2">
+                    Search Query
+                  </h5>
+                  <p className="text-sm text-foreground">
+                    "{networkState.searchTerm}"
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <span className="text-muted-foreground block">
+                      Results Found
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {networkState.memories.length} memories
+                    </span>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <span className="text-muted-foreground block">
+                      Search Time
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {new Date().toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+                {networkState.memories.length > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <h5 className="font-medium text-foreground mb-2">
+                      Memory Types Found
+                    </h5>
+                    <div className="flex flex-wrap gap-2">
+                      {(() => {
+                        const types = new Map<string, number>()
+                        networkState.memories.forEach((memory) => {
+                          const prompt = memory.prompt?.toLowerCase() || ""
+                          let type = "thought"
+                          if (prompt.includes("?")) type = "question"
+                          else if (
+                            prompt.includes("create") ||
+                            prompt.includes("make") ||
+                            prompt.includes("generate")
+                          )
+                            type = "creative"
+                          else if (
+                            prompt.includes("remind") ||
+                            prompt.includes("remember")
+                          )
+                            type = "reminder"
+                          else if (
+                            prompt.includes("analyze") ||
+                            prompt.includes("think")
+                          )
+                            type = "analysis"
+
+                          types.set(type, (types.get(type) || 0) + 1)
+                        })
+                        return Array.from(types.entries()).map(
+                          ([type, count]) => (
+                            <span
+                              key={type}
+                              className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full border border-primary/30"
+                            >
+                              {type} ({count})
+                            </span>
+                          )
+                        )
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="neural-connection"></div>
+              <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+                💡 This search explored your neural pathways for relevant
+                memories
+              </div>
             </div>
           </>
         )}

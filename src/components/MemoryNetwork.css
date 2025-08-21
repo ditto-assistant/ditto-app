@@ -621,6 +621,59 @@
   z-index: 10;
 }
 
+/* Markdown content styling within memory preview */
+.memory-preview-content .markdown-content {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.memory-preview-content .markdown-content h4 {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.memory-preview-content .markdown-content p {
+  margin: 0 0 8px 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.memory-preview-content .markdown-content img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin: 8px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.memory-preview-content .markdown-content .image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.memory-preview-content .markdown-content .image-container img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.memory-preview-content .markdown-content .image-container img:hover {
+  transform: scale(1.02);
+}
+
 /* Network statistics overlay */
 .memory-network-stats {
   position: absolute;

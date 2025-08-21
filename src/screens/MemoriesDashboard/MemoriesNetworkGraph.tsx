@@ -8,9 +8,11 @@ import {
   Info,
   Maximize2,
   ArrowLeft,
+  Image as ImageIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import ChatMessage from "@/components/ChatMessage"
+import MarkdownRenderer from "@/components/MarkdownRenderer"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
@@ -66,6 +68,28 @@ const getMemoryType = (memory: Memory): { icon: string; type: string } => {
   return { icon: "💭", type: "thought" }
 }
 
+// Image detection in memory content
+const hasImages = (content: string): boolean => {
+  return (
+    content.includes("![") && content.includes("](") && content.includes(")")
+  )
+}
+
+// Extract image URLs from markdown content
+const extractImageUrls = (content: string): string[] => {
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
+  const urls: string[] = []
+  let match
+
+  while ((match = imageRegex.exec(content)) !== null) {
+    if (match[2]) {
+      urls.push(match[2])
+    }
+  }
+
+  return urls
+}
+
 // Memory depth calculation
 const getMemoryDepth = (memory: Memory): number => {
   if (!memory.children || memory.children.length === 0) return 1
@@ -88,6 +112,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       Memory | { isQueryNode: boolean; query?: string; originalMemory?: Memory }
     >
   >(new Map())
+  const subjectMapRef = useRef<Map<string, PairSubject>>(new Map())
   const initializationRef = useRef<boolean>(false)
 
   // Removed useMemoryNodeViewer - now using inline chat message view
@@ -296,18 +321,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
       if (nodeId.startsWith("shared-subject-")) {
-        const subjectId = nodeId.replace("shared-subject-", "")
-
-        // Find the subject in pair details
-        let foundSubject: PairSubject | null = null
-        for (const details of Object.values(pairDetails)) {
-          if (details && details.subjects) {
-            foundSubject =
-              details.subjects.find((s: PairSubject) => s.id === subjectId) ||
-              null
-            if (foundSubject) break
-          }
-        }
+        // Find the subject in our subject map (more reliable than searching pairDetails)
+        const foundSubject = subjectMapRef.current.get(nodeId)
 
         if (foundSubject) {
           // Get canvas position for modal placement
@@ -373,7 +388,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         }
       }
     },
-    [pairDetails, rootNodeConfig, onRootNodeClick]
+    [rootNodeConfig, onRootNodeClick]
   )
 
   // Network building effect - simplified and stable
@@ -402,18 +417,29 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       const nodes = new DataSet<Node>()
       const edges = new DataSet<Edge>()
       memoryMapRef.current.clear()
+      subjectMapRef.current.clear()
 
       setIsReady(false)
       initializationRef.current = true
 
       // Enhanced root node with neural styling
       const rootSize = 35 + Math.min(networkStats.totalSubjects * 2, 15)
+
+      // Clean root node label by replacing markdown image syntax with emoji
+      let cleanRootLabel = rootNodeConfig.label
+      if (
+        rootNodeConfig.originalMemory &&
+        hasImages(rootNodeConfig.originalMemory.prompt || "")
+      ) {
+        cleanRootLabel = cleanRootLabel.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️")
+      }
+
       nodes.add({
         id: rootNodeConfig.id,
         label:
-          rootNodeConfig.label.substring(0, 30) +
-          (rootNodeConfig.label.length > 30 ? "..." : ""),
-        title: `${rootNodeConfig.title || rootNodeConfig.label}\n\n🧠 Neural Activity:\n• ${networkStats.totalMemories} memories\n• ${networkStats.totalSubjects} subjects\n• ${networkStats.keySubjects} key subjects`,
+          cleanRootLabel.substring(0, 30) +
+          (cleanRootLabel.length > 30 ? "..." : ""),
+        title: `${rootNodeConfig.title || cleanRootLabel}\n\n🧠 Neural Activity:\n• ${networkStats.totalMemories} memories\n• ${networkStats.totalSubjects} subjects\n• ${networkStats.keySubjects} key subjects`,
         color: {
           background:
             rootNodeConfig.color ||
@@ -448,9 +474,17 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         const nodeColor = colors[depth % colors.length]
         const memoryType = getMemoryType(memory)
 
-        const label = memory.prompt
-          ? memory.prompt.substring(0, 20) +
-            (memory.prompt.length > 20 ? "..." : "")
+        // Clean prompt text by replacing markdown image syntax with emoji
+        let cleanPrompt = memory.prompt || ""
+        const promptHasImages = hasImages(cleanPrompt)
+        if (promptHasImages) {
+          // Replace ![alt](url) with 🖼️
+          cleanPrompt = cleanPrompt.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️")
+        }
+
+        const label = cleanPrompt
+          ? cleanPrompt.substring(0, 20) +
+            (cleanPrompt.length > 20 ? "..." : "")
           : "Memory"
 
         // Enhanced node with depth-based sizing and opacity
@@ -460,7 +494,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         nodes.add({
           id: nodeId,
           label: `${memoryType.icon} ${label}`,
-          title: `${memoryType.type.toUpperCase()}\n${memory.prompt ? `Prompt: ${memory.prompt}` : "Memory"}\n\nDepth: Level ${depth + 1}`,
+          title: `${memoryType.type.toUpperCase()}\n${cleanPrompt ? `Prompt: ${cleanPrompt}` : "Memory"}\n\nDepth: Level ${depth + 1}`,
           color: {
             background: nodeColor,
             border: "#ffffff",
@@ -634,6 +668,9 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           x: finalX,
           y: finalY,
         })
+
+        // Store subject in the subject map for lookup
+        subjectMapRef.current.set(subjectNodeId, subj)
 
         // Connect to all related memory nodes
         data.connectedMemoryNodes.forEach((memoryNodeId) => {
@@ -1153,7 +1190,27 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                     </div>
                   </div>
                   <div className="memory-preview-content">
-                    {memory.prompt || "No content available"}
+                    {(() => {
+                      const promptHasImages = hasImages(memory.prompt || "")
+                      const responseHasImages = hasImages(memory.response || "")
+
+                      if (promptHasImages || responseHasImages) {
+                        return (
+                          <div className="space-y-4">
+                            {/* Show only the prompt content with images rendered */}
+                            {memory.prompt && (
+                              <MarkdownRenderer
+                                content={memory.prompt}
+                                className="text-sm text-white/90"
+                              />
+                            )}
+                          </div>
+                        )
+                      }
+
+                      // Fallback to plain text if no images
+                      return memory.prompt || "No content available"
+                    })()}
                   </div>
                   {details && details.subjects.length > 0 && (
                     <>

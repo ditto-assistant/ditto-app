@@ -30,11 +30,38 @@ export default function MemoryNetworkModal() {
 
   const rootNodeConfig = {
     id: currentRootMemory.id || "root-memory-node",
-    label: currentRootMemory.prompt
-      ? currentRootMemory.prompt.substring(0, 30) +
-        (currentRootMemory.prompt.length > 30 ? "..." : "")
-      : "Memory",
-    title: `Central Memory: ${currentRootMemory.prompt || "N/A"}`,
+    label: (() => {
+      if (!currentRootMemory.prompt) return "Memory"
+
+      // Clean prompt text by replacing markdown image syntax with emoji
+      let cleanPrompt = currentRootMemory.prompt
+      if (
+        cleanPrompt.includes("![") &&
+        cleanPrompt.includes("](") &&
+        cleanPrompt.includes(")")
+      ) {
+        cleanPrompt = cleanPrompt.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️")
+      }
+
+      return (
+        cleanPrompt.substring(0, 30) + (cleanPrompt.length > 30 ? "..." : "")
+      )
+    })(),
+    title: (() => {
+      if (!currentRootMemory.prompt) return "Central Memory: N/A"
+
+      // Clean prompt text by replacing markdown image syntax with emoji
+      let cleanPrompt = currentRootMemory.prompt
+      if (
+        cleanPrompt.includes("![") &&
+        cleanPrompt.includes("](") &&
+        cleanPrompt.includes(")")
+      ) {
+        cleanPrompt = cleanPrompt.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️")
+      }
+
+      return `Central Memory: ${cleanPrompt}`
+    })(),
     isQueryNode: false,
     originalMemory: currentRootMemory,
     color: "#FF5733",
