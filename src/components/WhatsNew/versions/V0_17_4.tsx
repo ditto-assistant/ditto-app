@@ -7,6 +7,12 @@ const sections: Section[] = [
     features: [
       {
         type: "new",
+        title: "Revamped Memories Dashboard",
+        description:
+          "A revamped dashboard for searching your memories, complete with a network graph, statistics, and more! Launch it by clicking the 'Memories' button in the top left of the app.",
+      },
+      {
+        type: "new",
         title: "Subject Satellite Visualization",
         description:
           "Memory network now displays related subjects as satellite nodes around each memory, showing you the key topics and connections at a glance",
