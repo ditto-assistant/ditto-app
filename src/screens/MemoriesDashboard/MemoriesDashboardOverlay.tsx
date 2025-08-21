@@ -57,6 +57,7 @@ export default function MemoriesDashboardOverlay() {
     showSearchQueryModal: false,
   })
   const [searchExpanded, setSearchExpanded] = useState(false)
+  const [viewMode, setViewMode] = useState<"cards" | "graph">("graph")
 
   // Helper function to collect all pair IDs from memories
   const collectPairIds = useCallback((memories: Memory[]): string[] => {
@@ -533,17 +534,22 @@ export default function MemoriesDashboardOverlay() {
         <div className="neural-dashboard-header relative z-20 bg-background/95 backdrop-blur-sm border-b border-border/50">
           {/* Top Row - Compact Controls */}
           <div className="flex items-center justify-between p-3">
-            {/* Left Side - Reset Button */}
+            {/* Left Side - View Toggle */}
             <div className="flex items-center gap-2 flex-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetToTopSubjects}
-                className="neural-dashboard-compact-button text-primary hover:text-primary/80 hover:bg-primary/10 neural-glow px-2 py-1 h-8"
-                title="Reset to Top Subjects"
-              >
-                <RotateCcw className="h-4 w-4 neural-pulse" />
-              </Button>
+              <div className="view-toggle-container">
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className={`view-toggle-option ${viewMode === "cards" ? "active" : ""}`}
+                >
+                  Cards
+                </button>
+                <button
+                  onClick={() => setViewMode("graph")}
+                  className={`view-toggle-option ${viewMode === "graph" ? "active" : ""}`}
+                >
+                  Graph
+                </button>
+              </div>
             </div>
 
             {/* Center - Query Title */}
@@ -591,6 +597,15 @@ export default function MemoriesDashboardOverlay() {
                     disabled={networkState.loading}
                   />
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetToTopSubjects}
+                  className="neural-dashboard-compact-button text-primary hover:text-primary/80 hover:bg-primary/10 neural-glow px-3 py-2 h-9"
+                  title="Reset to Top Subjects"
+                >
+                  <RotateCcw className="h-4 w-4 neural-pulse" />
+                </Button>
                 <Button
                   onClick={handleSearch}
                   disabled={networkState.loading}
@@ -699,6 +714,9 @@ export default function MemoriesDashboardOverlay() {
                 rootNodeConfig={rootNodeConfig}
                 pairDetails={networkState.pairDetails}
                 onRootNodeClick={handleRootNodeClick}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                showCardViewControls={false}
               />
             </>
           )}

@@ -231,8 +231,20 @@
   flex-direction: column;
 }
 
-/* Modal backdrop styling */
-.memory-preview-card + div[class*="fixed inset-0"] {
+/* Ensure chat message modal has highest priority */
+.memory-preview-card.chat-message-modal {
+  z-index: 100000 !important;
+}
+
+/* Chat message modal backdrop - highest priority */
+.memory-preview-card.chat-message-modal + div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 99999;
+}
+
+/* Regular modal backdrop styling */
+.memory-preview-card:not(.chat-message-modal) + div[class*="fixed inset-0"] {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(2px);
   z-index: 9999;
@@ -1397,6 +1409,56 @@
     top: 8px;
     right: 8px;
     padding: 5px;
+  }
+}
+
+/* iOS-style View Toggle */
+.view-toggle-container {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.view-toggle-option {
+  padding: 6px 12px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  min-width: 50px;
+  text-align: center;
+}
+
+.view-toggle-option:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.view-toggle-option.active {
+  background: rgba(114, 137, 218, 0.8);
+  color: white;
+  box-shadow: 0 2px 8px rgba(114, 137, 218, 0.4);
+  transform: scale(1.05);
+}
+
+/* Mobile optimizations for toggle */
+@media (max-width: 768px) {
+  .view-toggle-container {
+    padding: 1px;
+  }
+
+  .view-toggle-option {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 40px;
   }
 }
 

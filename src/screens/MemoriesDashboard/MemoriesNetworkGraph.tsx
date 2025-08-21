@@ -44,6 +44,9 @@ interface MemoriesNetworkGraphProps {
   rootNodeConfig: RootNodeConfig
   pairDetails?: Record<string, ComprehensivePairDetails>
   onRootNodeClick?: () => void
+  viewMode?: "cards" | "graph"
+  onViewModeChange?: (mode: "cards" | "graph") => void
+  showCardViewControls?: boolean
 }
 
 const SUBJECT_NODE_COLOR = "#2ECC71"
@@ -86,6 +89,9 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   rootNodeConfig,
   pairDetails: externalPairDetails,
   onRootNodeClick,
+  viewMode: externalViewMode,
+  onViewModeChange,
+  showCardViewControls = true,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const networkRef = useRef<VisNetwork | null>(null)
@@ -127,7 +133,13 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     memory: Memory | null
     position: { x: number; y: number }
   } | null>(null)
-  const [viewMode, setViewMode] = useState<"graph" | "cards">("graph")
+  const [internalViewMode, setInternalViewMode] = useState<"graph" | "cards">(
+    "graph"
+  )
+
+  // Use external viewMode if provided, otherwise use internal state
+  const viewMode = externalViewMode ?? internalViewMode
+  const setViewMode = onViewModeChange ?? setInternalViewMode
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const { isMobile } = usePlatform()
   const { theme } = useTheme()
@@ -274,6 +286,28 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       setIsAnimatingBack(false)
     }
   }, [showChatMessage, selectedNodeForModal, selectedKeySubject])
+
+  // Cleanup all modals when view mode changes
+  useEffect(() => {
+    if (viewMode === "cards") {
+      // Clear all modals when switching to card view to prevent z-index conflicts
+      setShowChatMessage(null)
+      setSelectedNodeForModal(null)
+      setSelectedKeySubject(null)
+      setIsAnimatingBack(false)
+    }
+  }, [viewMode])
+
+  // Cleanup all modals when memories change to prevent stale modal states
+  useEffect(() => {
+    return () => {
+      // Cleanup function to clear all modals when component unmounts or memories change
+      setShowChatMessage(null)
+      setSelectedNodeForModal(null)
+      setSelectedKeySubject(null)
+      setIsAnimatingBack(false)
+    }
+  }, [memories])
 
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -1034,13 +1068,15 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           >
             <Maximize2 size={18} />
           </button>
-          <button
-            className="memory-network-control-button"
-            onClick={() => setViewMode("cards")}
-            title="Switch to Card View"
-          >
-            <Grid3X3 size={18} />
-          </button>
+          {showCardViewControls && (
+            <button
+              className="memory-network-control-button"
+              onClick={() => setViewMode("cards")}
+              title="Switch to Card View"
+            >
+              <Grid3X3 size={18} />
+            </button>
+          )}
         </div>
       )}
 
@@ -1384,11 +1420,16 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         <>
           {/* Backdrop for click-outside */}
           <div
-            className="fixed inset-0 z-[9999] bg-black/30"
-            onClick={() => setShowChatMessage(null)}
+            className="fixed inset-0 z-[99999] bg-black/30"
+            onClick={() => {
+              setShowChatMessage(null)
+              // Clear any other modal states to prevent conflicts
+              setSelectedNodeForModal(null)
+              setSelectedKeySubject(null)
+            }}
           />
           <div
-            className={`memory-preview-card fixed z-[10000] w-[min(90vw,520px)] max-h-[85vh] transition-all duration-300 ease-in-out ${
+            className={`memory-preview-card chat-message-modal fixed z-[100000] w-[min(90vw,520px)] max-h-[85vh] transition-all duration-300 ease-in-out ${
               isAnimatingBack
                 ? "animate-slide-out-left"
                 : "animate-slide-in-right"
@@ -1452,7 +1493,12 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                         </button>
                       )}
                       <button
-                        onClick={() => setShowChatMessage(null)}
+                        onClick={() => {
+                          setShowChatMessage(null)
+                          // Clear any other modal states to prevent conflicts
+                          setSelectedNodeForModal(null)
+                          setSelectedKeySubject(null)
+                        }}
                         className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                         title="Close"
                       >
@@ -1585,6 +1631,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                             <div className="flex items-center gap-2 ml-auto">
                               <button
                                 onClick={() => {
+                                  // Clear any existing modals first to prevent z-index conflicts
+                                  setSelectedNodeForModal(null)
+                                  setSelectedKeySubject(null)
+
+                                  // Set the chat message modal
                                   setShowChatMessage({
                                     memory,
                                     position: { x: 0, y: 0 },
