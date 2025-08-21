@@ -1423,6 +1423,231 @@
   -ms-user-select: none;
 }
 
+/* Slider styling for card navigation */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--muted) 0%, var(--muted) 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.slider:hover {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary/50);
+}
+
+.slider:focus {
+  outline: none;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 0 0 3px var(--ring/30),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slider::-webkit-slider-track {
+  background: transparent;
+  height: 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--primary);
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  border: 3px solid var(--background);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.slider::-webkit-slider-thumb::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--background);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: var(--primary/90);
+  transform: scale(1.15) translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-webkit-slider-thumb:active {
+  background: var(--primary);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.slider::-moz-range-track {
+  background: transparent;
+  height: 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  background: var(--primary);
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  border: 3px solid var(--background);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slider::-moz-range-thumb:hover {
+  background: var(--primary/90);
+  transform: scale(1.15) translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-moz-range-thumb:active {
+  background: var(--primary);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced slider container styling */
+.slider-container {
+  position: relative;
+  padding: 8px 0;
+}
+
+.slider-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--primary/20) 0%,
+    var(--primary/40) 50%,
+    var(--primary/20) 100%
+  );
+  border-radius: 1px;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* Slider value indicator */
+.slider-value {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.slider:hover + .slider-value,
+.slider:focus + .slider-value {
+  opacity: 1;
+}
+
+/* Card view specific styles */
+.memory-preview-card.w-full {
+  width: 100% !important;
+  max-width: none !important;
+  position: relative !important;
+  transform: none !important;
+  left: auto !important;
+  top: auto !important;
+  margin: 0 !important;
+}
+
+/* Card view header styling */
+.memory-preview-card .memory-preview-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+/* Rank badge styling */
+.memory-preview-card .bg-primary {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Navigation button styling */
+.memory-preview-card .bg-primary.text-primary-foreground {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Ensure proper spacing in card view */
+.memory-preview-card .memory-preview-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Mobile optimizations for card view */
+@media (max-width: 768px) {
+  .slider::-webkit-slider-thumb {
+    height: 24px;
+    width: 24px;
+  }
+
+  .slider::-moz-range-thumb {
+    height: 24px;
+    width: 24px;
+  }
+
+  .memory-preview-card.w-full {
+    margin: 8px !important;
+    padding: 16px !important;
+  }
+
+  .memory-preview-card .memory-preview-content {
+    max-height: 50vh;
+  }
+}
+
 /* Additional mobile touch optimizations */
 @media (max-width: 768px) {
   /* Ensure the modal content is properly touchable */

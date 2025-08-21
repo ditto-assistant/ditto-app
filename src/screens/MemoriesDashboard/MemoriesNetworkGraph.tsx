@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import {
-  Target,
   BarChart3,
   Brain,
   MessageCircle,
@@ -8,7 +7,9 @@ import {
   Info,
   Maximize2,
   ArrowLeft,
-  Image as ImageIcon,
+  Grid3X3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { toast } from "sonner"
 import ChatMessage from "@/components/ChatMessage"
@@ -16,7 +17,6 @@ import MarkdownRenderer from "@/components/MarkdownRenderer"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
-import { MemoryWithLevel } from "@/hooks/useMemoryNodeViewer"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import { DataSet } from "vis-data"
 import {
@@ -75,21 +75,6 @@ const hasImages = (content: string): boolean => {
   )
 }
 
-// Extract image URLs from markdown content
-const extractImageUrls = (content: string): string[] => {
-  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
-  const urls: string[] = []
-  let match
-
-  while ((match = imageRegex.exec(content)) !== null) {
-    if (match[2]) {
-      urls.push(match[2])
-    }
-  }
-
-  return urls
-}
-
 // Memory depth calculation
 const getMemoryDepth = (memory: Memory): number => {
   if (!memory.children || memory.children.length === 0) return 1
@@ -119,7 +104,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const { pairDetails: contextPairDetails } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
   // Removed isOpeningNode - no longer needed with inline chat view
-  const [showStats, setShowStats] = useState(true)
   const [showLegend, setShowLegend] = useState(true)
   const [showNeuralActivity, setShowNeuralActivity] = useState(true)
   const [selectedNodeForModal, setSelectedNodeForModal] = useState<{
@@ -129,12 +113,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const [selectedKeySubject, setSelectedKeySubject] = useState<{
     subject: PairSubject
     position: { x: number; y: number }
-  } | null>(null)
-  const [selectedNode, setSelectedNode] = useState<{
-    nodeId: string
-    memory: Memory
-    x: number
-    y: number
   } | null>(null)
   const [showChatMessage, setShowChatMessage] = useState<{
     memory: Memory
@@ -149,6 +127,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     memory: Memory | null
     position: { x: number; y: number }
   } | null>(null)
+  const [viewMode, setViewMode] = useState<"graph" | "cards">("graph")
+  const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const { isMobile } = usePlatform()
   const { theme } = useTheme()
 
@@ -218,6 +198,50 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           : 1,
     }
   }, [memories, pairDetails])
+
+  // Memoize ranked memories for card view
+  const rankedMemories = useMemo(() => {
+    const allMemories: Array<{
+      memory: Memory
+      depth: number
+      rank: number
+      parentRank?: number
+      childRank?: number
+    }> = []
+
+    // Add L1 memories (depth 1)
+    memories.forEach((memory, index) => {
+      allMemories.push({
+        memory,
+        depth: 1,
+        rank: index + 1,
+        parentRank: undefined,
+        childRank: undefined,
+      })
+
+      // Add L2 memories (depth 2) with parent-child ranking
+      if (memory.children && memory.children.length > 0) {
+        memory.children.forEach((child, childIndex) => {
+          allMemories.push({
+            memory: child,
+            depth: 2,
+            rank: index + 1,
+            parentRank: index + 1,
+            childRank: childIndex + 1,
+          })
+        })
+      }
+    })
+
+    // Sort by relevance (L1 first, then L2, maintaining parent-child relationships)
+    return allMemories.sort((a, b) => {
+      if (a.depth !== b.depth) return a.depth - b.depth
+      if (a.depth === 2 && a.parentRank !== b.parentRank) {
+        return (a.parentRank || 0) - (b.parentRank || 0)
+      }
+      return (a.childRank || 0) - (b.childRank || 0)
+    })
+  }, [memories])
 
   // Minimize overlays by default on mobile
   useEffect(() => {
@@ -488,7 +512,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           : "Memory"
 
         // Enhanced node with depth-based sizing and opacity
-        const nodeSize = Math.max(28 - depth * 4, 12)
+        // L1 memory nodes (depth = 1) are 30% larger for better visibility
+        let nodeSize = Math.max(28 - depth * 4, 12)
+        if (depth === 1) {
+          nodeSize = Math.floor(nodeSize * 1.3) // 30% larger for L1 memories
+        }
         const opacity = Math.max(1 - depth * 0.15, 0.6)
 
         nodes.add({
@@ -607,15 +635,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         .sort((a, b) => b[1].totalConnections - a[1].totalConnections) // Sort by total connections
         .slice(0, MAX_SUBJECTS_PER_PAIR * 3) // Allow more subjects for the whole network
 
-      // Position subjects in a strategic layout around the network
-      const networkBounds = {
-        minX: -200,
-        maxX: 200,
-        minY: -200,
-        maxY: 200,
-      }
-
-      subjectEntries.forEach(([subjectKey, data], idx) => {
+      subjectEntries.forEach(([_, data], idx) => {
         const subj = data.subject
         const connections = data.totalConnections
 
@@ -1005,18 +1025,27 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   return (
     <div className="absolute inset-0 flex flex-col w-full h-full relative">
       {/* Network Controls */}
-      <div className="memory-network-controls">
-        <button
-          className="memory-network-control-button"
-          onClick={fitAllNodes}
-          title="Fit to screen"
-        >
-          <Maximize2 size={18} />
-        </button>
-      </div>
+      {viewMode === "graph" && (
+        <div className="memory-network-controls">
+          <button
+            className="memory-network-control-button"
+            onClick={fitAllNodes}
+            title="Fit to screen"
+          >
+            <Maximize2 size={18} />
+          </button>
+          <button
+            className="memory-network-control-button"
+            onClick={() => setViewMode("cards")}
+            title="Switch to Card View"
+          >
+            <Grid3X3 size={18} />
+          </button>
+        </div>
+      )}
 
       {/* Legend */}
-      {showLegend ? (
+      {viewMode === "graph" && showLegend ? (
         <div className="memory-network-legend">
           <div className="legend-header">
             <span className="legend-title">Legend</span>
@@ -1034,11 +1063,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           </div>
           <div className="legend-item">
             <span className="legend-swatch node memory"></span>
-            <span>Memory</span>
+            <span>L2 Memory</span>
           </div>
           <div className="legend-item">
             <span className="legend-swatch node subject"></span>
-            <span>Subject</span>
+            <span>L1 Memory</span>
           </div>
           <div className="legend-item">
             <span className="legend-swatch node key-subject"></span>
@@ -1048,17 +1077,19 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           <div className="legend-note">Node size = connection count</div>
         </div>
       ) : (
-        <button
-          className="memory-network-legend-toggle"
-          onClick={() => setShowLegend(true)}
-          title="Show legend"
-        >
-          <Info size={16} />
-        </button>
+        viewMode === "graph" && (
+          <button
+            className="memory-network-legend-toggle"
+            onClick={() => setShowLegend(true)}
+            title="Show legend"
+          >
+            <Info size={16} />
+          </button>
+        )
       )}
 
       {/* Network Statistics */}
-      {showNeuralActivity && (
+      {viewMode === "graph" && showNeuralActivity && (
         <div className="memory-network-stats">
           <div className="memory-network-stats-title">
             <div className="flex items-center justify-between">
@@ -1106,7 +1137,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       )}
 
       {/* Neural Activity Toggle Button (when hidden) */}
-      {!showNeuralActivity && (
+      {viewMode === "graph" && !showNeuralActivity && (
         <button
           onClick={() => setShowNeuralActivity(true)}
           className="memory-network-control-button"
@@ -1264,7 +1295,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                 selectedKeySubject.subject
               )
               const subject = selectedKeySubject.subject
-              const subjectId = subject.id
               const subjectName = subject.subject_text
               const subjectDescription = subject.description
 
@@ -1498,6 +1528,191 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         className="absolute inset-0 w-full h-full bg-background overflow-hidden"
         style={{ visibility: isReady ? "visible" : "hidden" }}
       />
+
+      {/* Card View */}
+      {viewMode === "cards" && (
+        <div className="absolute inset-0 w-full h-full bg-background flex flex-col">
+          {/* Card Header */}
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewMode("graph")}
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                title="Back to Graph View"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <div>
+                <h2 className="text-lg font-semibold">Memory Cards</h2>
+                <p className="text-sm text-muted-foreground">
+                  {rankedMemories.length} memories ranked by relevance
+                </p>
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {currentCardIndex + 1} of {rankedMemories.length}
+            </div>
+          </div>
+
+          {/* Card Content */}
+          <div className="flex-1 flex items-center justify-center p-4">
+            {rankedMemories.length > 0 ? (
+              <div className="w-full max-w-2xl">
+                {rankedMemories[currentCardIndex] && (
+                  <div className="memory-preview-card w-full max-w-none">
+                    {(() => {
+                      const { memory, depth, rank, parentRank, childRank } =
+                        rankedMemories[currentCardIndex]
+                      const memoryType = getMemoryType(memory)
+                      const details = pairDetails[memory.id]
+                      const rankDisplay =
+                        depth === 1 ? `#${rank}` : `#${parentRank}.${childRank}`
+
+                      return (
+                        <>
+                          <div className="memory-preview-header">
+                            <div className="flex items-center gap-3">
+                              <div className="memory-preview-icon">
+                                {memoryType.icon}
+                              </div>
+                              <div className="memory-preview-title">
+                                {memoryType.type.toUpperCase()}
+                              </div>
+                              <div className="px-3 py-1 bg-primary text-primary-foreground text-sm font-medium rounded-full">
+                                {rankDisplay}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 ml-auto">
+                              <button
+                                onClick={() => {
+                                  setShowChatMessage({
+                                    memory,
+                                    position: { x: 0, y: 0 },
+                                  })
+                                }}
+                                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                title="Open Chat Message"
+                              >
+                                <MessageCircle
+                                  size={16}
+                                  className="text-blue-400"
+                                />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="memory-preview-content">
+                            {(() => {
+                              const promptHasImages = hasImages(
+                                memory.prompt || ""
+                              )
+                              const responseHasImages = hasImages(
+                                memory.response || ""
+                              )
+
+                              if (promptHasImages || responseHasImages) {
+                                return (
+                                  <div className="space-y-4">
+                                    {memory.prompt && (
+                                      <MarkdownRenderer
+                                        content={memory.prompt}
+                                        className="text-sm text-white/90"
+                                      />
+                                    )}
+                                  </div>
+                                )
+                              }
+
+                              return memory.prompt || "No content available"
+                            })()}
+                          </div>
+                          {details && details.subjects.length > 0 && (
+                            <>
+                              <div className="text-sm font-medium text-white/80 mb-2">
+                                Related Subjects ({details.subjects.length})
+                              </div>
+                              <div className="memory-preview-subjects">
+                                {details.subjects.map(
+                                  (subj: PairSubject, idx: number) => (
+                                    <div
+                                      key={idx}
+                                      className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
+                                    >
+                                      {subj.subject_text} ({subj.pair_count})
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )
+                    })()}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <Brain size={48} className="mx-auto mb-4 opacity-50" />
+                <p>No memories found</p>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="p-4 border-t border-border">
+            {/* Slider */}
+            <div className="slider-container mb-6">
+              <input
+                type="range"
+                min={0}
+                max={Math.max(0, rankedMemories.length - 1)}
+                value={currentCardIndex}
+                onChange={(e) => setCurrentCardIndex(parseInt(e.target.value))}
+                className="w-full slider"
+              />
+              <div className="slider-value">
+                {rankedMemories[currentCardIndex]?.depth === 1
+                  ? "L1 Memory"
+                  : "L2 Memory"}{" "}
+                #{currentCardIndex + 1}
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() =>
+                  setCurrentCardIndex(Math.max(0, currentCardIndex - 1))
+                }
+                disabled={currentCardIndex === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={16} />
+                Previous
+              </button>
+
+              <div className="text-sm text-muted-foreground">
+                {rankedMemories[currentCardIndex]?.depth === 1
+                  ? "L1 Memory"
+                  : "L2 Memory"}
+              </div>
+
+              <button
+                onClick={() =>
+                  setCurrentCardIndex(
+                    Math.min(rankedMemories.length - 1, currentCardIndex + 1)
+                  )
+                }
+                disabled={currentCardIndex === rankedMemories.length - 1}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!isReady &&
         nodesDatasetRef.current &&
