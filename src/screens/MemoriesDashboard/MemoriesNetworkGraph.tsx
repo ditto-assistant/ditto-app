@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import {
   Target,
   BarChart3,
@@ -88,12 +88,15 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       Memory | { isQueryNode: boolean; query?: string; originalMemory?: Memory }
     >
   >(new Map())
+  const initializationRef = useRef<boolean>(false)
+
   // Removed useMemoryNodeViewer - now using inline chat message view
   const { pairDetails: contextPairDetails } = useMemoryNetwork()
   const [isReady, setIsReady] = useState(false)
   // Removed isOpeningNode - no longer needed with inline chat view
   const [showStats, setShowStats] = useState(true)
   const [showLegend, setShowLegend] = useState(true)
+  const [showNeuralActivity, setShowNeuralActivity] = useState(true)
   const [selectedNodeForModal, setSelectedNodeForModal] = useState<{
     memory: Memory | null
     position: { x: number; y: number }
@@ -127,6 +130,79 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   // Use external pair details if provided, otherwise fall back to context
   const pairDetails = externalPairDetails || contextPairDetails
 
+  // Custom hook for network initialization
+  const useNetworkInitialization = () => {
+    const lastDataRef = useRef<string>("")
+
+    return useMemo(() => {
+      // Create a simple hash of the important data
+      const dataHash = JSON.stringify({
+        memoriesLength: memories.length,
+        memoriesIds: memories
+          .map((m) => m.id)
+          .sort()
+          .join(","), // Track actual memory IDs
+        rootId: rootNodeConfig.id,
+        rootLabel: rootNodeConfig.label,
+        pairDetailsKeys: Object.keys(pairDetails).sort().join(","),
+        pairDetailsLength: Object.keys(pairDetails).length, // Track pair details count
+        theme,
+      })
+
+      if (lastDataRef.current !== dataHash) {
+        lastDataRef.current = dataHash
+        return true
+      }
+
+      return false
+    }, [
+      memories.length,
+      memories.map((m) => m.id).join(","),
+      rootNodeConfig.id,
+      rootNodeConfig.label,
+      Object.keys(pairDetails).join(","),
+      Object.keys(pairDetails).length,
+      theme,
+    ])
+  }
+
+  const shouldRebuildNetwork = useNetworkInitialization()
+
+  // Memoize network statistics for rendering
+  const networkStats = useMemo(() => {
+    const totalMemories = memories.length + 1
+    const totalSubjects = Object.values(pairDetails).reduce(
+      (sum, pd) => sum + pd.subjects.length,
+      0
+    )
+    const keySubjects = Object.values(pairDetails).reduce(
+      (sum, pd) =>
+        sum + pd.subjects.filter((s: PairSubject) => s.is_key_subject).length,
+      0
+    )
+
+    return {
+      totalMemories,
+      totalSubjects,
+      keySubjects,
+      avgSubjectsPerMemory:
+        totalMemories > 0 ? (totalSubjects / totalMemories).toFixed(1) : "0",
+      memoryDepth:
+        memories.length > 0
+          ? Math.max(...memories.map((m) => getMemoryDepth(m)), 1)
+          : 1,
+    }
+  }, [memories, pairDetails])
+
+  // Minimize overlays by default on mobile
+  useEffect(() => {
+    const isSmall = window.matchMedia("(max-width: 768px)").matches
+    if (isSmall) {
+      setShowLegend(false)
+      setShowNeuralActivity(false)
+    }
+  }, [])
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -152,29 +228,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Simple network statistics to avoid re-render loops
-  const totalMemories = memories.length + 1
-  const totalSubjects = Object.values(pairDetails).reduce(
-    (sum, pd) => sum + pd.subjects.length,
-    0
-  )
-  const keySubjects = Object.values(pairDetails).reduce(
-    (sum, pd) =>
-      sum + pd.subjects.filter((s: PairSubject) => s.is_key_subject).length,
-    0
-  )
-  const networkStats = {
-    totalMemories,
-    totalSubjects,
-    keySubjects,
-    avgSubjectsPerMemory:
-      totalMemories > 0 ? (totalSubjects / totalMemories).toFixed(1) : "0",
-    memoryDepth:
-      memories.length > 0
-        ? Math.max(...memories.map((m) => getMemoryDepth(m)), 1)
-        : 1,
-  }
 
   const fitAllNodes = useCallback(() => {
     if (isFittingRef.current) return
@@ -205,72 +258,116 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
   }, [])
 
+  // Mobile touch handling state
+  const [lastTouchTime, setLastTouchTime] = useState(0)
+  const [isProcessingClick, setIsProcessingClick] = useState(false)
+
   const handleNodeClick = useCallback(
     (nodeId: string) => {
       console.log("Node clicked:", nodeId)
 
+      // Mobile touch debouncing to prevent double-clicks
+      const isMobile = window.innerWidth <= 768
+      const now = Date.now()
+
+      if (isMobile) {
+        // Prevent rapid successive clicks on mobile
+        if (now - lastTouchTime < 500 || isProcessingClick) {
+          console.log("Mobile: Ignoring rapid click/double-tap")
+          return
+        }
+        setLastTouchTime(now)
+        setIsProcessingClick(true)
+
+        // Reset processing flag after a delay
+        setTimeout(() => setIsProcessingClick(false), 600)
+      }
+
       // Handle root node click
       if (nodeId === rootNodeConfig.id && onRootNodeClick) {
-        onRootNodeClick()
+        if (isMobile) {
+          // Add extra delay on mobile to ensure modal renders properly
+          setTimeout(() => onRootNodeClick(), 100)
+        } else {
+          onRootNodeClick()
+        }
         return
       }
 
       // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
       if (nodeId.startsWith("shared-subject-")) {
-        console.log("Subject node detected:", nodeId)
-        // Extract subject ID from the nodeId
         const subjectId = nodeId.replace("shared-subject-", "")
-        console.log("Looking for subject ID:", subjectId)
 
-        // Find the subject in pairDetails
-        let foundSubject = null
-        Object.entries(pairDetails).forEach(([pairId, details]) => {
+        // Find the subject in pair details
+        let foundSubject: PairSubject | null = null
+        for (const details of Object.values(pairDetails)) {
           if (details && details.subjects) {
-            const subject = details.subjects.find((s) => s.id === subjectId)
-            if (subject) {
-              console.log("Found subject:", subject)
-              foundSubject = subject
-            }
+            foundSubject =
+              details.subjects.find((s: PairSubject) => s.id === subjectId) ||
+              null
+            if (foundSubject) break
           }
-        })
+        }
 
         if (foundSubject) {
-          console.log("Setting selectedKeySubject with:", foundSubject)
-          // Get node position for modal positioning
-          if (networkRef.current) {
-            const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
-            if (canvasPos) {
-              const domPos = networkRef.current.canvasToDOM(canvasPos)
+          // Get canvas position for modal placement
+          const canvas = containerRef.current?.querySelector("canvas")
+          if (canvas && networkRef.current) {
+            const canvasPosition = canvas.getBoundingClientRect()
+            const nodePosition = networkRef.current.getPositions([nodeId])[
+              nodeId
+            ]
+
+            if (nodePosition) {
+              // Convert network coordinates to screen coordinates
+              const scale = networkRef.current.getScale()
+              const viewPosition = networkRef.current.getViewPosition()
+
+              const screenX =
+                canvasPosition.left +
+                (nodePosition.x - viewPosition.x) * scale +
+                canvasPosition.width / 2
+              const screenY =
+                canvasPosition.top +
+                (nodePosition.y - viewPosition.y) * scale +
+                canvasPosition.height / 2
+
               setSelectedKeySubject({
                 subject: foundSubject,
-                position: { x: domPos.x, y: domPos.y },
+                position: { x: screenX, y: screenY },
               })
             }
           }
-        } else {
-          console.log("Subject not found for ID:", subjectId)
         }
         return
       }
 
-      // Handle memory node clicks (existing logic)
-      console.log("Memory node detected:", nodeId)
-      const clickedItem = memoryMapRef.current.get(nodeId)
-      if (
-        clickedItem &&
-        !(clickedItem as RootNodeConfig).isQueryNode &&
-        !("query" in clickedItem)
-      ) {
-        const clickedMemory = clickedItem as Memory
+      // Check if this is a memory node
+      const memory = memoryMapRef.current.get(nodeId)
+      if (memory && "prompt" in memory) {
+        // Get canvas position for modal placement
+        const canvas = containerRef.current?.querySelector("canvas")
+        if (canvas && networkRef.current) {
+          const canvasPosition = canvas.getBoundingClientRect()
+          const nodePosition = networkRef.current.getPositions([nodeId])[nodeId]
 
-        // Get node position for modal positioning
-        if (networkRef.current) {
-          const canvasPos = networkRef.current.getPositions([nodeId])[nodeId]
-          if (canvasPos) {
-            const domPos = networkRef.current.canvasToDOM(canvasPos)
+          if (nodePosition) {
+            // Convert network coordinates to screen coordinates
+            const scale = networkRef.current.getScale()
+            const viewPosition = networkRef.current.getViewPosition()
+
+            const screenX =
+              canvasPosition.left +
+              (nodePosition.x - viewPosition.x) * scale +
+              canvasPosition.width / 2
+            const screenY =
+              canvasPosition.top +
+              (nodePosition.y - viewPosition.y) * scale +
+              canvasPosition.height / 2
+
             setSelectedNodeForModal({
-              memory: clickedMemory,
-              position: { x: domPos.x, y: domPos.y },
+              memory: memory as Memory,
+              position: { x: screenX, y: screenY },
             })
           }
         }
@@ -279,494 +376,563 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     [pairDetails, rootNodeConfig, onRootNodeClick]
   )
 
+  // Network building effect - simplified and stable
   useEffect(() => {
-    let effectiveTheme = theme
-    if (theme === "system") {
-      effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-    }
-    const nodeFontColor = effectiveTheme === "dark" ? "#FFFFFF" : "#333333"
-
-    const container = containerRef.current
-    const nodes = new DataSet<Node>()
-    const edges = new DataSet<Edge>()
-    memoryMapRef.current.clear()
-
-    setIsReady(false)
-
-    // Enhanced root node with neural styling
-    const rootSize = 35 + Math.min(networkStats.totalSubjects * 2, 15)
-    nodes.add({
-      id: rootNodeConfig.id,
-      label:
-        rootNodeConfig.label.substring(0, 30) +
-        (rootNodeConfig.label.length > 30 ? "..." : ""),
-      title: `${rootNodeConfig.title || rootNodeConfig.label}\n\n🧠 Neural Activity:\n• ${networkStats.totalMemories} memories\n• ${networkStats.totalSubjects} subjects\n• ${networkStats.keySubjects} key subjects`,
-      color: {
-        background:
-          rootNodeConfig.color ||
-          (rootNodeConfig.isQueryNode ? "#ED4245" : "#3498DB"),
-        border: "#ffffff",
-        highlight: { background: "#7289da", border: "#ffffff" },
-      },
-      level: 0,
-      shape: "dot",
-      size: rootSize,
-      font: { size: 14, color: nodeFontColor, face: "Inter, Arial" },
-      x: persistedNodePositions[rootNodeConfig.id]?.x,
-      y: persistedNodePositions[rootNodeConfig.id]?.y,
-    })
-    if (rootNodeConfig.originalMemory) {
-      memoryMapRef.current.set(rootNodeConfig.id, rootNodeConfig.originalMemory)
+    if (
+      !shouldRebuildNetwork ||
+      !containerRef.current ||
+      initializationRef.current
+    ) {
+      return
     }
 
-    const addMemoryRecursive = (
-      memory: Memory,
-      parentNodeId: string,
-      depth: number,
-      path: string
-    ) => {
-      const nodeId = `${path}-${memory.id}`
-      if (memoryMapRef.current.has(nodeId)) return
+    const buildNetwork = () => {
+      let effectiveTheme = theme
+      if (theme === "system") {
+        effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "dark"
+          : "light"
+      }
+      const nodeFontColor = effectiveTheme === "dark" ? "#FFFFFF" : "#333333"
 
-      const colors = ["#3498DB", "#2ECC71", "#9B59B6", "#F1C40F", "#E74C3C"]
-      const nodeColor = colors[depth % colors.length]
-      const memoryType = getMemoryType(memory)
+      const container = containerRef.current
+      if (!container) return
 
-      const label = memory.prompt
-        ? memory.prompt.substring(0, 20) +
-          (memory.prompt.length > 20 ? "..." : "")
-        : "Memory"
+      const nodes = new DataSet<Node>()
+      const edges = new DataSet<Edge>()
+      memoryMapRef.current.clear()
 
-      // Enhanced node with depth-based sizing and opacity
-      const nodeSize = Math.max(28 - depth * 4, 12)
-      const opacity = Math.max(1 - depth * 0.15, 0.6)
+      setIsReady(false)
+      initializationRef.current = true
 
+      // Enhanced root node with neural styling
+      const rootSize = 35 + Math.min(networkStats.totalSubjects * 2, 15)
       nodes.add({
-        id: nodeId,
-        label: `${memoryType.icon} ${label}`,
-        title: `${memoryType.type.toUpperCase()}\n${memory.prompt ? `Prompt: ${memory.prompt}` : "Memory"}\n\nDepth: Level ${depth + 1}`,
+        id: rootNodeConfig.id,
+        label:
+          rootNodeConfig.label.substring(0, 30) +
+          (rootNodeConfig.label.length > 30 ? "..." : ""),
+        title: `${rootNodeConfig.title || rootNodeConfig.label}\n\n🧠 Neural Activity:\n• ${networkStats.totalMemories} memories\n• ${networkStats.totalSubjects} subjects\n• ${networkStats.keySubjects} key subjects`,
         color: {
-          background: nodeColor,
+          background:
+            rootNodeConfig.color ||
+            (rootNodeConfig.isQueryNode ? "#ED4245" : "#3498DB"),
           border: "#ffffff",
           highlight: { background: "#7289da", border: "#ffffff" },
         },
-        level: depth + 1,
+        level: 0,
         shape: "dot",
-        size: nodeSize,
-        font: {
-          size: Math.max(11 - depth, 9),
-          color: nodeFontColor,
-          face: "Inter, Arial",
-        },
-        opacity: opacity,
-        x: persistedNodePositions[nodeId]?.x,
-        y: persistedNodePositions[nodeId]?.y,
+        size: rootSize,
+        font: { size: 14, color: nodeFontColor, face: "Inter, Arial" },
+        x: persistedNodePositions[rootNodeConfig.id]?.x,
+        y: persistedNodePositions[rootNodeConfig.id]?.y,
       })
-      memoryMapRef.current.set(nodeId, memory)
-
-      if (parentNodeId) {
-        // Dynamic edge thickness based on memory relevance
-        const relevanceScore = memory.vector_distance || 0.5
-        const edgeWidth = Math.max(1, Math.floor(relevanceScore * 4))
-
-        edges.add({
-          from: parentNodeId,
-          to: nodeId,
-          arrows: { to: { enabled: true, scaleFactor: 0.6 } },
-          length: 80 + depth * 30,
-          width: edgeWidth,
-          color: {
-            color: `rgba(160, 160, 160, ${opacity})`,
-            highlight: "#66afe9",
-            hover: "#66afe9",
-          },
-          smooth: { enabled: true, type: "dynamic", roundness: 0.3 },
-        })
-      }
-
-      // Remove individual subject nodes creation from here
-      // Subject consolidation will happen later
-
-      if (memory.children && memory.children.length > 0) {
-        memory.children.forEach((child) => {
-          addMemoryRecursive(child, nodeId, depth + 1, `${path}-${memory.id}`)
-        })
-      }
-    }
-
-    memories.forEach((rootMemory, index) => {
-      addMemoryRecursive(rootMemory, rootNodeConfig.id, 1, `child-${index}`)
-    })
-
-    // Consolidate subjects across all memory pairs
-    const consolidatedSubjects = new Map<
-      string,
-      {
-        subject: PairSubject
-        connectedMemoryNodes: string[]
-        totalConnections: number
-      }
-    >()
-
-    // Collect all subjects and their connections
-    Object.entries(pairDetails).forEach(([pairId, details]) => {
-      if (details && details.subjects && details.subjects.length > 0) {
-        details.subjects.forEach((subj: PairSubject) => {
-          const subjectKey = subj.subject_text // Use subject_text as unique key
-
-          if (consolidatedSubjects.has(subjectKey)) {
-            const existing = consolidatedSubjects.get(subjectKey)!
-            // Find the memory node for this pair
-            const memoryNodeId = Array.from(memoryMapRef.current.keys()).find(
-              (nodeId) => {
-                const memory = memoryMapRef.current.get(nodeId)
-                return memory && "id" in memory && memory.id === pairId
-              }
-            )
-            if (
-              memoryNodeId &&
-              !existing.connectedMemoryNodes.includes(memoryNodeId)
-            ) {
-              existing.connectedMemoryNodes.push(memoryNodeId)
-              existing.totalConnections++
-            }
-            // Keep the subject with higher pair_count
-            if (subj.pair_count > existing.subject.pair_count) {
-              existing.subject = subj
-            }
-          } else {
-            // Find the memory node for this pair
-            const memoryNodeId = Array.from(memoryMapRef.current.keys()).find(
-              (nodeId) => {
-                const memory = memoryMapRef.current.get(nodeId)
-                return memory && "id" in memory && memory.id === pairId
-              }
-            )
-            consolidatedSubjects.set(subjectKey, {
-              subject: subj,
-              connectedMemoryNodes: memoryNodeId ? [memoryNodeId] : [],
-              totalConnections: 1,
-            })
-          }
-        })
-      }
-    })
-
-    // Create consolidated subject nodes
-    const subjectEntries = Array.from(consolidatedSubjects.entries())
-      .sort((a, b) => b[1].totalConnections - a[1].totalConnections) // Sort by total connections
-      .slice(0, MAX_SUBJECTS_PER_PAIR * 3) // Allow more subjects for the whole network
-
-    // Position subjects in a strategic layout around the network
-    const networkBounds = {
-      minX: -200,
-      maxX: 200,
-      minY: -200,
-      maxY: 200,
-    }
-
-    subjectEntries.forEach(([subjectKey, data], idx) => {
-      const subj = data.subject
-      const connections = data.totalConnections
-
-      // Calculate size based on total connections across the network
-      const subjectSize = Math.min(
-        SUBJECT_NODE_SIZE + Math.log(connections + 1) * 4, // Larger scaling for shared nodes
-        35 // Increased max size for important subjects
-      )
-
-      const subjectColor = subj.is_key_subject
-        ? KEY_SUBJECT_COLOR
-        : SUBJECT_NODE_COLOR
-      const subjectNodeId = `shared-subject-${subj.id}`
-
-      // Strategic positioning: arrange in a loose grid around the network
-      const gridCols = Math.ceil(Math.sqrt(subjectEntries.length))
-      const gridRow = Math.floor(idx / gridCols)
-      const gridCol = idx % gridCols
-
-      const spacing = 120
-      const offsetX = (gridCol - gridCols / 2) * spacing
-      const offsetY =
-        (gridRow - Math.ceil(subjectEntries.length / gridCols) / 2) * spacing
-
-      // Add some randomization to avoid perfect grid
-      const randomOffset = 30
-      const finalX = offsetX + (Math.random() - 0.5) * randomOffset
-      const finalY = offsetY + (Math.random() - 0.5) * randomOffset
-
-      nodes.add({
-        id: subjectNodeId,
-        label: `${subj.subject_text.substring(0, 18)}${subj.subject_text.length > 18 ? "..." : ""}\n(${connections} ${connections === 1 ? "memory" : "memories"})`,
-        title: `Subject: ${subj.subject_text}\nConnected to ${connections} memories across network\n${subj.is_key_subject ? "⭐ Key Subject" : "Regular Subject"}${subj.description ? `\n\n${subj.description}` : ""}`,
-        color: {
-          background: subjectColor,
-          border: subj.is_key_subject ? "#FFD700" : "#2ECC71",
-          highlight: { background: "#7289da", border: "#ffffff" },
-        },
-        level: 10, // High level to keep subjects on the periphery
-        shape: "dot",
-        size: subjectSize,
-        font: {
-          size: Math.min(10 + Math.log(connections), 14), // Dynamic font size
-          color: "#ffffff",
-          face: "Inter, Arial",
-          multi: "md",
-          strokeWidth: 1,
-          strokeColor: "#000000",
-        },
-        x: finalX,
-        y: finalY,
-      })
-
-      // Connect to all related memory nodes
-      data.connectedMemoryNodes.forEach((memoryNodeId) => {
-        const connectionStrength = Math.min(connections, 5) // Cap edge thickness
-
-        edges.add({
-          from: memoryNodeId,
-          to: subjectNodeId,
-          color: {
-            color: subj.is_key_subject
-              ? `rgba(255, 215, 0, ${0.3 + connectionStrength * 0.1})`
-              : `rgba(143, 217, 168, ${0.3 + connectionStrength * 0.1})`,
-            highlight: "#66afe9",
-          },
-          dashes: [3, 7], // Distinctive dashed pattern for subject connections
-          arrows: { to: { enabled: false } },
-          length: 100 + connections * 10, // Longer edges for shared subjects
-          width: Math.min(0.5 + Math.log(connections) * 0.5, 4), // Dynamic width based on connections
-          smooth: { enabled: true, type: "curvedCW", roundness: 0.3 },
-        })
-      })
-    })
-
-    nodesDatasetRef.current = nodes
-    edgesDatasetRef.current = edges
-
-    if (container) {
-      const options: Options = {
-        layout: { hierarchical: false },
-        physics: {
-          enabled: true,
-          solver: "forceAtlas2Based",
-          forceAtlas2Based: {
-            gravitationalConstant: -80,
-            centralGravity: 0.005,
-            springLength: 140,
-            springConstant: 0.06,
-            damping: 0.6,
-            avoidOverlap: 1.2,
-          },
-          stabilization: {
-            enabled: true,
-            iterations: 300,
-            fit: true,
-            updateInterval: 25,
-            onlyDynamicEdges: false,
-          },
-          adaptiveTimestep: true,
-          wind: { x: 0, y: 0 },
-          // Mobile-specific physics optimizations
-          ...(isMobile && {
-            stabilization: {
-              enabled: true,
-              iterations: 200, // Fewer iterations for faster stabilization on mobile
-              fit: true,
-              updateInterval: 50, // Slower updates for better performance on mobile
-              onlyDynamicEdges: false,
-            },
-            adaptiveTimestep: true,
-            // Reduce physics complexity on mobile for better performance
-            forceAtlas2Based: {
-              gravitationalConstant: -60, // Reduced gravity for more stable layout
-              centralGravity: 0.003,
-              springLength: 120,
-              springConstant: 0.08,
-              damping: 0.7, // Increased damping for stability
-              avoidOverlap: 1.0,
-            },
-          }),
-        },
-        interaction: {
-          dragNodes: true,
-          tooltipDelay: 150,
-          hover: true,
-          zoomView: true,
-          dragView: true,
-          multiselect: false,
-          selectable: true,
-          selectConnectedEdges: true,
-          hoverConnectedEdges: true,
-          // Mobile-specific touch optimizations
-          touch: {
-            enabled: true,
-            delay: 0, // Remove delay for immediate response
-            pinchToZoom: true,
-            panToDrag: true,
-          },
-          // Ensure click events work properly on mobile
-          clickToUse: false,
-          // Mobile-specific improvements
-          ...(isMobile && {
-            tooltipDelay: 0, // Immediate tooltip on mobile
-            hover: false, // Disable hover on mobile for better touch
-            dragNodes: false, // Disable node dragging on mobile to prevent accidental moves
-          }),
-          // Additional mobile optimizations
-          ...(isMobile && {
-            // Ensure proper touch event handling
-            touch: {
-              enabled: true,
-              delay: 0,
-              pinchToZoom: true,
-              panToDrag: true,
-            },
-            // Disable features that don't work well on mobile
-            keyboard: false,
-            // Ensure immediate response
-            clickToUse: false,
-          }),
-        },
-        nodes: {
-          borderWidth: 2,
-          font: { color: nodeFontColor, size: 12, face: "Inter, Arial" },
-          // Mobile-specific node improvements
-          ...(isMobile && {
-            size: 20, // Ensure minimum size for touch
-            borderWidth: 3, // Thicker borders for better visibility
-            shadow: true, // Enable shadows for better depth perception
-          }),
-        },
-        edges: {
-          smooth: { enabled: true, type: "dynamic", roundness: 0.4 },
-          color: {
-            color: "#a0a0a0",
-            highlight: "#66afe9",
-            hover: "#66afe9",
-            inherit: "from",
-            opacity: 0.7,
-          },
-        },
-      }
-
-      if (networkRef.current) {
-        networkRef.current.setData({ nodes, edges })
-        networkRef.current.setOptions(options)
-      } else {
-        networkRef.current = new VisNetwork(
-          container,
-          { nodes, edges },
-          options
+      if (rootNodeConfig.originalMemory) {
+        memoryMapRef.current.set(
+          rootNodeConfig.id,
+          rootNodeConfig.originalMemory
         )
+      }
 
-        // Ensure mobile-specific settings are applied immediately
-        if (isMobile) {
-          // Force immediate interaction readiness on mobile
-          setTimeout(() => {
-            if (networkRef.current) {
-              networkRef.current.setOptions({
-                interaction: {
-                  tooltipDelay: 0,
-                  hover: false,
-                  dragNodes: false,
-                },
-              })
-            }
-          }, 100)
+      const addMemoryRecursive = (
+        memory: Memory,
+        parentNodeId: string,
+        depth: number,
+        path: string
+      ) => {
+        const nodeId = `${path}-${memory.id}`
+        if (memoryMapRef.current.has(nodeId)) return
+
+        const colors = ["#3498DB", "#2ECC71", "#9B59B6", "#F1C40F", "#E74C3C"]
+        const nodeColor = colors[depth % colors.length]
+        const memoryType = getMemoryType(memory)
+
+        const label = memory.prompt
+          ? memory.prompt.substring(0, 20) +
+            (memory.prompt.length > 20 ? "..." : "")
+          : "Memory"
+
+        // Enhanced node with depth-based sizing and opacity
+        const nodeSize = Math.max(28 - depth * 4, 12)
+        const opacity = Math.max(1 - depth * 0.15, 0.6)
+
+        nodes.add({
+          id: nodeId,
+          label: `${memoryType.icon} ${label}`,
+          title: `${memoryType.type.toUpperCase()}\n${memory.prompt ? `Prompt: ${memory.prompt}` : "Memory"}\n\nDepth: Level ${depth + 1}`,
+          color: {
+            background: nodeColor,
+            border: "#ffffff",
+            highlight: { background: "#7289da", border: "#ffffff" },
+          },
+          level: depth + 1,
+          shape: "dot",
+          size: nodeSize,
+          font: {
+            size: Math.max(11 - depth, 9),
+            color: nodeFontColor,
+            face: "Inter, Arial",
+          },
+          opacity: opacity,
+          x: persistedNodePositions[nodeId]?.x,
+          y: persistedNodePositions[nodeId]?.y,
+        })
+        memoryMapRef.current.set(nodeId, memory)
+
+        if (parentNodeId) {
+          // Dynamic edge thickness based on memory relevance
+          const relevanceScore = memory.vector_distance || 0.5
+          const edgeWidth = Math.max(1, Math.floor(relevanceScore * 4))
+
+          edges.add({
+            from: parentNodeId,
+            to: nodeId,
+            arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+            length: 80 + depth * 30,
+            width: edgeWidth,
+            color: {
+              color: `rgba(160, 160, 160, ${opacity})`,
+              highlight: "#66afe9",
+              hover: "#66afe9",
+            },
+            smooth: { enabled: true, type: "dynamic", roundness: 0.3 },
+          })
         }
 
-        networkRef.current.on("click", (params) => {
-          if (params.nodes.length > 0) {
-            const clickedNodeId = params.nodes[0] as string
-            handleNodeClick(clickedNodeId)
-          }
-        })
+        // Remove individual subject nodes creation from here
+        // Subject consolidation will happen later
 
-        // Mobile-specific optimizations are handled in the options above
-
-        // Add additional event handling for better mobile compatibility
-        if (isMobile) {
-          // Ensure the network is ready for interaction immediately
-          networkRef.current.on("stabilizationIterationsDone", () => {
-            // Force the network to be immediately interactive on mobile
-            if (networkRef.current) {
-              networkRef.current.setOptions({
-                interaction: {
-                  tooltipDelay: 0,
-                  hover: false,
-                },
-              })
-            }
+        if (memory.children && memory.children.length > 0) {
+          memory.children.forEach((child) => {
+            addMemoryRecursive(child, nodeId, depth + 1, `${path}-${memory.id}`)
           })
         }
       }
 
-      networkRef.current.once("stabilizationIterationsDone", () => {
-        setIsReady(true)
-        // Force resize and fit
-        setTimeout(() => {
-          if (networkRef.current) {
-            networkRef.current.redraw()
-            networkRef.current.setSize("100%", "100%")
-          }
-          fitAllNodes()
-        }, 200)
-        if (networkRef.current && nodesDatasetRef.current) {
-          networkRef.current.storePositions()
-          nodesDatasetRef.current
-            .get({ fields: ["id", "x", "y"] })
-            .forEach((node) => {
-              if (node.x != null && node.y != null) {
-                persistedNodePositions[node.id as string] = {
-                  x: node.x,
-                  y: node.y,
+      memories.forEach((rootMemory, index) => {
+        addMemoryRecursive(rootMemory, rootNodeConfig.id, 1, `child-${index}`)
+      })
+
+      // Consolidate subjects across all memory pairs
+      const consolidatedSubjects = new Map<
+        string,
+        {
+          subject: PairSubject
+          connectedMemoryNodes: string[]
+          totalConnections: number
+        }
+      >()
+
+      // Collect all subjects and their connections
+      Object.entries(pairDetails).forEach(([pairId, details]) => {
+        if (details && details.subjects && details.subjects.length > 0) {
+          details.subjects.forEach((subj: PairSubject) => {
+            const subjectKey = subj.subject_text // Use subject_text as unique key
+
+            if (consolidatedSubjects.has(subjectKey)) {
+              const existing = consolidatedSubjects.get(subjectKey)!
+              // Find the memory node for this pair
+              const memoryNodeId = Array.from(memoryMapRef.current.keys()).find(
+                (nodeId) => {
+                  const memory = memoryMapRef.current.get(nodeId)
+                  return memory && "id" in memory && memory.id === pairId
                 }
+              )
+              if (
+                memoryNodeId &&
+                !existing.connectedMemoryNodes.includes(memoryNodeId)
+              ) {
+                existing.connectedMemoryNodes.push(memoryNodeId)
+                existing.totalConnections++
               }
-            })
+              // Keep the subject with higher pair_count
+              if (subj.pair_count > existing.subject.pair_count) {
+                existing.subject = subj
+              }
+            } else {
+              // Find the memory node for this pair
+              const memoryNodeId = Array.from(memoryMapRef.current.keys()).find(
+                (nodeId) => {
+                  const memory = memoryMapRef.current.get(nodeId)
+                  return memory && "id" in memory && memory.id === pairId
+                }
+              )
+              consolidatedSubjects.set(subjectKey, {
+                subject: subj,
+                connectedMemoryNodes: memoryNodeId ? [memoryNodeId] : [],
+                totalConnections: 1,
+              })
+            }
+          })
         }
       })
 
-      const resizeObserver = new ResizeObserver(() => {
-        if (isReady && networkRef.current && !isFittingRef.current) {
-          if (fitTimeoutRef.current) clearTimeout(fitTimeoutRef.current)
-          fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 300)
-        }
-      })
-      if (container) resizeObserver.observe(container)
+      // Create consolidated subject nodes
+      const subjectEntries = Array.from(consolidatedSubjects.entries())
+        .sort((a, b) => b[1].totalConnections - a[1].totalConnections) // Sort by total connections
+        .slice(0, MAX_SUBJECTS_PER_PAIR * 3) // Allow more subjects for the whole network
 
-      if (networkRef.current && (memories.length > 0 || nodes.length > 1)) {
-        networkRef.current.stabilize(300)
+      // Position subjects in a strategic layout around the network
+      const networkBounds = {
+        minX: -200,
+        maxX: 200,
+        minY: -200,
+        maxY: 200,
       }
 
-      return () => {
-        if (container) resizeObserver.unobserve(container)
-        resizeObserver.disconnect()
-        if (networkRef.current && nodesDatasetRef.current) {
-          networkRef.current.storePositions()
-          nodesDatasetRef.current
-            .get({ fields: ["id", "x", "y"] })
-            .forEach((node) => {
-              if (node.x != null && node.y != null) {
-                persistedNodePositions[node.id as string] = {
-                  x: node.x,
-                  y: node.y,
-                }
+      subjectEntries.forEach(([subjectKey, data], idx) => {
+        const subj = data.subject
+        const connections = data.totalConnections
+
+        // Calculate size based on total connections across the network
+        const subjectSize = Math.min(
+          SUBJECT_NODE_SIZE + Math.log(connections + 1) * 4, // Larger scaling for shared nodes
+          35 // Increased max size for important subjects
+        )
+
+        const subjectColor = subj.is_key_subject
+          ? KEY_SUBJECT_COLOR
+          : SUBJECT_NODE_COLOR
+        const subjectNodeId = `shared-subject-${subj.id}`
+
+        // Strategic positioning: arrange in a loose grid around the network
+        const gridCols = Math.ceil(Math.sqrt(subjectEntries.length))
+        const gridRow = Math.floor(idx / gridCols)
+        const gridCol = idx % gridCols
+
+        const spacing = 120
+        const offsetX = (gridCol - gridCols / 2) * spacing
+        const offsetY =
+          (gridRow - Math.ceil(subjectEntries.length / gridCols) / 2) * spacing
+
+        // Add some randomization to avoid perfect grid
+        const randomOffset = 30
+        const finalX = offsetX + (Math.random() - 0.5) * randomOffset
+        const finalY = offsetY + (Math.random() - 0.5) * randomOffset
+
+        nodes.add({
+          id: subjectNodeId,
+          label: `${subj.subject_text.substring(0, 18)}${subj.subject_text.length > 18 ? "..." : ""}\n(${connections} ${connections === 1 ? "memory" : "memories"})`,
+          title: `Subject: ${subj.subject_text}\nConnected to ${connections} memories across network\n${subj.is_key_subject ? "⭐ Key Subject" : "Regular Subject"}${subj.description ? `\n\n${subj.description}` : ""}`,
+          color: {
+            background: subjectColor,
+            border: subj.is_key_subject ? "#FFD700" : "#2ECC71",
+            highlight: { background: "#7289da", border: "#ffffff" },
+          },
+          level: 10, // High level to keep subjects on the periphery
+          shape: "dot",
+          size: subjectSize,
+          font: {
+            size: Math.min(10 + Math.log(connections), 14), // Dynamic font size
+            color: "#ffffff",
+            face: "Inter, Arial",
+            multi: "md",
+            strokeWidth: 1,
+            strokeColor: "#000000",
+          },
+          x: finalX,
+          y: finalY,
+        })
+
+        // Connect to all related memory nodes
+        data.connectedMemoryNodes.forEach((memoryNodeId) => {
+          const connectionStrength = Math.min(connections, 5) // Cap edge thickness
+
+          edges.add({
+            from: memoryNodeId,
+            to: subjectNodeId,
+            color: {
+              color: subj.is_key_subject
+                ? `rgba(255, 215, 0, ${0.3 + connectionStrength * 0.1})`
+                : `rgba(143, 217, 168, ${0.3 + connectionStrength * 0.1})`,
+              highlight: "#66afe9",
+            },
+            dashes: [3, 7], // Distinctive dashed pattern for subject connections
+            arrows: { to: { enabled: false } },
+            length: 100 + connections * 10, // Longer edges for shared subjects
+            width: Math.min(0.5 + Math.log(connections) * 0.5, 4), // Dynamic width based on connections
+            smooth: { enabled: true, type: "curvedCW", roundness: 0.3 },
+          })
+        })
+      })
+
+      nodesDatasetRef.current = nodes
+      edgesDatasetRef.current = edges
+
+      if (container) {
+        const options: Options = {
+          layout: { hierarchical: false },
+          physics: {
+            enabled: true,
+            solver: "forceAtlas2Based",
+            forceAtlas2Based: {
+              gravitationalConstant: -80,
+              centralGravity: 0.005,
+              springLength: 140,
+              springConstant: 0.06,
+              damping: 0.6,
+              avoidOverlap: 1.2,
+            },
+            stabilization: {
+              enabled: true,
+              iterations: 300,
+              fit: true,
+              updateInterval: 25,
+              onlyDynamicEdges: false,
+            },
+            adaptiveTimestep: true,
+            wind: { x: 0, y: 0 },
+            // Mobile-specific physics optimizations
+            ...(isMobile && {
+              stabilization: {
+                enabled: true,
+                iterations: 200, // Fewer iterations for faster stabilization on mobile
+                fit: true,
+                updateInterval: 50, // Slower updates for better performance on mobile
+                onlyDynamicEdges: false,
+              },
+              adaptiveTimestep: true,
+              // Reduce physics complexity on mobile for better performance
+              forceAtlas2Based: {
+                gravitationalConstant: -60, // Reduced gravity for more stable layout
+                centralGravity: 0.003,
+                springLength: 120,
+                springConstant: 0.08,
+                damping: 0.7, // Increased damping for stability
+                avoidOverlap: 1.0,
+              },
+            }),
+          },
+          interaction: {
+            dragNodes: true,
+            tooltipDelay: 150,
+            hover: true,
+            zoomView: true,
+            dragView: true,
+            multiselect: false,
+            selectable: true,
+            selectConnectedEdges: true,
+            hoverConnectedEdges: true,
+            // Mobile-specific improvements
+            ...(isMobile && {
+              tooltipDelay: 0, // Immediate tooltip on mobile
+              hover: false, // Disable hover on mobile for better touch
+              dragNodes: false, // Disable node dragging on mobile to prevent accidental moves
+            }),
+          },
+          // Click to use should be at top level, not in interaction
+          clickToUse: false,
+          nodes: {
+            borderWidth: 2,
+            font: { color: nodeFontColor, size: 12, face: "Inter, Arial" },
+            // Mobile-specific node improvements
+            ...(isMobile && {
+              size: 20, // Ensure minimum size for touch
+              borderWidth: 3, // Thicker borders for better visibility
+              shadow: true, // Enable shadows for better depth perception
+            }),
+          },
+          edges: {
+            smooth: { enabled: true, type: "dynamic", roundness: 0.4 },
+            color: {
+              color: "#a0a0a0",
+              highlight: "#66afe9",
+              hover: "#66afe9",
+              inherit: "from",
+              opacity: 0.7,
+            },
+          },
+        }
+
+        if (networkRef.current) {
+          networkRef.current.setData({ nodes, edges })
+          networkRef.current.setOptions(options)
+        } else {
+          networkRef.current = new VisNetwork(
+            container,
+            { nodes, edges },
+            options
+          )
+
+          // Ensure mobile-specific settings are applied immediately
+          if (isMobile) {
+            // Force immediate interaction readiness on mobile
+            setTimeout(() => {
+              if (networkRef.current) {
+                networkRef.current.setOptions({
+                  interaction: {
+                    tooltipDelay: 0,
+                    hover: false,
+                    dragNodes: false,
+                  },
+                })
+              }
+            }, 100)
+          }
+
+          networkRef.current.on("click", (params) => {
+            if (params.nodes.length > 0) {
+              const clickedNodeId = params.nodes[0] as string
+              handleNodeClick(clickedNodeId)
+            }
+          })
+
+          // Add mobile-specific touch handling to prevent double-click issues
+          if (isMobile) {
+            let touchStartTime = 0
+            let touchStartNode: string | number | null = null
+
+            networkRef.current.on("oncontext", () => {
+              // Disable context menu on mobile to prevent interference
+              return false
+            })
+
+            // Override the click behavior on mobile for better control
+            const canvas = container.querySelector("canvas")
+            if (canvas) {
+              canvas.addEventListener(
+                "touchstart",
+                (e) => {
+                  touchStartTime = Date.now()
+                  // Get the touched node if any
+                  const params = networkRef.current?.getNodeAt({
+                    x:
+                      e.touches[0].clientX -
+                      canvas.getBoundingClientRect().left,
+                    y:
+                      e.touches[0].clientY - canvas.getBoundingClientRect().top,
+                  })
+                  touchStartNode = params || null
+                },
+                { passive: true }
+              )
+
+              canvas.addEventListener(
+                "touchend",
+                (e) => {
+                  const touchDuration = Date.now() - touchStartTime
+                  // Only process if it's a quick tap (< 300ms) and on the same node
+                  if (touchDuration < 300 && touchStartNode) {
+                    const params = networkRef.current?.getNodeAt({
+                      x:
+                        e.changedTouches[0].clientX -
+                        canvas.getBoundingClientRect().left,
+                      y:
+                        e.changedTouches[0].clientY -
+                        canvas.getBoundingClientRect().top,
+                    })
+
+                    if (params && params === touchStartNode) {
+                      // Prevent the vis-network click event from firing
+                      e.preventDefault()
+                      e.stopPropagation()
+
+                      // Handle the click manually with our debouncing
+                      handleNodeClick(String(params))
+                    }
+                  }
+                  touchStartNode = null
+                },
+                { passive: false }
+              )
+            }
+          }
+
+          // Mobile-specific optimizations are handled in the options above
+
+          // Add additional event handling for better mobile compatibility
+          if (isMobile) {
+            // Ensure the network is ready for interaction immediately
+            networkRef.current.on("stabilizationIterationsDone", () => {
+              // Force the network to be immediately interactive on mobile
+              if (networkRef.current) {
+                networkRef.current.setOptions({
+                  interaction: {
+                    tooltipDelay: 0,
+                    hover: false,
+                  },
+                })
               }
             })
+          }
+        }
+
+        networkRef.current.once("stabilizationIterationsDone", () => {
+          setIsReady(true)
+          initializationRef.current = false
+
+          // Disable physics after stabilization to prevent perpetual motion
+          if (networkRef.current) {
+            networkRef.current.setOptions({
+              physics: {
+                enabled: false,
+              },
+            })
+          }
+
+          // Force resize and fit
+          setTimeout(() => {
+            if (networkRef.current) {
+              networkRef.current.redraw()
+              networkRef.current.setSize("100%", "100%")
+            }
+            fitAllNodes()
+          }, 200)
+          if (networkRef.current && nodesDatasetRef.current) {
+            networkRef.current.storePositions()
+            nodesDatasetRef.current
+              .get({ fields: ["id", "x", "y"] })
+              .forEach((node) => {
+                if (node.x != null && node.y != null) {
+                  persistedNodePositions[node.id as string] = {
+                    x: node.x,
+                    y: node.y,
+                  }
+                }
+              })
+          }
+        })
+
+        const resizeObserver = new ResizeObserver(() => {
+          if (isReady && networkRef.current && !isFittingRef.current) {
+            if (fitTimeoutRef.current) clearTimeout(fitTimeoutRef.current)
+            fitTimeoutRef.current = setTimeout(() => fitAllNodes(), 300)
+          }
+        })
+        if (container) resizeObserver.observe(container)
+
+        if (networkRef.current && (memories.length > 0 || nodes.length > 1)) {
+          networkRef.current.stabilize(300)
+        }
+
+        return () => {
+          initializationRef.current = false
+          if (container) resizeObserver.unobserve(container)
+          resizeObserver.disconnect()
+          if (networkRef.current && nodesDatasetRef.current) {
+            networkRef.current.storePositions()
+            nodesDatasetRef.current
+              .get({ fields: ["id", "x", "y"] })
+              .forEach((node) => {
+                if (node.x != null && node.y != null) {
+                  persistedNodePositions[node.id as string] = {
+                    x: node.x,
+                    y: node.y,
+                  }
+                }
+              })
+          }
         }
       }
     }
+
+    buildNetwork()
   }, [
-    memories,
-    rootNodeConfig,
+    shouldRebuildNetwork,
     handleNodeClick,
     fitAllNodes,
     isMobile,
-    theme,
-    pairDetails,
     onRootNodeClick,
   ])
 
@@ -855,9 +1021,20 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       )}
 
       {/* Network Statistics */}
-      {showStats && (
+      {showNeuralActivity && (
         <div className="memory-network-stats">
-          <div className="memory-network-stats-title">🧠 Neural Activity</div>
+          <div className="memory-network-stats-title">
+            <div className="flex items-center justify-between">
+              <span>🧠 Neural Activity</span>
+              <button
+                onClick={() => setShowNeuralActivity(false)}
+                className="text-white/60 hover:text-white/90 transition-colors p-1 rounded hover:bg-white/10"
+                title="Hide Neural Activity"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
           <div className="memory-network-stats-item">
             <span>Memories:</span>
             <span className="memory-network-stats-value">
@@ -891,16 +1068,33 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         </div>
       )}
 
+      {/* Neural Activity Toggle Button (when hidden) */}
+      {!showNeuralActivity && (
+        <button
+          onClick={() => setShowNeuralActivity(true)}
+          className="memory-network-control-button"
+          style={{
+            position: "absolute",
+            bottom: "16px",
+            left: "16px",
+            zIndex: 30,
+          }}
+          title="Show Neural Activity"
+        >
+          <BarChart3 size={20} />
+        </button>
+      )}
+
       {/* Floating Memory Preview */}
       {selectedNodeForModal && selectedNodeForModal.memory && (
         <>
           {/* Backdrop for click-outside */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[9999] bg-black/30"
             onClick={() => setSelectedNodeForModal(null)}
           />
           <div
-            className="memory-preview-card fixed z-50"
+            className="memory-preview-card fixed z-[10000]"
             style={{
               left: "50%",
               top: "50%",
@@ -992,11 +1186,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         <>
           {/* Backdrop for click-outside */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[9999] bg-black/30"
             onClick={() => setSelectedKeySubject(null)}
           />
           <div
-            className="memory-preview-card fixed z-50"
+            className="memory-preview-card fixed z-[10000]"
             style={{
               left: "50%",
               top: "50%",
@@ -1071,7 +1265,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                           <span className="text-white/70">Network Impact:</span>
                           <span className="font-medium text-purple-400">
                             {(
-                              (subject.pair_count / totalMemories) *
+                              (subject.pair_count /
+                                networkStats.totalMemories) *
                               100
                             ).toFixed(1)}
                             %
@@ -1097,16 +1292,16 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         </>
       )}
 
-      {/* Floating Chat Message View */}
+      {/* Floating Chat Message View - Use portal-like approach */}
       {showChatMessage && (
         <>
           {/* Backdrop for click-outside */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[9999] bg-black/30"
             onClick={() => setShowChatMessage(null)}
           />
           <div
-            className={`memory-preview-card fixed z-50 transition-all duration-300 ease-in-out ${
+            className={`memory-preview-card fixed z-[10000] w-[min(90vw,520px)] max-h-[85vh] transition-all duration-300 ease-in-out ${
               isAnimatingBack
                 ? "animate-slide-out-left"
                 : "animate-slide-in-right"
@@ -1114,7 +1309,11 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             style={{
               left: "50%",
               top: "50%",
+              // Ensure proper mobile positioning and visibility
               transform: "translate(-50%, -50%)",
+              // Force visibility on mobile
+              visibility: "visible",
+              opacity: 1,
             }}
             onClick={(e) => {
               // Prevent clicks inside the modal from bubbling up to the backdrop
@@ -1132,7 +1331,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                     <div className="text-white/80">Invalid memory data</div>
                     <button
                       onClick={() => setShowChatMessage(null)}
-                      className="mt-3 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors"
+                      className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Close
                     </button>
@@ -1140,152 +1339,100 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                 )
               }
 
-              const memoryType = getMemoryType(memory)
-
               return (
                 <>
                   <div className="memory-preview-header">
-                    <div className="memory-preview-icon">{memoryType.icon}</div>
-                    <div className="memory-preview-title">Chat Message</div>
+                    <div className="memory-preview-icon">💬</div>
+                    <div className="memory-preview-title">Chat Messages</div>
                     <div className="flex items-center gap-2 ml-auto">
-                      <button
-                        onClick={() => {
-                          // Prevent multiple rapid clicks during animation
-                          if (isAnimatingBack) return
-
-                          console.log(
-                            "Back button clicked, previousNodeStats:",
-                            previousNodeStats
-                          )
-                          console.log(
-                            "Back button clicked, previousNodeStatsRef:",
-                            previousNodeStatsRef.current
-                          )
-
-                          // Animate back to node stats
-                          setIsAnimatingBack(true)
-
-                          // Use a shorter timeout to make the transition feel more responsive
-                          setTimeout(() => {
-                            // Try state first, then ref as fallback
-                            const statsToRestore =
-                              previousNodeStats || previousNodeStatsRef.current
-
-                            if (statsToRestore && statsToRestore.memory) {
-                              console.log(
-                                "Restoring node stats:",
-                                statsToRestore
-                              )
-                              // Set the node stats immediately
-                              setSelectedNodeForModal(statsToRestore)
-                              // Close the chat and clean up
+                      {previousNodeStats && (
+                        <button
+                          onClick={() => {
+                            console.log("Going back to node stats")
+                            setIsAnimatingBack(true)
+                            setTimeout(() => {
                               setShowChatMessage(null)
-                              setPreviousNodeStats(null)
-                              previousNodeStatsRef.current = null
+                              if (previousNodeStats) {
+                                setSelectedNodeForModal(previousNodeStats)
+                              }
                               setIsAnimatingBack(false)
-                            } else {
-                              console.log(
-                                "No valid previousNodeStats, just closing"
-                              )
-                              setShowChatMessage(null)
-                              setIsAnimatingBack(false)
-                            }
-                          }, 250) // Slightly shorter than the CSS animation
-                        }}
-                        className={`p-2 hover:bg-white/10 rounded-lg transition-colors ${
-                          isAnimatingBack ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
-                        title="Back to Node Stats"
-                        disabled={isAnimatingBack}
-                      >
-                        <ArrowLeft size={16} className="text-blue-400" />
-                      </button>
+                            }, 300)
+                          }}
+                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                          title="Back to Memory Details"
+                        >
+                          <ArrowLeft size={16} className="text-gray-400" />
+                        </button>
+                      )}
                       <button
-                        onClick={() => {
-                          // Prevent closing during back animation
-                          if (isAnimatingBack) return
-                          setShowChatMessage(null)
-                        }}
-                        className={`p-2 hover:bg-white/10 rounded-lg transition-colors ${
-                          isAnimatingBack ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
+                        onClick={() => setShowChatMessage(null)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                         title="Close"
-                        disabled={isAnimatingBack}
                       >
-                        <X size={16} className="text-white/60" />
+                        <X size={16} className="text-gray-400" />
                       </button>
                     </div>
                   </div>
                   <div className="memory-preview-content">
-                    <div className="space-y-4">
-                      {/* User Message */}
-                      {memory.prompt && (
-                        <div className="mb-4">
-                          <ChatMessage
-                            content={memory.prompt}
-                            timestamp={memory.timestamp}
-                            isUser={true}
-                            isLast={false}
-                            isOptimistic={false}
-                            menuProps={{
-                              onCopy: () => {
-                                navigator.clipboard
-                                  .writeText(memory.prompt)
-                                  .then(() =>
-                                    toast.success("Copied to clipboard")
-                                  )
-                                  .catch(() => toast.error("Failed to copy"))
-                              },
-                              onDelete: () => {
-                                toast.info(
-                                  "Delete not available in network view"
-                                )
-                              },
-                              onShowMemories: () => {
-                                toast.info("Already viewing memory network")
-                              },
-                              id: memory.id,
-                            }}
-                          />
-                        </div>
-                      )}
-                      {/* Ditto's Response */}
-                      {memory.response && (
-                        <div>
-                          <ChatMessage
-                            content={memory.response}
-                            timestamp={memory.timestamp}
-                            isUser={false}
-                            isLast={false}
-                            isOptimistic={false}
-                            menuProps={{
-                              onCopy: () => {
-                                navigator.clipboard
-                                  .writeText(memory.response)
-                                  .then(() =>
-                                    toast.success("Copied to clipboard")
-                                  )
-                                  .catch(() => toast.error("Failed to copy"))
-                              },
-                              onDelete: () => {
-                                toast.info(
-                                  "Delete not available in network view"
-                                )
-                              },
-                              onShowMemories: () => {
-                                toast.info("Already viewing memory network")
-                              },
-                              id: memory.id,
-                            }}
-                          />
-                        </div>
-                      )}
+                    <div className="space-y-6">
+                      {/* User message */}
+                      <ChatMessage
+                        content={memory.prompt || "No prompt available"}
+                        timestamp={memory.timestamp || new Date()}
+                        isUser={true}
+                        hideActions={{
+                          delete: true,
+                          memories: true,
+                        }}
+                        menuProps={{
+                          id: memory.id,
+                          onCopy: () => {
+                            navigator.clipboard.writeText(memory.prompt || "")
+                            toast.success("Copied to clipboard")
+                          },
+                          onDelete: () => {
+                            // Handle delete if needed
+                          },
+                          onShowMemories: () => {
+                            // Handle show memories if needed
+                          },
+                        }}
+                      />
+
+                      {/* Assistant message */}
+                      <ChatMessage
+                        content={memory.response || "No response available"}
+                        timestamp={memory.timestamp || new Date()}
+                        isUser={false}
+                        hideActions={{
+                          delete: true,
+                          memories: true,
+                        }}
+                        menuProps={{
+                          id: memory.id,
+                          onCopy: () => {
+                            navigator.clipboard.writeText(memory.response || "")
+                            toast.success("Copied to clipboard")
+                          },
+                          onDelete: () => {
+                            // Handle delete if needed
+                          },
+                          onShowMemories: () => {
+                            // Handle show memories if needed
+                          },
+                        }}
+                      />
                     </div>
                   </div>
                 </>
               )
             })()}
           </div>
+          {/* Click outside to close */}
+          <div
+            className="absolute inset-0 -z-10"
+            onClick={() => setShowChatMessage(null)}
+          />
         </>
       )}
 

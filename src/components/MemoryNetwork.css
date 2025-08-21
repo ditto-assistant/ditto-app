@@ -219,7 +219,7 @@
   max-width: min(90vw, 520px);
   min-width: min(90vw, 400px);
   max-height: min(85vh, 700px);
-  z-index: 30;
+  z-index: 10000;
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.4),
     0 0 20px rgba(114, 137, 218, 0.2);
@@ -235,12 +235,12 @@
 .memory-preview-card + div[class*="fixed inset-0"] {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(2px);
-  z-index: 40;
+  z-index: 9999;
 }
 
 /* Ensure modals are properly layered */
 .memory-preview-card.fixed {
-  z-index: 50;
+  z-index: 10001;
   pointer-events: auto;
 }
 
@@ -674,6 +674,32 @@
     min-width: min(95vw, 320px);
     max-height: min(85vh, 500px);
     padding: 16px;
+    /* Ensure modal is visible on mobile */
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Force proper positioning */
+    transform: translate(-50%, -50%) !important;
+    /* Ensure modal appears above other elements */
+    z-index: 10000 !important;
+  }
+
+  /* Ensure neural subjects modal is properly positioned on mobile */
+  .neural-dashboard-legend {
+    /* Force proper positioning on mobile */
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Ensure it's visible and above other elements */
+    z-index: 100 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Mobile-specific sizing */
+    max-width: 90vw !important;
+    max-height: 80vh !important;
+    margin: 0 !important;
+    /* Remove backdrop-filter on mobile to prevent positioning issues */
+    backdrop-filter: none !important;
   }
 
   .memory-network-stats {
@@ -707,17 +733,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-  }
-
-  .neural-dashboard-legend {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 90vw;
-    max-height: 80vh;
-    margin: 0;
-    z-index: 50;
   }
 
   .neural-dashboard-header {
@@ -1301,8 +1316,6 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .memory-network-legend {
-    top: 8px;
-    right: 8px;
     padding: 8px;
     min-width: 140px;
     font-size: 11px;

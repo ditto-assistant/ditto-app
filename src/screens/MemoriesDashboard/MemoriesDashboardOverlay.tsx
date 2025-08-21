@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react"
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import {
   Search,
   Brain,
@@ -406,8 +406,7 @@ export default function MemoriesDashboardOverlay() {
         searchInputRef.current.value = subjectText
       }
 
-      // Expand search section so user can see the query
-      setSearchExpanded(true)
+      // Don't change search expanded state - keep it as is
 
       if (!user?.uid || !preferences) {
         toast.error("User not authenticated")
@@ -497,6 +496,18 @@ export default function MemoriesDashboardOverlay() {
     })
   }, []) // No dependencies to prevent network re-render
 
+  // Memoize rootNodeConfig to prevent unnecessary re-renders
+  const rootNodeConfig = useMemo(
+    () => ({
+      id: "search-query-node",
+      label: networkState.searchTerm,
+      title: `Your search: ${networkState.searchTerm}`,
+      isQueryNode: true,
+      color: "#7289da",
+    }),
+    [networkState.searchTerm]
+  )
+
   // Format count for display
   const formatCount = (count: number): string => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
@@ -526,20 +537,14 @@ export default function MemoriesDashboardOverlay() {
 
             {/* Center - Query Title */}
             <div className="flex-1 flex justify-center">
-              <div className="text-sm text-foreground font-medium neural-glow bg-muted/30 rounded-md px-3 py-1">
+              <div className="neural-dashboard-stats-card text-sm text-primary font-semibold bg-primary/10 border border-primary/30 rounded-full px-4 md:px-5 py-1.5 neural-glow flex items-center gap-2 max-w-[85vw] md:max-w-xl whitespace-nowrap">
+                <Target className="h-4 w-4 neural-pulse" />
                 {networkState.searchTerm || "Loading..."}
               </div>
             </div>
 
-            {/* Right Side - Memory Count and Search Toggle */}
+            {/* Right Side - Search Toggle */}
             <div className="flex items-center gap-2 flex-1 justify-end">
-              <div className="neural-dashboard-stats-card flex items-center gap-1.5 text-xs bg-primary/10 border border-primary/30 rounded-full px-2 py-1">
-                <Brain className="h-3 w-3 text-primary neural-glow" />
-                <span className="font-bold text-primary">
-                  {formatCount(totalMemoryCount)} Memories
-                </span>
-              </div>
-
               <Button
                 variant="ghost"
                 size="sm"
@@ -607,7 +612,7 @@ export default function MemoriesDashboardOverlay() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-xl font-semibold text-foreground neural-glow">
-                    Initializing Neural Network
+                    Initializing Memory Network
                   </h3>
                   <p className="text-muted-foreground">
                     Loading your memory subjects and building the knowledge
@@ -680,13 +685,7 @@ export default function MemoriesDashboardOverlay() {
               {/* Network Graph */}
               <MemoriesNetworkGraph
                 memories={networkState.memories}
-                rootNodeConfig={{
-                  id: "search-query-node",
-                  label: networkState.searchTerm,
-                  title: `Your search: ${networkState.searchTerm}`,
-                  isQueryNode: true,
-                  color: "#7289da",
-                }}
+                rootNodeConfig={rootNodeConfig}
                 pairDetails={networkState.pairDetails}
                 onRootNodeClick={handleRootNodeClick}
               />
@@ -694,56 +693,90 @@ export default function MemoriesDashboardOverlay() {
           )}
         </div>
 
+        {/* Floating Memory Count - top center of network area */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur-sm border border-border/50 rounded-full px-3 py-1 shadow-md flex items-center gap-2">
+          <Brain className="h-4 w-4 text-primary neural-glow" />
+          <span className="font-bold text-primary">
+            {formatCount(totalMemoryCount)} Memories
+          </span>
+        </div>
+
         {/* Top Subjects Modal */}
         {networkState.showTopSubjectsModal && topSubjects.length > 0 && (
-          <div className="neural-dashboard-legend absolute top-20 right-4 z-20 bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-xs shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-sm text-primary flex items-center gap-2 neural-glow">
-                <Brain className="h-4 w-4 neural-pulse" />
-                Neural Subjects
-              </h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  setNetworkState((prev) => ({
-                    ...prev,
-                    showTopSubjectsModal: false,
-                  }))
-                }
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground neural-glow"
-              >
-                ×
-              </Button>
-            </div>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {topSubjects.slice(0, 8).map((subject, index) => (
-                <button
-                  key={subject.id}
-                  onClick={() => handleSubjectClick(subject.subject_text)}
-                  className="neural-dashboard-legend-item flex items-center justify-between text-xs bg-muted/50 rounded-md px-2 py-1.5 transition-all hover:bg-muted/70 hover:bg-primary/10 cursor-pointer w-full text-left border border-transparent hover:border-primary/30"
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-[99] bg-black/30"
+              onClick={() =>
+                setNetworkState((prev) => ({
+                  ...prev,
+                  showTopSubjectsModal: false,
+                }))
+              }
+            />
+            <div
+              className="neural-dashboard-legend fixed z-[100] bg-background/95 border border-border/50 rounded-lg p-4 w-[min(90vw,420px)] max-w-[90vw] shadow-lg"
+              style={{
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                // Ensure proper mobile positioning
+                position: "fixed",
+                maxHeight: "80vh",
+                margin: 0,
+                // Force visibility
+                visibility: "visible",
+                opacity: 1,
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-sm text-primary flex items-center gap-2 neural-glow">
+                  <Brain className="h-4 w-4 neural-pulse" />
+                  Top Neural Subjects
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setNetworkState((prev) => ({
+                      ...prev,
+                      showTopSubjectsModal: false,
+                    }))
+                  }
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground neural-glow"
                 >
-                  <span className="font-medium text-foreground truncate flex-1 mr-2">
-                    {subject.subject_text}
-                  </span>
-                  <span className="text-muted-foreground font-mono neural-glow">
-                    {subject.pair_count}
-                  </span>
-                </button>
-              ))}
+                  ×
+                </Button>
+              </div>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {topSubjects.slice(0, 8).map((subject, index) => (
+                  <button
+                    key={subject.id}
+                    onClick={() => handleSubjectClick(subject.subject_text)}
+                    className="neural-dashboard-legend-item flex items-center justify-between text-xs bg-muted/50 rounded-md px-2 py-1.5 transition-all hover:bg-muted/70 hover:bg-primary/10 cursor-pointer w-full text-left border border-transparent hover:border-primary/30"
+                  >
+                    <span className="font-medium text-foreground truncate flex-1 mr-2">
+                      {subject.subject_text}
+                    </span>
+                    <span className="text-muted-foreground font-mono neural-glow">
+                      {subject.pair_count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="neural-connection"></div>
+              <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+                Neural pathways connecting{" "}
+                <span className="neural-glow font-medium">
+                  {formatCount(totalMemoryCount)}
+                </span>{" "}
+                memories
+              </div>
+              <p className="text-xs text-muted-foreground/80 mt-2 italic">
+                💡 Click any subject to explore its memories
+              </p>
             </div>
-            <div className="neural-connection"></div>
-            <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
-              Neural pathways connecting{" "}
-              <span className="neural-glow font-medium">
-                {formatCount(totalMemoryCount)}
-              </span>{" "}
-              memories
-            </div>
-            <p className="text-xs text-muted-foreground/80 mt-2 italic">
-              💡 Click any subject to explore its memories
-            </p>
-          </div>
+          </>
         )}
       </div>
     </Modal>
