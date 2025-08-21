@@ -843,7 +843,7 @@ export default function MemoriesDashboardOverlay() {
                     Search Query
                   </h5>
                   <p className="text-sm text-foreground">
-                    "{networkState.searchTerm}"
+                    &ldquo;{networkState.searchTerm}&rdquo;
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
