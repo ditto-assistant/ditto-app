@@ -19,7 +19,9 @@ interface MemoryCardProps {
 
 // Image detection in memory content
 const hasImages = (content: string): boolean => {
-  return content.includes("![") && content.includes("](") && content.includes(")")
+  return (
+    content.includes("![") && content.includes("](") && content.includes(")")
+  )
 }
 
 const MemoryCard: React.FC<MemoryCardProps> = ({
@@ -37,19 +39,25 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
   const [subjectsCollapsed, setSubjectsCollapsed] = useState(false)
 
   // Clean prompt text by replacing markdown image syntax with emoji
-  const cleanPrompt = memory.prompt?.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️") || ""
-  const cleanResponse = memory.response?.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️") || ""
+  const cleanPrompt =
+    memory.prompt?.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️") || ""
+  const cleanResponse =
+    memory.response?.replace(/!\[[^\]]*\]\([^)]+\)/g, "🖼️") || ""
 
   // Truncate content for overview
-  const truncatedPrompt = cleanPrompt.length > 100 
-    ? cleanPrompt.substring(0, 100) + "..." 
-    : cleanPrompt
-  const truncatedResponse = cleanResponse.length > 100 
-    ? cleanResponse.substring(0, 100) + "..." 
-    : cleanResponse
+  const truncatedPrompt =
+    cleanPrompt.length > 100
+      ? cleanPrompt.substring(0, 100) + "..."
+      : cleanPrompt
+  const truncatedResponse =
+    cleanResponse.length > 100
+      ? cleanResponse.substring(0, 100) + "..."
+      : cleanResponse
 
   return (
-    <div className={`${variant === "card" ? "memory-card-view" : "memory-preview-card"} ${className}`}>
+    <div
+      className={`${variant === "card" ? "memory-card-view" : "memory-preview-card"} ${className}`}
+    >
       <div className="memory-preview-header">
         <div className="flex items-center gap-3">
           <div className="memory-preview-icon">{memoryType.icon}</div>
@@ -133,12 +141,14 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             className="subjects-toggle flex items-center justify-between w-full text-sm font-medium text-white/80 mb-2 hover:text-white/90 transition-colors"
           >
             <span>Related Subjects ({details.subjects.length})</span>
-            <ChevronDown 
-              size={16} 
-              className={`transition-transform ${subjectsCollapsed ? 'rotate-180' : ''}`}
+            <ChevronDown
+              size={16}
+              className={`transition-transform ${subjectsCollapsed ? "rotate-180" : ""}`}
             />
           </button>
-          <div className={`subjects-content ${subjectsCollapsed ? 'collapsed' : ''}`}>
+          <div
+            className={`subjects-content ${subjectsCollapsed ? "collapsed" : ""}`}
+          >
             <div className="memory-preview-subjects">
               {details.subjects.map((subj: PairSubject, idx: number) => (
                 <div
@@ -156,4 +166,4 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
   )
 }
 
-export default MemoryCard 
+export default MemoryCard

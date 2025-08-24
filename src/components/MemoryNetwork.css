@@ -1640,7 +1640,7 @@
   .view-toggle-container {
     padding: 1px;
   }
-  
+
   .view-toggle-option {
     padding: 4px 8px;
     font-size: 11px;
@@ -1654,12 +1654,12 @@
     font-size: 11px !important;
     max-width: 50vw !important;
   }
-  
+
   .neural-dashboard-stats-card {
     padding: 8px 12px !important;
     gap: 6px !important;
   }
-  
+
   .neural-dashboard-stats-card .h-4 {
     width: 14px !important;
     height: 14px !important;
@@ -2038,11 +2038,11 @@
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: thin !important;
   }
-  
+
   .subjects-content.collapsed {
     max-height: 0;
   }
-  
+
   .subjects-section {
     margin: 20px 0 0 0;
     padding: 20px 16px 24px 16px;

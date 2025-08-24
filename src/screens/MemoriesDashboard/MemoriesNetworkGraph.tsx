@@ -11,6 +11,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Target,
+  RotateCcw,
+  ChevronUp,
+  Search,
+  Loader2,
 } from "lucide-react"
 import { toast } from "sonner"
 import ChatMessage from "@/components/ChatMessage"
@@ -28,6 +33,9 @@ import {
   FitOptions,
 } from "vis-network"
 import { ComprehensivePairDetails, PairSubject } from "@/api/kg"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 const persistedNodePositions: Record<string, { x: number; y: number }> = {}
 
@@ -48,6 +56,11 @@ interface MemoriesNetworkGraphProps {
   viewMode?: "cards" | "graph"
   onViewModeChange?: (mode: "cards" | "graph") => void
   showCardViewControls?: boolean
+  // New props for reorganization
+  context?: "dashboard" | "chatfeed"
+  onSearch?: (searchTerm: string) => Promise<void>
+  onReset?: () => void
+  searchLoading?: boolean
 }
 
 const SUBJECT_NODE_COLOR = "#2ECC71"
@@ -93,6 +106,10 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   viewMode: externalViewMode,
   onViewModeChange,
   showCardViewControls = true,
+  context = "dashboard",
+  onSearch,
+  onReset,
+  searchLoading = false,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const networkRef = useRef<VisNetwork | null>(null)
@@ -148,6 +165,50 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
   // Use external pair details if provided, otherwise fall back to context
   const pairDetails = externalPairDetails || contextPairDetails
+
+  // Header state and functionality
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [searchExpanded, setSearchExpanded] = useState(false)
+
+  // Handle search functionality
+  const handleSearch = useCallback(async () => {
+    const searchTerm = searchInputRef.current?.value?.trim()
+    if (!searchTerm) {
+      toast.error("Please enter a search term")
+      return
+    }
+
+    if (onSearch) {
+      await onSearch(searchTerm)
+      setSearchExpanded(false) // Collapse search after search
+    }
+  }, [onSearch])
+
+  // Handle Enter key in search
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch()
+    }
+  }
+
+  // Handle reset functionality
+  const handleReset = useCallback(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.value = ""
+    }
+    setSearchExpanded(false) // Collapse search on reset
+    if (onReset) {
+      onReset()
+    }
+  }, [onReset])
+
+  // Get query indicator text based on context
+  const getQueryIndicatorText = () => {
+    if (context === "chatfeed") {
+      return "User's Message"
+    }
+    return rootNodeConfig.label || "Loading..."
+  }
 
   // Custom hook for network initialization
   const useNetworkInitialization = () => {
@@ -1059,556 +1120,672 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   }
 
   return (
-    <div className="absolute inset-0 flex flex-col w-full h-full relative">
-      {/* Network Controls */}
-      {viewMode === "graph" && (
-        <div className="memory-network-controls">
-          <button
-            className="memory-network-control-button"
-            onClick={fitAllNodes}
-            title="Fit to screen"
+    <div className="flex flex-col w-full h-full relative">
+      {/* Unified Header Controls - now part of the graph component */}
+      <div className="neural-dashboard-header flex-shrink-0 bg-background/95 backdrop-blur-sm border-b border-border/50">
+        {/* Top Row - Compact Controls */}
+        <div className="flex items-center justify-between p-3">
+          {/* Left Side - View Toggle */}
+          <div className="flex items-center gap-2 flex-1">
+            <div className="view-toggle-container">
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`view-toggle-option ${viewMode === "cards" ? "active" : ""}`}
+              >
+                Cards
+              </button>
+              <button
+                onClick={() => setViewMode("graph")}
+                className={`view-toggle-option ${viewMode === "graph" ? "active" : ""}`}
+              >
+                Graph
+              </button>
+            </div>
+          </div>
+
+          {/* Center - Query Title */}
+          <div className="flex-1 flex justify-center">
+            <div className="neural-dashboard-stats-card text-sm text-primary font-semibold bg-primary/10 border border-primary/30 rounded-full px-4 md:px-5 py-1.5 neural-glow flex items-center gap-2 max-w-[85vw] md:max-w-xl whitespace-nowrap">
+              <Target className="h-4 w-4 neural-pulse" />
+              <span className="query-label truncate max-w-[60vw] md:max-w-none">
+                {getQueryIndicatorText()}
+              </span>
+            </div>
+          </div>
+
+          {/* Right Side - Reset and Search Toggle */}
+          <div className="flex items-center gap-2 flex-1 justify-end">
+            {onReset && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="neural-dashboard-compact-button text-primary hover:text-primary/80 hover:bg-primary/10 neural-glow px-2 py-1 h-8"
+                title="Reset to Top Subjects"
+              >
+                <RotateCcw className="h-4 w-4 neural-pulse" />
+              </Button>
+            )}
+            {onSearch && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchExpanded(!searchExpanded)}
+                className="neural-dashboard-search-toggle text-muted-foreground hover:text-foreground px-2 py-1 h-8"
+                title={searchExpanded ? "Hide Search" : "Show Search"}
+              >
+                {searchExpanded ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Collapsible Search Section */}
+        {onSearch && (
+          <div
+            className={cn(
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              searchExpanded ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+            )}
           >
-            <Maximize2 size={18} />
-          </button>
-          {showCardViewControls && (
+            <div className="p-3 pt-0">
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 neural-glow" />
+                  <Input
+                    ref={searchInputRef}
+                    placeholder="Search your neural memories..."
+                    className="neural-dashboard-search-input pl-10 bg-background/80 border-border/60 focus:border-primary/50 focus:ring-primary/20"
+                    onKeyPress={handleKeyPress}
+                    disabled={searchLoading}
+                  />
+                </div>
+                <Button
+                  onClick={handleSearch}
+                  disabled={searchLoading}
+                  className="neural-dashboard-button px-4 bg-primary hover:bg-primary/90 h-9"
+                >
+                  {searchLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Search"
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="neural-connection mx-3 mb-3"></div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Network Controls */}
+        {viewMode === "graph" && (
+          <div className="memory-network-controls">
             <button
               className="memory-network-control-button"
-              onClick={() => setViewMode("cards")}
-              title="Switch to Card View"
+              onClick={fitAllNodes}
+              title="Fit to screen"
             >
-              <Grid3X3 size={18} />
+              <Maximize2 size={18} />
             </button>
-          )}
-        </div>
-      )}
-
-      {/* Legend */}
-      {viewMode === "graph" && showLegend ? (
-        <div className="memory-network-legend">
-          <div className="legend-header">
-            <span className="legend-title">Legend</span>
-            <button
-              className="legend-close"
-              onClick={() => setShowLegend(false)}
-            >
-              <X size={14} />
-            </button>
-          </div>
-
-          <div className="legend-item">
-            <span className="legend-swatch node query"></span>
-            <span>Query Root</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-swatch node memory"></span>
-            <span>L2 Memory</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-swatch node subject"></span>
-            <span>L1 Memory</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-swatch node key-subject"></span>
-            <span>Key Subject</span>
-          </div>
-
-          <div className="legend-note">Node size = connection count</div>
-        </div>
-      ) : (
-        viewMode === "graph" && (
-          <button
-            className="memory-network-legend-toggle"
-            onClick={() => setShowLegend(true)}
-            title="Show legend"
-          >
-            <Info size={16} />
-          </button>
-        )
-      )}
-
-      {/* Network Statistics */}
-      {viewMode === "graph" && showNeuralActivity && (
-        <div className="memory-network-stats">
-          <div className="memory-network-stats-title">
-            <div className="flex items-center justify-between">
-              <span>🧠 Neural Activity</span>
+            {showCardViewControls && (
               <button
-                onClick={() => setShowNeuralActivity(false)}
-                className="text-white/60 hover:text-white/90 transition-colors p-1 rounded hover:bg-white/10"
-                title="Hide Neural Activity"
+                className="memory-network-control-button"
+                onClick={() => setViewMode("cards")}
+                title="Switch to Card View"
+              >
+                <Grid3X3 size={18} />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Legend */}
+        {viewMode === "graph" && showLegend ? (
+          <div className="memory-network-legend">
+            <div className="legend-header">
+              <span className="legend-title">Legend</span>
+              <button
+                className="legend-close"
+                onClick={() => setShowLegend(false)}
               >
                 <X size={14} />
               </button>
             </div>
-          </div>
-          <div className="memory-network-stats-item">
-            <span>Memories:</span>
-            <span className="memory-network-stats-value">
-              {networkStats.totalMemories}
-            </span>
-          </div>
-          <div className="memory-network-stats-item">
-            <span>Subjects:</span>
-            <span className="memory-network-stats-value">
-              {networkStats.totalSubjects}
-            </span>
-          </div>
-          <div className="memory-network-stats-item">
-            <span>Key Subjects:</span>
-            <span className="memory-network-stats-value">
-              {networkStats.keySubjects}
-            </span>
-          </div>
-          <div className="memory-network-stats-item">
-            <span>Max Depth:</span>
-            <span className="memory-network-stats-value">
-              {networkStats.memoryDepth}
-            </span>
-          </div>
-          <div className="memory-network-stats-item">
-            <span>Avg Subjects:</span>
-            <span className="memory-network-stats-value">
-              {networkStats.avgSubjectsPerMemory}
-            </span>
-          </div>
-        </div>
-      )}
 
-      {/* Neural Activity Toggle Button (when hidden) */}
-      {viewMode === "graph" && !showNeuralActivity && (
-        <button
-          onClick={() => setShowNeuralActivity(true)}
-          className="memory-network-control-button"
-          style={{
-            position: "absolute",
-            bottom: "16px",
-            left: "16px",
-            zIndex: 30,
-          }}
-          title="Show Neural Activity"
-        >
-          <BarChart3 size={20} />
-        </button>
-      )}
-
-      {/* Floating Memory Preview */}
-      {selectedNodeForModal && selectedNodeForModal.memory && (
-        <>
-          {/* Backdrop for click-outside */}
-          <div
-            className="fixed inset-0 z-[9999] bg-black/30"
-            onClick={() => setSelectedNodeForModal(null)}
-          />
-          <div
-            className="fixed z-[10000]"
-            style={{
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-            onClick={(e) => {
-              // Prevent clicks inside the modal from bubbling up to the backdrop
-              e.stopPropagation()
-            }}
-          >
-            <MemoryCard
-              memory={selectedNodeForModal.memory}
-              details={pairDetails[selectedNodeForModal.memory.id]}
-              memoryType={getMemoryType(selectedNodeForModal.memory)}
-              showCloseButton={true}
-              onClose={() => setSelectedNodeForModal(null)}
-              onShowChatMessage={(memory) => {
-                // Store the current node stats before opening chat
-                console.log(
-                  "Opening chat message, selectedNodeForModal:",
-                  selectedNodeForModal
-                )
-
-                // Store in both state and ref for reliability
-                setPreviousNodeStats(selectedNodeForModal)
-                previousNodeStatsRef.current = selectedNodeForModal
-
-                setShowChatMessage({
-                  memory: memory,
-                  position: selectedNodeForModal.position,
-                })
-                setSelectedNodeForModal(null)
-              }}
-              variant="modal"
-            />
-          </div>
-        </>
-      )}
-
-      {/* Floating Key Subject Preview */}
-      {selectedKeySubject && (
-        <>
-          {/* Backdrop for click-outside */}
-          <div
-            className="fixed inset-0 z-[9999] bg-black/30"
-            onClick={() => setSelectedKeySubject(null)}
-          />
-          <div
-            className="memory-preview-card fixed z-[10000]"
-            style={{
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-            onClick={(e) => {
-              // Prevent clicks inside the modal from bubbling up to the backdrop
-              e.stopPropagation()
-            }}
-          >
-            {(() => {
-              console.log(
-                "Rendering key subject modal for:",
-                selectedKeySubject.subject
-              )
-              const subject = selectedKeySubject.subject
-              const subjectName = subject.subject_text
-              const subjectDescription = subject.description
-
-              /* Connected Memory Pairs section removed */
-
-              return (
-                <>
-                  <div className="memory-preview-header">
-                    <div className="memory-preview-icon">⭐</div>
-                    <div className="memory-preview-title">
-                      Key Subject: {subjectName}
-                    </div>
-                    <div className="flex items-center gap-2 ml-auto">
-                      <button
-                        onClick={() => setSelectedKeySubject(null)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Close"
-                      >
-                        <X size={16} className="text-white/60" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="memory-preview-content">
-                    <div className="mb-3">
-                      <p className="text-sm text-white/90 mb-2">
-                        <strong>Subject:</strong> {subjectName}
-                      </p>
-                      {subjectDescription && (
-                        <p className="text-sm text-white/80 mb-2">
-                          <strong>Description:</strong> {subjectDescription}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="mb-4 p-4 bg-white/5 rounded-lg">
-                      <h4 className="text-sm font-semibold text-blue-400 mb-3">
-                        📊 Statistics
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-white/70">
-                            Total Connections:
-                          </span>
-                          <span className="font-medium text-green-400">
-                            {subject.pair_count}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Subject Type:</span>
-                          <span className="font-medium text-yellow-400">
-                            {subject.is_key_subject ? "Key Subject" : "Regular"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Network Impact:</span>
-                          <span className="font-medium text-purple-400">
-                            {(
-                              (subject.pair_count /
-                                networkStats.totalMemories) *
-                              100
-                            ).toFixed(1)}
-                            %
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">
-                            Relevance Score:
-                          </span>
-                          <span className="font-medium text-orange-400">
-                            {Math.min(subject.pair_count * 20, 100)}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Connected Memory Pairs section removed to avoid modal overflow */}
-                  </div>
-                </>
-              )
-            })()}
-          </div>
-        </>
-      )}
-
-      {/* Floating Chat Message View - Use portal-like approach */}
-      {showChatMessage && (
-        <>
-          {/* Backdrop for click-outside */}
-          <div
-            className="fixed inset-0 z-[99999] bg-black/30"
-            onClick={() => {
-              setShowChatMessage(null)
-              // Clear any other modal states to prevent conflicts
-              setSelectedNodeForModal(null)
-              setSelectedKeySubject(null)
-            }}
-          />
-          <div
-            className={`memory-preview-card chat-message-modal fixed z-[100000] transition-all duration-300 ease-in-out ${
-              isAnimatingBack
-                ? "animate-slide-out-left"
-                : "animate-slide-in-right"
-            }`}
-            style={{
-              // Force visibility on mobile
-              visibility: "visible",
-              opacity: 1,
-            }}
-            onClick={(e) => {
-              // Prevent clicks inside the modal from bubbling up to the backdrop
-              e.stopPropagation()
-            }}
-          >
-            {(() => {
-              const memory = showChatMessage.memory
-
-              // Edge case: memory object validation
-              if (!memory || !memory.id) {
-                return (
-                  <div className="p-4 text-center">
-                    <div className="text-red-400 mb-2">⚠️</div>
-                    <div className="text-white/80">Invalid memory data</div>
-                    <button
-                      onClick={() => setShowChatMessage(null)}
-                      className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Close
-                    </button>
-                  </div>
-                )
-              }
-
-              return (
-                <>
-                  <div className="memory-preview-header">
-                    <div className="memory-preview-icon">💬</div>
-                    <div className="memory-preview-title">Chat Messages</div>
-                    <div className="flex items-center gap-2 ml-auto">
-                      {previousNodeStats && (
-                        <button
-                          onClick={() => {
-                            console.log("Going back to node stats")
-                            setIsAnimatingBack(true)
-                            setTimeout(() => {
-                              setShowChatMessage(null)
-                              if (previousNodeStats) {
-                                setSelectedNodeForModal(previousNodeStats)
-                              }
-                              setIsAnimatingBack(false)
-                            }, 300)
-                          }}
-                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                          title="Back to Memory Details"
-                        >
-                          <ArrowLeft size={16} className="text-gray-400" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          setShowChatMessage(null)
-                          // Clear any other modal states to prevent conflicts
-                          setSelectedNodeForModal(null)
-                          setSelectedKeySubject(null)
-                        }}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Close"
-                      >
-                        <X size={16} className="text-gray-400" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="memory-preview-content chat-message-content">
-                    <div className="space-y-6">
-                      {/* User message */}
-                      <ChatMessage
-                        content={memory.prompt || "No prompt available"}
-                        timestamp={memory.timestamp || new Date()}
-                        isUser={true}
-                        hideActions={{
-                          delete: true,
-                          memories: true,
-                        }}
-                        menuProps={{
-                          id: memory.id,
-                          onCopy: () => {
-                            navigator.clipboard.writeText(memory.prompt || "")
-                            toast.success("Copied to clipboard")
-                          },
-                          onDelete: () => {
-                            // Handle delete if needed
-                          },
-                          onShowMemories: () => {
-                            // Handle show memories if needed
-                          },
-                        }}
-                      />
-
-                      {/* Assistant message */}
-                      <ChatMessage
-                        content={memory.response || "No response available"}
-                        timestamp={memory.timestamp || new Date()}
-                        isUser={false}
-                        hideActions={{
-                          delete: true,
-                          memories: true,
-                        }}
-                        menuProps={{
-                          id: memory.id,
-                          onCopy: () => {
-                            navigator.clipboard.writeText(memory.response || "")
-                            toast.success("Copied to clipboard")
-                          },
-                          onDelete: () => {
-                            // Handle delete if needed
-                          },
-                          onShowMemories: () => {
-                            // Handle show memories if needed
-                          },
-                        }}
-                      />
-                    </div>
-                  </div>
-                </>
-              )
-            })()}
-          </div>
-          {/* Click outside to close */}
-          <div
-            className="absolute inset-0 -z-10"
-            onClick={() => setShowChatMessage(null)}
-          />
-        </>
-      )}
-
-      <div
-        ref={containerRef}
-        className="absolute inset-0 w-full h-full bg-background overflow-hidden"
-        style={{ visibility: isReady ? "visible" : "hidden" }}
-      />
-
-      {/* Card View */}
-      {viewMode === "cards" && (
-        <div className="absolute inset-0 w-full h-full bg-background flex flex-col overflow-hidden">
-          {/* Card Content */}
-          <div className="flex-1 p-4 overflow-hidden">
-            {rankedMemories.length > 0 ? (
-              <div className="w-full h-full">
-                {rankedMemories[currentCardIndex] && (
-                  <MemoryCard
-                    memory={rankedMemories[currentCardIndex].memory}
-                    details={pairDetails[rankedMemories[currentCardIndex].memory.id]}
-                    memoryType={getMemoryType(rankedMemories[currentCardIndex].memory)}
-                    rankDisplay={
-                      rankedMemories[currentCardIndex].depth === 1 
-                        ? `#${rankedMemories[currentCardIndex].rank}` 
-                        : `#${rankedMemories[currentCardIndex].parentRank}.${rankedMemories[currentCardIndex].childRank}`
-                    }
-                    showRank={true}
-                    onShowChatMessage={(memory) => {
-                      // Clear any existing modals first to prevent z-index conflicts
-                      setSelectedNodeForModal(null)
-                      setSelectedKeySubject(null)
-
-                      // Set the chat message modal
-                      setShowChatMessage({
-                        memory,
-                        position: { x: 0, y: 0 },
-                      })
-                    }}
-                    variant="card"
-                    className="w-full h-full"
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="text-center text-muted-foreground">
-                <Brain size={48} className="mx-auto mb-4 opacity-50" />
-                <p>No memories found</p>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation Controls */}
-          <div className="p-4 border-t border-border flex-shrink-0">
-            {/* Slider */}
-            <div className="slider-container mb-4">
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, rankedMemories.length - 1)}
-                value={currentCardIndex}
-                onChange={(e) => setCurrentCardIndex(parseInt(e.target.value))}
-                className="w-full slider"
-              />
+            <div className="legend-item">
+              <span className="legend-swatch node query"></span>
+              <span>Query Root</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch node memory"></span>
+              <span>L2 Memory</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch node subject"></span>
+              <span>L1 Memory</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch node key-subject"></span>
+              <span>Key Subject</span>
             </div>
 
-            {/* Card Counter */}
-            <div className="text-center mb-4">
-              <div className="text-sm text-muted-foreground">
-                {currentCardIndex + 1} of {rankedMemories.length}
+            <div className="legend-note">Node size = connection count</div>
+          </div>
+        ) : (
+          viewMode === "graph" && (
+            <button
+              className="memory-network-legend-toggle"
+              onClick={() => setShowLegend(true)}
+              title="Show legend"
+            >
+              <Info size={16} />
+            </button>
+          )
+        )}
+
+        {/* Network Statistics */}
+        {viewMode === "graph" && showNeuralActivity && (
+          <div className="memory-network-stats">
+            <div className="memory-network-stats-title">
+              <div className="flex items-center justify-between">
+                <span>🧠 Neural Activity</span>
+                <button
+                  onClick={() => setShowNeuralActivity(false)}
+                  className="text-white/60 hover:text-white/90 transition-colors p-1 rounded hover:bg-white/10"
+                  title="Hide Neural Activity"
+                >
+                  <X size={14} />
+                </button>
               </div>
             </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() =>
-                  setCurrentCardIndex(Math.max(0, currentCardIndex - 1))
-                }
-                disabled={currentCardIndex === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={16} />
-                Previous
-              </button>
-
-              <button
-                onClick={() =>
-                  setCurrentCardIndex(
-                    Math.min(rankedMemories.length - 1, currentCardIndex + 1)
-                  )
-                }
-                disabled={currentCardIndex === rankedMemories.length - 1}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRight size={16} />
-              </button>
+            <div className="memory-network-stats-item">
+              <span>Memories:</span>
+              <span className="memory-network-stats-value">
+                {networkStats.totalMemories}
+              </span>
             </div>
-          </div>
-        </div>
-      )}
-
-      {!isReady &&
-        nodesDatasetRef.current &&
-        nodesDatasetRef.current.length > 0 && (
-          <div className="memory-network-loading">
-            <div className="memory-network-loading-spinner"></div>
-            <div className="memory-network-loading-text">
-              Mapping your neural pathways...
+            <div className="memory-network-stats-item">
+              <span>Subjects:</span>
+              <span className="memory-network-stats-value">
+                {networkStats.totalSubjects}
+              </span>
+            </div>
+            <div className="memory-network-stats-item">
+              <span>Key Subjects:</span>
+              <span className="memory-network-stats-value">
+                {networkStats.keySubjects}
+              </span>
+            </div>
+            <div className="memory-network-stats-item">
+              <span>Max Depth:</span>
+              <span className="memory-network-stats-value">
+                {networkStats.memoryDepth}
+              </span>
+            </div>
+            <div className="memory-network-stats-item">
+              <span>Avg Subjects:</span>
+              <span className="memory-network-stats-value">
+                {networkStats.avgSubjectsPerMemory}
+              </span>
             </div>
           </div>
         )}
+
+        {/* Neural Activity Toggle Button (when hidden) */}
+        {viewMode === "graph" && !showNeuralActivity && (
+          <button
+            onClick={() => setShowNeuralActivity(true)}
+            className="memory-network-control-button"
+            style={{
+              position: "absolute",
+              bottom: "16px",
+              left: "16px",
+              zIndex: 30,
+            }}
+            title="Show Neural Activity"
+          >
+            <BarChart3 size={20} />
+          </button>
+        )}
+
+        {/* Floating Memory Preview */}
+        {selectedNodeForModal && selectedNodeForModal.memory && (
+          <>
+            {/* Backdrop for click-outside */}
+            <div
+              className="fixed inset-0 z-[9999] bg-black/30"
+              onClick={() => setSelectedNodeForModal(null)}
+            />
+            <div
+              className="fixed z-[10000]"
+              style={{
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+              onClick={(e) => {
+                // Prevent clicks inside the modal from bubbling up to the backdrop
+                e.stopPropagation()
+              }}
+            >
+              <MemoryCard
+                memory={selectedNodeForModal.memory}
+                details={pairDetails[selectedNodeForModal.memory.id]}
+                memoryType={getMemoryType(selectedNodeForModal.memory)}
+                showCloseButton={true}
+                onClose={() => setSelectedNodeForModal(null)}
+                onShowChatMessage={(memory) => {
+                  // Store the current node stats before opening chat
+                  console.log(
+                    "Opening chat message, selectedNodeForModal:",
+                    selectedNodeForModal
+                  )
+
+                  // Store in both state and ref for reliability
+                  setPreviousNodeStats(selectedNodeForModal)
+                  previousNodeStatsRef.current = selectedNodeForModal
+
+                  setShowChatMessage({
+                    memory: memory,
+                    position: selectedNodeForModal.position,
+                  })
+                  setSelectedNodeForModal(null)
+                }}
+                variant="modal"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Floating Key Subject Preview */}
+        {selectedKeySubject && (
+          <>
+            {/* Backdrop for click-outside */}
+            <div
+              className="fixed inset-0 z-[9999] bg-black/30"
+              onClick={() => setSelectedKeySubject(null)}
+            />
+            <div
+              className="memory-preview-card fixed z-[10000]"
+              style={{
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+              onClick={(e) => {
+                // Prevent clicks inside the modal from bubbling up to the backdrop
+                e.stopPropagation()
+              }}
+            >
+              {(() => {
+                console.log(
+                  "Rendering key subject modal for:",
+                  selectedKeySubject.subject
+                )
+                const subject = selectedKeySubject.subject
+                const subjectName = subject.subject_text
+                const subjectDescription = subject.description
+
+                /* Connected Memory Pairs section removed */
+
+                return (
+                  <>
+                    <div className="memory-preview-header">
+                      <div className="memory-preview-icon">⭐</div>
+                      <div className="memory-preview-title">
+                        Key Subject: {subjectName}
+                      </div>
+                      <div className="flex items-center gap-2 ml-auto">
+                        <button
+                          onClick={() => setSelectedKeySubject(null)}
+                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                          title="Close"
+                        >
+                          <X size={16} className="text-white/60" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="memory-preview-content">
+                      <div className="mb-3">
+                        <p className="text-sm text-white/90 mb-2">
+                          <strong>Subject:</strong> {subjectName}
+                        </p>
+                        {subjectDescription && (
+                          <p className="text-sm text-white/80 mb-2">
+                            <strong>Description:</strong> {subjectDescription}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mb-4 p-4 bg-white/5 rounded-lg">
+                        <h4 className="text-sm font-semibold text-blue-400 mb-3">
+                          📊 Statistics
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-white/70">
+                              Total Connections:
+                            </span>
+                            <span className="font-medium text-green-400">
+                              {subject.pair_count}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Subject Type:</span>
+                            <span className="font-medium text-yellow-400">
+                              {subject.is_key_subject
+                                ? "Key Subject"
+                                : "Regular"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">
+                              Network Impact:
+                            </span>
+                            <span className="font-medium text-purple-400">
+                              {(
+                                (subject.pair_count /
+                                  networkStats.totalMemories) *
+                                100
+                              ).toFixed(1)}
+                              %
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">
+                              Relevance Score:
+                            </span>
+                            <span className="font-medium text-orange-400">
+                              {Math.min(subject.pair_count * 20, 100)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Connected Memory Pairs section removed to avoid modal overflow */}
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          </>
+        )}
+
+        {/* Floating Chat Message View - Use portal-like approach */}
+        {showChatMessage && (
+          <>
+            {/* Backdrop for click-outside */}
+            <div
+              className="fixed inset-0 z-[99999] bg-black/30"
+              onClick={() => {
+                setShowChatMessage(null)
+                // Clear any other modal states to prevent conflicts
+                setSelectedNodeForModal(null)
+                setSelectedKeySubject(null)
+              }}
+            />
+            <div
+              className={`memory-preview-card chat-message-modal fixed z-[100000] transition-all duration-300 ease-in-out ${
+                isAnimatingBack
+                  ? "animate-slide-out-left"
+                  : "animate-slide-in-right"
+              }`}
+              style={{
+                // Force visibility on mobile
+                visibility: "visible",
+                opacity: 1,
+              }}
+              onClick={(e) => {
+                // Prevent clicks inside the modal from bubbling up to the backdrop
+                e.stopPropagation()
+              }}
+            >
+              {(() => {
+                const memory = showChatMessage.memory
+
+                // Edge case: memory object validation
+                if (!memory || !memory.id) {
+                  return (
+                    <div className="p-4 text-center">
+                      <div className="text-red-400 mb-2">⚠️</div>
+                      <div className="text-white/80">Invalid memory data</div>
+                      <button
+                        onClick={() => setShowChatMessage(null)}
+                        className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  )
+                }
+
+                return (
+                  <>
+                    <div className="memory-preview-header">
+                      <div className="memory-preview-icon">💬</div>
+                      <div className="memory-preview-title">Chat Messages</div>
+                      <div className="flex items-center gap-2 ml-auto">
+                        {previousNodeStats && (
+                          <button
+                            onClick={() => {
+                              console.log("Going back to node stats")
+                              setIsAnimatingBack(true)
+                              setTimeout(() => {
+                                setShowChatMessage(null)
+                                if (previousNodeStats) {
+                                  setSelectedNodeForModal(previousNodeStats)
+                                }
+                                setIsAnimatingBack(false)
+                              }, 300)
+                            }}
+                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                            title="Back to Memory Details"
+                          >
+                            <ArrowLeft size={16} className="text-gray-400" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setShowChatMessage(null)
+                            // Clear any other modal states to prevent conflicts
+                            setSelectedNodeForModal(null)
+                            setSelectedKeySubject(null)
+                          }}
+                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                          title="Close"
+                        >
+                          <X size={16} className="text-gray-400" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="memory-preview-content chat-message-content">
+                      <div className="space-y-6">
+                        {/* User message */}
+                        <ChatMessage
+                          content={memory.prompt || "No prompt available"}
+                          timestamp={memory.timestamp || new Date()}
+                          isUser={true}
+                          hideActions={{
+                            delete: true,
+                            memories: true,
+                          }}
+                          menuProps={{
+                            id: memory.id,
+                            onCopy: () => {
+                              navigator.clipboard.writeText(memory.prompt || "")
+                              toast.success("Copied to clipboard")
+                            },
+                            onDelete: () => {
+                              // Handle delete if needed
+                            },
+                            onShowMemories: () => {
+                              // Handle show memories if needed
+                            },
+                          }}
+                        />
+
+                        {/* Assistant message */}
+                        <ChatMessage
+                          content={memory.response || "No response available"}
+                          timestamp={memory.timestamp || new Date()}
+                          isUser={false}
+                          hideActions={{
+                            delete: true,
+                            memories: true,
+                          }}
+                          menuProps={{
+                            id: memory.id,
+                            onCopy: () => {
+                              navigator.clipboard.writeText(
+                                memory.response || ""
+                              )
+                              toast.success("Copied to clipboard")
+                            },
+                            onDelete: () => {
+                              // Handle delete if needed
+                            },
+                            onShowMemories: () => {
+                              // Handle show memories if needed
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            {/* Click outside to close */}
+            <div
+              className="absolute inset-0 -z-10"
+              onClick={() => setShowChatMessage(null)}
+            />
+          </>
+        )}
+
+        <div
+          ref={containerRef}
+          className="absolute inset-0 w-full h-full bg-background overflow-hidden"
+          style={{ visibility: isReady ? "visible" : "hidden" }}
+        />
+
+        {/* Card View */}
+        {viewMode === "cards" && (
+          <div className="absolute inset-0 w-full h-full bg-background flex flex-col overflow-hidden">
+            {/* Card Content */}
+            <div className="flex-1 p-4 overflow-hidden">
+              {rankedMemories.length > 0 ? (
+                <div className="w-full h-full">
+                  {rankedMemories[currentCardIndex] && (
+                    <MemoryCard
+                      memory={rankedMemories[currentCardIndex].memory}
+                      details={
+                        pairDetails[rankedMemories[currentCardIndex].memory.id]
+                      }
+                      memoryType={getMemoryType(
+                        rankedMemories[currentCardIndex].memory
+                      )}
+                      rankDisplay={
+                        rankedMemories[currentCardIndex].depth === 1
+                          ? `#${rankedMemories[currentCardIndex].rank}`
+                          : `#${rankedMemories[currentCardIndex].parentRank}.${rankedMemories[currentCardIndex].childRank}`
+                      }
+                      showRank={true}
+                      onShowChatMessage={(memory) => {
+                        // Clear any existing modals first to prevent z-index conflicts
+                        setSelectedNodeForModal(null)
+                        setSelectedKeySubject(null)
+
+                        // Set the chat message modal
+                        setShowChatMessage({
+                          memory,
+                          position: { x: 0, y: 0 },
+                        })
+                      }}
+                      variant="card"
+                      className="w-full h-full"
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <Brain size={48} className="mx-auto mb-4 opacity-50" />
+                  <p>No memories found</p>
+                </div>
+              )}
+            </div>
+
+            {/* Navigation Controls */}
+            <div className="p-4 border-t border-border flex-shrink-0">
+              {/* Slider */}
+              <div className="slider-container mb-4">
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, rankedMemories.length - 1)}
+                  value={currentCardIndex}
+                  onChange={(e) =>
+                    setCurrentCardIndex(parseInt(e.target.value))
+                  }
+                  className="w-full slider"
+                />
+              </div>
+
+              {/* Card Counter */}
+              <div className="text-center mb-4">
+                <div className="text-sm text-muted-foreground">
+                  {currentCardIndex + 1} of {rankedMemories.length}
+                </div>
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() =>
+                    setCurrentCardIndex(Math.max(0, currentCardIndex - 1))
+                  }
+                  disabled={currentCardIndex === 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+
+                <button
+                  onClick={() =>
+                    setCurrentCardIndex(
+                      Math.min(rankedMemories.length - 1, currentCardIndex + 1)
+                    )
+                  }
+                  disabled={currentCardIndex === rankedMemories.length - 1}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isReady &&
+          nodesDatasetRef.current &&
+          nodesDatasetRef.current.length > 0 && (
+            <div className="memory-network-loading">
+              <div className="memory-network-loading-spinner"></div>
+              <div className="memory-network-loading-text">
+                Mapping your neural pathways...
+              </div>
+            </div>
+          )}
+      </div>
     </div>
   )
 }

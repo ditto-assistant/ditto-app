@@ -74,6 +74,11 @@ export default function MemoryNetworkModal() {
           <MemoriesNetworkGraph
             memories={memories || []}
             rootNodeConfig={rootNodeConfig}
+            context="chatfeed"
+            // ChatFeed doesn't need search/reset since it's focused on a specific message
+            onSearch={undefined}
+            onReset={undefined}
+            searchLoading={false}
           />
         ) : (
           <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center gap-4">

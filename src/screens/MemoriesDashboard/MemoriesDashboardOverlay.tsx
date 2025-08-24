@@ -45,7 +45,6 @@ export default function MemoriesDashboardOverlay() {
     error: statsError,
   } = useMemoryStats(15)
 
-  const searchInputRef = useRef<HTMLInputElement>(null)
   const [networkState, setNetworkState] = useState<NetworkState>({
     memories: [],
     loading: true,
@@ -56,7 +55,6 @@ export default function MemoriesDashboardOverlay() {
     showTopSubjectsModal: false,
     showSearchQueryModal: false,
   })
-  const [searchExpanded, setSearchExpanded] = useState(false)
   const [viewMode, setViewMode] = useState<"cards" | "graph">("graph")
 
   // Helper function to collect all pair IDs from memories
@@ -241,101 +239,86 @@ export default function MemoriesDashboardOverlay() {
     collectPairIds,
   ])
 
-  // Handle manual search
-  const handleSearch = useCallback(async () => {
-    const searchTerm = searchInputRef.current?.value?.trim()
-    if (!searchTerm) {
-      toast.error("Please enter a search term")
-      return
-    }
-
-    if (!user?.uid || !preferences) {
-      toast.error("User not authenticated")
-      return
-    }
-
-    try {
-      setNetworkState((prev) => ({
-        ...prev,
-        loading: true,
-        error: null,
-        searchTerm,
-        showTopSubjectsModal: false,
-      }))
-
-      const embeddingResult = await embed({
-        userID: user.uid,
-        text: searchTerm,
-        model: "text-embedding-005",
-      })
-
-      if (embeddingResult.err) {
-        throw new Error(`Embedding failed: ${embeddingResult.err}`)
+  // Handle manual search - now will be called from MemoriesNetworkGraph
+  const handleSearch = useCallback(
+    async (searchTerm: string) => {
+      if (!user?.uid || !preferences) {
+        toast.error("User not authenticated")
+        return
       }
 
-      const memoriesResponse = await getMemories(
-        {
+      try {
+        setNetworkState((prev) => ({
+          ...prev,
+          loading: true,
+          error: null,
+          searchTerm,
+          showTopSubjectsModal: false,
+        }))
+
+        const embeddingResult = await embed({
           userID: user.uid,
-          longTerm: {
-            vector: embeddingResult.ok,
-            nodeCounts: preferences.memory.longTermMemoryChain,
-          },
-          stripImages: false,
-        },
-        "application/json"
-      )
-
-      if (memoriesResponse.err) {
-        throw new Error(memoriesResponse.err)
-      }
-
-      const memories = memoriesResponse.ok?.longTerm || []
-
-      // Fetch pair details for search results
-      const allPairIds = collectPairIds(memories)
-      let pairDetails: Record<string, ComprehensivePairDetails> = {}
-
-      if (allPairIds.length > 0) {
-        const detailsResp = await getComprehensivePairDetails({
-          pairIDs: allPairIds,
+          text: searchTerm,
+          model: "text-embedding-005",
         })
-        if (detailsResp.ok) {
-          pairDetails = detailsResp.ok
+
+        if (embeddingResult.err) {
+          throw new Error(`Embedding failed: ${embeddingResult.err}`)
         }
+
+        const memoriesResponse = await getMemories(
+          {
+            userID: user.uid,
+            longTerm: {
+              vector: embeddingResult.ok,
+              nodeCounts: preferences.memory.longTermMemoryChain,
+            },
+            stripImages: false,
+          },
+          "application/json"
+        )
+
+        if (memoriesResponse.err) {
+          throw new Error(memoriesResponse.err)
+        }
+
+        const memories = memoriesResponse.ok?.longTerm || []
+
+        // Fetch pair details for search results
+        const allPairIds = collectPairIds(memories)
+        let pairDetails: Record<string, ComprehensivePairDetails> = {}
+
+        if (allPairIds.length > 0) {
+          const detailsResp = await getComprehensivePairDetails({
+            pairIDs: allPairIds,
+          })
+          if (detailsResp.ok) {
+            pairDetails = detailsResp.ok
+          }
+        }
+
+        setNetworkState((prev) => ({
+          ...prev,
+          memories,
+          loading: false,
+          error: null,
+          pairDetails,
+        }))
+      } catch (error) {
+        console.error("Search error:", error)
+        setNetworkState((prev) => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : "Search failed",
+        }))
+        toast.error("Search failed. Please try again.")
       }
+    },
+    [user?.uid, preferences, collectPairIds]
+  )
 
-      setNetworkState((prev) => ({
-        ...prev,
-        memories,
-        loading: false,
-        error: null,
-        pairDetails,
-      }))
-    } catch (error) {
-      console.error("Search error:", error)
-      setNetworkState((prev) => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : "Search failed",
-      }))
-      toast.error("Search failed. Please try again.")
-    }
-  }, [user?.uid, preferences, collectPairIds])
-
-  // Handle Enter key in search
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch()
-    }
-  }
-
-  // Reset to top subjects view
+  // Reset to top subjects view - now will be called from MemoriesNetworkGraph
   const resetToTopSubjects = useCallback(() => {
-    if (searchInputRef.current) {
-      searchInputRef.current.value = ""
-    }
-    setSearchExpanded(false) // Collapse search on reset
-
     const prompt = createTopSubjectsPrompt()
     setNetworkState((prev) => ({
       ...prev,
@@ -405,88 +388,10 @@ export default function MemoriesDashboardOverlay() {
       // Close the modal first
       setNetworkState((prev) => ({ ...prev, showTopSubjectsModal: false }))
 
-      // Set the search term in the input
-      if (searchInputRef.current) {
-        searchInputRef.current.value = subjectText
-      }
-
-      // Don't change search expanded state - keep it as is
-
-      if (!user?.uid || !preferences) {
-        toast.error("User not authenticated")
-        return
-      }
-
-      try {
-        setNetworkState((prev) => ({
-          ...prev,
-          loading: true,
-          error: null,
-          searchTerm: subjectText,
-          showTopSubjectsModal: false,
-        }))
-
-        const embeddingResult = await embed({
-          userID: user.uid,
-          text: subjectText,
-          model: "text-embedding-005",
-        })
-
-        if (embeddingResult.err) {
-          throw new Error(`Embedding failed: ${embeddingResult.err}`)
-        }
-
-        const memoriesResponse = await getMemories(
-          {
-            userID: user.uid,
-            longTerm: {
-              vector: embeddingResult.ok,
-              nodeCounts: preferences.memory.longTermMemoryChain,
-            },
-            stripImages: false,
-          },
-          "application/json"
-        )
-
-        if (memoriesResponse.err) {
-          throw new Error(memoriesResponse.err)
-        }
-
-        const memories = memoriesResponse.ok?.longTerm || []
-
-        // Fetch pair details for search results
-        const allPairIds = collectPairIds(memories)
-        let pairDetails: Record<string, ComprehensivePairDetails> = {}
-
-        if (allPairIds.length > 0) {
-          const detailsResp = await getComprehensivePairDetails({
-            pairIDs: allPairIds,
-          })
-          if (detailsResp.ok) {
-            pairDetails = detailsResp.ok
-          }
-        }
-
-        setNetworkState((prev) => ({
-          ...prev,
-          memories,
-          loading: false,
-          error: null,
-          pairDetails,
-        }))
-
-        // No toast notification for smooth UX
-      } catch (error) {
-        console.error("Subject search error:", error)
-        setNetworkState((prev) => ({
-          ...prev,
-          loading: false,
-          error: error instanceof Error ? error.message : "Search failed",
-        }))
-        toast.error("Search failed. Please try again.")
-      }
+      // Call the search handler directly with the subject text
+      await handleSearch(subjectText)
     },
-    [user?.uid, preferences, collectPairIds]
+    [handleSearch]
   )
 
   // Handle root node click to show appropriate modal
@@ -530,101 +435,6 @@ export default function MemoriesDashboardOverlay() {
   return (
     <Modal id="memories" title="Neural Memory Network">
       <div className="neural-dashboard-container flex flex-col h-full bg-background text-foreground relative overflow-hidden">
-        {/* Compact Header with Collapsible Search */}
-        <div className="neural-dashboard-header relative z-20 bg-background/95 backdrop-blur-sm border-b border-border/50">
-          {/* Top Row - Compact Controls */}
-          <div className="flex items-center justify-between p-3">
-            {/* Left Side - View Toggle */}
-            <div className="flex items-center gap-2 flex-1">
-              <div className="view-toggle-container">
-                <button
-                  onClick={() => setViewMode("cards")}
-                  className={`view-toggle-option ${viewMode === "cards" ? "active" : ""}`}
-                >
-                  Cards
-                </button>
-                <button
-                  onClick={() => setViewMode("graph")}
-                  className={`view-toggle-option ${viewMode === "graph" ? "active" : ""}`}
-                >
-                  Graph
-                </button>
-              </div>
-            </div>
-
-            {/* Center - Query Title */}
-            <div className="flex-1 flex justify-center">
-              <div className="neural-dashboard-stats-card text-sm text-primary font-semibold bg-primary/10 border border-primary/30 rounded-full px-4 md:px-5 py-1.5 neural-glow flex items-center gap-2 max-w-[85vw] md:max-w-xl whitespace-nowrap">
-                <Target className="h-4 w-4 neural-pulse" />
-                <span className="query-label truncate max-w-[60vw] md:max-w-none">
-                  {networkState.searchTerm || "Loading..."}
-                </span>
-              </div>
-            </div>
-
-            {/* Right Side - Search Toggle */}
-            <div className="flex items-center gap-2 flex-1 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSearchExpanded(!searchExpanded)}
-                className="neural-dashboard-search-toggle text-muted-foreground hover:text-foreground px-2 py-1 h-8"
-                title={searchExpanded ? "Hide Search" : "Show Search"}
-              >
-                {searchExpanded ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Collapsible Search Section */}
-          <div
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              searchExpanded ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
-            )}
-          >
-            <div className="p-3 pt-0">
-              <div className="flex gap-2 items-center">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 neural-glow" />
-                  <Input
-                    ref={searchInputRef}
-                    placeholder="Search your neural memories..."
-                    className="neural-dashboard-search-input pl-10 bg-background/80 border-border/60 focus:border-primary/50 focus:ring-primary/20"
-                    onKeyPress={handleKeyPress}
-                    disabled={networkState.loading}
-                  />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetToTopSubjects}
-                  className="neural-dashboard-compact-button text-primary hover:text-primary/80 hover:bg-primary/10 neural-glow px-3 py-2 h-9"
-                  title="Reset to Top Subjects"
-                >
-                  <RotateCcw className="h-4 w-4 neural-pulse" />
-                </Button>
-                <Button
-                  onClick={handleSearch}
-                  disabled={networkState.loading}
-                  className="neural-dashboard-button px-4 bg-primary hover:bg-primary/90 h-9"
-                >
-                  {networkState.loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Search"
-                  )}
-                </Button>
-              </div>
-            </div>
-            <div className="neural-connection mx-3 mb-3"></div>
-          </div>
-        </div>
-
         {/* Network Visualization */}
         <div className="flex-1 relative overflow-hidden">
           {statsLoading || networkState.isInitialLoad ? (
@@ -710,7 +520,7 @@ export default function MemoriesDashboardOverlay() {
                 </div>
               )}
 
-              {/* Network Graph */}
+              {/* Network Graph with integrated controls */}
               <MemoriesNetworkGraph
                 memories={networkState.memories}
                 rootNodeConfig={rootNodeConfig}
@@ -719,17 +529,13 @@ export default function MemoriesDashboardOverlay() {
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 showCardViewControls={false}
+                context="dashboard"
+                onSearch={handleSearch}
+                onReset={resetToTopSubjects}
+                searchLoading={networkState.loading}
               />
             </>
           )}
-        </div>
-
-        {/* Floating Memory Count - top center of network area */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur-sm border border-border/50 rounded-full px-3 py-1 shadow-md flex items-center gap-2">
-          <Brain className="h-4 w-4 text-primary neural-glow" />
-          <span className="font-bold text-primary">
-            {formatCount(totalMemoryCount)} Memories
-          </span>
         </div>
 
         {/* Top Subjects Modal */}
