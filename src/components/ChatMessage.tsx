@@ -65,6 +65,12 @@ interface ChatMessageProps {
   // Sync indicator props
   showSyncIndicator?: boolean
   syncStage?: number
+  // Action visibility control
+  hideActions?: {
+    delete?: boolean
+    memories?: boolean
+    subjects?: boolean
+  }
 }
 
 export default function ChatMessage({
@@ -76,6 +82,7 @@ export default function ChatMessage({
   menuProps,
   showSyncIndicator = false,
   syncStage = 1,
+  hideActions = {},
 }: ChatMessageProps) {
   const { user } = useAuth()
   const userAvatar = useUserAvatar(user?.photoURL)
@@ -256,61 +263,65 @@ export default function ChatMessage({
               {formatTimestamp(timestamp)}
             </div>
 
-            <DropdownMenu
-              onOpenChange={(open) => {
-                if (open && !showSyncIndicator) {
-                  handleFetchSubjects()
-                }
-              }}
-            >
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "h-8 w-8 text-foreground/70 hover:bg-background/20",
-                    showSyncIndicator && "opacity-50 cursor-not-allowed"
-                  )}
-                  aria-label="View linked subjects"
-                  disabled={showSyncIndicator}
-                >
-                  {isLoadingSubjects ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Tags className="h-5 w-5" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-60">
-                <DropdownMenuLabel>Linked Subjects</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="p-2 space-y-2">
-                  {errorSubjects && (
-                    <p className="text-xs text-destructive">{errorSubjects}</p>
-                  )}
-                  {subjects.length > 0
-                    ? subjects.map((s, i) => (
-                        <div
-                          key={i}
-                          className="flex justify-between items-center"
-                        >
-                          <span className="text-sm font-medium">
-                            {s.subject_text}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {s.pair_count} pairs
-                          </span>
-                        </div>
-                      ))
-                    : !errorSubjects &&
-                      !isLoadingSubjects && (
-                        <p className="text-xs text-muted-foreground">
-                          No subjects found.
-                        </p>
-                      )}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!hideActions.subjects && (
+              <DropdownMenu
+                onOpenChange={(open) => {
+                  if (open && !showSyncIndicator) {
+                    handleFetchSubjects()
+                  }
+                }}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8 text-foreground/70 hover:bg-background/20",
+                      showSyncIndicator && "opacity-50 cursor-not-allowed"
+                    )}
+                    aria-label="View linked subjects"
+                    disabled={showSyncIndicator}
+                  >
+                    {isLoadingSubjects ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Tags className="h-5 w-5" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-60">
+                  <DropdownMenuLabel>Linked Subjects</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="p-2 space-y-2">
+                    {errorSubjects && (
+                      <p className="text-xs text-destructive">
+                        {errorSubjects}
+                      </p>
+                    )}
+                    {subjects.length > 0
+                      ? subjects.map((s, i) => (
+                          <div
+                            key={i}
+                            className="flex justify-between items-center"
+                          >
+                            <span className="text-sm font-medium">
+                              {s.subject_text}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {s.pair_count} pairs
+                            </span>
+                          </div>
+                        ))
+                      : !errorSubjects &&
+                        !isLoadingSubjects && (
+                          <p className="text-xs text-muted-foreground">
+                            No subjects found.
+                          </p>
+                        )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             <Button
               variant="ghost"
@@ -325,39 +336,43 @@ export default function ChatMessage({
               <Copy className="h-5 w-5" />
             </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-foreground/70 hover:bg-background/20"
-              onClick={() => {
-                triggerLightHaptic()
-                menuProps.onShowMemories()
-              }}
-              aria-label="Show memory graph"
-            >
-              <Network className="h-5 w-5" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-8 w-8 text-foreground/70 hover:bg-background/20",
-                showSyncIndicator
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:text-destructive"
-              )}
-              onClick={() => {
-                if (!showSyncIndicator) {
+            {!hideActions.memories && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-foreground/70 hover:bg-background/20"
+                onClick={() => {
                   triggerLightHaptic()
-                  menuProps.onDelete()
-                }
-              }}
-              disabled={showSyncIndicator}
-              aria-label="Delete message"
-            >
-              <Trash className="h-5 w-5" />
-            </Button>
+                  menuProps.onShowMemories()
+                }}
+                aria-label="Show memory graph"
+              >
+                <Network className="h-5 w-5" />
+              </Button>
+            )}
+
+            {!hideActions.delete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 text-foreground/70 hover:bg-background/20",
+                  showSyncIndicator
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:text-destructive"
+                )}
+                onClick={() => {
+                  if (!showSyncIndicator) {
+                    triggerLightHaptic()
+                    menuProps.onDelete()
+                  }
+                }}
+                disabled={showSyncIndicator}
+                aria-label="Delete message"
+              >
+                <Trash className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         )}
       </div>

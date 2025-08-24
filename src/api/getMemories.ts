@@ -12,6 +12,9 @@ export interface Memory {
   depth: number
   similarity?: number // For KG pairs data
   children?: Memory[]
+  // Image support fields
+  hasImages?: boolean
+  imageUrls?: string[]
 }
 
 export interface ParamsLongTermMemoriesV2 {
