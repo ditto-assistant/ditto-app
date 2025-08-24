@@ -36,7 +36,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
   className = "",
   variant = "modal",
 }) => {
-  const [subjectsCollapsed, setSubjectsCollapsed] = useState(false)
+  const [subjectsCollapsed, setSubjectsCollapsed] = useState(true)
 
   // Clean prompt text by replacing markdown image syntax with emoji
   const cleanPrompt =

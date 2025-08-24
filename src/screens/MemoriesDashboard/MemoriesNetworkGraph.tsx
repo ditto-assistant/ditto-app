@@ -1234,7 +1234,8 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             >
               <Maximize2 size={18} />
             </button>
-            {showCardViewControls && (
+            {/* Only show card view button when not in ChatFeed context and showCardViewControls is true */}
+            {showCardViewControls && context !== "chatfeed" && (
               <button
                 className="memory-network-control-button"
                 onClick={() => setViewMode("cards")}
