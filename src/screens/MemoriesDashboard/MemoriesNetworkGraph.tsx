@@ -10,10 +10,11 @@ import {
   Grid3X3,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react"
 import { toast } from "sonner"
 import ChatMessage from "@/components/ChatMessage"
-import MarkdownRenderer from "@/components/MarkdownRenderer"
+import MemoryCard from "@/components/MemoryCard"
 import { Memory } from "@/api/getMemories"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
@@ -142,6 +143,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const setViewMode = onViewModeChange ?? setInternalViewMode
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const { isMobile } = usePlatform()
+  const [subjectsCollapsed, setSubjectsCollapsed] = useState(isMobile)
   const { theme } = useTheme()
 
   // Use external pair details if provided, otherwise fall back to context
@@ -1198,7 +1200,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             onClick={() => setSelectedNodeForModal(null)}
           />
           <div
-            className="memory-preview-card fixed z-[10000]"
+            className="fixed z-[10000]"
             style={{
               left: "50%",
               top: "50%",
@@ -1209,98 +1211,31 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
               e.stopPropagation()
             }}
           >
-            {(() => {
-              const memory = selectedNodeForModal.memory!
-              const memoryType = getMemoryType(memory)
-              const details = pairDetails[memory.id]
+            <MemoryCard
+              memory={selectedNodeForModal.memory}
+              details={pairDetails[selectedNodeForModal.memory.id]}
+              memoryType={getMemoryType(selectedNodeForModal.memory)}
+              showCloseButton={true}
+              onClose={() => setSelectedNodeForModal(null)}
+              onShowChatMessage={(memory) => {
+                // Store the current node stats before opening chat
+                console.log(
+                  "Opening chat message, selectedNodeForModal:",
+                  selectedNodeForModal
+                )
 
-              return (
-                <>
-                  <div className="memory-preview-header">
-                    <div className="memory-preview-icon">{memoryType.icon}</div>
-                    <div className="memory-preview-title">
-                      {memoryType.type.toUpperCase()}
-                    </div>
-                    <div className="flex items-center gap-2 ml-auto">
-                      <button
-                        onClick={() => {
-                          // Store the current node stats before opening chat
-                          console.log(
-                            "Opening chat message, selectedNodeForModal:",
-                            selectedNodeForModal
-                          )
+                // Store in both state and ref for reliability
+                setPreviousNodeStats(selectedNodeForModal)
+                previousNodeStatsRef.current = selectedNodeForModal
 
-                          // Store in both state and ref for reliability
-                          setPreviousNodeStats(selectedNodeForModal)
-                          previousNodeStatsRef.current = selectedNodeForModal
-
-                          if (selectedNodeForModal.memory) {
-                            setShowChatMessage({
-                              memory: selectedNodeForModal.memory,
-                              position: selectedNodeForModal.position,
-                            })
-                            setSelectedNodeForModal(null)
-                          }
-                        }}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Open Chat Message"
-                      >
-                        <MessageCircle size={16} className="text-blue-400" />
-                      </button>
-                      <button
-                        onClick={() => setSelectedNodeForModal(null)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Close"
-                      >
-                        <X size={16} className="text-white/60" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="memory-preview-content">
-                    {(() => {
-                      const promptHasImages = hasImages(memory.prompt || "")
-                      const responseHasImages = hasImages(memory.response || "")
-
-                      if (promptHasImages || responseHasImages) {
-                        return (
-                          <div className="space-y-4">
-                            {/* Show only the prompt content with images rendered */}
-                            {memory.prompt && (
-                              <MarkdownRenderer
-                                content={memory.prompt}
-                                className="text-sm text-white/90"
-                              />
-                            )}
-                          </div>
-                        )
-                      }
-
-                      // Fallback to plain text if no images
-                      return memory.prompt || "No content available"
-                    })()}
-                  </div>
-                  {details && details.subjects.length > 0 && (
-                    <>
-                      <div className="text-sm font-medium text-white/80 mb-2">
-                        Related Subjects ({details.subjects.length})
-                      </div>
-                      <div className="memory-preview-subjects">
-                        {details.subjects.map(
-                          (subj: PairSubject, idx: number) => (
-                            <div
-                              key={idx}
-                              className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
-                            >
-                              {subj.subject_text} ({subj.pair_count})
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </>
-                  )}
-                </>
-              )
-            })()}
+                setShowChatMessage({
+                  memory: memory,
+                  position: selectedNodeForModal.position,
+                })
+                setSelectedNodeForModal(null)
+              }}
+              variant="modal"
+            />
           </div>
         </>
       )}
@@ -1429,16 +1364,12 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
             }}
           />
           <div
-            className={`memory-preview-card chat-message-modal fixed z-[100000] w-[min(90vw,520px)] max-h-[85vh] transition-all duration-300 ease-in-out ${
+            className={`memory-preview-card chat-message-modal fixed z-[100000] transition-all duration-300 ease-in-out ${
               isAnimatingBack
                 ? "animate-slide-out-left"
                 : "animate-slide-in-right"
             }`}
             style={{
-              left: "50%",
-              top: "50%",
-              // Ensure proper mobile positioning and visibility
-              transform: "translate(-50%, -50%)",
               // Force visibility on mobile
               visibility: "visible",
               opacity: 1,
@@ -1506,7 +1437,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                       </button>
                     </div>
                   </div>
-                  <div className="memory-preview-content">
+                  <div className="memory-preview-content chat-message-content">
                     <div className="space-y-6">
                       {/* User message */}
                       <ChatMessage
@@ -1577,128 +1508,36 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
       {/* Card View */}
       {viewMode === "cards" && (
-        <div className="absolute inset-0 w-full h-full bg-background flex flex-col">
-          {/* Card Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setViewMode("graph")}
-                className="p-2 hover:bg-muted rounded-lg transition-colors"
-                title="Back to Graph View"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <div>
-                <h2 className="text-lg font-semibold">Memory Cards</h2>
-                <p className="text-sm text-muted-foreground">
-                  {rankedMemories.length} memories ranked by relevance
-                </p>
-              </div>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {currentCardIndex + 1} of {rankedMemories.length}
-            </div>
-          </div>
-
+        <div className="absolute inset-0 w-full h-full bg-background flex flex-col overflow-hidden">
           {/* Card Content */}
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="flex-1 p-4 overflow-hidden">
             {rankedMemories.length > 0 ? (
-              <div className="w-full max-w-2xl">
+              <div className="w-full h-full">
                 {rankedMemories[currentCardIndex] && (
-                  <div className="memory-preview-card w-full max-w-none">
-                    {(() => {
-                      const { memory, depth, rank, parentRank, childRank } =
-                        rankedMemories[currentCardIndex]
-                      const memoryType = getMemoryType(memory)
-                      const details = pairDetails[memory.id]
-                      const rankDisplay =
-                        depth === 1 ? `#${rank}` : `#${parentRank}.${childRank}`
+                  <MemoryCard
+                    memory={rankedMemories[currentCardIndex].memory}
+                    details={pairDetails[rankedMemories[currentCardIndex].memory.id]}
+                    memoryType={getMemoryType(rankedMemories[currentCardIndex].memory)}
+                    rankDisplay={
+                      rankedMemories[currentCardIndex].depth === 1 
+                        ? `#${rankedMemories[currentCardIndex].rank}` 
+                        : `#${rankedMemories[currentCardIndex].parentRank}.${rankedMemories[currentCardIndex].childRank}`
+                    }
+                    showRank={true}
+                    onShowChatMessage={(memory) => {
+                      // Clear any existing modals first to prevent z-index conflicts
+                      setSelectedNodeForModal(null)
+                      setSelectedKeySubject(null)
 
-                      return (
-                        <>
-                          <div className="memory-preview-header">
-                            <div className="flex items-center gap-3">
-                              <div className="memory-preview-icon">
-                                {memoryType.icon}
-                              </div>
-                              <div className="memory-preview-title">
-                                {memoryType.type.toUpperCase()}
-                              </div>
-                              <div className="px-3 py-1 bg-primary text-primary-foreground text-sm font-medium rounded-full">
-                                {rankDisplay}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 ml-auto">
-                              <button
-                                onClick={() => {
-                                  // Clear any existing modals first to prevent z-index conflicts
-                                  setSelectedNodeForModal(null)
-                                  setSelectedKeySubject(null)
-
-                                  // Set the chat message modal
-                                  setShowChatMessage({
-                                    memory,
-                                    position: { x: 0, y: 0 },
-                                  })
-                                }}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                                title="Open Chat Message"
-                              >
-                                <MessageCircle
-                                  size={16}
-                                  className="text-blue-400"
-                                />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="memory-preview-content">
-                            {(() => {
-                              const promptHasImages = hasImages(
-                                memory.prompt || ""
-                              )
-                              const responseHasImages = hasImages(
-                                memory.response || ""
-                              )
-
-                              if (promptHasImages || responseHasImages) {
-                                return (
-                                  <div className="space-y-4">
-                                    {memory.prompt && (
-                                      <MarkdownRenderer
-                                        content={memory.prompt}
-                                        className="text-sm text-white/90"
-                                      />
-                                    )}
-                                  </div>
-                                )
-                              }
-
-                              return memory.prompt || "No content available"
-                            })()}
-                          </div>
-                          {details && details.subjects.length > 0 && (
-                            <>
-                              <div className="text-sm font-medium text-white/80 mb-2">
-                                Related Subjects ({details.subjects.length})
-                              </div>
-                              <div className="memory-preview-subjects">
-                                {details.subjects.map(
-                                  (subj: PairSubject, idx: number) => (
-                                    <div
-                                      key={idx}
-                                      className={`memory-preview-subject ${subj.is_key_subject ? "key-subject" : ""}`}
-                                    >
-                                      {subj.subject_text} ({subj.pair_count})
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </>
-                      )
-                    })()}
-                  </div>
+                      // Set the chat message modal
+                      setShowChatMessage({
+                        memory,
+                        position: { x: 0, y: 0 },
+                      })
+                    }}
+                    variant="card"
+                    className="w-full h-full"
+                  />
                 )}
               </div>
             ) : (
@@ -1710,9 +1549,9 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
           </div>
 
           {/* Navigation Controls */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border flex-shrink-0">
             {/* Slider */}
-            <div className="slider-container mb-6">
+            <div className="slider-container mb-4">
               <input
                 type="range"
                 min={0}
@@ -1721,11 +1560,12 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                 onChange={(e) => setCurrentCardIndex(parseInt(e.target.value))}
                 className="w-full slider"
               />
-              <div className="slider-value">
-                {rankedMemories[currentCardIndex]?.depth === 1
-                  ? "L1 Memory"
-                  : "L2 Memory"}{" "}
-                #{currentCardIndex + 1}
+            </div>
+
+            {/* Card Counter */}
+            <div className="text-center mb-4">
+              <div className="text-sm text-muted-foreground">
+                {currentCardIndex + 1} of {rankedMemories.length}
               </div>
             </div>
 
@@ -1741,12 +1581,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                 <ChevronLeft size={16} />
                 Previous
               </button>
-
-              <div className="text-sm text-muted-foreground">
-                {rankedMemories[currentCardIndex]?.depth === 1
-                  ? "L1 Memory"
-                  : "L2 Memory"}
-              </div>
 
               <button
                 onClick={() =>

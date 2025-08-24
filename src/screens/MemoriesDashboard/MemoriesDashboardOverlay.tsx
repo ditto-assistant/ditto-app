@@ -556,7 +556,9 @@ export default function MemoriesDashboardOverlay() {
             <div className="flex-1 flex justify-center">
               <div className="neural-dashboard-stats-card text-sm text-primary font-semibold bg-primary/10 border border-primary/30 rounded-full px-4 md:px-5 py-1.5 neural-glow flex items-center gap-2 max-w-[85vw] md:max-w-xl whitespace-nowrap">
                 <Target className="h-4 w-4 neural-pulse" />
-                {networkState.searchTerm || "Loading..."}
+                <span className="query-label truncate max-w-[60vw] md:max-w-none">
+                  {networkState.searchTerm || "Loading..."}
+                </span>
               </div>
             </div>
 
