@@ -83,6 +83,36 @@ export type GetTopSubjectsResponse = z.infer<
   typeof GetTopSubjectsResponseSchema
 >
 
+export const GetTopSubjectsWithPairsResponseSchema = z.object({
+  results: z.array(
+    SubjectSchema.extend({
+      recent_pairs: z.array(
+        z.object({
+          id: z.string(),
+          prompt: z.string(),
+          response: z.string(),
+          timestamp: z.coerce.date().optional(), // Use coerce to handle string timestamps
+          title: z.string().optional(),
+          similarity: z.number().optional(),
+          score: z.number().optional(),
+          vector_distance: z.number().optional(),
+          depth: z.number().optional(),
+          timestamp_formatted: z.string().optional(),
+        })
+      ),
+    })
+  ),
+  metadata: z.object({
+    limit: z.number(),
+    pairs_per_subject: z.number(),
+    total_subjects: z.number(),
+    total_firestore_ids: z.number(),
+  }),
+})
+export type GetTopSubjectsWithPairsResponse = z.infer<
+  typeof GetTopSubjectsWithPairsResponseSchema
+>
+
 export async function searchSubjects({
   userID,
   userEmail,
@@ -233,6 +263,56 @@ export async function getSubjectPairs({
     }
   } catch (error) {
     return { err: `Unable to get subject pairs. Error: ${error}` }
+  }
+}
+
+export async function getTopSubjectsWithPairs({
+  userID,
+  userEmail,
+  limit = 10,
+  pairsPerSubject = 3,
+}: {
+  userID?: string
+  userEmail?: string
+  limit?: number
+  pairsPerSubject?: number
+}): Promise<Result<GetTopSubjectsWithPairsResponse>> {
+  const tok = await getToken()
+  if (tok.err) return { err: "Unable to get token" }
+  if (!tok.ok) return { err: "No token" }
+
+  try {
+    const response = await fetch(routes.kgTopSubjectsWithPairs, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userID,
+        user_email: userEmail,
+        limit,
+        pairs_per_subject: pairsPerSubject,
+      }),
+    })
+    if (response.ok) {
+      const rawData: unknown = await response.json()
+      const validatedResponse =
+        GetTopSubjectsWithPairsResponseSchema.safeParse(rawData)
+      if (!validatedResponse.success) {
+        return {
+          err: `getTopSubjectsWithPairs: Invalid response data: ${validatedResponse.error.flatten()}`,
+        }
+      }
+      return { ok: validatedResponse.data }
+    } else {
+      return {
+        err: `Unable to get top subjects with pairs. Error: ${response.status}`,
+      }
+    }
+  } catch (error) {
+    return { err: `Unable to get top subjects with pairs. Error: ${error}` }
   }
 }
 

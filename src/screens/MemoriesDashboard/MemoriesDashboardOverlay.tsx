@@ -27,6 +27,7 @@ import "@/components/MemoryNetwork.css"
 interface NetworkState {
   memories: Memory[]
   loading: boolean
+  loadingType: "initial" | "search" | "reset" | null
   error: string | null
   searchTerm: string
   isInitialLoad: boolean
@@ -45,9 +46,16 @@ export default function MemoriesDashboardOverlay() {
     error: statsError,
   } = useMemoryStats(15)
 
+  // Cache for top subjects data to make reset instant
+  const topSubjectsCacheRef = useRef<{
+    memories: Memory[]
+    pairDetails: Record<string, ComprehensivePairDetails>
+  } | null>(null)
+
   const [networkState, setNetworkState] = useState<NetworkState>({
     memories: [],
     loading: true,
+    loadingType: "initial",
     error: null,
     searchTerm: "",
     isInitialLoad: true,
@@ -56,6 +64,14 @@ export default function MemoriesDashboardOverlay() {
     showSearchQueryModal: false,
   })
   const [viewMode, setViewMode] = useState<"cards" | "graph">("graph")
+
+  // Clear cache when component unmounts (modal closes)
+  useEffect(() => {
+    return () => {
+      console.log("🗑️ Clearing top subjects cache on modal close")
+      topSubjectsCacheRef.current = null
+    }
+  }, [])
 
   // Helper function to collect all pair IDs from memories
   const collectPairIds = useCallback((memories: Memory[]): string[] => {
@@ -85,6 +101,182 @@ export default function MemoriesDashboardOverlay() {
     return `Here are my most important memory subjects:\n\n${subjectsList}\n\nThese represent the key topics and themes in my conversations with you.`
   }, [topSubjects])
 
+  // Shared function to load top subjects with optimized endpoint
+  const loadTopSubjectsData = useCallback(async () => {
+    if (!user?.uid || !preferences || !topSubjects.length) {
+      return { memories: [], pairDetails: {} }
+    }
+
+    console.log("🔄 Loading top subjects data using optimized endpoint...")
+
+    // Use the optimized endpoint that fetches top subjects with recent pairs in a single call
+    const { getTopSubjectsWithPairs } = await import("@/api/kg")
+
+    const topSubjectsWithPairsResult = await getTopSubjectsWithPairs({
+      userID: user.uid,
+      limit: 8, // Limit to top 8 subjects for performance
+      pairsPerSubject: 3, // Get 3 recent memories per subject
+    })
+
+    const allMemories: Memory[] = []
+    const allPairDetails: Record<string, ComprehensivePairDetails> = {}
+
+    if (topSubjectsWithPairsResult.ok) {
+      // Process the optimized response
+      console.log(
+        "✅ Using optimized endpoint with",
+        topSubjectsWithPairsResult.ok.results.length,
+        "subjects"
+      )
+
+      topSubjectsWithPairsResult.ok.results.forEach((subject) => {
+        subject.recent_pairs.forEach((pair) => {
+          const memory: Memory = {
+            id: pair.id,
+            prompt: pair.prompt || "",
+            response: pair.response || "",
+            timestamp: pair.timestamp || new Date(),
+            score: pair.score || 1.0,
+            vector_distance: pair.vector_distance || 0.0,
+            depth: pair.depth || 1,
+            similarity: pair.similarity,
+            children: [],
+          }
+          allMemories.push(memory)
+
+          // Store basic pair info
+          allPairDetails[pair.id] = {
+            id: pair.id,
+            title: pair.title || "Memory Pair",
+            description: "", // Will be populated by getComprehensivePairDetails if needed
+            timestamp: pair.timestamp ? pair.timestamp.toISOString() : null,
+            timestamp_formatted: pair.timestamp_formatted || "",
+            subjects: [], // Will be populated by getComprehensivePairDetails
+          }
+        })
+      })
+
+      console.log(
+        "✅ Optimized endpoint provided",
+        allMemories.length,
+        "memories"
+      )
+    } else {
+      console.warn(
+        "❌ Optimized endpoint failed:",
+        topSubjectsWithPairsResult.err
+      )
+      console.log("⏳ Falling back to sequential approach...")
+
+      // FALLBACK: Use the old sequential approach if the optimized endpoint fails
+      const { getSubjectPairsRecent } = await import("@/api/kg")
+
+      for (const subject of topSubjects.slice(0, 8)) {
+        try {
+          const recentPairsResult = await getSubjectPairsRecent({
+            userID: user.uid,
+            subjectID: subject.id,
+            limit: 3,
+            offset: 0,
+          })
+
+          if (recentPairsResult.ok && recentPairsResult.ok.results.length > 0) {
+            recentPairsResult.ok.results.forEach((pair) => {
+              const memory: Memory = {
+                id: pair.id,
+                prompt: pair.prompt || "",
+                response: pair.response || "",
+                timestamp: pair.timestamp || new Date(),
+                score: pair.score || 1.0,
+                vector_distance: pair.vector_distance || 0.0,
+                depth: pair.depth || 1,
+                similarity: pair.similarity,
+                children: [],
+              }
+              allMemories.push(memory)
+
+              allPairDetails[pair.id] = {
+                id: pair.id,
+                title: pair.title || "Memory Pair",
+                description: pair.summary || "",
+                timestamp: pair.timestamp ? pair.timestamp.toISOString() : null,
+                timestamp_formatted: pair.timestamp_formatted || "",
+                subjects: [],
+              }
+            })
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to fetch memories for subject ${subject.subject_text}:`,
+            error
+          )
+        }
+      }
+    }
+
+    // Check if we have enough memories, regardless of which method was used
+    if (allMemories.length < 5) {
+      console.log(
+        "⚠️ Still not enough memories (" +
+          allMemories.length +
+          "), trying embedding search fallback"
+      )
+      // If we don't have enough memories from subjects, fall back to embedding search
+      const prompt = createTopSubjectsPrompt()
+      const embeddingResult = await embed({
+        userID: user.uid,
+        text: prompt,
+        model: "text-embedding-005",
+      })
+
+      if (embeddingResult.ok) {
+        const memoriesResponse = await getMemories(
+          {
+            userID: user.uid,
+            longTerm: {
+              vector: embeddingResult.ok,
+              nodeCounts: preferences.memory.longTermMemoryChain,
+            },
+            stripImages: false,
+          },
+          "application/json"
+        )
+
+        if (memoriesResponse.ok) {
+          const fallbackMemories = memoriesResponse.ok?.longTerm || []
+          // Merge with existing memories (avoid duplicates)
+          const existingIds = new Set(allMemories.map((m) => m.id))
+          fallbackMemories.forEach((memory) => {
+            if (!existingIds.has(memory.id)) {
+              allMemories.push(memory)
+            }
+          })
+        }
+      }
+    }
+
+    // Fetch comprehensive pair details for all collected memories
+    const allPairIds = collectPairIds(allMemories)
+
+    if (allPairIds.length > 0) {
+      const detailsResp = await getComprehensivePairDetails({
+        pairIDs: allPairIds,
+      })
+      if (detailsResp.ok) {
+        // Merge with existing pair details
+        Object.assign(allPairDetails, detailsResp.ok)
+      }
+    }
+
+    return { memories: allMemories, pairDetails: allPairDetails }
+  }, [
+    user?.uid,
+    preferences,
+    topSubjects,
+    createTopSubjectsPrompt,
+    collectPairIds,
+  ])
+
   // Initialize the network with top subjects as a synthetic "search"
   useEffect(() => {
     const initializeNetwork = async () => {
@@ -95,123 +287,19 @@ export default function MemoriesDashboardOverlay() {
       try {
         setNetworkState((prev) => ({ ...prev, loading: true, error: null }))
 
-        // Instead of using embedding search for top subjects, get recent memories for each subject
-        // This ensures all top subjects are represented with actual connections
-        const { getSubjectPairsRecent } = await import("@/api/kg")
+        const { memories, pairDetails } = await loadTopSubjectsData()
 
-        // Collect memories from top subjects (up to 3 memories per subject to avoid too many nodes)
-        const allMemories: Memory[] = []
-        const allPairDetails: Record<string, ComprehensivePairDetails> = {}
-
-        for (const subject of topSubjects.slice(0, 8)) {
-          // Limit to top 8 subjects for performance
-          try {
-            const recentPairsResult = await getSubjectPairsRecent({
-              userID: user.uid,
-              subjectID: subject.id,
-              limit: 3, // Get 3 recent memories per subject
-              offset: 0,
-            })
-
-            if (
-              recentPairsResult.ok &&
-              recentPairsResult.ok.results.length > 0
-            ) {
-              // Convert pair results to Memory format and collect pair details
-              recentPairsResult.ok.results.forEach((pair) => {
-                const memory: Memory = {
-                  id: pair.id,
-                  prompt: pair.prompt || "",
-                  response: pair.response || "",
-                  timestamp: pair.timestamp || new Date(),
-                  score: pair.score || 1.0,
-                  vector_distance: pair.vector_distance || 0.0,
-                  depth: pair.depth || 1,
-                  similarity: pair.similarity,
-                  children: [],
-                }
-                allMemories.push(memory)
-
-                // We'll get the comprehensive pair details (including subjects) later
-                // For now, just store basic pair info
-                allPairDetails[pair.id] = {
-                  id: pair.id,
-                  title: pair.title || "Memory Pair",
-                  description: pair.summary || "",
-                  timestamp: pair.timestamp
-                    ? pair.timestamp.toISOString()
-                    : null,
-                  timestamp_formatted: pair.timestamp_formatted || "",
-                  subjects: [], // Will be populated by getComprehensivePairDetails
-                }
-              })
-            }
-          } catch (error) {
-            console.warn(
-              `Failed to fetch memories for subject ${subject.subject_text}:`,
-              error
-            )
-          }
-        }
-
-        // If we don't have enough memories from subjects, fall back to embedding search
-        if (allMemories.length < 5) {
-          console.log(
-            "Not enough memories from subjects, falling back to embedding search"
-          )
-          const prompt = createTopSubjectsPrompt()
-          const embeddingResult = await embed({
-            userID: user.uid,
-            text: prompt,
-            model: "text-embedding-005",
-          })
-
-          if (embeddingResult.ok) {
-            const memoriesResponse = await getMemories(
-              {
-                userID: user.uid,
-                longTerm: {
-                  vector: embeddingResult.ok,
-                  nodeCounts: preferences.memory.longTermMemoryChain,
-                },
-                stripImages: false,
-              },
-              "application/json"
-            )
-
-            if (memoriesResponse.ok) {
-              const fallbackMemories = memoriesResponse.ok?.longTerm || []
-              // Merge with existing memories (avoid duplicates)
-              const existingIds = new Set(allMemories.map((m) => m.id))
-              fallbackMemories.forEach((memory) => {
-                if (!existingIds.has(memory.id)) {
-                  allMemories.push(memory)
-                }
-              })
-            }
-          }
-        }
-
-        // Fetch comprehensive pair details for all collected memories
-        const allPairIds = collectPairIds(allMemories)
-
-        if (allPairIds.length > 0) {
-          const detailsResp = await getComprehensivePairDetails({
-            pairIDs: allPairIds,
-          })
-          if (detailsResp.ok) {
-            // Merge with existing pair details
-            Object.assign(allPairDetails, detailsResp.ok)
-          }
-        }
+        // Cache the top subjects data for instant reset
+        topSubjectsCacheRef.current = { memories, pairDetails }
 
         setNetworkState({
-          memories: allMemories,
+          memories: memories,
           loading: false,
+          loadingType: null,
           error: null,
           searchTerm: "Top Memory Subjects",
           isInitialLoad: false,
-          pairDetails: allPairDetails,
+          pairDetails: pairDetails,
           showTopSubjectsModal: false,
           showSearchQueryModal: false,
         })
@@ -236,7 +324,7 @@ export default function MemoriesDashboardOverlay() {
     topSubjects,
     statsLoading,
     createTopSubjectsPrompt,
-    collectPairIds,
+    loadTopSubjectsData,
   ])
 
   // Handle manual search - now will be called from MemoriesNetworkGraph
@@ -251,6 +339,7 @@ export default function MemoriesDashboardOverlay() {
         setNetworkState((prev) => ({
           ...prev,
           loading: true,
+          loadingType: "search",
           error: null,
           searchTerm,
           showTopSubjectsModal: false,
@@ -301,6 +390,7 @@ export default function MemoriesDashboardOverlay() {
           ...prev,
           memories,
           loading: false,
+          loadingType: null,
           error: null,
           pairDetails,
         }))
@@ -309,6 +399,7 @@ export default function MemoriesDashboardOverlay() {
         setNetworkState((prev) => ({
           ...prev,
           loading: false,
+          loadingType: null,
           error: error instanceof Error ? error.message : "Search failed",
         }))
         toast.error("Search failed. Please try again.")
@@ -318,68 +409,73 @@ export default function MemoriesDashboardOverlay() {
   )
 
   // Reset to top subjects view - now will be called from MemoriesNetworkGraph
-  const resetToTopSubjects = useCallback(() => {
-    const prompt = createTopSubjectsPrompt()
-    setNetworkState((prev) => ({
-      ...prev,
-      searchTerm: "Top Memory Subjects",
-      isInitialLoad: false,
-      showTopSubjectsModal: false,
-    }))
+  const resetToTopSubjects = useCallback(async () => {
+    if (!user?.uid || !preferences || !topSubjects.length) {
+      return
+    }
 
-    // Re-trigger search with top subjects
-    if (user?.uid && preferences && topSubjects.length > 0) {
-      embed({
-        userID: user.uid,
-        text: prompt,
-        model: "text-embedding-005",
-      }).then((embeddingResult) => {
-        if (embeddingResult.ok) {
-          getMemories(
-            {
-              userID: user.uid,
-              longTerm: {
-                vector: embeddingResult.ok,
-                nodeCounts: preferences.memory.longTermMemoryChain,
-              },
-              stripImages: false,
-            },
-            "application/json"
-          ).then(async (memoriesResponse) => {
-            if (memoriesResponse.ok) {
-              const memories = memoriesResponse.ok?.longTerm || []
-
-              // Fetch pair details
-              const allPairIds = collectPairIds(memories)
-              let pairDetails: Record<string, ComprehensivePairDetails> = {}
-
-              if (allPairIds.length > 0) {
-                const detailsResp = await getComprehensivePairDetails({
-                  pairIDs: allPairIds,
-                })
-                if (detailsResp.ok) {
-                  pairDetails = detailsResp.ok
-                }
-              }
-
-              setNetworkState((prev) => ({
-                ...prev,
-                memories,
-                loading: false,
-                error: null,
-                pairDetails,
-              }))
-            }
-          })
-        }
+    // Check if we have cached data for instant reset
+    if (topSubjectsCacheRef.current) {
+      console.log("✅ Using cached top subjects data for instant reset")
+      setNetworkState({
+        memories: topSubjectsCacheRef.current.memories,
+        loading: false,
+        loadingType: null,
+        error: null,
+        searchTerm: "Top Memory Subjects",
+        isInitialLoad: false,
+        pairDetails: topSubjectsCacheRef.current.pairDetails,
+        showTopSubjectsModal: false,
+        showSearchQueryModal: false,
       })
+      return
+    }
+
+    try {
+      setNetworkState((prev) => ({
+        ...prev,
+        loading: true,
+        loadingType: "reset",
+        error: null,
+        searchTerm: "Top Memory Subjects",
+        isInitialLoad: false,
+        showTopSubjectsModal: false,
+      }))
+
+      console.log("🔄 Resetting to optimized top subjects view...")
+
+      const { memories, pairDetails } = await loadTopSubjectsData()
+
+      // Update cache
+      topSubjectsCacheRef.current = { memories, pairDetails }
+
+      setNetworkState({
+        memories: memories,
+        loading: false,
+        loadingType: null,
+        error: null,
+        searchTerm: "Top Memory Subjects",
+        isInitialLoad: false,
+        pairDetails: pairDetails,
+        showTopSubjectsModal: false,
+        showSearchQueryModal: false,
+      })
+    } catch (error) {
+      console.error("Error resetting to top subjects:", error)
+      setNetworkState((prev) => ({
+        ...prev,
+        loading: false,
+        loadingType: null,
+        error: error instanceof Error ? error.message : "Failed to reset",
+        isInitialLoad: false,
+      }))
     }
   }, [
     user?.uid,
     preferences,
     topSubjects,
     createTopSubjectsPrompt,
-    collectPairIds,
+    loadTopSubjectsData,
   ])
 
   // Handle neural subject click to run as query
@@ -513,27 +609,33 @@ export default function MemoriesDashboardOverlay() {
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 className="h-8 w-8 animate-spin text-primary neural-glow" />
                     <p className="text-sm text-muted-foreground">
-                      Searching neural pathways...
+                      {networkState.loadingType === "search"
+                        ? "Searching neural pathways..."
+                        : networkState.loadingType === "reset"
+                          ? "Loading top subjects..."
+                          : "Loading memory network..."}
                     </p>
                     <div className="neural-connection w-32" />
                   </div>
                 </div>
               )}
 
-              {/* Network Graph with integrated controls */}
-              <MemoriesNetworkGraph
-                memories={networkState.memories}
-                rootNodeConfig={rootNodeConfig}
-                pairDetails={networkState.pairDetails}
-                onRootNodeClick={handleRootNodeClick}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                showCardViewControls={false}
-                context="dashboard"
-                onSearch={handleSearch}
-                onReset={resetToTopSubjects}
-                searchLoading={networkState.loading}
-              />
+              {/* Network Graph with integrated controls - hidden during loading */}
+              {!networkState.loading && (
+                <MemoriesNetworkGraph
+                  memories={networkState.memories}
+                  rootNodeConfig={rootNodeConfig}
+                  pairDetails={networkState.pairDetails}
+                  onRootNodeClick={handleRootNodeClick}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                  showCardViewControls={false}
+                  context="dashboard"
+                  onSearch={handleSearch}
+                  onReset={resetToTopSubjects}
+                  searchLoading={networkState.loading}
+                />
+              )}
             </>
           )}
         </div>
@@ -552,18 +654,25 @@ export default function MemoriesDashboardOverlay() {
               }
             />
             <div
-              className="neural-dashboard-legend fixed z-[100] bg-background/95 border border-border/50 rounded-lg p-4 w-[min(90vw,420px)] max-w-[90vw] shadow-lg"
+              className="neural-dashboard-legend fixed z-[100] bg-background/95 border border-border/50 rounded-lg p-4 shadow-lg"
               style={{
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 // Ensure proper mobile positioning
                 position: "fixed",
+                width: "min(90vw, 420px)",
+                maxWidth: "90vw",
                 maxHeight: "80vh",
                 margin: 0,
                 // Force visibility
                 visibility: "visible",
                 opacity: 1,
+                // Ensure centering works on all devices
+                marginLeft: 0,
+                marginRight: 0,
+                // Prevent any box-sizing issues
+                boxSizing: "border-box",
               }}
             >
               <div className="flex items-center justify-between mb-3">
@@ -630,18 +739,25 @@ export default function MemoriesDashboardOverlay() {
               }
             />
             <div
-              className="neural-dashboard-legend fixed z-[100] bg-background/95 border border-border/50 rounded-lg p-4 w-[min(90vw,420px)] max-w-[90vw] shadow-lg"
+              className="neural-dashboard-legend fixed z-[100] bg-background/95 border border-border/50 rounded-lg p-4 shadow-lg"
               style={{
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 // Ensure proper mobile positioning
                 position: "fixed",
+                width: "min(90vw, 420px)",
+                maxWidth: "90vw",
                 maxHeight: "80vh",
                 margin: 0,
                 // Force visibility
                 visibility: "visible",
                 opacity: 1,
+                // Ensure centering works on all devices
+                marginLeft: 0,
+                marginRight: 0,
+                // Prevent any box-sizing issues
+                boxSizing: "border-box",
               }}
             >
               <div className="flex items-center justify-between mb-3">

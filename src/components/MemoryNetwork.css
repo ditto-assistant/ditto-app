@@ -259,15 +259,17 @@
 /* Mobile chat message modal optimization */
 @media (max-width: 768px) {
   .memory-preview-card.chat-message-modal {
-    /* Mobile-first sizing */
+    /* Mobile-first sizing with proper width calculation */
     width: min(95vw, 400px) !important;
     max-width: 95vw !important;
     min-width: 320px !important;
     /* Optimize height for mobile */
     max-height: 90vh !important;
     height: auto !important;
-    /* Ensure proper spacing from screen edges */
-    margin: 20px 0 !important;
+    /* Remove conflicting margins that affect centering */
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     /* Force perfect centering */
     left: 50% !important;
     top: 50% !important;
@@ -276,8 +278,13 @@
     z-index: 1000000 !important;
     /* Prevent any positioning issues */
     position: fixed !important;
-    /* Add some padding for comfortable spacing */
+    /* Ensure proper box-sizing */
+    box-sizing: border-box !important;
+    /* Add padding but account for it in centering */
     padding: 16px !important;
+    /* Prevent positioning conflicts */
+    right: auto !important;
+    bottom: auto !important;
   }
 
   .chat-message-content {
@@ -300,12 +307,53 @@
     max-width: 95vw !important;
     min-width: 95vw !important;
     max-height: 95vh !important;
-    margin: 10px 0 !important;
+    margin: 0 !important;
     padding: 12px !important;
+    /* Force absolute centering on very small screens */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
+  }
+
+  .memory-preview-card {
+    /* Extra small screen modal centering */
+    width: 95vw !important;
+    max-width: 95vw !important;
+    min-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    /* Force absolute centering */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
+  }
+
+  .neural-dashboard-legend {
+    /* Extra small screen neural subjects modal */
+    width: 95vw !important;
+    max-width: 95vw !important;
+    min-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    /* Force absolute centering */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
   }
 
   .chat-message-content {
     max-height: calc(95vh - 120px) !important;
+    padding-right: 4px !important;
+    /* Ensure smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch !important;
   }
 }
 
@@ -921,17 +969,31 @@
   }
 
   .memory-preview-card {
-    max-width: min(95vw, 380px);
-    min-width: min(95vw, 320px);
+    /* Use fixed width for better centering on mobile */
+    width: min(95vw, 380px) !important;
+    max-width: 95vw !important;
+    min-width: 320px !important;
     max-height: min(85vh, 500px);
     padding: 16px;
     /* Ensure modal is visible on mobile */
     visibility: visible !important;
     opacity: 1 !important;
     /* Force proper positioning */
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
     transform: translate(-50%, -50%) !important;
+    /* Remove any conflicting margins */
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Ensure proper box-sizing */
+    box-sizing: border-box !important;
     /* Ensure modal appears above other elements */
     z-index: 10000 !important;
+    /* Prevent positioning conflicts */
+    right: auto !important;
+    bottom: auto !important;
   }
 
   /* Ensure neural subjects modal is properly positioned on mobile */
@@ -945,12 +1007,20 @@
     z-index: 100 !important;
     visibility: visible !important;
     opacity: 1 !important;
-    /* Mobile-specific sizing */
+    /* Mobile-specific sizing - remove any conflicting width/margin rules */
+    width: min(90vw, 420px) !important;
     max-width: 90vw !important;
     max-height: 80vh !important;
     margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Ensure proper box-sizing */
+    box-sizing: border-box !important;
     /* Remove backdrop-filter on mobile to prevent positioning issues */
     backdrop-filter: none !important;
+    /* Ensure no conflicting positioning */
+    right: auto !important;
+    bottom: auto !important;
   }
 
   .memory-network-stats {
@@ -2327,5 +2397,37 @@
     margin: 4px;
     width: calc(100% - 8px);
     height: calc(100% - 8px);
+  }
+}
+
+/* Global mobile modal centering fix - ensures consistent behavior across all browsers */
+@media (max-width: 768px) {
+  /* Reset any browser-specific positioning quirks */
+  .memory-preview-card,
+  .neural-dashboard-legend,
+  .memory-preview-card.chat-message-modal {
+    /* Ensure consistent centering across all mobile browsers */
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Remove any conflicting properties that affect centering */
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Ensure proper box model */
+    box-sizing: border-box !important;
+    /* Prevent browser-specific positioning issues */
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure no negative margins or transforms interfere */
+    transform-origin: center center !important;
+    /* Disable any browser-specific positioning behavior */
+    -webkit-transform: translate(-50%, -50%) !important;
+    -moz-transform: translate(-50%, -50%) !important;
+    -ms-transform: translate(-50%, -50%) !important;
+    -o-transform: translate(-50%, -50%) !important;
   }
 }

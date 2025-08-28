@@ -19,8 +19,8 @@ const getPGVectorAPIURL = (dittoEnv: string) => {
     case "development":
       return "http://localhost:8080"
     case "staging":
-      return "https://agentic-pipelines-22790208601.us-central1.run.app"
-    // return "http://localhost:8080"
+      // return "https://agentic-pipelines-22790208601.us-central1.run.app"
+      return "http://localhost:8080"
     case "production":
     default:
       return "https://agentic-pipelines-prod-22790208601.us-central1.run.app"
@@ -66,6 +66,8 @@ export const routes = {
   kgSubjectPairs: PG_VECTOR_API_URL + "/kg/subjects/pairs",
   kgSubjectPairsRecent: PG_VECTOR_API_URL + "/kg/subjects/pairs/recent",
   kgTopSubjects: PG_VECTOR_API_URL + "/kg/subjects/top",
+  kgTopSubjectsWithPairs:
+    PG_VECTOR_API_URL + "/kg/subjects/top-with-recent-pairs",
   // Memory Management Endpoints
   kgDeleteMemoryPair: (pairId: string) =>
     PG_VECTOR_API_URL + `/memory/pairs/${pairId}/delete`,
