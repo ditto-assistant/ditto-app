@@ -19,8 +19,8 @@ const getPGVectorAPIURL = (dittoEnv: string) => {
     case "development":
       return "http://localhost:8080"
     case "staging":
-      // return "https://agentic-pipelines-22790208601.us-central1.run.app"
-      return "http://localhost:8080"
+      return "https://agentic-pipelines-22790208601.us-central1.run.app"
+      // return "http://localhost:8080"
     case "production":
     default:
       return "https://agentic-pipelines-prod-22790208601.us-central1.run.app"
