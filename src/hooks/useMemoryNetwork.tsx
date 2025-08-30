@@ -1,6 +1,7 @@
 import { ReactNode, createContext, useContext, useState } from "react"
 import { useModal } from "./useModal"
 import { getMemories, Memory } from "@/api/getMemories"
+import { getComprehensivePairDetails, ComprehensivePairDetails } from "@/api/kg"
 import { useModelPreferences } from "./useModelPreferences"
 import { auth } from "@/lib/firebase"
 import { toast } from "sonner"
@@ -21,14 +22,15 @@ const filterMemoryById = (memories: Memory[], idToRemove: string): Memory[] => {
 }
 
 interface MemoryNetworkContextType {
-  memories: Memory[] // These are the children/related memories for the currentRootMemory
+  memories: Memory[]
   setMemories: (memories: Memory[]) => void
-  currentRootMemory: Memory | null // The memory that is the center of the current network view
+  currentRootMemory: Memory | null
   setCurrentRootMemory: (memory: Memory | null) => void
   loading: boolean
   setLoading: (loading: boolean) => void
   fetchMemories: (memory: Memory) => Promise<void>
   deleteMemory: (memoryId: string) => void
+  pairDetails: Record<string, ComprehensivePairDetails>
 }
 
 const MemoryNetworkContext = createContext<
@@ -41,7 +43,21 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
   const [currentRootMemory, setCurrentRootMemory] = useState<Memory | null>(
     null
   )
+  const [pairDetails, setPairDetails] = useState<
+    Record<string, ComprehensivePairDetails>
+  >({})
   const { preferences } = useModelPreferences()
+
+  function collectPairIds(root: Memory, children: Memory[]): string[] {
+    const ids = new Set<string>()
+    ids.add(root.id)
+    const dfs = (m: Memory) => {
+      ids.add(m.id)
+      if (m.children) m.children.forEach(dfs)
+    }
+    children.forEach(dfs)
+    return Array.from(ids)
+  }
 
   return (
     <MemoryNetworkContext.Provider
@@ -52,28 +68,26 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
         setCurrentRootMemory,
         loading,
         setLoading,
+        pairDetails,
         deleteMemory: (memoryId: string) => {
           setMemories((prevMemories) =>
             filterMemoryById(prevMemories, memoryId)
           )
-          // If the deleted memory was the root, clear it too
           if (currentRootMemory?.id === memoryId) {
             setCurrentRootMemory(null)
-            setMemories([]) // Clear children too
+            setMemories([])
+            setPairDetails({})
           }
         },
         fetchMemories: async (memory) => {
           try {
-            setLoading(true)
-            setCurrentRootMemory(memory) // Set the root memory when fetching
+            // Don't set loading here - it's already set by showMemoryNetwork
+            setCurrentRootMemory(memory)
 
             const userID = auth.currentUser?.uid
-            if (!userID) {
-              throw new Error("User not authenticated")
-            }
-            if (!preferences) {
-              throw new Error("Model preferences not available")
-            }
+            if (!userID) throw new Error("User not authenticated")
+            if (!preferences) throw new Error("Model preferences not available")
+
             const memoriesResponse = await getMemories(
               {
                 userID,
@@ -85,26 +99,30 @@ export function MemoryNetworkProvider({ children }: { children: ReactNode }) {
               },
               "application/json"
             )
+            if (memoriesResponse.err) throw new Error(memoriesResponse.err)
 
-            if (memoriesResponse.err) {
-              throw new Error(memoriesResponse.err)
-            }
+            const fetched = Array.isArray(memoriesResponse.ok?.longTerm)
+              ? (memoriesResponse.ok?.longTerm as Memory[])
+              : []
+            setMemories(fetched)
 
-            if (!memoriesResponse.ok || !memoriesResponse.ok.longTerm) {
-              // It's possible to have a root memory with no children fetched
-              setMemories([]) // Set to empty array if no children
-              // throw new Error("Failed to fetch memories or no children found") - Don't throw error
+            const allPairIds = collectPairIds(memory, fetched)
+            if (allPairIds.length > 0) {
+              const detailsResp = await getComprehensivePairDetails({
+                pairIDs: allPairIds,
+              })
+              if (detailsResp.err) throw new Error(detailsResp.err)
+              setPairDetails(detailsResp.ok || {})
             } else {
-              const fetchedMemories = memoriesResponse.ok.longTerm
-              console.log("Fetched child memories:", fetchedMemories)
-              setMemories(Array.isArray(fetchedMemories) ? fetchedMemories : [])
+              setPairDetails({})
             }
           } catch (error: unknown) {
             console.error("Error fetching memories:", error)
             toast.error(
               `Failed to load memory network: ${error instanceof Error ? error.message : "Unknown error"}`
             )
-            setMemories([]) // Clear memories on error
+            setMemories([])
+            setPairDetails({})
           } finally {
             setLoading(false)
           }
@@ -129,14 +147,20 @@ export function useMemoryNetwork() {
 
   const showMemoryNetwork = async (message: Memory) => {
     try {
-      context.setCurrentRootMemory(message) // Set root memory before fetching
-      await context.fetchMemories(message) // fetchMemories will also set currentRootMemory
+      // Set loading and open modal immediately for instant feedback
+      context.setLoading(true)
+      context.setCurrentRootMemory(message)
       openModal()
+
+      // Fetch data in background
+      await context.fetchMemories(message)
     } catch (error: unknown) {
       console.error("Error showing memory network:", error)
       toast.error(
         `Failed to show memory network: ${error instanceof Error ? error.message : "Unknown error"}`
       )
+      // Ensure loading is stopped on error
+      context.setLoading(false)
     }
   }
 

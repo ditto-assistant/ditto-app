@@ -43,6 +43,8 @@ const sanitizeSchema = {
   ...defaultSchema,
   attributes: {
     ...defaultSchema.attributes,
+    // Allow className on container elements used by custom renderers
+    div: [...(defaultSchema?.attributes?.div ?? []), ["className"]],
     // Allow className on table elements
     table: [...(defaultSchema?.attributes?.table ?? []), ["className"]],
     thead: [...(defaultSchema?.attributes?.thead ?? []), ["className"]],

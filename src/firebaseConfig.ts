@@ -66,6 +66,8 @@ export const routes = {
   kgSubjectPairs: PG_VECTOR_API_URL + "/kg/subjects/pairs",
   kgSubjectPairsRecent: PG_VECTOR_API_URL + "/kg/subjects/pairs/recent",
   kgTopSubjects: PG_VECTOR_API_URL + "/kg/subjects/top",
+  kgTopSubjectsWithPairs:
+    PG_VECTOR_API_URL + "/kg/subjects/top-with-recent-pairs",
   // Memory Management Endpoints
   kgDeleteMemoryPair: (pairId: string) =>
     PG_VECTOR_API_URL + `/memory/pairs/${pairId}/delete`,
@@ -79,6 +81,7 @@ export const routes = {
   personalityAssessmentStart: PG_VECTOR_API_URL + "/personality-assessment",
   personalityLastSync: PG_VECTOR_API_URL + "/personality/last-sync",
   pairSubjects: PG_VECTOR_API_URL + "/pairs/subjects",
+  pairDetails: PG_VECTOR_API_URL + "/pairs/details",
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

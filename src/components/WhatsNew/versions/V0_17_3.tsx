@@ -22,6 +22,12 @@ const sections: Section[] = [
         description:
           "The system now provides richer subject information including descriptions when available, giving the AI deeper understanding of your conversation topics and improving the quality of responses.",
       },
+      {
+        type: "improved",
+        title: "Developer Console Logging",
+        description:
+          "Added comprehensive logging for memory stats in development mode, making it easier to verify and debug the memory context system.",
+      },
     ],
   },
 ]

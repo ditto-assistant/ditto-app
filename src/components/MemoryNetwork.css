@@ -1,20 +1,1263 @@
-/* Memory Network Styles */
-/* 
-Only keeping essential styles needed for the vis-network library 
-to function properly. The rest is handled by Tailwind.
-*/
+/* Memory Network Styles - Award-Winning Neural Interface */
 
-/* Make network nodes more visible */
+/* Neural Dashboard Specific Styles */
+.neural-dashboard-container {
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.05) 0%,
+    rgba(46, 204, 113, 0.05) 100%
+  );
+  border-radius: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.neural-dashboard-header {
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  min-height: 0;
+  transition: all 0.3s ease;
+}
+
+.neural-dashboard-search-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.neural-dashboard-search-input:focus {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(114, 137, 218, 0.5) !important;
+  box-shadow: 0 0 20px rgba(114, 137, 218, 0.3) !important;
+  outline: none !important;
+}
+
+.neural-dashboard-button {
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.8) 0%,
+    rgba(46, 204, 113, 0.8) 100%
+  );
+  border: none;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(114, 137, 218, 0.3);
+}
+
+.neural-dashboard-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(114, 137, 218, 0.4);
+}
+
+.neural-dashboard-compact-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.neural-dashboard-compact-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.neural-dashboard-search-toggle {
+  background: rgba(114, 137, 218, 0.1);
+  border: 1px solid rgba(114, 137, 218, 0.2);
+  transition: all 0.2s ease;
+}
+
+.neural-dashboard-search-toggle:hover {
+  background: rgba(114, 137, 218, 0.2);
+  border-color: rgba(114, 137, 218, 0.3);
+  transform: scale(1.05);
+}
+
+.neural-dashboard-button:disabled {
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.neural-dashboard-loading {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.neural-dashboard-stats-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.neural-dashboard-stats-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.neural-dashboard-legend {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.neural-dashboard-legend-item {
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.neural-dashboard-legend-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px);
+}
+
+.neural-glow {
+  filter: drop-shadow(0 0 8px rgba(114, 137, 218, 0.4)) !important;
+  text-shadow: 0 0 10px rgba(114, 137, 218, 0.3);
+}
+
+.neural-pulse {
+  animation: neuralPulse 2s ease-in-out infinite;
+}
+
+@keyframes neuralPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.neural-connection {
+  background: linear-gradient(
+    90deg,
+    rgba(114, 137, 218, 0.3) 0%,
+    rgba(46, 204, 113, 0.3) 50%,
+    rgba(241, 196, 15, 0.3) 100%
+  );
+  height: 2px;
+  width: 100%;
+  border-radius: 1px;
+  margin: 8px 0;
+  opacity: 0.6;
+}
+
+/* Neuron-inspired network styling */
 .vis-network .vis-node {
   border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 15px rgba(255, 255, 255, 0.3),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+  filter: drop-shadow(0 0 8px rgba(114, 137, 218, 0.4));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.vis-network .vis-node:hover {
+  box-shadow:
+    0 0 25px rgba(255, 255, 255, 0.5),
+    inset 0 0 15px rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 0 12px rgba(114, 137, 218, 0.6));
+  transform: scale(1.05);
+}
+
+/* Enhanced edge styling with dynamic thickness */
 .vis-network .vis-edge {
   stroke-width: 2px;
+  filter: drop-shadow(0 0 3px rgba(160, 160, 160, 0.3));
+  transition: all 0.3s ease;
 }
 
-/* Essential styles for TableView */
+.vis-network .vis-edge.strong-connection {
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 6px rgba(114, 137, 218, 0.5));
+}
+
+.vis-network .vis-edge.weak-connection {
+  stroke-width: 1px;
+  opacity: 0.6;
+}
+
+/* Subject nodes special styling */
+.vis-network .vis-node.subject-node {
+  border: 2px solid rgba(46, 204, 113, 0.8);
+  box-shadow:
+    0 0 12px rgba(46, 204, 113, 0.4),
+    inset 0 0 8px rgba(46, 204, 113, 0.1);
+  filter: drop-shadow(0 0 6px rgba(46, 204, 113, 0.3));
+}
+
+.vis-network .vis-node.subject-node.key-subject {
+  border: 2px solid rgba(255, 215, 0, 0.9);
+  box-shadow:
+    0 0 15px rgba(255, 215, 0, 0.5),
+    inset 0 0 10px rgba(255, 215, 0, 0.2);
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+}
+
+/* Floating memory preview - now works as a modal */
+.memory-preview-card {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  max-width: min(90vw, 520px);
+  min-width: min(90vw, 400px);
+  max-height: min(85vh, 700px);
+  z-index: 10000;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(114, 137, 218, 0.2);
+  /* Center the modal properly */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure chat message modal has highest priority */
+.memory-preview-card.chat-message-modal {
+  z-index: 100000 !important;
+  /* Prevent overflow and ensure proper sizing */
+  max-height: 85vh !important;
+  overflow: hidden !important;
+  /* Ensure perfect centering */
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  /* Override any conflicting positioning */
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Chat message content optimization */
+.chat-message-content {
+  max-height: calc(85vh - 120px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  /* Ensure proper scrolling */
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  /* Prevent content from overflowing the modal */
+  padding-right: 8px !important;
+}
+
+/* Mobile chat message modal optimization */
+@media (max-width: 768px) {
+  .memory-preview-card.chat-message-modal {
+    /* Mobile-first sizing with proper width calculation */
+    width: min(95vw, 400px) !important;
+    max-width: 95vw !important;
+    min-width: 320px !important;
+    /* Optimize height for mobile */
+    max-height: 90vh !important;
+    height: auto !important;
+    /* Remove conflicting margins that affect centering */
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Force perfect centering */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Ensure modal floats over everything */
+    z-index: 1000000 !important;
+    /* Prevent any positioning issues */
+    position: fixed !important;
+    /* Ensure proper box-sizing */
+    box-sizing: border-box !important;
+    /* Add padding but account for it in centering */
+    padding: 16px !important;
+    /* Prevent positioning conflicts */
+    right: auto !important;
+    bottom: auto !important;
+  }
+
+  .chat-message-content {
+    max-height: calc(90vh - 140px) !important;
+    padding-right: 4px !important;
+    /* Ensure smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Mobile backdrop optimization */
+  .memory-preview-card.chat-message-modal + div[class*="fixed inset-0"] {
+    z-index: 999999 !important;
+  }
+}
+
+/* Extra small screen optimization */
+@media (max-width: 480px) {
+  .memory-preview-card.chat-message-modal {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    min-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    /* Force absolute centering on very small screens */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
+  }
+
+  .memory-preview-card {
+    /* Extra small screen modal centering */
+    width: 95vw !important;
+    max-width: 95vw !important;
+    min-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    /* Force absolute centering */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
+  }
+
+  .neural-dashboard-legend {
+    /* Extra small screen neural subjects modal */
+    width: 95vw !important;
+    max-width: 95vw !important;
+    min-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    /* Force absolute centering */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
+  }
+
+  .chat-message-content {
+    max-height: calc(95vh - 120px) !important;
+    padding-right: 4px !important;
+    /* Ensure smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* ChatMessage component optimization within memory network modal */
+.chat-message-modal .memory-preview-content {
+  /* Override any inherited styles that might cause issues */
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.chat-message-modal .memory-preview-content .space-y-6 {
+  /* Ensure proper spacing between messages */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure ChatMessage components render properly */
+.chat-message-modal .memory-preview-content .message-pair,
+.chat-message-modal .memory-preview-content .chat-message {
+  /* Override any conflicting styles */
+  max-width: none !important;
+  overflow: visible !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Chat message modal backdrop - highest priority */
+.memory-preview-card.chat-message-modal + div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 99999;
+  /* Ensure backdrop covers entire screen */
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+/* Regular modal backdrop styling */
+.memory-preview-card:not(.chat-message-modal) + div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+}
+
+/* Ensure modals are properly layered */
+.memory-preview-card.fixed {
+  z-index: 10001;
+  pointer-events: auto;
+}
+
+/* Ensure memory card stays centered on all screen sizes */
+.memory-preview-card:not(.memory-card-view) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Override any conflicting positioning for wider screens */
+@media (min-width: 769px) {
+  .memory-preview-card:not(.memory-card-view) {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure proper centering on wide screens */
+    max-width: min(90vw, 520px);
+    min-width: min(90vw, 400px);
+  }
+}
+
+/* Prevent text selection in modals */
+.memory-preview-card {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ensure modal content is properly touchable */
+.memory-preview-card * {
+  pointer-events: auto;
+}
+
+/* Modal backdrop improvements */
+.memory-preview-card + div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+/* Additional backdrop styling for better visibility */
+.memory-preview-card ~ div[class*="fixed inset-0"] {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+/* Ensure proper touch handling for all modals */
+.memory-preview-card,
+.memory-preview-card * {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.memory-preview-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.3) 0%,
+    rgba(46, 204, 113, 0.3) 50%,
+    rgba(241, 196, 15, 0.3) 100%
+  );
+  border-radius: 16px;
+  z-index: -1;
+}
+
+.memory-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.memory-preview-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #7289da, #2ecc71);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+}
+
+.memory-preview-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e8e8e8;
+  flex: 1;
+}
+
+.memory-preview-content {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  max-height: 70vh;
+  padding-right: 4px;
+  /* Ensure scrolling works properly */
+  overflow-x: hidden;
+  /* Force scrolling to work */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar styling for the content */
+.memory-preview-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.memory-preview-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.memory-preview-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.memory-preview-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Subjects scrollbar styling */
+.subjects-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.subjects-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.subjects-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.subjects-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Enhanced scrollbar for chat messages */
+.memory-preview-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Chat message styling */
+.chat-message-user {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.chat-message-ditto {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.chat-message-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
+}
+
+.chat-message-avatar.user {
+  background: #3b82f6;
+}
+
+.chat-message-avatar.ditto {
+  background: #22c55e;
+}
+
+/* Copy button styling */
+.copy-button {
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  transform: scale(1.1);
+}
+
+.group:hover .copy-button {
+  opacity: 1;
+}
+
+/* ChatMessage component scrolling support */
+.memory-preview-content .prose {
+  max-height: none;
+  overflow: visible;
+}
+
+.memory-preview-content .prose > * {
+  max-width: none;
+}
+
+/* Ensure ChatMessage content can scroll */
+.memory-preview-content .prose .prose-invert {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Ensure ChatMessage components can scroll properly */
+.memory-preview-content .prose {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-content .prose-invert {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Override any height constraints from ChatMessage component */
+.memory-preview-content > div {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-content .space-y-4 {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure ChatMessage components in memory network modal can scroll */
+.memory-preview-card .memory-preview-content .prose {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-card .memory-preview-content .prose-invert {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.memory-preview-card .memory-preview-content .prose > * {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Override any flex constraints that might prevent scrolling */
+.memory-preview-card .memory-preview-content > div {
+  flex: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Connected pairs scrollable area - removed as section was removed */
+
+/* Slide animations for chat message modal */
+@keyframes slideInRight {
+  from {
+    transform: translate(100%, -50%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-100%, -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translate(-100%, -50%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-in-out forwards;
+}
+
+.animate-slide-out-left {
+  animation: slideOutLeft 0.3s ease-in-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-in-out forwards;
+}
+
+.memory-preview-subjects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Ensure proper scrolling behavior */
+  width: 100%;
+  /* Prevent flex items from interfering with scroll */
+  align-content: flex-start;
+  /* Add padding for better edge spacing */
+  padding: 4px 0;
+  /* Center key subjects */
+  justify-content: center;
+}
+
+.memory-preview-subject {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  color: #2ecc71;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  /* Improve visual appeal */
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.1);
+}
+
+.memory-preview-subject.key-subject {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  /* Enhanced key subject styling */
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.15);
+  font-weight: 600;
+  /* Make key subjects stand out */
+  position: relative;
+  /* Add subtle indicator */
+  border-width: 2px;
+}
+
+/* Hover effects for subject tags */
+.memory-preview-subject:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+  border-color: rgba(46, 204, 113, 0.5);
+}
+
+.memory-preview-subject.key-subject:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+}
+
+/* Network controls */
+.memory-network-controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memory-network-control-button {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+.memory-network-control-button:hover {
+  background: rgba(114, 137, 218, 0.3);
+  border-color: rgba(114, 137, 218, 0.5);
+  transform: scale(1.05);
+}
+
+.memory-network-control-button.active {
+  background: rgba(114, 137, 218, 0.5);
+  border-color: rgba(114, 137, 218, 0.8);
+}
+
+/* Path tracing visualization */
+.vis-network .vis-edge.path-trace {
+  stroke-width: 5px;
+  color: rgba(255, 193, 7, 0.9);
+  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
+  animation: pathFlow 2s ease-in-out infinite;
+}
+
+@keyframes pathFlow {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Memory type indicators */
+.memory-type-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #7289da, #2ecc71);
+  border: 2px solid rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: white;
+  z-index: 10;
+}
+
+/* Overview section styling */
+.overview-section {
+  margin-bottom: 20px;
+}
+
+.overview-item {
+  margin-bottom: 16px;
+}
+
+.overview-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Show full thread button styling */
+.show-full-thread-section {
+  text-align: center;
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.show-full-thread-section button {
+  transition: all 0.2s ease;
+}
+
+.show-full-thread-section button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.show-full-thread-section button:active {
+  transform: translateY(0);
+}
+
+/* Markdown content styling within memory preview */
+.memory-preview-content .markdown-content {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.memory-preview-content .markdown-content h4 {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.memory-preview-content .markdown-content p {
+  margin: 0 0 8px 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.memory-preview-content .markdown-content img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin: 8px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.memory-preview-content .markdown-content .image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.memory-preview-content .markdown-content .image-container img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.memory-preview-content .markdown-content .image-container img:hover {
+  transform: scale(1.02);
+}
+
+/* Network statistics overlay */
+.memory-network-stats {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  font-size: 12px;
+  min-width: 200px;
+}
+
+.memory-network-stats-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #7289da;
+}
+
+.memory-network-stats-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.memory-network-stats-value {
+  color: #2ecc71;
+  font-weight: 500;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .memory-network-controls {
+    top: 8px;
+    left: 8px;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .memory-network-control-button {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+  }
+
+  .memory-preview-card {
+    /* Use fixed width for better centering on mobile */
+    width: min(95vw, 380px) !important;
+    max-width: 95vw !important;
+    min-width: 320px !important;
+    max-height: min(85vh, 500px);
+    padding: 16px;
+    /* Ensure modal is visible on mobile */
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Force proper positioning */
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Remove any conflicting margins */
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Ensure proper box-sizing */
+    box-sizing: border-box !important;
+    /* Ensure modal appears above other elements */
+    z-index: 10000 !important;
+    /* Prevent positioning conflicts */
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure consistent positioning across all screen sizes */
+    position: fixed !important;
+  }
+
+  /* Ensure neural subjects modal is properly positioned on mobile */
+  .neural-dashboard-legend {
+    /* Force proper positioning on mobile */
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Ensure it's visible and above other elements */
+    z-index: 100 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Mobile-specific sizing - remove any conflicting width/margin rules */
+    width: min(90vw, 420px) !important;
+    max-width: 90vw !important;
+    max-height: 80vh !important;
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Ensure proper box-sizing */
+    box-sizing: border-box !important;
+    /* Remove backdrop-filter on mobile to prevent positioning issues */
+    backdrop-filter: none !important;
+    /* Ensure no conflicting positioning */
+    right: auto !important;
+    bottom: auto !important;
+  }
+
+  .memory-network-stats {
+    bottom: 8px;
+    left: 8px;
+    padding: 8px 12px;
+    min-width: 150px;
+    font-size: 11px;
+  }
+
+  /* Dashboard mobile optimizations */
+  .neural-dashboard-header {
+    padding: 12px 16px;
+  }
+
+  .neural-dashboard-search {
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .neural-dashboard-search .search-input {
+    width: 100%;
+  }
+
+  .neural-dashboard-search .search-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .neural-dashboard-stats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .neural-dashboard-header {
+    padding: 8px 12px;
+  }
+
+  .neural-dashboard-header .flex {
+    gap: 4px;
+  }
+
+  .neural-dashboard-header button {
+    padding: 4px 6px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .neural-dashboard-header .text-xs {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+
+  .vis-network .vis-node {
+    box-shadow:
+      0 0 10px rgba(255, 255, 255, 0.3),
+      inset 0 0 5px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Mobile touch optimizations */
+  .vis-network .vis-node {
+    /* Ensure nodes are easily tappable on mobile */
+    min-width: 44px;
+    min-height: 44px;
+    /* Improve touch response */
+    touch-action: manipulation;
+    /* Remove hover effects that don't work well on mobile */
+    transition: all 0.2s ease;
+  }
+
+  .vis-network .vis-node:hover {
+    /* Simplified hover for mobile */
+    transform: scale(1.02);
+    box-shadow:
+      0 0 15px rgba(255, 255, 255, 0.4),
+      inset 0 0 8px rgba(255, 255, 255, 0.15);
+  }
+
+  /* Ensure edges don't interfere with node tapping */
+  .vis-network .vis-edge {
+    pointer-events: none;
+  }
+
+  /* Make sure the network container is touch-friendly */
+  .memory-network-container {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #memory-network-container {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Force proper sizing for all node types on mobile */
+  .vis-network .vis-node[data-id*="shared-subject"] {
+    /* Ensure subject nodes are properly sized for touch */
+    min-width: 48px !important;
+    min-height: 48px !important;
+    /* Make key subjects even more prominent */
+    border-width: 3px !important;
+  }
+
+  .vis-network .vis-node[data-id*="shared-subject"].key-subject {
+    /* Key subjects should be even more touchable */
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-width: 4px !important;
+  }
+
+  /* Ensure memory nodes are also properly sized */
+  .vis-network .vis-node:not([data-id*="shared-subject"]) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* Mobile modal improvements */
+  .memory-preview-card {
+    /* Ensure modals are properly sized for mobile */
+    max-width: min(95vw, 360px);
+    min-width: min(95vw, 300px);
+    max-height: min(90vh, 600px);
+    /* Improve touch handling */
+    touch-action: manipulation;
+    /* Ensure proper z-index on mobile */
+    z-index: 60;
+  }
+
+  /* Mobile backdrop improvements */
+  .memory-preview-card + div[class*="fixed inset-0"],
+  .memory-preview-card ~ div[class*="fixed inset-0"] {
+    /* Ensure backdrop is visible on mobile */
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+  }
+}
+
+/* Accessibility and performance */
+@media (prefers-reduced-motion: reduce) {
+  .vis-network .vis-node,
+  .vis-network .vis-edge,
+  .memory-preview-card,
+  .memory-network-control-button {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .vis-network .vis-node {
+    border-width: 3px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
+
+  .memory-preview-card {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.98);
+  }
+}
+
+/* Loading states */
+.memory-network-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 40;
+}
+
+.memory-network-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(114, 137, 218, 0.2);
+  border-top: 3px solid #7289da;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.memory-network-loading-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Original TableView styles preserved */
 .memory-node {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -260,34 +1503,6 @@ to function properly. The rest is handled by Tailwind.
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  #memory-network-container {
-    width: 100% !important;
-    touch-action: none !important;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  .vis-network {
-    touch-action: none !important;
-    -webkit-user-select: none;
-    user-select: none;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  .memory-table {
-    width: 100% !important;
-    padding: 12px 8px;
-  }
-
-  .memory-node {
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
 /* Ensure proper network visibility on all devices */
 .memory-network-container {
   width: 100%;
@@ -300,4 +1515,973 @@ to function properly. The rest is handled by Tailwind.
   width: 100%;
   height: 100%;
   min-height: 500px;
+}
+
+/* Mobile touch target improvements */
+@media (max-width: 768px) {
+  /* Ensure all interactive elements meet mobile touch target requirements */
+  .vis-network .vis-node {
+    /* Minimum 44x44px touch target as per mobile guidelines */
+    min-width: 44px !important;
+    min-height: 44px !important;
+    /* Improve touch response */
+    touch-action: manipulation;
+    /* Ensure proper cursor for touch devices */
+    cursor: pointer;
+  }
+
+  /* Make sure the network area is properly sized for mobile */
+  .vis-network {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure the canvas has proper touch handling */
+  .vis-network canvas {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  /* Force proper sizing for all node types on mobile */
+  .vis-network .vis-node[data-id*="shared-subject"] {
+    /* Ensure subject nodes are properly sized for touch */
+    min-width: 48px !important;
+    min-height: 48px !important;
+    /* Make key subjects even more prominent */
+    border-width: 3px !important;
+  }
+
+  .vis-network .vis-node[data-id*="shared-subject"].key-subject {
+    /* Key subjects should be even more touchable */
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-width: 4px !important;
+  }
+
+  /* Ensure memory nodes are also properly sized */
+  .vis-network .vis-node:not([data-id*="shared-subject"]) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
+/* Legend overlay (top-right) */
+.memory-network-legend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 160px;
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+}
+
+.memory-network-legend .legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.memory-network-legend .legend-title {
+  font-weight: 600;
+  color: #9aa7ff;
+  font-size: 12px;
+}
+
+.memory-network-legend .legend-close {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.memory-network-legend .legend-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.memory-network-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin: 4px 0;
+}
+
+.memory-network-legend .legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.memory-network-legend .legend-swatch.node.query {
+  background: #ed4245;
+}
+
+.memory-network-legend .legend-swatch.node.memory {
+  background: #9b59b6;
+}
+
+.memory-network-legend .legend-swatch.node.subject {
+  background: #2ecc71;
+}
+
+.memory-network-legend .legend-swatch.node.key-subject {
+  background: #ffd700;
+}
+
+.memory-network-legend .legend-note {
+  margin-top: 6px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+/* Legend toggle button (when hidden) */
+.memory-network-legend-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.memory-network-legend-toggle:hover {
+  background: rgba(114, 137, 218, 0.3);
+  border-color: rgba(114, 137, 218, 0.5);
+  transform: scale(1.03);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .memory-network-legend {
+    padding: 8px;
+    min-width: 140px;
+    font-size: 11px;
+  }
+
+  .memory-network-legend .legend-title {
+    font-size: 11px;
+  }
+
+  .memory-network-legend .legend-item {
+    font-size: 10px;
+    margin: 3px 0;
+    gap: 6px;
+  }
+
+  .memory-network-legend .legend-swatch {
+    width: 12px;
+    height: 12px;
+  }
+
+  .memory-network-legend .legend-note {
+    font-size: 9px;
+  }
+
+  .memory-network-legend-toggle {
+    top: 8px;
+    right: 8px;
+    padding: 5px;
+  }
+}
+
+/* iOS-style View Toggle */
+.view-toggle-container {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.view-toggle-option {
+  padding: 6px 12px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  min-width: 50px;
+  text-align: center;
+}
+
+.view-toggle-option:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.view-toggle-option.active {
+  background: rgba(114, 137, 218, 0.8);
+  color: white;
+  box-shadow: 0 2px 8px rgba(114, 137, 218, 0.4);
+  transform: scale(1.05);
+}
+
+/* Mobile optimizations for toggle */
+@media (max-width: 768px) {
+  .view-toggle-container {
+    padding: 1px;
+  }
+
+  .view-toggle-option {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 40px;
+  }
+}
+
+/* Query label truncation on small screens */
+@media (max-width: 768px) {
+  .query-label {
+    font-size: 11px !important;
+    max-width: 50vw !important;
+  }
+
+  .neural-dashboard-stats-card {
+    padding: 8px 12px !important;
+    gap: 6px !important;
+  }
+
+  .neural-dashboard-stats-card .h-4 {
+    width: 14px !important;
+    height: 14px !important;
+  }
+}
+
+/* Memory Network Modal - ensure proper touch handling */
+#memoryNetwork {
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+
+#memoryNetwork .modal-content {
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure the network container itself has proper touch handling */
+.memory-network-container,
+#memory-network-container {
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent text selection that might interfere with touch */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Slider styling for card navigation */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--muted) 0%, var(--muted) 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.slider:hover {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary/50);
+}
+
+.slider:focus {
+  outline: none;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 0 0 3px var(--ring/30),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slider::-webkit-slider-track {
+  background: transparent;
+  height: 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--primary);
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  border: 3px solid var(--background);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.slider::-webkit-slider-thumb::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--background);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: var(--primary/90);
+  transform: scale(1.15) translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-webkit-slider-thumb:active {
+  background: var(--primary);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.slider::-moz-range-track {
+  background: transparent;
+  height: 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  background: var(--primary);
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  border: 3px solid var(--background);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slider::-moz-range-thumb:hover {
+  background: var(--primary/90);
+  transform: scale(1.15) translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-moz-range-thumb:active {
+  background: var(--primary);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced slider container styling */
+.slider-container {
+  position: relative;
+  padding: 8px 0;
+}
+
+.slider-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--primary/20) 0%,
+    var(--primary/40) 50%,
+    var(--primary/20) 100%
+  );
+  border-radius: 1px;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* Slider value indicator */
+.slider-value {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.slider:hover + .slider-value,
+.slider:focus + .slider-value {
+  opacity: 1;
+}
+
+/* Card view specific styles */
+.memory-preview-card.w-full {
+  width: 100% !important;
+  max-width: none !important;
+  position: relative !important;
+  transform: none !important;
+  left: auto !important;
+  top: auto !important;
+  margin: 0 !important;
+  /* Ensure proper sizing for card view */
+  max-height: calc(100vh - 200px) !important;
+  overflow: hidden !important;
+}
+
+/* Card view header styling */
+.memory-preview-card .memory-preview-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+/* Rank badge styling */
+.memory-preview-card .bg-primary {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Navigation button styling */
+.memory-preview-card .bg-primary.text-primary-foreground {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Ensure proper spacing in card view */
+.memory-preview-card .memory-preview-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Card view specific content sizing */
+.memory-preview-card.w-full .memory-preview-content {
+  max-height: calc(100vh - 300px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  /* Ensure content can scroll properly */
+  flex: 1 !important;
+  min-height: 0 !important;
+  /* Ensure proper scrolling */
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+}
+
+/* Prompt and Response sections */
+.prompt-section,
+.response-section {
+  margin-bottom: 20px;
+}
+
+.prompt-content,
+.response-content {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.prompt-content {
+  border-left: 3px solid rgba(59, 130, 246, 0.5);
+}
+
+.response-content {
+  border-left: 3px solid rgba(34, 197, 94, 0.5);
+}
+
+/* Subjects section */
+.subjects-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.25) 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  /* Remove negative margins that cause width issues */
+  margin: 20px 0 0 0;
+  padding: 20px 20px 24px 20px;
+  /* Ensure proper flex behavior */
+  flex-shrink: 0;
+  /* Ensure full width */
+  width: 100%;
+  box-sizing: border-box;
+  /* Add rounded corners and subtle border */
+  border-radius: 0 0 16px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  /* Add subtle shadow for depth */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Subjects content container */
+.subjects-content {
+  /* Ensure proper scrolling container */
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  /* Ensure full width */
+  width: 100%;
+  box-sizing: border-box;
+  /* Add top margin for better spacing */
+  margin-top: 12px;
+}
+
+/* Subjects content when expanded */
+.subjects-content:not(.collapsed) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Ensure smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Subjects toggle button */
+.subjects-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  /* Ensure button doesn't interfere with layout */
+  flex-shrink: 0;
+  /* Improve visual feedback */
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.subjects-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Ensure subjects area has proper behavior */
+.subjects-section .subjects-content {
+  /* Default state - collapsed */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.subjects-section .subjects-content:not(.collapsed) {
+  /* Expanded state */
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Subjects content with collapse animation */
+.subjects-content {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.subjects-content.collapsed {
+  max-height: 0;
+}
+
+/* Mobile subjects optimization */
+@media (max-width: 768px) {
+  .subjects-content {
+    max-height: 300px;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    /* Ensure smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+  }
+
+  .subjects-content.collapsed {
+    max-height: 0;
+  }
+
+  .subjects-section {
+    margin: 20px 0 0 0;
+    padding: 20px 16px 24px 16px;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 0 0 16px 16px !important;
+  }
+
+  /* Ensure subjects are scrollable when expanded */
+  .subjects-content:not(.collapsed) {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Extra small screen subjects optimization */
+@media (max-width: 480px) {
+  .subjects-content:not(.collapsed) {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Mobile optimizations for card view */
+@media (max-width: 768px) {
+  .slider::-webkit-slider-thumb {
+    height: 24px;
+    width: 24px;
+  }
+
+  .slider::-moz-range-thumb {
+    height: 24px;
+    width: 24px;
+  }
+
+  .memory-preview-card.w-full {
+    margin: 8px !important;
+    padding: 16px !important;
+    /* Mobile card view sizing */
+    max-height: calc(100vh - 120px) !important;
+    height: calc(100vh - 120px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    /* Ensure proper overflow handling */
+    overflow: hidden !important;
+  }
+
+  .memory-preview-card .memory-preview-content {
+    max-height: calc(100vh - 200px) !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    /* Ensure content scrolls properly */
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+  }
+
+  /* Mobile card view container */
+  .memory-preview-card.w-full .memory-preview-header {
+    flex-shrink: 0 !important;
+  }
+
+  .memory-preview-card.w-full .memory-preview-content {
+    flex: 1 !important;
+    min-height: 0 !important;
+    padding: 16px !important;
+  }
+
+  .memory-preview-card.w-full .subjects-section {
+    flex-shrink: 0 !important;
+    margin: 20px 0 0 0 !important;
+    padding: 20px 16px 24px 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 0 0 16px 16px !important;
+  }
+
+  /* Mobile subjects optimization */
+  .memory-preview-card.w-full .subjects-content:not(.collapsed) {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+  }
+
+  /* Mobile prompt and response styling */
+  .prompt-content,
+  .response-content {
+    padding: 10px !important;
+    margin-top: 6px !important;
+  }
+
+  .prompt-section,
+  .response-section {
+    margin-bottom: 16px !important;
+  }
+
+  /* Mobile chat message modal optimization */
+  .memory-preview-card.w-full .chat-message-modal {
+    max-height: 90vh !important;
+    width: min(95vw, 480px) !important;
+  }
+
+  .chat-message-content {
+    max-height: calc(90vh - 140px) !important;
+    padding-right: 4px !important;
+  }
+}
+
+/* Card view specific mobile optimizations */
+@media (max-width: 768px) {
+  /* Ensure the card view container doesn't cut off content on small screens */
+  .memory-preview-card {
+    /* Remove max-width constraints on mobile */
+    max-width: calc(100vw - 16px) !important;
+    min-width: calc(100vw - 16px) !important;
+    /* Ensure proper padding and margins */
+    margin: 8px !important;
+    padding: 16px !important;
+    /* Prevent horizontal overflow */
+    overflow-x: hidden !important;
+    /* Ensure content fits within viewport */
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure the card content area is properly sized */
+  .memory-preview-card .memory-preview-content {
+    /* Remove any horizontal overflow */
+    overflow-x: hidden !important;
+    /* Ensure content fits within the card */
+    width: 100% !important;
+    max-width: 100% !important;
+    /* Proper padding for mobile */
+    padding: 0 !important;
+  }
+
+  /* Ensure overview sections don't overflow */
+  .overview-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .overview-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Ensure the show full thread button doesn't overflow */
+  .show-full-thread-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .show-full-thread-section button {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure subjects section doesn't overflow */
+  .subjects-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .memory-preview-subjects {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Additional mobile touch optimizations */
+@media (max-width: 768px) {
+  /* Ensure the modal content is properly touchable */
+  #memoryNetwork .modal-content {
+    /* Prevent any touch event interference */
+    touch-action: pan-x pan-y pinch-zoom;
+    /* Ensure proper scrolling */
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure the network container is properly sized for mobile */
+  .memory-network-container,
+  #memory-network-container {
+    /* Ensure proper touch handling */
+    touch-action: pan-x pan-y pinch-zoom;
+    /* Prevent any interference with touch gestures */
+    pointer-events: auto;
+    /* Ensure proper sizing */
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 400px !important;
+  }
+}
+
+/* Memory Card View - for card view mode (not modal) */
+.memory-card-view {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(114, 137, 218, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Remove all positioning that interferes with card view */
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  max-width: none !important;
+  min-width: none !important;
+  max-height: none !important;
+  z-index: auto !important;
+}
+
+.memory-card-view::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(114, 137, 218, 0.3) 0%,
+    rgba(46, 204, 113, 0.3) 50%,
+    rgba(241, 196, 15, 0.3) 100%
+  );
+  border-radius: 16px;
+  z-index: -1;
+}
+
+/* Ensure card view content is properly sized */
+.memory-card-view .memory-preview-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+/* Mobile optimizations for card view */
+@media (max-width: 768px) {
+  .memory-card-view {
+    /* Mobile-specific sizing */
+    padding: 16px;
+    margin: 8px;
+    /* Ensure proper mobile layout */
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    /* Prevent any overflow issues */
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .memory-card-view .memory-preview-content {
+    /* Mobile content optimization */
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* Extra small screen optimization */
+@media (max-width: 480px) {
+  .memory-card-view {
+    padding: 12px;
+    margin: 4px;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+  }
+}
+
+/* Global mobile modal centering fix - ensures consistent behavior across all browsers */
+@media (max-width: 768px) {
+  /* Reset any browser-specific positioning quirks */
+  .memory-preview-card,
+  .neural-dashboard-legend,
+  .memory-preview-card.chat-message-modal {
+    /* Ensure consistent centering across all mobile browsers */
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Remove any conflicting properties that affect centering */
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Ensure proper box model */
+    box-sizing: border-box !important;
+    /* Prevent browser-specific positioning issues */
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure no negative margins or transforms interfere */
+    transform-origin: center center !important;
+    /* Disable any browser-specific positioning behavior */
+    -webkit-transform: translate(-50%, -50%) !important;
+    -moz-transform: translate(-50%, -50%) !important;
+    -ms-transform: translate(-50%, -50%) !important;
+    -o-transform: translate(-50%, -50%) !important;
+  }
+}
+
+/* Ensure consistent positioning across all screen sizes */
+@media (min-width: 769px) {
+  .memory-preview-card:not(.memory-card-view),
+  .memory-preview-card.chat-message-modal {
+    /* Force consistent centering on wider screens */
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure proper sizing on wide screens */
+    max-width: min(90vw, 520px);
+    min-width: min(90vw, 400px);
+  }
 }
