@@ -101,6 +101,25 @@
   transform: scale(0.95);
 }
 
+/* Special state when auto-scroll is interrupted during streaming */
+.follow-button.streaming-interrupted {
+  background-color: var(--primary, #4752c4);
+  box-shadow: 0 4px 15px rgba(71, 82, 196, 0.4);
+  animation: pulse-attention 2s ease-in-out infinite;
+}
+
+@keyframes pulse-attention {
+  0%,
+  100% {
+    transform: scale(1) translateZ(0);
+    box-shadow: 0 4px 15px rgba(71, 82, 196, 0.4);
+  }
+  50% {
+    transform: scale(1.1) translateZ(0);
+    box-shadow: 0 6px 20px rgba(71, 82, 196, 0.6);
+  }
+}
+
 /* Custom ScrollToBottom scroll view container */
 .messages-scroll-view,
 .custom-scroll-view {

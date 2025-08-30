@@ -69,12 +69,6 @@ function useScrollState() {
   const prevScrollTopRef = useRef(0)
   const scrollHeightRef = useRef(0)
 
-  const clearAllScrollFlags = useCallback(() => {
-    userScrollingManualRef.current = false
-    userScrollingImageRef.current = false
-    userScrollingKeyboardRef.current = false
-  }, [])
-
   return {
     showScrollToBottom,
     setShowScrollToBottom,
@@ -87,7 +81,6 @@ function useScrollState() {
     isInitialScrollRef,
     prevScrollTopRef,
     scrollHeightRef,
-    clearAllScrollFlags,
   }
 }
 
@@ -104,6 +97,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   forceScrollToBottomRef,
   scrollContainerRefExternal,
   messages = [],
+  onManualScrollStateChange, // Add callback to expose manual scroll state
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const scrollButtonRef = useRef<HTMLButtonElement>(null)
@@ -122,8 +116,21 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     isInitialScrollRef,
     prevScrollTopRef,
     scrollHeightRef,
-    clearAllScrollFlags,
   } = useScrollState()
+
+  // Define clearAllScrollFlags inside this component to access onManualScrollStateChange
+  const clearAllScrollFlags = useCallback(() => {
+    userScrollingManualRef.current = false
+    userScrollingImageRef.current = false
+    userScrollingKeyboardRef.current = false
+    // Notify parent that manual scrolling has stopped
+    onManualScrollStateChange?.(false)
+  }, [
+    onManualScrollStateChange,
+    userScrollingManualRef,
+    userScrollingImageRef,
+    userScrollingKeyboardRef,
+  ])
 
   const rafIdRef = useRef<number | null>(null)
   const cancelRaf = useCallback(() => {
@@ -162,11 +169,16 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
   // Expose force scroll function to parent
   const forceScrollToBottom: ForceScrollFunction = useCallback(() => {
-    // Clear all manual scrolling flags and force scroll to bottom for new messages
-    clearAllScrollFlags()
+    // Only clear manual scrolling flags if user hasn't intentionally scrolled up
+    // This allows users to interrupt auto-scroll during streaming
+    if (!userScrollingManualRef.current) {
+      clearAllScrollFlags()
+    } else {
+      return
+    }
 
-    // Force scroll to bottom immediately
-    if (scrollContainerRef.current) {
+    // Force scroll to bottom immediately, but only if user hasn't manually scrolled up
+    if (scrollContainerRef.current && !userScrollingManualRef.current) {
       const timeout1 = setTimeout(
         () => scrollToBottom("auto"),
         SCROLL_CONSTANTS.STANDARD_SCROLL_DELAY
@@ -184,7 +196,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       addTimeout(timeout2)
       addTimeout(timeout3)
     }
-  }, [scrollToBottom, clearAllScrollFlags, addTimeout])
+  }, [scrollToBottom, clearAllScrollFlags, addTimeout, userScrollingManualRef])
 
   useEffect(() => {
     if (onScrollToTopRef) {
@@ -378,38 +390,51 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
         scrollHeight - scrollTop - clientHeight <
         SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
 
+      // Detect scroll direction change more immediately
+      const scrollDirection =
+        scrollTop > prevScrollTopRef.current ? "down" : "up"
+      const isStreamingMode = streamingTimeoutRef.current !== null
+
       // Only mark as manual scrolling if:
       // 1. User scrolled away from bottom AND
       // 2. The scroll position actually decreased significantly (user scrolled up) AND
       // 3. Content hasn't changed AND we're not in streaming mode
       if (!isBottom && isScrolledToBottom) {
         const contentUnchanged = scrollHeight === scrollHeightRef.current
-        const isStreamingMode = streamingTimeoutRef.current !== null
 
         // During streaming mode, be EXTREMELY restrictive about manual scroll detection
         if (isStreamingMode) {
-          // During streaming, only consider it manual if:
+          // During streaming, be more responsive to user scrolling to allow interruption
           // 1. User scrolled up by more than threshold
-          // 2. AND content didn't change at all
-          // 3. AND they're currently far from bottom
-          const verySignificantScrollUp =
+          // 2. AND they're currently away from bottom
+          const significantScrollUp =
             scrollTop <
-            prevScrollTopRef.current -
-              SCROLL_CONSTANTS.VERY_SIGNIFICANT_SCROLL_UP
-          const veryFarFromBottom =
+            prevScrollTopRef.current - SCROLL_CONSTANTS.SIGNIFICANT_SCROLL_UP
+          const awayFromBottom =
             scrollHeight - scrollTop - clientHeight >
-            SCROLL_CONSTANTS.VERY_FAR_FROM_BOTTOM
+            SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
 
-          if (
-            verySignificantScrollUp &&
-            contentUnchanged &&
-            veryFarFromBottom
-          ) {
+          if (significantScrollUp && awayFromBottom) {
             userScrollingManualRef.current = true
-            const timeout = setTimeout(() => {
-              userScrollingManualRef.current = false
-            }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT)
-            addTimeout(timeout)
+            // Notify parent of manual scroll state change
+            onManualScrollStateChange?.(true)
+
+            // If we're in streaming mode, clear the streaming timeout to give user full control
+            if (isStreamingMode && streamingTimeoutRef.current) {
+              clearTimeout(streamingTimeoutRef.current)
+              streamingTimeoutRef.current = null
+            }
+
+            // During streaming, don't auto-clear the manual scroll flag
+            // User must explicitly resume by scrolling to bottom or clicking button
+            if (!isStreamingMode) {
+              const timeout = setTimeout(() => {
+                userScrollingManualRef.current = false
+                // Notify parent of manual scroll state change
+                onManualScrollStateChange?.(false)
+              }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT)
+              addTimeout(timeout)
+            }
           }
         } else {
           // Normal mode - less restrictive
@@ -418,8 +443,12 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
             prevScrollTopRef.current - SCROLL_CONSTANTS.SIGNIFICANT_SCROLL_UP
           if (scrolledUp && contentUnchanged) {
             userScrollingManualRef.current = true
+            // Notify parent of manual scroll state change
+            onManualScrollStateChange?.(true)
             const timeout = setTimeout(() => {
               userScrollingManualRef.current = false
+              // Notify parent of manual scroll state change
+              onManualScrollStateChange?.(false)
             }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT_NORMAL)
             addTimeout(timeout)
           }
@@ -428,7 +457,45 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
       // If user scrolled back to bottom, clear all manual scrolling flags more aggressively
       if (isBottom) {
-        clearAllScrollFlags()
+        // Only clear manual scroll flags if user is actually at the bottom
+        // This prevents auto-resuming when user is just near the bottom
+        const isActuallyAtBottom = scrollHeight - scrollTop - clientHeight < 10 // Very strict bottom detection
+        if (isActuallyAtBottom) {
+          clearAllScrollFlags()
+          // Notify parent that manual scrolling has stopped
+          onManualScrollStateChange?.(false)
+        }
+      }
+
+      // Additional immediate detection for streaming mode interruption
+      if (isStreamingMode && scrollDirection === "up" && !isBottom) {
+        // If user is scrolling up during streaming and not at bottom, mark as manual scrolling
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+        if (
+          distanceFromBottom > SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
+        ) {
+          userScrollingManualRef.current = true
+          // Notify parent of manual scroll state change
+          onManualScrollStateChange?.(true)
+
+          // If we're in streaming mode, clear the streaming timeout to give user full control
+          if (isStreamingMode && streamingTimeoutRef.current) {
+            clearTimeout(streamingTimeoutRef.current)
+            streamingTimeoutRef.current = null
+          }
+
+          // During streaming, don't auto-clear the manual scroll flag
+          // User must explicitly resume by scrolling to bottom or clicking button
+          if (!isStreamingMode) {
+            // Use a shorter timeout for immediate response during streaming
+            const timeout = setTimeout(() => {
+              userScrollingManualRef.current = false
+              // Notify parent of manual scroll state change
+              onManualScrollStateChange?.(false)
+            }, SCROLL_CONSTANTS.MANUAL_SCROLL_CLEAR_TIMEOUT)
+            addTimeout(timeout)
+          }
+        }
       }
 
       setIsScrolledToBottom(isBottom)
@@ -457,6 +524,13 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       onScroll,
       clearAllScrollFlags,
       addTimeout,
+      onManualScrollStateChange,
+      prevScrollTopRef,
+      scrollHeightRef,
+      setIsScrolledToBottom,
+      setShowScrollToBottom,
+      streamingTimeoutRef,
+      userScrollingManualRef,
       // Refs are intentionally omitted to prevent infinite re-renders
     ]
   )
@@ -514,7 +588,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       (isStreamingMode
         ? (isAtBottom || isNearBottom) &&
           !userScrollingImageRef.current &&
-          !userScrollingKeyboardRef.current
+          !userScrollingKeyboardRef.current &&
+          !userScrollingManualRef.current
         : (isAtBottom || isNearBottom) &&
           !userScrollingImageRef.current &&
           !userScrollingKeyboardRef.current &&
@@ -522,41 +597,44 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
 
     if (shouldAutoScroll) {
       scrollToBottom("auto") // Use "auto" for smoother streaming
-
-      // Much more aggressive follow-up during streaming
-      const followUpTimeout = setTimeout(() => {
-        // During streaming, ignore manual flag entirely in follow-ups
-        const stillShouldAutoScroll = isStreamingMode
-          ? !userScrollingImageRef.current && !userScrollingKeyboardRef.current
-          : !userScrollingImageRef.current &&
-            !userScrollingKeyboardRef.current &&
-            !userScrollingManualRef.current
-
-        if (stillShouldAutoScroll) {
-          scrollToBottom("auto")
-
-          // Extra persistence for streaming - multiple checks
-          SCROLL_CONSTANTS.EXTRA_PERSISTENCE_DELAYS.forEach((delay) => {
-            const persistenceTimeout = setTimeout(() => {
-              const extraCheck = isStreamingMode
-                ? !userScrollingImageRef.current &&
-                  !userScrollingKeyboardRef.current
-                : !userScrollingImageRef.current &&
-                  !userScrollingKeyboardRef.current &&
-                  !userScrollingManualRef.current
-
-              if (extraCheck) {
-                scrollToBottom("auto")
-              }
-            }, delay)
-
-            addTimeout(persistenceTimeout)
-          })
-        }
-      }, SCROLL_CONSTANTS.SCROLL_FOLLOW_UP_DELAY)
-
-      addTimeout(followUpTimeout)
     }
+
+    // Much more aggressive follow-up during streaming
+    const followUpTimeout = setTimeout(() => {
+      // During streaming, respect manual scroll flag to allow user interruption
+      const stillShouldAutoScroll = isStreamingMode
+        ? !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current &&
+          !userScrollingManualRef.current
+        : !userScrollingImageRef.current &&
+          !userScrollingKeyboardRef.current &&
+          !userScrollingManualRef.current
+
+      if (stillShouldAutoScroll) {
+        scrollToBottom("auto")
+
+        // Extra persistence for streaming - multiple checks
+        SCROLL_CONSTANTS.EXTRA_PERSISTENCE_DELAYS.forEach((delay) => {
+          const persistenceTimeout = setTimeout(() => {
+            const extraCheck = isStreamingMode
+              ? !userScrollingImageRef.current &&
+                !userScrollingKeyboardRef.current &&
+                !userScrollingManualRef.current
+              : !userScrollingImageRef.current &&
+                !userScrollingKeyboardRef.current &&
+                !userScrollingManualRef.current
+
+            if (extraCheck) {
+              scrollToBottom("auto")
+            }
+          }, delay)
+
+          addTimeout(persistenceTimeout)
+        })
+      }
+    }, SCROLL_CONSTANTS.SCROLL_FOLLOW_UP_DELAY)
+
+    addTimeout(followUpTimeout)
 
     // Start a short-lived RAF follow loop while streaming for ultra-fast updates
     if (isStreamingMode && scrollContainer) {
@@ -583,7 +661,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
         if (
           distance < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD &&
           !userScrollingImageRef.current &&
-          !userScrollingKeyboardRef.current
+          !userScrollingKeyboardRef.current &&
+          !userScrollingManualRef.current
         ) {
           // keep pinned to bottom
           scrollContainer.scrollTop = scrollContainer.scrollHeight
@@ -637,7 +716,11 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       {showScrollToBottom && (
         <button
           ref={scrollButtonRef}
-          className="follow-button"
+          className={`follow-button ${
+            streamingTimeoutRef.current && !userScrollingManualRef.current
+              ? "streaming-interrupted"
+              : ""
+          }`}
           onClick={(e) => {
             e.stopPropagation()
             e.preventDefault()
@@ -646,7 +729,11 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
             scrollToBottom()
           }}
           role="button"
-          aria-label={A11Y_CONSTANTS.SCROLL_TO_BOTTOM_LABEL}
+          aria-label={
+            streamingTimeoutRef.current && !userScrollingManualRef.current
+              ? "Auto-scroll interrupted - Click to resume following new messages"
+              : A11Y_CONSTANTS.SCROLL_TO_BOTTOM_LABEL
+          }
           aria-describedby="scroll-to-bottom-description"
           style={{
             visibility: "visible",
@@ -662,7 +749,9 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
         >
           <ChevronDown size={18} />
           <span id="scroll-to-bottom-description" className="sr-only">
-            {A11Y_CONSTANTS.SCROLL_TO_BOTTOM_DESCRIPTION}
+            {streamingTimeoutRef.current && !userScrollingManualRef.current
+              ? "Auto-scroll was interrupted while new messages were being generated. Click to resume automatically following new messages."
+              : A11Y_CONSTANTS.SCROLL_TO_BOTTOM_DESCRIPTION}
           </span>
         </button>
       )}
@@ -694,6 +783,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
   const previousMessageCountRef = useRef(0)
   const previousSyncCountRef = useRef(0)
   const messagesScrollViewRef = useRef<HTMLDivElement>(null)
+  const manualScrollStateRef = useRef(false) // Track manual scroll state from child component
 
   const { addTimeout, clearAllTimeouts } = useTimeoutCleanup()
 
@@ -704,7 +794,23 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
         (msg) => msg.isOptimistic === true
       )
       if (hasOptimisticMessages) {
-        forceScrollToBottomRef.current()
+        // Check if user has manually scrolled up before forcing scroll
+        const scrollContainer = messagesScrollViewRef.current
+        if (scrollContainer) {
+          const currentDistanceFromBottom =
+            scrollContainer.scrollHeight -
+            scrollContainer.scrollTop -
+            scrollContainer.clientHeight
+
+          // Only auto-scroll if user is near bottom or hasn't manually scrolled up
+          if (
+            currentDistanceFromBottom <
+              SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD ||
+            !manualScrollStateRef.current
+          ) {
+            forceScrollToBottomRef.current()
+          }
+        }
       }
     }
   }, [messagesVisible, messages])
@@ -980,6 +1086,9 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           forceScrollToBottomRef={forceScrollToBottomRef}
           scrollContainerRefExternal={messagesScrollViewRef}
           messages={messages}
+          onManualScrollStateChange={(isManualScrolling) => {
+            manualScrollStateRef.current = isManualScrolling
+          }}
           style={{
             opacity: messagesVisible ? 1 : 0,
             transition: UI_CONSTANTS.OPACITY_TRANSITION,

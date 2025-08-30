@@ -17,7 +17,7 @@ export const SCROLL_CONSTANTS = {
   IMMEDIATE_SCROLL_DELAY: 0, // ms - no delay for immediate scroll during streaming
   STANDARD_SCROLL_DELAY: 16, // ms - one frame
   USER_SCROLL_TIMEOUT: 500, // ms - timeout for user scroll detection
-  MANUAL_SCROLL_CLEAR_TIMEOUT: 300, // ms - timeout to clear manual scroll flag during streaming
+  MANUAL_SCROLL_CLEAR_TIMEOUT: 150, // ms - timeout to clear manual scroll flag during streaming (reduced for responsiveness)
   MANUAL_SCROLL_CLEAR_TIMEOUT_NORMAL: 1000, // ms - timeout to clear manual scroll flag in normal mode
   STREAMING_MODE_TIMEOUT: 5000, // ms - how long to consider content "streaming"
 
