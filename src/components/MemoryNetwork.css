@@ -210,7 +210,7 @@
 
 /* Floating memory preview - now works as a modal */
 .memory-preview-card {
-  position: absolute;
+  position: fixed;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -223,7 +223,10 @@
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.4),
     0 0 20px rgba(114, 137, 218, 0.2);
-  transform: translateY(-10px);
+  /* Center the modal properly */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
   overflow: hidden;
@@ -242,6 +245,10 @@
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
+  /* Override any conflicting positioning */
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
 }
 
 /* Chat message content optimization */
@@ -403,6 +410,33 @@
 .memory-preview-card.fixed {
   z-index: 10001;
   pointer-events: auto;
+}
+
+/* Ensure memory card stays centered on all screen sizes */
+.memory-preview-card:not(.memory-card-view) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Override any conflicting positioning for wider screens */
+@media (min-width: 769px) {
+  .memory-preview-card:not(.memory-card-view) {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure proper centering on wide screens */
+    max-width: min(90vw, 520px);
+    min-width: min(90vw, 400px);
+  }
 }
 
 /* Prevent text selection in modals */
@@ -994,6 +1028,8 @@
     /* Prevent positioning conflicts */
     right: auto !important;
     bottom: auto !important;
+    /* Ensure consistent positioning across all screen sizes */
+    position: fixed !important;
   }
 
   /* Ensure neural subjects modal is properly positioned on mobile */
@@ -2429,5 +2465,23 @@
     -moz-transform: translate(-50%, -50%) !important;
     -ms-transform: translate(-50%, -50%) !important;
     -o-transform: translate(-50%, -50%) !important;
+  }
+}
+
+/* Ensure consistent positioning across all screen sizes */
+@media (min-width: 769px) {
+  .memory-preview-card:not(.memory-card-view),
+  .memory-preview-card.chat-message-modal {
+    /* Force consistent centering on wider screens */
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure proper sizing on wide screens */
+    max-width: min(90vw, 520px);
+    min-width: min(90vw, 400px);
   }
 }
