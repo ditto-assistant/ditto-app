@@ -36,7 +36,7 @@ export const SCROLL_CONSTANTS = {
   KEYBOARD_SCROLL_DELAY: 80, // ms - delay for scroll when keyboard appears
 
   // Sync indicator scroll
-  SYNC_SCROLL_DELAY: 80, // ms - delay when sync indicator appears
+  SYNC_SCROLL_DELAY: 350, // ms - delay when sync indicator appears (accounts for 300ms animation + bubble growth)
 
   // Force scroll delays for new messages
   NEW_MESSAGE_SCROLL_DELAY: 150, // ms - delay for new message scroll persistence

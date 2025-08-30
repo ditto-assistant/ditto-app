@@ -844,6 +844,8 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
   }, [messages, addTimeout])
 
   // Force scroll to bottom when sync indicators appear (if user is at bottom)
+  // This handles the case where sync indicators appear 1 second after messages complete
+  // and can cause message bubbles to grow slightly, pushing the user's view up if they're at the bottom
   useEffect(() => {
     const currentSyncCount = syncsInProgress.size
     const previousSyncCount = previousSyncCountRef.current
@@ -862,23 +864,20 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           scrollContainer.clientHeight
 
         // If user is at bottom (within threshold), auto-scroll to accommodate sync indicator
-        // But only if there are optimistic messages or sync is related to recent generation
+        // Sync indicators appear 1 second after messages complete and can cause bubble growth
+        // So we should auto-scroll if user is at bottom, regardless of optimistic messages
         if (
           currentDistanceFromBottom <
           SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
         ) {
-          const hasOptimisticMessages = messages.some(
-            (msg) => msg.isOptimistic === true
-          )
-          // Allow sync scroll if there are optimistic messages OR if sync just started (could be related to recent generation)
-          if (hasOptimisticMessages || currentSyncCount > 0) {
-            const timeout = setTimeout(() => {
-              if (forceScrollToBottomRef.current) {
-                forceScrollToBottomRef.current()
-              }
-            }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
-            addTimeout(timeout)
-          }
+          // Always allow sync scroll if user is at bottom, since sync indicators
+          // appear after messages complete and can cause bubble growth that pushes view up
+          const timeout = setTimeout(() => {
+            if (forceScrollToBottomRef.current) {
+              forceScrollToBottomRef.current()
+            }
+          }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
+          addTimeout(timeout)
         }
       }
     }
