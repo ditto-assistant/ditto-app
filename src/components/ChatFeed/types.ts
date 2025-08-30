@@ -41,6 +41,8 @@ export interface CustomScrollToBottomProps {
   scrollContainerRefExternal?: MutableRefObject<HTMLDivElement | null>
   // Messages array to detect optimistic state
   messages?: any[]
+  // Callback to expose manual scroll state to parent
+  onManualScrollStateChange?: (isManualScrolling: boolean) => void
 }
 
 // Main ChatFeed component props (forwardRef pattern)
