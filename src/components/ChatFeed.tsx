@@ -870,14 +870,36 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           currentDistanceFromBottom <
           SCROLL_CONSTANTS.DISTANCE_FROM_BOTTOM_TOLERANCE
         ) {
-          // Always allow sync scroll if user is at bottom, since sync indicators
-          // appear after messages complete and can cause bubble growth that pushes view up
+          const scrollAbsoluteBottom = () => {
+            if (!messagesScrollViewRef.current) return
+            const el = messagesScrollViewRef.current
+            // Snap to absolute bottom immediately (ignore manual flags)
+            el.scrollTop = el.scrollHeight
+          }
+
+          // Immediate rAF scroll to catch layout just before/after sync indicator mounts
+          requestAnimationFrame(() => {
+            scrollAbsoluteBottom()
+          })
+
+          // Primary delayed scroll to account for animation + bubble growth
           const timeout = setTimeout(() => {
+            // Try direct snap first
+            scrollAbsoluteBottom()
+            // Also trigger the internal force scroll as a secondary nudge
             if (forceScrollToBottomRef.current) {
               forceScrollToBottomRef.current()
             }
           }, SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
           addTimeout(timeout)
+
+          // Extra persistence: multiple follow-ups to ensure we stay pinned even if bubble keeps growing
+          SCROLL_CONSTANTS.EXTRA_PERSISTENCE_DELAYS.forEach((delay) => {
+            const persistenceTimeout = setTimeout(() => {
+              scrollAbsoluteBottom()
+            }, delay + SCROLL_CONSTANTS.SYNC_SCROLL_DELAY)
+            addTimeout(persistenceTimeout)
+          })
         }
       }
     }
