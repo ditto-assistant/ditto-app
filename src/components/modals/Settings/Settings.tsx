@@ -5,7 +5,6 @@ import { useMemo } from "react"
 import {
   MemoryStick,
   Settings as SettingsIcon,
-  Wrench,
   Crown,
   Skull,
 } from "lucide-react"
@@ -23,7 +22,7 @@ import { ModalButton } from "@/components/ui/buttons/ModalButton"
 // Settings Components
 import ModelPreferencesModal from "@/components/model-preferences/ModelPreferencesModal"
 import MemoryControlsModal from "@/components/modals/Settings/MemoryControlsModal"
-import AgentToolsModal from "@/components/modals/Settings/AgentToolsModal"
+
 import SubscriptionTabContent from "@/components/modals/Settings/SubscriptionTabContent"
 // Config
 import packageJson from "../../../../package.json"
@@ -42,7 +41,6 @@ export default function Settings() {
   // Memoize the modal components
   const modelPreferences = useMemo(() => <ModelPreferencesModal />, [])
   const memoryControls = useMemo(() => <MemoryControlsModal />, [])
-  const agentTools = useMemo(() => <AgentToolsModal />, [])
   const subscriptionContent = useMemo(() => <SubscriptionTabContent />, [])
 
   const handleLogout = () => {
@@ -219,13 +217,7 @@ export default function Settings() {
       minimumTier: 1,
       icon: <MemoryStick className="h-4 w-4" />,
     },
-    {
-      id: "tools",
-      label: "Tools",
-      content: agentTools,
-      minimumTier: 1,
-      icon: <Wrench className="h-4 w-4" />,
-    },
+
     {
       id: "danger",
       label: "Danger Zone",
