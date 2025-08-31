@@ -34,10 +34,6 @@ const SpeechPreferencesSchema = z.object({
   voicePitch: z.number().min(0).max(2).default(1), // Voice pitch (0 to 2)
   voiceVolume: z.number().min(0).max(1).default(1), // Voice volume (0 to 1)
   voiceName: z.string().optional(), // Specific voice name if selected
-  // Speech-to-Text settings
-  inputLanguage: z.string().default("en-US"), // STT input language
-  enableContinuousListening: z.boolean().default(true), // Continuous vs single utterance
-  enableAutoSubmit: z.boolean().default(false), // Auto-submit on speech end
 })
 
 // Define the preferences schema

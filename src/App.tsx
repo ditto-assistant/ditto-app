@@ -26,7 +26,7 @@ import { PromptStorageProvider } from "@/hooks/usePromptStorage"
 import { ComposeProvider } from "@/contexts/ComposeContext"
 import { MemorySyncProvider } from "@/contexts/MemorySyncContext"
 import { ServicesProvider } from "@/hooks/useServices"
-import { initUpdateService } from "@/utils/updateService"
+import { initUpdateService } from "@/lib/updateService"
 import useLazyLoadErrorHandler from "@/hooks/useLazyLoadErrorHandler"
 import UpdateNotification from "@/components/UpdateNotification"
 import WhatsNew from "@/components/WhatsNew/WhatsNew"
@@ -58,21 +58,28 @@ const loadE = <T extends React.ComponentType>(
   })
 }
 
-const Login = loadE(() => import("@/screens/Login"))
-const FeedbackModal = loadE(() => import("@/components/FeedbackModal"))
-const ImageViewer = loadE(() => import("@/components/ImageViewer"))
-const HomeScreen = loadE(() => import("@/screens/HomeScreen"))
-const Settings = loadE(() => import("@/screens/Settings"))
-const TokenModal = loadE(() => import("@/components/TokenModal"))
+const Login = loadE(() => import("@/components/Login"))
+const FeedbackModal = loadE(() => import("@/components/modals/FeedbackModal"))
+const ImageViewer = loadE(() => import("@/components/modals/ImageViewer"))
+const HomeScreen = loadE(() => import("@/components/HomeScreen"))
+const Settings = loadE(() => import("@/components/modals/Settings"))
+const TokenModal = loadE(() => import("@/components/modals/TokenModal"))
 const MemoriesDashboardOverlay = loadE(
-  () => import("@/screens/MemoriesDashboard/MemoriesDashboardOverlay")
+  () => import("@/components/modals/MemoriesDashboard/MemoriesDashboardOverlay")
 )
-const MemoryNetworkModal = loadE(() => import("@/components/MemoryNetwork"))
-const MemoryNodeModal = loadE(() => import("@/components/MemoryNodeModal"))
+const MemoryNetworkModal = loadE(
+  () => import("@/components/modals/MemoryNetwork")
+)
+const MemoryNodeModal = loadE(
+  () => import("@/components/modals/MemoryNodeModal")
+)
 const PersonalityAssessmentOverlay = loadE(
-  () => import("@/screens/PersonalityAssessments/PersonalityAssessmentOverlay")
+  () =>
+    import(
+      "@/components/modals/PersonalityAssessments/PersonalityAssessmentOverlay"
+    )
 )
-const ComposeModal = loadE(() => import("@/components/ComposeModal"))
+const ComposeModal = loadE(() => import("@/components/modals/ComposeModal"))
 // const TestWhatsNew = loadE(() => import("@/components/WhatsNew/TestWhatsNew"))
 const queryClient = new QueryClient()
 

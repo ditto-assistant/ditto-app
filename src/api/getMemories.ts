@@ -2,6 +2,21 @@ import { Result } from "@/types/common"
 import { routes } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
 
+export type ContentTypeV2 =
+  | "text"
+  | "image"
+  | "application/pdf"
+  | "audio/wav"
+  | "audio/mp3"
+
+export interface ContentV2 {
+  type: ContentTypeV2
+  content: string
+  // optional fields present in some tool/file responses
+  toolCall?: Record<string, unknown>
+  annotations?: unknown
+}
+
 export interface Memory {
   id: string
   score: number
@@ -12,6 +27,9 @@ export interface Memory {
   depth: number
   similarity?: number // For KG pairs data
   children?: Memory[]
+  // v2 fields
+  input?: ContentV2[]
+  output?: ContentV2[]
   // Image support fields
   hasImages?: boolean
   imageUrls?: string[]

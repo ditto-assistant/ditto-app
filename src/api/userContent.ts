@@ -9,7 +9,6 @@ export type UploadImageResponse = z.infer<typeof UploadImageResponseSchema>
 export const PresignedUploadResponseSchema = z.object({
   uploadURL: z.string(),
   fileURL: z.string(),
-  fields: z.record(z.string()).optional(),
   expiration: z.string().transform((str) => new Date(str)),
 })
 export type PresignedUploadResponse = z.infer<

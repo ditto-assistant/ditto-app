@@ -14,11 +14,11 @@ import rehypeRaw from "rehype-raw"
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import addClasses from "rehype-class-names"
 import "./MarkdownRenderer.css"
-import { triggerHaptic, HapticPattern } from "@/utils/haptics"
+import { triggerHaptic, HapticPattern } from "@/lib/haptics"
 
 interface MarkdownRendererProps {
-  content: string
   className?: string
+  children?: string
 }
 
 // Configuration for rehype-class-names plugin
@@ -324,7 +324,7 @@ const parseTable = (
 }
 
 const MarkdownRendererCore = ({
-  content,
+  children,
   className = "",
 }: MarkdownRendererProps) => {
   const { handleImageClick } = useImageViewerHandler()
@@ -332,7 +332,7 @@ const MarkdownRendererCore = ({
   const { theme } = useTheme()
   const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
 
-  if (!content) return null
+  if (!children || typeof children !== "string") return null
 
   const handleCopy = (text: string) => {
     triggerLightHaptic()
@@ -344,50 +344,14 @@ const MarkdownRendererCore = ({
   // Choose the appropriate syntax highlighting theme based on the current theme
   const syntaxTheme = theme === "dark" ? vscDarkPlus : oneLight
 
-  // Minimal preprocessing to handle Unicode issues before rehype-sanitize
-  const preProcessContent = (text: string): string => {
-    if (typeof text !== "string") return ""
-
-    // First, extract all content from ```markdown code blocks
-    // This prevents ReactMarkdown from treating them as code blocks
-    text = text.replace(
-      /```markdown\s*\n([\s\S]*?)\n```/g,
-      (match, markdownContent) => {
-        // Return the raw markdown content without the code block wrapper
-        // Preserve the whitespace and formatting
-        return "\n" + markdownContent + "\n"
-      }
-    )
-
-    // Only fix Unicode characters that cause DOM parsing errors
-    // Non-breaking hyphen (U+2011) is the main culprit from the error reports
-    text = text.replace(/\u2011/g, "-")
-
-    // Remove zero-width characters that can cause parsing issues
-    text = text.replace(/[\u200B-\u200D\uFEFF]/g, "")
-
-    // Strip ```markdown fenced blocks to prevent breaking our custom table parser
-    // Replace ```markdown\n...\n``` with the inner content
-    text = text.replace(
-      /```\s*markdown\n([\s\S]*?)```/gi,
-      (m, inner) => inner.trim() + "\n"
-    )
-
-    // Also handle trailing triple backticks left at the end of messages
-    text = text.replace(/\n?```\s*$/g, "")
-
-    return text
-  }
-
   // Pre-process content to handle tables and Unicode issues
   let processedContent: string
   try {
-    const preprocessedContent = preProcessContent(content)
-    processedContent = parseMarkdownTables(preprocessedContent)
+    processedContent = parseMarkdownTables(children)
   } catch (error) {
     console.error("Error processing markdown content:", error)
     // Fallback to displaying raw content with basic escaping
-    processedContent = content.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    processedContent = children.replace(/</g, "&lt;").replace(/>/g, "&gt;")
   }
 
   return (

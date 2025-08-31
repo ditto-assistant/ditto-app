@@ -1,6 +1,5 @@
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
-import { HapticPattern } from "@/utils/haptics"
-import { triggerHaptic } from "@/utils/haptics"
+import { HapticPattern, triggerHaptic } from "@/lib/haptics"
 import {
   createContext,
   useCallback,

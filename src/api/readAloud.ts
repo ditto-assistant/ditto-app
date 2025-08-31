@@ -5,9 +5,12 @@ export interface ReadAloudJSONResponse {
   url: string
 }
 
+export type ReadTarget = "prompt" | "response"
+
 export async function requestReadAloud(
   userID: string,
   pairID: string,
+  target: ReadTarget = "response",
   signal?: AbortSignal
 ): Promise<Response> {
   const tok = await getToken()
@@ -20,7 +23,7 @@ export async function requestReadAloud(
 
   const endpoint = `${BASE_URL}/api/v3/users/${encodeURIComponent(
     userID
-  )}/conversations/${encodeURIComponent(pairID)}/response/readaloud`
+  )}/conversations/${encodeURIComponent(pairID)}/${target}/readaloud`
 
   const res = await fetch(endpoint, {
     method: "GET",

@@ -1,7 +1,7 @@
 import { getToken } from "@/api/auth"
 import { routes } from "@/firebaseConfig"
 import { Result } from "@/types/common"
-import { getDeviceID, APP_VERSION } from "@/utils/deviceId"
+import { getDeviceID, APP_VERSION } from "@/lib/deviceId"
 import { z } from "zod"
 
 const BalanceSchema = z.object({

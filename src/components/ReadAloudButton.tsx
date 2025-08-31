@@ -1,11 +1,13 @@
 import React from "react"
-import { Pause, Play, Loader2, Volume2 } from "lucide-react"
+import { Pause, Play, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useReadAloud } from "@/hooks/useReadAloud"
+import { ReadTarget } from "@/api/readAloud"
 
 interface ReadAloudButtonProps {
   pairID: string
+  target?: ReadTarget
   size?: "sm" | "md" | "lg"
   variant?: "ghost" | "outline" | "default"
   className?: string
@@ -13,12 +15,20 @@ interface ReadAloudButtonProps {
 
 const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
   pairID,
+  target = "response",
   size = "sm",
   variant = "ghost",
   className,
 }) => {
-  const { isSupported, isLoading, isPlaying, play, pause, resume } =
-    useReadAloud()
+  const {
+    isSupported,
+    isLoading,
+    isPlaying,
+    currentPairId,
+    currentTarget,
+    play,
+    pause,
+  } = useReadAloud()
 
   if (!isSupported) return null
 
@@ -33,12 +43,17 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
     lg: "h-6 w-6",
   }
 
+  // Check if this button represents the currently playing audio
+  const isThisAudioPlaying =
+    currentPairId === pairID && currentTarget === target && isPlaying
+  const isThisAudioLoaded = currentPairId === pairID && currentTarget === target
+
   const handleClick = async () => {
     if (isLoading) return
-    if (isPlaying) {
+    if (isThisAudioPlaying) {
       pause()
     } else {
-      await play(pairID)
+      await play(pairID, target)
     }
   }
 
@@ -49,21 +64,23 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({
       className={cn(
         sizeClasses[size],
         "text-foreground/70 hover:bg-background/20 transition-colors",
-        isPlaying && "text-blue-600 dark:text-blue-400",
+        isThisAudioPlaying && "text-blue-600 dark:text-blue-400",
+        isThisAudioLoaded &&
+          !isThisAudioPlaying &&
+          "text-blue-500/70 dark:text-blue-300/70",
         className
       )}
       onClick={handleClick}
-      aria-label={isPlaying ? "Pause read aloud" : "Play read aloud"}
-      title={isPlaying ? "Pause read aloud" : "Play read aloud"}
+      aria-label={isThisAudioPlaying ? "Pause read aloud" : "Play read aloud"}
+      title={isThisAudioPlaying ? "Pause read aloud" : "Play read aloud"}
       disabled={isLoading}
     >
       <div className={iconSizes[size]}>
-        {isLoading ? (
+        {isLoading && isThisAudioLoaded ? (
           <Loader2 className="animate-spin" />
-        ) : isPlaying ? (
+        ) : isThisAudioPlaying ? (
           <Pause />
         ) : (
-          // Use Volume2 as default play icon per design tone
           <Play />
         )}
       </div>

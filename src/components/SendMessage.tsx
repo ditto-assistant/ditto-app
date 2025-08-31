@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { debounce } from "perfect-debounce"
 import { toast } from "sonner"
 import {
   Plus,
@@ -11,26 +12,32 @@ import {
   Bolt,
   X,
   Square,
+  FileText,
+  AudioLines,
 } from "lucide-react"
-import { sendPrompt, cancelPrompt } from "@/control/agent"
+import {
+  promptV2BackendBuild,
+  cancelPromptLLMV2,
+  type PromptV2Content,
+} from "@/api/LLM"
 import { uploadImage } from "@/api/userContent"
+import { PersonalityStorage } from "@/lib/personalityStorage"
 import { cn } from "@/lib/utils"
-import { HapticPattern, triggerHaptic } from "@/utils/haptics"
-import { DEFAULT_MODELS, FREE_MODEL_ID, DITTO_LOGO } from "@/constants"
+import { HapticPattern, triggerHaptic } from "@/lib/haptics"
+import { DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { ErrorPaymentRequired } from "@/types/errors"
 import { useAuth } from "@/hooks/useAuth"
 import { useBalance } from "@/hooks/useBalance"
+import { useMemoryStats, stringifyTopSubjects } from "@/hooks/useMemoryStats"
 import { useComposeContext } from "@/contexts/ComposeContext"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
-import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
+import { useImageViewer } from "@/hooks/useImageViewer"
 import { useModal } from "@/hooks/useModal"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { usePlatform } from "@/hooks/usePlatform"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
 import { useUser } from "@/hooks/useUser"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
-import { useIOSDetection } from "@/hooks/useIOSDetection"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -52,7 +59,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import VoiceInputButton from "./VoiceInputButton"
 
 interface SendMessageProps {
   onCameraOpen: () => void
@@ -67,21 +73,25 @@ export default function SendMessage({
   onClearCapturedImage,
   onStop,
 }: SendMessageProps) {
-  const [image, setImage] = useState<string | File>(capturedImage || "")
+  const [images, setImages] = useState<Array<string | File>>(
+    capturedImage ? [capturedImage] : []
+  )
+  const [documents, setDocuments] = useState<File[]>([])
+  const [audios, setAudios] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const preferences = useModelPreferences()
-  const { handleImageClick } = useImageViewerHandler()
+  const { setImageUrl } = useImageViewer()
   const balance = useBalance()
-  const { isMobile } = usePlatform()
-  const { data: userData } = useUser()
-  const iosInfo = useIOSDetection()
+  const { isMobile, isIOS, isPWA, safeAreaBottom } = usePlatform()
 
   const {
-    refetch,
     addOptimisticMessage,
     updateOptimisticResponse,
     finalizeOptimisticMessage,
+    setOptimisticPairID,
+    setImagePartial,
+    setImageCompleted,
   } = useConversationHistory()
   const {
     message,
@@ -92,38 +102,45 @@ export default function SendMessage({
     registerSubmitCallback,
     appendToMessage,
   } = useComposeContext()
+
   const { clearPrompt } = usePromptStorage()
   const { triggerSync } = useMemorySyncContext()
 
   const modal = useModal()
   const openTokenModal = modal.createOpenHandler("tokenCheckout")
   const openSubscriptionsTab = modal.createOpenHandler("settings", "general")
-  const triggerLightHaptic = () => triggerHaptic(HapticPattern.Light)
+  const triggerLightHaptic = useCallback(
+    () => triggerHaptic(HapticPattern.Light),
+    []
+  )
 
   const { user: authUser } = useAuth()
   const user = useUser()
+  const memoryStats = useMemoryStats()
 
   const [showSalesPitch, setShowSalesPitch] = useState(false)
 
   const [autoScroll, setAutoScroll] = useState(false)
 
+  const shouldShowSalesPitch = useMemo(() => {
+    if (!balance.data || !preferences.preferences) return false
+    const balanceRaw = balance.data.balanceRaw || 0
+    const hasZeroBalance = balanceRaw <= 0
+    const currentModelID = preferences.preferences.mainModel
+    const selectedModel = DEFAULT_MODELS.find(
+      (model) => model.id === currentModelID
+    )
+    return hasZeroBalance && !selectedModel?.isFree
+  }, [balance.data, preferences.preferences]) // More specific dependencies
+
   useEffect(() => {
-    if (balance.data && preferences.preferences) {
-      const balanceRaw = balance.data.balanceRaw || 0
-      const hasZeroBalance = balanceRaw <= 0
-      const currentModelID = preferences.preferences.mainModel
-      const selectedModel = DEFAULT_MODELS.find(
-        (model) => model.id === currentModelID
-      )
-      const isInvalid = hasZeroBalance && !selectedModel?.isFree
-      setShowSalesPitch(isInvalid)
-    }
-  }, [balance.data, preferences.preferences])
+    setShowSalesPitch(shouldShowSalesPitch)
+  }, [shouldShowSalesPitch])
 
   const handleStopGeneration = useCallback(() => {
     if (isWaitingForResponse) {
       console.log("🛑 [SendMessage] Stopping response generation")
-      const wasCancelled = cancelPrompt()
+      const wasCancelled = cancelPromptLLMV2()
       if (wasCancelled) {
         toast.info("Response generation stopped")
       }
@@ -132,104 +149,197 @@ export default function SendMessage({
     }
   }, [isWaitingForResponse, onStop, setIsWaitingForResponse])
 
+  const uploadFiles = useCallback(
+    async (
+      userID: string,
+      fileArrays: {
+        images: Array<string | File>
+        documents: File[]
+        audios: File[]
+      }
+    ) => {
+      const uploadedImageURIs: string[] = []
+      const uploadedDocURIs: string[] = []
+      const uploadedAudioURIs: string[] = []
+
+      if (fileArrays.images.length > 0) {
+        setIsUploading(true)
+        try {
+          for (const img of fileArrays.images) {
+            const res = await uploadImage(userID, img)
+            if (res instanceof Error) throw res
+            uploadedImageURIs.push(res)
+          }
+        } finally {
+          setIsUploading(false)
+        }
+      }
+
+      if (fileArrays.documents.length > 0) {
+        setIsUploading(true)
+        try {
+          for (const doc of fileArrays.documents) {
+            const res = await uploadImage(userID, doc)
+            if (res instanceof Error) throw res
+            uploadedDocURIs.push(res)
+          }
+        } finally {
+          setIsUploading(false)
+        }
+      }
+
+      if (fileArrays.audios.length > 0) {
+        setIsUploading(true)
+        try {
+          for (const a of fileArrays.audios) {
+            const res = await uploadImage(userID, a)
+            if (res instanceof Error) throw res
+            uploadedAudioURIs.push(res)
+          }
+        } finally {
+          setIsUploading(false)
+        }
+      }
+
+      return { uploadedImageURIs, uploadedDocURIs, uploadedAudioURIs }
+    },
+    []
+  )
+
   const handleSubmit = useCallback(
     async (event?: React.FormEvent) => {
       if (event) event.preventDefault()
       if (isWaitingForResponse) return
-      if (message === "" && !image) return
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🚀 [SendMessage] Submit triggered, message length:",
+          message.length
+        )
+      }
+
+      if (
+        message === "" &&
+        images.length === 0 &&
+        documents.length === 0 &&
+        audios.length === 0
+      )
+        return
+
+      const userID = authUser?.uid
+      if (!userID) {
+        toast.error("Please log in to send a message")
+        return
+      }
+      if (!preferences.preferences) {
+        toast.error("Please set your model preferences")
+        return
+      }
 
       setIsWaitingForResponse(true)
+
       try {
-        const userID = authUser?.uid
-        if (!userID) {
-          toast.error("Please log in to send a message")
-          setIsWaitingForResponse(false)
-          return
-        }
-        if (!preferences.preferences) {
-          toast.error("Please set your model preferences")
-          setIsWaitingForResponse(false)
-          return
-        }
-        const firstName = userData?.firstName || ""
-        let messageToSend = message
-        let imageURI = ""
-        let uploadSuccessful = false
+        const { uploadedImageURIs, uploadedDocURIs, uploadedAudioURIs } =
+          await uploadFiles(userID, {
+            images,
+            documents,
+            audios,
+          })
 
-        // Handle image upload if present
-        if (image) {
-          setIsUploading(true)
-          try {
-            const uploadResult = await uploadImage(userID, image)
-            if (uploadResult instanceof Error) {
-              throw uploadResult
-            }
-            console.log(
-              `🚀 [SendMessage] Presigned uploaded image: ${uploadResult}`
-            )
-            imageURI = uploadResult
-            messageToSend = `![image](${uploadResult})\n\n${messageToSend}`
-            uploadSuccessful = true
-          } catch (uploadError) {
-            console.error("Error uploading image:", uploadError)
-            toast.error("Failed to upload image. Please try again.")
-            setIsWaitingForResponse(false)
-            setIsUploading(false)
-            return
-          } finally {
-            setIsUploading(false)
-          }
-        }
-
-        // Only clear state after successful upload (or no image)
         clearPrompt()
         setMessage("")
-        if (uploadSuccessful || !image) {
-          setImage("")
+        setImages([])
+        setDocuments([])
+        setAudios([])
+
+        if (process.env.NODE_ENV === "development") {
+          console.log("🚀 [SendMessage] Creating optimistic message")
         }
-        console.log("🚀 [SendMessage] Creating optimistic message")
         const optimisticMessageId = addOptimisticMessage(
-          messageToSend,
-          imageURI
+          message,
+          uploadedImageURIs[0] || ""
         )
+
         const streamingCallback = (chunk: string) => {
           updateOptimisticResponse(optimisticMessageId, chunk)
         }
 
-        try {
-          await sendPrompt(
-            userID,
-            firstName,
-            messageToSend,
-            imageURI,
-            preferences.preferences,
-            refetch,
-            streamingCallback,
-            optimisticMessageId,
-            finalizeOptimisticMessage,
-            user?.data?.planTier ?? 0,
-            triggerSync
+        const extraInput = [
+          ...uploadedImageURIs
+            .slice(1)
+            .map((u) => ({ type: "image" as const, content: u })),
+          ...uploadedDocURIs.map((u) => ({
+            type: "application/pdf" as const,
+            content: u,
+          })),
+          ...uploadedAudioURIs.map((u) => ({
+            type: "audio/mp3" as const,
+            content: u,
+          })),
+        ]
+
+        // Build input array per backend types.Content
+        const input: PromptV2Content[] = []
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            "📝 [SendMessage] Building input, message length:",
+            message.trim().length
           )
+        }
+        if (message.trim().length > 0) {
+          input.push({ type: "text", content: message })
+        }
+        if (uploadedImageURIs[0]) {
+          input.push({ type: "image", content: uploadedImageURIs[0] })
+        }
+        if (extraInput && extraInput.length > 0) {
+          input.push(...extraInput)
+        }
+
+        let pairID = optimisticMessageId
+        const final = await promptV2BackendBuild({
+          input,
+          textCallback: streamingCallback,
+          onPairID: (id) => {
+            pairID = id
+            setOptimisticPairID(optimisticMessageId, id)
+          },
+          onImagePartial: (index, b64) =>
+            setImagePartial(optimisticMessageId, index, b64),
+          onImageCompleted: (url) =>
+            setImageCompleted(optimisticMessageId, url),
+          personalitySummary: PersonalityStorage.getPersonalitySummary(userID),
+          memoryStats: stringifyTopSubjects(memoryStats.topSubjects),
+        })
+
+        // Finalize optimistic message with final text
+        finalizeOptimisticMessage(optimisticMessageId, final)
+
+        if (!pairID) {
+          console.error("No pairID received from backend")
+          return
+        }
+        try {
+          triggerSync(pairID)
+        } catch {}
+        if (process.env.NODE_ENV === "development") {
           console.log("✅ [SendMessage] Prompt completed successfully")
-        } catch (error) {
-          if (error === ErrorPaymentRequired) {
-            toast.error("Please upgrade to a paid plan to continue")
-            setShowSalesPitch(true)
-          } else if (
-            error instanceof Error &&
-            error.message === "Request cancelled"
-          ) {
-            console.log("⏹️ [SendMessage] Prompt was cancelled by user")
-          } else {
-            console.error("❌ [SendMessage] Error in sendPrompt:", error)
-            finalizeOptimisticMessage(
-              optimisticMessageId,
-              "Sorry, an error occurred while processing your request. Please try again."
-            )
-          }
         }
       } catch (error) {
-        console.error("Error sending message:", error)
+        if (error === ErrorPaymentRequired) {
+          toast.error("Please upgrade to a paid plan to continue")
+          setShowSalesPitch(true)
+        } else if (
+          error instanceof Error &&
+          error.message === "Request cancelled"
+        ) {
+          if (process.env.NODE_ENV === "development") {
+            console.log("⏹️ [SendMessage] Prompt was cancelled by user")
+          }
+        } else {
+          console.error("❌ [SendMessage] Error in prompt:", error)
+          toast.error("Failed to upload file(s). Please try again.")
+        }
       } finally {
         setIsWaitingForResponse(false)
         onStop()
@@ -238,32 +348,25 @@ export default function SendMessage({
     [
       isWaitingForResponse,
       message,
-      image,
-      setIsWaitingForResponse,
-      preferences.preferences,
-      clearPrompt,
+      images,
+      documents,
+      audios,
       authUser?.uid,
+      preferences.preferences,
+      setIsWaitingForResponse,
+      uploadFiles,
+      clearPrompt,
       setMessage,
       addOptimisticMessage,
-      updateOptimisticResponse,
-      refetch,
+      memoryStats.topSubjects,
       finalizeOptimisticMessage,
-      user?.data?.planTier,
-      userData?.firstName,
-      onStop,
+      updateOptimisticResponse,
+      setOptimisticPairID,
+      setImagePartial,
+      setImageCompleted,
       triggerSync,
+      onStop,
     ]
-  )
-
-  // Handle voice input through the same pipeline
-  const handleVoiceTranscript = useCallback(
-    (transcript: string) => {
-      if (transcript.trim()) {
-        setMessage(transcript.trim())
-        // Just populate the text field - user can manually submit if desired
-      }
-    },
-    [setMessage]
   )
 
   useEffect(() => {
@@ -272,21 +375,44 @@ export default function SendMessage({
 
   useEffect(() => {
     if (capturedImage) {
-      setImage(capturedImage)
+      setImages((prev) => [capturedImage, ...prev])
     }
   }, [capturedImage])
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setImage(file)
-    }
-  }
+  const handleImageUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files
+      if (!files || files.length === 0) return
+      setImages((prev) => [...prev, ...Array.from(files)])
+    },
+    []
+  )
 
-  const handleClearImage = () => {
-    setImage("")
-    onClearCapturedImage()
-  }
+  const handlePDFUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files
+      if (!files || files.length === 0) return
+      setDocuments((prev) => [...prev, ...Array.from(files)])
+    },
+    []
+  )
+
+  const handleAudioUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files
+      if (!files || files.length === 0) return
+      setAudios((prev) => [...prev, ...Array.from(files)])
+    },
+    []
+  )
+
+  const handleClearImage = useCallback(
+    (idx: number) => {
+      setImages((prev) => prev.filter((_, i) => i !== idx))
+      if (idx === 0) onClearCapturedImage()
+    },
+    [onClearCapturedImage]
+  )
 
   // Memoized handler functions to prevent unnecessary re-renders
   const handleKeyDown = useCallback(
@@ -313,60 +439,127 @@ export default function SendMessage({
     [isMobile, appendToMessage, handleSubmit]
   )
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setMessage(e.target.value)
-    },
+  const handleTextareaChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value),
     [setMessage]
   )
 
-  const handlePaste = (event: React.ClipboardEvent) => {
+  const handlePaste = useCallback((event: React.ClipboardEvent) => {
     const items = event.clipboardData.items
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
         const blob = items[i].getAsFile()
         if (blob) {
-          setImage(blob)
+          setImages((prev) => [blob, ...prev])
           event.preventDefault()
           break
         }
       }
     }
-  }
-
-  const handleGalleryClick = () => {
-    document.getElementById("image-upload")?.click()
-  }
-
-  const handleCameraClick = () => {
-    onCameraOpen()
-  }
-
-  // Add auto-resize function
-  const autoResizeTextarea = useCallback(() => {
-    if (!textAreaRef.current) return
-    const ta = textAreaRef.current
-    ta.style.height = "auto"
-    const newHeight = Math.min(ta.scrollHeight, 200)
-    ta.style.height = `${newHeight}px`
-    // If scrollHeight > newHeight, we're clipped ⇒ allow scroll.
-    setAutoScroll(ta.scrollHeight > newHeight)
   }, [])
 
-  // Auto-resize when message changes
+  const handleGalleryClick = useCallback(() => {
+    document.getElementById("image-upload")?.click()
+  }, [])
+
+  const handlePDFClick = useCallback(() => {
+    document.getElementById("pdf-upload")?.click()
+  }, [])
+
+  const handleAudioClick = useCallback(() => {
+    document.getElementById("audio-upload")?.click()
+  }, [])
+
+  const handleCameraClick = useCallback(() => {
+    onCameraOpen()
+  }, [onCameraOpen])
+
+  const handleSwitchModel = useCallback(() => {
+    preferences.updatePreferences({ mainModel: FREE_MODEL_ID })
+    setShowSalesPitch(false)
+    toast.success("Switched to a free model")
+  }, [preferences])
+
+  const handleBuyTokens = useCallback(() => {
+    openTokenModal()
+  }, [openTokenModal])
+
+  const handleExpandClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      triggerLightHaptic()
+      openComposeModal()
+    },
+    [triggerLightHaptic, openComposeModal]
+  )
+
+  const vibrateLight = useCallback(() => navigator.vibrate?.(10), [])
+
+  const handleImagePreviewClick = useCallback(
+    (imageUrl: string) => {
+      setImageUrl(imageUrl)
+      modal.createOpenHandler("imageViewer")()
+    },
+    [setImageUrl, modal]
+  )
+
+  const createImageClearHandler = useCallback(
+    (idx: number) => (e: React.MouseEvent) => {
+      e.stopPropagation()
+      handleClearImage(idx)
+    },
+    [handleClearImage]
+  )
+
+  // Memoize expensive className computation
+  const textareaClassName = useMemo(
+    () =>
+      cn(
+        "resize-none w-full px-3 py-2.5 pr-12 rounded-lg transition-all", // Added pr-12 for button space
+        "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
+        autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // toggle scroll
+        "focus-visible:ring-1 focus-visible:ring-primary"
+      ),
+    [autoScroll]
+  )
+
+  // Auto-resize when message changes (debounced)
   useEffect(() => {
-    autoResizeTextarea()
-  }, [message, autoResizeTextarea])
+    const autoResizeTextarea = () => {
+      if (!textAreaRef.current) return
+
+      const ta = textAreaRef.current
+      const currentHeight = ta.clientHeight
+
+      // Reset height to auto to get accurate scrollHeight
+      ta.style.height = "auto"
+      const newHeight = Math.min(ta.scrollHeight, 200)
+
+      // Only update if height actually changed to prevent unnecessary DOM updates
+      if (currentHeight !== newHeight) {
+        ta.style.height = `${newHeight}px`
+        setAutoScroll(ta.scrollHeight > newHeight)
+      }
+    }
+
+    const debouncedResize = debounce(() => {
+      requestAnimationFrame(() => {
+        autoResizeTextarea()
+      })
+    }, 100) // 100ms debounce
+
+    debouncedResize()
+  }, [message])
 
   return (
     <div
       className="w-full z-[200] backdrop-blur-md border-t border-border bg-[var(--footer-background)]"
       style={{
         paddingBottom:
-          iosInfo.isIOS && iosInfo.isPWA
+          isIOS && isPWA
             ? `0px`
-            : iosInfo.isIOS
-              ? `${iosInfo.safeAreaBottom}px`
+            : isIOS
+              ? `${safeAreaBottom}px`
               : "env(safe-area-inset-bottom)",
       }}
     >
@@ -405,11 +598,7 @@ export default function SendMessage({
                 variant="secondary"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => {
-                  preferences.updatePreferences({ mainModel: FREE_MODEL_ID })
-                  setShowSalesPitch(false)
-                  toast.success("Switched to a free model")
-                }}
+                onClick={handleSwitchModel}
               >
                 <Bolt className="mr-2 h-4 w-4" /> Switch to Free Model
               </Button>
@@ -441,9 +630,7 @@ export default function SendMessage({
                 variant="outline"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => {
-                  openTokenModal()
-                }}
+                onClick={handleBuyTokens}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
                 Buy Tokens
@@ -458,28 +645,10 @@ export default function SendMessage({
                 ref={textAreaRef}
                 onKeyDown={handleKeyDown}
                 value={message}
-                onChange={handleInputChange}
+                onChange={handleTextareaChange}
                 placeholder="Message Ditto"
-                className={cn(
-                  "resize-none w-full px-3 py-2.5 pr-12 rounded-lg transition-all", // Added pr-12 for button space
-                  "min-h-[64px] max-h-[200px]", // grow from ~4 lines up to 200px
-                  autoScroll ? "overflow-y-auto" : "overflow-y-hidden", // toggle scroll
-                  "focus-visible:ring-1 focus-visible:ring-primary"
-                )}
+                className={textareaClassName}
               />
-
-              {/* Voice Input Button - floating inside textarea */}
-              <div className="absolute right-2 bottom-2">
-                <VoiceInputButton
-                  onTranscript={handleVoiceTranscript}
-                  onTranscriptChange={setMessage}
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 rounded-full ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
-                  disabled={showSalesPitch || isUploading}
-                  autoSubmit={false}
-                />
-              </div>
             </div>
 
             <div className="flex items-center justify-between w-full relative">
@@ -491,11 +660,7 @@ export default function SendMessage({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        triggerLightHaptic()
-                        openComposeModal()
-                      }}
+                      onClick={handleExpandClick}
                       aria-label="Expand message"
                       className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
                     >
@@ -515,7 +680,7 @@ export default function SendMessage({
                           size="icon"
                           aria-label="Add media"
                           className="h-10 w-10 rounded-full bg-background ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all"
-                          onPointerDown={() => navigator.vibrate?.(10)}
+                          onPointerDown={vibrateLight}
                         >
                           <Plus className="h-5 w-5" />
                         </Button>
@@ -525,18 +690,32 @@ export default function SendMessage({
                   </Tooltip>
                   <DropdownMenuContent align="start">
                     <DropdownMenuItem
-                      onClick={handleGalleryClick}
-                      onPointerDown={() => navigator.vibrate?.(10)}
-                    >
-                      <Image className="mr-2 h-4 w-4" />
-                      <span>Photo Gallery</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
                       onClick={handleCameraClick}
-                      onPointerDown={() => navigator.vibrate?.(10)}
+                      onPointerDown={vibrateLight}
                     >
                       <Camera className="mr-2 h-4 w-4" />
                       <span>Camera</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleGalleryClick}
+                      onPointerDown={vibrateLight}
+                    >
+                      <Image className="mr-2 h-4 w-4" />
+                      <span>Photo</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handlePDFClick}
+                      onPointerDown={vibrateLight}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>PDF</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleAudioClick}
+                      onPointerDown={vibrateLight}
+                    >
+                      <AudioLines className="mr-2 h-4 w-4" />
+                      <span>Audio</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -556,7 +735,7 @@ export default function SendMessage({
                         onClick={handleStopGeneration}
                         aria-label="Stop generation"
                         className="h-10 w-10 rounded-full ring-2 ring-primary/50 shadow-lg shadow-primary/50"
-                        onPointerDown={triggerLightHaptic}
+                        onPointerDown={vibrateLight}
                       >
                         <Square className="h-5 w-5" />
                       </Button>
@@ -570,7 +749,7 @@ export default function SendMessage({
                           isUploading ? "Uploading image..." : "Send message"
                         }
                         className="h-10 w-10 p-0 rounded-full border-none ring-1 ring-blue-500/70 shadow-sm shadow-blue-500/50 hover:scale-110 hover:ring-blue-500 hover:shadow-md hover:shadow-blue-500/80 transition-all hover:bg-transparent focus:bg-transparent"
-                        onPointerDown={triggerLightHaptic}
+                        onPointerDown={vibrateLight}
                       >
                         <SendHorizonal className="h-5 w-5" />
                       </Button>
@@ -592,43 +771,58 @@ export default function SendMessage({
             <input
               id="image-upload"
               type="file"
+              multiple
               accept="image/*"
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
+            <input
+              id="pdf-upload"
+              type="file"
+              multiple
+              accept="application/pdf"
+              style={{ display: "none" }}
+              onChange={handlePDFUpload}
+            />
+            <input
+              id="audio-upload"
+              type="file"
+              multiple
+              accept="audio/wav, audio/mp3, audio/mpeg"
+              style={{ display: "none" }}
+              onChange={handleAudioUpload}
+            />
           </>
         )}
 
-        {/* Image preview */}
-        {image && (
-          <div
-            className="absolute bottom-full left-3 mb-3 bg-background/85 backdrop-blur-md rounded-md 
-            flex items-center shadow-md border border-border overflow-hidden cursor-pointer"
-            onClick={() => {
+        {/* Image previews */}
+        {images.length > 0 && (
+          <div className="absolute bottom-full left-3 mb-3 flex gap-2">
+            {images.map((img, idx) => {
               const imageUrl =
-                typeof image === "string" ? image : URL.createObjectURL(image)
-              handleImageClick(imageUrl)
-            }}
-          >
-            <img
-              src={
-                typeof image === "string" ? image : URL.createObjectURL(image)
-              }
-              alt="Preview"
-              className="w-12 h-12 object-cover"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-6 w-6 rounded-full bg-background/50 
-              hover:bg-background/80 text-foreground/80"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleClearImage()
-              }}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+                typeof img === "string" ? img : URL.createObjectURL(img)
+              return (
+                <div
+                  key={idx}
+                  className="bg-background/85 backdrop-blur-md rounded-md flex items-center shadow-md border border-border overflow-hidden cursor-pointer relative"
+                  onClick={() => handleImagePreviewClick(imageUrl)}
+                >
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="w-12 h-12 object-cover"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-6 w-6 rounded-full bg-background/50 hover:bg-background/80 text-foreground/80"
+                    onClick={createImageClearHandler(idx)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )
+            })}
           </div>
         )}
       </form>

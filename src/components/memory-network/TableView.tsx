@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react"
 import { Trash, Eye } from "lucide-react"
-import ChatMessage from "../ChatMessage"
+import ChatMessage from "../chat-message/ChatMessage"
 import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
 import { useMemoryNodeViewer } from "@/hooks/useMemoryNodeViewer"
 import { Memory } from "@/api/getMemories"
