@@ -27,7 +27,7 @@ interface DISCResults {
 
 interface DISCResultsProps {
   results: DISCResults
-  answers: any
+  answers: Record<string, unknown>
   onBack: () => void
 }
 

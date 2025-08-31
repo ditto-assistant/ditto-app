@@ -110,18 +110,10 @@ export default function ChatMessage({
               >
                 {/* Render v2 parts if provided (images/files already presigned) */}
                 {inputParts && isUser && (
-                  <MessagePartsRenderer
-                    parts={inputParts}
-                    isOptimistic={isOptimistic}
-                    keyPrefix="in"
-                  />
+                  <MessagePartsRenderer parts={inputParts} keyPrefix="in" />
                 )}
                 {outputParts && !isUser && (
-                  <MessagePartsRenderer
-                    parts={outputParts}
-                    isOptimistic={isOptimistic}
-                    keyPrefix="out"
-                  />
+                  <MessagePartsRenderer parts={outputParts} keyPrefix="out" />
                 )}
 
                 {/* Progressive image preview if present */}

@@ -52,11 +52,26 @@ export function isSupportedContentType(
 export function getContentTypeCategory(
   contentType: SupportedContentType
 ): "image" | "document" | "audio" | null {
-  if (SUPPORTED_CONTENT_TYPES.IMAGE.includes(contentType as any)) return "image"
-  if (SUPPORTED_CONTENT_TYPES.DOCUMENT.includes(contentType as any))
-    return "document"
-  if (SUPPORTED_CONTENT_TYPES.AUDIO.includes(contentType as any)) return "audio"
-  return null
+  switch (contentType) {
+    case SUPPORTED_CONTENT_TYPES.IMAGE[0]:
+      return "image"
+    case SUPPORTED_CONTENT_TYPES.IMAGE[1]:
+      return "image"
+    case SUPPORTED_CONTENT_TYPES.IMAGE[2]:
+      return "image"
+    case SUPPORTED_CONTENT_TYPES.IMAGE[3]:
+      return "image"
+    case SUPPORTED_CONTENT_TYPES.DOCUMENT[0]:
+      return "document"
+    case SUPPORTED_CONTENT_TYPES.AUDIO[0]:
+      return "audio"
+    case SUPPORTED_CONTENT_TYPES.AUDIO[1]:
+      return "audio"
+    case SUPPORTED_CONTENT_TYPES.AUDIO[2]:
+      return "audio"
+    default:
+      return null
+  }
 }
 
 /**

@@ -3,13 +3,11 @@ import { ContentV2 } from "@/api/getMemories"
 
 interface MessagePartsRendererProps {
   parts: ContentV2[]
-  isOptimistic: boolean
   keyPrefix: string
 }
 
 const MessagePartsRenderer: React.FC<MessagePartsRendererProps> = ({
   parts,
-  isOptimistic,
   keyPrefix,
 }) => {
   const renderPart = (part: ContentV2, index: number) => {

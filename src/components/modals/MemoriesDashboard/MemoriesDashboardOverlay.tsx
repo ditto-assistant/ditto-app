@@ -12,6 +12,7 @@ import MemoriesNetworkGraph from "./MemoriesNetworkGraph"
 import { LoadingSpinner } from "@/components/ui/loading/LoadingSpinner"
 import { toast } from "sonner"
 import "@/components/modals/MemoryNetwork.css"
+import { useMemoryCount } from "@/hooks/useMemoryCount"
 
 interface NetworkState {
   memories: Memory[]
@@ -29,11 +30,11 @@ export default function MemoriesDashboardOverlay() {
   const { user } = useAuth()
   const { preferences } = useModelPreferences()
   const {
-    totalMemoryCount,
     topSubjects,
     loading: statsLoading,
     error: statsError,
   } = useMemoryStats(15)
+  const { count: totalMemoryCount } = useMemoryCount()
 
   // Cache for top subjects data to make reset instant
   const topSubjectsCacheRef = useRef<{
@@ -459,13 +460,7 @@ export default function MemoriesDashboardOverlay() {
         isInitialLoad: false,
       }))
     }
-  }, [
-    user?.uid,
-    preferences,
-    topSubjects,
-    createTopSubjectsPrompt,
-    loadTopSubjectsData,
-  ])
+  }, [user?.uid, preferences, topSubjects, loadTopSubjectsData])
 
   // Handle neural subject click to run as query
   const handleSubjectClick = useCallback(
@@ -684,7 +679,7 @@ export default function MemoriesDashboardOverlay() {
                 </Button>
               </div>
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {topSubjects.slice(0, 8).map((subject, index) => (
+                {topSubjects.slice(0, 8).map((subject, _index) => (
                   <button
                     key={subject.id}
                     onClick={() => handleSubjectClick(subject.subject_text)}

@@ -17,7 +17,7 @@ interface BigFiveResults {
 
 interface BigFiveResultsProps {
   results: BigFiveResults
-  answers: any
+  answers: Record<string, unknown>
   onBack: () => void
 }
 

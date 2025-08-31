@@ -16,7 +16,7 @@ interface MBTIResults {
 
 interface MBTIResultsProps {
   results: MBTIResults
-  answers: any
+  answers: Record<string, unknown>
   onBack: () => void
 }
 

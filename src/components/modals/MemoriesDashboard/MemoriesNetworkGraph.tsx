@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import {
   BarChart3,
   Brain,
-  MessageCircle,
   X,
   Info,
   Maximize2,
@@ -10,7 +9,6 @@ import {
   Grid3X3,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Target,
   RotateCcw,
   ChevronUp,
@@ -160,7 +158,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const setViewMode = onViewModeChange ?? setInternalViewMode
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const { isMobile } = usePlatform()
-  const [subjectsCollapsed, setSubjectsCollapsed] = useState(isMobile)
   const { theme } = useTheme()
 
   // Use external pair details if provided, otherwise fall back to context
@@ -235,15 +232,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
       }
 
       return false
-    }, [
-      memories.length,
-      memories.map((m) => m.id).join(","),
-      rootNodeConfig.id,
-      rootNodeConfig.label,
-      Object.keys(pairDetails).join(","),
-      Object.keys(pairDetails).length,
-      theme,
-    ])
+    }, [])
   }
 
   const shouldRebuildNetwork = useNetworkInitialization()
@@ -327,6 +316,35 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
   }, [])
 
+  const fitAllNodes = useCallback(() => {
+    if (isFittingRef.current) return
+    if (fitTimeoutRef.current) {
+      clearTimeout(fitTimeoutRef.current)
+      fitTimeoutRef.current = null
+    }
+    if (
+      networkRef.current &&
+      nodesDatasetRef.current &&
+      nodesDatasetRef.current.length > 0
+    ) {
+      try {
+        isFittingRef.current = true
+        const fitOptions: FitOptions = {
+          nodes: nodesDatasetRef.current.getIds(),
+          animation: { duration: 800, easingFunction: "easeOutCubic" },
+        }
+        networkRef.current.fit(fitOptions)
+        fitTimeoutRef.current = setTimeout(() => {
+          isFittingRef.current = false
+          fitTimeoutRef.current = null
+        }, 850)
+      } catch (e) {
+        console.error("Error fitting nodes:", e)
+        isFittingRef.current = false
+      }
+    }
+  }, [])
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -341,7 +359,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, [])
+  }, [fitAllNodes])
 
   // Cleanup animation state when modals are closed
   useEffect(() => {
@@ -374,35 +392,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
 
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const fitAllNodes = useCallback(() => {
-    if (isFittingRef.current) return
-    if (fitTimeoutRef.current) {
-      clearTimeout(fitTimeoutRef.current)
-      fitTimeoutRef.current = null
-    }
-    if (
-      networkRef.current &&
-      nodesDatasetRef.current &&
-      nodesDatasetRef.current.length > 0
-    ) {
-      try {
-        isFittingRef.current = true
-        const fitOptions: FitOptions = {
-          nodes: nodesDatasetRef.current.getIds(),
-          animation: { duration: 800, easingFunction: "easeOutCubic" },
-        }
-        networkRef.current.fit(fitOptions)
-        fitTimeoutRef.current = setTimeout(() => {
-          isFittingRef.current = false
-          fitTimeoutRef.current = null
-        }, 850)
-      } catch (e) {
-        console.error("Error fitting nodes:", e)
-        isFittingRef.current = false
-      }
-    }
-  }, [])
 
   // Mobile touch handling state
   const [lastTouchTime, setLastTouchTime] = useState(0)
@@ -509,7 +498,7 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
         }
       }
     },
-    [rootNodeConfig, onRootNodeClick]
+    [rootNodeConfig.id, onRootNodeClick, lastTouchTime, isProcessingClick]
   )
 
   // Network building effect - simplified and stable
@@ -1088,6 +1077,19 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     fitAllNodes,
     isMobile,
     onRootNodeClick,
+    theme,
+    networkStats.totalSubjects,
+    networkStats.totalMemories,
+    networkStats.keySubjects,
+    rootNodeConfig.label,
+    rootNodeConfig.originalMemory,
+    rootNodeConfig.id,
+    rootNodeConfig.title,
+    rootNodeConfig.color,
+    rootNodeConfig.isQueryNode,
+    memories,
+    pairDetails,
+    isReady,
   ])
 
   useEffect(() => {
