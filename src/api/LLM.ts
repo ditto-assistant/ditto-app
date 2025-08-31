@@ -20,12 +20,37 @@ export interface PromptV2Content {
   content: string
 }
 
-// For request cancellation - temporarily disabled until stop stream endpoint is implemented
-export function cancelPromptLLMV2() {
-  console.log(
-    "🛑 [LLM] Stop button temporarily disabled - stop stream endpoint coming soon"
-  )
-  return false
+// Cancel an active prompt streaming request
+export async function cancelPromptLLMV2(): Promise<boolean> {
+  try {
+    const tok = await getToken()
+    if (tok.err) throw tok.err
+    if (!tok.ok) throw new Error("Unable to get token")
+
+    const response = await fetch(routes.promptStop(tok.ok.userID), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
+    })
+
+    if (response.status === 404) {
+      console.log("🛑 [LLM] No active stream to cancel")
+      return false
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to cancel prompt: ${response.status} ${response.statusText}`
+      )
+    }
+
+    console.log("🛑 [LLM] Prompt stream cancelled successfully")
+    return true
+  } catch (error) {
+    console.error("🛑 [LLM] Error cancelling prompt:", error)
+    return false
+  }
 }
 
 // New simplified V2 caller that builds and sends `input` array (types.Content shape)

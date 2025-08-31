@@ -1,14 +1,9 @@
-import {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useCallback,
-} from "react"
+import { createContext, useContext, ReactNode, useState } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useAuth, useAuthToken } from "./useAuth"
 import { BASE_URL } from "@/firebaseConfig"
 import { Memory } from "@/api/getMemories"
+import { cancelPromptLLMV2 } from "@/api/LLM"
 
 interface ConversationResponse {
   items: Memory[]
@@ -41,6 +36,7 @@ interface ConversationContextType {
   setOptimisticPairID: (tempId: string, realId: string) => void
   setImagePartial: (pairId: string, index: number, b64: string) => void
   setImageCompleted: (pairId: string, url: string) => void
+  cancelPrompt: () => Promise<boolean>
 }
 
 const ConversationContext = createContext<ConversationContextType | null>(null)
@@ -103,114 +99,105 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       : serverMessages
 
   // Add a new optimistic message pair (user prompt + empty assistant response)
-  const addOptimisticMessage = useCallback(
-    (userPrompt: string, imageURL?: string): string => {
-      const timestamp = Date.now()
-      const tempPairId = `optimistic-${timestamp}`
+  const addOptimisticMessage = (
+    userPrompt: string,
+    imageURL?: string
+  ): string => {
+    const timestamp = Date.now()
+    const tempPairId = `optimistic-${timestamp}`
 
-      const newOptimisticMessage: OptimisticMemory = {
-        id: tempPairId,
-        // Legacy fields for backward compatibility
-        prompt: userPrompt,
-        response: "",
-        // New v2 structure
-        input: [{ type: "text" as const, content: userPrompt }],
-        output: [],
-        timestamp: new Date(timestamp),
-        isOptimistic: true,
-        score: 0,
-        vector_distance: 0,
-        depth: 0,
-      }
+    const newOptimisticMessage: OptimisticMemory = {
+      id: tempPairId,
+      // Legacy fields for backward compatibility
+      prompt: userPrompt,
+      response: "",
+      // New v2 structure
+      input: [{ type: "text" as const, content: userPrompt }],
+      output: [],
+      timestamp: new Date(timestamp),
+      isOptimistic: true,
+      score: 0,
+      vector_distance: 0,
+      depth: 0,
+    }
 
-      if (imageURL) {
-        newOptimisticMessage.input?.push({
-          type: "image" as const,
-          content: imageURL,
-        })
-      }
+    if (imageURL) {
+      newOptimisticMessage.input?.push({
+        type: "image" as const,
+        content: imageURL,
+      })
+    }
 
-      setOptimisticMessage(newOptimisticMessage)
-      return tempPairId
-    },
-    []
-  )
+    setOptimisticMessage(newOptimisticMessage)
+    return tempPairId
+  }
 
   // Update the streaming response of an optimistic message
-  const updateOptimisticResponse = useCallback(
-    (pairId: string, responseChunk: string) => {
-      setOptimisticMessage((prev) => {
-        if (!prev || prev.id !== pairId) return prev
+  const updateOptimisticResponse = (pairId: string, responseChunk: string) => {
+    setOptimisticMessage((prev) => {
+      if (!prev || prev.id !== pairId) return prev
 
-        const currentContent = (prev.output || [])[0]?.content || ""
-        const newContent = currentContent + responseChunk
+      const currentContent = (prev.output || [])[0]?.content || ""
+      const newContent = currentContent + responseChunk
 
-        return {
-          ...prev,
-          output: [{ type: "text" as const, content: newContent }],
-        }
-      })
-    },
-    []
-  )
+      return {
+        ...prev,
+        output: [{ type: "text" as const, content: newContent }],
+      }
+    })
+  }
 
   // Finalize an optimistic message by setting its final response
-  const finalizeOptimisticMessage = useCallback(
-    (pairId: string, finalResponse: string) => {
-      setOptimisticMessage((prev) => {
-        if (!prev || prev.id !== pairId) return prev
+  const finalizeOptimisticMessage = (pairId: string, finalResponse: string) => {
+    setOptimisticMessage((prev) => {
+      if (!prev || prev.id !== pairId) return prev
 
-        return {
-          ...prev,
-          output: [{ type: "text" as const, content: finalResponse }],
-          isOptimistic: false,
-        }
-      })
+      return {
+        ...prev,
+        output: [{ type: "text" as const, content: finalResponse }],
+        isOptimistic: false,
+      }
+    })
 
+    setTimeout(() => {
+      refetch()
+
+      // Clear the optimistic message after refetch to ensure data is loaded
       setTimeout(() => {
-        refetch()
-
-        // Clear the optimistic message after refetch to ensure data is loaded
-        setTimeout(() => {
-          setOptimisticMessage(null)
-        }, 1000) // Wait 1 second after refetch to ensure data is loaded
-      }, 800)
-    },
-    [refetch]
-  )
+        setOptimisticMessage(null)
+      }, 1000) // Wait 1 second after refetch to ensure data is loaded
+    }, 800)
+  }
 
   // Clear the optimistic message
-  const clearOptimisticMessages = useCallback(() => {
+  const clearOptimisticMessages = () => {
     setOptimisticMessage(null)
-  }, [])
+  }
 
   // Map temporary optimistic ID to real pair ID when server reports it
-  const setOptimisticPairID = useCallback((tempId: string, realId: string) => {
+  const setOptimisticPairID = (tempId: string, realId: string) => {
     if (!tempId || !realId || tempId === realId) return
     setOptimisticMessage((prev) => {
       if (!prev || prev.id !== tempId) return prev
       return { ...prev, id: realId }
     })
-  }, [])
+  }
 
   // Image generation progressive updates (partial frames)
-  const setImagePartial = useCallback(
-    (pairId: string, _index: number, b64: string) => {
-      if (!pairId || !b64) return
-      const dataUrl = `data:image/png;base64,${b64}`
-      setOptimisticMessage((prev) => {
-        if (!prev || prev.id !== pairId) return prev
+  const setImagePartial = (pairId: string, _index: number, b64: string) => {
+    if (!pairId || !b64) return
+    const dataUrl = `data:image/png;base64,${b64}`
+    setOptimisticMessage((prev) => {
+      if (!prev || prev.id !== pairId) return prev
 
-        return {
-          ...prev,
-          generatedImagePartial: dataUrl,
-        }
-      })
-    },
-    []
-  )
+      return {
+        ...prev,
+        generatedImagePartial: dataUrl,
+      }
+    })
+  }
 
-  const setImageCompleted = useCallback((pairId: string, url: string) => {
+  const setImageCompleted = (pairId: string, url: string) => {
     if (!pairId || !url) return
     setOptimisticMessage((prev) => {
       if (!prev || prev.id !== pairId) return prev
@@ -221,7 +208,12 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         generatedImageURL: url,
       }
     })
-  }, [])
+  }
+
+  // Cancel the current prompt streaming request
+  const cancelPrompt = async (): Promise<boolean> => {
+    return await cancelPromptLLMV2()
+  }
 
   const value = {
     messages,
@@ -238,6 +230,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setOptimisticPairID,
     setImagePartial,
     setImageCompleted,
+    cancelPrompt,
   }
 
   return (

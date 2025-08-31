@@ -59,6 +59,8 @@ export const routes = {
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
   promptV2: BASE_URL + "/api/v2/prompt",
+  promptStop: (userID: string) =>
+    BASE_URL + `/api/v2/users/${userID}/prompt/stop`,
   pgVectorAPIURL: PG_VECTOR_API_URL,
   // Knowledge Graph Endpoints
   kgSubjectsSearch: PG_VECTOR_API_URL + "/kg/subjects/search",
