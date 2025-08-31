@@ -377,7 +377,7 @@ export const MEMORY_CONFIG = {
   },
   longTerm: {
     min: 0,
-    max: 5,
+    max: 8,
     step: 1,
     maxChainLength: 2,
   },
