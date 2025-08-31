@@ -1071,25 +1071,14 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
     }
 
     buildNetwork()
+    // we do not need to re-run this effect when all dependencies change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     shouldRebuildNetwork,
     handleNodeClick,
     fitAllNodes,
     isMobile,
     onRootNodeClick,
-    theme,
-    networkStats.totalSubjects,
-    networkStats.totalMemories,
-    networkStats.keySubjects,
-    rootNodeConfig.label,
-    rootNodeConfig.originalMemory,
-    rootNodeConfig.id,
-    rootNodeConfig.title,
-    rootNodeConfig.color,
-    rootNodeConfig.isQueryNode,
-    memories,
-    pairDetails,
-    isReady,
   ])
 
   useEffect(() => {
